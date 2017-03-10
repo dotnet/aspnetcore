@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Testing;
@@ -19,13 +20,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // Which happens if ProduceEnd is called in Frame without _responseStarted == true
             // As it calls ProduceStart with write immediate == true
             // This happens in WebSocket Upgrade over SSL
+            using (var factory = new PipeFactory())
+            {
+                var socketOutput = new StreamSocketOutput(new ThrowsOnNullWriteStream(), factory.Create());
 
-            ISocketOutput socketOutput = new StreamSocketOutput("id", new ThrowsOnNullWriteStream(), null, new TestKestrelTrace());
+                // Should not throw
+                socketOutput.Write(default(ArraySegment<byte>), true);
 
-            // Should not throw
-            socketOutput.Write(default(ArraySegment<byte>), true);
+                Assert.True(true);
 
-            Assert.True(true);
+                socketOutput.Dispose();
+            }
         }
 
         private class ThrowsOnNullWriteStream : Stream

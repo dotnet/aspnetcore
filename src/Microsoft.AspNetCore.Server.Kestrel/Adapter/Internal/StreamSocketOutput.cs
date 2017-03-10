@@ -3,124 +3,130 @@
 
 using System;
 using System.IO;
-using System.Text;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 {
     public class StreamSocketOutput : ISocketOutput
     {
-        private static readonly byte[] _endChunkBytes = Encoding.ASCII.GetBytes("\r\n");
-        private static readonly byte[] _nullBuffer = new byte[0];
+        private static readonly ArraySegment<byte> _nullBuffer = new ArraySegment<byte>(new byte[0]);
 
-        private readonly string _connectionId;
         private readonly Stream _outputStream;
-        private readonly MemoryPool _memory;
-        private readonly IKestrelTrace _logger;
-        private MemoryPoolBlock _producingBlock;
+        private readonly IPipe _pipe;
+        private object _sync = new object();
+        private bool _completed;
 
-        private bool _canWrite = true;
-
-        public StreamSocketOutput(string connectionId, Stream outputStream, MemoryPool memory, IKestrelTrace logger)
+        public StreamSocketOutput(Stream outputStream, IPipe pipe)
         {
-            _connectionId = connectionId;
             _outputStream = outputStream;
-            _memory = memory;
-            _logger = logger;
+            _pipe = pipe;
         }
 
         public void Write(ArraySegment<byte> buffer, bool chunk)
         {
-            if (chunk && buffer.Array != null)
-            {
-                var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
-                _outputStream.Write(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count);
-            }
-
-            _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
-
-            if (chunk && buffer.Array != null)
-            {
-                _outputStream.Write(_endChunkBytes, 0, _endChunkBytes.Length);
-            }
+            WriteAsync(buffer, chunk, default(CancellationToken)).GetAwaiter().GetResult();
         }
 
-        public Task WriteAsync(ArraySegment<byte> buffer, bool chunk, CancellationToken cancellationToken)
+        public async Task WriteAsync(ArraySegment<byte> buffer, bool chunk, CancellationToken cancellationToken)
         {
-            if (chunk && buffer.Array != null)
+            var flushAwaiter = default(WritableBufferAwaitable);
+
+            lock (_sync)
             {
-                return WriteAsyncChunked(buffer, cancellationToken);
-            }
-
-            return _outputStream.WriteAsync(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count, cancellationToken);
-        }
-
-        private async Task WriteAsyncChunked(ArraySegment<byte> buffer, CancellationToken cancellationToken)
-        {
-            var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
-
-            await _outputStream.WriteAsync(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count, cancellationToken);
-            await _outputStream.WriteAsync(buffer.Array, buffer.Offset, buffer.Count, cancellationToken);
-            await _outputStream.WriteAsync(_endChunkBytes, 0, _endChunkBytes.Length, cancellationToken);
-        }
-
-        public MemoryPoolIterator ProducingStart()
-        {
-            _producingBlock = _memory.Lease();
-            return new MemoryPoolIterator(_producingBlock);
-        }
-
-        public void ProducingComplete(MemoryPoolIterator end)
-        {
-            var block = _producingBlock;
-            while (block != end.Block)
-            {
-                // If we don't handle an exception from _outputStream.Write() here, we'll leak memory blocks.
-                if (_canWrite)
+                if (_completed)
                 {
-                    try
+                    return;
+                }
+
+                var writableBuffer = _pipe.Writer.Alloc();
+
+                if (buffer.Count > 0)
+                {
+                    if (chunk)
                     {
-                         _outputStream.Write(block.Data.Array, block.Data.Offset, block.Data.Count);
+                        ChunkWriter.WriteBeginChunkBytes(ref writableBuffer, buffer.Count);
+                        writableBuffer.Write(buffer);
+                        ChunkWriter.WriteEndChunkBytes(ref writableBuffer);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _canWrite = false;
-                        _logger.ConnectionError(_connectionId, ex);
+                        writableBuffer.Write(buffer);
                     }
                 }
 
-                var returnBlock = block;
-                block = block.Next;
-                returnBlock.Pool.Return(returnBlock);
-            }
-            
-            if (_canWrite)
-            {
-                try
-                {
-                    _outputStream.Write(end.Block.Array, end.Block.Data.Offset, end.Index - end.Block.Data.Offset);
-                }
-                catch (Exception ex)
-                {
-                    _canWrite = false;
-                    _logger.ConnectionError(_connectionId, ex);
-                }
+                flushAwaiter = writableBuffer.FlushAsync();
             }
 
-            end.Block.Pool.Return(end.Block);
+            await flushAwaiter;
+        }
+
+        public void Dispose()
+        {
+            lock (_sync)
+            {
+                _completed = true;
+            }
+
+            _pipe.Writer.Complete();
         }
 
         public void Flush()
         {
-            _outputStream.Flush();
+            FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
         }
 
         public Task FlushAsync(CancellationToken cancellationToken)
         {
-            return _outputStream.FlushAsync(cancellationToken);
+            return WriteAsync(default(ArraySegment<byte>), chunk: false, cancellationToken: cancellationToken);
+        }
+
+        public WritableBuffer Alloc()
+        {
+            return _pipe.Writer.Alloc();
+        }
+
+        public async Task WriteOutputAsync()
+        {
+            try
+            {
+                while (true)
+                {
+                    var readResult = await _pipe.Reader.ReadAsync();
+                    var buffer = readResult.Buffer;
+
+                    try
+                    {
+                        if (buffer.IsEmpty && readResult.IsCompleted)
+                        {
+                            break;
+                        }
+
+                        if (buffer.IsEmpty)
+                        {
+                            await _outputStream.FlushAsync();
+                        }
+
+                        foreach (var memory in buffer)
+                        {
+                            var array = memory.GetArray();
+                            await _outputStream.WriteAsync(array.Array, array.Offset, array.Count);
+                        }
+                    }
+                    finally
+                    {
+                        _pipe.Reader.Advance(readResult.Buffer.End);
+                    }
+
+                    // REVIEW: Should we flush here?
+                }
+            }
+            finally
+            {
+                _pipe.Reader.Complete();
+            }
         }
     }
 }

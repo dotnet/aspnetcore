@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -14,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
     /// </summary>
     public class UvWriteReq : UvRequest
     {
-        private readonly static Libuv.uv_write_cb _uv_write_cb = (IntPtr ptr, int status) => UvWriteCb(ptr, status);
+        private static readonly Libuv.uv_write_cb _uv_write_cb = (IntPtr ptr, int status) => UvWriteCb(ptr, status);
 
         private IntPtr _bufs;
 
@@ -22,7 +25,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         private object _state;
         private const int BUFFER_COUNT = 4;
 
+        private LibuvAwaitable<UvWriteReq> _awaitable = new LibuvAwaitable<UvWriteReq>();
         private List<GCHandle> _pins = new List<GCHandle>(BUFFER_COUNT + 1);
+        private List<MemoryHandle> _handles = new List<MemoryHandle>(BUFFER_COUNT + 1);
 
         public UvWriteReq(IKestrelTrace logger) : base(logger)
         {
@@ -39,11 +44,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             _bufs = handle + requestSize;
         }
 
-        public unsafe void Write(
+        public LibuvAwaitable<UvWriteReq> WriteAsync(UvStreamHandle handle, ReadableBuffer buffer)
+        {
+            Write(handle, buffer, LibuvAwaitable<UvWriteReq>.Callback, _awaitable);
+            return _awaitable;
+        }
+
+        public LibuvAwaitable<UvWriteReq> WriteAsync(UvStreamHandle handle, ArraySegment<ArraySegment<byte>> bufs)
+        {
+            Write(handle, bufs, LibuvAwaitable<UvWriteReq>.Callback, _awaitable);
+            return _awaitable;
+        }
+
+        private unsafe void Write(
             UvStreamHandle handle,
-            MemoryPoolIterator start,
-            MemoryPoolIterator end,
-            int nBuffers,
+            ReadableBuffer buffer,
             Action<UvWriteReq, int, Exception, object> callback,
             object state)
         {
@@ -51,6 +66,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             {
                 // add GCHandle to keeps this SafeHandle alive while request processing
                 _pins.Add(GCHandle.Alloc(this, GCHandleType.Normal));
+
+                var nBuffers = 0;
+                foreach (var _ in buffer)
+                {
+                    nBuffers++;
+                }
 
                 var pBuffers = (Libuv.uv_buf_t*)_bufs;
                 if (nBuffers > BUFFER_COUNT)
@@ -61,19 +82,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
                     _pins.Add(gcHandle);
                     pBuffers = (Libuv.uv_buf_t*)gcHandle.AddrOfPinnedObject();
                 }
-
-                var block = start.Block;
-                for (var index = 0; index < nBuffers; index++)
+                var index = 0;
+                foreach (var memory in buffer)
                 {
-                    var blockStart = block == start.Block ? start.Index : block.Data.Offset;
-                    var blockEnd = block == end.Block ? end.Index : block.Data.Offset + block.Data.Count;
+                    // REVIEW: This isn't necessary for our default pool since the memory is 
+                    // already pinned but it also makes tests pass
+                    var memoryHandle = memory.Pin();
+                    _handles.Add(memoryHandle);
 
                     // create and pin each segment being written
                     pBuffers[index] = Libuv.buf_init(
-                        block.DataArrayPtr + blockStart,
-                        blockEnd - blockStart);
-
-                    block = block.Next;
+                        (IntPtr)memoryHandle.PinnedPointer,
+                        memory.Length);
+                    index++;
                 }
 
                 _callback = callback;
@@ -89,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             }
         }
 
-        public void Write(
+        private void Write(
             UvStreamHandle handle,
             ArraySegment<ArraySegment<byte>> bufs,
             Action<UvWriteReq, int, Exception, object> callback,
@@ -170,7 +191,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             {
                 pin.Free();
             }
+
+            foreach (var handle in req._handles)
+            {
+                handle.Free();
+            }
+
             req._pins.Clear();
+            req._handles.Clear();
         }
 
         private static void UvWriteCb(IntPtr ptr, int status)

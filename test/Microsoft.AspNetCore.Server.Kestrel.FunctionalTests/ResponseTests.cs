@@ -455,11 +455,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(trace => trace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), response.Length))
                 .Callback<string, long>((connectionId, count) => logTcs.SetResult(null));
 
-                using (var server = new TestServer(async httpContext =>
-                {
-                    await httpContext.Response.WriteAsync(response);
-                    await httpContext.Response.Body.FlushAsync();
-                }, new TestServiceContext { Log = mockKestrelTrace.Object }))
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync(response);
+                await httpContext.Response.Body.FlushAsync();
+            }, new TestServiceContext { Log = mockKestrelTrace.Object }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -504,19 +504,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         $"HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 11",
                         "",
                         "hello,");
+
+                    await connection.WaitForConnectionClose();
                 }
             }
 
+
             var logMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
+
             Assert.Equal(
                 $"Response Content-Length mismatch: too many bytes written (12 of 11).",
                 logMessage.Exception.Message);
+
         }
 
         [Fact]

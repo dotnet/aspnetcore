@@ -291,6 +291,7 @@ namespace CodeGenerator
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -521,7 +522,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return true;
         }}
         {(loop.ClassName == "FrameResponseHeaders" ? $@"
-        protected void CopyToFast(ref MemoryPoolIterator output)
+        protected void CopyToFast(ref WritableBuffer output)
         {{
             var tempBits = _bits | (_contentLength.HasValue ? {1L << 63}L : 0);
             {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
@@ -529,7 +530,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {{ {(header.EnhancedSetter == false ? "" : $@"
                     if (_headers._raw{header.Identifier} != null)
                     {{
-                        output.CopyFrom(_headers._raw{header.Identifier}, 0, _headers._raw{header.Identifier}.Length);
+                        output.Write(_headers._raw{header.Identifier});
                     }}
                     else ")}
                     {{
@@ -539,8 +540,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             var value = _headers._{header.Identifier}[i];
                             if (value != null)
                             {{
-                                output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
-                                output.CopyFromAscii(value);
+                                output.Write(new Span<byte>(_headerBytes, {header.BytesOffset}, {header.BytesCount}));
+                                output.WriteAscii(value);
                             }}
                         }}
                     }}
@@ -553,8 +554,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }}{(header.Identifier == "Server" ? $@"
                 if ((tempBits & {1L << 63}L) != 0)
                 {{
-                    output.CopyFrom(_headerBytes, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesOffset}, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesCount});
-                    output.CopyFromNumeric((ulong)ContentLength.Value);
+                    output.Write(new Span<byte>(_headerBytes, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesOffset}, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesCount}));
+                    output.WriteNumeric((ulong)ContentLength.Value);
 
                     if((tempBits & ~{1L << 63}L) == 0)
                     {{

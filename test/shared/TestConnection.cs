@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
@@ -21,6 +20,7 @@ namespace Microsoft.AspNetCore.Testing
         private Socket _socket;
         private NetworkStream _stream;
         private StreamReader _reader;
+        private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(1);
 
         public TestConnection(int port)
             : this(port, AddressFamily.InterNetwork)
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Testing
                 var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
                 if (!Debugger.IsAttached)
                 {
-                    Assert.True(await Task.WhenAny(task, Task.Delay(TimeSpan.FromMinutes(1))) == task, "TestConnection.Receive timed out.");
+                    task = task.TimeoutAfter(Timeout);
                 }
                 var count = await task;
                 if (count == 0)
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Testing
             await Receive(lines);
             _socket.Shutdown(SocketShutdown.Send);
             var ch = new char[128];
-            var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(TimeSpan.FromMinutes(1));
+            var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout);
             var text = new string(ch, 0, count);
             Assert.Equal("", text);
         }
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Testing
             try
             {
                 var ch = new char[128];
-                var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(TimeSpan.FromMinutes(1));
+                var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout);
                 var text = new string(ch, 0, count);
                 Assert.Equal("", text);
             }

@@ -4,21 +4,20 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Testing
 {
     public class MockSocketOutput : ISocketOutput
     {
-        public void ProducingComplete(MemoryPoolIterator end)
-        {
-        }
+        private PipeFactory _factory = new PipeFactory();
+        private IPipeWriter _writer;
 
-        public MemoryPoolIterator ProducingStart()
+        public MockSocketOutput()
         {
-            return new MemoryPoolIterator();
+            _writer = _factory.Create().Writer;
         }
 
         public void Write(ArraySegment<byte> buffer, bool chunk = false)
@@ -37,6 +36,11 @@ namespace Microsoft.AspNetCore.Testing
         public Task FlushAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             return TaskCache.CompletedTask;
+        }
+
+        public WritableBuffer Alloc()
+        {
+            return _writer.Alloc();
         }
     }
 }

@@ -6,8 +6,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 {
@@ -16,30 +14,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
         private const int MinAllocBufferSize = 2048;
 
         private readonly Stream _filteredStream;
+        private readonly StreamSocketOutput _output;
 
         public AdaptedPipeline(
-            string connectionId,
             Stream filteredStream,
-            IPipe pipe,
-            MemoryPool memory,
-            IKestrelTrace logger)
+            IPipe inputPipe,
+            IPipe outputPipe)
         {
-            Input = pipe;
-            Output = new StreamSocketOutput(connectionId, filteredStream, memory, logger);
+            Input = inputPipe;
+            _output = new StreamSocketOutput(filteredStream, outputPipe);
 
             _filteredStream = filteredStream;
         }
 
         public IPipe Input { get; }
 
-        public ISocketOutput Output { get; }
+        public ISocketOutput Output => _output;
 
         public void Dispose()
         {
             Input.Writer.Complete();
         }
 
-        public async Task ReadInputAsync()
+        public async Task StartAsync()
+        {
+            var inputTask = ReadInputAsync();
+            var outputTask = _output.WriteOutputAsync();
+
+            var result = await Task.WhenAny(inputTask, outputTask);
+
+            if (result == inputTask)
+            {
+                // Close output
+                _output.Dispose();
+            }
+            else
+            {
+                // Close input
+                Input.Writer.Complete();
+            }
+
+            await Task.WhenAll(inputTask, outputTask);
+        }
+
+        private async Task ReadInputAsync()
         {
             int bytesRead;
 

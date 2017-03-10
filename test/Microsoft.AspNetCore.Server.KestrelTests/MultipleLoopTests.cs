@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             serverListenPipe.Init(loop, (a, b) => { }, false);
             serverListenPipe.Bind(pipeName);
-            serverListenPipe.Listen(128, (backlog, status, error, state) =>
+            serverListenPipe.Listen(128, async (backlog, status, error, state) =>
             {
                 var serverConnectionPipe = new UvPipeHandle(_logger);
                 serverConnectionPipe.Init(loop, (a, b) => { }, true);
@@ -72,27 +72,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var writeRequest = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
                 writeRequest.Init(loop);
-
-                var pool = new MemoryPool();
-                var block = pool.Lease();
-                block.GetIterator().CopyFrom(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }));
-
-                var start = new MemoryPoolIterator(block, 0);
-                var end = new MemoryPoolIterator(block, block.Data.Count);
-                writeRequest.Write(
+                
+                await writeRequest.WriteAsync(
                     serverConnectionPipe,
-                    start,
-                    end,
-                    1,
-                    (handle, status2, error2, state2) =>
-                    {
-                        writeRequest.Dispose();
-                        serverConnectionPipe.Dispose();
-                        serverListenPipe.Dispose();
-                        pool.Return(block);
-                        pool.Dispose();
-                    },
-                    null);
+                    ReadableBuffer.Create(new byte[] { 1, 2, 3, 4 }));
+
+                writeRequest.Dispose();
+                serverConnectionPipe.Dispose();
+                serverListenPipe.Dispose();
+
             }, null);
 
             var worker = new Thread(() =>

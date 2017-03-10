@@ -1,14 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -19,7 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
         private static readonly DateHeaderValueManager _dateHeaderValueManager = new DateHeaderValueManager();
-        private static readonly MemoryPool _memoryPool = new MemoryPool();
         private FrameResponseHeaders _responseHeadersDirect;
         private HttpResponse _response;
 
@@ -46,19 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 case "Unknown":
                     Unknown(InnerLoopCount);
                     break;
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
-        public void OutputHeaders()
-        {
-            for (var i = 0; i < InnerLoopCount; i++)
-            {
-                var block = _memoryPool.Lease();
-                var iter = new MemoryPoolIterator(block);
-                _responseHeadersDirect.CopyTo(ref iter);
-
-                ReturnBlocks(block);
             }
         }
 
@@ -168,6 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Setup()
         {
             var connectionContext = new MockConnection(new KestrelServerOptions());
+            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = f => new KestrelHttpParser(f.ConnectionContext.ListenerContext.ServiceContext.Log);
             var frame = new Frame<object>(application: null, context: connectionContext);
             frame.Reset();
             frame.InitializeHeaders();
@@ -192,17 +178,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 case "Unknown":
                     Unknown(1);
                     break;
-            }
-        }
-
-        private static void ReturnBlocks(MemoryPoolBlock block)
-        {
-            while (block != null)
-            {
-                var returningBlock = block;
-                block = returningBlock.Next;
-
-                returningBlock.Pool.Return(returningBlock);
             }
         }
     }

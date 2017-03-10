@@ -58,8 +58,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             ConnectionId = GenerateConnectionId(Interlocked.Increment(ref _lastConnectionId));
 
-            Input = Thread.PipelineFactory.Create(ListenerContext.LibuvPipeOptions);
-            Output = new SocketOutput(Thread, _socket, this, ConnectionId, Log, ThreadPool);
+            Input = Thread.PipelineFactory.Create(ListenerContext.LibuvInputPipeOptions);
+            var outputPipe = Thread.PipelineFactory.Create(ListenerContext.LibuvOutputPipeOptions);
+            Output = new SocketOutput(outputPipe, Thread, _socket, this, ConnectionId, Log);
 
             var tcpHandle = _socket as UvTcpHandle;
             if (tcpHandle != null)
@@ -197,11 +198,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     _filteredStream = adapterContext.ConnectionStream;
                     _adaptedPipeline = new AdaptedPipeline(
-                        ConnectionId,
                         adapterContext.ConnectionStream,
                         Thread.PipelineFactory.Create(ListenerContext.AdaptedPipeOptions),
-                        Thread.Memory,
-                        Log);
+                        Thread.PipelineFactory.Create(ListenerContext.AdaptedPipeOptions));
 
                     _frame.Input = _adaptedPipeline.Input;
                     _frame.Output = _adaptedPipeline.Output;
@@ -209,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     // Don't attempt to read input if connection has already closed.
                     // This can happen if a client opens a connection and immediately closes it.
                     _readInputTask = _socketClosedTcs.Task.Status == TaskStatus.WaitingForActivation
-                        ? _adaptedPipeline.ReadInputAsync()
+                        ? _adaptedPipeline.StartAsync()
                         : TaskCache.CompletedTask;
                 }
 

@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             listener.ConnectedCallback(connect, status, error, tcs);
         }
 
-        private void ConnectedCallback(UvConnectRequest connect, int status, Exception error, TaskCompletionSource<int> tcs)
+        private async void ConnectedCallback(UvConnectRequest connect, int status, Exception error, TaskCompletionSource<int> tcs)
         {
             connect.Dispose();
             if (error != null)
@@ -102,24 +102,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     this);
 
                 writeReq.Init(Thread.Loop);
-                writeReq.Write(
+               var result = await writeReq.WriteAsync(
                     DispatchPipe,
-                    new ArraySegment<ArraySegment<byte>>(new [] { new ArraySegment<byte>(_pipeMessage) }),
-                    (req, status2, ex, state) =>
-                    {
-                        req.Dispose();
-
-                        var innerTcs = (TaskCompletionSource<int>)state;
-                        if (ex != null)
-                        {
-                            innerTcs.SetException(ex);
-                        }
-                        else
-                        {
-                            innerTcs.SetResult(0);
-                        }
-                    },
-                    tcs);
+                    new ArraySegment<ArraySegment<byte>>(new [] { new ArraySegment<byte>(_pipeMessage) }));
+                
+                if (result.Error != null)
+                {
+                    tcs.SetException(result.Error);
+                }
+                else
+                {
+                    tcs.SetResult(0);
+                }
             }
             catch (Exception ex)
             {

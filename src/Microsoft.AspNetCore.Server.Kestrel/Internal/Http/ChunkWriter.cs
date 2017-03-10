@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
@@ -47,16 +48,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return new ArraySegment<byte>(bytes, offset, 10 - offset);
         }
 
-        public static int WriteBeginChunkBytes(ref MemoryPoolIterator start, int dataCount)
+        public static int WriteBeginChunkBytes(ref WritableBuffer start, int dataCount)
         {
             var chunkSegment = BeginChunkBytes(dataCount);
-            start.CopyFrom(chunkSegment);
+            start.Write(chunkSegment);
             return chunkSegment.Count;
         }
 
-        public static void WriteEndChunkBytes(ref MemoryPoolIterator start)
+        public static void WriteEndChunkBytes(ref WritableBuffer start)
         {
-            start.CopyFrom(_endChunkBytes);
+            start.Write(_endChunkBytes);
         }
     }
 }

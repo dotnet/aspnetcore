@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
                     (a, b, c) => tcp2.Libuv.buf_init(data, 500),
-                    (__, nread, state2) =>
+                    async (__, nread, state2) =>
                     {
                         if (nread <= 0)
                         {
@@ -179,23 +179,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                             for (var x = 0; x < 2; x++)
                             {
                                 var req = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
-                                req.Init(loop); var pool = new MemoryPool();
-                                var block = pool.Lease();
-                                block.GetIterator().CopyFrom(new ArraySegment<byte>(new byte[] { 65, 66, 67, 68, 69 }));
-
-                                var start = new MemoryPoolIterator(block, 0);
-                                var end = new MemoryPoolIterator(block, block.Data.Count);
-                                req.Write(
+                                req.Init(loop);
+                                var block = ReadableBuffer.Create(new byte[] { 65, 66, 67, 68, 69 });
+                
+                                await req.WriteAsync(
                                     tcp2,
-                                    start,
-                                    end,
-                                    1,
-                                    (_1, _2, _3, _4) =>
-                                    {
-                                        pool.Return(block);
-                                        pool.Dispose();
-                                    },
-                                    null);
+                                    block);
                             }
                         }
                     },
