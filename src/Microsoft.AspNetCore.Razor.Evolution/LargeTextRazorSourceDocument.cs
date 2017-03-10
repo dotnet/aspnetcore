@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private readonly int _length;
 
-        public LargeTextRazorSourceDocument(StreamReader reader, int chunkMaxLength, Encoding encoding, string filename)
+        public LargeTextRazorSourceDocument(StreamReader reader, int chunkMaxLength, Encoding encoding, string fileName)
         {
             if (reader == null)
             {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             _chunkMaxLength = chunkMaxLength;
             Encoding = encoding;
-            Filename = filename;
+            FileName = fileName;
 
             ReadChunks(reader, _chunkMaxLength, out _length, out _chunks);
             _lines = new DefaultRazorSourceLineCollection(this);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public override Encoding Encoding { get; }
 
-        public override string Filename { get; }
+        public override string FileName { get; }
 
         public override int Length => _length;
 

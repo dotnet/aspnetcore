@@ -46,7 +46,7 @@ namespace RazorPageGenerator
                     .SetBaseType("Microsoft.Extensions.RazorViews.BaseView")
                     .ConfigureClass((document, @class) =>
                     {
-                        @class.Name = Path.GetFileNameWithoutExtension(document.Source.Filename);
+                        @class.Name = Path.GetFileNameWithoutExtension(document.Source.FileName);
                         @class.AccessModifier = "internal";
                     });
 
@@ -76,7 +76,7 @@ namespace RazorPageGenerator
 
                 foreach (var item in cshtmlFiles)
                 {
-                    Console.WriteLine("    Generating code file for view {0}...", item.Filename);
+                    Console.WriteLine("    Generating code file for view {0}...", item.FileName);
                     results.Add(GenerateCodeFile(templateEngine, item));
                     Console.WriteLine("      Done!");
                     fileCount++;
@@ -118,7 +118,7 @@ namespace RazorPageGenerator
             public override string Path => _source.Path;
 
             // Mask the full name since we don't want a developer's local file paths to be commited.
-            public override string PhysicalPath => _source.Filename;
+            public override string PhysicalPath => _source.FileName;
 
             public override bool Exists => _source.Exists;
 

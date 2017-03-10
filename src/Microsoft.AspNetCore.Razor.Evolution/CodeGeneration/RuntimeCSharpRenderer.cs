@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             {
                 Context.Writer
                 .Write("#pragma checksum \"")
-                .Write(node.Filename)
+                .Write(node.FileName)
                 .Write("\" \"")
                 .Write(node.Guid)
                 .Write("\" \"")

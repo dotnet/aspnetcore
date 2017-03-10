@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -14,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         private readonly string _content;
         private readonly RazorSourceLineCollection _lines;
 
-        public DefaultRazorSourceDocument(string content, Encoding encoding, string filename)
+        public DefaultRazorSourceDocument(string content, Encoding encoding, string fileName)
         {
             if (content == null)
             {
@@ -28,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             _content = content;
             Encoding = encoding;
-            Filename = filename;
+            FileName = fileName;
 
             _lines = new DefaultRazorSourceLineCollection(this);
         }
@@ -37,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public override Encoding Encoding { get; }
 
-        public override string Filename { get; }
+        public override string FileName { get; }
 
         public override int Length => _content.Length;
 

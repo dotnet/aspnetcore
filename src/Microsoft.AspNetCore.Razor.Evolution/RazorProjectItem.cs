@@ -63,14 +63,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             get
             {
-                var index = Filename.LastIndexOf('.');
+                var index = FileName.LastIndexOf('.');
                 if (index == -1)
                 {
                     return null;
                 }
                 else
                 {
-                    return Filename.Substring(index);
+                    return FileName.Substring(index);
                 }
             }
         }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// <summary>
         /// The name of the file including the extension.
         /// </summary>
-        public virtual string Filename
+        public virtual string FileName
         {
             get
             {

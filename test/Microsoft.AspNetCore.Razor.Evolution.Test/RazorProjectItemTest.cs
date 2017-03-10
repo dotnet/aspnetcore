@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var projectItem = new TestRazorProjectItem(path, basePath: "/");
 
             // Act
-            var fileName = projectItem.Filename;
+            var fileName = projectItem.FileName;
 
             // Assert
             Assert.Equal(expected, fileName);

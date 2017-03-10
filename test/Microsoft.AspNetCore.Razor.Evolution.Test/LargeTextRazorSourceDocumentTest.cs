@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Test
             var document = new LargeTextRazorSourceDocument(reader, ChunkTestLength, Encoding.UTF8, fileName);
 
             // Assert
-            Assert.Equal(fileName, document.Filename);
+            Assert.Equal(fileName, document.FileName);
         }
 
         [Fact]

@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     var import = imports[j];
 
-                    importsVisitor.Filename = import.Source.Filename;
+                    importsVisitor.FileName = import.Source.FileName;
                     importsVisitor.VisitBlock(import.Root);
                 }
             }
 
             var visitor = new MainSourceVisitor(document, builder, namespaces)
             {
-                Filename = syntaxTree.Source.Filename,
+                FileName = syntaxTree.Source.FileName,
             };
 
             visitor.VisitBlock(syntaxTree.Root);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 _namespaces = namespaces;
             }
 
-            public string Filename { get; set; }
+            public string FileName { get; set; }
 
             public override void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
             {
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
 
                 var span = new SourceSpan(
-                    node.Start.FilePath ?? Filename,
+                    node.Start.FilePath ?? FileName,
                     node.Start.AbsoluteIndex,
                     node.Start.LineIndex,
                     node.Start.CharacterIndex,
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         var contentLength = templateNode.Children.Sum(child => child.Source?.Length ?? 0);
 
                         templateNode.Source = new SourceSpan(
-                            sourceRangeStart.Value.FilePath ?? Filename,
+                            sourceRangeStart.Value.FilePath ?? FileName,
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         var contentLength = expressionNode.Children.Sum(child => child.Source?.Length ?? 0);
 
                         expressionNode.Source = new SourceSpan(
-                            sourceRangeStart.Value.FilePath ?? Filename,
+                            sourceRangeStart.Value.FilePath ?? FileName,
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,

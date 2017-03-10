@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public override bool Exists => File.Exists;
 
         /// <inheritdoc />
-        public override string Filename => File.Name;
+        public override string FileName => File.Name;
 
         /// <inheritdoc />
         public override string PhysicalPath => File.FullName;

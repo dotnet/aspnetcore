@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             Assert.Equal("/Home.cshtml", projectItem.Path);
             Assert.Equal("/Views", projectItem.BasePath);
             Assert.True(projectItem.Exists);
-            Assert.Equal("Home.cshtml", projectItem.Filename);
+            Assert.Equal("Home.cshtml", projectItem.FileName);
             Assert.Equal(fileInfo.FullName, projectItem.PhysicalPath);
         }
 

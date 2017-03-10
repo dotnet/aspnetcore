@@ -159,8 +159,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Assert
             Assert.Collection(codeDocument.Imports,
-                import => Assert.Equal("/MyImport.cshtml", import.Filename),
-                import => Assert.Equal("/Views/Home/MyImport.cshtml", import.Filename));
+                import => Assert.Equal("/MyImport.cshtml", import.FileName),
+                import => Assert.Equal("/Views/Home/MyImport.cshtml", import.FileName));
         }
 
         [Fact]
@@ -188,8 +188,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Assert
             Assert.Collection(codeDocument.Imports,
                 import => Assert.Same(defaultImport, import),
-                import => Assert.Equal("/MyImport.cshtml", import.Filename),
-                import => Assert.Equal("/Views/Home/MyImport.cshtml", import.Filename));
+                import => Assert.Equal("/MyImport.cshtml", import.FileName),
+                import => Assert.Equal("/Views/Home/MyImport.cshtml", import.FileName));
         }
     }
 }

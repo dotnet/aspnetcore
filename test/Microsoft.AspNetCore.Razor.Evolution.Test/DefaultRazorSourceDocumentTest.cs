@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var expectedContent = "Hello, World!";
             var indexerBuffer = new char[expectedContent.Length];
-            var document = new DefaultRazorSourceDocument(expectedContent, Encoding.UTF8, filename: "file.cshtml");
+            var document = new DefaultRazorSourceDocument(expectedContent, Encoding.UTF8, fileName: "file.cshtml");
 
             // Act
             for (var i = 0; i < document.Length; i++)
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var expectedContent = "Hello, World!";
-            var document = new DefaultRazorSourceDocument(expectedContent, Encoding.UTF8, filename: "file.cshtml");
+            var document = new DefaultRazorSourceDocument(expectedContent, Encoding.UTF8, fileName: "file.cshtml");
 
             // Act & Assert
             Assert.Equal(expectedContent.Length, document.Length);
@@ -46,10 +46,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var content = "Hello, World!";
 
             // Act
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: "file.cshtml");
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: "file.cshtml");
 
             // Assert
-            Assert.Equal("file.cshtml", document.Filename);
+            Assert.Equal("file.cshtml", document.FileName);
         }
 
         [Fact]
@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var content = "Hello, World!";
 
             // Act
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Assert
-            Assert.Null(document.Filename);
+            Assert.Null(document.FileName);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = "Hello, World!";
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
             var expectedContent = "Hello";
             var charBuffer = new char[expectedContent.Length];
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = "Hello, World!";
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
             var expectedContent = "$Hello";
             var charBuffer = new char[expectedContent.Length];
             charBuffer[0] = '$';
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = "Hello, World!";
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
             var expectedContent = "World";
             var charBuffer = new char[expectedContent.Length];
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = "Hi";
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
             var charBuffer = new char[2];
 
             // Act
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = "Hi";
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act & Assert
             //
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = string.Empty;
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.Count;
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = string.Empty;
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.GetLineLength(0);
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = "hello\n";
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.GetLineLength(0);
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = "hello\r\n";
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.GetLineLength(0);
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 .Append("jumps over the lazy dog.")
                 .ToString();
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = GetAllLineMappings(document);
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\r\nWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = GetAllLineMappings(document);
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\rWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = GetAllLineMappings(document);
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\rBig\r\nWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = GetAllLineMappings(document);
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\nWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = GetAllLineMappings(document);
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\u0085World!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = GetAllLineMappings(document);
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\u2028World!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = GetAllLineMappings(document);
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\u2029World!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = GetAllLineMappings(document);
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello, World!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: "Hi.cshtml");
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: "Hi.cshtml");
 
             // Act
             var actual = document.Lines.GetLocation(1);
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.GetLocation(0);
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.GetLocation(5);
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.GetLocation(7);
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.GetLocation(11);
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, filename: null);
+            var document = new DefaultRazorSourceDocument(content, Encoding.UTF8, fileName: null);
 
             // Act
             var actual = document.Lines.GetLocation(16);
