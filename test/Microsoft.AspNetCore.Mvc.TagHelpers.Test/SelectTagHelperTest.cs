@@ -201,6 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var modelExpression = new ModelExpression(nameAndId.Name, modelExplorer);
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "select",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -290,6 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var modelExpression = new ModelExpression(nameAndId.Name, modelExplorer);
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "select",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -380,6 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "select";
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "select",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -468,6 +471,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var modelExpression = new ModelExpression(name: string.Empty, modelExplorer: modelExplorer);
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "select",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -556,7 +560,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "select";
 
             var tagHelperContext = new TagHelperContext(
-                contextAttributes,
+                tagName: "select",
+                allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -638,7 +643,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var tagName = "select";
 
             var tagHelperContext = new TagHelperContext(
-                contextAttributes,
+                tagName: "select",
+                allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var output = new TagHelperOutput(

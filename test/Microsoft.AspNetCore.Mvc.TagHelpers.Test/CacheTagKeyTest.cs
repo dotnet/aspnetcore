@@ -384,6 +384,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private static TagHelperContext GetTagHelperContext(string id = "testid")
         {
             return new TagHelperContext(
+                tagName: "test",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: id);

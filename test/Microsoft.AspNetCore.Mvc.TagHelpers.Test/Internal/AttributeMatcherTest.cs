@@ -96,7 +96,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         private static TagHelperContext MakeTagHelperContext(TagHelperAttributeList attributes)
         {
             return new TagHelperContext(
-                attributes,
+                tagName: "test",
+                allAttributes: attributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: Guid.NewGuid().ToString("N"));
         }

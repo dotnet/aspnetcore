@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var metadataProvider = new TestModelMetadataProvider();
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "form-action",
                 allAttributes: new TagHelperAttributeList
                 {
                     { "id", "my-id" },
@@ -100,6 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var metadataProvider = new TestModelMetadataProvider();
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "form-action",
                 allAttributes: new TagHelperAttributeList
                 {
                     { "id", "my-id" },
@@ -203,6 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "form-action",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -262,6 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "form-action",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -339,6 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "form-action",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -392,6 +397,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "form-action",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -472,6 +478,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "'asp-action', 'asp-controller', 'asp-area', 'asp-fragment', or 'asp-route' attribute.";
 
             var context = new TagHelperContext(
+                tagName: "form-action",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -507,6 +514,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "elements with a specified 'asp-route' must not have an 'asp-action', 'asp-controller', or 'asp-fragment' attribute.";
 
             var context = new TagHelperContext(
+                tagName: "form-action",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),

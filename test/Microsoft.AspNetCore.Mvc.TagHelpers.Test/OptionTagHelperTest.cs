@@ -401,7 +401,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             var tagHelperContext = new TagHelperContext(
-                contextAttributes,
+                tagName: "option",
+                allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -472,7 +473,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var originalPreContent = "original pre-content";
             var originalPostContent = "original post-content";
             var tagHelperContext = new TagHelperContext(
-                contextAttributes,
+                tagName: "option",
+                allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var output = new TagHelperOutput(
@@ -535,7 +537,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var originalPreContent = "original pre-content";
             var originalPostContent = "original post-content";
             var tagHelperContext = new TagHelperContext(
-                contextAttributes,
+                tagName: "option",
+                allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 

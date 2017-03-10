@@ -434,6 +434,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var cacheEntryOptions = new MemoryCacheEntryOptions()
                 .AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
             var tagHelperContext = new TagHelperContext(
+                tagName: "cache",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: id);
@@ -661,6 +662,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private static TagHelperContext GetTagHelperContext(string id = "testid")
         {
             return new TagHelperContext(
+                tagName: "cache",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: id);

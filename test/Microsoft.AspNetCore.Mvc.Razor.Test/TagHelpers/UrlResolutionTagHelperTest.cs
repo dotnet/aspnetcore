@@ -88,6 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -144,6 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -199,6 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -254,6 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -284,6 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory: null, htmlEncoder: null);
 
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -329,6 +334,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),

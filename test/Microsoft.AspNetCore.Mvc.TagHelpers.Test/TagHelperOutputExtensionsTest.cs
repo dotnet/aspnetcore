@@ -340,7 +340,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
                     new DefaultTagHelperContent()));
             var context = new TagHelperContext(
-                allAttributes,
+                tagName: "p",
+                allAttributes: allAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -441,7 +442,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
                     new DefaultTagHelperContent()));
             var context = new TagHelperContext(
-                allAttributes,
+                tagName: "p",
+                allAttributes: allAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -468,6 +470,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
             var tagHelperContext = new TagHelperContext(
+                tagName: "p",
                 allAttributes: new TagHelperAttributeList
                 {
                     { attributeName, attributeValue }
@@ -503,6 +506,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
             var expectedAttribute = new TagHelperAttribute(attributeName, "world2");
             var tagHelperContext = new TagHelperContext(
+                tagName: "p",
                 allAttributes: new TagHelperAttributeList
                 {
                     { attributeName, "world" }
@@ -533,6 +537,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
             var tagHelperContext = new TagHelperContext(
+                tagName: "p",
                 allAttributes: new TagHelperAttributeList
                 {
                     { "hello", "world" }

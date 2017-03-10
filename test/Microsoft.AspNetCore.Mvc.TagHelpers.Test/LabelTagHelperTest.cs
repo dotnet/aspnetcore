@@ -190,6 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "not-label",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");

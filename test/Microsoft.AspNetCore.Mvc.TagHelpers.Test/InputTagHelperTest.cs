@@ -88,6 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "<input name=\"HtmlEncode[[IsACar]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" />";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -135,6 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -181,6 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -224,6 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -330,6 +334,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -409,6 +414,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 { "type", specifiedType },
             };
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: allAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -464,6 +470,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -567,6 +574,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -669,6 +677,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -768,6 +777,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -879,6 +889,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: contextAttributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -999,6 +1010,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -1069,6 +1081,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList()
                 {
                     {"type", "datetime" }
@@ -1154,6 +1167,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
+                tagName: "input",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),

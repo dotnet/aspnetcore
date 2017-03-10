@@ -124,6 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "text-area",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),

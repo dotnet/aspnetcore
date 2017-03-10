@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "not-span",
                 allAttributes: new TagHelperAttributeList
                 {
                     { "id", "myvalidationmessage" },
@@ -114,6 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedContent = "original content";
             var expectedPostContent = "original post-content";
             var context = new TagHelperContext(
+                tagName: "span",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -186,6 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             output.Content.AppendHtml(outputContent);
 
             var context = new TagHelperContext(
+                tagName: "span",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -246,6 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
 
             var context = new TagHelperContext(
+                tagName: "span",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -286,6 +290,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             output.PostContent.SetContent(expectedPostContent);
 
             var context = new TagHelperContext(
+                tagName: "span",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),

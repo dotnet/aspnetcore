@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
             var tagHelperContext = new TagHelperContext(
+                tagName: "not-div",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -122,7 +123,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
 
             var context = new TagHelperContext(
-                new TagHelperAttributeList(),
+                tagName: "div",
+                allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -189,7 +191,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
 
             var context = new TagHelperContext(
-                new TagHelperAttributeList(),
+                tagName: "div",
+                allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -221,6 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
             var tagHelperContext = new TagHelperContext(
+                tagName: "not-div",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -290,6 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
             var tagHelperContext = new TagHelperContext(
+                tagName: "not-div",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -373,6 +378,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             validationSummaryTagHelper.ViewContext = expectedViewContext;
 
             var context = new TagHelperContext(
+                tagName: "div",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -428,6 +434,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             validationSummaryTagHelper.ViewContext = viewContext;
 
             var context = new TagHelperContext(
+                tagName: "div",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -486,6 +493,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             validationSummaryTagHelper.ViewContext = viewContext;
 
             var context = new TagHelperContext(
+                tagName: "div",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -541,6 +549,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             validationSummaryTagHelper.ViewContext = viewContext;
 
             var context = new TagHelperContext(
+                tagName: "div",
                 allAttributes: new TagHelperAttributeList(),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");

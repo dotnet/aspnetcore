@@ -908,7 +908,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             attributes = attributes ?? new TagHelperAttributeList();
 
             return new TagHelperContext(
-                attributes,
+                tagName: "script",
+                allAttributes: attributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: Guid.NewGuid().ToString("N"));
         }

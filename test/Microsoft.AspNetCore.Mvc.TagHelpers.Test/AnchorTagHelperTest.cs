@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var metadataProvider = new TestModelMetadataProvider();
 
             var tagHelperContext = new TagHelperContext(
+                tagName: "not-a",
                 allAttributes: new TagHelperAttributeList
                 {
                     { "id", "myanchor" },
@@ -93,6 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -142,6 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -193,6 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -250,6 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -308,6 +313,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
+                tagName: "a",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -398,6 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                                        "'asp-fragment' attribute.";
 
             var context = new TagHelperContext(
+                tagName: "test",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -433,6 +440,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 
             var context = new TagHelperContext(
+                tagName: "test",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),

@@ -284,7 +284,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             TagHelperAttributeList attributes)
         {
             return new TagHelperContext(
-                attributes,
+                tagName: "image",
+                allAttributes: attributes,
                 items: new Dictionary<object, object>(),
                 uniqueId: Guid.NewGuid().ToString("N"));
         }

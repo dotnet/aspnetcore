@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-form";
             var metadataProvider = new TestModelMetadataProvider();
             var tagHelperContext = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList
                 {
                     { "id", "myform" },
@@ -115,6 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var viewContext = CreateViewContext();
             var expectedAttribute = new TagHelperAttribute("method", method.ToString().ToLowerInvariant());
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(new[] { expectedAttribute }),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
@@ -167,6 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var testViewContext = CreateViewContext();
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -239,6 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -291,6 +295,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "form";
             var metadataProvider = new TestModelMetadataProvider();
             var tagHelperContext = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList
                 {
                     { "id", "myform" },
@@ -356,6 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -412,6 +418,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -468,6 +475,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -525,6 +533,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var viewContext = CreateViewContext();
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -606,6 +615,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -654,6 +664,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                                        "'asp-action', 'asp-controller', 'asp-fragment', 'asp-area', or 'asp-route' attribute.";
 
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
@@ -685,6 +696,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "'asp-route' must not have an 'asp-action', 'asp-controller', or 'asp-fragment' attribute.";
 
             var context = new TagHelperContext(
+                tagName: "form",
                 allAttributes: new TagHelperAttributeList(
                     Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
