@@ -107,6 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 Output = new MockSocketOutput(),
                 ConnectionControl = Mock.Of<IConnectionControl>()
             };
+            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = f => new Internal.Http.KestrelHttpParser(log: null);
 
             var frame = new TestFrame<object>(application: null, context: connectionContext);
             frame.Reset();
