@@ -19,6 +19,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
+        public async Task Page_SetsPath()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/PathSet");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Path: /PathSet.cshtml", content.Trim());
+        }
+
+        [Fact]
         public async Task NoPage_NotFound()
         {
             // Arrange

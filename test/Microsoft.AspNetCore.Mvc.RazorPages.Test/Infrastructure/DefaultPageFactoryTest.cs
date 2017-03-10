@@ -49,7 +49,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 PageTypeInfo = typeof(TestPage).GetTypeInfo(),
             };
-            var pageContext = new PageContext();
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = descriptor
+            };
             var factoryProvider = CreatePageFactory();
 
             // Act
@@ -92,6 +95,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Assert.Same(urlHelper, testPage.UrlHelper);
             Assert.Same(htmlEncoder, testPage.HtmlEncoder);
             Assert.NotNull(testPage.ViewData);
+        }
+
+        [Fact]
+        public void PageFactorySetsPath()
+        {
+            // Arrange
+            var descriptor = new CompiledPageActionDescriptor
+            {
+                PageTypeInfo = typeof(ViewDataTestPage).GetTypeInfo(),
+                ModelTypeInfo = typeof(ViewDataTestPageModel).GetTypeInfo()
+            };
+            descriptor.RelativePath = "/this/is/a/path.cshtml";
+
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = descriptor
+            };
+            
+            // Act
+            var factory = CreatePageFactory().CreatePageFactory(descriptor);
+            var instance = factory(pageContext);
+
+            // Assert
+            var testPage = Assert.IsType<ViewDataTestPage>(instance);
+            Assert.Equal("/this/is/a/path.cshtml", testPage.Path);
         }
 
         [Fact]

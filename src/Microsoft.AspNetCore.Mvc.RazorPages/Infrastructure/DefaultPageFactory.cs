@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 var page = (Page)activatorFactory(context);
                 page.PageContext = context;
+                page.Path = context.ActionDescriptor.RelativePath;
                 propertyActivator.Activate(page, context);
                 return page;
             };
