@@ -32,6 +32,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public EndToEndTests(ServerFixture serverFixture)
         {
+            if (serverFixture == null)
+            {
+                throw new ArgumentNullException(nameof(serverFixture));
+            }
             _serverFixture = serverFixture;
         }
 

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var _verbose = string.Equals(Environment.GetEnvironmentVariable("SIGNALR_TESTS_VERBOSE"), "1");
             if (_verbose)
             {
-                _loggerFactory.AddConsole();
+                _loggerFactory.AddConsole(LogLevel.Debug);
             }
             if (Debugger.IsAttached)
             {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var t = Task.Run(() => host.Start());
             Console.WriteLine("Starting test server...");
             lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
-            if (!lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(1)))
+            if (!lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
             {
                 // t probably faulted
                 if (t.IsFaulted)
