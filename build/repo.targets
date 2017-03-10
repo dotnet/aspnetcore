@@ -10,8 +10,8 @@
     <_DependencyRepositoryList>$(_DependencyBuildDirectory)$(_RepositoryListFileName)</_DependencyRepositoryList>
     <_RestoreGraphSpecsDirectory>$(RepositoryRoot)obj\package-specs\</_RestoreGraphSpecsDirectory>
 
-    <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">Package;VerifyPackages</_RepositoryBuildTargets>
-    <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">Verify</_RepositoryBuildTargets>
+    <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
+    <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Verify</_RepositoryBuildTargets>
 
     <PrepareDependsOn>$(PrepareDependsOn);CleanUniverseArtifacts</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>

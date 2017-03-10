@@ -26,37 +26,19 @@
 
   <Target Name="_BuildRepository" DependsOnTargets="_PinVersions">
     <PropertyGroup>
-      <RepositoryKoreBuildDirectory>$(BuildRepositoryRoot).build\</RepositoryKoreBuildDirectory>
+      <BuildArguments>$(_RepositoryBuildTargets) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</BuildArguments>
       <RepositoryArtifactsDirectory>$(BuildRepositoryRoot)artifacts\build\</RepositoryArtifactsDirectory>
+
+      <_BuildScriptToExecute Condition="'$(OS)'!='Windows_NT'">build.sh</_BuildScriptToExecute>
+      <_BuildScriptToExecute Condition="'$(OS)'=='Windows_NT'">build.cmd</_BuildScriptToExecute>
     </PropertyGroup>
 
-    <ItemGroup>
-      <KoreBuildFiles Include="$(KoreBuildDirectory)**\*" />
-    </ItemGroup>
-
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
-    <Copy SourceFiles="@(KoreBuildFiles)" DestinationFolder="$(RepositoryKoreBuildDirectory)%(RecursiveDir)" />
 
-    <ItemGroup>
-      <RepositoryKoreBuildProject Include="$(RepositoryKoreBuildDirectory)$(KoreBuildProject)">
-        <AdditionalProperties>
-          RepositoryRoot=$(BuildRepositoryRoot);
-          BuildNumber=$(BuildNumber);
-          Configuration=$(Configuration)
-        </AdditionalProperties>
-      </RepositoryKoreBuildProject>
-    </ItemGroup>
-
-    <MSBuild
-      Projects="@(RepositoryKoreBuildProject)"
-      Targets="Restore"
-      Properties="PreflightRestore=true"
-      UnloadProjectsOnCompletion="true" />
-
-    <MSBuild
-      Projects="@(RepositoryKoreBuildProject)"
-      Targets="$(_RepositoryBuildTargets)"
-      UnloadProjectsOnCompletion="true"  />
+    <Exec
+      Command="./$(_BuildScriptToExecute) $(BuildArguments)"
+      EnvironmentVariables="KOREBUILD_SKIP_RUNTIME_INSTALL=1"
+      WorkingDirectory="$(BuildRepositoryRoot)" />
 
     <ItemGroup>
       <RepositoryArtifacts Include="$(RepositoryArtifactsDirectory)*" />
