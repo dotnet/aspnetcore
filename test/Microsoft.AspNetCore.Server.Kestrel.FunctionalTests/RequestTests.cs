@@ -454,6 +454,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Theory]
+        [InlineData("http://localhost/abs/path", "/abs/path", null)]
+        [InlineData("https://localhost/abs/path", "/abs/path", null)] // handles mismatch scheme
+        [InlineData("https://localhost:22/abs/path", "/abs/path", null)] // handles mismatched ports
+        [InlineData("https://differenthost/abs/path", "/abs/path", null)] // handles mismatched hostname
+        [InlineData("http://localhost/", "/", null)]
+        [InlineData("http://root@contoso.com/path", "/path", null)]
+        [InlineData("http://root:password@contoso.com/path", "/path", null)]
+        [InlineData("https://localhost/", "/", null)]
+        [InlineData("http://localhost", "/", null)]
+        [InlineData("http://127.0.0.1/", "/", null)]
+        [InlineData("http://[::1]/", "/", null)]
+        [InlineData("http://[::1]:8080/", "/", null)]
+        [InlineData("http://localhost?q=123&w=xyz", "/", "123")]
+        [InlineData("http://localhost/?q=123&w=xyz", "/", "123")]
+        [InlineData("http://localhost/path?q=123&w=xyz", "/path", "123")]
+        [InlineData("http://localhost/path%20with%20space?q=abc%20123", "/path with space", "abc 123")]
+        public async Task CanHandleRequestsWithUrlInAbsoluteForm(string requestUrl, string expectedPath, string queryValue)
+        {
+            var pathTcs = new TaskCompletionSource<PathString>();
+            var rawTargetTcs = new TaskCompletionSource<string>();
+            var hostTcs = new TaskCompletionSource<HostString>();
+            var queryTcs = new TaskCompletionSource<IQueryCollection>();
+
+            using (var server = new TestServer(async context =>
+                 {
+                     pathTcs.TrySetResult(context.Request.Path);
+                     hostTcs.TrySetResult(context.Request.Host);
+                     queryTcs.TrySetResult(context.Request.Query);
+                     rawTargetTcs.TrySetResult(context.Features.Get<IHttpRequestFeature>().RawTarget);
+                     await context.Response.WriteAsync("Done");
+                 }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        $"GET {requestUrl} HTTP/1.1",
+                        "Content-Length: 0",
+                        "Host: localhost",
+                        "",
+                        "");
+
+                    await connection.Receive($"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "4",
+                        "Done")
+                        .TimeoutAfter(TimeSpan.FromSeconds(10));
+
+                    await Task.WhenAll(pathTcs.Task, rawTargetTcs.Task, hostTcs.Task, queryTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(30));
+                    Assert.Equal(new PathString(expectedPath), pathTcs.Task.Result);
+                    Assert.Equal(requestUrl, rawTargetTcs.Task.Result);
+                    Assert.Equal("localhost", hostTcs.Task.Result.ToString());
+                    if (queryValue == null)
+                    {
+                        Assert.False(queryTcs.Task.Result.ContainsKey("q"));
+                    }
+                    else
+                    {
+                        Assert.Equal(queryValue, queryTcs.Task.Result["q"]);
+                    }
+                }
+            }
+        }
+
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)
         {
             var builder = new WebHostBuilder()

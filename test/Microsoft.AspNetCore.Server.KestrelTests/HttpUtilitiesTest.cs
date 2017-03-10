@@ -84,8 +84,20 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             TestKnownStringsInterning(input, expected, span =>
             {
-                HttpUtilities.GetKnownVersion(span, out var version, out var lenght);
+                HttpUtilities.GetKnownVersion(span, out var version, out var _);
                 return HttpUtilities.VersionToString(version);
+            });
+        }
+
+        [Theory]
+        [InlineData("https://host/", "https://")]
+        [InlineData("http://host/", "http://")]
+        public void KnownSchemesAreInterned(string input, string expected)
+        {
+            TestKnownStringsInterning(input, expected, span =>
+            {
+                HttpUtilities.GetKnownHttpScheme(span, out var scheme);
+                return HttpUtilities.SchemeToString(scheme);
             });
         }
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -90,7 +91,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 $"Invalid content length: {contentLength}");
         }
 
-        private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage)
+        [Theory]
+        [InlineData("GET *", "OPTIONS")]
+        [InlineData("GET www.host.com", "CONNECT")]
+        public Task RejectsIncorrectMethods(string request, string allowedMethod)
+        {
+            return TestBadRequest(
+                $"{request} HTTP/1.1\r\n",
+                "405 Method Not Allowed",
+                "Method not allowed.",
+                $"Allow: {allowedMethod}");
+        }
+
+        private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage, string expectedAllowHeader = null)
         {
             BadHttpRequestException loggedException = null;
             var mockKestrelTrace = new Mock<IKestrelTrace>();
@@ -106,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAll(request);
-                    await ReceiveBadRequestResponse(connection, expectedResponseStatusCode, server.Context.DateHeaderValue);
+                    await ReceiveBadRequestResponse(connection, expectedResponseStatusCode, server.Context.DateHeaderValue, expectedAllowHeader);
                 }
             }
 
@@ -114,15 +127,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.Equal(expectedExceptionMessage, loggedException.Message);
         }
 
-        private async Task ReceiveBadRequestResponse(TestConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue)
+        private async Task ReceiveBadRequestResponse(TestConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue, string expectedAllowHeader = null)
         {
-            await connection.ReceiveForcedEnd(
+            var lines = new[]
+            {
                 $"HTTP/1.1 {expectedResponseStatusCode}",
                 "Connection: close",
                 $"Date: {expectedDateHeaderValue}",
                 "Content-Length: 0",
+                expectedAllowHeader,
                 "",
-                "");
+                ""
+            };
+
+            await connection.ReceiveForcedEnd(lines.Where(f => f != null).ToArray());
         }
 
         public static TheoryData<string, string> InvalidRequestLineData
@@ -131,9 +149,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 var data = new TheoryData<string, string>();
 
+                string Escape(string line)
+                {
+                    return line
+                        .Replace("\r", @"\x0D")
+                        .Replace("\n", @"\x0A")
+                        .Replace("\0", @"\x00");
+                }
+
                 foreach (var requestLine in HttpParsingData.RequestLineInvalidData)
                 {
-                    data.Add(requestLine, $"Invalid request line: '{requestLine.Replace("\r", "\\x0D").Replace("\n", "\\x0A")}'");
+                    data.Add(requestLine, $"Invalid request line: '{Escape(requestLine)}'");
                 }
 
                 foreach (var requestLine in HttpParsingData.RequestLineWithEncodedNullCharInTargetData)
@@ -143,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 foreach (var requestLine in HttpParsingData.RequestLineWithNullCharInTargetData)
                 {
-                    data.Add(requestLine, "Invalid request line.");
+                    data.Add(requestLine, $"Invalid request line.");
                 }
 
                 return data;

@@ -157,7 +157,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 RejectRequestLine(data, length);
             }
 
-            handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
+            var line = new Span<byte>(data, length);
+
+            handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, line, pathEncoded);
         }
 
         public unsafe bool ParseHeaders<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes) where T : IHttpHeadersHandler
@@ -341,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // Skip colon from value start
             var valueStart = nameEnd + 1;
             // Ignore start whitespace
-            for(; valueStart < valueEnd; valueStart++)
+            for (; valueStart < valueEnd; valueStart++)
             {
                 var ch = headerLine[valueStart];
                 if (ch != ByteTab && ch != ByteSpace && ch != ByteCR)
@@ -409,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
             return false;
-        found:
+            found:
             return true;
         }
 

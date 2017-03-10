@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,26 @@ namespace Microsoft.AspNetCore.Testing
                     Tuple.Create("/%C3%A5/bc", "/\u00E5/bc"),
                     Tuple.Create("/%25", "/%"),
                     Tuple.Create("/%2F", "/%2F"),
+                    Tuple.Create("http://host/abs/path", "/abs/path"),
+                    Tuple.Create("http://host/abs/path/", "/abs/path/"),
+                    Tuple.Create("http://host/a%20b%20c/", "/a b c/"),
+                    Tuple.Create("https://host/abs/path", "/abs/path"),
+                    Tuple.Create("https://host/abs/path/", "/abs/path/"),
+                    Tuple.Create("https://host:22/abs/path", "/abs/path"),
+                    Tuple.Create("https://user@host:9080/abs/path", "/abs/path"),
+                    Tuple.Create("http://host/", "/"),
+                    Tuple.Create("http://host", "/"),
+                    Tuple.Create("https://host/", "/"),
+                    Tuple.Create("https://host", "/"),
+                    Tuple.Create("http://user@host/", "/"),
+                    Tuple.Create("http://127.0.0.1/", "/"),
+                    Tuple.Create("http://user@127.0.0.1/", "/"),
+                    Tuple.Create("http://user@127.0.0.1:8080/", "/"),
+                    Tuple.Create("http://127.0.0.1:8080/", "/"),
+                    Tuple.Create("http://[::1]", "/"),
+                    Tuple.Create("http://[::1]/path", "/path"),
+                    Tuple.Create("http://[::1]:8080/", "/"),
+                    Tuple.Create("http://user@[::1]:8080/", "/"),
                 };
                 var queryStrings = new[]
                 {
@@ -173,9 +194,73 @@ namespace Microsoft.AspNetCore.Testing
             "GET /%E8%01%00 HTTP/1.1\r\n",
         };
 
+        public static TheoryData<string> RequestLineWithInvalidRequestTarget => new TheoryData<string>
+        {
+            // Invalid absolute-form requests
+            "GET http:// HTTP/1.1\r\n",
+            "GET http:/ HTTP/1.1\r\n",
+            "GET https:/ HTTP/1.1\r\n",
+            "GET http:/// HTTP/1.1\r\n",
+            "GET https:// HTTP/1.1\r\n",
+            "GET http://// HTTP/1.1\r\n",
+            "GET http://:80 HTTP/1.1\r\n",
+            "GET http://:80/abc HTTP/1.1\r\n",
+            "GET http://user@ HTTP/1.1\r\n",
+            "GET http://user@/abc HTTP/1.1\r\n",
+            "GET http://abc%20xyz/abc HTTP/1.1\r\n",
+            "GET http://%20/abc?query=%0A HTTP/1.1\r\n",
+            // Valid absolute-form but with unsupported schemes
+            "GET otherscheme://host/ HTTP/1.1\r\n",
+            "GET ws://host/ HTTP/1.1\r\n",
+            "GET wss://host/ HTTP/1.1\r\n",
+            // Must only have one asterisk
+            "OPTIONS ** HTTP/1.1\r\n",
+            // Relative form
+            "GET ../../ HTTP/1.1\r\n",
+            "GET ..\\. HTTP/1.1\r\n",
+        };
+
+        public static TheoryData<string, HttpMethod> MethodNotAllowedRequestLine
+        {
+            get
+            {
+                var methods = new[]
+                {
+                    "GET",
+                    "PUT",
+                    "DELETE",
+                    "POST",
+                    "HEAD",
+                    "TRACE",
+                    "PATCH",
+                    "CONNECT",
+                    //"OPTIONS",
+                    "CUSTOM",
+                };
+
+                var theoryData = new TheoryData<string, HttpMethod>();
+                foreach (var line in methods
+                    .Select(m => Tuple.Create($"{m} * HTTP/1.1\r\n", HttpMethod.Options))
+                    .Concat(new[]
+                    {
+                        // CONNECT required for authority-form targets
+                        Tuple.Create("GET http:80 HTTP/1.1\r\n", HttpMethod.Connect),
+                        Tuple.Create("GET http: HTTP/1.1\r\n", HttpMethod.Connect),
+                        Tuple.Create("GET https: HTTP/1.1\r\n", HttpMethod.Connect),
+                        Tuple.Create("GET . HTTP/1.1\r\n", HttpMethod.Connect),
+                    }))
+                {
+                    theoryData.Add(line.Item1, line.Item2);
+                }
+
+                return theoryData;
+            }
+        }
+
         public static IEnumerable<string> RequestLineWithNullCharInTargetData => new[]
         {
-            "GET \0 HTTP/1.1\r\n",
+            // TODO re-enable after we get both #1469 and #1470 merged
+            // "GET \0 HTTP/1.1\r\n",
             "GET /\0 HTTP/1.1\r\n",
             "GET /\0\0 HTTP/1.1\r\n",
             "GET /%C8\0 HTTP/1.1\r\n",
@@ -183,6 +268,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public static TheoryData<string> UnrecognizedHttpVersionData => new TheoryData<string>
         {
+            " ",
+            "/",
             "H",
             "HT",
             "HTT",

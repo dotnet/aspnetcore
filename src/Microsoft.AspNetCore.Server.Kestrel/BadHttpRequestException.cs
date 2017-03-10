@@ -4,18 +4,31 @@
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {
     public sealed class BadHttpRequestException : IOException
     {
         private BadHttpRequestException(string message, int statusCode)
+            : this(message, statusCode, null)
+        { }
+
+        private BadHttpRequestException(string message, int statusCode, HttpMethod? requiredMethod)
             : base(message)
         {
             StatusCode = statusCode;
+
+            if (requiredMethod.HasValue)
+            {
+                AllowedHeader = HttpUtilities.MethodToString(requiredMethod.Value);
+            }
         }
 
         internal int StatusCode { get; }
+
+        internal StringValues AllowedHeader { get; }
 
         internal static BadHttpRequestException GetException(RequestRejectionReason reason)
         {
@@ -60,6 +73,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     break;
                 case RequestRejectionReason.RequestTimeout:
                     ex = new BadHttpRequestException("Request timed out.", StatusCodes.Status408RequestTimeout);
+                    break;
+                case RequestRejectionReason.OptionsMethodRequired:
+                    ex = new BadHttpRequestException("Method not allowed.", StatusCodes.Status405MethodNotAllowed, HttpMethod.Options);
+                    break;
+                case RequestRejectionReason.ConnectMethodRequired:
+                    ex = new BadHttpRequestException("Method not allowed.", StatusCodes.Status405MethodNotAllowed, HttpMethod.Connect);
                     break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", StatusCodes.Status400BadRequest);

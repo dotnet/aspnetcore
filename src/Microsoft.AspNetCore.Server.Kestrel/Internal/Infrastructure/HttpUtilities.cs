@@ -15,7 +15,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
 
+        public const string HttpUriScheme = "http://";
+        public const string HttpsUriScheme = "https://";
+
         // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
+
+        private readonly static ulong _httpSchemeLong = GetAsciiStringAsLong(HttpUriScheme + "\0");
+        private readonly static ulong _httpsSchemeLong = GetAsciiStringAsLong(HttpsUriScheme);
         private readonly static ulong _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");
         private readonly static ulong _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE \0");
         private const uint _httpGetMethodInt = 542393671; // retun of GetAsciiStringAsInt("GET "); const results in better codegen
@@ -253,6 +259,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             return knownVersion;
         }
 
+        /// <summary>
+        /// Checks 8 bytes from <paramref name="span"/> that correspond to 'http://' or 'https://'
+        /// </summary>
+        /// <param name="span">The span</param>
+        /// <param name="knownScheme">A reference to the known scheme, if the input matches any</param>
+        /// <returns>True when memory starts with known http or https schema</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
+        {
+            if (span.TryRead<ulong>(out var value))
+            {
+                if ((value & _mask7Chars) == _httpSchemeLong)
+                {
+                    knownScheme = HttpScheme.Http;
+                    return true;
+                }
+
+                if (value == _httpsSchemeLong)
+                {
+                    knownScheme = HttpScheme.Https;
+                    return true;
+                }
+            }
+
+            knownScheme = HttpScheme.Unknown;
+            return false;
+        }
+
         public static string VersionToString(HttpVersion httpVersion)
         {
             switch (httpVersion)
@@ -273,6 +307,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return _methodNames[methodIndex];
             }
             return null;
+        }
+
+        public static string SchemeToString(HttpScheme scheme)
+        {
+            switch (scheme)
+            {
+                case HttpScheme.Http:
+                    return HttpUriScheme;
+                case HttpScheme.Https:
+                    return HttpsUriScheme;
+                default:
+                    return null;
+            }
         }
     }
 }
