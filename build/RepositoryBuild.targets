@@ -50,11 +50,13 @@
     <MSBuild
       Projects="@(RepositoryKoreBuildProject)"
       Targets="Restore"
-      Properties="PreflightRestore=true" />
+      Properties="PreflightRestore=true"
+      UnloadProjectsOnCompletion="true" />
 
     <MSBuild
       Projects="@(RepositoryKoreBuildProject)"
-      Targets="$(_RepositoryBuildTargets)" />
+      Targets="$(_RepositoryBuildTargets)"
+      UnloadProjectsOnCompletion="true"  />
 
     <ItemGroup>
       <RepositoryArtifacts Include="$(RepositoryArtifactsDirectory)*" />
