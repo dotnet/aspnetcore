@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Watcher
     {
         public string Executable { get; set; }
         public string WorkingDirectory { get; set; }
+        public IDictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
         public IEnumerable<string> Arguments { get; set; }
         public OutputCapture OutputCapture { get; set; }
 

@@ -63,20 +63,25 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private Process CreateProcess(ProcessSpec processSpec)
         {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = processSpec.Executable,
-                Arguments = ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments),
-                UseShellExecute = false,
-                WorkingDirectory = processSpec.WorkingDirectory,
-                RedirectStandardOutput = processSpec.IsOutputCaptured,
-                RedirectStandardError = processSpec.IsOutputCaptured,
-            };
             var process = new Process
             {
-                StartInfo = startInfo,
-                EnableRaisingEvents = true
+                EnableRaisingEvents = true,
+                StartInfo =
+                {
+                    FileName = processSpec.Executable,
+                    Arguments = ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments),
+                    UseShellExecute = false,
+                    WorkingDirectory = processSpec.WorkingDirectory,
+                    RedirectStandardOutput = processSpec.IsOutputCaptured,
+                    RedirectStandardError = processSpec.IsOutputCaptured,
+                }
             };
+
+            foreach (var env in processSpec.EnvironmentVariables)
+            {
+                process.StartInfo.Environment.Add(env.Key, env.Value);
+            }
+
             return process;
         }
 

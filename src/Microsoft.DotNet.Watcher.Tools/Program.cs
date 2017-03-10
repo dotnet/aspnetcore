@@ -133,7 +133,11 @@ namespace Microsoft.DotNet.Watcher
             {
                 Executable = DotNetMuxer.MuxerPathOrDefault(),
                 WorkingDirectory = Path.GetDirectoryName(projectFile),
-                Arguments = args
+                Arguments = args,
+                EnvironmentVariables =
+                {
+                    ["DOTNET_WATCH"] = "1"
+                },
             };
 
             await new DotNetWatcher(reporter)

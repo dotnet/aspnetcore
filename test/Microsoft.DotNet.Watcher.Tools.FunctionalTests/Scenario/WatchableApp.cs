@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public virtual void Dispose()
         {
-            Process.Dispose();
+            Process?.Dispose();
             Scenario.Dispose();
         }
     }
