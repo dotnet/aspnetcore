@@ -38,6 +38,7 @@
     <Exec
       Command="./$(_BuildScriptToExecute) $(BuildArguments)"
       EnvironmentVariables="KOREBUILD_SKIP_RUNTIME_INSTALL=1"
+      IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(BuildRepositoryRoot)" />
 
     <ItemGroup>
