@@ -61,7 +61,16 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to all page under the specified path.
+        /// Adds a <see cref="AuthorizeFilter"/> to the page with the specified path.
+        /// </summary>
+        /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
+        /// <param name="path">The path of the Razor Page.</param>
+        /// <returns>The <see cref="RazorPagesOptions"/>.</returns>
+        public static RazorPagesOptions AuthorizePage(this RazorPagesOptions options, string path) =>
+            AuthorizePage(options, path, policy: string.Empty);
+
+        /// <summary>
+        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to all pages under the specified path.
         /// </summary>
         /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
         /// <param name="folderPath">The folder path.</param>
@@ -83,6 +92,15 @@ namespace Microsoft.Extensions.DependencyInjection
             options.Conventions.Add(new FolderConvention(folderPath, model => model.Filters.Add(authorizeFilter)));
             return options;
         }
+
+        /// <summary>
+        /// Adds a <see cref="AuthorizeFilter"/> to all pages under the specified path.
+        /// </summary>
+        /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
+        /// <param name="folderPath">The folder path.</param>
+        /// <returns>The <see cref="RazorPagesOptions"/>.</returns>
+        public static RazorPagesOptions AuthorizeFolder(this RazorPagesOptions options, string folderPath) =>
+            AuthorizeFolder(options, folderPath, policy: string.Empty);
 
         private class PageConvention : IPageApplicationModelConvention
         {

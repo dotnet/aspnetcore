@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void AuthorizePage_AddsAuthorizeFilterToSpecificPage()
+        public void AuthorizePage_AddsAuthorizeFilterWithPolicyToSpecificPage()
         {
             // Arrange
             var options = new RazorPagesOptions();
@@ -66,10 +66,39 @@ namespace Microsoft.Extensions.DependencyInjection
                 model => Assert.Empty(model.Filters));
         }
 
+        [Fact]
+        public void AuthorizePage_AddsAuthorizeFilterWithoutPolicyToSpecificPage()
+        {
+            // Arrange
+            var options = new RazorPagesOptions();
+            var models = new[]
+            {
+                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+            };
+
+            // Act
+            options.AuthorizePage("/Users/Account.cshtml");
+            ApplyConventions(options, models);
+
+            // Assert
+            Assert.Collection(models,
+                model => Assert.Empty(model.Filters),
+                model =>
+                {
+                    Assert.Equal("/Users/Account.cshtml", model.ViewEnginePath);
+                    var authorizeFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(model.Filters));
+                    var authorizeData = Assert.IsType<AuthorizeAttribute>(Assert.Single(authorizeFilter.AuthorizeData));
+                    Assert.Equal(string.Empty, authorizeData.Policy);
+                },
+                model => Assert.Empty(model.Filters));
+        }
+
         [Theory]
         [InlineData("/Users")]
         [InlineData("/Users/")]
-        public void AuthorizePage_AddsAuthorizeFilterToPagesUnderFolder(string folderName)
+        public void AuthorizePage_AddsAuthorizeFilterWithPolicyToPagesUnderFolder(string folderName)
         {
             // Arrange
             var options = new RazorPagesOptions();
@@ -100,6 +129,43 @@ namespace Microsoft.Extensions.DependencyInjection
                     var authorizeFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(model.Filters));
                     var authorizeData = Assert.IsType<AuthorizeAttribute>(Assert.Single(authorizeFilter.AuthorizeData));
                     Assert.Equal("Manage-Accounts", authorizeData.Policy);
+                });
+        }
+
+        [Theory]
+        [InlineData("/Users")]
+        [InlineData("/Users/")]
+        public void AuthorizePage_AddsAuthorizeFilterWithoutPolicyToPagesUnderFolder(string folderName)
+        {
+            // Arrange
+            var options = new RazorPagesOptions();
+            var models = new[]
+            {
+                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+            };
+
+            // Act
+            options.AuthorizeFolder(folderName);
+            ApplyConventions(options, models);
+
+            // Assert
+            Assert.Collection(models,
+                model => Assert.Empty(model.Filters),
+                model =>
+                {
+                    Assert.Equal("/Users/Account.cshtml", model.ViewEnginePath);
+                    var authorizeFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(model.Filters));
+                    var authorizeData = Assert.IsType<AuthorizeAttribute>(Assert.Single(authorizeFilter.AuthorizeData));
+                    Assert.Equal(string.Empty, authorizeData.Policy);
+                },
+                model =>
+                {
+                    Assert.Equal("/Users/Contact.cshtml", model.ViewEnginePath);
+                    var authorizeFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(model.Filters));
+                    var authorizeData = Assert.IsType<AuthorizeAttribute>(Assert.Single(authorizeFilter.AuthorizeData));
+                    Assert.Equal(string.Empty, authorizeData.Policy);
                 });
         }
 

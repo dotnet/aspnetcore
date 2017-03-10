@@ -16,8 +16,8 @@ namespace RazorPagesWebSite
                 .AddRazorPagesOptions(options =>
                 {
                     options.RootDirectory = "/Pages";
-                    options.AuthorizePage("/Conventions/Auth", string.Empty);
-                    options.AuthorizeFolder("/Conventions/AuthFolder", string.Empty);
+                    options.AuthorizePage("/Conventions/Auth");
+                    options.AuthorizeFolder("/Conventions/AuthFolder");
                 });
         }
 

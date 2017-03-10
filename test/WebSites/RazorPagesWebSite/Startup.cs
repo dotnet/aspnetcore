@@ -15,7 +15,7 @@ namespace RazorPagesWebSite
                 .AddCookieTempDataProvider()
                 .AddRazorPagesOptions(options =>
                 {
-                    options.AuthorizePage("/HelloWorldWithAuth", string.Empty);
+                    options.AuthorizePage("/HelloWorldWithAuth");
                 });
         }
 
