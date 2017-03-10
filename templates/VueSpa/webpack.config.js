@@ -2,16 +2,19 @@ const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
+const VueSSRPlugin = require('vue-ssr-webpack-plugin');
+const merge = require('webpack-merge');
 const bundleOutputDir = './wwwroot/dist';
 
 module.exports = (env) => {
     const isDevBuild = !(env && env.prod);
-    return [{
+
+    // Configuration in common to both client-side and server-side bundles
+    const sharedConfig = {
         stats: { modules: false },
-        entry: { 'main': './ClientApp/boot-client.ts' },
+        context: __dirname,
         resolve: { extensions: [ '.js', '.ts' ] },
         output: {
-            path: path.join(__dirname, bundleOutputDir),
             filename: '[name].js',
             publicPath: '/dist/'
         },
@@ -25,25 +28,56 @@ module.exports = (env) => {
         },
         plugins: [
             new CheckerPlugin(),
-            new webpack.DllReferencePlugin({
-                context: __dirname,
-                manifest: require('./wwwroot/dist/vendor-manifest.json')
-            }),
             new webpack.DefinePlugin({
                 'process.env': {
                     NODE_ENV: JSON.stringify(isDevBuild ? 'development' : 'production')
                 }
             })
+        ]
+    };
+
+    // Configuration for client-side bundle suitable for running in browsers
+    const clientBundleOutputDir = './wwwroot/dist';
+    const clientBundleConfig = merge(sharedConfig, {
+        entry: { 'main-client': './ClientApp/boot-client.ts' },
+        output: { path: path.join(__dirname, clientBundleOutputDir) },
+        plugins: [
+            new webpack.DllReferencePlugin({
+                context: __dirname,
+                manifest: require('./wwwroot/dist/vendor-manifest.json')
+            })
         ].concat(isDevBuild ? [
             // Plugins that apply in development builds only
             new webpack.SourceMapDevToolPlugin({
                 filename: '[file].map', // Remove this line if you prefer inline source maps
-                moduleFilenameTemplate: path.relative(bundleOutputDir, '[resourcePath]') // Point sourcemap entries to the original file locations on disk
+                moduleFilenameTemplate: path.relative(clientBundleOutputDir, '[resourcePath]') // Point sourcemap entries to the original file locations on disk
             })
         ] : [
             // Plugins that apply in production builds only
-            new webpack.optimize.UglifyJsPlugin(),
-            new ExtractTextPlugin('site.css')
+            new webpack.optimize.UglifyJsPlugin()
         ])
-    }];
+    });
+
+    // Configuration for server-side (prerendering) bundle suitable for running in Node
+    const serverBundlesOutput = {
+        libraryTarget: 'commonjs2',
+        path: path.join(__dirname, './ClientApp/dist')
+    };
+    const serverBundleConfig = merge(sharedConfig, {
+        resolve: { mainFields: ['main'] },
+        entry: { 'main': './ClientApp/boot-server-bundle.ts' },
+        externals: {},
+        plugins: [new VueSSRPlugin()],
+        output: serverBundlesOutput,
+        target: 'node',
+        devtool: 'inline-source-map'
+    });
+
+    const vueBundleRendererConfig = merge(sharedConfig, {
+        entry: { 'main-server': './ClientApp/boot-server.ts' },
+        output: serverBundlesOutput,
+        target: 'node'
+    });
+
+    return [clientBundleConfig, serverBundleConfig, vueBundleRendererConfig];
 };

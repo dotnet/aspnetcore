@@ -1,11 +1,10 @@
-import './css/site.css';
 import Vue from 'vue';
-import router from './router';
-
-const App = require('./components/app/app.vue.html');
+import VueRouter from 'vue-router';
+import { routes } from './routes';
+Vue.use(VueRouter);
 
 new Vue({
-    el: 'app',
-    render: h => h(App, { props: {} }),
-    router: router
+    el: '#app-root',
+    router: new VueRouter({ mode: 'history', routes: routes }),
+    render: h => h(require('./components/app/app.vue.html'))
 });

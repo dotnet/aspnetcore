@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "devDependencies": {
     "@types/requirejs": "^2.1.28",
+    "aspnet-prerendering": "^2.0.3",
     "aspnet-webpack": "^1.0.27",
     "av-ts": "^0.7.1",
     "awesome-typescript-loader": "^3.0.0",
@@ -19,8 +20,11 @@
     "vue": "^2.2.2",
     "vue-loader": "^11.1.4",
     "vue-router": "^2.3.0",
+    "vue-server-renderer": "^2.2.2",
+    "vue-ssr-webpack-plugin": "^1.0.2",
     "vue-template-compiler": "^2.2.2",
     "webpack": "^2.2.0",
-    "webpack-hot-middleware": "^2.12.2"
+    "webpack-hot-middleware": "^2.12.2",
+    "webpack-merge": "^4.0.0"
   }
 }
