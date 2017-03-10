@@ -27,6 +27,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public bool IsInputRedirected { get; set; } = false;
         public bool IsOutputRedirected { get; } = false;
         public bool IsErrorRedirected { get; } = false;
+        public ConsoleColor ForegroundColor { get; set; }
 
         public ConsoleCancelEventArgs ConsoleCancelKey()
         {
@@ -37,6 +38,10 @@ namespace Microsoft.Extensions.Tools.Internal
             var args = (ConsoleCancelEventArgs)ctor.Invoke(new object[] { ConsoleSpecialKey.ControlC });
             CancelKeyPress?.Invoke(this, args);
             return args;
+        }
+
+        public void ResetColor()
+        {
         }
 
         private class TestOutputWriter : TextWriter

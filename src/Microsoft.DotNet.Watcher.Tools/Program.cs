@@ -176,51 +176,6 @@ namespace Microsoft.DotNet.Watcher
         }
 
         private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
-        {
-            const string prefix = "watch : ";
-            var colorPrefix = new ColorFormatter(ConsoleColor.DarkGray).Format(prefix);
-
-            return new ReporterBuilder()
-                .WithConsole(console)
-                .Verbose(f =>
-                {
-                    if (console.IsOutputRedirected)
-                    {
-                        f.WithPrefix(prefix);
-                    }
-                    else
-                    {
-                        f.WithColor(ConsoleColor.DarkGray).WithPrefix(colorPrefix);
-                    }
-
-                    f.When(() => verbose || CliContext.IsGlobalVerbose());
-                })
-                .Output(f => f
-                    .WithPrefix(console.IsOutputRedirected ? prefix : colorPrefix)
-                    .When(() => !quiet))
-                .Warn(f =>
-                {
-                    if (console.IsOutputRedirected)
-                    {
-                        f.WithPrefix(prefix);
-                    }
-                    else
-                    {
-                        f.WithColor(ConsoleColor.Yellow).WithPrefix(colorPrefix);
-                    }
-                })
-                .Error(f =>
-                {
-                    if (console.IsOutputRedirected)
-                    {
-                        f.WithPrefix(prefix);
-                    }
-                    else
-                    {
-                        f.WithColor(ConsoleColor.Red).WithPrefix(colorPrefix);
-                    }
-                })
-                .Build();
-        }
+            => new PrefixConsoleReporter(console, verbose || CliContext.IsGlobalVerbose(), quiet);
     }
 }
