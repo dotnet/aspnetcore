@@ -13,5 +13,10 @@ namespace RazorPagesWebSite
         {
             Message = message;
         }
+
+        public void OnPost()
+        {
+            Message = "You posted!";
+        }
     }
 }

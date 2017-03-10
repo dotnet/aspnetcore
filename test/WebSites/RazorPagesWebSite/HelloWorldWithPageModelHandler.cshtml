@@ -2,3 +2,8 @@
 @model RazorPagesWebSite.HelloWorldWithPageModelHandler
 
 Hello, @Model.Message!
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+}

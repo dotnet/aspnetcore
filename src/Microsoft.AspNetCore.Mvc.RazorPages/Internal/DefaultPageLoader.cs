@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class DefaultPageLoader : IPageLoader
     {
+        private const string ModelPropertyName = "Model";
         private readonly RazorCompilationService _razorCompilationService;
         private readonly ICompilationService _compilationService;
         private readonly RazorProject _project;
@@ -33,22 +34,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _logger = logger;
         }
 
-        public Type Load(PageActionDescriptor actionDescriptor)
+        public CompiledPageActionDescriptor Load(PageActionDescriptor actionDescriptor)
         {
             var item = _project.GetItem(actionDescriptor.RelativePath);
             if (!item.Exists)
             {
                 throw new InvalidOperationException($"File {actionDescriptor.RelativePath} was not found.");
             }
-
-            RazorCodeDocument codeDocument;
-            RazorCSharpDocument cSharpDocument;
+            
             _logger.RazorFileToCodeCompilationStart(item.Path);
 
             var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
 
-            codeDocument = CreateCodeDocument(item);
-            cSharpDocument = _razorCompilationService.ProcessCodeDocument(codeDocument);
+            var codeDocument = CreateCodeDocument(item);
+            var cSharpDocument = _razorCompilationService.ProcessCodeDocument(codeDocument);
 
             _logger.RazorFileToCodeCompilationEnd(item.Path, startTimestamp);
 
@@ -63,7 +62,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             compilationResult.EnsureSuccessful();
-            return compilationResult.CompiledType;
+
+            // If a model type wasn't set in code then the model property's type will be the same
+            // as the compiled type.
+            var pageType = compilationResult.CompiledType.GetTypeInfo();
+            var modelType = pageType.GetProperty(ModelPropertyName)?.PropertyType.GetTypeInfo();
+            if (modelType == pageType)
+            {
+                modelType = null;
+            }
+
+            return new CompiledPageActionDescriptor(actionDescriptor)
+            {
+                ModelTypeInfo = modelType,
+                PageTypeInfo = pageType,
+            };
         }
 
         private RazorCodeDocument CreateCodeDocument(RazorProjectItem item)

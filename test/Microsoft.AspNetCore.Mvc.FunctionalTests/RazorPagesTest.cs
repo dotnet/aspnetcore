@@ -96,6 +96,31 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task HelloWorldWithPageModelHandler_CanPostContent()
+        {
+            // Arrange
+            var getRequest = new HttpRequestMessage(HttpMethod.Get, "http://localhost/HelloWorldWithPageModelHandler?message=message");
+            var getResponse = await Client.SendAsync(getRequest);
+            var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "/HelloWorlWithPageModelHandler");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
+
+
+            var postRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost/HelloWorldWithPageModelHandler");
+            postRequest.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            postRequest.Headers.Add("RequestVerificationToken", formToken);
+
+            // Act
+            var response = await Client.SendAsync(postRequest);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith("Hello, You posted!", content.Trim());
+        }
+
+        [Fact]
         public async Task HelloWorldWithPageModelHandler_CanGetContent()
         {
             // Arrange
@@ -108,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Hello, pagemodel!", content.Trim());
+            Assert.StartsWith("Hello, pagemodel!", content.Trim());
         }
 
         [Fact]
