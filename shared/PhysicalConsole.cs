@@ -25,5 +25,12 @@ namespace Microsoft.Extensions.Tools.Internal
         public bool IsInputRedirected => Console.IsInputRedirected;
         public bool IsOutputRedirected => Console.IsOutputRedirected;
         public bool IsErrorRedirected => Console.IsErrorRedirected;
+        public ConsoleColor ForegroundColor
+        {
+            get => Console.ForegroundColor;
+            set => Console.ForegroundColor = value;
+        }
+
+        public void ResetColor() => Console.ResetColor();
     }
 }

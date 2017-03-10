@@ -99,34 +99,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
         }
 
         private IReporter CreateReporter(bool verbose)
-        {
-            return new ReporterBuilder()
-                .WithConsole(_console)
-                .Verbose(f =>
-                {
-                    f.When(() => verbose);
-                    if (!_console.IsOutputRedirected)
-                    {
-                        f.WithColor(ConsoleColor.DarkGray);
-                    }
-                })
-                .Warn(f =>
-                {
-                    if (!_console.IsOutputRedirected)
-                    {
-                        f.WithColor(ConsoleColor.Yellow);
-                    }
-                })
-                .Error(f =>
-                {
-                    if (!_console.IsErrorRedirected)
-                    {
-                        f.WithColor(ConsoleColor.Red);
-                    }
-                })
-                .Build();
-        }
-
+            => new ConsoleReporter(_console, verbose, quiet: false);
         private int CreateTableAndIndexes(IReporter reporter)
         {
             ValidateConnectionString();
