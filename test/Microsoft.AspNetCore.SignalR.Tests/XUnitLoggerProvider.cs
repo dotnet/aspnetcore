@@ -15,6 +15,11 @@ namespace Microsoft.Extensions.Logging
         {
             self.AddProvider(new XUnitLoggerProvider(output));
         }
+
+        public static void AddXUnit(this ILoggerFactory self, ITestOutputHelper output, LogLevel minLevel)
+        {
+            self.AddProvider(new XUnitLoggerProvider(output, minLevel));
+        }
     }
 }
 
@@ -23,15 +28,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public class XUnitLoggerProvider : ILoggerProvider
     {
         private ITestOutputHelper _output;
+        private LogLevel _minLevel;
 
         public XUnitLoggerProvider(ITestOutputHelper output)
+            : this(output, LogLevel.Trace)
+        {
+        }
+
+        public XUnitLoggerProvider(ITestOutputHelper output, LogLevel minLevel)
         {
             _output = output;
+            _minLevel = minLevel;
         }
 
         public ILogger CreateLogger(string categoryName)
         {
-            return new XUnitLogger(_output, categoryName, LogLevel.Trace);
+            return new XUnitLogger(_output, categoryName, _minLevel);
         }
 
         public void Dispose()

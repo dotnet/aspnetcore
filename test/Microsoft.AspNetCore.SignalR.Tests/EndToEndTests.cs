@@ -16,6 +16,7 @@ using Xunit;
 
 using ClientConnection = Microsoft.AspNetCore.Sockets.Client.Connection;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -28,15 +29,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     [Collection(EndToEndTestsCollection.Name)]
     public class EndToEndTests
     {
+        private readonly ITestOutputHelper _output;
+
         private readonly ServerFixture _serverFixture;
 
-        public EndToEndTests(ServerFixture serverFixture)
+        public EndToEndTests(ServerFixture serverFixture, ITestOutputHelper output)
         {
             if (serverFixture == null)
             {
                 throw new ArgumentNullException(nameof(serverFixture));
             }
+
             _serverFixture = serverFixture;
+            _output = output;
         }
 
         [ConditionalFact]
@@ -126,6 +131,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var baseUrl = _serverFixture.BaseUrl;
             var loggerFactory = new LoggerFactory();
+            loggerFactory.AddXUnit(_output, LogLevel.Debug);
 
             var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
             try
