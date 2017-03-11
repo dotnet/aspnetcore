@@ -33,6 +33,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task StartAsync(Uri url, IChannelConnection<SendMessage, Message> application)
         {
+            _logger.LogInformation("Starting {0}", nameof(WebSocketsTransport));
+
             if (url == null)
             {
                 throw new ArgumentNullException(nameof(url));
@@ -53,6 +55,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
             Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t =>
             {
+                _logger.LogDebug("Transport stopped. Exception: '{0}'", t.Exception?.InnerException);
+
                 _application.Output.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
@@ -60,6 +64,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task ReceiveMessages(Uri pollUrl, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Starting receive loop");
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 const int bufferSize = 1024;
@@ -74,9 +80,15 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     receiveResult = await _webSocket.ReceiveAsync(buffer, cancellationToken);
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
+                        _logger.LogInformation("Websocket closed by the server. Close status {0}", receiveResult.CloseStatus);
+
                         _application.Output.Complete();
                         return;
                     }
+
+                    _logger.LogDebug("Message received. Type: {0}, size: {1}, EndOfMessage: {2}",
+                        receiveResult.MessageType.ToString(), receiveResult.Count, receiveResult.EndOfMessage);
+
                     var truncBuffer = new ArraySegment<byte>(buffer.Array, 0, receiveResult.Count);
                     incomingMessage.Add(truncBuffer);
                     totalBytes += receiveResult.Count;
@@ -106,6 +118,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     message = new Message(buffer, messageType, receiveResult.EndOfMessage);
                 }
 
+                _logger.LogInformation("Passing message to application. Payload size: {0}", message.Payload.Length);
                 while (await _application.Output.WaitToWriteAsync(cancellationToken))
                 {
                     if (_application.Output.TryWrite(message))
@@ -115,37 +128,46 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
                 }
             }
+
+            _logger.LogInformation("Receive loop stopped");
         }
 
         private async Task SendMessages(Uri sendUrl, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Starting the send loop");
+
             while (await _application.Input.WaitToReadAsync(cancellationToken))
             {
                 while (_application.Input.TryRead(out SendMessage message))
                 {
                     try
                     {
+                        _logger.LogDebug("Received message from application. Message type {0}. Payload size: {1}",
+                            message.Type, message.Payload.Length);
+
                         await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload),
-                        message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary, true,
-                        cancellationToken);
+                            message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary,
+                            true, cancellationToken);
+
                         message.SendResult.SetResult(null);
                     }
-                    catch (OperationCanceledException ex)
+                    catch (OperationCanceledException)
                     {
-                        _logger?.LogError(ex.Message);
                         message.SendResult.SetCanceled();
                         await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, _cancellationToken);
                         break;
                     }
                     catch (Exception ex)
                     {
-                        _logger?.LogError(ex.Message);
+                        _logger.LogError(ex.Message);
                         message.SendResult.SetException(ex);
                         await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, _cancellationToken);
                         throw;
                     }
                 }
             }
+
+            _logger.LogInformation("Send loop stopped");
         }
 
         private async Task Connect(Uri url)
@@ -167,6 +189,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task StopAsync()
         {
+            _logger.LogInformation("Transport {0} is stopping", nameof(WebSocketsTransport));
+
             await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, _cancellationToken);
             _webSocket.Dispose();
 
@@ -178,6 +202,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 // exceptions have been handled in the Running task continuation by closing the channel with the exception
             }
+
+            _logger.LogInformation("Transport {0} stopped", nameof(WebSocketsTransport));
         }
     }
 }

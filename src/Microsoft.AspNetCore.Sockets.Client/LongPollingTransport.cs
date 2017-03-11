@@ -42,6 +42,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Task StartAsync(Uri url, IChannelConnection<SendMessage, Message> application)
         {
+            _logger.LogInformation("Starting {0}", nameof(LongPollingTransport));
+
             _application = application;
 
             // Start sending and polling
@@ -50,6 +52,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
             {
+                _logger.LogDebug("Transport stopped. Exception: '{0}'", t.Exception?.InnerException);
+
                 _application.Output.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
@@ -59,7 +63,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task StopAsync()
         {
+            _logger.LogInformation("Transport {0} is stopping", nameof(LongPollingTransport));
+
             _transportCts.Cancel();
+
             try
             {
                 await Running;
@@ -68,10 +75,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 // exceptions have been handled in the Running task continuation by closing the channel with the exception
             }
+
+            _logger.LogInformation("Transport {0} stopped", nameof(LongPollingTransport));
         }
 
         private async Task Poll(Uri pollUrl, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Starting the receive loop");
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -84,11 +94,15 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     if (response.StatusCode == HttpStatusCode.NoContent || cancellationToken.IsCancellationRequested)
                     {
+                        _logger.LogDebug("The server is closing the connection");
+
                         // Transport closed or polling stopped, we're done
                         break;
                     }
                     else
                     {
+                        _logger.LogDebug("Receive a message from the server");
+
                         // Read the whole payload
                         var payload = await response.Content.ReadAsByteArrayAsync();
 
@@ -119,6 +133,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 // Make sure the send loop is terminated
                 _transportCts.Cancel();
             }
+
+            _logger.LogInformation("Receive loop stopped");
         }
 
         private IEnumerable<Message> ReadMessages(ReadOnlySpan<byte> payload)
@@ -145,6 +161,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task SendMessages(Uri sendUrl, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Starting the send loop");
+
             TaskCompletionSource<object> sendTcs = null;
             try
             {
@@ -161,8 +179,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                             request.Content = new ByteArrayContent(message.Payload);
                         }
 
+                        _logger.LogDebug("Sending a message to the server using url: '{0}'. Message type {1}", sendUrl, message.Type);
+
                         var response = await _httpClient.SendAsync(request);
                         response.EnsureSuccessStatusCode();
+
+                        _logger.LogDebug("Message sent successfully");
+
                         sendTcs.SetResult(null);
                     }
                 }
@@ -183,6 +206,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 // Make sure the poll loop is terminated
                 _transportCts.Cancel();
             }
+
+            _logger.LogInformation("Send loop stopped");
         }
     }
 }

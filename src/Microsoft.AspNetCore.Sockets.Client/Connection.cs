@@ -64,6 +64,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 throw new InvalidOperationException("Cannot start a connection that is not in the Initial state.");
             }
 
+            _logger.LogDebug("Starting connection.");
+
             try
             {
                 var connectUrl = await GetConnectUrl(Url, httpClient, _logger);
@@ -71,10 +73,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 // Connection is being stopped while start was in progress
                 if (_connectionState == ConnectionState.Disconnected)
                 {
+                    _logger.LogDebug("Connection was closed from a different thread.");
                     return;
                 }
 
                 _transport = transport ?? new WebSocketsTransport(_loggerFactory);
+
+                _logger.LogDebug("Starting transport '{0}' with Url: {1}", transport.GetType().Name, connectUrl);
                 await StartTransport(connectUrl);
             }
             catch
@@ -89,6 +94,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 var ignore = _eventQueue.Enqueue(() =>
                 {
+                    _logger.LogDebug("Raising Connected event");
+
                     // Do not "simplify" - events can be removed from a different thread
                     var connectedEventHandler = Connected;
                     if (connectedEventHandler != null)
@@ -103,7 +110,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
 
+                    _logger.LogDebug("Draining event queue");
+
                     await _eventQueue.Drain();
+
+                    _logger.LogDebug("Raising Closed event");
 
                     // Do not "simplify" - event handlers can be removed from a different thread
                     var closedEventHandler = Closed;
@@ -196,7 +207,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     if (Input.TryRead(out Message message))
                     {
                         _logger.LogDebug("Scheduling raising Received event.");
-                        var ignore = _eventQueue.Enqueue(() => 
+                        var ignore = _eventQueue.Enqueue(() =>
                         {
                             // Do not "simplify" - event handlers can be removed from a different thread
                             var receivedEventHandler = Received;
@@ -249,6 +260,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // send loop.
             var sendTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var message = new SendMessage(data, type, sendTcs);
+
+            _logger.LogDebug("Sending message");
 
             while (await Output.WaitToWriteAsync(cancellationToken))
             {
