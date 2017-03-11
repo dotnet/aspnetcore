@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         private readonly static ulong _mask4Chars = GetMaskAsLong(new byte[]
             {0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00});
 
-        private readonly static Tuple<ulong, ulong, HttpMethod, int, bool>[] _knownMethods =
-            new Tuple<ulong, ulong, HttpMethod, int, bool>[17];
+        private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
+            new Tuple<ulong, ulong, HttpMethod, int>[17];
 
         private readonly static string[] _methodNames = new string[9];
 

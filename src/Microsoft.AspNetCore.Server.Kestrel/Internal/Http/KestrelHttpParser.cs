@@ -34,219 +34,132 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             consumed = buffer.Start;
             examined = buffer.End;
 
-            ReadCursor end;
-            Span<byte> span;
-
-            // If the buffer is a single span then use it to find the LF
-            if (buffer.IsSingleSpan)
+            // Prepare the first span
+            var span = buffer.First.Span;
+            var lineIndex = span.IndexOfVectorized(ByteLF);
+            if (lineIndex >= 0)
             {
-                var startLineSpan = buffer.First.Span;
-                var lineIndex = startLineSpan.IndexOfVectorized(ByteLF);
-
-                if (lineIndex == -1)
-                {
-                    return false;
-                }
-
-                end = buffer.Move(consumed, lineIndex + 1);
-                span = startLineSpan.Slice(0, lineIndex + 1);
+                consumed = buffer.Move(consumed, lineIndex + 1);
+                span = span.Slice(0, lineIndex + 1);
             }
-            else
+            else if (buffer.IsSingleSpan || !TryGetNewLineSpan(ref buffer, ref span, out consumed))
             {
-                var start = buffer.Start;
-                if (ReadCursorOperations.Seek(start, buffer.End, out end, ByteLF) == -1)
-                {
-                    return false;
-                }
-
-                // Move 1 byte past the \n
-                end = buffer.Move(end, 1);
-                var startLineBuffer = buffer.Slice(start, end);
-
-                span = startLineBuffer.ToSpan();
+                // No request line end
+                return false;
             }
 
-            var pathStart = -1;
-            var queryStart = -1;
-            var queryEnd = -1;
-            var pathEnd = -1;
-            var versionStart = -1;
-
-            var httpVersion = HttpVersion.Unknown;
-            HttpMethod method;
-            Span<byte> customMethod;
-            var i = 0;
-            var length = span.Length;
-            var done = false;
-
+            // Fix and parse the span
             fixed (byte* data = &span.DangerousGetPinnableReference())
             {
-                switch (StartLineState.KnownMethod)
+                ParseRequestLine(handler, data, span.Length);
+            }
+
+            examined = consumed;
+            return true;
+        }
+
+        private unsafe void ParseRequestLine<T>(T handler, byte* data, int length) where T : IHttpRequestLineHandler
+        {
+            int offset;
+            Span<byte> customMethod;
+            // Get Method and set the offset
+            var method = HttpUtilities.GetKnownMethod(data, length, out offset);
+            if (method == HttpMethod.Custom)
+            {
+                customMethod = GetUnknownMethod(data, length, out offset);
+            }
+
+            // Skip space
+            offset++;
+
+            byte ch = 0;
+            // Target = Path and Query
+            var pathEncoded = false;
+            var pathStart = -1;
+            for (; offset < length; offset++)
+            {
+                ch = data[offset];
+                if (ch == ByteSpace)
                 {
-                    case StartLineState.KnownMethod:
-                        if (span.GetKnownMethod(out method, out var methodLength))
-                        {
-                            // Update the index, current char, state and jump directly
-                            // to the next state
-                            i += methodLength + 1;
+                    if (pathStart == -1)
+                    {
+                        // Empty path is illegal
+                        RejectRequestLine(data, length);
+                    }
 
-                            goto case StartLineState.Path;
-                        }
-                        goto case StartLineState.UnknownMethod;
+                    break;
+                }
+                else if (ch == ByteQuestionMark)
+                {
+                    if (pathStart == -1)
+                    {
+                        // Empty path is illegal
+                        RejectRequestLine(data, length);
+                    }
 
-                    case StartLineState.UnknownMethod:
-                        for (; i < length; i++)
-                        {
-                            var ch = data[i];
+                    break;
+                }
+                else if (ch == BytePercentage)
+                {
+                    if (pathStart == -1)
+                    {
+                        // Path starting with % is illegal
+                        RejectRequestLine(data, length);
+                    }
 
-                            if (ch == ByteSpace)
-                            {
-                                customMethod = span.Slice(0, i);
-
-                                if (customMethod.Length == 0)
-                                {
-                                    RejectRequestLine(span);
-                                }
-                                // Consume space
-                                i++;
-
-                                goto case StartLineState.Path;
-                            }
-
-                            if (!IsValidTokenChar((char)ch))
-                            {
-                                RejectRequestLine(span);
-                            }
-                        }
-
-                        break;
-                    case StartLineState.Path:
-                        for (; i < length; i++)
-                        {
-                            var ch = data[i];
-                            if (ch == ByteSpace)
-                            {
-                                pathEnd = i;
-
-                                if (pathStart == -1)
-                                {
-                                    // Empty path is illegal
-                                    RejectRequestLine(span);
-                                }
-
-                                // No query string found
-                                queryStart = queryEnd = i;
-
-                                // Consume space
-                                i++;
-
-                                goto case StartLineState.KnownVersion;
-                            }
-                            else if (ch == ByteQuestionMark)
-                            {
-                                pathEnd = i;
-
-                                if (pathStart == -1)
-                                {
-                                    // Empty path is illegal
-                                    RejectRequestLine(span);
-                                }
-
-                                queryStart = i;
-                                goto case StartLineState.QueryString;
-                            }
-                            else if (ch == BytePercentage)
-                            {
-                                if (pathStart == -1)
-                                {
-                                    RejectRequestLine(span);
-                                }
-                            }
-
-                            if (pathStart == -1)
-                            {
-                                pathStart = i;
-                            }
-                        }
-                        break;
-                    case StartLineState.QueryString:
-                        for (; i < length; i++)
-                        {
-                            var ch = data[i];
-                            if (ch == ByteSpace)
-                            {
-                                queryEnd = i;
-
-                                // Consume space
-                                i++;
-
-                                goto case StartLineState.KnownVersion;
-                            }
-                        }
-                        break;
-                    case StartLineState.KnownVersion:
-                        // REVIEW: We don't *need* to slice here but it makes the API
-                        // nicer, slicing should be free :)
-                        if (span.Slice(i).GetKnownVersion(out httpVersion, out var versionLenght))
-                        {
-                            // Update the index, current char, state and jump directly
-                            // to the next state
-                            i += versionLenght + 1;
-                            goto case StartLineState.NewLine;
-                        }
-
-                        versionStart = i;
-
-                        goto case StartLineState.UnknownVersion;
-
-                    case StartLineState.UnknownVersion:
-                        for (; i < length; i++)
-                        {
-                            var ch = data[i];
-                            if (ch == ByteCR)
-                            {
-                                var versionSpan = span.Slice(versionStart, i - versionStart);
-
-                                if (versionSpan.Length == 0)
-                                {
-                                    RejectRequestLine(span);
-                                }
-                                else
-                                {
-                                    RejectRequest(RequestRejectionReason.UnrecognizedHTTPVersion,
-                                        versionSpan.GetAsciiStringEscaped(32));
-                                }
-                            }
-                        }
-                        break;
-                    case StartLineState.NewLine:
-                        if (data[i] != ByteLF)
-                        {
-                            RejectRequestLine(span);
-                        }
-                        i++;
-
-                        goto case StartLineState.Complete;
-                    case StartLineState.Complete:
-                        done = true;
-                        break;
+                    pathEncoded = true;
+                }
+                else if (pathStart == -1)
+                {
+                    pathStart = offset;
                 }
             }
 
-            if (!done)
+            if (pathStart == -1)
             {
-                RejectRequestLine(span);
+                // End of path not found
+                RejectRequestLine(data, length);
             }
 
-            var pathBuffer = span.Slice(pathStart, pathEnd - pathStart);
-            var targetBuffer = span.Slice(pathStart, queryEnd - pathStart);
-            var query = span.Slice(queryStart, queryEnd - queryStart);
+            var pathBuffer = new Span<byte>(data + pathStart, offset - pathStart);
 
-            handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod);
+            var queryStart = offset;
+            // Query string
+            if (ch == ByteQuestionMark)
+            {
+                // We have a query string
+                for (; offset < length; offset++)
+                {
+                    ch = data[offset];
+                    if (ch == ByteSpace)
+                    {
+                        break;
+                    }
+                }
+            }
 
-            consumed = end;
-            examined = consumed;
-            return true;
+            var targetBuffer = new Span<byte>(data + pathStart, offset - pathStart);
+            var query = new Span<byte>(data + queryStart, offset - queryStart);
+
+            // Consume space
+            offset++;
+
+            // Version
+            var httpVersion = HttpUtilities.GetKnownVersion(data + offset, length - offset);
+            if (httpVersion == HttpVersion.Unknown)
+            {
+                RejectUnknownVersion(data, length, offset);
+            }
+
+            //  After version 8 bytes and cr 1 byte, expect lf
+            if (data[offset + 8 + 1] != ByteLF)
+            {
+                RejectRequestLine(data, length);
+            }
+
+            var line = new Span<byte>(data, length);
+
+            handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, line, pathEncoded);
         }
 
         public unsafe bool ParseHeaders<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes) where T : IHttpHeadersHandler
@@ -316,11 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 }
 
                                 // Headers don't end in CRLF line.
-                                RejectRequest(RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence);
-                            }
-                            else if(ch1 == ByteSpace || ch1 == ByteTab)
-                            {
-                                RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
+                                RejectRequest(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
                             }
 
                             // We moved the reader so look ahead 2 bytes so reset both the reader
@@ -390,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe int FindEndOfName(byte* headerLine, int length)
+        private unsafe int FindEndOfName(byte* headerLine, int length)
         {
             var index = 0;
             var sawWhitespace = false;
@@ -407,14 +316,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            if (index == length)
+            if (index == length || sawWhitespace)
             {
-                RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
+                RejectRequestHeader(headerLine, length);
             }
-            if (sawWhitespace)
-            {
-                RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
-            }
+
             return index;
         }
 
@@ -427,17 +333,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (headerLine[valueEnd + 2] != ByteLF)
             {
-                RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
+                RejectRequestHeader(headerLine, length);
             }
             if (headerLine[valueEnd + 1] != ByteCR)
             {
-                RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
+                RejectRequestHeader(headerLine, length);
             }
 
             // Skip colon from value start
             var valueStart = nameEnd + 1;
             // Ignore start whitespace
-            for(; valueStart < valueEnd; valueStart++)
+            for (; valueStart < valueEnd; valueStart++)
             {
                 var ch = headerLine[valueStart];
                 if (ch != ByteTab && ch != ByteSpace && ch != ByteCR)
@@ -446,16 +352,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else if (ch == ByteCR)
                 {
-                    RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
+                    RejectRequestHeader(headerLine, length);
                 }
             }
-
 
             // Check for CR in value
             var i = valueStart + 1;
             if (Contains(headerLine + i, valueEnd - i, ByteCR))
             {
-                RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
+                RejectRequestHeader(headerLine, length);
             }
 
             // Ignore end whitespace
@@ -506,8 +411,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
             return false;
-        found:
+            found:
             return true;
+        }
+
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool TryGetNewLineSpan(ref ReadableBuffer buffer, ref Span<byte> span, out ReadCursor end)
+        {
+            var start = buffer.Start;
+            if (ReadCursorOperations.Seek(start, buffer.End, out end, ByteLF) != -1)
+            {
+                // Move 1 byte past the \n
+                end = buffer.Move(end, 1);
+                span = buffer.Slice(start, end).ToSpan();
+                return true;
+            }
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private unsafe Span<byte> GetUnknownMethod(byte* data, int length, out int methodLength)
+        {
+            methodLength = 0;
+            for (var i = 0; i < length; i++)
+            {
+                var ch = data[i];
+
+                if (ch == ByteSpace)
+                {
+                    if (i == 0)
+                    {
+                        RejectRequestLine(data, length);
+                    }
+
+                    methodLength = i;
+                    break;
+                }
+                else if (!IsValidTokenChar((char)ch))
+                {
+                    RejectRequestLine(data, length);
+                }
+            }
+
+            return new Span<byte>(data, methodLength);
         }
 
         private static bool IsValidTokenChar(char c)
@@ -540,9 +487,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             throw BadHttpRequestException.GetException(reason);
         }
 
-        public static void RejectRequest(RequestRejectionReason reason, string value)
+        private unsafe void RejectUnknownVersion(byte* data, int length, int versionStart)
         {
-            throw BadHttpRequestException.GetException(reason, value);
+            throw GetRejectUnknownVersion(data, length, versionStart);
+        }
+
+        private unsafe void RejectRequestLine(byte* data, int length)
+        {
+            throw GetRejectRequestLineException(new Span<byte>(data, length));
         }
 
         private void RejectRequestLine(Span<byte> span)
@@ -557,9 +509,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 Log.IsEnabled(LogLevel.Information) ? span.GetAsciiStringEscaped(MaxRequestLineError) : string.Empty);
         }
 
+        private unsafe BadHttpRequestException GetRejectUnknownVersion(byte* data, int length, int versionStart)
+        {
+            var span = new Span<byte>(data, length);
+            length -= versionStart;
+            for (var i = 0; i < length; i++)
+            {
+                var ch = span[i + versionStart];
+                if (ch == ByteCR)
+                {
+                    if (i == 0)
+                    {
+                        return GetRejectRequestLineException(span);
+                    }
+                    else
+                    {
+                        return BadHttpRequestException.GetException(RequestRejectionReason.UnrecognizedHTTPVersion,
+                            span.Slice(versionStart, i).GetAsciiStringEscaped(32));
+                    }
+                }
+            }
+
+            return GetRejectRequestLineException(span);
+        }
+
+        private unsafe void RejectRequestHeader(byte* headerLine, int length)
+        {
+            RejectRequestHeader(new Span<byte>(headerLine, length));
+        }
+
+        private void RejectRequestHeader(Span<byte> span)
+        {
+            throw GetRejectRequestHeaderException(span);
+        }
+
+        private BadHttpRequestException GetRejectRequestHeaderException(Span<byte> span)
+        {
+            const int MaxRequestHeaderError = 128;
+            return BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestHeader,
+                Log.IsEnabled(LogLevel.Information) ? span.GetAsciiStringEscaped(MaxRequestHeaderError) : string.Empty);
+        }
+
         public void Reset()
         {
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -569,27 +561,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // However this does cause it to become an intrinsic (with additional multiply and reg->reg copy)
             // https://github.com/dotnet/coreclr/issues/7459#issuecomment-253965670
             return Vector.AsVectorByte(new Vector<uint>(vectorByte * 0x01010101u));
-        }
-
-        private enum HeaderState
-        {
-            Name,
-            Whitespace,
-            ExpectValue,
-            ExpectNewLine,
-            Complete
-        }
-
-        private enum StartLineState
-        {
-            KnownMethod,
-            UnknownMethod,
-            Path,
-            QueryString,
-            KnownVersion,
-            UnknownVersion,
-            NewLine,
-            Complete
         }
     }
 }

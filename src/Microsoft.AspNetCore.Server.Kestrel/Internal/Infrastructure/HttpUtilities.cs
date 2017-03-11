@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
@@ -13,34 +14,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
     {
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
-        private const uint _httpGetMethodInt = 542393671; // retun of GetAsciiStringAsInt("GET "); const results in better codegen
 
+        public const string HttpUriScheme = "http://";
+        public const string HttpsUriScheme = "https://";
+
+        // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
+        private readonly static ulong _httpSchemeLong = GetAsciiStringAsLong(HttpUriScheme + "\0");
+        private readonly static ulong _httpsSchemeLong = GetAsciiStringAsLong(HttpsUriScheme);
+
+        private const uint _httpGetMethodInt = 542393671; // retun of GetAsciiStringAsInt("GET "); const results in better codegen
 
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
         {
-            _knownMethods[GetKnownMethodIndex(knownMethodUlong)] = new Tuple<ulong, ulong, HttpMethod, int, bool>(mask, knownMethodUlong, knownMethod, length, true);
-        }
-
-        private unsafe static ulong GetMaskAsLong(byte[] bytes)
-        {
-            Debug.Assert(bytes.Length == 8, "Mask must be exactly 8 bytes long.");
-
-            fixed (byte* ptr = bytes)
-            {
-                return *(ulong*)ptr;
-            }
+            _knownMethods[GetKnownMethodIndex(knownMethodUlong)] = new Tuple<ulong, ulong, HttpMethod, int>(mask, knownMethodUlong, knownMethod, length);
         }
 
         private static void FillKnownMethodsGaps()
         {
             var knownMethods = _knownMethods;
             var length = knownMethods.Length;
-            var invalidHttpMethod = new Tuple<ulong, ulong, HttpMethod, int, bool>(_mask8Chars, 0ul, HttpMethod.Custom, 0, false);
+            var invalidHttpMethod = new Tuple<ulong, ulong, HttpMethod, int>(_mask8Chars, 0ul, HttpMethod.Custom, 0);
             for (int i = 0; i < length; i++)
             {
                 if (knownMethods[i] == null)
@@ -74,7 +71,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
+        private unsafe static ulong GetMaskAsLong(byte[] bytes)
+        {
+            Debug.Assert(bytes.Length == 8, "Mask must be exactly 8 bytes long.");
 
+            fixed (byte* ptr = bytes)
+            {
+                return *(ulong*)ptr;
+            }
+        }
 
         public unsafe static string GetAsciiStringNonNullCharacters(this Span<byte> span)
         {
@@ -106,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             for (i = 0; i < Math.Min(span.Length, maxChars); ++i)
             {
                 var ch = span[i];
-                sb.Append(ch < 0x20 || ch >= 0x7F ? $"<0x{ch:X2}>" : ((char)ch).ToString());
+                sb.Append(ch < 0x20 || ch >= 0x7F ? $"\\x{ch:X2}" : ((char)ch).ToString());
             }
 
             if (span.Length > maxChars)
@@ -129,35 +134,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length)
+        public static unsafe bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length)
         {
-            if (span.TryRead<uint>(out var possiblyGet))
+            fixed (byte* data = &span.DangerousGetPinnableReference())
             {
-                if (possiblyGet == _httpGetMethodInt)
-                {
-                    length = 3;
-                    method = HttpMethod.Get;
-                    return true;
-                }
+                method = GetKnownMethod(data, span.Length, out length);
+                return method != HttpMethod.Custom;
             }
+        }
 
-            if (span.TryRead<ulong>(out var value))
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal unsafe static HttpMethod GetKnownMethod(byte* data, int length, out int methodLength)
+        {
+            methodLength = 0;
+            if (length < sizeof(uint))
             {
+                return HttpMethod.Custom;
+            }
+            else if (*(uint*)data == _httpGetMethodInt)
+            {
+                methodLength = 3;
+                return HttpMethod.Get;
+            }
+            else if (length < sizeof(ulong))
+            {
+                return HttpMethod.Custom;
+            }
+            else
+            {
+                var value = *(ulong*)data;
                 var key = GetKnownMethodIndex(value);
-
                 var x = _knownMethods[key];
 
                 if (x != null && (value & x.Item1) == x.Item2)
                 {
-                    method = x.Item3;
-                    length = x.Item4;
-                    return x.Item5;
+                    methodLength = x.Item4;
+                    return x.Item3;
                 }
             }
 
-            method = HttpMethod.Custom;
-            length = 0;
-            return false;
+            return HttpMethod.Custom;
         }
 
         /// <summary>
@@ -172,35 +188,83 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length)
+        public static unsafe bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length)
         {
-            if (span.TryRead<ulong>(out var version))
+            fixed (byte* data = &span.DangerousGetPinnableReference())
             {
-                if (version == _http11VersionLong)
+                knownVersion = GetKnownVersion(data, span.Length);
+                if (knownVersion != HttpVersion.Unknown)
                 {
                     length = sizeof(ulong);
-                    knownVersion = HttpVersion.Http11;
-                }
-                else if (version == _http10VersionLong)
-                {
-                    length = sizeof(ulong);
-                    knownVersion = HttpVersion.Http10;
-                }
-                else
-                {
-                    length = 0;
-                    knownVersion = HttpVersion.Unknown;
-                    return false;
+                    return true;
                 }
 
-                if (span[sizeof(ulong)] == (byte)'\r')
+                length = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks 9 bytes from <paramref name="location"/>  correspond to a known HTTP version.
+        /// </summary>
+        /// <remarks>
+        /// A "known HTTP version" Is is either HTTP/1.0 or HTTP/1.1.
+        /// Since those fit in 8 bytes, they can be optimally looked up by reading those bytes as a long. Once
+        /// in that format, it can be checked against the known versions.
+        /// The Known versions will be checked with the required '\r'.
+        /// To optimize performance the HTTP/1.1 will be checked first.
+        /// </remarks>
+        /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal unsafe static HttpVersion GetKnownVersion(byte* location, int length)
+        {
+            HttpVersion knownVersion;
+            var version = *(ulong*)location;
+            if (length < sizeof(ulong) + 1 || location[sizeof(ulong)] != (byte)'\r')
+            {
+                knownVersion = HttpVersion.Unknown;
+            }
+            else if (version == _http11VersionLong)
+            {
+                knownVersion = HttpVersion.Http11;
+            }
+            else if (version == _http10VersionLong)
+            {
+                knownVersion = HttpVersion.Http10;
+            }
+            else
+            {
+                knownVersion = HttpVersion.Unknown;
+            }
+
+            return knownVersion;
+        }
+
+        /// <summary>
+        /// Checks 8 bytes from <paramref name="span"/> that correspond to 'http://' or 'https://'
+        /// </summary>
+        /// <param name="span">The span</param>
+        /// <param name="knownScheme">A reference to the known scheme, if the input matches any</param>
+        /// <returns>True when memory starts with known http or https schema</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
+        {
+            if (span.TryRead<ulong>(out var value))
+            {
+                if ((value & _mask7Chars) == _httpSchemeLong)
                 {
+                    knownScheme = HttpScheme.Http;
+                    return true;
+                }
+
+                if (value == _httpsSchemeLong)
+                {
+                    knownScheme = HttpScheme.Https;
                     return true;
                 }
             }
 
-            knownVersion = HttpVersion.Unknown;
-            length = 0;
+            knownScheme = HttpScheme.Unknown;
             return false;
         }
 
@@ -224,6 +288,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return _methodNames[methodIndex];
             }
             return null;
+        }
+
+        public static string SchemeToString(HttpScheme scheme)
+        {
+            switch (scheme)
+            {
+                case HttpScheme.Http:
+                    return HttpUriScheme;
+                case HttpScheme.Https:
+                    return HttpsUriScheme;
+                default:
+                    return null;
+            }
         }
     }
 }

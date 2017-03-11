@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -93,19 +95,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [InlineData("*")]
-        [InlineData("*/?arg=value")]
-        [InlineData("*?arg=value")]
-        [InlineData("DoesNotStartWith/")]
-        [InlineData("DoesNotStartWith/?arg=value")]
-        [InlineData("DoesNotStartWithSlash?arg=value")]
-        [InlineData("./")]
-        [InlineData("../")]
-        [InlineData("../.")]
-        [InlineData(".././")]
-        [InlineData("../..")]
-        [InlineData("../../")]
-        public async Task NonPathRequestTargetSetInRawTarget(string requestTarget)
+        [InlineData(HttpMethod.Options, "*")]
+        [InlineData(HttpMethod.Connect, "host")]
+        public async Task NonPathRequestTargetSetInRawTarget(HttpMethod method, string requestTarget)
         {
             var testContext = new TestServiceContext();
 
@@ -123,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
-                        $"GET {requestTarget} HTTP/1.1",
+                        $"{HttpUtilities.MethodToString(method)} {requestTarget} HTTP/1.1",
                         "",
                         "");
                     await connection.ReceiveEnd(

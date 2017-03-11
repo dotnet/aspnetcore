@@ -4,38 +4,39 @@
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {
     public sealed class BadHttpRequestException : IOException
     {
         private BadHttpRequestException(string message, int statusCode)
+            : this(message, statusCode, null)
+        { }
+
+        private BadHttpRequestException(string message, int statusCode, HttpMethod? requiredMethod)
             : base(message)
         {
             StatusCode = statusCode;
+
+            if (requiredMethod.HasValue)
+            {
+                AllowedHeader = HttpUtilities.MethodToString(requiredMethod.Value);
+            }
         }
 
         internal int StatusCode { get; }
+
+        internal StringValues AllowedHeader { get; }
 
         internal static BadHttpRequestException GetException(RequestRejectionReason reason)
         {
             BadHttpRequestException ex;
             switch (reason)
             {
-                case RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence:
-                    ex = new BadHttpRequestException("Headers corrupted, invalid header sequence.", StatusCodes.Status400BadRequest);
-                    break;
-                case RequestRejectionReason.NoColonCharacterFoundInHeaderLine:
-                    ex = new BadHttpRequestException("No ':' character found in header line.", StatusCodes.Status400BadRequest);
-                    break;
-                case RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName:
-                    ex = new BadHttpRequestException("Whitespace is not allowed in header name.", StatusCodes.Status400BadRequest);
-                    break;
-                case RequestRejectionReason.HeaderValueMustNotContainCR:
-                    ex = new BadHttpRequestException("Header value must not contain CR characters.", StatusCodes.Status400BadRequest);
-                    break;
-                case RequestRejectionReason.HeaderValueLineFoldingNotSupported:
-                    ex = new BadHttpRequestException("Header value line folding not supported.", StatusCodes.Status400BadRequest);
+                case RequestRejectionReason.InvalidRequestHeadersNoCRLF:
+                    ex = new BadHttpRequestException("Invalid request headers: missing final CRLF in header fields.", StatusCodes.Status400BadRequest);
                     break;
                 case RequestRejectionReason.InvalidRequestLine:
                     ex = new BadHttpRequestException("Invalid request line.", StatusCodes.Status400BadRequest);
@@ -58,14 +59,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.ChunkedRequestIncomplete:
                     ex = new BadHttpRequestException("Chunked request incomplete.", StatusCodes.Status400BadRequest);
                     break;
-                case RequestRejectionReason.PathContainsNullCharacters:
-                    ex = new BadHttpRequestException("The path contains null characters.", StatusCodes.Status400BadRequest);
-                    break;
                 case RequestRejectionReason.InvalidCharactersInHeaderName:
                     ex = new BadHttpRequestException("Invalid characters in header name.", StatusCodes.Status400BadRequest);
-                    break;
-                case RequestRejectionReason.NonAsciiOrNullCharactersInInputString:
-                    ex = new BadHttpRequestException("The input string contains non-ASCII or null characters.", StatusCodes.Status400BadRequest);
                     break;
                 case RequestRejectionReason.RequestLineTooLong:
                     ex = new BadHttpRequestException("Request line too long.", StatusCodes.Status414UriTooLong);
@@ -73,14 +68,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.HeadersExceedMaxTotalSize:
                     ex = new BadHttpRequestException("Request headers too long.", StatusCodes.Status431RequestHeaderFieldsTooLarge);
                     break;
-                case RequestRejectionReason.MissingCRInHeaderLine:
-                    ex = new BadHttpRequestException("No CR character found in header line.", StatusCodes.Status400BadRequest);
-                    break;
                 case RequestRejectionReason.TooManyHeaders:
                     ex = new BadHttpRequestException("Request contains too many headers.", StatusCodes.Status431RequestHeaderFieldsTooLarge);
                     break;
                 case RequestRejectionReason.RequestTimeout:
                     ex = new BadHttpRequestException("Request timed out.", StatusCodes.Status408RequestTimeout);
+                    break;
+                case RequestRejectionReason.OptionsMethodRequired:
+                    ex = new BadHttpRequestException("Method not allowed.", StatusCodes.Status405MethodNotAllowed, HttpMethod.Options);
+                    break;
+                case RequestRejectionReason.ConnectMethodRequired:
+                    ex = new BadHttpRequestException("Method not allowed.", StatusCodes.Status405MethodNotAllowed, HttpMethod.Connect);
                     break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", StatusCodes.Status400BadRequest);
@@ -95,7 +93,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             switch (reason)
             {
                 case RequestRejectionReason.InvalidRequestLine:
-                    ex = new BadHttpRequestException($"Invalid request line: {value}", StatusCodes.Status400BadRequest);
+                    ex = new BadHttpRequestException($"Invalid request line: '{value}'", StatusCodes.Status400BadRequest);
+                    break;
+                case RequestRejectionReason.InvalidRequestHeader:
+                    ex = new BadHttpRequestException($"Invalid request header: '{value}'", StatusCodes.Status400BadRequest);
                     break;
                 case RequestRejectionReason.InvalidContentLength:
                     ex = new BadHttpRequestException($"Invalid content length: {value}", StatusCodes.Status400BadRequest);

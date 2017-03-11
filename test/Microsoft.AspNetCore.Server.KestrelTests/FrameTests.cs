@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Moq;
@@ -79,25 +80,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             _input.Reader.Complete();
             _input.Writer.Complete();
             _pipelineFactory.Dispose();
-        }
-
-        [Fact]
-        public async Task TakeMessageHeadersThrowsOnHeaderValueWithLineFolding_CharacterNotAvailableOnFirstAttempt()
-        {
-            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("Header-1: value1\r\n"));
-
-            var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
-            Assert.False(_frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
-            _input.Reader.Advance(_consumed, _examined);
-
-            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(" "));
-
-            readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
-            _input.Reader.Advance(_consumed, _examined);
-
-            Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Fact]
@@ -347,6 +329,37 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal(new InvalidOperationException().Message, exception.Message);
         }
 
+        [Theory]
+        [MemberData(nameof(RequestLineWithInvalidRequestTargetData))]
+        public async Task TakeStartLineThrowsWhenRequestTargetIsInvalid(string requestLine)
+        {
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
+            var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
+
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
+                _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            _input.Reader.Advance(_consumed, _examined);
+
+            Assert.Equal($"Invalid request line: '{Escape(requestLine)}'", exception.Message);
+        }
+
+
+        [Theory]
+        [MemberData(nameof(MethodNotAllowedTargetData))]
+        public async Task TakeStartLineThrowsWhenMethodNotAllowed(string requestLine, HttpMethod allowedMethod)
+        {
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
+            var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
+
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
+                _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            _input.Reader.Advance(_consumed, _examined);
+
+            Assert.Equal(405, exception.StatusCode);
+            Assert.Equal("Method not allowed.", exception.Message);
+            Assert.Equal(HttpUtilities.MethodToString(allowedMethod), exception.AllowedHeader);
+        }
+
         [Fact]
         public void RequestProcessingAsyncEnablesKeepAliveTimeout()
         {
@@ -534,6 +547,25 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 return data;
             }
         }
+
+        private string Escape(string requestLine)
+        {
+            var ellipsis = requestLine.Length > 32
+                ? "..."
+                : string.Empty;
+            return requestLine
+                .Substring(0, Math.Min(32, requestLine.Length))
+                .Replace("\r", @"\x0D")
+                .Replace("\n", @"\x0A")
+                .Replace("\0", @"\x00")
+                + ellipsis;
+        }
+
+        public static TheoryData<string> RequestLineWithInvalidRequestTargetData 
+            => HttpParsingData.RequestLineWithInvalidRequestTarget;
+
+        public static TheoryData<string, HttpMethod> MethodNotAllowedTargetData
+            => HttpParsingData.MethodNotAllowedRequestLine;
 
         public static TheoryData<string> RequestLineWithNullCharInTargetData
         {

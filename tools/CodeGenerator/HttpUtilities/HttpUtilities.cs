@@ -76,8 +76,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {0}
 
 {1}
-        private readonly static Tuple<ulong, ulong, HttpMethod, int, bool>[] _knownMethods =
-            new Tuple<ulong, ulong, HttpMethod, int, bool>[{2}];
+        private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
+            new Tuple<ulong, ulong, HttpMethod, int>[{2}];
 
         private readonly static string[] _methodNames = new string[{3}];
 

@@ -49,14 +49,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     It.IsAny<Span<byte>>(),
                     It.IsAny<Span<byte>>(),
                     It.IsAny<Span<byte>>(),
-                    It.IsAny<Span<byte>>()))
-                .Callback<HttpMethod, HttpVersion, Span<byte>, Span<byte>, Span<byte>, Span<byte>>((method, version, target, path, query, customMethod) =>
+                    It.IsAny<Span<byte>>(),
+                    It.IsAny<Span<byte>>(),
+                    It.IsAny<bool>()))
+                .Callback<HttpMethod, HttpVersion, Span<byte>, Span<byte>, Span<byte>, Span<byte>, Span<byte>, bool>((method, version, target, path, query, customMethod, line, pathEncoded) =>
                 {
                     parsedMethod = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();
                     parsedVersion = HttpUtilities.VersionToString(version);
                     parsedRawTarget = target.GetAsciiStringNonNullCharacters();
                     parsedRawPath = path.GetAsciiStringNonNullCharacters();
                     parsedQuery = query.GetAsciiStringNonNullCharacters();
+                    pathEncoded = false;
                 });
 
             Assert.True(parser.ParseRequestLine(requestLineHandler.Object, buffer, out var consumed, out var examined));
@@ -108,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(Mock.Of<IHttpRequestLineHandler>(), buffer, out var consumed, out var examined));
 
-            Assert.Equal($"Invalid request line: {requestLine.Replace("\r", "<0x0D>").Replace("\n", "<0x0A>")}", exception.Message);
+            Assert.Equal($"Invalid request line: '{requestLine.Replace("\r", "\\x0D").Replace("\n", "\\x0A")}'", exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
         }
 
@@ -306,7 +309,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [MemberData(nameof(RequestHeaderInvalidData))]
         public void ParseHeadersThrowsOnInvalidRequestHeaders(string rawHeaders, string expectedExceptionMessage)
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var mockTrace = new Mock<IKestrelTrace>();
+            mockTrace
+                .Setup(trace => trace.IsEnabled(LogLevel.Information))
+                .Returns(true);
+
+            var parser = CreateParser(mockTrace.Object);
             var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(rawHeaders));
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>

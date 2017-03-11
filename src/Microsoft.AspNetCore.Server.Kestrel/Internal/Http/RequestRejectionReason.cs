@@ -6,12 +6,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     public enum RequestRejectionReason
     {
         UnrecognizedHTTPVersion,
-        HeadersCorruptedInvalidHeaderSequence,
-        NoColonCharacterFoundInHeaderLine,
-        WhitespaceIsNotAllowedInHeaderName,
-        HeaderValueMustNotContainCR,
-        HeaderValueLineFoldingNotSupported,
         InvalidRequestLine,
+        InvalidRequestHeader,
+        InvalidRequestHeadersNoCRLF,
         MalformedRequestInvalidHeaders,
         InvalidContentLength,
         MultipleContentLengths,
@@ -19,16 +16,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         BadChunkSuffix,
         BadChunkSizeData,
         ChunkedRequestIncomplete,
-        PathContainsNullCharacters,
         InvalidCharactersInHeaderName,
-        NonAsciiOrNullCharactersInInputString,
         RequestLineTooLong,
         HeadersExceedMaxTotalSize,
-        MissingCRInHeaderLine,
         TooManyHeaders,
         RequestTimeout,
         FinalTransferCodingNotChunked,
         LengthRequired,
-        LengthRequiredHttp10
+        LengthRequiredHttp10,
+        OptionsMethodRequired,
+        ConnectMethodRequired,
     }
 }
