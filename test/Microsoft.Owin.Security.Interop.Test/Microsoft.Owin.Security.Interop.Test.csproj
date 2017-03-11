@@ -3,7 +3,7 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net452</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
@@ -11,12 +11,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.Cookies\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Owin.Security.Interop\Microsoft.Owin.Security.Interop.csproj" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
+
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
     <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="3.0.1" />
     <PackageReference Include="Microsoft.Owin.Testing" Version="3.0.1" />
     <PackageReference Include="xunit" Version="2.2.0-*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
   </ItemGroup>
 
 </Project>
