@@ -1,31 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'RazorViewCompilation.sln'))\build\common-testapps.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <Version>1.0.0-z$([System.DateTime]::UtcNow.Ticks)</Version>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <MvcRazorOutputPath Condition="'$(TargetFramework)'!=''">obj\precompiled\$(TargetFramework)</MvcRazorOutputPath>
+    <TestIncludeViewCompilationTargets>true</TestIncludeViewCompilationTargets>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content
-      Include="obj\precompiled\**\*"
-      Pack="true"
-      PackagePath="lib\%(RecursiveDir)%(FileName)%(Extension)" />
-  </ItemGroup>
+  <Import Project="..\..\build\common-testapps.props" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation">
-      <Version>1.2.0-*</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 
-  <Target
-    Name="PrecompileRazorViews"
-    AfterTargets="Build"
-    DependsOnTargets="MvcRazorPrecompile"
-    Condition="'$(TargetFramework)'!=''" />
+  <Target Name="PrecompileRazorViews" AfterTargets="Build" DependsOnTargets="MvcRazorPrecompile" Condition="'$(TargetFramework)'!=''" />
 
 </Project>

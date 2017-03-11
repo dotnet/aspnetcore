@@ -4,14 +4,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 {
-    public class ApplicationWithParseErrorsTest : IClassFixture<ApplicationWithParseErrorsTest.ApplicationWithParseErrorsFixture>
+    public class ApplicationWithParseErrorsTest :
+        IClassFixture<ApplicationWithParseErrorsTest.ApplicationWithParseErrorsFixture>
     {
         public ApplicationWithParseErrorsTest(ApplicationWithParseErrorsFixture fixture)
         {
@@ -31,18 +31,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 viewImportsPath + " (1): A space or line break was encountered after the \"@\" character.  Only valid identifiers, keywords, comments, \"(\" and \"{\" are valid at the start of a code block and they must occur immediately following \"@\" with no space in between.",
 
             };
-            using (var deployer = Fixture.CreateDeployment())
+
+            // Act & Assert
+            Assert.Throws<Exception>(() => Fixture.CreateDeployment());
+
+            // Assert
+            var output = Fixture.TestSink.Writes.Select(w => w.State.ToString().Trim()).ToList();
+
+            foreach (var error in expectedErrors)
             {
-                // Act & Assert
-                Assert.Throws<Exception>(() => deployer.Deploy());
-
-                // Assert
-                var output = Fixture.TestSink.Writes.Select(w => w.State.ToString().Trim()).ToList();
-
-                foreach (var error in expectedErrors)
-                {
-                    Assert.Contains(error, output);
-                }
+                Assert.Contains(error, output);
             }
         }
 
@@ -55,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
             public TestSink TestSink { get; } = new TestSink();
 
-            protected override ILogger CreateLogger()
+            public override ILogger CreateLogger()
             {
                 return new TestLoggerFactory(TestSink, enabled: true).CreateLogger($"{ApplicationName}");
             }

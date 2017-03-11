@@ -1,8 +1,22 @@
 <Project>
   <Import Project="dependencies.props" />
+  <PropertyGroup>
+    <TestIncludeViewCompilationTargets Condition="'$(TestIncludeViewCompilationTargets)'==''">$(MvcRazorCompileOnPublish)</TestIncludeViewCompilationTargets>
+  </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.1-*" PrivateAssets="All" />
+  <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netcoreapp1.1\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
+    Condition="'$(TestIncludeViewCompilationTargets)'=='true'"/>
+
+  <ItemGroup Condition="'$(TestIncludeViewCompilationTargets)'=='true'">
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj" />
   </ItemGroup>
 
+  <Target
+    Name="SetMvcRazorViewCompilationBinaryPath"
+    BeforeTargets="MvcRazorPrecompile"
+    Condition="'$(TestIncludeViewCompilationTargets)'=='true'">
+    <PropertyGroup>
+      <_MvcViewCompilationBinaryPath>$(MSBuildProjectDirectory)\$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll</_MvcViewCompilationBinaryPath>
+    </PropertyGroup>
+  </Target>
 </Project>

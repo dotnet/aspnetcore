@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
@@ -21,36 +20,30 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_WorksForViewsUsingRelativePath()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                var deploymentResult = deployer.Deploy();
+            var deploymentResult = Fixture.CreateDeployment();
 
-                // Act
-                var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    deploymentResult.ApplicationBaseUri,
-                    Fixture.Logger);
+            // Act
+            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+                deploymentResult.ApplicationBaseUri,
+                Fixture.Logger);
 
-                // Assert
-                TestEmbeddedResource.AssertContent("ApplicationUsingRelativePaths.Home.Index.txt", response);
-            }
+            // Assert
+            TestEmbeddedResource.AssertContent("ApplicationUsingRelativePaths.Home.Index.txt", response);
         }
 
         [Fact]
         public async Task Precompilation_WorksForViewsUsingDirectoryTraversal()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                var deploymentResult = deployer.Deploy();
+            var deploymentResult = Fixture.CreateDeployment();
 
-                // Act
-                var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    deploymentResult.ApplicationBaseUri,
-                    Fixture.Logger);
+            // Act
+            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+                deploymentResult.ApplicationBaseUri,
+                Fixture.Logger);
 
-                // Assert
-                TestEmbeddedResource.AssertContent("ApplicationUsingRelativePaths.Home.About.txt", response);
-            }
+            // Assert
+            TestEmbeddedResource.AssertContent("ApplicationUsingRelativePaths.Home.About.txt", response);
         }
 
         public class ApplicationUsingRelativePathsTestFixture : ApplicationTestFixture

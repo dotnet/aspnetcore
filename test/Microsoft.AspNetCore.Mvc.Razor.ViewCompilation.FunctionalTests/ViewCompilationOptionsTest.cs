@@ -20,27 +20,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         [Fact]
         public void Precompilation_PreventsRefAssembliesFromBeingPublished()
         {
-            // Arrange
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                // Act
-                var deploymentResult = deployer.Deploy();
+            // Arrange & Act
+            var deploymentResult = Fixture.CreateDeployment();
 
-                // Assert
-                Assert.False(Directory.Exists(Path.Combine(deploymentResult.ContentRoot, "refs")));
-            }
+            // Assert
+            Assert.False(Directory.Exists(Path.Combine(deploymentResult.ContentRoot, "refs")));
         }
 
         [Fact]
         public void PublishingWithOption_AllowsPublishingRefAssemblies()
         {
             // Arrange
-            Fixture.PrepareForDeployment();
             var deploymentParameters = Fixture.GetDeploymentParameters();
             deploymentParameters.PublishEnvironmentVariables.Add(
                 new KeyValuePair<string, string>("MvcRazorExcludeRefAssembliesFromPublish", "false"));
+            var logger = Fixture.CreateLogger();
 
-            using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, Fixture.Logger))
+            using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
             {
                 // Act
                 var deploymentResult = deployer.Deploy();

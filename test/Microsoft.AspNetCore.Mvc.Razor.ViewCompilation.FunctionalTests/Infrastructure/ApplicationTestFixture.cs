@@ -5,66 +5,53 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 {
     public abstract class ApplicationTestFixture : IDisposable
     {
-        public const string NuGetPackagesEnvironmentKey = "NUGET_PACKAGES";
-        public const string DotnetSkipFirstTimeExperience = "DOTNET_SKIP_FIRST_TIME_EXPERIENCE";
         public const string DotnetCLITelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
-
-        private readonly string _oldRestoreDirectory;
-        private bool _isRestored;
+        private readonly object _deploymentLock = new object();
+        private IApplicationDeployer _deployer;
+        private DeploymentResult _deploymentResult;
 
         protected ApplicationTestFixture(string applicationName)
         {
             ApplicationName = applicationName;
-            _oldRestoreDirectory = Environment.GetEnvironmentVariable(NuGetPackagesEnvironmentKey);
         }
 
         public string ApplicationName { get; }
 
         public string ApplicationPath => ApplicationPaths.GetTestAppDirectory(ApplicationName);
 
-        public string TempRestoreDirectory { get; } = CreateTempRestoreDirectory();
-
         public HttpClient HttpClient { get; } = new HttpClient();
 
         public ILogger Logger { get; private set; }
 
-        public IApplicationDeployer CreateDeployment()
+        public DeploymentResult CreateDeployment()
         {
-            PrepareForDeployment();
-            var deploymentParameters = GetDeploymentParameters();
-            return ApplicationDeployerFactory.Create(deploymentParameters, Logger);
-        }
-
-        public virtual void PrepareForDeployment()
-        {
-            Logger = CreateLogger();
-
-            if (!_isRestored)
+            lock (_deploymentLock)
             {
-                Restore();
-                _isRestored = true;
+                if (_deployer != null)
+                {
+                    return _deploymentResult;
+                }
+
+                Logger = CreateLogger();
+                var deploymentParameters = GetDeploymentParameters();
+                var deployer = ApplicationDeployerFactory.Create(deploymentParameters, Logger);
+                _deploymentResult = deployer.Deploy();
+
+                _deployer = deployer;
+
+                return _deploymentResult;
             }
         }
 
         public virtual DeploymentParameters GetDeploymentParameters()
         {
-            var tempRestoreDirectoryEnvironment = new KeyValuePair<string, string>(
-                NuGetPackagesEnvironmentKey,
-                TempRestoreDirectory);
-
-            var skipFirstTimeCacheCreation = new KeyValuePair<string, string>(
-                DotnetSkipFirstTimeExperience,
-                "true");
-
             var telemetryOptOut = new KeyValuePair<string, string>(
                 DotnetCLITelemetryOptOut,
                 "1");
@@ -81,17 +68,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 #else
 #error the target framework needs to be updated.
 #endif
+#if DEBUG
+                Configuration = "Debug",
+#else
                 Configuration = "Release",
+#endif
                 EnvironmentVariables =
                 {
-                    tempRestoreDirectoryEnvironment,
-                    skipFirstTimeCacheCreation,
                     telemetryOptOut,
                 },
                 PublishEnvironmentVariables =
                 {
-                    tempRestoreDirectoryEnvironment,
-                    skipFirstTimeCacheCreation,
                     telemetryOptOut,
                 },
             };
@@ -99,22 +86,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             return deploymentParameters;
         }
 
-        protected virtual ILogger CreateLogger()
+        public virtual ILogger CreateLogger()
         {
             return new LoggerFactory()
                 .AddConsole()
                 .CreateLogger($"{ApplicationName}");
         }
 
-        protected virtual void Restore()
+        public void Dispose()
         {
-            RestoreProject(ApplicationPath);
-        }
-
-        public virtual void Dispose()
-        {
-            TryDeleteDirectory(TempRestoreDirectory);
-            HttpClient.Dispose();
+            HttpClient?.Dispose();
+            _deployer?.Dispose();
         }
 
         protected static void TryDeleteDirectory(string directory)
@@ -127,69 +109,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             {
                 // Ignore delete failures.
             }
-        }
-
-        protected void RestoreProject(string applicationDirectory, IList<string> feeds = null)
-        {            
-            var args = new List<string>
-            {
-                "--packages",
-                TempRestoreDirectory,
-            };
-
-            if (feeds != null)
-            {
-                foreach (var feed in feeds)
-                {
-                    args.Add("-s");
-                    args.Add(feed);
-                }
-            }
-
-            var command = Command
-                .CreateDotNet("restore", args)
-                .EnvironmentVariable(DotnetSkipFirstTimeExperience, "true")
-                .CaptureStdErr()
-                .CaptureStdOut()
-                .WorkingDirectory(applicationDirectory)
-                .Execute();
-
-            if (command.ExitCode != 0)
-            {
-                throw new Exception(
-$@"dotnet {command.StartInfo.Arguments} failed.
-===StdOut===
-{command.StdOut}
-===StdErr===
-{command.StdErr}");
-            }
-        }
-
-        private static string CreateTempRestoreDirectory()
-        {
-            var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            return Directory.CreateDirectory(path).FullName;
-        }
-
-        private static string GetNuGetPackagesDirectory()
-        {
-            var nugetFeed = Environment.GetEnvironmentVariable(NuGetPackagesEnvironmentKey);
-            if (!string.IsNullOrEmpty(nugetFeed))
-            {
-                return nugetFeed;
-            }
-
-            string basePath;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                basePath = Environment.GetEnvironmentVariable("USERPROFILE");
-            }
-            else
-            {
-                basePath = Environment.GetEnvironmentVariable("HOME");
-            }
-
-            return Path.Combine(basePath, ".nuget", "packages");
         }
     }
 }

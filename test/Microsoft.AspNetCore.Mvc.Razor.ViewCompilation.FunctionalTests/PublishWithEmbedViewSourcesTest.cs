@@ -32,31 +32,29 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
                 "/Views/Home/Index.cshtml",
             };
             var expectedText = "Hello Index!";
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                var deploymentResult = deployer.Deploy();
-                var assemblyPath = Path.Combine(
-                    deploymentResult.DeploymentParameters.PublishedApplicationRootPath,
-                    $"{ApplicationName}.PrecompiledViews.dll");
+            var deploymentResult = Fixture.CreateDeployment();
 
-                // Act - 1
-                var response1 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    $"{deploymentResult.ApplicationBaseUri}Home/Index",
-                    Fixture.Logger);
+            var assemblyPath = Path.Combine(
+                deploymentResult.DeploymentParameters.PublishedApplicationRootPath,
+                $"{ApplicationName}.PrecompiledViews.dll");
 
-                // Assert - 1
-                Assert.Equal(expectedText, response1.Trim());
+            // Act - 1
+            var response1 = await Fixture.HttpClient.GetStringWithRetryAsync(
+                $"{deploymentResult.ApplicationBaseUri}Home/Index",
+                Fixture.Logger);
 
-                // Act - 2
-                var response2 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    $"{deploymentResult.ApplicationBaseUri}Home/GetPrecompiledResourceNames",
-                    Fixture.Logger);
+            // Assert - 1
+            Assert.Equal(expectedText, response1.Trim());
 
-                // Assert - 2
-                var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                    .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
-                Assert.Equal(expectedViews, actual);
-            }
+            // Act - 2
+            var response2 = await Fixture.HttpClient.GetStringWithRetryAsync(
+                $"{deploymentResult.ApplicationBaseUri}Home/GetPrecompiledResourceNames",
+                Fixture.Logger);
+
+            // Assert - 2
+            var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(expectedViews, actual);
         }
 
         public class PublishWithEmbedViewSourcesTestFixture : ApplicationTestFixture

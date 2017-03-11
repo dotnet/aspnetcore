@@ -24,20 +24,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
         [Fact]
         public async Task ApplicationWithCustomInputFiles_Works()
         {
+            // Arrange
             var expectedText = "Hello Index!";
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                // Arrange
-                var deploymentResult = deployer.Deploy();
+            var deploymentResult = Fixture.CreateDeployment();
 
-                // Act
-                var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    deploymentResult.ApplicationBaseUri,
-                    Fixture.Logger);
+            // Act
+            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+                deploymentResult.ApplicationBaseUri,
+                Fixture.Logger);
 
-                // Assert
-                Assert.Equal(expectedText, response.Trim());
-            }
+            // Assert
+            Assert.Equal(expectedText, response.Trim());
         }
 
         [Fact]
@@ -49,21 +46,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
                 "/Views/Home/About.cshtml",
                 "/Views/Home/Index.cshtml",
             };
+            var deploymentResult = Fixture.CreateDeployment();
 
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                var deploymentResult = deployer.Deploy();
+            // Act
+            var response2 = await Fixture.HttpClient.GetStringWithRetryAsync(
+                $"{deploymentResult.ApplicationBaseUri}Home/GetPrecompiledResourceNames",
+                Fixture.Logger);
 
-                // Act
-                var response2 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    $"{deploymentResult.ApplicationBaseUri}Home/GetPrecompiledResourceNames",
-                    Fixture.Logger);
-
-                // Assert
-                var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                    .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
-                Assert.Equal(expectedViews, actual);
-            }
+            // Assert
+            var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(expectedViews, actual);
         }
 
         [Fact]
@@ -80,24 +73,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
             {
                 "NotIncluded.cshtml",
             };
+            var deploymentResult = Fixture.CreateDeployment();
+            var viewsDirectory = Path.Combine(deploymentResult.ContentRoot, "Views", "Home");
 
-            using (var deployer = Fixture.CreateDeployment())
+            // Act & Assert
+            foreach (var file in viewsPublished)
             {
-                var deploymentResult = deployer.Deploy();
-                var viewsDirectory = Path.Combine(deploymentResult.ContentRoot, "Views", "Home");
-                
-                // Act & Assert
-                foreach (var file in viewsPublished)
-                {
-                    var filePath = Path.Combine(viewsDirectory, file);
-                    Assert.True(File.Exists(filePath), $"{filePath} was not published.");
-                }
+                var filePath = Path.Combine(viewsDirectory, file);
+                Assert.True(File.Exists(filePath), $"{filePath} was not published.");
+            }
 
-                foreach (var file in viewsNotPublished)
-                {
-                    var filePath = Path.Combine(viewsDirectory, file);
-                    Assert.False(File.Exists(filePath), $"{filePath} was published.");
-                }
+            foreach (var file in viewsNotPublished)
+            {
+                var filePath = Path.Combine(viewsDirectory, file);
+                Assert.False(File.Exists(filePath), $"{filePath} was published.");
             }
         }
 

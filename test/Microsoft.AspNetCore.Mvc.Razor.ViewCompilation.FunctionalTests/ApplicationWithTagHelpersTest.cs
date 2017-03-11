@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -33,18 +32,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_WorksForViewsThatUseTagHelpers(string url)
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                var deploymentResult = deployer.Deploy();
+            var deploymentResult = Fixture.CreateDeployment();
 
-                // Act
-                var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    $"{deploymentResult.ApplicationBaseUri}Home/{url}",
-                    Fixture.Logger);
+            // Act
+            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+                $"{deploymentResult.ApplicationBaseUri}Home/{url}",
+                Fixture.Logger);
 
-                // Assert
-                TestEmbeddedResource.AssertContent($"ApplicationWithTagHelpers.Home.{url}.txt", response);
-            }
+            // Assert
+            TestEmbeddedResource.AssertContent($"ApplicationWithTagHelpers.Home.{url}.txt", response);
         }
 
         public class ApplicationWithTagHelpersFixture : ApplicationTestFixture
@@ -52,12 +48,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             public ApplicationWithTagHelpersFixture()
                 : base("ApplicationWithTagHelpers")
             {
-            }
-
-            protected override void Restore()
-            {
-                RestoreProject(Path.GetFullPath(Path.Combine(ApplicationPath, "..", "ClassLibraryTagHelper")));
-                base.Restore();
             }
         }
     }

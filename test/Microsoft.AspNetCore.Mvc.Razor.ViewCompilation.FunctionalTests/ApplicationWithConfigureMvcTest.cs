@@ -20,38 +20,32 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_RunsConfiguredCompilationCallbacks()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                var deploymentResult = deployer.Deploy();
+            var deploymentResult = Fixture.CreateDeployment();
 
-                // Act
-                var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    deploymentResult.ApplicationBaseUri,
-                    Fixture.Logger);
+            // Act
+            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+                deploymentResult.ApplicationBaseUri,
+                Fixture.Logger);
 
-                // Assert
-                TestEmbeddedResource.AssertContent("ApplicationWithConfigureMvc.Home.Index.txt", response);
-            }
+            // Assert
+            TestEmbeddedResource.AssertContent("ApplicationWithConfigureMvc.Home.Index.txt", response);
         }
 
         [Fact]
         public async Task Precompilation_UsesConfiguredParseOptions()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment())
-            {
-                var deploymentResult = deployer.Deploy();
+            var deploymentResult = Fixture.CreateDeployment();
 
-                // Act
-                var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                    deploymentResult.ApplicationBaseUri + "Home/ViewWithPreprocessor",
-                    Fixture.Logger);
+            // Act
+            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+                deploymentResult.ApplicationBaseUri + "Home/ViewWithPreprocessor",
+                Fixture.Logger);
 
-                // Assert
-                TestEmbeddedResource.AssertContent(
-                    "ApplicationWithConfigureMvc.Home.ViewWithPreprocessor.txt",
-                    response);
-            }
+            // Assert
+            TestEmbeddedResource.AssertContent(
+                "ApplicationWithConfigureMvc.Home.ViewWithPreprocessor.txt",
+                response);
         }
 
         public class ApplicationWithConfigureMvcFixture : ApplicationTestFixture
