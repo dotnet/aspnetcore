@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET452
+#if NET46
 
 using System;
 using System.Linq;
@@ -148,5 +148,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         }
     }
 }
-
+#elif NETSTANDARD1_3
+#else
+#error Target framework needs to be updated.
 #endif

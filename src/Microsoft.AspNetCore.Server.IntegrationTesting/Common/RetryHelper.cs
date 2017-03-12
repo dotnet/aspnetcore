@@ -57,8 +57,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     else
                     {
                         if (exception is HttpRequestException
-#if NET452
+#if NET46
                         || exception is System.Net.WebException
+#elif NETSTANDARD1_3
+#else
+#error Target frameworks need to be updated.
 #endif
                         )
                         {

@@ -207,8 +207,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
                 var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
                 var clrVersion = assemblyVersion;
-#else
+#elif NET46
                 var clrVersion = Environment.Version.ToString();
+#else
+#error Target frameworks need to be updated.
 #endif
                 model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
                 var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;

@@ -168,20 +168,7 @@ namespace Microsoft.AspNetCore.TestHost
                 _readLock.Release();
             }
         }
-#if NET451
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            // TODO: This option doesn't preserve the state object.
-            // return ReadAsync(buffer, offset, count);
-            return base.BeginRead(buffer, offset, count, callback, state);
-        }
 
-        public override int EndRead(IAsyncResult asyncResult)
-        {
-            // return ((Task<int>)asyncResult).Result;
-            return base.EndRead(asyncResult);
-        }
-#endif
         public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             VerifyBuffer(buffer, offset, count, allowEmpty: false);
@@ -266,7 +253,8 @@ namespace Microsoft.AspNetCore.TestHost
                 _writeLock.Release();
             }
         }
-#if NET451
+
+#if NET46
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             Write(buffer, offset, count);
@@ -283,7 +271,11 @@ namespace Microsoft.AspNetCore.TestHost
         public override void EndWrite(IAsyncResult asyncResult)
         {
         }
+#elif NETSTANDARD1_3
+#else
+#error Target frameworks need to be updated.
 #endif
+
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             VerifyBuffer(buffer, offset, count, allowEmpty: true);

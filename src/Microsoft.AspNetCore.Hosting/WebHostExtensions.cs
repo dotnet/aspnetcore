@@ -37,6 +37,9 @@ namespace Microsoft.AspNetCore.Hosting
 #if NETSTANDARD1_5
                 var assemblyLoadContext = AssemblyLoadContext.GetLoadContext(typeof(WebHostExtensions).GetTypeInfo().Assembly);
                 assemblyLoadContext.Unloading += context => shutdown();
+#elif NETSTANDARD1_3
+#else
+#error Target frameworks need to be updated.                
 #endif
                 Console.CancelKeyPress += (sender, eventArgs) =>
                 {

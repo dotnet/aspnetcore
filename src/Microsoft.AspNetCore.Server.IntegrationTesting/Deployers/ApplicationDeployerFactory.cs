@@ -33,9 +33,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 case ServerType.IISExpress:
                     return new IISExpressDeployer(deploymentParameters, logger);
-#if NET452
+#if NET46
                 case ServerType.IIS:
                     return new IISDeployer(deploymentParameters, logger);
+#elif NETSTANDARD1_3
+#else
+#error Target framework needs to be updated.
 #endif
                 case ServerType.WebListener:
                 case ServerType.Kestrel:

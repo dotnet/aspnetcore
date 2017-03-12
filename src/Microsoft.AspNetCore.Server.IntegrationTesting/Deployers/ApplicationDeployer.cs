@@ -125,13 +125,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo, List<KeyValuePair<string, string>> environmentVariables)
         {
-            var environment =
-#if NET452
-                startInfo.EnvironmentVariables;
-#else
-                startInfo.Environment;
-#endif
-
+            var environment = startInfo.Environment;
             SetEnvironmentVariable(environment, "ASPNETCORE_ENVIRONMENT", DeploymentParameters.EnvironmentName);
 
             foreach (var environmentVariable in environmentVariables)
@@ -140,13 +134,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-#if NET452
-        protected void SetEnvironmentVariable(System.Collections.Specialized.StringDictionary environment, string name, string value)
+        protected void SetEnvironmentVariable(IDictionary<string, string> environment, string name, string value)
         {
-#else
-        protected void SetEnvironmentVariable(System.Collections.Generic.IDictionary<string, string> environment, string name, string value)
-        {
-#endif
             if (value == null)
             {
                 Logger.LogInformation("Removing environment variable {name}", name);
