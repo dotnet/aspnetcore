@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
-#if NET452
+#if NET46
     public class DataStoreErrorLoggerTest
     {
         private const string _name = "test";

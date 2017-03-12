@@ -32,3 +32,4 @@ project.lock.json
 launchSettings.json
 .build/
 .testPublish/
+global.json

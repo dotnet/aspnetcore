@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             Assert.Empty(store.GetActivities());
         }
 
-#if NET452
+#if NET46
         private static void DomainFunc()
         {
             var t = SetUp();

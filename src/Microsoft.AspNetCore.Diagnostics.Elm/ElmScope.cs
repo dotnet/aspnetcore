@@ -1,10 +1,5 @@
 using System;
-#if NET451
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Messaging;
-#else
 using System.Threading;
-#endif
 
 namespace Microsoft.AspNetCore.Diagnostics.Elm
 {
@@ -25,27 +20,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
 
         public ScopeNode Node { get; set; }
 
-#if NET451
-        private static readonly string FieldKey = $"{typeof(ElmScope).FullName}.Value.{AppDomain.CurrentDomain.Id}";
-        public static ElmScope Current
-        {
-            get
-            {
-                var handle = CallContext.LogicalGetData(FieldKey) as ObjectHandle;
-
-                if (handle == null)
-                {
-                    return default(ElmScope);
-                }
-
-                return (ElmScope)handle.Unwrap();
-            }
-            set
-            {
-                CallContext.LogicalSetData(FieldKey, new ObjectHandle(value));
-            }
-        }
-#else
         private static AsyncLocal<ElmScope> _value = new AsyncLocal<ElmScope>();
         public static ElmScope Current
         {
@@ -58,7 +32,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
                 return _value.Value;
             }
         }
-#endif
 
         public static IDisposable Push(ElmScope scope, ElmStore store)
         {

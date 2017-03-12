@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for exception handling, exception display pages, and diagnostics information. Includes developer exception page middleware, exception handler middleware, runtime info middleware, status code page middleware, and welcome page middleware</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;diagnostics</PackageTags>
@@ -30,12 +30,9 @@
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
     <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Diagnostics.StackTrace" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
     <DotNetCliToolReference Include="RazorPageGenerator" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
-    <PackageReference Include="System.Diagnostics.StackTrace" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
