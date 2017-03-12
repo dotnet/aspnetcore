@@ -109,13 +109,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         req.Dispose();
 
+                        var innerTcs = (TaskCompletionSource<int>)state;
                         if (ex != null)
                         {
-                            tcs.SetException(ex);
+                            innerTcs.SetException(ex);
                         }
                         else
                         {
-                            tcs.SetResult(0);
+                            innerTcs.SetResult(0);
                         }
                     },
                     tcs);
