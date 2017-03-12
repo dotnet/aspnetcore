@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Http
             contextFactory.Dispose(context);
         }
 
-#if NET452
+#if NET46
         private static void DomainFunc()
         {
             var accessor = new HttpContextAccessor();
@@ -50,9 +51,11 @@ namespace Microsoft.AspNetCore.Http
             // Arrange
             var accessor = new HttpContextAccessor();
             var contextFactory = new HttpContextFactory(new DefaultObjectPoolProvider(), Options.Create(new FormOptions()), accessor);
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             var setupInfo = new AppDomainSetup
             {
-               ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
+                ApplicationBase = baseDirectory,
+                ConfigurationFile = Path.Combine(baseDirectory, Path.GetFileNameWithoutExtension(GetType().Assembly.Location) + ".dll.config"),
             };
             var domain = AppDomain.CreateDomain("newDomain", null, setupInfo);
 

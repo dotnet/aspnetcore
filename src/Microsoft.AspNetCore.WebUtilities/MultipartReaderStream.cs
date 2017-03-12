@@ -126,17 +126,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             throw new NotSupportedException();
         }
-#if NET451
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
-        {
-            throw new NotSupportedException();
-        }
 
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            throw new NotSupportedException();
-        }
-#endif
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
@@ -168,7 +158,17 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             return read;
         }
-#if NET451
+#if NET46
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void EndWrite(IAsyncResult asyncResult)
+        {
+            throw new NotSupportedException();
+        }
+
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
         {
             var tcs = new TaskCompletionSource<int>(state);
@@ -215,6 +215,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             var task = (Task<int>)asyncResult;
             return task.GetAwaiter().GetResult();
         }
+#elif NETSTANDARD1_3
+#else
+#error Target frameworks need to be updated.
 #endif
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -231,10 +234,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             var bufferedData = _innerStream.BufferedData;
 
             // scan for a boundary match, full or partial.
-            int matchOffset;
-            int matchCount;
             int read;
-            if (SubMatch(bufferedData, _boundary.BoundaryBytes, out matchOffset, out matchCount))
+            if (SubMatch(bufferedData, _boundary.BoundaryBytes, out var matchOffset, out var matchCount))
             {
                 // We found a possible match, return any data before it.
                 if (matchOffset > bufferedData.Offset)

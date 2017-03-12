@@ -11,11 +11,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     public class RequestCookieCollection : IRequestCookieCollection
     {
         public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
-#if NETSTANDARD1_3
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-#else
-        private static readonly string[] EmptyKeys = new string[0];
-#endif
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;

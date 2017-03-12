@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             return read;
         }
-#if NET451
+#if NET46
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             ThrowIfDisposed();
@@ -298,6 +298,19 @@ namespace Microsoft.AspNetCore.WebUtilities
             var task = (Task<int>)asyncResult;
             return task.GetAwaiter().GetResult();
         }
+
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void EndWrite(IAsyncResult asyncResult)
+        {
+            throw new NotSupportedException();
+        }
+#elif NETSTANDARD1_3
+#else
+#error Target frameworks need to be updated.
 #endif
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
@@ -358,17 +371,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             throw new NotSupportedException();
         }
-#if NET451
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            throw new NotSupportedException();
-        }
 
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            throw new NotSupportedException();
-        }
-#endif
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             throw new NotSupportedException();

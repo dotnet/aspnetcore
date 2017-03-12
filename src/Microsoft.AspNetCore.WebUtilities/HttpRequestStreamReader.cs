@@ -108,11 +108,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-#if NET451 
+#if NET46 
         public override void Close()
         {
             Dispose(true);
         }
+#elif NETSTANDARD1_3
+#else
+#error Target frameworks need to be updated.
 #endif
 
         protected override void Dispose(bool disposing)

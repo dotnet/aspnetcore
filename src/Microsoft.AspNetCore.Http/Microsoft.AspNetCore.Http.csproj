@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core default HTTP feature implementations.</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

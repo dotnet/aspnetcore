@@ -28,3 +28,4 @@ project.lock.json
 .build/
 .testPublish/
 /.vs/
+global.json

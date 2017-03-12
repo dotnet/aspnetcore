@@ -162,17 +162,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             _inner.Write(buffer, offset, count);
         }
-#if NET451
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return _inner.BeginWrite(buffer, offset, count, callback, state);
-        }
 
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            _inner.EndWrite(asyncResult);
-        }
-#endif
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             return _inner.WriteAsync(buffer, offset, count, cancellationToken);
@@ -211,7 +201,17 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             return await _inner.ReadAsync(buffer, offset, count, cancellationToken);
         }
-#if NET451
+#if NET46
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            return _inner.BeginWrite(buffer, offset, count, callback, state);
+        }
+
+        public override void EndWrite(IAsyncResult asyncResult)
+        {
+            _inner.EndWrite(asyncResult);
+        }
+
         // We only anticipate using ReadAsync
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
@@ -262,6 +262,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             return _inner.EndRead(asyncResult);
         }
+#elif NETSTANDARD1_3
+#else
+#error Target frameworks need to be updated.
 #endif
         public bool EnsureBuffered()
         {

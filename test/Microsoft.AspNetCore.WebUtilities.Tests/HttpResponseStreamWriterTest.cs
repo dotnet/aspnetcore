@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(expectedData, memoryStream.ToArray());
         }
 
-#if NET452
+#if NET46
         [Fact]
         public async Task DoesNotFlush_UnderlyingStream_OnClosingWriter()
         {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(0, stream.FlushAsyncCallCount);
         }
 
-#if NET452
+#if NET46
         [Fact]
         public async Task DoesNotClose_UnderlyingStream_OnDisposingWriter()
         {
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             await writer.WriteAsync(new string('a', byteLength));
 
             // Act
-#if NET452
+#if NET46
             writer.Close();
 #elif NETCOREAPP2_0
             writer.Dispose();
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
         [Theory]
         [InlineData("你好世界", "utf-16")]
-#if NET452
+#if NET46
         // CoreCLR does not like shift_jis as an encoding.
         [InlineData("こんにちは世界", "shift_jis")]
 #elif NETCOREAPP2_0
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [InlineData('你', 1023, "utf-16")]
         [InlineData('你', 1024, "utf-16")]
         [InlineData('你', 1050, "utf-16")]
-#if NET452
+#if NET46
         // CoreCLR does not like shift_jis as an encoding.
         [InlineData('こ', 1023, "shift_jis")]
         [InlineData('こ', 1024, "shift_jis")]
@@ -516,7 +516,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
                 return base.WriteAsync(buffer, offset, count, cancellationToken);
             }
 
-#if NET452
+#if NET46
             public override void Close()
             {
                 CloseCallCount++;
