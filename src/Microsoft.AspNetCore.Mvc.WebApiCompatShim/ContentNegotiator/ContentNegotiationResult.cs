@@ -50,4 +50,7 @@ namespace System.Net.Http.Formatting
         public MediaTypeHeaderValue MediaType { get; set; }
     }
 }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif

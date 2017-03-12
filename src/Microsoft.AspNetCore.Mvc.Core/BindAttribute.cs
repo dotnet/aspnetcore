@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             if (string.IsNullOrEmpty(original))
             {
-                return EmptyArray<string>.Instance;
+                return Array.Empty<string>();
             }
 
             var split = original.Split(',').Select(piece => piece.Trim()).Where(piece => !string.IsNullOrEmpty(piece));

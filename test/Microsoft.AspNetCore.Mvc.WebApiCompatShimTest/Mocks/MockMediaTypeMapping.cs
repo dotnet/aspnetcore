@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !NETCOREAPP1_1
+#if NET46
 
 using System.Net.Http.Headers;
 
@@ -35,4 +35,7 @@ namespace System.Net.Http.Formatting.Mocks
         }
     }
 }
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.            
 #endif

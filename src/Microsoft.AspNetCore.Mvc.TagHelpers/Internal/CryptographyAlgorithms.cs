@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 
             return sha256;
         }
-#else
+#elif NET46
         public static SHA256 CreateSHA256()
         {
             SHA256 sha256;
@@ -33,6 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 
             return sha256;
         }
+#else
+#error target frameworks needs to be updated.
 #endif
     }
 }

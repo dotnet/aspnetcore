@@ -79,6 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                     }
                 }
             }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif
 
             var precompiledAssemblyName = new AssemblyName(assemblyPart.Assembly.FullName);

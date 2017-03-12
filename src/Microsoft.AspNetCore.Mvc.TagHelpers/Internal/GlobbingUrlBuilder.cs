@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         {
             if (string.IsNullOrEmpty(include))
             {
-                return EmptyArray<string>.Instance;
+                return Array.Empty<string>();
             }
 
             var cacheKey = new GlobbingUrlKey(include, exclude);
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             var includeEnumerator = includeTokenizer.GetEnumerator();
             if (!includeEnumerator.MoveNext())
             {
-                return EmptyArray<string>.Instance;
+                return Array.Empty<string>();
             }
 
             var options = new MemoryCacheEntryOptions();

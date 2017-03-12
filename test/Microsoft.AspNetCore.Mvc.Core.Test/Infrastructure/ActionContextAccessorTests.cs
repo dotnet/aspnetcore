@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-#if NET452
+#if NET46
     public class ActionContextAccessorTests
     {
         private static void DomainFunc()
@@ -38,5 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.True(ReferenceEquals(context, accessor.ActionContext));
         }
     }
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.    
 #endif
 }

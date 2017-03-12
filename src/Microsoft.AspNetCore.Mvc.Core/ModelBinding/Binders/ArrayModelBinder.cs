@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             Debug.Assert(targetType == typeof(TElement[]), "GenericModelBinder only creates this binder for arrays.");
 
-            return EmptyArray<TElement>.Instance;
+            return Array.Empty<TElement>();
         }
 
         /// <inheritdoc />

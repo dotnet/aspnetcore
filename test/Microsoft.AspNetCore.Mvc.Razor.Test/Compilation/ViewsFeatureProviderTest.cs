@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             Assert.Empty(feature.Views);
         }
 
-#if !NETCOREAPP1_1
+#if NET46
         [Fact]
         public void PopulateFeature_DoesNotFail_IfAssemblyHasEmptyLocation()
         {
@@ -107,6 +107,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             // Assert
             Assert.Empty(feature.Views);
         }
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.
 #endif
 
         private class TestableViewsFeatureProvider : ViewsFeatureProvider
@@ -145,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             }
         }
 
-#if !NETCOREAPP1_1
+#if NET46
         private class AssemblyWithEmptyLocation : Assembly
         {
             public override string Location => string.Empty;

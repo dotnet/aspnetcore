@@ -31,4 +31,7 @@ namespace System.Collections.ObjectModel
         }
     }
 }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif

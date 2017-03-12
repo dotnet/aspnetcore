@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -186,10 +185,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public static Assembly LoadAssembly(MemoryStream assemblyStream, MemoryStream pdbStream)
         {
             var assembly =
-#if NET451
+#if NET46
                 Assembly.Load(assemblyStream.ToArray(), pdbStream.ToArray());
-#else
+#elif NETSTANDARD1_6
                 System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromStream(assemblyStream, pdbStream);
+#else
+#error target frameworks need to be updated
 #endif
             return assembly;
         }

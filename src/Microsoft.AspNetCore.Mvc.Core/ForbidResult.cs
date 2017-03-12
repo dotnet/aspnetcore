@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes a new instance of <see cref="ForbidResult"/>.
         /// </summary>
         public ForbidResult()
-            : this(EmptyArray<string>.Instance)
+            : this(Array.Empty<string>())
         {
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
         public ForbidResult(AuthenticationProperties properties)
-            : this(EmptyArray<string>.Instance, properties)
+            : this(Array.Empty<string>(), properties)
         {
         }
 

@@ -57,4 +57,7 @@ namespace System.Net.Http.Formatting
         public MediaTypeFormatterMatchRanking Ranking { get; private set; }
     }
 }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif

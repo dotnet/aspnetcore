@@ -15,12 +15,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly CSharpParseOptions _parseOptions;
         private readonly RazorReferenceManager _referenceManager;
         private readonly DebugInformationFormat _pdbFormat =
-#if NET451
+#if NET46
             SymbolsUtility.SupportsFullPdbGeneration() ?
                 DebugInformationFormat.Pdb :
                 DebugInformationFormat.PortablePdb;
-#else
+#elif NETSTANDARD1_6
             DebugInformationFormat.PortablePdb;
+#else
+#error target frameworks need to be updated.
 #endif
 
         public CSharpCompiler(RazorReferenceManager manager, IOptions<RazorViewEngineOptions> optionsAccessor)

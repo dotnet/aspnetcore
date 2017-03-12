@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 // Only need to lookup _ViewStarts for the main page.
                 var viewStartPages = isMainPage ?
                     GetViewStartPages(relativePath, expirationTokens) :
-                    EmptyArray<ViewLocationCacheItem>.Instance;
+                    Array.Empty<ViewLocationCacheItem>();
                 if (factoryResult.IsPrecompiled)
                 {
                     _logger.PrecompiledViewFound(relativePath);

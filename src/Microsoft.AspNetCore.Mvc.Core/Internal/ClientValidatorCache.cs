@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (count == 0)
             {
-                return EmptyArray<IClientModelValidator>.Instance;
+                return Array.Empty<IClientModelValidator>();
             }
 
             var validators = new IClientModelValidator[count];

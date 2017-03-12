@@ -278,7 +278,7 @@ namespace System.Net.Http
             Assert.Equal("bin/baz", response.Content.Headers.ContentType.MediaType);
         }
 
-#if !NETCOREAPP1_1
+#if NET46
         // API doesn't exist in CoreCLR.
         [Fact]
         public void CreateErrorResponseRangeNotSatisfiable_SetsCorrectStatusCodeAndContentRangeHeader()
@@ -299,6 +299,9 @@ namespace System.Net.Http
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.Same(expectedContentRange, response.Content.Headers.ContentRange);
         }
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.            
 #endif
 
         private static IServiceProvider CreateServices(

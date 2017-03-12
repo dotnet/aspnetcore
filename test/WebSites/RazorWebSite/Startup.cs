@@ -29,8 +29,8 @@ namespace RazorWebSite
                         $"{nameof(RazorWebSite)}.EmbeddedViews"));
                     options.FileProviders.Add(updateableFileProvider);
                     options.ViewLocationExpanders.Add(new NonMainPageViewLocationExpander());
-#if NET452
-                    options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols("NET452", "NET452_CUSTOM_DEFINE");
+#if NET46
+                    options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols("NET46", "NET46_CUSTOM_DEFINE");
 #endif
                 })
                 .AddViewOptions(options =>

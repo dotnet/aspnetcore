@@ -162,9 +162,6 @@ namespace System.Net.Http
         {
             // MaxDepth is a DOS mitigation. We don't support MaxDepth in portable libraries because it is strictly
             // client side.
-#if NETFX_CORE
-            return XmlDictionaryReaderQuotas.Max;
-#else
             return new XmlDictionaryReaderQuotas()
             {
                 MaxArrayLength = int.MaxValue,
@@ -173,7 +170,6 @@ namespace System.Net.Http
                 MaxNameTableCharCount = int.MaxValue,
                 MaxStringContentLength = int.MaxValue
             };
-#endif
         }
 
         /// <summary>
@@ -241,4 +237,7 @@ namespace System.Net.Http
         }
     }
 }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif

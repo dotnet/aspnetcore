@@ -45,4 +45,7 @@ namespace System.Net.Http.Formatting
         MatchOnRequestMediaType,
     }
 }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif

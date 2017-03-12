@@ -15,10 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// We're caching this in a static readonly field to make it more inlinable and avoid the volatile lookup done
         /// by <c>Task.CompletedTask</c>.
         /// </remarks>
-#if NET451
-        public static readonly Task CompletedTask = Task.FromResult(0);
-#else
         public static readonly Task CompletedTask = Task.CompletedTask;
-#endif
     }
 }

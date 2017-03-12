@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (_originalValues.Count == 0)
             {
-                _sortedValues = EmptyArray<string>.Instance;
+                _sortedValues = Array.Empty<string>();
             }
             else
             {

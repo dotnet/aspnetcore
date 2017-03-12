@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             if (arguments == null || arguments.Length == 0)
             {
-                return EmptyArray<string>.Instance;
+                return Array.Empty<string>();
             }
 
             var formattedArguments = new string[arguments.Length];

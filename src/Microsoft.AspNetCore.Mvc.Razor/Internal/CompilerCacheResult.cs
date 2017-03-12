@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <param name="compilationResult">The <see cref="CompilationResult"/>.</param>
         /// <param name="isPrecompiled"><c>true</c> if the view is precompiled, <c>false</c> otherwise.</param>
         public CompilerCacheResult(string relativePath, CompilationResult compilationResult, bool isPrecompiled)
-            : this(relativePath, compilationResult, EmptyArray<IChangeToken>.Instance)
+            : this(relativePath, compilationResult, Array.Empty<IChangeToken>())
         {
             IsPrecompiled = isPrecompiled;
         }

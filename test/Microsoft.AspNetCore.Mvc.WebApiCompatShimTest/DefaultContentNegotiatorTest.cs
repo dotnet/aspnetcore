@@ -149,10 +149,13 @@ namespace System.Net.Http.Formatting
         {
             get
             {
-#if !NETCOREAPP1_1
+#if NET46
                 // Only mapping and accept makes sense with q != 1.0
                 MediaTypeFormatterMatch matchMapping10 = CreateMatch(1.0, MediaTypeFormatterMatchRanking.MatchOnRequestWithMediaTypeMapping);
                 MediaTypeFormatterMatch matchMapping05 = CreateMatch(0.5, MediaTypeFormatterMatchRanking.MatchOnRequestWithMediaTypeMapping);
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.        
 #endif
 
                 MediaTypeFormatterMatch matchAccept10 = CreateMatch(1.0, MediaTypeFormatterMatchRanking.MatchOnRequestAcceptHeaderLiteral);
@@ -176,9 +179,6 @@ namespace System.Net.Http.Formatting
                     { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10 }, matchAcceptAllRange10 },
                     { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10, matchAcceptSubTypeRange10 }, matchAcceptSubTypeRange10 },
                     { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10, matchAcceptSubTypeRange10, matchAccept10 }, matchAccept10 },
-#if !NETCOREAPP1_1
-                    { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10, matchAcceptSubTypeRange10, matchAccept10, matchMapping10 }, matchMapping10 },
-#endif
                     { new List<MediaTypeFormatterMatch>() { matchAccept05, matchAccept10 }, matchAccept10 },
                     { new List<MediaTypeFormatterMatch>() { matchAccept10, matchAccept05 }, matchAccept10 },
 
@@ -187,7 +187,8 @@ namespace System.Net.Http.Formatting
 
                     { new List<MediaTypeFormatterMatch>() { matchAcceptAllRange05, matchAcceptAllRange10 }, matchAcceptAllRange10 },
                     { new List<MediaTypeFormatterMatch>() { matchAcceptAllRange10, matchAcceptAllRange05 }, matchAcceptAllRange10 },
-#if !NETCOREAPP1_1
+#if NET46
+                    { new List<MediaTypeFormatterMatch>() { matchType10, matchRequest10, matchAcceptAllRange10, matchAcceptSubTypeRange10, matchAccept10, matchMapping10 }, matchMapping10 },
                     { new List<MediaTypeFormatterMatch>() { matchMapping05, matchMapping10 }, matchMapping10 },
                     { new List<MediaTypeFormatterMatch>() { matchMapping10, matchMapping05 }, matchMapping10 },
 
@@ -203,6 +204,9 @@ namespace System.Net.Http.Formatting
                     { new List<MediaTypeFormatterMatch>() { matchMapping05, matchAccept10 }, matchAccept10 },
                     { new List<MediaTypeFormatterMatch>() { matchMapping05, matchAcceptSubTypeRange10 }, matchAcceptSubTypeRange10 },
                     { new List<MediaTypeFormatterMatch>() { matchMapping05, matchAcceptAllRange10 }, matchAcceptAllRange10 },
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.            
 #endif
                 };
             }
@@ -251,7 +255,7 @@ namespace System.Net.Http.Formatting
             Assert.Null(result);
         }
 
-#if !NETCOREAPP1_1
+#if NET46
 
         [Fact]
         public void Negotiate_MediaTypeMappingTakesPrecedenceOverAcceptHeader()
@@ -280,7 +284,9 @@ namespace System.Net.Http.Formatting
             Assert.Equal("application/xml", result.MediaType.MediaType);
             Assert.IsType<PlainTextFormatter>(result.Formatter);
         }
-
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.            
 #endif
 
         [Fact]
@@ -359,7 +365,7 @@ namespace System.Net.Http.Formatting
             Assert.IsType<JsonMediaTypeFormatter>(result.Formatter);
         }
 
-#if !NETCOREAPP1_1
+#if NET46
 
         [Fact]
         public void Negotiate_RespectsFormatterOrdering_ForXhrRequestThatDoesNotSpecifyAcceptHeaders()
@@ -382,7 +388,9 @@ namespace System.Net.Http.Formatting
             Assert.Equal("application/json", result.MediaType.MediaType);
             Assert.IsType<JsonMediaTypeFormatter>(result.Formatter);
         }
-
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.            
 #endif
 
         [Fact]
@@ -458,7 +466,7 @@ namespace System.Net.Http.Formatting
             }
         }
 
-#if !NETCOREAPP1_1
+#if NET46
 
         [Fact]
         public void MatchMediaTypeMapping_ReturnsMatch()
@@ -485,7 +493,9 @@ namespace System.Net.Http.Formatting
             Assert.Equal(mockMediaTypeMapping.MatchQuality, match.Quality);
             Assert.Equal(MediaTypeFormatterMatchRanking.MatchOnRequestWithMediaTypeMapping, match.Ranking);
         }
-
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.            
 #endif
 
         [Theory]
@@ -810,7 +820,7 @@ namespace System.Net.Http.Formatting
             }
         }
 
-#if !NETCOREAPP1_1
+#if NET46
 
         private class MyMediaTypeMapping : MediaTypeMapping
         {
@@ -832,6 +842,9 @@ namespace System.Net.Http.Formatting
             }
         }
 
+#elif NETCOREAPP2_0
+#else
+#error target frameworks needs to be updated.            
 #endif
 
     }

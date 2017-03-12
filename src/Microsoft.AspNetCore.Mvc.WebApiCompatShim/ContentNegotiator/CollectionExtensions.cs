@@ -293,4 +293,7 @@ namespace System.Collections.Generic
         }
     }
 }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif

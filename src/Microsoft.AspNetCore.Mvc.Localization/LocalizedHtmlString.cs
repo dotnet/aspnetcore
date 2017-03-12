@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <param name="name">The name of the string resource.</param>
         /// <param name="value">The string resource.</param>
         public LocalizedHtmlString(string name, string value)
-            : this(name, value, isResourceNotFound: false, arguments: EmptyArray<string>.Instance)
+            : this(name, value, isResourceNotFound: false, arguments: Array.Empty<string>())
         {
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// <param name="value">The string resource.</param>
         /// <param name="isResourceNotFound">A flag that indicates if the resource is not found.</param>
         public LocalizedHtmlString(string name, string value, bool isResourceNotFound)
-            : this(name, value, isResourceNotFound, arguments: EmptyArray<string>.Instance)
+            : this(name, value, isResourceNotFound, arguments: Array.Empty<string>())
         {
         }
 

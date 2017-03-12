@@ -109,4 +109,7 @@ namespace System.Net.Http.Formatting
         }
     }
 }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif

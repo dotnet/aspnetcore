@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (count == 0)
             {
-                return EmptyArray<IFilterMetadata>.Instance;
+                return Array.Empty<IFilterMetadata>();
             }
             else
             {

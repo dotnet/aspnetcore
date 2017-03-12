@@ -19,7 +19,7 @@ namespace System.Net.Http
     /// </summary>
     public static class HttpRequestMessageExtensions
     {
-#if !NETSTANDARD1_6
+#if NET46
 
         /// <summary>
         /// Helper method for creating an <see cref="HttpResponseMessage"/> message with a "416 (Requested Range Not
@@ -55,7 +55,9 @@ namespace System.Net.Http
             rangeNotSatisfiableResponse.Content.Headers.ContentRange = invalidByteRangeException.ContentRange;
             return rangeNotSatisfiableResponse;
         }
-
+#elif NETSTANDARD1_6
+#else
+#error target frameworks needs to be updated.
 #endif
 
         /// <summary>

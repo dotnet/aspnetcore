@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var expected = GetLibrary("MyApplication", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc");
             var deps = new DependencyContext(
-                new TargetInfo("netcoreapp1.1", "rurntime", "signature", isPortable: true),
+                new TargetInfo("netcoreapp2.0", "rurntime", "signature", isPortable: true),
                 CompilationOptions.Default,
                 Enumerable.Empty<CompilationLibrary>(),
                 new[]

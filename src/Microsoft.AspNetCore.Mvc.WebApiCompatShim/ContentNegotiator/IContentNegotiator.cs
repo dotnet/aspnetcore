@@ -38,4 +38,7 @@ namespace System.Net.Http.Formatting
             IEnumerable<MediaTypeFormatter> formatters);
     }
 }
+#elif NET46
+#else
+#error target frameworks needs to be updated.
 #endif
