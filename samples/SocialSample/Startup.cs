@@ -110,7 +110,7 @@ namespace SocialSample
                 SaveTokens = true
             });
 
-            // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
+            // You must first create an app with Google and add its ID and Secret to your user-secrets.
             // https://console.developers.google.com/project
             var googleOptions = new GoogleOptions
             {
