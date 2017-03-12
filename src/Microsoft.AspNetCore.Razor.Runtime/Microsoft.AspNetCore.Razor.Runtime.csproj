@@ -8,7 +8,7 @@ Commonly used types:
 Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute
 Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute
 Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
-    <TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
+    <TargetFrameworks>netstandard1.5;net46</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
