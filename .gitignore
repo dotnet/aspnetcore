@@ -36,3 +36,4 @@ nuget.exe
 node_modules
 *launchSettings.json
 *.orig
+global.json
