@@ -6,7 +6,7 @@ namespace BuildGraph
 {
     public static class GraphBuilder
     {
-        public static IList<GraphNode> Generate(IList<Repository> repositories)
+        public static IList<GraphNode> Generate(IList<Repository> repositories, string root)
         {
             // Build global list of primary projects
             var primaryProjects = repositories.SelectMany(c => c.Projects)
@@ -14,9 +14,15 @@ namespace BuildGraph
             var graphNodes = repositories.Select(r => new GraphNode { Repository = r })
                 .ToDictionary(r => r.Repository);
 
+            GraphNode searchRoot = null;
+
             foreach (var project in repositories.SelectMany(r => r.AllProjects))
             {
                 var thisProjectRepositoryNode = graphNodes[project.Repository];
+                if (root != null && string.Equals(root, project.Repository.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    searchRoot = thisProjectRepositoryNode;
+                }
 
                 foreach (var packageDependency in project.PackageReferences)
                 {
@@ -31,7 +37,25 @@ namespace BuildGraph
                 }
             }
 
+            var results = new HashSet<GraphNode>();
+            if (searchRoot != null)
+            {
+                Visit(results, searchRoot);
+                return results.ToList();
+            }
+
             return graphNodes.Values.ToList();
+        }
+
+        private static void Visit(HashSet<GraphNode> results, GraphNode searchRoot)
+        {
+            if (results.Add(searchRoot))
+            {
+                foreach (var node in searchRoot.Outgoing)
+                {
+                    Visit(results, node);
+                }
+            }
         }
     }
 }

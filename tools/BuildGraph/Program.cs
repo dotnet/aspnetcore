@@ -23,6 +23,10 @@ namespace BuildGraph
                 "Directory containing package specs. (Optional)",
                 CommandOptionType.SingleValue);
 
+            var graphRoot = app.Option("--start-at",
+                "Calculate the build graph starting at the specified repo. (Optional)",
+                CommandOptionType.SingleValue);
+
             var outputPathArgument = app.Argument("Output path", "Output path");
 
             app.OnExecute(() =>
@@ -45,7 +49,6 @@ namespace BuildGraph
 
                 var outputType = outputTypeOption.Value() ?? "msbuild";
 
-
                 var graphSpecProvider = packageSpecsDirectoryOption.HasValue()
                     ? new DependencyGraphSpecProvider(packageSpecsDirectoryOption.Value().Trim())
                     : DependencyGraphSpecProvider.Default;
@@ -55,7 +58,7 @@ namespace BuildGraph
                     repositories = Repository.ReadAllRepositories(repositoriesRootOption.Value().Trim(), graphSpecProvider);
                 }
 
-                var graph = GraphBuilder.Generate(repositories);
+                var graph = GraphBuilder.Generate(repositories, graphRoot.Value());
                 GraphFormatter formatter;
                 switch (outputType)
                 {

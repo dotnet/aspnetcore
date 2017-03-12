@@ -152,8 +152,12 @@
   </Target>
 
   <Target Name="_GenerateBuildGraph" DependsOnTargets="_FindDotNetPath">
+    <PropertyGroup>
+      <BuildGrapArgs>$(DotNetPath) run -r &quot;$(_CloneRepositoryRoot) &quot; --graph-specs-root &quot;$(_RestoreGraphSpecsDirectory) &quot; &quot;$(_BuildGraphFile)&quot;</BuildGrapArgs>
+      <BuildGrapArgs Condition="'$(BuildGraphOf)'!=''">$(BuildGrapArgs) --start-at $(BuildGraphOf)</BuildGrapArgs>
+    </PropertyGroup>
     <Exec
-      Command="$(DotNetPath) run -r &quot;$(_CloneRepositoryRoot) &quot; --graph-specs-root &quot;$(_RestoreGraphSpecsDirectory) &quot; &quot;$(_BuildGraphFile)&quot;"
+      Command="$(BuildGrapArgs)"
       WorkingDirectory="$(RepositoryRoot)tools\BuildGraph\" />
   </Target>
 
@@ -192,10 +196,10 @@
       <RepositoryCloneDirectory>$(_CloneRepositoryRoot)%(Repository.Identity)</RepositoryCloneDirectory>
     </PropertyGroup>
 
-    <Error Text="%(Repository.Identity) has not been cloned."
+    <Warning Text="%(Repository.Identity) has not been cloned."
       Condition="!Exists('$(RepositoryCloneDirectory)')" />
 
-    <GetGitCommitInfo WorkingDirectory="$(RepositoryCloneDirectory)">
+    <GetGitCommitInfo WorkingDirectory="$(RepositoryCloneDirectory)" Condition="Exists('$(RepositoryCloneDirectory)')">
       <Output TaskParameter="CommitHash" PropertyName="_Hash" />
     </GetGitCommitInfo>
 
