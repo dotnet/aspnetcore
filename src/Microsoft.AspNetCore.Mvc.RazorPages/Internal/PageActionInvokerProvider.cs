@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly HtmlHelperOptions _htmlHelperOptions;
+        private readonly RazorPagesOptions _razorPagesOptions;
         private readonly IPageHandlerMethodSelector _selector;
         private readonly TempDataPropertyProvider _propertyProvider;
         private readonly RazorProject _razorProject;
@@ -53,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<MvcOptions> mvcOptions,
             IOptions<HtmlHelperOptions> htmlHelperOptions,
+            IOptions<RazorPagesOptions> razorPagesOptions,
             IPageHandlerMethodSelector selector,
             TempDataPropertyProvider propertyProvider,
             RazorProject razorProject,
@@ -69,6 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions.Value;
+            _razorPagesOptions = razorPagesOptions.Value;
             _selector = selector;
             _propertyProvider = propertyProvider;
             _razorProject = razorProject;
@@ -201,7 +204,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         internal List<Func<IRazorPage>> GetPageStartFactories(CompiledPageActionDescriptor descriptor)
         {
             var pageStartFactories = new List<Func<IRazorPage>>();
-            var pageStartItems = _razorProject.FindHierarchicalItems(descriptor.ViewEnginePath, PageStartFileName);
+            var pageStartItems = _razorProject.FindHierarchicalItems(
+                _razorPagesOptions.RootDirectory,
+                descriptor.RelativePath,
+                PageStartFileName);
             foreach (var item in pageStartItems)
             {
                 if (item.Exists)

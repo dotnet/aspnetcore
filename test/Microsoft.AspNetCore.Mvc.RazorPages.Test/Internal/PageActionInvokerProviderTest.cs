@@ -12,12 +12,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Moq;
@@ -574,7 +572,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptor = new PageActionDescriptor()
             {
-                RelativePath = "Path1",
+                RelativePath = "/Views/Deeper/Index.cshtml",
                 FilterDescriptors = new FilterDescriptor[0],
                 ViewEnginePath = "/Views/Deeper/Index.cshtml"
             };
@@ -623,13 +621,72 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             mock.Verify();
         }
 
+        [Theory]
+        [InlineData("/Pages/Level1/")]
+        [InlineData("/Pages/Level1")]
+        public void GetPageFactories_DoesNotFindPageStartsOutsideBaseDirectory(string rootDirectory)
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                RelativePath = "/Pages/Level1/Level2/Index.cshtml",
+                FilterDescriptors = new FilterDescriptor[0],
+                ViewEnginePath = "/Pages/Level1/Level2/Index.cshtml"
+            };
+            var compiledPageDescriptor = new CompiledPageActionDescriptor(descriptor)
+            {
+                PageTypeInfo = typeof(object).GetTypeInfo(),
+            };
+            var loader = new Mock<IPageLoader>();
+            loader.Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
+                .Returns(compiledPageDescriptor);
+            var descriptorCollection = new ActionDescriptorCollection(new[] { descriptor }, version: 1);
+            var actionDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorProvider.Setup(p => p.ActionDescriptors).Returns(descriptorCollection);
+
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/_PageStart.cshtml", "page content");
+            fileProvider.AddFile("/Pages/_PageStart.cshtml", "page content");
+            fileProvider.AddFile("/Pages/Level1/_PageStart.cshtml", "page content");
+            fileProvider.AddFile("/Pages/Level1/Level2/_PageStart.cshtml", "page content");
+            fileProvider.AddFile("/Pages/Level1/Level3/_PageStart.cshtml", "page content");
+
+            var razorProject = new TestRazorProject(fileProvider);
+
+            var mock = new Mock<IRazorPageFactoryProvider>(MockBehavior.Strict);
+            mock.Setup(p => p.CreateFactory("/Pages/Level1/Level2/_PageStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
+                .Verifiable();
+            mock.Setup(p => p.CreateFactory("/Pages/Level1/_PageStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
+                .Verifiable();
+            var razorPageFactoryProvider = mock.Object;
+            var options = new RazorPagesOptions
+            {
+                RootDirectory = rootDirectory,
+            };
+
+            var invokerProvider = CreateInvokerProvider(
+                loader.Object,
+                actionDescriptorProvider.Object,
+                razorPageFactoryProvider: razorPageFactoryProvider,
+                razorProject: razorProject,
+                razorPagesOptions: options);
+
+            // Act
+            var factories = invokerProvider.GetPageStartFactories(compiledPageDescriptor);
+
+            // Assert
+            mock.Verify();
+        }
+
         [Fact]
         public void GetPageStartFactories_NoFactoriesForMissingFiles()
         {
             // Arrange
             var descriptor = new PageActionDescriptor()
             {
-                RelativePath = "Path1",
+                RelativePath = "/Views/Deeper/Index.cshtml",
                 FilterDescriptors = new FilterDescriptor[0],
                 ViewEnginePath = "/Views/Deeper/Index.cshtml"
             };
@@ -692,7 +749,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IPageFactoryProvider pageProvider = null,
             IPageModelFactoryProvider modelProvider = null,
             IRazorPageFactoryProvider razorPageFactoryProvider = null,
-            RazorProject razorProject = null)
+            RazorProject razorProject = null,
+            RazorPagesOptions razorPagesOptions = null)
         {
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
             tempDataFactory.Setup(t => t.GetTempData(It.IsAny<HttpContext>()))
@@ -714,6 +772,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 tempDataFactory.Object,
                 new TestOptionsManager<MvcOptions>(),
                 new TestOptionsManager<HtmlHelperOptions>(),
+                new TestOptionsManager<RazorPagesOptions>(razorPagesOptions ?? new RazorPagesOptions()),
                 Mock.Of<IPageHandlerMethodSelector>(),
                 new TempDataPropertyProvider(),
                 razorProject,

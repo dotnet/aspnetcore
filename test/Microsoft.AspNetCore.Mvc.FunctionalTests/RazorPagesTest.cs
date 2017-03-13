@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -246,6 +247,35 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Equal("/Login?ReturnUrl=%2FHelloWorldWithAuth", response.Headers.Location.PathAndQuery);
+        }
+
+
+        [Fact]
+        public async Task PageStart_IsDiscoveredWhenRootDirectoryIsNotSpecified()
+        {
+            // Test for https://github.com/aspnet/Mvc/issues/5915
+            //Arrange
+            var expected = $"Hello from _PageStart{Environment.NewLine}Hello from /Pages/WithPageStart/Index.cshtml!";
+
+            // Act
+            var response = await Client.GetStringAsync("/Pages/WithPageStart");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task PageImport_IsDiscoveredWhenRootDirectoryIsNotSpecified()
+        {
+            // Test for https://github.com/aspnet/Mvc/issues/5915
+            //Arrange
+            var expected = "Hello from CustomService!";
+
+            // Act
+            var response = await Client.GetStringAsync("/Pages/WithPageImport");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
         }
 
         private static string GetCookie(HttpResponseMessage response)
