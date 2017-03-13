@@ -73,8 +73,11 @@ namespace Microsoft.AspNetCore.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-#if !NETSTANDARD1_3
+#if NET46
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
         public static bool TimeConstantBuffersAreEqual(byte* bufA, byte* bufB, uint count)
         {

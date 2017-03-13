@@ -78,8 +78,11 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             };
             var dataOut = default(DATA_BLOB);
 
-#if !NETSTANDARD1_3
+#if NET46
             RuntimeHelpers.PrepareConstrainedRegions();
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
             try
             {
@@ -168,8 +171,11 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                     fixed (byte* pbRetVal = retVal)
                     {
                         var handleAcquired = false;
-#if !NETSTANDARD1_3
+#if NET46
                         RuntimeHelpers.PrepareConstrainedRegions();
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
                         try
                         {
@@ -218,8 +224,11 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             };
             var dataOut = default(DATA_BLOB);
 
-#if !NETSTANDARD1_3
+#if NET46
             RuntimeHelpers.PrepareConstrainedRegions();
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
             try
             {
@@ -291,8 +300,11 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             using (unencryptedPayloadHandle)
             {
                 var handleAcquired = false;
-#if !NETSTANDARD1_3
+#if NET46
                 RuntimeHelpers.PrepareConstrainedRegions();
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
                 try
                 {

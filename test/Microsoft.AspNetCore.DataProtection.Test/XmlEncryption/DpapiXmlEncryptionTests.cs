@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             XmlAssert.Equal(originalXml, roundTrippedElement);
         }
 
-#if NET452
+#if NET46
         [ConditionalFact]
         [ConditionalRunTestOnlyOnWindows]
         public void Encrypt_CurrentUser_Decrypt_ImpersonatedAsAnonymous_Fails()

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
-#if !NETSTANDARD1_3
+#if NET46
     /// <summary>
     /// Provides access to configuration for the data protection system, which allows the
     /// developer to configure default cryptographic algorithms, key storage locations,
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// contain existing keys that use older algorithms or protection mechanisms.
     /// </para>
     /// </remarks>
-#else
+#elif NETSTANDARD1_3
     /// <summary>
     /// Provides access to configuration for the data protection system, which allows the
     /// developer to configure default cryptographic algorithms, key storage locations,
@@ -58,6 +58,8 @@ namespace Microsoft.AspNetCore.DataProtection
     /// contain existing keys that use older algorithms or protection mechanisms.
     /// </para>
     /// </remarks>
+#else
+#error target frameworks need to be updated.
 #endif
     public interface IDataProtectionBuilder
     {

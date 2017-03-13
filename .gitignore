@@ -29,3 +29,4 @@ project.lock.json
 .build/
 .testPublish/
 samples/**/temp-keys/
+global.json

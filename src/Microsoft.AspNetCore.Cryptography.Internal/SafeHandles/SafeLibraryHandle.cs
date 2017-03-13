@@ -127,23 +127,30 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             return UnsafeNativeMethods.FreeLibrary(handle);
         }
 
-#if !NETSTANDARD1_3
+#if NET46
         [SuppressUnmanagedCodeSecurity]
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
         private static class UnsafeNativeMethods
         {
 #if NETSTANDARD1_3
             private const string CORE_LIBRARY_LOADER_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
             private const string CORE_LOCALIZATION_LIB = "api-ms-win-core-localization-l1-2-0.dll";
-#else
+#elif NET46
             private const string KERNEL32_LIB = "kernel32.dll";
+#else
+#error target frameworks need to be updated.
 #endif
 
             // http://msdn.microsoft.com/en-us/library/windows/desktop/ms679351(v=vs.85).aspx
 #if NETSTANDARD1_3
             [DllImport(CORE_LOCALIZATION_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
-#else
+#elif NET46
             [DllImport(KERNEL32_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
+#else
+#error target frameworks need to be updated.
 #endif
             public static extern int FormatMessage(
                 [In] uint dwFlags,
@@ -159,9 +166,11 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             [return: MarshalAs(UnmanagedType.Bool)]
 #if NETSTANDARD1_3
             [DllImport(CORE_LIBRARY_LOADER_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-#else
+#elif NET46
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+#else
+#error target frameworks need to be updated.
 #endif
             internal static extern bool FreeLibrary(IntPtr hModule);
 
@@ -169,8 +178,10 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             [return: MarshalAs(UnmanagedType.Bool)]
 #if NETSTANDARD1_3
             [DllImport(CORE_LIBRARY_LOADER_LIB, EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#else
+#elif NET46
             [DllImport(KERNEL32_LIB, EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
+#error target frameworks need to be updated.
 #endif
             internal static extern bool GetModuleHandleEx(
                 [In] uint dwFlags,
@@ -180,8 +191,10 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             // http://msdn.microsoft.com/en-us/library/ms683212(v=vs.85).aspx
 #if NETSTANDARD1_3
             [DllImport(CORE_LIBRARY_LOADER_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#else
+#elif NET46
             [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
+#error target frameworks need to be updated.
 #endif
             internal static extern IntPtr GetProcAddress(
                 [In] SafeLibraryHandle hModule,
@@ -190,8 +203,10 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             // http://msdn.microsoft.com/en-us/library/windows/desktop/ms684179(v=vs.85).aspx
 #if NETSTANDARD1_3
             [DllImport(CORE_LIBRARY_LOADER_LIB, EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#else
+#elif NET46
             [DllImport(KERNEL32_LIB, EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+#else
+#error target frameworks need to be updated.
 #endif
             internal static extern SafeLibraryHandle LoadLibraryEx(
                 [In, MarshalAs(UnmanagedType.LPWStr)] string lpFileName,

@@ -343,11 +343,13 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
 
                             using (var validationAlgorithm = CreateValidationAlgorithm(validationSubkey))
                             {
-#if !NETSTANDARD1_3
+#if NET46
                                 // As an optimization, avoid duplicating the underlying buffer if we're on desktop CLR.
                                 var underlyingBuffer = outputStream.GetBuffer();
-#else
+#elif NETSTANDARD1_3
                                 var underlyingBuffer = outputStream.ToArray();
+#else
+#error target frameworks need to be updated.
 #endif
 
                                 var mac = validationAlgorithm.ComputeHash(underlyingBuffer, KEY_MODIFIER_SIZE_IN_BYTES, checked((int)outputStream.Length - KEY_MODIFIER_SIZE_IN_BYTES));

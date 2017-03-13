@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         {
 #if NETCOREAPP2_0
             return Environment.GetEnvironmentVariable("LOCALAPPDATA");
-#elif NET452
+#elif NET46
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 #else
 #error Target framework needs to be updated

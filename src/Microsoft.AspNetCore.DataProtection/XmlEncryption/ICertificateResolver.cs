@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 
 using System.Security.Cryptography.X509Certificates;
 
@@ -20,5 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         X509Certificate2 ResolveCertificate(string thumbprint);
     }
 }
-
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif

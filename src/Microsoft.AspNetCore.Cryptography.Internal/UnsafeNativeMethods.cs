@@ -12,14 +12,17 @@ using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.Win32.SafeHandles;
 
-#if !NETSTANDARD1_3
+#if NET46
 using System.Runtime.ConstrainedExecution;
 #endif
 
 namespace Microsoft.AspNetCore.Cryptography
 {
-#if !NETSTANDARD1_3
+#if NET46
     [SuppressUnmanagedCodeSecurity]
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
     internal unsafe static class UnsafeNativeMethods
     {
@@ -87,16 +90,22 @@ namespace Microsoft.AspNetCore.Cryptography
             [In] uint dwFlags);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !NETSTANDARD1_3
+#if NET46
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375399(v=vs.85).aspx
         internal static extern int BCryptDestroyHash(
             [In] IntPtr hHash);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !NETSTANDARD1_3
+#if NET46
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375404(v=vs.85).aspx
         internal static extern int BCryptDestroyKey(
@@ -249,8 +258,11 @@ namespace Microsoft.AspNetCore.Cryptography
          */
 
         [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
-#if !NETSTANDARD1_3
+#if NET46
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706799(v=vs.85).aspx
         internal static extern int NCryptCloseProtectionDescriptor(

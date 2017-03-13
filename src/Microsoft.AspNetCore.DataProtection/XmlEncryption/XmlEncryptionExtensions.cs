@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             var memoryStream = new MemoryStream(DEFAULT_BUFFER_SIZE);
             element.Save(memoryStream);
 
-#if !NETSTANDARD1_3
+#if NET46
             var underlyingBuffer = memoryStream.GetBuffer();
             fixed (byte* __unused__ = underlyingBuffer) // try to limit this moving around in memory while we allocate
             {
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                     Array.Clear(underlyingBuffer, 0, underlyingBuffer.Length);
                 }
             }
-#else
+#elif NETSTANDARD1_3
             ArraySegment<byte> underlyingBuffer;
             CryptoUtil.Assert(memoryStream.TryGetBuffer(out underlyingBuffer), "Underlying buffer isn't exposable.");
             fixed (byte* __unused__ = underlyingBuffer.Array) // try to limit this moving around in memory while we allocate
@@ -160,6 +160,8 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                     Array.Clear(underlyingBuffer.Array, underlyingBuffer.Offset, underlyingBuffer.Count);
                 }
             }
+#else
+#error target frameworks need to be updated.
 #endif
         }
 

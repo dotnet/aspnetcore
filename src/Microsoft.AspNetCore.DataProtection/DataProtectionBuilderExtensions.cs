@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 
-#if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.DataProtection
             return builder;
         }
 
-#if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 
         /// <summary>
         /// Configures keys to be encrypted to a given certificate before being persisted to storage.
@@ -321,7 +321,9 @@ namespace Microsoft.AspNetCore.DataProtection
 
             return builder;
         }
-
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
 
         /// <summary>

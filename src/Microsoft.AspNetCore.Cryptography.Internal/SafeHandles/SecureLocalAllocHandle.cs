@@ -41,8 +41,11 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             return newHandle;
         }
 
-#if !NETSTANDARD1_3
+#if NET46
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
         private void AllocateImpl(IntPtr cb)
         {

@@ -24,4 +24,7 @@ namespace Microsoft.Win32.SafeHandles
         }
     }
 }
+#elif NET46
+#else
+#error target frameworks need to be updated.
 #endif

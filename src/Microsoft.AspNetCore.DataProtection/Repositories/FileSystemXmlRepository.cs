@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private static DirectoryInfo GetDefaultKeyStorageDirectory()
         {
-#if !NETSTANDARD1_3
+#if NET46
             // Environment.GetFolderPath returns null if the user profile isn't loaded.
             var folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             if (!String.IsNullOrEmpty(folderPath))
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 return null;
             }
-#else
+#elif NETSTANDARD1_3
             // On core CLR, we need to fall back to environment variables.
             DirectoryInfo retVal;
 
@@ -131,6 +131,8 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 return null;
             }
+#else
+#error target frameworks need to be updated.
 #endif
         }
 
