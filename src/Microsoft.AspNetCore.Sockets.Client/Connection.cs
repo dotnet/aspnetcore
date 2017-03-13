@@ -110,8 +110,16 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
 
-                    _logger.LogDebug("Draining event queue");
+                    // There is an inherent race between receive and close. Removing the last message from the channel
+                    // makes Input.Completion task completed and runs this continuation. We need to await _receiveLoopTask
+                    // to make sure that the message removed from the channel is processed before we drain the queue.
+                    // There is a short window between we start the channel and assign the _receiveLoopTask a value.
+                    // To make sure that _receiveLoopTask can be awaited (i.e. is not null) we need to await _startTask.
+                    _logger.LogDebug("Ensuring all outstanding messages are processed.");
+                    await _startTask;
+                    await _receiveLoopTask;
 
+                    _logger.LogDebug("Draining event queue");
                     await _eventQueue.Drain();
 
                     _logger.LogDebug("Raising Closed event");
@@ -209,6 +217,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         _logger.LogDebug("Scheduling raising Received event.");
                         var ignore = _eventQueue.Enqueue(() =>
                         {
+                            _logger.LogDebug("Raising Received event.");
+
                             // Do not "simplify" - event handlers can be removed from a different thread
                             var receivedEventHandler = Received;
                             if (receivedEventHandler != null)
