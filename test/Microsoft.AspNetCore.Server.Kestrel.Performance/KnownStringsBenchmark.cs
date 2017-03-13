@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class KnownStrings
+    public class KnownStringsBenchmark
     {
         static byte[] _method = Encoding.UTF8.GetBytes("GET ");
         static byte[] _version = Encoding.UTF8.GetBytes("HTTP/1.1\r\n");

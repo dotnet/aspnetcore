@@ -10,7 +10,7 @@ using BenchmarkDotNet.Attributes;
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     [Config(typeof(CoreConfig))]
-    public class PipeThroughput
+    public class PipeThroughputBenchmark
     {
         private const int _writeLenght = 57;
         private const int InnerLoopCount = 512;

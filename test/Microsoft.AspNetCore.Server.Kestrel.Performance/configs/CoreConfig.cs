@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             Add(JitOptimizationsValidator.FailOnError);
             Add(MemoryDiagnoser.Default);
-            Add(new RpsColumn());
+            Add(StatisticColumn.OperationsPerSecond);
 
             Add(Job.Default
                 .With(BenchmarkDotNet.Environments.Runtime.Core)

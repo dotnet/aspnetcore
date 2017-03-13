@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Testing;
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     [Config(typeof(CoreConfig))]
-    public class FrameParsingOverhead
+    public class FrameParsingOverheadBenchmark
     {
         private const int InnerLoopCount = 512;
 
@@ -60,14 +60,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             if (!_frame.TakeStartLine(_buffer, out var consumed, out var examined))
             {
-                RequestParsing.ThrowInvalidRequestLine();
+                ErrorUtilities.ThrowInvalidRequestLine();
             }
 
             _frame.InitializeHeaders();
 
             if (!_frame.TakeMessageHeaders(_buffer, out consumed, out examined))
             {
-                RequestParsing.ThrowInvalidRequestHeaders();
+                ErrorUtilities.ThrowInvalidRequestHeaders();
             }
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             if (!_frame.TakeStartLine(_buffer, out var consumed, out var examined))
             {
-                RequestParsing.ThrowInvalidRequestLine();
+                ErrorUtilities.ThrowInvalidRequestLine();
             }
         }
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             if (!_frame.TakeMessageHeaders(_buffer, out var consumed, out var examined))
             {
-                RequestParsing.ThrowInvalidRequestHeaders();
+                ErrorUtilities.ThrowInvalidRequestHeaders();
             }
         }
 

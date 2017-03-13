@@ -16,13 +16,13 @@ using Moq;
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     [Config(typeof(CoreConfig))]
-    public class Writing
+    public class FrameWritingBenchmark
     {
         private readonly TestFrame<object> _frame;
         private readonly TestFrame<object> _frameChunked;
         private readonly byte[] _writeData;
 
-        public Writing()
+        public FrameWritingBenchmark()
         {
             _frame = MakeFrame();
             _frameChunked = MakeFrame();

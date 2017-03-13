@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     [Config(typeof(CoreConfig))]
-    public class ResponseHeaders
+    public class ResponseHeadersBenchmark
     {
         private const int InnerLoopCount = 512;
 

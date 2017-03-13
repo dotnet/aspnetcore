@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     [Config(typeof(CoreConfig))]
 
-    public class KestrelHttpParser : IHttpRequestLineHandler, IHttpHeadersHandler
+    public class KestrelHttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {
-        private readonly Internal.Http.KestrelHttpParser _parser = new Internal.Http.KestrelHttpParser(log: null);
+        private readonly KestrelHttpParser _parser = new KestrelHttpParser(log: null);
 
         private ReadableBuffer _buffer;
 
@@ -55,14 +55,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             if (!_parser.ParseRequestLine(this, _buffer, out var consumed, out var examined))
             {
-                RequestParsing.ThrowInvalidRequestHeaders();
+                ErrorUtilities.ThrowInvalidRequestHeaders();
             }
 
             _buffer = _buffer.Slice(consumed, _buffer.End);
 
             if (!_parser.ParseHeaders(this, _buffer, out consumed, out examined, out var consumedBytes))
             {
-                RequestParsing.ThrowInvalidRequestHeaders();
+                ErrorUtilities.ThrowInvalidRequestHeaders();
             }
         }
 

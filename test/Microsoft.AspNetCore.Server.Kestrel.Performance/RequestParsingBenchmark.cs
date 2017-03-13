@@ -10,11 +10,8 @@ using Microsoft.AspNetCore.Testing;
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     [Config(typeof(CoreConfig))]
-    public class RequestParsing
+    public class RequestParsingBenchmark
     {
-        [Params(typeof(Internal.Http.KestrelHttpParser))]
-        public Type ParserType { get; set; }
-
         public IPipe Pipe { get; set; }
 
         public Frame<object> Frame { get; set; }
@@ -25,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Setup()
         {
             var connectionContext = new MockConnection(new KestrelServerOptions());
-            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = frame => (IHttpParser)Activator.CreateInstance(ParserType, frame.ConnectionContext.ListenerContext.ServiceContext.Log);
+            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = frame => new KestrelHttpParser(frame.ConnectionContext.ListenerContext.ServiceContext.Log);
 
             Frame = new Frame<object>(application: null, context: connectionContext);
             PipelineFactory = new PipeFactory();
@@ -128,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 if (!Frame.TakeStartLine(readableBuffer, out var consumed, out var examined))
                 {
-                    ThrowInvalidRequestLine();
+                    ErrorUtilities.ThrowInvalidRequestLine();
                 }
                 Pipe.Reader.Advance(consumed, examined);
 
@@ -139,21 +136,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 if (!Frame.TakeMessageHeaders(readableBuffer, out consumed, out examined))
                 {
-                    ThrowInvalidRequestHeaders();
+                    ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
                 Pipe.Reader.Advance(consumed, examined);
             }
             while (true);
-        }
-
-        public static void ThrowInvalidRequestLine()
-        {
-            throw new InvalidOperationException("Invalid request line");
-        }
-
-        public static void ThrowInvalidRequestHeaders()
-        {
-            throw new InvalidOperationException("Invalid request headers");
         }
     }
 }
