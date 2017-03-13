@@ -39,8 +39,27 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// e.g.
         /// /Views/Home/View.cshtml -> [ /Views/Home/FileName.cshtml, /Views/FileName.cshtml, /FileName.cshtml ]
         /// </remarks>
-        public virtual IEnumerable<RazorProjectItem> FindHierarchicalItems(string path, string fileName)
+        public IEnumerable<RazorProjectItem> FindHierarchicalItems(string path, string fileName)
         {
+            return FindHierarchicalItems(basePath: "/", path: path, fileName: fileName);
+        }
+
+        /// <summary>
+        /// Gets the sequence of files named <paramref name="fileName"/> that are applicable to the specified path.
+        /// </summary>
+        /// <param name="basePath">The base path.</param>
+        /// <param name="path">The path of a project item.</param>
+        /// <param name="fileName">The file name to seek.</param>
+        /// <returns>A sequence of applicable <see cref="RazorProjectItem"/> instances.</returns>
+        /// <remarks>
+        /// This method returns paths starting from the directory of <paramref name="path"/> and
+        /// traverses to the <paramref name="basePath"/>.
+        /// e.g.
+        /// (/Views, /Views/Home/View.cshtml) -> [ /Views/Home/FileName.cshtml, /Views/FileName.cshtml ]
+        /// </remarks>
+        public virtual IEnumerable<RazorProjectItem> FindHierarchicalItems(string basePath, string path, string fileName)
+        {
+            EnsureValidPath(basePath);
             EnsureValidPath(path);
             if (string.IsNullOrEmpty(fileName))
             {
@@ -49,6 +68,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             Debug.Assert(!string.IsNullOrEmpty(path));
             if (path.Length == 1)
+            {
+                yield break;
+            }
+
+            if (!path.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
             {
                 yield break;
             }
@@ -69,8 +93,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 builder = new StringBuilder(path);
             }
 
+            var maxDepth = 255;
             var index = length;
-            while (index > 0 && (index = path.LastIndexOf('/', index - 1)) != -1)
+            while (maxDepth-- > 0 && index > basePath.Length && (index = path.LastIndexOf('/', index - 1)) != -1)
             {
                 builder.Length = index + 1;
                 builder.Append(fileName);

@@ -188,6 +188,127 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 });
         }
 
+        [Theory]
+        [InlineData("/Areas")]
+        [InlineData("/Areas/")]
+        public void FindHierarchicalItems_WithBasePath(string basePath)
+        {
+            // Arrange
+            var path = "/Areas/MyArea/Views/Home/Test.cshtml";
+            var items = new Dictionary<string, RazorProjectItem>
+            {
+                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
+                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+            };
+            var project = new TestRazorProject(items);
+
+            // Act
+            var result = project.FindHierarchicalItems(basePath, path, "File.cshtml");
+
+            // Assert
+            Assert.Collection(
+                result,
+                item =>
+                {
+                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.Path);
+                    Assert.False(item.Exists);
+                },
+                item =>
+                {
+                    Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.Path);
+                    Assert.False(item.Exists);
+                },
+                item =>
+                {
+                    Assert.Equal("/Areas/MyArea/File.cshtml", item.Path);
+                    Assert.True(item.Exists);
+                },
+                item =>
+                {
+                    Assert.Equal("/Areas/File.cshtml", item.Path);
+                    Assert.False(item.Exists);
+                });
+        }
+
+        [Theory]
+        [InlineData("/Areas/MyArea/Views")]
+        [InlineData("/Areas/MyArea/Views/")]
+        public void FindHierarchicalItems_WithNestedBasePath(string basePath)
+        {
+            // Arrange
+            var path = "/Areas/MyArea/Views/Home/Test.cshtml";
+            var items = new Dictionary<string, RazorProjectItem>
+            {
+                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
+                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+            };
+            var project = new TestRazorProject(items);
+
+            // Act
+            var result = project.FindHierarchicalItems(basePath, path, "File.cshtml");
+
+            // Assert
+            Assert.Collection(
+                result,
+                item =>
+                {
+                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.Path);
+                    Assert.False(item.Exists);
+                },
+                item =>
+                {
+                    Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.Path);
+                    Assert.False(item.Exists);
+                });
+        }
+
+        [Theory]
+        [InlineData("/Areas/MyArea/Views/Home")]
+        [InlineData("/Areas/MyArea/Views/Home/")]
+        public void FindHierarchicalItems_WithFileAtBasePath(string basePath)
+        {
+            // Arrange
+            var path = "/Areas/MyArea/Views/Home/Test.cshtml";
+            var items = new Dictionary<string, RazorProjectItem>
+            {
+                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
+                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+            };
+            var project = new TestRazorProject(items);
+
+            // Act
+            var result = project.FindHierarchicalItems(basePath, path, "File.cshtml");
+
+            // Assert
+            Assert.Collection(
+                result,
+                item =>
+                {
+                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.Path);
+                    Assert.False(item.Exists);
+                });
+        }
+
+        [Fact]
+        public void FindHierarchicalItems_ReturnsEmptySequenceIfPathIsNotASubPathOfBasePath()
+        {
+            // Arrange
+            var basePath = "/Pages";
+            var path = "/Areas/MyArea/Views/Home/Test.cshtml";
+            var items = new Dictionary<string, RazorProjectItem>
+            {
+                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
+                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+            };
+            var project = new TestRazorProject(items);
+
+            // Act
+            var result = project.FindHierarchicalItems(basePath, path, "File.cshtml");
+
+            // Assert
+            Assert.Empty(result);
+        }
+
         private RazorProjectItem CreateProjectItem(string path)
         {
             var projectItem = new Mock<RazorProjectItem>();
