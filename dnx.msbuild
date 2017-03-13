@@ -28,20 +28,17 @@
         <MakeDir Directories="$(CoherenceDestinationDir)" />
         <MakeDir Directories="$(CoherenceDestinationDir)vsix" />
 
-        <PropertyGroup>
-            <RazorVSIXPath>$(RAZOR_VSIX_DROP_LOCATION)\build\Microsoft.VisualStudio.RazorExtension.vsix</RazorVSIXPath>
-        </PropertyGroup>
+        <ItemGroup>
+          <VSIXPaths Include="$(COHERENCE_DROP_LOCATION)\build\*.vsix" />
+        </ItemGroup>
 
         <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{build-number}"
             Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
 
-        <Error Text="RAZOR_VSIX_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Razor-Vsix\{branch}\{build-number}"
-            Condition=" '$(RAZOR_VSIX_DROP_LOCATION)' == '' " />
-
         <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(COHERENCE_DROP_LOCATION) $(CoherenceDestinationDir) /XD build packages-expanded
                        IF %ERRORLEVEL% LEQ 3 exit 0" />
 
-        <Copy SourceFiles="$(RazorVSIXPath)" DestinationFolder="$(CoherenceDestinationDir)vsix" />
+        <Copy SourceFiles="@(VSIXPaths)" DestinationFolder="$(CoherenceDestinationDir)vsix" />
 
         <ItemGroup>
             <UnsignedPackages Include="$(CoherenceDestinationDir)ship\*.nupkg" />
