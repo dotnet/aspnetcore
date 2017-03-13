@@ -36,13 +36,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     ConnectionControl.SetTimeout(_keepAliveMilliseconds, TimeoutAction.CloseConnection);
 
+                    InitializeHeaders();
+
                     while (!_requestProcessingStopping)
                     {
                         var result = await Input.Reader.ReadAsync();
                         var examined = result.Buffer.End;
                         var consumed = result.Buffer.End;
-
-                        InitializeHeaders();
 
                         try
                         {

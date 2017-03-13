@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Testing
         private KestrelEngine _engine;
         private IDisposable _server;
         private ListenOptions _listenOptions;
+        private Frame<HttpContext> _frame;
 
         public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
@@ -46,7 +47,8 @@ namespace Microsoft.AspNetCore.Testing
 
             context.FrameFactory = connectionContext =>
             {
-                return new Frame<HttpContext>(new DummyApplication(app, httpContextFactory), connectionContext);
+                _frame = new Frame<HttpContext>(new DummyApplication(app, httpContextFactory), connectionContext);
+                return _frame;
             };
 
             try
@@ -64,6 +66,8 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         public int Port => _listenOptions.IPEndPoint.Port;
+
+        public Frame<HttpContext> Frame => _frame;
 
         public TestServiceContext Context { get; }
 
