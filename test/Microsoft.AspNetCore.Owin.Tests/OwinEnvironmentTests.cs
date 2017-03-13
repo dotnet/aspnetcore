@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -127,6 +128,15 @@ namespace Microsoft.AspNetCore.Owin
 
             Assert.Equal(CancellationToken.None, env["owin.CallCancelled"]);
             Assert.Equal("1.0", env["owin.Version"]);
+        }
+
+        [Fact]
+        public void OwinEnvironmentImpelmentsGetEnumerator()
+        {
+            var owinEnvironment = new OwinEnvironment(CreateContext());
+
+            Assert.NotNull(owinEnvironment.GetEnumerator());
+            Assert.NotNull(((IEnumerable)owinEnvironment).GetEnumerator());
         }
 
         private HttpContext CreateContext()

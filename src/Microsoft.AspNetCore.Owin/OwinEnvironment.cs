@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Owin
             throw new NotImplementedException();
         }
 
-        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             foreach (var entryPair in _entries)
             {
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Owin
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetEnumerator();
         }
 
         public class FeatureMap
