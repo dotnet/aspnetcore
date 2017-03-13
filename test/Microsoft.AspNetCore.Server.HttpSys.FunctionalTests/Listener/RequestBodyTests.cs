@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Equal("Hello World", response);
             }
         }
-#if NET452
+#if NET46
         [ConditionalFact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {

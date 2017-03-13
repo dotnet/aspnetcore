@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 httpContext.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = httpContext.Response.Body;
-#if NET452
+#if NET46
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
 #elif NETCOREAPP2_0
                 await stream.WriteAsync(new byte[10], 0, 10);
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
             }
         }
-#if NET452
+#if NET46
         [ConditionalFact]
         public async Task ResponseBody_BeginWrite_TriggersOnStarting()
         {

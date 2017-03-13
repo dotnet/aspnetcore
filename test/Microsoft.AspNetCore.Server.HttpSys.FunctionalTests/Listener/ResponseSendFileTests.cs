@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET452
+#if NET46
                 // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 cts = new CancellationTokenSource();
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET452
+#if NET46
                 // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 cts = new CancellationTokenSource();

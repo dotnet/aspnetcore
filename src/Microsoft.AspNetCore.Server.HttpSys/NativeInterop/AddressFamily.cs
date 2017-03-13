@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-#if NET451
+#if NET46
     /// <devdoc>
     ///    <para>
     ///       Specifies the address families that an instance of the <see cref="System.Net.Sockets.Socket"/>

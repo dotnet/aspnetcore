@@ -3,16 +3,13 @@
   <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net451;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.HttpSys\Microsoft.AspNetCore.Server.HttpSys.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 

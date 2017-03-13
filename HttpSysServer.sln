@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26202.1
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}"
 EndProject
@@ -34,6 +34,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{85914BA9-4168-48C5-9C3F-E2E8B1479A6E}"
 	ProjectSection(SolutionItems) = preProject
 		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
 		build\Key.snk = build\Key.snk
 	EndProjectSection
 EndProject

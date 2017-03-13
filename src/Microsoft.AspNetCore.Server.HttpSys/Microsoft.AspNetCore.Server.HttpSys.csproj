@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP server that uses the Windows HTTP Server API.</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -16,11 +16,11 @@
     <PackageReference Include="Microsoft.Extensions.RuntimeEnvironment.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="System.Threading.Overlapped" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.Security.Principal.Windows" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Threading.Overlapped" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

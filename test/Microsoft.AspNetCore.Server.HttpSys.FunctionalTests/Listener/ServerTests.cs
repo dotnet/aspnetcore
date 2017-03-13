@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Abort();
                 Assert.True(canceled.WaitOne(interval), "Aborted");
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-#if NET452
+#if NET46
                 // HttpClient re-tries the request because it doesn't know if the request was received.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Abort();
