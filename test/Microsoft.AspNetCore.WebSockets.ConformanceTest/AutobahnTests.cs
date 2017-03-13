@@ -65,14 +65,12 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                             // IIS Express tests are a bit flaky, some tests fail occasionally or get non-strict passes
                             // https://github.com/aspnet/WebSockets/issues/100
                             await tester.DeployTestAndAddToSpec(ServerType.IISExpress, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token, expectationConfig: expect => expect
-                                .OkOrFail(Enumerable.Range(1, 20).Select(i => $"5.{i}").ToArray()) // 5.* occasionally fail on IIS express
-                                .OkOrNonStrict("3.2", "3.3", "3.4", "4.1.3", "4.1.4", "4.1.5", "4.2.3", "4.2.4", "4.2.5", "5.15")); // These occasionally get non-strict results
+                                .OkOrFail(Enumerable.Range(1, 20).Select(i => $"5.{i}").ToArray())); // 5.* occasionally fail on IIS express
                         }
 
                         // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?
                         // For now, just allow the non-strict response, it's not a failure.
-                        await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token, expectationConfig: expect => expect
-                            .OkOrNonStrict("3.2", "4.1.3", "4.2.4"));
+                        await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
                     }
                 }
 

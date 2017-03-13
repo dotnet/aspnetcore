@@ -5,7 +5,6 @@
         Fail,
         NonStrict,
         OkOrFail,
-        Ok,
-        OkOrNonStrict
+        Ok
     }
 }
