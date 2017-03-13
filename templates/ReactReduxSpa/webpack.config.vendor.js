@@ -28,7 +28,6 @@ module.exports = (env) => {
                 'redux',
                 'redux-thunk',
                 'react-router-redux',
-                'style-loader',
                 'jquery'
             ],
         },
