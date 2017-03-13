@@ -34,3 +34,4 @@ launchSettings.json
 BenchmarkDotNet.Artifacts/
 BDN.Generated/
 binaries/
+global.json

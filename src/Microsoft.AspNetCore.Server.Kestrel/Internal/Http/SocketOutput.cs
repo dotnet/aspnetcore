@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 _connection.AbortAsync();
                 _cancelled = true;
-                return TaskUtilities.GetCancelledTask(cancellationToken);
+                return Task.FromCanceled(cancellationToken);
             }
             else if (_cancelled)
             {

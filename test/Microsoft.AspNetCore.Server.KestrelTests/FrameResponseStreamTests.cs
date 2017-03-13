@@ -61,6 +61,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var stream = new FrameResponseStream(new MockFrameControl());
             Assert.Throws<NotSupportedException>(() => stream.BeginRead(new byte[1], 0, 1, null, null));
         }
+#elif NETCOREAPP1_1
+#else
+#error target frameworks need to be updated
 #endif
 
         [Fact]

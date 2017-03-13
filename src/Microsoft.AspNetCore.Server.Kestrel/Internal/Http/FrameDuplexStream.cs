@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET451
+#if NET46
 using System;
 #endif
 using System.IO;
@@ -97,14 +97,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-#if NET451
-        public override void Close()
-        {
-            _requestStream.Close();
-            _responseStream.Close();
-        }
-#endif
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -124,7 +116,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return _responseStream.FlushAsync(cancellationToken);
         }
 
-#if NET451
+#if NET46
+        public override void Close()
+        {
+            _requestStream.Close();
+            _responseStream.Close();
+        }
+
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
@@ -134,6 +132,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             return _requestStream.EndRead(asyncResult);
         }
+
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            return _responseStream.BeginWrite(buffer, offset, count, callback, state);
+        }
+
+        public override void EndWrite(IAsyncResult asyncResult)
+        {
+            _responseStream.EndWrite(asyncResult);
+        }
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -145,18 +156,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             return _requestStream.CopyToAsync(destination, bufferSize, cancellationToken);
         }
-
-#if NET451
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return _responseStream.BeginWrite(buffer, offset, count, callback, state);
-        }
-
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            _responseStream.EndWrite(asyncResult);
-        }
-#endif
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

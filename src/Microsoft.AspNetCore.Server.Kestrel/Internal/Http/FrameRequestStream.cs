@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return ReadAsync(buffer, offset, count).Result;
         }
 
-#if NET451
+#if NET46
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
@@ -112,6 +112,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }, tcs, cancellationToken);
             return tcs.Task;
         }
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated
 #endif
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -198,15 +201,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 case FrameStreamState.Open:
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        return TaskUtilities.GetCancelledZeroTask(cancellationToken);
+                        return Task.FromCanceled<int>(cancellationToken);
                     }
                     break;
                 case FrameStreamState.Closed:
                     throw new ObjectDisposedException(nameof(FrameRequestStream));
                 case FrameStreamState.Aborted:
                     return _error != null ?
-                        TaskUtilities.GetFaultedTask(_error) :
-                        TaskUtilities.GetCancelledZeroTask();
+                        Task.FromException<int>(_error) :
+                        Task.FromCanceled<int>(new CancellationToken(true));
             }
             return null;
         }

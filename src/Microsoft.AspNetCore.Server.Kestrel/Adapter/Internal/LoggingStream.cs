@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
             _logger.LogDebug(builder.ToString());
         }
 
-#if NET451
+#if NET46
         // The below APM methods call the underlying Read/WriteAsync methods which will still be logged.
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
@@ -209,6 +209,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
             }, tcs, cancellationToken);
             return tcs.Task;
         }
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
     }
 }

@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _frameControl.Write(new ArraySegment<byte>(buffer, offset, count));
         }
 
-#if NET451
+#if NET46
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var task = WriteAsync(buffer, offset, count, default(CancellationToken), state);
@@ -123,6 +123,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }, tcs, cancellationToken);
             return tcs.Task;
         }
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated.
 #endif
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -180,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 case FrameStreamState.Open:
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        return TaskUtilities.GetCancelledTask(cancellationToken);
+                        return Task.FromCanceled(cancellationToken);
                     }
                     break;
                 case FrameStreamState.Closed:
@@ -189,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     if (cancellationToken.IsCancellationRequested)
                     {
                         // Aborted state only throws on write if cancellationToken requests it
-                        return TaskUtilities.GetCancelledTask(cancellationToken);
+                        return Task.FromCanceled(cancellationToken);
                     }
                     break;
             }

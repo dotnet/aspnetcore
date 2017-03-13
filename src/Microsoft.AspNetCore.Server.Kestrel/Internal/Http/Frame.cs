@@ -1382,14 +1382,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
             // copy to an array
-#if NET451
-            return Encoding.UTF8.GetString(path.ToArray());
-#else
             fixed (byte* pointer = &path.DangerousGetPinnableReference())
             {
                 return Encoding.UTF8.GetString(pointer, path.Length);
             }
-#endif
         }
 
         public void OnHeader(Span<byte> name, Span<byte> value)

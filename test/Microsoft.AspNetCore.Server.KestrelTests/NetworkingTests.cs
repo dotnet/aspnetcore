@@ -131,18 +131,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var t = Task.Run(async () =>
             {
                 var socket = TestConnection.CreateConnectedLoopbackSocket(port);
-#if NET46
-                await Task.Factory.FromAsync(
-                    socket.BeginSend,
-                    socket.EndSend,
-                    new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
-                    SocketFlags.None,
-                    null,
-                    TaskCreationOptions.None);
-#else
                 await socket.SendAsync(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
                                        SocketFlags.None);
-#endif
                 socket.Dispose();
             });
             loop.Run();
@@ -194,33 +184,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var t = Task.Run(async () =>
             {
                 var socket = TestConnection.CreateConnectedLoopbackSocket(port);
-#if NET46
-                await Task.Factory.FromAsync(
-                    socket.BeginSend,
-                    socket.EndSend,
-                    new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
-                    SocketFlags.None,
-                    null,
-                    TaskCreationOptions.None);
-#else
                 await socket.SendAsync(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
                                        SocketFlags.None);
-#endif
                 socket.Shutdown(SocketShutdown.Send);
                 var buffer = new ArraySegment<byte>(new byte[2048]);
                 while (true)
                 {
-#if NET46
-                    var count = await Task.Factory.FromAsync(
-                        socket.BeginReceive,
-                        socket.EndReceive,
-                        new[] { buffer },
-                        SocketFlags.None,
-                        null,
-                        TaskCreationOptions.None);
-#else
                     var count = await socket.ReceiveAsync(new[] { buffer }, SocketFlags.None);
-#endif
                     if (count <= 0) break;
                 }
                 socket.Dispose();
