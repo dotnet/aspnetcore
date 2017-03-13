@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -163,12 +164,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     {
                         var parsedAddress = ServerAddress.FromUrl(address);
 
+                        if (!string.IsNullOrEmpty(parsedAddress.PathBase))
+                        {
+                            _logger.LogWarning($"Path base in address {address} is not supported and will be ignored. To specify a path base, use {nameof(IApplicationBuilder)}.UsePathBase().");
+                        }
+
                         if (parsedAddress.IsUnixPipe)
                         {
                             listenOptions.Add(new ListenOptions(parsedAddress.UnixPipePath)
                             {
                                 Scheme = parsedAddress.Scheme,
-                                PathBase = parsedAddress.PathBase
                             });
                         }
                         else
@@ -188,7 +193,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                                 listenOptions.Add(new ListenOptions(CreateIPEndPoint(parsedAddress))
                                 {
                                     Scheme = parsedAddress.Scheme,
-                                    PathBase = parsedAddress.PathBase
                                 });
                             }
                         }
@@ -259,7 +263,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 var ipv4ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, parsedAddress.Port))
                 {
                     Scheme = parsedAddress.Scheme,
-                    PathBase = parsedAddress.PathBase
                 };
 
                 _disposables.Push(engine.CreateServer(ipv4ListenOptions));
@@ -283,7 +286,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 var ipv6ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.IPv6Loopback, parsedAddress.Port))
                 {
                     Scheme = parsedAddress.Scheme,
-                    PathBase = parsedAddress.PathBase
                 };
 
                 _disposables.Push(engine.CreateServer(ipv6ListenOptions));

@@ -68,8 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected HttpVersion _httpVersion;
 
-        private readonly string _pathBase;
-
         private int _remainingRequestHeadersBytesAllowed;
         private int _requestHeadersParsed;
 
@@ -88,7 +86,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             ServerOptions = context.ListenerContext.ServiceContext.ServerOptions;
 
-            _pathBase = context.ListenerContext.ListenOptions.PathBase;
             _parser = context.ListenerContext.ServiceContext.HttpParserFactory(this);
 
             FrameControl = this;
@@ -1041,38 +1038,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return result;
         }
 
-        private bool RequestUrlStartsWithPathBase(string requestUrl, out bool caseMatches)
-        {
-            caseMatches = true;
-
-            if (string.IsNullOrEmpty(_pathBase))
-            {
-                return false;
-            }
-
-            if (requestUrl.Length < _pathBase.Length || (requestUrl.Length > _pathBase.Length && requestUrl[_pathBase.Length] != '/'))
-            {
-                return false;
-            }
-
-            for (var i = 0; i < _pathBase.Length; i++)
-            {
-                if (requestUrl[i] != _pathBase[i])
-                {
-                    if (char.ToLowerInvariant(requestUrl[i]) == char.ToLowerInvariant(_pathBase[i]))
-                    {
-                        caseMatches = false;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
         public bool TakeMessageHeaders(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
         {
             // Make sure the buffer is limited
@@ -1321,7 +1286,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             QueryString = query.GetAsciiStringNonNullCharacters();
             RawTarget = rawTarget;
-            SetNormalizedPath(requestUrlPath);
+            Path = PathNormalizer.RemoveDotSegments(requestUrlPath);
         }
 
         private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
@@ -1356,7 +1321,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // See https://tools.ietf.org/html/rfc3986#section-3.2
             RawTarget = target.GetAsciiStringNonNullCharacters();
             Path = string.Empty;
-            PathBase = string.Empty;
             QueryString = string.Empty;
         }
 
@@ -1371,7 +1335,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             RawTarget = Asterisk;
             Path = string.Empty;
-            PathBase = string.Empty;
             QueryString = string.Empty;
         }
 
@@ -1397,23 +1360,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 RejectRequestTarget(target);
             }
 
-            SetNormalizedPath(uri.LocalPath);
+            Path = PathNormalizer.RemoveDotSegments(uri.LocalPath);
             // don't use uri.Query because we need the unescaped version
             QueryString = query.GetAsciiStringNonNullCharacters();
-        }
-
-        private void SetNormalizedPath(string requestPath)
-        {
-            var normalizedTarget = PathNormalizer.RemoveDotSegments(requestPath);
-            if (RequestUrlStartsWithPathBase(normalizedTarget, out bool caseMatches))
-            {
-                PathBase = caseMatches ? _pathBase : normalizedTarget.Substring(0, _pathBase.Length);
-                Path = normalizedTarget.Substring(_pathBase.Length);
-            }
-            else
-            {
-                Path = normalizedTarget;
-            }
         }
 
         private unsafe static string GetUtf8String(Span<byte> path)

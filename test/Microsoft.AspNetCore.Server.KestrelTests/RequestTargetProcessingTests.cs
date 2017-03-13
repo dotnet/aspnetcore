@@ -19,18 +19,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task RequestPathIsNotNormalized()
         {
             var testContext = new TestServiceContext();
-
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                PathBase = "/\u0041\u030A"
-            };
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
 
             using (var server = new TestServer(async context =>
             {
-                Assert.Equal("/\u0041\u030A", context.Request.PathBase.Value);
-                Assert.Equal("/B/\u0041\u030A", context.Request.Path.Value);
+                Assert.Equal("/\u0041\u030A/B/\u0041\u030A", context.Request.Path.Value);
 
-                context.Response.Headers["Content-Length"] = new[] { "11" };
+                context.Response.Headers.ContentLength = 11;
                 await context.Response.WriteAsync("Hello World");
             }, testContext, listenOptions))
             {

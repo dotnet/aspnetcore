@@ -37,18 +37,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         {
             if (IsUnixPipe)
             {
-                if (string.IsNullOrEmpty(PathBase))
-                {
-                    return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant();
-                }
-                else
-                {
-                    return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + PathBase.ToLowerInvariant();
-                }
+                return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant();
             }
             else
             {
-                return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture) + PathBase.ToLowerInvariant();
+                return Scheme.ToLowerInvariant() + "://" + Host.ToLowerInvariant() + ":" + Port.ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -66,8 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             return string.Equals(Scheme, other.Scheme, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(Host, other.Host, StringComparison.OrdinalIgnoreCase)
-                && Port == other.Port
-                && string.Equals(PathBase, other.PathBase, StringComparison.OrdinalIgnoreCase);
+                && Port == other.Port;
         }
 
         public static ServerAddress FromUrl(string url)
@@ -145,7 +137,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 throw new FormatException($"Invalid URL: {url}");
             }
 
-            // Path should not end with a / since it will be used as PathBase later
             if (url[url.Length - 1] == '/')
             {
                 serverAddress.PathBase = url.Substring(pathDelimiterEnd, url.Length - pathDelimiterEnd - 1);
@@ -156,17 +147,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
 
             return serverAddress;
-        }
-
-        internal ServerAddress WithHost(string host)
-        {
-            return new ServerAddress
-            {
-                Scheme = Scheme,
-                Host = host,
-                Port = Port,
-                PathBase = PathBase
-            };
         }
     }
 }

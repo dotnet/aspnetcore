@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,8 +19,11 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -518,6 +522,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                 }
             }
+        }
+
+        [Theory]
+        [InlineData("/base", "/base")]
+        [InlineData("/base", "/base/")]
+        [InlineData("/base", "/base/something")]
+        [InlineData("/base", "/base/something/")]
+        [InlineData("/base/something", "/base/something")]
+        [InlineData("/base/something", "/base/something/")]
+        [InlineData("/base/something", "/base/something/more")]
+        [InlineData("/base/something", "/base/something/more/")]
+        public async Task DoesNotSplitPathBase(string registerPathBase, string requestPath)
+        {
+            var testLogger = new TestApplicationErrorLogger();
+
+            string contextPathBase = null;
+            string contextPath = null;
+
+            var builder = new WebHostBuilder()
+                .UseKestrel()
+                .UseUrls($"http://127.0.0.1:0{registerPathBase}")
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ILoggerFactory>(new KestrelTestLoggerFactory(testLogger));
+                })
+                .Configure(app =>
+                {
+                    app.Run(context =>
+                    {
+                        contextPathBase = context.Request.PathBase;
+                        contextPath = context.Request.Path;
+
+                        return TaskCache.CompletedTask;
+                    });
+                });
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var connection = new TestConnection(host.GetPort()))
+                {
+                    await connection.Send($"GET {requestPath} HTTP/1.1\r\n\r\n");
+                    await connection.Receive("HTTP/1.1 200 OK");
+                }
+
+                Assert.Single(testLogger.Messages, log =>
+                    log.LogLevel == LogLevel.Warning &&
+                    string.Equals(
+                        $"Path base in address http://127.0.0.1:0{registerPathBase} is not supported and will be ignored. To specify a path base, use {nameof(IApplicationBuilder)}.UsePathBase().",
+                        log.Message,
+                        StringComparison.Ordinal));
+            }
+
+            Assert.Equal("", contextPathBase);
+            Assert.Equal(requestPath, contextPath);
+
+            
         }
 
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)

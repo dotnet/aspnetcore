@@ -81,9 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         /// </remarks>
         public List<IConnectionAdapter> ConnectionAdapters { get; } = new List<IConnectionAdapter>();
 
-        // PathBase and Scheme are hopefully only a temporary measure for back compat with IServerAddressesFeature.
-        // This allows a ListenOptions to describe all the information encoded in IWebHostBuilder.UseUrls.
-        internal string PathBase { get; set; }
+        // Scheme is hopefully only a temporary measure for back compat with IServerAddressesFeature.
         internal string Scheme { get; set; } = "http";
 
         public override string ToString()
@@ -93,12 +91,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             switch (Type)
             {
                 case ListenType.IPEndPoint:
-                    return $"{Scheme}://{IPEndPoint}{PathBase}";
+                    return $"{Scheme}://{IPEndPoint}";
                 case ListenType.SocketPath:
-                    // ":" is used by ServerAddress to separate the socket path from PathBase.
-                    return $"{Scheme}://unix:{SocketPath}:{PathBase}";
+                    return $"{Scheme}://unix:{SocketPath}";
                 case ListenType.FileHandle:
-                    // This was never supported via --server.urls, so no need to include Scheme or PathBase.
+                    // This was never supported via --server.urls, so no need to include Scheme.
                     return "http://<file handle>";
                 default:
                     throw new InvalidOperationException();
