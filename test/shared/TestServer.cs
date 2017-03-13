@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
@@ -66,6 +67,7 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         public int Port => _listenOptions.IPEndPoint.Port;
+        public AddressFamily AddressFamily => _listenOptions.IPEndPoint.AddressFamily;
 
         public Frame<HttpContext> Frame => _frame;
 
@@ -73,7 +75,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public TestConnection CreateConnection()
         {
-            return new TestConnection(Port);
+            return new TestConnection(Port, AddressFamily);
         }
 
         public void Dispose()

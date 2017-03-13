@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public void Start()
         {
             Log.ConnectionStart(ConnectionId);
+            KestrelEventSource.Log.ConnectionStart(this);
 
             // Start socket prior to applying the ConnectionAdapter
             _socket.ReadStart(_allocCallback, _readCallback, this);
@@ -137,6 +138,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         // Called on Libuv thread
         public virtual void OnSocketClosed()
         {
+            KestrelEventSource.Log.ConnectionStop(this);
+
             _frame.FrameStartedTask.ContinueWith((task, state) =>
             {
                 var connection = (Connection)state;

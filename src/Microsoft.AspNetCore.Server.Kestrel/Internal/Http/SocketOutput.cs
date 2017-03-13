@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 ScheduleWrite();
             }
 
-            // Return TaskCompletionSource's Task if set, otherwise completed Task 
+            // Return TaskCompletionSource's Task if set, otherwise completed Task
             return tcs?.Task ?? TaskCache.CompletedTask;
         }
 

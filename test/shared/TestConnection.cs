@@ -23,13 +23,18 @@ namespace Microsoft.AspNetCore.Testing
         private StreamReader _reader;
 
         public TestConnection(int port)
+            : this(port, AddressFamily.InterNetwork)
         {
-            Create(port);
         }
 
-        public void Create(int port)
+        public TestConnection(int port, AddressFamily addressFamily)
         {
-            _socket = CreateConnectedLoopbackSocket(port);
+            Create(port, addressFamily);
+        }
+
+        public void Create(int port, AddressFamily addressFamily)
+        {
+            _socket = CreateConnectedLoopbackSocket(port, addressFamily);
 
             _stream = new NetworkStream(_socket, false);
             _reader = new StreamReader(_stream, Encoding.ASCII);
@@ -154,10 +159,20 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
-        public static Socket CreateConnectedLoopbackSocket(int port)
+        public static Socket CreateConnectedLoopbackSocket(int port) => CreateConnectedLoopbackSocket(port, AddressFamily.InterNetwork);
+
+        public static Socket CreateConnectedLoopbackSocket(int port, AddressFamily addressFamily)
         {
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
+            if (addressFamily != AddressFamily.InterNetwork && addressFamily != AddressFamily.InterNetworkV6)
+            {
+                throw new ArgumentException($"TestConnection does not support address family of type {addressFamily}", nameof(addressFamily));
+            }
+
+            var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp);
+            var address = addressFamily == AddressFamily.InterNetworkV6
+                ? IPAddress.IPv6Loopback
+                : IPAddress.Loopback;
+            socket.Connect(new IPEndPoint(address, port));
             return socket;
         }
     }
