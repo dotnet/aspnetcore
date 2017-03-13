@@ -48,7 +48,8 @@ const templates: TemplateConfig[] = [
     { value: 'aurelia', rootDir: 'aurelia', name: 'Aurelia', tests: false },
     { value: 'knockout', rootDir: 'knockout', name: 'Knockout', tests: false },
     { value: 'react', rootDir: 'react', name: 'React', tests: false },
-    { value: 'react-redux', rootDir: 'react-redux', name: 'React with Redux', tests: false }
+    { value: 'react-redux', rootDir: 'react-redux', name: 'React with Redux', tests: false },
+    { value: 'vue', rootDir: 'vue', name: 'Vue', tests: false }
 ];
 
 // Once everyone is on .csproj-compatible tooling, we might be able to remove the global.json files and eliminate
