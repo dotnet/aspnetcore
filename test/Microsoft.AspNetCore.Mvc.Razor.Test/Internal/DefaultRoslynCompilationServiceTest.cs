@@ -28,7 +28,7 @@ public class MyTestType  {}";
 
             var compilationService = GetRoslynCompilationService();
 
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), "test.cshtml"));
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "test.cshtml"));
 
             var csharpDocument = new RazorCSharpDocument()
             {
@@ -53,7 +53,7 @@ public class MyTestType  {}";
 this should fail";
 
             var compilationService = GetRoslynCompilationService();
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(fileContent), viewPath));
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(fileContent, viewPath));
 
             var csharpDocument = new RazorCSharpDocument()
             {
@@ -80,7 +80,7 @@ this should fail";
             var content = "this should fail";
 
             var compilationService = GetRoslynCompilationService();
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(fileContent), viewPath));
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(fileContent, viewPath));
 
             var csharpDocument = new RazorCSharpDocument()
             {
@@ -114,7 +114,7 @@ public class MyNonCustomDefinedClass {}
             var options = GetOptions();
             options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols("MY_CUSTOM_DEFINE");
             var compilationService = GetRoslynCompilationService(options: options);
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), viewPath));
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", viewPath));
 
             var csharpDocument = new RazorCSharpDocument()
             {
@@ -136,7 +136,7 @@ public class MyNonCustomDefinedClass {}
             var viewPath = "Views/Home/Index";
             var generatedCodeFileName = "Generated Code";
             var compilationService = GetRoslynCompilationService();
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent("view-content"), viewPath));
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("view-content", viewPath));
             var assemblyName = "random-assembly-name";
 
             var diagnostics = new[]
@@ -220,7 +220,7 @@ public class MyNonCustomDefinedClass {}
             var options = GetOptions(c => usedCompilation = c);
             var compilationService = GetRoslynCompilationService(options: options);
             
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), "some-relative-path"));
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "some-relative-path"));
 
             var csharpDocument = new RazorCSharpDocument()
             {
@@ -244,7 +244,7 @@ public class MyNonCustomDefinedClass {}
             });
             var content = "public class MyTestType  {}";
             var compilationService = GetRoslynCompilationService(options: options);
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), "some-relative-path.cshtml"));
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "some-relative-path.cshtml"));
 
             var csharpDocument = new RazorCSharpDocument()
             {
@@ -274,7 +274,7 @@ public class MyNonCustomDefinedClass {}
             var applicationPartManager = new ApplicationPartManager();
             var compilationService = GetRoslynCompilationService(applicationPartManager, options);
 
-            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), "some-relative-path.cshtml"));
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "some-relative-path.cshtml"));
 
             var csharpDocument = new RazorCSharpDocument()
             {
@@ -339,20 +339,6 @@ public class MyNonCustomDefinedClass {}
                 compiler,
                 optionsAccessor,
                 NullLoggerFactory.Instance);
-        }
-
-        private static MemoryStream CreateStreamContent(string content = "Hello, World!", Encoding encoding = null)
-        {
-            var stream = new MemoryStream();
-            encoding = encoding ?? Encoding.UTF8;
-            using (var writer = new StreamWriter(stream, encoding, bufferSize: 1024, leaveOpen: true))
-            {
-                writer.Write(content);
-            }
-
-            stream.Seek(0L, SeekOrigin.Begin);
-
-            return stream;
         }
     }
 }

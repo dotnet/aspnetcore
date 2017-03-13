@@ -319,15 +319,8 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
         private RazorCodeDocument CreateDocument(string content)
         {
-            using (var stream = new MemoryStream())
-            {
-                var bytes = Encoding.UTF8.GetBytes(content);
-                stream.Write(bytes, 0, bytes.Length);
-                stream.Seek(0L, SeekOrigin.Begin);
-
-                var source = RazorSourceDocument.ReadFrom(stream, "test.cshtml");
-                return RazorCodeDocument.Create(source);
-            }
+            var source = RazorSourceDocument.Create(content, "test.cshtml");
+            return RazorCodeDocument.Create(source);
         }
 
         private RazorEngine CreateEngine(params TagHelperDescriptor[] tagHelpers)

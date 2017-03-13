@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                         Diagnostics = new List<RazorDiagnostic>()
                     });
 
-                    Assert.Equal(viewPath, document.Source.Filename);  // Assert if source file name is the root relative path
+                    Assert.Equal(viewPath, document.Source.FileName);  // Assert if source file name is the root relative path
                 }).Verifiable();
 
             var razorService = new RazorCompilationService(

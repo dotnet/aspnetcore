@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             writer.Flush();
 
             stream.Seek(0L, SeekOrigin.Begin);
-            GlobalImports = RazorSourceDocument.ReadFrom(stream, filename: null, encoding: Encoding.UTF8);
+            GlobalImports = RazorSourceDocument.ReadFrom(stream, fileName: null, encoding: Encoding.UTF8);
         }
 
         public RazorSourceDocument GlobalImports { get; }

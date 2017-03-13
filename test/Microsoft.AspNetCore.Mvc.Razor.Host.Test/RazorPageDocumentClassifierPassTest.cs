@@ -215,12 +215,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
         {
             filePath = filePath ?? Path.Combine(Directory.GetCurrentDirectory(), "Test.cshtml");
 
-            var bytes = Encoding.UTF8.GetBytes(content);
-            using (var stream = new MemoryStream(bytes))
-            {
-                var source = RazorSourceDocument.ReadFrom(stream, filePath);
-                return RazorCodeDocument.Create(source);
-            }
+            var source = RazorSourceDocument.Create(content, filePath);
+            return RazorCodeDocument.Create(source);
         }
 
         private static RazorEngine CreateEngine()

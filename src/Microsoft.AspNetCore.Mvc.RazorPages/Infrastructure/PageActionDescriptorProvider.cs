@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             foreach (var item in _project.EnumerateItems(_pagesOptions.RootDirectory))
             {
-                if (item.Filename.StartsWith("_"))
+                if (item.FileName.StartsWith("_"))
                 {
                     // Pages like _PageImports should not be routable.
                     continue;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var routePrefix = item.PathWithoutExtension;
             model.Selectors.Add(CreateSelectorModel(routePrefix, template));
 
-            if (string.Equals(IndexFileName, item.Filename, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(IndexFileName, item.FileName, StringComparison.OrdinalIgnoreCase))
             {
                 var parentDirectoryPath = item.Path;
                 var index = parentDirectoryPath.LastIndexOf('/');
