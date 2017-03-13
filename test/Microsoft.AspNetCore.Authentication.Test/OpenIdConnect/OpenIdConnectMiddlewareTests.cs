@@ -46,7 +46,25 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
             Assert.NotNull(res.Headers.Location);
 
-            setting.ValidateSignoutRedirect(transaction.Response.Headers.Location);
+            setting.ValidateSignoutRedirect(
+                transaction.Response.Headers.Location,
+                OpenIdConnectParameterNames.SkuTelemetry,
+                OpenIdConnectParameterNames.VersionTelemetry);
+        }
+
+        [Fact]
+        public async Task EndSessionRequestDoesNotIncludeTelemetryParametersWhenDisabled()
+        {
+            var setting = new TestSettings(opt => opt.DisableTelemetry = true);
+
+            var server = setting.CreateTestServer();
+
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.DoesNotContain(OpenIdConnectParameterNames.SkuTelemetry, res.Headers.Location.Query);
+            Assert.DoesNotContain(OpenIdConnectParameterNames.VersionTelemetry, res.Headers.Location.Query);
         }
 
         [Fact]

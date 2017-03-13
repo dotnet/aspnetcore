@@ -241,5 +241,12 @@ namespace Microsoft.AspNetCore.Builder
         /// This is disabled by default.
         /// </summary>
         public bool SkipUnrecognizedRequests { get; set; } = false;
+
+        /// <summary>
+        /// Indicates whether telemetry should be disabled. When this feature is enabled,
+        /// the assembly version of the Microsoft IdentityModel packages is sent to the
+        /// remote OpenID Connect provider as an authorization/logout request parameter.
+        /// </summary>
+        public bool DisableTelemetry { get; set; }
     }
 }

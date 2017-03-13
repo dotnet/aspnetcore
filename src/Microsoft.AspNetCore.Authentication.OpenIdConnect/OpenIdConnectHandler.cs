@@ -161,6 +161,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             var message = new OpenIdConnectMessage()
             {
+                EnableTelemetryParameters = !Options.DisableTelemetry,
                 IssuerAddress = _configuration?.EndSessionEndpoint ?? string.Empty,
 
                 // Redirect back to SigneOutCallbackPath first before user agent is redirected to actual post logout redirect uri
@@ -309,6 +310,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             var message = new OpenIdConnectMessage
             {
                 ClientId = Options.ClientId,
+                EnableTelemetryParameters = !Options.DisableTelemetry,
                 IssuerAddress = _configuration?.AuthorizationEndpoint ?? string.Empty,
                 RedirectUri = BuildRedirectUri(Options.CallbackPath),
                 Resource = Options.Resource,
@@ -1023,6 +1025,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 ClientSecret = Options.ClientSecret,
                 Code = authorizationResponse.Code,
                 GrantType = OpenIdConnectGrantTypes.AuthorizationCode,
+                EnableTelemetryParameters = !Options.DisableTelemetry,
                 RedirectUri = properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey]
             };
 
