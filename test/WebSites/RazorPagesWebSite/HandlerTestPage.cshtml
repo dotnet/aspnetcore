@@ -1,0 +1,49 @@
+﻿@page "{formaction?}"
+
+@using Microsoft.AspNetCore.Mvc.Internal
+@using RazorPagesWebSite
+
+@functions{
+    public string MethodName { get; set; }
+
+    public IActionResult OnGet()
+    {
+        return View();
+    }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        await TaskCache.CompletedTask;
+        MethodName = nameof(OnPostAsync);
+        return View();
+    }
+
+    public async Task OnGetCustomer()
+    {
+        await TaskCache.CompletedTask;
+        MethodName = nameof(OnGetCustomer);
+    }
+
+    public async Task OnGetViewCustomerAsync()
+    {
+        await TaskCache.CompletedTask;
+        MethodName = nameof(OnGetViewCustomerAsync);
+    }
+
+    public async Task<CustomActionResult> OnPostCustomActionResult()
+    {
+        await TaskCache.CompletedTask;
+        return new CustomActionResult();
+    }
+
+    public CustomActionResult OnGetCustomACtionResultAsync()
+    {
+        return new CustomActionResult();
+    }
+}
+
+Method: @MethodName
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+}

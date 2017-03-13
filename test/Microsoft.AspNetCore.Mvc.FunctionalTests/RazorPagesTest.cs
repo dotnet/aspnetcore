@@ -20,6 +20,153 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
+        public async Task Page_Handler_FormAction()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage/Customer");
+
+            // Assert
+            Assert.StartsWith("Method: OnGetCustomer", content.Trim());
+        }
+
+        [Fact]
+        public async Task Page_Handler_Async()
+        {
+            // Arrange
+            var getResponse = await Client.GetAsync("http://localhost/HandlerTestPage");
+            var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "/ModelHandlerTestPage");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
+
+            var postRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost/HandlerTestPage");
+            postRequest.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            postRequest.Headers.Add("RequestVerificationToken", formToken);
+
+            // Act
+            var response = await Client.SendAsync(postRequest);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith("Method: OnPostAsync", content.Trim());
+        }
+
+        [Fact]
+        public async Task Page_Handler_AsyncFormAction()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage/ViewCustomer");
+
+            // Assert
+            Assert.StartsWith("Method: OnGetViewCustomerAsync", content.Trim());
+        }
+
+        [Fact]
+        public async Task Page_Handler_ReturnTypeImplementsIActionResult()
+        {
+            // Arrange
+            var getResponse = await Client.GetAsync("http://localhost/HandlerTestPage");
+            var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "/ModelHandlerTestPage");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
+
+            var postRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost/HandlerTestPage/CustomActionResult");
+            postRequest.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            postRequest.Headers.Add("RequestVerificationToken", formToken);
+            // Act
+            var response = await Client.SendAsync(postRequest);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("CustomActionResult", content);
+        }
+
+        [Fact]
+        public async Task Page_Handler_AsyncReturnTypeImplementsIActionResult()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage/CustomActionResult");
+
+            // Assert
+            Assert.Equal("CustomActionResult", content);
+        }
+
+
+        [Fact]
+        public async Task PageModel_Handler_FormAction()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("http://localhost/ModelHandlerTestPage/Customer");
+
+            // Assert
+            Assert.StartsWith("Method: OnGetCustomer", content.Trim());
+        }
+
+        [Fact]
+        public async Task PageModel_Handler_Async()
+        {
+            // Arrange
+            var getResponse = await Client.GetAsync("http://localhost/ModelHandlerTestPage");
+            var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "/ModelHandlerTestPage");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
+
+            var postRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost/ModelHandlerTestPage");
+            postRequest.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            postRequest.Headers.Add("RequestVerificationToken", formToken);
+
+            // Act
+            var response = await Client.SendAsync(postRequest);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith("Method: OnPostAsync", content.Trim());
+        }
+
+        [Fact]
+        public async Task PageModel_Handler_AsyncFormAction()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("http://localhost/ModelHandlerTestPage/ViewCustomer");
+
+            // Assert
+            Assert.StartsWith("Method: OnGetViewCustomerAsync", content.Trim());
+        }
+
+        [Fact]
+        public async Task PageModel_Handler_ReturnTypeImplementsIActionResult()
+        {
+            // Arrange
+            var getResponse = await Client.GetAsync("http://localhost/ModelHandlerTestPage");
+            var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "/ModelHandlerTestPage");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
+
+            var postRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost/ModelHandlerTestPage/CustomActionResult");
+            postRequest.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            postRequest.Headers.Add("RequestVerificationToken", formToken);
+            // Act
+            var response = await Client.SendAsync(postRequest);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("CustomActionResult", content);
+        }
+
+        [Fact]
+        public async Task PageModel_Handler_AsyncReturnTypeImplementsIActionResult()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("http://localhost/ModelHandlerTestPage/CustomActionResult");
+
+            // Assert
+            Assert.Equal("CustomActionResult", content);
+        }
+
+        [Fact]
         public async Task Page_SetsPath()
         {
             // Arrange
@@ -207,6 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Act2
             response = await Client.SendAsync(request);
 
+            // Assert 2
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal("Hi1", content.Trim());
         }
@@ -228,9 +376,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
             request.Headers.Add("Cookie", GetCookie(response));
 
-            // Act2
+            // Act 2
             response = await Client.SendAsync(request);
 
+            // Assert 2
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal("Hi2", content.Trim());
         }
