@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26206.0
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{27304DDE-AFB2-4F8B-B765-E3E2F11E886C}"
 EndProject
@@ -61,6 +61,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E415FE14
 		src\build\common.props = src\build\common.props
 		src\build\Key.snk = src\build\Key.snk
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VueSpa", "templates\VueSpa\VueSpa.csproj", "{49D7665A-20EC-43FC-B8E8-EA0204F2D8C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -136,6 +138,10 @@ Global
 		{86911E07-C733-4C18-B49F-9A007A651246}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86911E07-C733-4C18-B49F-9A007A651246}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86911E07-C733-4C18-B49F-9A007A651246}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49D7665A-20EC-43FC-B8E8-EA0204F2D8C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49D7665A-20EC-43FC-B8E8-EA0204F2D8C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49D7665A-20EC-43FC-B8E8-EA0204F2D8C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49D7665A-20EC-43FC-B8E8-EA0204F2D8C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -162,5 +168,6 @@ Global
 		{9D4D15A1-A25B-44EC-AB63-F1CE9986712E} = {1598B415-73F1-4B37-B3B4-0A10677ABB2D}
 		{86911E07-C733-4C18-B49F-9A007A651246} = {1598B415-73F1-4B37-B3B4-0A10677ABB2D}
 		{E415FE14-13B0-469F-836D-95059E6BAA6E} = {27304DDE-AFB2-4F8B-B765-E3E2F11E886C}
+		{49D7665A-20EC-43FC-B8E8-EA0204F2D8C3} = {1598B415-73F1-4B37-B3B4-0A10677ABB2D}
 	EndGlobalSection
 EndGlobal
