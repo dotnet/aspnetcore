@@ -37,14 +37,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             var mvcBuilderConfiguration = GetConfigureCompilationAction(configureCompilationType);
             var serviceProvider = GetProvider(mvcBuilderConfiguration);
 
-            CompilationService = (RazorCompilationService)serviceProvider.GetRequiredService<IRazorCompilationService>();
             Engine = serviceProvider.GetRequiredService<RazorEngine>();
+            TemplateEngine = new MvcRazorTemplateEngine(Engine, serviceProvider.GetRequiredService<RazorProject>())
+            {
+                Options =
+                {
+                    ImportsFileName = "_ViewImports.cshtml",
+                }
+            };
             Compiler = serviceProvider.GetRequiredService<CSharpCompiler>();
             ViewEngineOptions = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
         }
 
-
-        public RazorCompilationService CompilationService { get; }
+        public MvcRazorTemplateEngine TemplateEngine { get; }
 
         public RazorEngine Engine { get; }
 

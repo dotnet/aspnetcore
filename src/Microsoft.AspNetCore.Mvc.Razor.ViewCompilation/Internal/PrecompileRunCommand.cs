@@ -238,9 +238,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 var fileInfo = files[i];
                 using (var fileStream = fileInfo.CreateReadStream())
                 {
-                    var codeDocument = MvcServiceProvider.CompilationService.CreateCodeDocument(fileInfo.ViewEnginePath, fileStream);
-                    var result = MvcServiceProvider.CompilationService.ProcessCodeDocument(codeDocument);
-                    results[i] = new ViewCompilationInfo(fileInfo, result);
+                    var csharpDocument = MvcServiceProvider.TemplateEngine.GenerateCode(fileInfo.ViewEnginePath);
+                    results[i] = new ViewCompilationInfo(fileInfo, csharpDocument);
                 }
             });
 
