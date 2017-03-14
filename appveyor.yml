@@ -11,4 +11,4 @@ build_script:
 clone_depth: 1
 test: off
 deploy: off
-os: Visual Studio 2017 RC
+os: Visual Studio 2017
