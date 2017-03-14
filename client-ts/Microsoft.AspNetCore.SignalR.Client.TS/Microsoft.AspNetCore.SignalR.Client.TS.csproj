@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
@@ -28,5 +29,26 @@
 
   <Target Name="CleanTSClient" AfterTargets="Clean">
     <RemoveDir Directories="$(SignalRClientDistFolder)" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="Pack">
+    <Message Text="Creating TypeScript client Node module" Importance="High" />
+    <Exec Command="node -pe &quot;require('./package.json').version&quot;" ConsoleToMSBuild="true" WorkingDirectory="$(MSBuildThisFileDirectory)..">
+      <Output TaskParameter="ConsoleOutput" ItemName="ExecOutput" />
+    </Exec>
+    <PropertyGroup>
+      <ModuleVersion>@(ExecOutput)</ModuleVersion>
+      <ModuleVersion Condition="'$(VersionSuffix)' != ''">$(ModuleVersion)-$(VersionSuffix)</ModuleVersion>
+    </PropertyGroup>
+    <Exec Command="npm version $(ModuleVersion)"  WorkingDirectory="$(MSBuildThisFileDirectory).." Condition="'$(VersionSuffix)' != ''" />
+    <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package.json" Condition="'$(VersionSuffix)' != ''" />
+
+    <ItemGroup>
+      <TSClient Include="$(MSBuildThisFileDirectory)../signalr-client*.tgz" />
+    </ItemGroup>
+    <Move SourceFiles="@(TSClient)" DestinationFolder="$(PackageOutputPath)" />
   </Target>
 </Project>
