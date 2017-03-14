@@ -22,6 +22,10 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 **NOTE on errors:** In all error cases, by default, the detailed exception message is **never** provided; a short description string may be provided. However, an application developer may elect to allow detailed exception messages to be emitted, which should only be used in the `Development` environment. Unexpected errors are communicated by HTTP `500 Server Error` status codes or WebSockets `1008 Policy Violation` close frames; in these cases the connection should be considered to be terminated.
 
+## `Close` and `Error` frames
+
+For the Long-Polling and Server-Sent events transports, there are two additional frame types: `Close` and `Error`. These are used to communicate completion and errors to the other end of the transport. Both can have optional **text** bodies, with descriptive text. Neither of these frame types are communicated to the application directly however, they manifest in terminating the channel and optionally (in the case of `Error`) yielding an exception.
+
 ## WebSockets (Full Duplex)
 
 The WebSockets transport is unique in that it is full duplex, and a persistent connection that can be established in a single operation. As a result, the client is not required to use the `[endpoint-base]/negotiate` endpoint to establish a connection in advance. It also includes all the necessary metadata in it's own frame metadata.
@@ -76,9 +80,9 @@ In this transport, the client establishes an SSE connection to `[endpoint-base]/
 
 * `[Type]` is a single UTF-8 character representing the type of the frame; `T` indicates Text, `B` indicates Binary, `E` indicates an error, `C` indicates that the server is terminating its end of the connection.
 
-If the `[Type]` field is `T`, the remaining lines of the `data` field contain the value, in UTF-8 text. If the `[Type]` field is `B`, the remaining lines of the `data` field contain Base64-encoded binary data. Any `\n` characters in Binary frames are removed before Base64-decoding. However, servers should avoid line breaks in the Base64-encoded data. If the `[Type]` field is `E`, the remaining lines of the `data` field may contain a textual description of the error. Also, the connection will be terminated immediately following an `E` frame. If the `[Type]` field is `C`, there is no remaining content in the `data` field.
+If the `[Type]` field is `T`, the remaining lines of the `data` field contain the value, in UTF-8 text. If the `[Type]` field is `B`, the remaining lines of the `data` field contain Base64-encoded binary data. Any `\n` characters in Binary frames are removed before Base64-decoding. However, servers should avoid line breaks in the Base64-encoded data. If the `[Type]` field is `E`, the remaining lines of the `data` field may contain a textual description of the error. Also, the connection will be terminated immediately following an `E` frame. If the `[Type]` field is `C`, the remaining lines of the `data` field may contain a textual description of the reason for closing.
 
-If the SSE response ends without a `C` or `E` frame, the client should immediately attempt to reestablish the connection. However, the protocol provides **no** guarantees that any messages that have not been seen will be retransmitted.
+If the SSE response ends **without** a `C` or `E` frame, the client should immediately attempt to reestablish the connection. However, the protocol provides **no** guarantees that any messages that have not been seen will be retransmitted.
 
 TBD: Keep Alive - Should it be done at this level?
 
@@ -86,7 +90,7 @@ For example, when sending the following frames (`\n` indicates the actual Line F
 
 * Type=`Text`, "Hello\nWorld"
 * Type=`Binary`, `0x01 0x02`
-* Type=`Close`
+* Type=`Close`, `<<no body>>`
 
 The encoding will be as follows
 
@@ -139,7 +143,7 @@ The following values are valid for `[Type]`:
 * `T` - Indicates a text frame, the `[Body]` contains UTF-8 encoded text data.
 * `B` - Indicates a text frame, the `[Body]` contains Base64 encoded binary data.
 * `E` - Indicates an error frame, the `[Body]` contains an optional UTF-8 encoded error description. The connection is immediately closed after processing this frame.
-* `C` - Indicates a close frame, there is no `[Body]`. The connection is immediately closed after processing this frame.
+* `C` - Indicates a close frame, the `[Body]` contains an optional UTF-8 encoded description of the reason for closing. The connection is immediately closed after processing this frame.
 
 Note: If there is no `[Body]` for a frame, there does still need to be a `:` and `;` delimiting the body. So, for example, the following is an encoding of a single text frame `A` followed by a single close frame: `T1:T:A;0:C:;`
 
@@ -147,7 +151,7 @@ For example, when sending the following frames (`\n` indicates the actual Line F
 
 * Type=`Text`, "Hello\nWorld"
 * Type=`Binary`, `0x01 0x02`
-* Type=`Close`
+* Type=`Close`, `<<no body>>`
 
 The encoding will be as follows
 
