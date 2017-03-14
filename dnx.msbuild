@@ -276,7 +276,13 @@
     <Target Name="NuGetVerify" DependsOnTargets="InstallNuGetPackageVerifier;NuGetVerifyTimestampPackages;NuGetVerifyTimestampFreePackages" />
 
     <Target Name="PushPackages" DependsOnTargets="NuGetVerifyTimestampFreePackages">
-        <Exec Command="$(PUSH_NUGET_EXE) push -Source $(NUGET_FEED) -ApiKey $(APIKEY) $(CoherenceSignedDestinationDir)\Packages\*.nupkg" />
+        <ItemGroup>
+            <DirectoryContainingPackages Include="$(CoherenceSignedDestinationDir)Packages\" />
+            <DirectoryContainingPackages Include="$(CoherenceDestinationDir)ext\" />
+            <DirectoryContainingPackages Include="$(CoherenceDestinationDir)noship\" />
+        </ItemGroup>
+
+        <Exec Command="$(PUSH_NUGET_EXE) push -Source $(NUGET_FEED) -ApiKey $(APIKEY) %(DirectoryContainingPackages)*.nupkg" />
     </Target>
 
     <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
