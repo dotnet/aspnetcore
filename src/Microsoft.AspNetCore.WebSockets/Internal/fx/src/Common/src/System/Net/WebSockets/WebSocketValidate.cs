@@ -7,7 +7,7 @@ using System.Text;
 
 namespace System.Net.WebSockets
 {
-    internal static class WebSocketValidate
+    internal static partial class WebSocketValidate
     {
         internal const int MaxControlFramePayloadLength = 123;
         private const int CloseStatusCodeAbort = 1006;
@@ -15,6 +15,34 @@ namespace System.Net.WebSockets
         private const int InvalidCloseStatusCodesFrom = 0;
         private const int InvalidCloseStatusCodesTo = 999;
         private const string Separators = "()<>@,;:\\\"/[]?={} ";
+
+        internal static void ThrowIfInvalidState(WebSocketState currentState, bool isDisposed, WebSocketState[] validStates)
+        {
+            string validStatesText = string.Empty;
+
+            if (validStates != null && validStates.Length > 0)
+            {
+                foreach (WebSocketState validState in validStates)
+                {
+                    if (currentState == validState)
+                    {
+                        // Ordering is important to maintain .NET 4.5 WebSocket implementation exception behavior.
+                        if (isDisposed)
+                        {
+                            throw new ObjectDisposedException("ClientWebSocket");
+                        }
+
+                        return;
+                    }
+                }
+
+                validStatesText = string.Join(", ", validStates);
+            }
+
+            throw new WebSocketException(
+                WebSocketError.InvalidState,
+                SR.Format(SR.net_WebSockets_InvalidState, currentState, validStatesText));
+        }
 
         internal static void ValidateSubprotocol(string subProtocol)
         {
@@ -101,32 +129,22 @@ namespace System.Net.WebSockets
             }
         }
 
-        internal static void ThrowIfInvalidState(WebSocketState currentState, bool isDisposed, WebSocketState[] validStates)
+        internal static void ValidateBuffer(byte[] buffer, int offset, int count)
         {
-            string validStatesText = string.Empty;
-
-            if (validStates != null && validStates.Length > 0)
+            if (buffer == null)
             {
-                foreach (WebSocketState validState in validStates)
-                {
-                    if (currentState == validState)
-                    {
-                        // Ordering is important to maintain .NET 4.5 WebSocket implementation exception behavior.
-                        if (isDisposed)
-                        {
-                            throw new ObjectDisposedException("ClientWebSocket");
-                        }
-
-                        return;
-                    }
-                }
-
-                validStatesText = string.Join(", ", validStates);
+                throw new ArgumentNullException(nameof(buffer));
             }
 
-            throw new WebSocketException(
-                WebSocketError.InvalidState,
-                SR.Format(SR.net_WebSockets_InvalidState, currentState, validStatesText));
+            if (offset < 0 || offset > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            }
+
+            if (count < 0 || count > (buffer.Length - offset))
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
         }
     }
 }

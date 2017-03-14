@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
                 stream,
                 isServer: false,
                 subprotocol: subProtocol,
-                keepAliveIntervalSeconds: (int)keepAliveInterval.TotalSeconds,
+                keepAliveInterval: keepAliveInterval,
                 receiveBufferSize: receiveBufferSize);
         }
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
                 stream,
                 isServer: true,
                 subprotocol: subProtocol,
-                keepAliveIntervalSeconds: (int)keepAliveInterval.TotalSeconds,
+                keepAliveInterval: keepAliveInterval,
                 receiveBufferSize: receiveBufferSize);
         }
     }
