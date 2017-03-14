@@ -20,7 +20,6 @@
     <Repository Include="Diagnostics" Commit="" />
     <Repository Include="DotNetTools" Commit="" />
     <Repository Include="EntityFramework" Commit="" />
-    <Repository Include="EntityFramework.Tools" Commit="" />
     <Repository Include="Entropy" Commit="" />
     <Repository Include="EventNotification" Commit="" />
     <Repository Include="FileSystem" Commit="" />
