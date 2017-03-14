@@ -64,6 +64,9 @@ namespace Microsoft.AspNetCore.Http
             // Assert
             Assert.True(ReferenceEquals(context, accessor.HttpContext));
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
     }
 }

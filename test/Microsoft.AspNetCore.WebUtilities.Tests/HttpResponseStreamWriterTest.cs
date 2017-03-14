@@ -50,6 +50,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(0, stream.FlushCallCount);
             Assert.Equal(0, stream.FlushAsyncCallCount);
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
         [Fact]
@@ -83,6 +86,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             // Assert
             Assert.Equal(0, stream.CloseCallCount);
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
         [Fact]
@@ -115,8 +121,10 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             // Act
 #if NET452
             writer.Close();
-#else
+#elif NETCOREAPP2_0
             writer.Dispose();
+#else
+#error Target framework needs to be updated
 #endif
 
             // Assert
@@ -232,7 +240,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
 
             await writer.WriteAsync(new string('a', byteLength));
-            await Assert.ThrowsAsync<IOException>(() =>  writer.FlushAsync());
+            await Assert.ThrowsAsync<IOException>(() => writer.FlushAsync());
 
             // Act
             writer.Dispose();
@@ -337,9 +345,12 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
         [Theory]
         [InlineData("你好世界", "utf-16")]
-#if !NETCOREAPP1_1
+#if NET452
         // CoreCLR does not like shift_jis as an encoding.
         [InlineData("こんにちは世界", "shift_jis")]
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
         [InlineData("హలో ప్రపంచ", "iso-8859-1")]
         [InlineData("வணக்கம் உலக", "utf-32")]
@@ -368,11 +379,14 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [InlineData('你', 1023, "utf-16")]
         [InlineData('你', 1024, "utf-16")]
         [InlineData('你', 1050, "utf-16")]
-#if !NETCOREAPP1_1
+#if NET452
         // CoreCLR does not like shift_jis as an encoding.
         [InlineData('こ', 1023, "shift_jis")]
         [InlineData('こ', 1024, "shift_jis")]
         [InlineData('こ', 1050, "shift_jis")]
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
         [InlineData('హ', 1023, "iso-8859-1")]
         [InlineData('హ', 1024, "iso-8859-1")]
@@ -508,6 +522,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
                 CloseCallCount++;
                 base.Close();
             }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
             protected override void Dispose(bool disposing)

@@ -295,8 +295,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
 #if NET452
             return AppDomain.CurrentDomain.BaseDirectory;
-#else
+#elif NETCOREAPP2_0
             return AppContext.BaseDirectory;
+#else
+#error Target framework needs to be updated
 #endif
         }
     }
