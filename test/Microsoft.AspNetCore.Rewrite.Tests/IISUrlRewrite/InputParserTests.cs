@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
 using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         private RewriteContext CreateTestRewriteContext()
         {
             var context = new DefaultHttpContext();
-            return new RewriteContext { HttpContext = context, StaticFileProvider = null, Logger = new NullLogger() };
+            return new RewriteContext { HttpContext = context, StaticFileProvider = null, Logger = NullLogger.Instance };
         }
 
         private BackReferenceCollection CreateTestRuleBackReferences()

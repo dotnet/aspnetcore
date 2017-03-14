@@ -13,7 +13,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="1.2.0-*" />
     <PackageReference Include="xunit" Version="2.2.0-*" />
   </ItemGroup>
 
