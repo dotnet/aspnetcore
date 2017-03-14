@@ -65,6 +65,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void GetCandidateLibraries_DoesNotThrow_IfLibraryDoesNotHaveRuntimeComponent()
+        {
+            // Arrange
+            var expected = GetLibrary("MyApplication", "Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Mvc");
+            var deps = new DependencyContext(
+                new TargetInfo("netcoreapp1.1", "rurntime", "signature", isPortable: true),
+                CompilationOptions.Default,
+                Enumerable.Empty<CompilationLibrary>(),
+                new[]
+                {
+                    expected,
+                    GetLibrary("Microsoft.AspNetCore.Server.Kestrel", "Libuv"),
+                    GetLibrary("Microsoft.AspNetCore.Mvc"),
+                },
+                Enumerable.Empty<RuntimeFallbacks>());
+
+            // Act
+            var candidates = DefaultAssemblyPartDiscoveryProvider.GetCandidateLibraries(deps).ToList();
+
+            // Assert
+            Assert.Equal(new[] { expected }, candidates);
+        }
+
+        [Fact]
         public void CandidateAssemblies_ReturnsEntryAssemblyIfDependencyContextIsNull()
         {
             // Arrange & Act
