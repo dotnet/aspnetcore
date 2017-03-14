@@ -1,9 +1,14 @@
 <Project>
   <PropertyGroup>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
+    <CoreFxLabsPipelinesVersion>0.1.0-*</CoreFxLabsPipelinesVersion>
+    <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <LibUvVersion>1.9.1</LibUvVersion>
-    <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
-    <CoreFxLabsPipelinesVersion>0.1.0-*</CoreFxLabsPipelinesVersion>
+    <JsonNetVersion>9.0.1</JsonNetVersion>
+    <MoqVersion>4.7.1</MoqVersion>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <TestSdkVersion>15.0.0</TestSdkVersion>
+    <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>
 </Project>

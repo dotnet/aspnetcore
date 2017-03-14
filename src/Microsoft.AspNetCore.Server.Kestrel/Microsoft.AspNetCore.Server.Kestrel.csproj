@@ -13,9 +13,9 @@
 
   <ItemGroup>
     <PackageReference Include="Libuv" Version="$(LibUvVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabsPipelinesVersion)" />

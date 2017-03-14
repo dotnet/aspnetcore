@@ -3,14 +3,14 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
+    <PlatformTarget Condition="'$(TargetFramework)' == 'net46'">x64</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- TODO remove rid when https://github.com/dotnet/sdk/issues/396 is resolved -->
-    <RuntimeIdentifier Condition="'$(TargetFramework)'!='netcoreapp1.1'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\shared\**\*.cs" />
     <Content Include="..\shared\TestResources\testCert.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -20,16 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.CodeCoverage" Version="1.0.2" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-    <PackageReference Include="Moq" Version="4.6.36-*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
-    <PackageReference Include="xunit" Version="2.2.0-*" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <Reference Include="System.Net.Http" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
+    <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
   </ItemGroup>
 
   <ItemGroup>

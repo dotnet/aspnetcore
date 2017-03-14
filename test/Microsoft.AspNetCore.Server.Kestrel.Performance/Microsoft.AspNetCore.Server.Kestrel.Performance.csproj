@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.10.3" />
-    <PackageReference Include="Moq" Version="4.6.36-*" />
+    <PackageReference Include="Moq" Version="$(MoqVersion)" />
   </ItemGroup>
 
 </Project>
