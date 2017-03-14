@@ -28,7 +28,7 @@ If you want to use the latest dev build then you need to:
   <configuration>
       <packageSources>
           <clear />
-          <add key="AspNetVNext" value="https://www.myget.org/F/aspnetvnext/api/v3/index.json" />
+          <add key="AspNetVNext" value="https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>
