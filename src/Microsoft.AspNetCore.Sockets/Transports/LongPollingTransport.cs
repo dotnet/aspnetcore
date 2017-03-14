@@ -1,14 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO.Pipelines;
+using System.IO.Pipelines.Text.Primitives;
+using System.Text;
+using System.Text.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Sockets.Formatters;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Transports
 {
@@ -43,39 +46,28 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 context.Response.ContentType = MessageFormatter.GetContentType(messageFormat);
 
                 var writer = context.Response.Body.AsPipelineWriter();
-                var alloc = writer.Alloc(minimumSize: 1);
-                alloc.WriteBigEndian(MessageFormatter.GetFormatIndicator(messageFormat));
+                var output = new PipelineTextOutput(writer, TextEncoder.Utf8); // We don't need the Encoder, but it's harmless to set.
+
+                output.Append(MessageFormatter.GetFormatIndicator(messageFormat));
 
                 while (_application.TryRead(out var message))
                 {
-                    var buffer = alloc.Memory.Span;
-
                     _logger.LogDebug("Writing {0} byte message to response", message.Payload.Length);
 
-                    // Try to format the message
-                    if (!MessageFormatter.TryFormatMessage(message, buffer, messageFormat, out var written))
+                    if (!MessageFormatter.TryWriteMessage(message, output, messageFormat))
                     {
-                        // We need to expand the buffer
-                        // REVIEW: I'm not sure I fully understand the "right" pattern here...
-                        alloc.Ensure(MaxBufferSize);
-                        buffer = alloc.Memory.Span;
+                        // We ran out of space to write, even after trying to enlarge.
+                        // This should only happen in a significant lack-of-memory scenario.
 
-                        // Try one more time
-                        if (!MessageFormatter.TryFormatMessage(message, buffer, messageFormat, out written))
-                        {
-                            // Message too large
-                            throw new InvalidOperationException($"Message is too large to write. Maximum allowed message size is: {MaxBufferSize}");
-                        }
+                        // IOutput doesn't really have a way to write incremental
+
+                        // Throwing InvalidOperationException here, but it's not quite an invalid operation...
+                        throw new InvalidOperationException("Ran out of space to format messages!");
                     }
 
-                    // Update the buffer and commit
-                    alloc.Advance(written);
-                    alloc.Commit();
-                    alloc = writer.Alloc();
-                    buffer = alloc.Memory.Span;
+                    // REVIEW: Flushing after each message? Good? Bad? We can't access Commit because it's hidden inside PipelineTextOutput
+                    await output.FlushAsync();
                 }
-
-                await alloc.FlushAsync();
             }
             catch (OperationCanceledException)
             {

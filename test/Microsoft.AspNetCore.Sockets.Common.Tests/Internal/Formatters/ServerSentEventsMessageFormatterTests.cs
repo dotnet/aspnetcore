@@ -3,40 +3,20 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNetCore.Sockets.Tests;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
+namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
 {
     public class ServerSentEventsMessageFormatterTests
     {
         [Fact]
-        public void InsufficientWriteBufferSpace()
-        {
-            const int ExpectedSize = 23;
-            var message = MessageTestUtils.CreateMessage("Test", MessageType.Text);
-
-            byte[] buffer;
-            int bufferSize;
-            int written;
-            for (bufferSize = 0; bufferSize < 23; bufferSize++)
-            {
-                buffer = new byte[bufferSize];
-                Assert.False(ServerSentEventsMessageFormatter.TryFormatMessage(message, buffer, out written));
-                Assert.Equal(0, written);
-            }
-
-            buffer = new byte[bufferSize];
-            Assert.True(ServerSentEventsMessageFormatter.TryFormatMessage(message, buffer, out written));
-            Assert.Equal(ExpectedSize, written);
-        }
-
-        [Fact]
         public void WriteInvalidMessages()
         {
             var message = new Message(new byte[0], MessageType.Binary, endOfMessage: false);
+            var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                ServerSentEventsMessageFormatter.TryFormatMessage(message, Span<byte>.Empty, out var written));
+                ServerSentEventsMessageFormatter.TryWriteMessage(message, output));
             Assert.Equal("Cannot format message where endOfMessage is false using this format", ex.Message);
         }
 
@@ -63,10 +43,10 @@ namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
         {
             var message = MessageTestUtils.CreateMessage(payload, messageType);
 
-            var buffer = new byte[256];
-            Assert.True(ServerSentEventsMessageFormatter.TryFormatMessage(message, buffer, out var written));
+            var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
+            Assert.True(ServerSentEventsMessageFormatter.TryWriteMessage(message, output));
 
-            Assert.Equal(encoded, Encoding.UTF8.GetString(buffer, 0, written));
+            Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
         }
 
         [Theory]
@@ -76,10 +56,10 @@ namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
         {
             var message = MessageTestUtils.CreateMessage(payload);
 
-            var buffer = new byte[256];
-            Assert.True(ServerSentEventsMessageFormatter.TryFormatMessage(message, buffer, out var written));
+            var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
+            Assert.True(ServerSentEventsMessageFormatter.TryWriteMessage(message, output));
 
-            Assert.Equal(encoded, Encoding.UTF8.GetString(buffer, 0, written));
+            Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
         }
     }
 }

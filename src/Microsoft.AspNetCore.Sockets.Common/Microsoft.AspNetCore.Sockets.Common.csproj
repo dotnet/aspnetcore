@@ -14,7 +14,8 @@
   <ItemGroup>
     <PackageReference Include="System.Binary.Base64" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabsVersion)" />
-    <PackageReference Include=" System.IO.Pipelines.Extensions" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="System.IO.Pipelines.Extensions" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="System.Text.Formatting" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.Text.Primitives" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
   </ItemGroup>

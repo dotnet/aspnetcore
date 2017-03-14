@@ -3,11 +3,13 @@
 
 using System;
 using System.IO.Pipelines;
+using System.IO.Pipelines.Text.Primitives;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Sockets.Formatters;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Transports
@@ -33,33 +35,27 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             await context.Response.Body.FlushAsync();
 
             var pipe = context.Response.Body.AsPipelineWriter();
+            var output = new PipelineTextOutput(pipe, TextEncoder.Utf8); // We don't need the Encoder, but it's harmless to set.
 
             try
             {
                 while (await _application.WaitToReadAsync(token))
                 {
-                    var buffer = pipe.Alloc();
                     while (_application.TryRead(out var message))
                     {
-                        if (!ServerSentEventsMessageFormatter.TryFormatMessage(message, buffer.Memory.Span, out var written))
+                        if (!ServerSentEventsMessageFormatter.TryWriteMessage(message, output))
                         {
-                            // We need to expand the buffer
-                            // REVIEW: I'm not sure I fully understand the "right" pattern here...
-                            buffer.Ensure(LongPollingTransport.MaxBufferSize);
+                            // We ran out of space to write, even after trying to enlarge.
+                            // This should only happen in a significant lack-of-memory scenario.
 
-                            // Try one more time
-                            if (!ServerSentEventsMessageFormatter.TryFormatMessage(message, buffer.Memory.Span, out written))
-                            {
-                                // Message too large
-                                throw new InvalidOperationException($"Message is too large to write. Maximum allowed message size is: {LongPollingTransport.MaxBufferSize}");
-                            }
+                            // IOutput doesn't really have a way to write incremental
+
+                            // Throwing InvalidOperationException here, but it's not quite an invalid operation...
+                            throw new InvalidOperationException("Ran out of space to format messages!");
                         }
-                        buffer.Advance(written);
-                        buffer.Commit();
-                        buffer = pipe.Alloc();
-                    }
 
-                    await buffer.FlushAsync();
+                        await output.FlushAsync();
+                    }
                 }
             }
             catch (OperationCanceledException)

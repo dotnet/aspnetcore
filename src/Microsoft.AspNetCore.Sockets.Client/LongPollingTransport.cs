@@ -1,18 +1,18 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Sockets.Formatters;
-using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private IChannelConnection<SendMessage, Message> _application;
         private Task _sender;
         private Task _poller;
+        private MessageParser _parser = new MessageParser();
+
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
         public Task Running { get; private set; } = Task.CompletedTask;
@@ -101,18 +103,22 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
                     else
                     {
-                        _logger.LogDebug("Receive a message from the server");
+                        _logger.LogDebug("Received messages from the server");
 
-                        // Read the whole payload
+                        // Until Pipeline starts natively supporting BytesReader, this is the easiest way to do this.
                         var payload = await response.Content.ReadAsByteArrayAsync();
-
-                        foreach (var message in ReadMessages(payload))
+                        if (payload.Length > 0)
                         {
-                            while (!_application.Output.TryWrite(message))
+                            var messages = ParsePayload(payload);
+
+                            foreach (var message in messages)
                             {
-                                if (cancellationToken.IsCancellationRequested || !await _application.Output.WaitToWriteAsync(cancellationToken))
+                                while (!_application.Output.TryWrite(message))
                                 {
-                                    return;
+                                    if (cancellationToken.IsCancellationRequested || !await _application.Output.WaitToWriteAsync(cancellationToken))
+                                    {
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -137,26 +143,29 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.LogInformation("Receive loop stopped");
         }
 
-        private IEnumerable<Message> ReadMessages(ReadOnlySpan<byte> payload)
+        private IList<Message> ParsePayload(byte[] payload)
         {
-            if (payload.Length == 0)
+            var reader = new BytesReader(payload);
+            var messageFormat = MessageParser.GetFormat(reader.Unread[0]);
+            reader.Advance(1);
+
+            _parser.Reset();
+            var messages = new List<Message>();
+            while (_parser.TryParseMessage(ref reader, messageFormat, out var message))
             {
-                yield break;
+                messages.Add(message);
             }
 
-            var messageFormat = MessageFormatter.GetFormat(payload[0]);
-            payload = payload.Slice(1);
+            // Since we pre-read the whole payload, we know that when this fails we have read everything.
+            // Once Pipelines natively support BytesReader, we could get into situations where the data for
+            // a message just isn't available yet.
 
-            while (payload.Length > 0)
+            // If there's still data, we hit an incomplete message
+            if (reader.Unread.Length > 0)
             {
-                if (!MessageFormatter.TryParseMessage(payload, messageFormat, out var message, out var consumed))
-                {
-                    throw new InvalidDataException("Invalid message payload from server");
-                }
-
-                payload = payload.Slice(consumed);
-                yield return message;
+                throw new FormatException("Incomplete message");
             }
+            return messages;
         }
 
         private async Task SendMessages(Uri sendUrl, CancellationToken cancellationToken)
