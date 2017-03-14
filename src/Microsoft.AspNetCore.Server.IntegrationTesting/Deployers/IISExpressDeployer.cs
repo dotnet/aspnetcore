@@ -80,23 +80,26 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 if (DeploymentParameters.ServerConfigTemplateContent.Contains("[ANCMPath]"))
                 {
                     string ancmPath;
-                    // We need to pick the bitness based the OS / IIS Express, not the application.
-                    // We'll eventually add support for choosing which IIS Express bitness to run: https://github.com/aspnet/Hosting/issues/880
-                    var ancmFile = Is64BitHost ? "aspnetcore_x64.dll" : "aspnetcore_x86.dll";
                     if (!IsWin8OrLater)
                     {
                         // The nupkg build of ANCM does not support Win7. https://github.com/aspnet/AspNetCoreModule/issues/40.
                         ancmPath = @"%ProgramFiles%\IIS Express\aspnetcore.dll";
                     }
-                    // Bin deployed by Microsoft.AspNetCore.AspNetCoreModule.nupkg
-                    else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
-                        && DeploymentParameters.ApplicationType == ApplicationType.Portable)
-                    {
-                        ancmPath = Path.Combine(contentRoot, @"runtimes\win7\native\", ancmFile);
-                    }
                     else
                     {
-                        ancmPath = Path.Combine(contentRoot, ancmFile);
+                        // We need to pick the bitness based the OS / IIS Express, not the application.
+                        // We'll eventually add support for choosing which IIS Express bitness to run: https://github.com/aspnet/Hosting/issues/880
+                        var ancmFile = Is64BitHost ? "aspnetcore_x64.dll" : "aspnetcore_x86.dll";
+                        // Bin deployed by Microsoft.AspNetCore.AspNetCoreModule.nupkg
+                        if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
+                            && DeploymentParameters.ApplicationType == ApplicationType.Portable)
+                        {
+                            ancmPath = Path.Combine(contentRoot, @"runtimes\win7\native\", ancmFile);
+                        }
+                        else
+                        {
+                            ancmPath = Path.Combine(contentRoot, ancmFile);
+                        }
                     }
 
                     if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmPath)))
