@@ -282,7 +282,7 @@
             <DirectoryContainingPackages Include="$(CoherenceDestinationDir)noship\" />
         </ItemGroup>
 
-        <Exec Command="$(PUSH_NUGET_EXE) push -Source $(NUGET_FEED) -ApiKey $(APIKEY) %(DirectoryContainingPackages)*.nupkg" />
+        <Exec Command="$(PUSH_NUGET_EXE) push -Source $(NUGET_FEED) -ApiKey $(APIKEY) %(DirectoryContainingPackages.Identity)*.nupkg" />
     </Target>
 
     <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
