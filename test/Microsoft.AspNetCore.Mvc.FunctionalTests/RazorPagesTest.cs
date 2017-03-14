@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("<a href=\"/Show?id=2\">Post title</a>", content.Trim());
+            Assert.StartsWith("<a href=\"/Show?id=2\">Post title</a>", content.Trim());
         }
 
         [Fact]
