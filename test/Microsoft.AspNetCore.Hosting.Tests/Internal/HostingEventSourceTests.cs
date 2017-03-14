@@ -43,8 +43,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var eventData = eventListener.EventData;
             Assert.NotNull(eventData);
             Assert.Equal(expectedEventId, eventData.EventId);
-#if NETCOREAPP1_1
+#if NETCOREAPP2_0
             Assert.Equal("HostStart", eventData.EventName);
+#elif NET452
+#else
+#error Target framework needs to be updated
 #endif
             Assert.Equal(EventLevel.Informational, eventData.Level);
             Assert.Same(hostingEventSource, eventData.EventSource);
@@ -68,8 +71,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var eventData = eventListener.EventData;
             Assert.NotNull(eventData);
             Assert.Equal(expectedEventId, eventData.EventId);
-#if NETCOREAPP1_1
+#if NETCOREAPP2_0
             Assert.Equal("HostStop", eventData.EventName);
+#elif NET452
+#else
+#error Target framework needs to be updated
 #endif
             Assert.Equal(EventLevel.Informational, eventData.Level);
             Assert.Same(hostingEventSource, eventData.EventSource);
@@ -126,8 +132,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var eventData = eventListener.EventData;
             Assert.NotNull(eventData);
             Assert.Equal(expectedEventId, eventData.EventId);
-#if NETCOREAPP1_1
+#if NETCOREAPP2_0
             Assert.Equal("RequestStart", eventData.EventName);
+#elif NET452
+#else
+#error Target framework needs to be updated
 #endif
             Assert.Equal(EventLevel.Informational, eventData.Level);
             Assert.Same(hostingEventSource, eventData.EventSource);
@@ -156,8 +165,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Assert
             var eventData = eventListener.EventData;
             Assert.Equal(expectedEventId, eventData.EventId);
-#if NETCOREAPP1_1
+#if NETCOREAPP2_0
             Assert.Equal("RequestStop", eventData.EventName);
+#elif NET452
+#else
+#error Target framework needs to be updated
 #endif
             Assert.Equal(EventLevel.Informational, eventData.Level);
             Assert.Same(hostingEventSource, eventData.EventSource);
@@ -180,8 +192,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Assert
             var eventData = eventListener.EventData;
             Assert.Equal(expectedEventId, eventData.EventId);
-#if NETCOREAPP1_1
+#if NETCOREAPP2_0
             Assert.Equal("UnhandledException", eventData.EventName);
+#elif NET452
+#else
+#error Target framework needs to be updated
 #endif
             Assert.Equal(EventLevel.Error, eventData.Level);
             Assert.Same(hostingEventSource, eventData.EventSource);

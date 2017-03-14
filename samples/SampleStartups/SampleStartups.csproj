@@ -3,7 +3,7 @@
   <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net451;netcoreapp1.1</TargetFrameworks>
+    <TargetFrameworks>net451;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
