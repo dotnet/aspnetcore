@@ -16,6 +16,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -417,7 +418,7 @@ namespace Microsoft.AspNetCore.Session
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton(typeof(ILoggerFactory), new NullLoggerFactory());
+                    services.AddSingleton(typeof(ILoggerFactory), NullLoggerFactory.Instance);
                     services.AddDistributedMemoryCache();
                     services.AddSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
                     services.Configure<MemoryCacheOptions>(o => o.Clock = clock);
