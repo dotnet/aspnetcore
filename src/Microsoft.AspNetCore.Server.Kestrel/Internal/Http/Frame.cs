@@ -1272,8 +1272,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             Debug.Assert(RawTarget != null, "RawTarget was not set");
             Debug.Assert(Method != null, "Method was not set");
             Debug.Assert(Path != null, "Path was not set");
-            Debug.Assert(QueryString != "QueryString was not set");
-            Debug.Assert(HttpVersion != "HttpVersion was not set");
+            Debug.Assert(QueryString != null, "QueryString was not set");
+            Debug.Assert(HttpVersion != null, "HttpVersion was not set");
         }
 
         private void OnOriginFormTarget(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
