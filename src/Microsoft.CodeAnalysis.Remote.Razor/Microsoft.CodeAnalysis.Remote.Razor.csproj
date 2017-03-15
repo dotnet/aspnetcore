@@ -11,8 +11,8 @@
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.0.0-rc5-61501-05" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="2.0.0-rc5-61501-05" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevVersion)" />
     <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj" />
   </ItemGroup>
