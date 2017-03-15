@@ -73,11 +73,11 @@
        DestinationFolder="$(UniverseBuildDir)" />
 
     <Message Text="Publishing the following packages to the volatile feed: @(RepositoryNupkgs -> '%(Filename)%(Extension)', ', ')"
-      Condition="'$(PublishPackages)'=='true'" />
+      Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Exec
       Command="$(DotNetPath) nuget push &quot;%(RepositoryNupkgs.Identity)&quot; -s $(NuGetPublishVolatileFeed) -k $(APIKEY)"
-      Condition="'$(PublishPackages)'=='true'" />
+      Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
   </Target>
