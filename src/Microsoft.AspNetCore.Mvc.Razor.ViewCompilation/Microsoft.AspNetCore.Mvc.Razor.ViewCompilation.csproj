@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\..\build\common.props" />
+
   <PropertyGroup>
     <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
     <TargetFramework>netcoreapp1.1</TargetFramework>
@@ -9,12 +11,15 @@
     <!-- Include the build outputs in the build directory (and not the lib directory) -->
     <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
   </PropertyGroup>
+
   <ItemGroup>
     <None Include="build\**\*" Pack="true" PackagePath="%(Identity)" />
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
+
 </Project>

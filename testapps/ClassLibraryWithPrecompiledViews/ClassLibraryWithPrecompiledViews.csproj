@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <OutputType>Exe</OutputType>
     <MvcRazorOutputPath Condition="'$(TargetFramework)'!=''">obj\precompiled\$(TargetFramework)</MvcRazorOutputPath>
     <TestIncludeViewCompilationTargets>true</TestIncludeViewCompilationTargets>
   </PropertyGroup>
   <Import Project="..\..\build\common-testapps.props" />
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
   <Target Name="PrecompileRazorViews" AfterTargets="Build" DependsOnTargets="MvcRazorPrecompile" Condition="'$(TargetFramework)'!=''" />
