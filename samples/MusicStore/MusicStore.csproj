@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <Import Project="..\..\build\common.props" />
+  <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
     <Description>Music store application on ASP.NET Core</Description>
@@ -8,30 +8,28 @@
     <TargetFrameworks>net451;netcoreapp1.1</TargetFrameworks>
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <OutputType>Exe</OutputType>
-    <RuntimeIdentifier Condition="'$(TargetFramework)'!='netcoreapp1.1'">win7-x64</RuntimeIdentifier>
     <RuntimeIdentifiers>win7-x64;win7-x86;win81-x64;win81-x86;win10-x64;win10-x86;osx.10.10-x64;osx.10.11-x64;osx.10.12-x64;ubuntu.14.04-x64;ubuntu.15.04-x64;ubuntu.16.04-x64;centos.7-x64;rhel.7.2-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Session" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(AspNetCoreModuleVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
