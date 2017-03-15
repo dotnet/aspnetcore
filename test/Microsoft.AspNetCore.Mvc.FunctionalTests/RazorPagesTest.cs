@@ -93,7 +93,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("CustomActionResult", content);
         }
 
-
         [Fact]
         public async Task PageModel_Handler_FormAction()
         {
@@ -165,6 +164,35 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal("CustomActionResult", content);
+        }
+
+        [Fact]
+        public async Task RouteData_StringValueOnIntProp_ExpectsNotFound()
+        {
+            // Arrange
+            var routeRequest = new HttpRequestMessage(HttpMethod.Get, "http://localhost/RouteData/pizza");
+           
+            // Act
+            var routeResponse = await Client.SendAsync(routeRequest);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, routeResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task RouteData_IntProperty_IsCoerced()
+        {
+            // Arrange
+            var routeRequest = new HttpRequestMessage(HttpMethod.Get, "http://localhost/RouteData/5");
+
+            // Act
+            var routeResponse = await Client.SendAsync(routeRequest);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, routeResponse.StatusCode);
+
+            var content = await routeResponse.Content.ReadAsStringAsync();
+            Assert.Equal("From RouteData: 5", content.Trim());
         }
 
         [Fact]
@@ -414,7 +442,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal("Login Page", content);
         }
-
 
         [Fact]
         public async Task PageStart_IsDiscoveredWhenRootDirectoryIsNotSpecified()

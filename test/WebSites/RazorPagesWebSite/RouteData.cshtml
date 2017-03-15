@@ -1,0 +1,12 @@
+﻿@page "{intRouteDataStringProperty:int}"
+
+@functions{
+    public string IntRouteDataStringProperty { get; set; }
+
+    public void OnGet(string intRouteDataStringProperty = "default")
+    {
+        IntRouteDataStringProperty = intRouteDataStringProperty;
+    }
+}
+
+From RouteData: @IntRouteDataStringProperty
