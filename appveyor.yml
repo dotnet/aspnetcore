@@ -10,8 +10,6 @@ branches:
 build_script:
   - ps: .\build.ps1
 install:
-  - set PATH=C:\Python27\scripts;%PATH%
-  - pip install autobahntestsuite
   - ps: Install-Product node 6
 clone_depth: 1
 test: off
