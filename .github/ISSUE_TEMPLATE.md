@@ -1,20 +1,23 @@
 This repo is not closely monitored by product and development teams.
 If you are experiencing a product issue, please open the issue on one of these repositories instead.
 
-Common ASP.NET repos and projects:
-
- - See the full list at https://github.com/aspnet
+Common ASP.NET and Entity Framework repos and projects:
 
  - Documentation: https://github.com/aspnet/Docs
  - MVC: https://github.com/aspnet/Mvc
  - Entity Framework Core: https://github.com/aspnet/EntityFramework
+ - Entity Framework 6: https://github.com/aspnet/EntityFramework6
  - SignalR: https://github.com/aspnet/SignalR
  - ASP.NET Core in Docker: https://github.com/aspnet/aspnet-docker
  - Microsoft.NET.Sdk.Web: https://github.com/aspnet/websdk
  - Kestrel HTTP Server: https://github.com/aspnet/KestrelHttpServer
+ - ASP.NET Katana: https://github.com/aspnet/AspNetKatana
+ - and more! See a full list here: https://github.com/aspnet
 
-Common projects that are not ASP.NET:
+Other common projects:
 
- - Visual Studio: https://developercommunity.visualstudio.com
  - NuGet: https://github.com/NuGet/home
  - .NET Core CLI, SDK, or runtime: https://github.com/dotnet/core
+ - Visual Studio: https://developercommunity.visualstudio.com
+ - Visual Studio Code: https://github.com/microsoft/vscode
+ - Omnisharp (C# support for VS Code): https://github.com/omnisharp/omnisharp-vscode
