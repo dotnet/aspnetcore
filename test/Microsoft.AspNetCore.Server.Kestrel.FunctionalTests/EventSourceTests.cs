@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
@@ -54,8 +55,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.Equal($"127.0.0.1:{port}", GetProperty(start, "localEndPoint"));
 
             var stop = Assert.Single(events, e => e.EventName == "ConnectionStop");
-            Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, start.PayloadNames));
-            Assert.Same(KestrelEventSource.Log, start.EventSource);
+            Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, stop.PayloadNames));
+            Assert.Same(KestrelEventSource.Log, stop.EventSource);
         }
 
         private string GetProperty(EventWrittenEventArgs data, string propName)
@@ -63,13 +64,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private class TestEventListener : EventListener
         {
-            private List<EventWrittenEventArgs> _events = new List<EventWrittenEventArgs>();
+            private volatile bool _disposed;
+            private ConcurrentBag<EventWrittenEventArgs> _events = new ConcurrentBag<EventWrittenEventArgs>();
 
             public IEnumerable<EventWrittenEventArgs> EventData => _events;
 
             protected override void OnEventWritten(EventWrittenEventArgs eventData)
             {
-                _events.Add(eventData);
+                if (!_disposed)
+                {
+                    _events.Add(eventData);
+                }
+            }
+
+            public override void Dispose()
+            {
+                _disposed = true;
+                base.Dispose();
             }
         }
 
