@@ -32,3 +32,4 @@ nuget.exe
 *.sln.ide
 *launchSettings.json
 **/Resources/*.Designer.cs
+.vscode/
