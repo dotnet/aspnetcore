@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -293,7 +294,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [InlineData("CustomIssuer")]
         public async Task ReplyPathWillAuthenticateValidAuthorizeCodeAndState(string claimsIssuer)
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -383,7 +384,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [InlineData(false)]
         public async Task ReplyPathWillThrowIfCodeIsInvalid(bool redirect)
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -436,7 +437,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [InlineData(false)]
         public async Task ReplyPathWillRejectIfAccessTokenIsMissing(bool redirect)
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -485,7 +486,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task AuthenticatedEventCanGetRefreshToken()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -565,7 +566,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task NullRedirectUriWillRedirectToSlash()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -638,7 +639,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task ValidateAuthenticatedContext()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -736,7 +737,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task CanRedirectOnError()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -764,7 +765,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task AuthenticateAutomaticWhenAlreadySignedInSucceeds()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -807,7 +808,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task AuthenticateGoogleWhenAlreadySignedInSucceeds()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -850,7 +851,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task ChallengeGoogleWhenAlreadySignedInReturnsForbidden()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -886,7 +887,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task AuthenticateFacebookWhenAlreadySignedWithGoogleReturnsNull()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",
@@ -922,7 +923,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task ChallengeFacebookWhenAlreadySignedWithGoogleSucceeds()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
             var server = CreateServer(new GoogleOptions
             {
                 ClientId = "Test Id",

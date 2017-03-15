@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
         [Fact]
         public async Task AuthenticatedEventCanGetRefreshToken()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("MsftTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("MsftTest"));
             var server = CreateServer(new MicrosoftAccountOptions
             {
                     ClientId = "Test Client Id",

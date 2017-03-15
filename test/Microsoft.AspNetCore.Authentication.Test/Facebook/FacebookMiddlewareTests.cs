@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -163,7 +164,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         {
             var customUserInfoEndpoint = "https://graph.facebook.com/me?fields=email,timezone,picture";
             var finalUserInfoEndpoint = string.Empty;
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("FacebookTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("FacebookTest"));
             var server = CreateServer(
                 app =>
                 {
