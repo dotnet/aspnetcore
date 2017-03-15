@@ -731,7 +731,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             // Setup
             var manager = MockHelpers.MockUserManager<TestUser>();
-            manager.Setup(m => m.FindByNameAsync("bogus")).ReturnsAsync(null).Verifiable();
+            manager.Setup(m => m.FindByNameAsync("bogus")).ReturnsAsync(default(TestUser)).Verifiable();
             var context = new Mock<HttpContext>();
             var helper = SetupSignInManager(manager.Object, context.Object);
 

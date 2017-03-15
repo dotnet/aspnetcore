@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var store = new Mock<IUserSecurityStampStore<TestUser>>();
             var manager = MockHelpers.TestUserManager(store.Object);
             var user = new TestUser { UserName = "nulldude" };
-            store.Setup(s => s.GetSecurityStampAsync(user, It.IsAny<CancellationToken>())).ReturnsAsync(null).Verifiable();
+            store.Setup(s => s.GetSecurityStampAsync(user, It.IsAny<CancellationToken>())).ReturnsAsync(default(string)).Verifiable();
 
             // Act
             // Assert
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var store = new Mock<IUserSecurityStampStore<TestUser>>();
             var manager = MockHelpers.TestUserManager(store.Object);
             var user = new TestUser { UserName = "nulldude" };
-            store.Setup(s => s.GetSecurityStampAsync(user, It.IsAny<CancellationToken>())).ReturnsAsync(null).Verifiable();
+            store.Setup(s => s.GetSecurityStampAsync(user, It.IsAny<CancellationToken>())).ReturnsAsync(default(string)).Verifiable();
 
             // Act
             // Assert
