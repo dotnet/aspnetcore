@@ -1,18 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <Import Project="..\..\build\common.props" />
+  <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
     <TargetFrameworks>net451;netcoreapp1.1</TargetFrameworks>
-    <RuntimeIdentifier Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">win7-x64</RuntimeIdentifier>
-    <OutputType>Exe</OutputType>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">$(PackageTargetFallback);portable-net40+sl5+win8+wp8+wpa81;portable-net45+win8+wp8+wpa81</PackageTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.AzureAppServicesIntegration\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
