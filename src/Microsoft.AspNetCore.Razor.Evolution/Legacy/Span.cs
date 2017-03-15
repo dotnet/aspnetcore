@@ -69,6 +69,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             Kind = builder.Kind;
             Symbols = builder.Symbols;
+
+            for (var i = 0; i <Symbols.Count; i++)
+            {
+                Symbols[i].Parent = this;
+            }
+
             EditHandler = builder.EditHandler;
             ChunkGenerator = builder.ChunkGenerator ?? SpanChunkGenerator.Null;
             _start = builder.Start;

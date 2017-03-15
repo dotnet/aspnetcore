@@ -80,6 +80,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 return HandleDotlessCommitInsertion(target);
             }
 
+            if (IsAcceptableIdentifierReplacement(target, normalizedChange))
+            {
+                return TryAcceptChange(target, normalizedChange);
+            }
+
             if (IsAcceptableReplace(target, normalizedChange))
             {
                 return HandleReplacement(target, normalizedChange);
@@ -148,6 +153,59 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             return IsEndReplace(target, change) ||
                    (change.IsReplace && RemainingIsWhitespace(target, change));
+        }
+
+        private bool IsAcceptableIdentifierReplacement(Span target, TextChange change)
+        {
+            if (!change.IsReplace)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < target.Symbols.Count; i++)
+            {
+                var symbol = target.Symbols[i] as CSharpSymbol;
+
+                if (symbol == null)
+                {
+                    break;
+                }
+
+                var symbolStartIndex = symbol.Start.AbsoluteIndex;
+                var symbolEndIndex = symbolStartIndex + symbol.Content.Length;
+
+                // We're looking for the first symbol that contains the TextChange.
+                if (symbolEndIndex > change.OldPosition)
+                {
+                    if (symbolEndIndex >= change.OldPosition + change.OldLength && symbol.Type == CSharpSymbolType.Identifier)
+                    {
+                        // The symbol we're changing happens to be an identifier. Need to check if its transformed state is also one.
+                        // We do this transformation logic to capture the case that the new text change happens to not be an identifier;
+                        // i.e. "5". Alone, it's numeric, within an identifier it's classified as identifier.
+                        var transformedContent = change.ApplyChange(symbol.Content, symbolStartIndex);
+                        var newSymbols = Tokenizer(transformedContent);
+
+                        if (newSymbols.Count() != 1)
+                        {
+                            // The transformed content resulted in more than one symbol; we can only replace a single identifier with
+                            // another single identifier.
+                            break;
+                        }
+
+                        var newSymbol = (CSharpSymbol)newSymbols.First();
+                        if (newSymbol.Type == CSharpSymbolType.Identifier)
+                        {
+                            return true;
+                        }
+                    }
+
+                    // Change is touching a non-identifier symbol or spans multiple symbols.
+
+                    break;
+                }
+            }
+
+            return false;
         }
 
         private static bool IsAcceptableDeletion(Span target, TextChange change)
@@ -300,7 +358,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private PartialParseResult TryAcceptChange(Span target, TextChange change, PartialParseResult acceptResult = PartialParseResult.Accepted)
         {
-            var content = change.ApplyChange(target);
+            var content = change.ApplyChange(target.Content, target.Start.AbsoluteIndex);
             if (StartsWithKeyword(content))
             {
                 return PartialParseResult.Rejected | PartialParseResult.SpanContextChanged;

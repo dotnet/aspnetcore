@@ -102,6 +102,38 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return current as Span;
         }
 
+        public virtual Span LocateOwner(TextChange change) => LocateOwner(change, Children);
+
+        protected static Span LocateOwner(TextChange change, IEnumerable<SyntaxTreeNode> elements)
+        {
+            // Ask each child recursively
+            Span owner = null;
+            foreach (var element in elements)
+            {
+                var span = element as Span;
+                if (span == null)
+                {
+                    owner = ((Block)element).LocateOwner(change);
+                }
+                else
+                {
+                    if (change.OldPosition < span.Start.AbsoluteIndex)
+                    {
+                        // Early escape for cases where changes overlap multiple spans
+                        // In those cases, the span will return false, and we don't want to search the whole tree
+                        // So if the current span starts after the change, we know we've searched as far as we need to
+                        break;
+                    }
+                    owner = span.EditHandler.OwnsChange(span, change) ? span : owner;
+                }
+
+                if (owner != null)
+                {
+                    break;
+                }
+            }
+            return owner;
+        }
         public override string ToString()
         {
             return string.Format(

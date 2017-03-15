@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         protected virtual SpanBuilder UpdateSpan(Span target, TextChange normalizedChange)
         {
-            var newContent = normalizedChange.ApplyChange(target);
+            var newContent = normalizedChange.ApplyChange(target.Content, target.Start.AbsoluteIndex);
             var newSpan = new SpanBuilder(target);
             newSpan.ClearSymbols();
             foreach (ISymbol sym in Tokenizer(newContent))

@@ -11,6 +11,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     {
         private readonly Dictionary<string, RazorProjectItem> _lookup;
 
+        public TestRazorProject()
+            : this(new RazorProjectItem[0])
+        {
+        }
+
         public TestRazorProject(IList<RazorProjectItem> items)
         {
             _lookup = items.ToDictionary(item => item.Path);

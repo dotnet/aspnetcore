@@ -14,4 +14,8 @@
      <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Threading.Thread" Version="$(CoreFxVersion)" />
+  </ItemGroup>
+
 </Project>

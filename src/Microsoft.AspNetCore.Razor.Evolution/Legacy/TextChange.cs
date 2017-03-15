@@ -9,7 +9,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal struct TextChange
+    public struct TextChange
     {
         private string _newText;
         private string _oldText;
@@ -163,15 +163,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             Debug.Assert(changeRelativePosition >= 0);
             return content.Remove(changeRelativePosition, OldLength)
                 .Insert(changeRelativePosition, NewText);
-        }
-
-        /// <summary>
-        /// Applies the text change to the content of the span and returns the new content.
-        /// This method doesn't update the span content.
-        /// </summary>
-        public string ApplyChange(Span span)
-        {
-            return ApplyChange(span.Content, span.Start.AbsoluteIndex);
         }
 
         public override string ToString()

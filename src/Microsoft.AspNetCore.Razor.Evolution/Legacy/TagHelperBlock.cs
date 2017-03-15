@@ -120,6 +120,45 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
+        public override Span LocateOwner(TextChange change)
+        {
+            var oldPosition = change.OldPosition;
+            if (oldPosition < Start.AbsoluteIndex)
+            {
+                // Change occurs prior to the TagHelper.
+                return null;
+            }
+
+            var bodyEndLocation = SourceStartTag?.Start.AbsoluteIndex + SourceStartTag?.Length + base.Length;
+            if (oldPosition > bodyEndLocation)
+            {
+                // Change occurs after the TagHelpers body. End tags for TagHelpers cannot claim ownership of changes
+                // because any change to them impacts whether or not a tag is a TagHelper.
+                return null;
+            }
+
+            var startTagEndLocation = Start.AbsoluteIndex + SourceStartTag?.Length;
+            if (oldPosition < startTagEndLocation)
+            {
+                // Change occurs in the start tag.
+
+                var attributeElements = Attributes
+                    .Select(attribute => attribute.Value)
+                    .Where(value => value != null);
+
+                return LocateOwner(change, attributeElements);
+            }
+
+            if (oldPosition < bodyEndLocation)
+            {
+                // Change occurs in the body
+                return base.LocateOwner(change);
+            }
+
+            // TagHelper does not contain a Span that can claim ownership.
+            return null;
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {

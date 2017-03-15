@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal interface ITextBuffer
+    public interface ITextBuffer
     {
         int Length { get; }
         int Position { get; set; }
