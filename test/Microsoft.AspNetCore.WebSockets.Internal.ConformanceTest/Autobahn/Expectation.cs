@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
         Fail,
         NonStrict,
         OkOrFail,
-        Ok,
-        OkOrNonStrict
+        Ok
     }
 }

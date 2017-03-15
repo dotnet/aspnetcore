@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
 
         public AutobahnExpectations Fail(params string[] caseSpecs) => Expect(Expectation.Fail, caseSpecs);
         public AutobahnExpectations NonStrict(params string[] caseSpecs) => Expect(Expectation.NonStrict, caseSpecs);
-        public AutobahnExpectations OkOrNonStrict(params string[] caseSpecs) => Expect(Expectation.OkOrNonStrict, caseSpecs);
         public AutobahnExpectations OkOrFail(params string[] caseSpecs) => Expect(Expectation.OkOrFail, caseSpecs);
 
         public AutobahnExpectations Expect(Expectation expectation, params string[] caseSpecs)
@@ -62,21 +61,15 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
                             }
                             break;
                         case Expectation.Ok:
-                            if (!caseResult.BehaviorIs("OK"))
-                            {
-                                failures.AppendLine($"Case {serverResult.Name}:{caseResult.Name}. Expected 'OK', but got '{caseResult.ActualBehavior}'");
-                            }
-                            break;
-                        case Expectation.OkOrNonStrict:
                             if (!caseResult.BehaviorIs("NON-STRICT") && !caseResult.BehaviorIs("OK"))
                             {
                                 failures.AppendLine($"Case {serverResult.Name}:{caseResult.Name}. Expected 'NON-STRICT' or 'OK', but got '{caseResult.ActualBehavior}'");
                             }
                             break;
                         case Expectation.OkOrFail:
-                            if (!caseResult.BehaviorIs("FAILED") && !caseResult.BehaviorIs("OK"))
+                            if (!caseResult.BehaviorIs("NON-STRICT") && !caseResult.BehaviorIs("FAILED") && !caseResult.BehaviorIs("OK"))
                             {
-                                failures.AppendLine($"Case {serverResult.Name}:{caseResult.Name}. Expected 'FAILED' or 'OK', but got '{caseResult.ActualBehavior}'");
+                                failures.AppendLine($"Case {serverResult.Name}:{caseResult.Name}. Expected 'FAILED', 'NON-STRICT' or 'OK', but got '{caseResult.ActualBehavior}'");
                             }
                             break;
                         default:
