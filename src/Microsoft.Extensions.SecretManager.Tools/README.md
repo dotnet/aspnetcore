@@ -9,7 +9,7 @@ Install `Microsoft.Extensions.SecretManager.Tools` as a `DotNetCliToolReference`
 
 ```xml
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.0-msbuild2-update1" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.0" />
   </ItemGroup>
 ```
 

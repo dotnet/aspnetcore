@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0" />
+
+    <Watch Include="say-hello.js" />
+  </ItemGroup>
+
+  <Target Name="RunMyNpmCommand">
+    <Exec Command="npm run custom" />
+  </Target>
+</Project>

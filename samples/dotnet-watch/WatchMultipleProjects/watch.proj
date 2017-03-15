@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0" />
+
+    <ProjectReference Include="Web\Web.csproj" />
+    <ProjectReference Include="Test\Test.csproj" />
+  </ItemGroup>
+
+  <Target Name="TestAndRun">
+    <Exec Command="dotnet test" WorkingDirectory="Test/" />
+    <Exec Command="dotnet run" WorkingDirectory="Web/" />
+  </Target>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets"/>
+</Project>

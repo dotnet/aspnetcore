@@ -8,7 +8,7 @@ Install `Microsoft.DotNet.Watcher.Tools` as a `DotNetCliToolReference` to your p
 
 ```xml
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0-msbuild3-final" />
+    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0" />
   </ItemGroup>
 ```
 
@@ -65,9 +65,9 @@ Example:
 ```xml
 <ItemGroup>
     <!-- exclude Generated.cs from dotnet-watch -->
-    <Compile Include="Generated.cs" Watch="false" />
+    <Compile Update="Generated.cs" Watch="false" />
     <!-- exclude Strings.resx from dotnet-watch -->
-    <EmbeddedResource Include="Strings.resx" Watch="false" />
+    <EmbeddedResource Update="Strings.resx" Watch="false" />
 </ItemGroup>
 ```
 
