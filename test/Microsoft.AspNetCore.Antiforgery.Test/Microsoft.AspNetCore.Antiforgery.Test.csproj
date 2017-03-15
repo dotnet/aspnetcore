@@ -9,16 +9,19 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Antiforgery\Microsoft.AspNetCore.Antiforgery.csproj" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="1.2.0-*" />
-    <PackageReference Include="Moq" Version="4.6.36-*" />
-    <PackageReference Include="xunit" Version="2.2.0-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
+    <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
   </ItemGroup>
 
 </Project>
