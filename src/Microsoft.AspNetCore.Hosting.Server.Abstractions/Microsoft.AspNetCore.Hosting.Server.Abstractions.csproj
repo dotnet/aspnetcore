@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>

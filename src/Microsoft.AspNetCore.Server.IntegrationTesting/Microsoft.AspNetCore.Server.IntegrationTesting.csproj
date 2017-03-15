@@ -17,17 +17,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="1.2.0-*" PrivateAssets="All"/>
-    <PackageReference Include="Microsoft.Extensions.RuntimeEnvironment.Sources" Version="1.2.0-*" PrivateAssets="All"/>
-    <PackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="1.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.RuntimeEnvironment.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="$(WindowsApiSetsVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <PackageReference Include="Microsoft.Web.Administration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Web.Administration" Version="$(WebAdministrationVersion)" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
