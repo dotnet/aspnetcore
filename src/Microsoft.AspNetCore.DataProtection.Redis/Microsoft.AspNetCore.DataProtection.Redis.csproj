@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.DataProtection\Microsoft.AspNetCore.DataProtection.csproj" />
-    <PackageReference Include="StackExchange.Redis.StrongName" Version="1.1.605" />
+    <PackageReference Include="StackExchange.Redis.StrongName" Version="$(RedisVersion)" />
   </ItemGroup>
 
 </Project>
