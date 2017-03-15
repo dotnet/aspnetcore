@@ -9,7 +9,7 @@ import * as childProcess from 'child_process';
 import * as targz from 'tar.gz';
 
 const isWindows = /^win/.test(process.platform);
-const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', 'Dockerfile', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx', '.xproj'];
+const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx'];
 const yeomanGeneratorSource = './src/yeoman';
 
 // To support the "dotnet new" templates, we want to bundle prebuilt dist dev-mode files, because "dotnet new" can't auto-run
@@ -92,19 +92,11 @@ function buildYeomanNpmPackage(outputRoot: string) {
 
     // Copy template files
     const filenameReplacements = [
-        { from: /.*\.xproj$/, to: 'tokenreplace-namePascalCase.xproj' },
         { from: /.*\.csproj$/, to: 'tokenreplace-namePascalCase.csproj' }
     ];
     const contentReplacements = [
-        // .xproj items
-        { from: /\bWebApplicationBasic\b/g, to: '<%= namePascalCase %>' },
-        { from: /<ProjectGuid>[0-9a-f\-]{36}<\/ProjectGuid>/g, to: '<ProjectGuid><%= projectGuid %></ProjectGuid>' },
-        { from: /<RootNamespace>.*?<\/RootNamespace>/g, to: '<RootNamespace><%= namePascalCase %></RootNamespace>'},
-        { from: /\s*<BaseIntermediateOutputPath.*?<\/BaseIntermediateOutputPath>/g, to: '' },
-        { from: /\s*<OutputPath.*?<\/OutputPath>/g, to: '' },
-
         // global.json items
-        { from: /1\.0\.0-preview2-1-003177/, to: '<%= sdkVersion %>' }
+        { from: /sdkVersionInjectedHere/, to: '<%= sdkVersion %>' }
     ];
     _.forEach(templates, (templateConfig, templateName) => {
         const outputDir = path.join(outputTemplatesRoot, templateName);
@@ -153,13 +145,13 @@ function buildDotNetNewNuGetPackage() {
             sources: [{
                 source: './',
                 target: './',
-                exclude: ['.deployment', '.template.config/**', 'project.json', '*.xproj', '**/_placeholder.txt']
+                exclude: ['.template.config/**']
             }],
             symbols: {
                 sdkVersion: {
                     type: 'bind',
                     binding: 'dotnet-cli-version',
-                    replaces: '1.0.0-preview2-1-003177'
+                    replaces: 'sdkVersionInjectedHere'
                 }
             },
             tags: { language: 'C#', type: 'project' },
