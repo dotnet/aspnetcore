@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
 </Project>
