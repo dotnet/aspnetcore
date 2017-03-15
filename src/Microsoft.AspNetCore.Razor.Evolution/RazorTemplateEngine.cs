@@ -188,20 +188,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 throw new InvalidOperationException(Resources.FormatRazorTemplateEngine_ItemCouldNotBeFound(projectItem.Path));
             }
 
-            var importsFileName = Options.ImportsFileName;
-            if (string.IsNullOrEmpty(importsFileName))
-            {
-                return Enumerable.Empty<RazorSourceDocument>();
-            }
-
             var result = new List<RazorSourceDocument>();
-            var importProjectItems = Project.FindHierarchicalItems(projectItem.Path, importsFileName);
-            foreach (var importItem in importProjectItems)
+
+            var importsFileName = Options.ImportsFileName;
+            if (!string.IsNullOrEmpty(importsFileName))
             {
-                if (importItem.Exists)
+                var importProjectItems = Project.FindHierarchicalItems(projectItem.Path, importsFileName);
+                foreach (var importItem in importProjectItems)
                 {
-                    // We want items in descending order. FindHierarchicalItems returns items in ascending order.
-                    result.Insert(0, RazorSourceDocument.ReadFrom(importItem));
+                    if (importItem.Exists)
+                    {
+                        // We want items in descending order. FindHierarchicalItems returns items in ascending order.
+                        result.Insert(0, RazorSourceDocument.ReadFrom(importItem));
+                    }
                 }
             }
 

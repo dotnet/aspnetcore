@@ -191,5 +191,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 import => Assert.Equal("/MyImport.cshtml", import.FileName),
                 import => Assert.Equal("/Views/Home/MyImport.cshtml", import.FileName));
         }
+
+        [Fact]
+        public void CreateCodeDocument_NullImportFileName_IncludesDefaultImportIfNotNull()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("/Views/Home/Index.cshtml");
+            var project = new TestRazorProject(new[] { projectItem });
+            var razorEngine = RazorEngine.Create();
+            var defaultImport = RazorSourceDocument.ReadFrom(new MemoryStream(), "Default.cshtml");
+            var templateEngine = new RazorTemplateEngine(razorEngine, project)
+            {
+                Options =
+                {
+                    DefaultImports = defaultImport,
+                }
+            };
+
+            // Act
+            var codeDocument = templateEngine.CreateCodeDocument(projectItem);
+
+            // Assert
+            Assert.Collection(codeDocument.Imports,
+                import => Assert.Same(defaultImport, import));
+        }
     }
 }
