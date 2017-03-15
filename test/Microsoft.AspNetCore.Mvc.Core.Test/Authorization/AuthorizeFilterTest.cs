@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
             auth.Setup(c => c.AuthenticateAsync("Bearer")).ReturnsAsync(bearerPrincipal);
             auth.Setup(c => c.AuthenticateAsync("Basic")).ReturnsAsync(basicPrincipal);
-            auth.Setup(c => c.AuthenticateAsync("Fails")).ReturnsAsync(null);
+            auth.Setup(c => c.AuthenticateAsync("Fails")).ReturnsAsync(default(ClaimsPrincipal));
 
             // AuthorizationFilterContext
             var actionContext = new ActionContext(

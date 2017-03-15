@@ -16,12 +16,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.csproj" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="1.2.0-*" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>
