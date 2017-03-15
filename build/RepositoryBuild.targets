@@ -64,15 +64,20 @@
 
     <ItemGroup>
       <RepositoryArtifacts Include="$(RepositoryArtifactsDirectory)*" />
+      <RepositorySymbolNupkgs Include="$(RepositoryArtifactsDirectory)*.symbols.nupkg" />
+      <RepositoryNupkgs Include="$(RepositoryArtifactsDirectory)*.nupkg" Exclude="@(RepositorySymbolNupkgs)" />
     </ItemGroup>
 
     <Copy
        SourceFiles="@(RepositoryArtifacts)"
        DestinationFolder="$(UniverseBuildDir)" />
 
+    <Message Text="Publishing the following packages to the volatile feed: @(RepositoryNupkgs -> '%(Filename)%(Extension)', ', ')"
+      Condition="'$(PublishPackages)'=='true'" />
+
     <Exec
-      Command="$(DotNetPath) nuget push &quot;%(RepositoryArtifacts.Identity)&quot; -s $(NuGetPublishVolatileFeed) -k $(APIKEY)"
-      Condition="'$(PublishPackages)'=='true' AND '%(RepositoryArtifacts.Extension)'=='.nupkg'" />
+      Command="$(DotNetPath) nuget push &quot;%(RepositoryNupkgs.Identity)&quot; -s $(NuGetPublishVolatileFeed) -k $(APIKEY)"
+      Condition="'$(PublishPackages)'=='true'" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
   </Target>

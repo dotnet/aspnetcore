@@ -122,7 +122,7 @@
 
       <_BuildRepositoryProperties Condition="'$(PublishPackages)'=='true'">
         $(_BuildRepositoryProperties);
-        APIKey=$(APIKey)
+        APIKey=$(APIKey);
         NuGetPublishVolatileFeed=$(NuGetPublishVolatileFeed);
         PublishPackages=$(PublishPackages)
       </_BuildRepositoryProperties>
