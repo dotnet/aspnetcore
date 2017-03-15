@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Core.Internal;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -18,7 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class ControllerActionInvoker : ResourceInvoker, IActionInvoker
     {
         private readonly IControllerFactory _controllerFactory;
-        private readonly IControllerArgumentBinder _controllerArgumentBinder;
+        private readonly ParameterBinder _parameterBinder;
+        private readonly IModelMetadataProvider _modelMetadataProvider;
 
         private readonly ControllerContext _controllerContext;
         private readonly ObjectMethodExecutor _executor;
@@ -36,7 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public ControllerActionInvoker(
             IControllerFactory controllerFactory,
-            IControllerArgumentBinder controllerArgumentBinder,
+            ParameterBinder parameterBinder,
+            IModelMetadataProvider modelMetadataProvider,
             ILogger logger,
             DiagnosticSource diagnosticSource,
             ControllerContext controllerContext,
@@ -50,9 +53,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(controllerFactory));
             }
 
-            if (controllerArgumentBinder == null)
+            if (parameterBinder == null)
             {
-                throw new ArgumentNullException(nameof(controllerArgumentBinder));
+                throw new ArgumentNullException(nameof(parameterBinder));
             }
 
             if (objectMethodExecutor == null)
@@ -61,7 +64,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             _controllerFactory = controllerFactory;
-            _controllerArgumentBinder = controllerArgumentBinder;
+            _parameterBinder = parameterBinder;
+            _modelMetadataProvider = modelMetadataProvider;
             _controllerContext = controllerContext;
             _executor = objectMethodExecutor;
         }
@@ -291,7 +295,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         _controller = _controllerFactory.CreateController(controllerContext);
 
                         _arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                        var task = _controllerArgumentBinder.BindArgumentsAsync(controllerContext, _controller, _arguments);
+
+                        var task = BindArgumentsAsync();
                         if (task.Status != TaskStatus.RanToCompletion)
                         {
                             next = State.ActionNext;
@@ -969,6 +974,76 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (context.Exception != null)
             {
                 throw context.Exception;
+            }
+        }
+
+        private Task BindArgumentsAsync()
+        {
+            // Perf: Avoid allocating async state machines where possible. We only need the state
+            // machine if you need to bind properties or arguments.
+            var actionDescriptor = _controllerContext.ActionDescriptor;
+            if (actionDescriptor.BoundProperties.Count == 0 &&
+                actionDescriptor.Parameters.Count == 0)
+            {
+                return TaskCache.CompletedTask;
+            }
+
+            return BindArgumentsCoreAsync(_parameterBinder, _modelMetadataProvider, _controllerContext, _controller, _arguments);
+        }
+
+        // Intentionally static internal for unit testing
+        internal static async Task BindArgumentsCoreAsync(
+            ParameterBinder parameterBinder,
+            IModelMetadataProvider modelMetadataProvider,
+            ControllerContext controllerContext, 
+            object controller, 
+            Dictionary<string, object> arguments)
+        {
+            var valueProvider = await CompositeValueProvider.CreateAsync(controllerContext);
+
+            var parameters = controllerContext.ActionDescriptor.Parameters;
+            for (var i = 0; i < parameters.Count; i++)
+            {
+                var parameter = parameters[i];
+
+                var result = await parameterBinder.BindModelAsync(controllerContext, valueProvider, parameter);
+                if (result.IsModelSet)
+                {
+                    arguments[parameter.Name] = result.Model;
+                }
+            }
+
+            var propertyDescriptors = controllerContext.ActionDescriptor.BoundProperties;
+            if (propertyDescriptors.Count == 0)
+            {
+                // Perf: Early exit to avoid PropertyHelper lookup in the (common) case where we have no
+                // bound properties.
+                return;
+            }
+
+            var controllerType = controller.GetType();
+            ModelMetadata controllerMetadata = null;
+            for (var i = 0; i < propertyDescriptors.Count; i++)
+            {
+                var property = propertyDescriptors[i];
+
+                var result = await parameterBinder.BindModelAsync(controllerContext, valueProvider, property);
+                if (result.IsModelSet)
+                {
+                    if (controllerMetadata == null)
+                    {
+                        controllerMetadata = modelMetadataProvider.GetMetadataForType(controllerType);
+                    }
+                    var propertyMetadata = controllerMetadata.Properties[property.Name] ??
+                        modelMetadataProvider.GetMetadataForProperty(controllerType, property.Name);
+                    if (propertyMetadata != null)
+                    {
+                        PropertyValueSetter.SetValue(
+                            propertyMetadata,
+                            controller,
+                            result.Model);
+                    }
+                }
             }
         }
 

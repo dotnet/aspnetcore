@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             setup.Configure(options);
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(options);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(options);
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             // ModelBindingResult

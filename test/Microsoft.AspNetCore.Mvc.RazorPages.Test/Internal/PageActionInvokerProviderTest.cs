@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -70,6 +71,43 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Same(releaser, entry.ReleasePage);
             Assert.Null(entry.ModelFactory);
             Assert.Null(entry.ReleaseModel);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_CachesModelBinderFactory()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                FilterDescriptors = new FilterDescriptor[0],
+            };
+
+            var loader = new Mock<IPageLoader>();
+            loader.Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
+                .Returns(new CompiledPageActionDescriptor
+                {
+                    PageTypeInfo = typeof(PageWithBoundProperties).GetTypeInfo(),
+                });
+            var descriptorCollection = new ActionDescriptorCollection(new[] { descriptor }, version: 1);
+            var actionDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorProvider.Setup(p => p.ActionDescriptors).Returns(descriptorCollection);
+            var pageFactoryProvider = Mock.Of<IPageFactoryProvider>();
+
+            var invokerProvider = CreateInvokerProvider(
+                loader.Object,
+                actionDescriptorProvider.Object,
+                pageFactoryProvider);
+            var context = new ActionInvokerProviderContext(
+                new ActionContext(new DefaultHttpContext(), new RouteData(), descriptor));
+
+            // Act
+            invokerProvider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.NotNull(context.Result);
+            var actionInvoker = Assert.IsType<PageActionInvoker>(context.Result);
+            var entry = actionInvoker.CacheEntry;
+            Assert.NotNull(entry.PropertyBinder);
         }
 
         [Fact]
@@ -762,6 +800,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 razorProject = Mock.Of<RazorProject>();
             }
 
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var parameterBinder = new ParameterBinder(
+                modelMetadataProvider,
+                TestModelBinderFactory.CreateDefault(),
+                Mock.Of<IObjectModelValidator>());
+
             return new PageActionInvokerProvider(
                 loader,
                 pageProvider ?? Mock.Of<IPageFactoryProvider>(),
@@ -769,7 +813,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 razorPageFactoryProvider ?? Mock.Of<IRazorPageFactoryProvider>(),
                 actionDescriptorProvider,
                 new IFilterProvider[0],
-                new EmptyModelMetadataProvider(),
+                parameterBinder,
+                modelMetadataProvider,
                 tempDataFactory.Object,
                 new TestOptionsManager<MvcOptions>(),
                 new TestOptionsManager<HtmlHelperOptions>(),
@@ -889,6 +934,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public void OnGet()
             {
             }
+        }
+
+        private class PageWithBoundProperties
+        {
+            [ModelBinder]
+            public string Id { get; set; }
         }
     }
 }

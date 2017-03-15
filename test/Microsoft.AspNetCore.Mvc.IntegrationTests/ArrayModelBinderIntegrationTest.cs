@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfSimpleType_WithPrefix_Success()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfSimpleType_WithExplicitPrefix_Success()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfSimpleType_EmptyPrefix_Success()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfSimpleType_NoData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfComplexType_WithPrefix_Success()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfComplexType_WithExplicitPrefix_Success()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfComplexType_EmptyPrefix_Success()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfComplexType_NoData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task ArrayModelBinder_BindsArrayOfComplexTypeHavingInitializedData_WithPrefix_Success_ReadOnly()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

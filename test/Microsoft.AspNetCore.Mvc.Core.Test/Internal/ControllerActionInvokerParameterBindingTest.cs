@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Moq;
@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class DefaultControllerArgumentBinderTests
+    public class ControllerActionInvokerParameterBindingTest
     {
         [Fact]
         public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsNull()
@@ -37,14 +37,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
                 .Returns(TaskCache.CompletedTask);
             var factory = GetModelBinderFactory(binder.Object);
-            var argumentBinder = GetArgumentBinder(factory);
+            var parameterBinder = GetParameterBinder(factory);
 
             var controllerContext = GetControllerContext(actionDescriptor);
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Empty(arguments);
@@ -68,14 +73,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
                 .Returns(TaskCache.CompletedTask);
             var factory = GetModelBinderFactory(binder.Object);
-            var argumentBinder = GetArgumentBinder(factory);
+            var parameterBinder = GetParameterBinder(factory);
 
             var controllerContext = GetControllerContext(actionDescriptor);
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Empty(arguments);
@@ -108,14 +118,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 })
                 .Returns(TaskCache.CompletedTask);
             var factory = GetModelBinderFactory(binder.Object);
-            var argumentBinder = GetArgumentBinder(factory);
+            var parameterBinder = GetParameterBinder(factory);
 
             var controllerContext = GetControllerContext(actionDescriptor);
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Equal(1, arguments.Count);
@@ -146,12 +161,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     It.IsAny<string>(),
                     It.IsAny<object>()));
 
-            var argumentBinder = GetArgumentBinder(factory, mockValidator.Object);
+            var parameterBinder = GetParameterBinder(factory, mockValidator.Object);
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             mockValidator
@@ -195,10 +215,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var factory = GetModelBinderFactory(binder.Object);
             var controller = new TestController();
-            var argumentBinder = GetArgumentBinder(factory, mockValidator.Object);
+            var parameterBinder = GetParameterBinder(factory, mockValidator.Object);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             mockValidator
@@ -235,10 +260,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     It.IsAny<object>()));
 
             var factory = GetModelBinderFactory("Hello");
-            var argumentBinder = GetArgumentBinder(factory, mockValidator.Object);
+            var parameterBinder = GetParameterBinder(factory, mockValidator.Object);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             mockValidator
@@ -281,10 +311,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     It.IsAny<object>()));
 
             var factory = GetModelBinderFactory(binder.Object);
-            var argumentBinder = GetArgumentBinder(factory, mockValidator.Object);
+            var parameterBinder = GetParameterBinder(factory, mockValidator.Object);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             mockValidator
@@ -314,11 +349,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var factory = GetModelBinderFactory("Hello");
-            var argumentBinder = GetArgumentBinder(factory);
+            var parameterBinder = GetParameterBinder(factory);
 
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Equal("Hello", controller.StringProperty);
@@ -345,10 +385,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var expected = new List<string> { "Hello", "World", "!!" };
             var factory = GetModelBinderFactory(expected);
-            var argumentBinder = GetArgumentBinder(factory);
+            var parameterBinder = GetParameterBinder(factory);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Equal(expected, controller.CollectionProperty);
@@ -377,14 +422,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var binder = new StubModelBinder(ModelBindingResult.Success(model: null));
             var factory = GetModelBinderFactory(binder);
-            var argumentBinder = GetArgumentBinder(factory);
+            var parameterBinder = GetParameterBinder(factory);
 
 
             // Some non default value.
             controller.NonNullableProperty = -1;
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Equal(-1, controller.NonNullableProperty);
@@ -409,14 +459,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var binder = new StubModelBinder(ModelBindingResult.Success(model: null));
             var factory = GetModelBinderFactory(binder);
-            var argumentBinder = GetArgumentBinder(factory);
+            var parameterBinder = GetParameterBinder(factory);
 
 
             // Some non default value.
             controller.NullableProperty = -1;
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Null(controller.NullableProperty);
@@ -485,11 +540,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
             var factory = GetModelBinderFactory(inputValue);
-            var argumentBinder = GetArgumentBinder(factory);
-
+            var parameterBinder = GetParameterBinder(factory);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Equal(expectedValue, propertyAccessor(controller));
@@ -549,7 +608,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 object model;
                 if (inputPropertyValues.TryGetValue(bindingContext.FieldName, out model))
                 {
-                    bindingContext.Result = ModelBindingResult.Success( model);
+                    bindingContext.Result = ModelBindingResult.Success(model);
                 }
                 else
                 {
@@ -560,10 +619,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var factory = GetModelBinderFactory(binder);
             controllerContext.ValueProviderFactories.Add(new SimpleValueProviderFactory());
 
-            var argumentBinder = GetArgumentBinder(factory);
+            var parameterBinder = GetParameterBinder(factory);
 
             // Act
-            await argumentBinder.BindArgumentsAsync(controllerContext, controller, arguments);
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                controllerContext,
+                controller,
+                arguments);
 
             // Assert
             Assert.Equal(new string[] { "goodbye" }, controller.ArrayProperty);                 // Skipped
@@ -574,141 +638,136 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal("Hello", controller.StringProperty);
         }
 
-        public static TheoryData BindModelAsyncData
+        private class TransferInfo
+        {
+            [Range(25, 50)]
+            public int AccountId { get; set; }
+
+            public double Amount { get; set; }
+        }
+
+        public static TheoryData<List<ParameterDescriptor>> MultipleActionParametersAndValidationData
         {
             get
             {
-                var emptyBindingInfo = new BindingInfo();
-                var bindingInfoWithName = new BindingInfo
+                return new TheoryData<List<ParameterDescriptor>>
                 {
-                    BinderModelName = "bindingInfoName",
-                    BinderType = typeof(Person),
-                };
-
-                // parameterBindingInfo, metadataBinderModelName, parameterName, expectedBinderModelName
-                return new TheoryData<BindingInfo, string, string, string>
-                {
-                    // If the parameter name is not a prefix match, it is ignored. But name is required to create a
-                    // ModelBindingContext.
-                    { null, null, "parameterName", string.Empty },
-                    { emptyBindingInfo, null, "parameterName", string.Empty },
-                    { bindingInfoWithName, null, "parameterName", "bindingInfoName" },
-                    { null, "modelBinderName", "parameterName", "modelBinderName" },
-                    { null, null, "parameterName", string.Empty },
-                    // Parameter's BindingInfo has highest precedence
-                    { bindingInfoWithName, "modelBinderName", "parameterName", "bindingInfoName" },
+                    // Irrespective of the order in which the parameters are defined on the action,
+                    // the validation on the TransferInfo's AccountId should occur.
+                    // Here 'accountId' parameter is bound by the prefix 'accountId' while the 'transferInfo'
+                    // property is bound using the empty prefix and the 'TransferInfo' property names.
+                    new List<ParameterDescriptor>()
+                    {
+                        new ParameterDescriptor()
+                        {
+                            Name = "accountId",
+                            ParameterType = typeof(int)
+                        },
+                        new ParameterDescriptor()
+                        {
+                            Name = "transferInfo",
+                            ParameterType = typeof(TransferInfo),
+                            BindingInfo = new BindingInfo()
+                            {
+                                BindingSource = BindingSource.Body
+                            }
+                        }
+                    },
+                    new List<ParameterDescriptor>()
+                    {
+                        new ParameterDescriptor()
+                        {
+                            Name = "transferInfo",
+                            ParameterType = typeof(TransferInfo),
+                            BindingInfo = new BindingInfo()
+                            {
+                                BindingSource = BindingSource.Body
+                            }
+                        },
+                        new ParameterDescriptor()
+                        {
+                            Name = "accountId",
+                            ParameterType = typeof(int)
+                        }
+                    }
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(BindModelAsyncData))]
-        public async Task BindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixDoesNotMatch(
-            BindingInfo parameterBindingInfo,
-            string metadataBinderModelName,
-            string parameterName,
-            string expectedModelName)
+        [MemberData(nameof(MultipleActionParametersAndValidationData))]
+        public async Task MultipleActionParameter_ValidModelState(List<ParameterDescriptor> parameters)
         {
+            // Since validation attribute is only present on the FromBody model's property(TransferInfo's AccountId),
+            // validation should not trigger for the parameter which is bound from Uri.
+
             // Arrange
-            var metadataProvider = new TestModelMetadataProvider();
-            metadataProvider.ForType<Person>().BindingDetails(binding =>
+            var actionDescriptor = new ControllerActionDescriptor()
             {
-                binding.BinderModelName = metadataBinderModelName;
-            });
-
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
-            var modelBinder = new Mock<IModelBinder>();
-            modelBinder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Callback((ModelBindingContext context) =>
-                {
-                    Assert.Equal(expectedModelName, context.ModelName, StringComparer.Ordinal);
-                })
-                .Returns(TaskCache.CompletedTask);
-
-            var parameterDescriptor = new ParameterDescriptor
-            {
-                BindingInfo = parameterBindingInfo,
-                Name = parameterName,
-                ParameterType = typeof(Person),
+                BoundProperties = new List<ParameterDescriptor>(),
+                Parameters = parameters
             };
-
-            var factory = new Mock<IModelBinderFactory>(MockBehavior.Strict);
-            factory
-                .Setup(f => f.CreateBinder(It.IsAny<ModelBinderFactoryContext>()))
-                .Callback((ModelBinderFactoryContext context) =>
-                {
-                    // Confirm expected data is passed through to ModelBindingFactory.
-                    Assert.Same(parameterDescriptor.BindingInfo, context.BindingInfo);
-                    Assert.Same(parameterDescriptor, context.CacheToken);
-                    Assert.Equal(metadata, context.Metadata);
-                })
-                .Returns(modelBinder.Object);
-
-            var argumentBinder = new DefaultControllerArgumentBinder(
-                metadataProvider,
-                factory.Object, 
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            
+            var parameterBinder = new Mock<ParameterBinder>(
+                new EmptyModelMetadataProvider(),
+                TestModelBinderFactory.CreateDefault(),
                 CreateMockValidator());
-
-            var controllerContext = GetControllerContext();
-            controllerContext.ActionDescriptor.Parameters.Add(parameterDescriptor);
-
-            // Act & Assert
-            await argumentBinder.BindModelAsync(parameterDescriptor, controllerContext);
-        }
-
-        [Fact]
-        public async Task BindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixMatches()
-        {
-            // Arrange
-            var expectedModelName = "expectedName";
-
-            var metadataProvider = new TestModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
-            var modelBinder = new Mock<IModelBinder>();
-            modelBinder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Callback((ModelBindingContext context) =>
+            parameterBinder.Setup(p => p.BindModelAsync(
+                It.IsAny<ActionContext>(),
+                It.IsAny<IValueProvider>(),
+                It.IsAny<ParameterDescriptor>(),
+                null))
+                .Returns((ActionContext context, IValueProvider valueProvider, ParameterDescriptor descriptor, object v) =>
                 {
-                    Assert.Equal(expectedModelName, context.ModelName, StringComparer.Ordinal);
-                })
-                .Returns(TaskCache.CompletedTask);
+                    ModelBindingResult result;
+                    if (descriptor.Name == "accountId")
+                    {
+                        result = ModelBindingResult.Success(10);
+                    }
+                    else if (descriptor.Name == "transferInfo")
+                    {
+                        result = ModelBindingResult.Success(new TransferInfo
+                        {
+                            AccountId = 40,
+                            Amount = 250.0
+                        });
+                    }
+                    else
+                    {
+                        result = ModelBindingResult.Failed();
+                    }
 
-            var parameterDescriptor = new ParameterDescriptor
+                    return Task.FromResult(result);
+                });
+
+            var testContext = new ControllerContext
             {
-                Name = expectedModelName,
-                ParameterType = typeof(Person),
+                ActionDescriptor = actionDescriptor,
             };
 
-            var factory = new Mock<IModelBinderFactory>(MockBehavior.Strict);
-            factory
-                .Setup(f => f.CreateBinder(It.IsAny<ModelBinderFactoryContext>()))
-                .Callback((ModelBinderFactoryContext context) =>
-                {
-                    // Confirm expected data is passed through to ModelBindingFactory.
-                    Assert.Null(context.BindingInfo);
-                    Assert.Same(parameterDescriptor, context.CacheToken);
-                    Assert.Equal(metadata, context.Metadata);
-                })
-                .Returns(modelBinder.Object);
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+            var modelState = testContext.ModelState;
 
-            var argumentBinder = new DefaultControllerArgumentBinder(
-                metadataProvider, 
-                factory.Object, 
-                CreateMockValidator());
+            // Act
+            await ControllerActionInvoker.BindArgumentsCoreAsync(
+                parameterBinder.Object,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                testContext,
+                new TestController(),
+                arguments);
 
-            var valueProvider = new SimpleValueProvider
-            {
-                { expectedModelName, new object() },
-            };
-            var valueProviderFactory = new SimpleValueProviderFactory(valueProvider);
-
-            var controllerContext = GetControllerContext();
-            controllerContext.ActionDescriptor.Parameters.Add(parameterDescriptor);
-            controllerContext.ValueProviderFactories.Insert(0, valueProviderFactory);
-
-            // Act & Assert
-            await argumentBinder.BindModelAsync(parameterDescriptor, controllerContext);
+            // Assert
+            Assert.True(modelState.IsValid);
+            object value;
+            Assert.True(arguments.TryGetValue("accountId", out value));
+            var accountId = Assert.IsType<int>(value);
+            Assert.Equal(10, accountId);
+            Assert.True(arguments.TryGetValue("transferInfo", out value));
+            var transferInfo = Assert.IsType<TransferInfo>(value);
+            Assert.NotNull(transferInfo);
+            Assert.Equal(40, transferInfo.AccountId);
+            Assert.Equal(250.0, transferInfo.Amount);
         }
 
         private static ControllerContext GetControllerContext(ControllerActionDescriptor descriptor = null)
@@ -760,7 +819,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return TestModelBinderFactory.Create(provider.Object);
         }
 
-        private static DefaultControllerArgumentBinder GetArgumentBinder(
+        private static ParameterBinder GetParameterBinder(
             IModelBinderFactory factory = null,
             IObjectModelValidator validator = null)
         {
@@ -774,7 +833,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 factory = TestModelBinderFactory.CreateDefault();
             }
 
-            return new DefaultControllerArgumentBinder(
+            return new ParameterBinder(
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 factory,
                 validator);

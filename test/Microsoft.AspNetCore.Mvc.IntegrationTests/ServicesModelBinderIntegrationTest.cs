@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameterFromService_WithData_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameterFromService_NoPrefix_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "ControllerProperty",
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             // ModelBindingResult
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindEnumerableParameterFromService_NoPrefix_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "ControllerProperty",
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             // ModelBindingResult
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindEnumerableParameterFromService_NoService_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "ControllerProperty",
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             // ModelBindingResult
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameterFromService_NoService_Throws()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "ControllerProperty",
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => argumentBinder.BindModelAsync(parameter, testContext));
+                () => parameterBinder.BindModelAsync(parameter, testContext));
             Assert.Contains(typeof(IActionResult).FullName, exception.Message);
         }
 
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .ForProperty<Person>(nameof(Person.Service))
                 .BindingDetails(binding => binding.BindingSource = BindingSource.Services);
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter-name",
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .ForType<JsonOutputFormatter>()
                 .BindingDetails(binding => binding.BindingSource = BindingSource.Services);
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter-name",
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

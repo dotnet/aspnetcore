@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 BoundProperties = new List<ParameterDescriptor>(),
                 Parameters = parameters
             };
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
 
             var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
@@ -100,11 +100,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
                 actionDescriptor: actionDescriptor);
 
-            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
             var modelState = testContext.ModelState;
 
             // Act
-            await argumentBinder.BindArgumentsAsync(testContext, new TestController(), arguments);
+            foreach (var parameter in parameters)
+            {
+                await parameterBinder.BindModelAsync(parameter, testContext);
+            }
 
             // Assert
             Assert.False(modelState.IsValid);
@@ -129,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 BoundProperties = new List<ParameterDescriptor>(),
                 Parameters = parameters
             };
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
 
             var testContext = ModelBindingTestHelper.GetTestContext(
                 request =>
@@ -140,23 +142,16 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 },
                 actionDescriptor: actionDescriptor);
 
-            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
             var modelState = testContext.ModelState;
 
             // Act
-            await argumentBinder.BindArgumentsAsync(testContext, new TestController(), arguments);
+            foreach (var parameter in parameters)
+            {
+                await parameterBinder.BindModelAsync(parameter, testContext);
+            }
 
             // Assert
             Assert.True(modelState.IsValid);
-            object value;
-            Assert.True(arguments.TryGetValue("accountId", out value));
-            var accountId = Assert.IsType<int>(value);
-            Assert.Equal(10, accountId);
-            Assert.True(arguments.TryGetValue("transferInfo", out value));
-            var transferInfo = Assert.IsType<TransferInfo>(value);
-            Assert.NotNull(transferInfo);
-            Assert.Equal(40, transferInfo.AccountId);
-            Assert.Equal(250.0, transferInfo.Amount);
         }
 
         private class Order1
@@ -169,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnSimpleTypeProperty_WithData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -184,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -206,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnSimpleTypeProperty_NoData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -221,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -257,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnPOCOProperty_WithData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -272,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -295,7 +290,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnPOCOProperty_NoData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -310,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -348,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnNestedSimpleTypeProperty_WithData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -363,7 +358,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -386,7 +381,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnNestedSimpleTypeProperty_NoDataForRequiredProperty()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -402,7 +397,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -440,7 +435,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnCollectionProperty_WithData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -455,7 +450,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -478,7 +473,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnCollectionProperty_NoData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -494,7 +489,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -527,7 +522,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnPOCOPropertyOfBoundElement_WithData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -542,7 +537,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -564,7 +559,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_RequiredAttribute_OnPOCOPropertyOfBoundElement_NoDataForRequiredProperty()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -580,7 +575,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -613,7 +608,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_StringLengthAttribute_OnPropertyOfPOCO_Valid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -628,7 +623,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -650,7 +645,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_StringLengthAttribute_OnPropertyOfPOCO_Invalid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -665,7 +660,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -701,7 +696,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_Valid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -716,7 +711,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -738,7 +733,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_Invalid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -753,7 +748,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -778,7 +773,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_StringLengthAttribute_OnPropertyOfNestedPOCO_NoData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -793,7 +788,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -836,7 +831,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_CustomAttribute_OnPOCOProperty_Valid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -851,7 +846,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -873,7 +868,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_CustomAttribute_OnPOCOProperty_Invalid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -888,7 +883,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -943,7 +938,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_CustomAttribute_OnCollectionElement_Valid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -958,7 +953,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -980,7 +975,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_CustomAttribute_OnCollectionElement_Invalid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -995,7 +990,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1031,7 +1026,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Valid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1046,7 +1041,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1068,7 +1063,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_Invalid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1083,7 +1078,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1108,7 +1103,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_StringLengthAttribute_OnProperyOfCollectionElement_NoData()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1123,7 +1118,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1148,7 +1143,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_FormatException_ShowsInvalidValueMessage_OnSimpleTypeProperty()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1163,7 +1158,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1188,7 +1183,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task Validation_OverflowException_ShowsInvalidValueMessage_OnSimpleTypeProperty()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1203,7 +1198,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1283,11 +1278,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 request => request.QueryString
                     = new QueryString($"?{nameof(ValidateSomeProperties.NeverValid)}.{nameof(NeverValid.NeverValidProperty)}=1"));
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var modelState = testContext.ModelState;
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -1330,11 +1325,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 request => request.QueryString
                     = new QueryString($"?{nameof(ValidateSomeProperties.NeverValidBecauseAttribute)}=1"));
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var modelState = testContext.ModelState;
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -1367,11 +1362,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 request => request.QueryString
                     = new QueryString($"?{nameof(ValidateSomeProperties.ValidateNever)}=1"));
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var modelState = testContext.ModelState;
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -1397,11 +1392,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext();
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var modelState = testContext.ModelState;
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -1430,11 +1425,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var testContext = ModelBindingTestHelper.GetTestContext(
                 request => request.QueryString = new QueryString($"?{propertyName}=1"));
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var modelState = testContext.ModelState;
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -1496,7 +1491,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext();
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var modelState = testContext.ModelState;
 
             // Add an entry for the ControlLength property so that we can observe Skipped versus Valid states.
@@ -1506,7 +1501,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 attemptedValue: null);
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -1536,7 +1531,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 request => request.QueryString = new QueryString(
                     $"?{nameof(ValidateSomePropertiesSometimes.Control)}=1"));
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var modelState = testContext.ModelState;
 
             // Add an entry for the ControlLength property so that we can observe Skipped versus Valid states.
@@ -1546,7 +1541,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 attemptedValue: null);
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -1618,11 +1613,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     testOptions = options;
                 });
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(testOptions);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testOptions);
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             Assert.Equal(3, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
@@ -1648,7 +1643,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task FromBody_JToken_ExcludedFromValidation()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(new TestMvcOptions().Value);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(new TestMvcOptions().Value);
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -1675,7 +1670,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             modelState.SetModelValue("CustomParameter.message", "Hello", "Hello");
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1702,7 +1697,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(new TestMvcOptions().Value);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(new TestMvcOptions().Value);
             var parameter = new ParameterDescriptor
             {
                 Name = "cancellationToken",
@@ -1718,7 +1713,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             modelState.SetModelValue("message", "Hello", "Hello");
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1738,7 +1733,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task FromBody_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors_Valid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(new TestMvcOptions().Value);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(new TestMvcOptions().Value);
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -1763,7 +1758,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             modelState.SetModelValue("other.key", "1", "1");
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -1784,7 +1779,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task FromBody_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors_Invalid()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(new TestMvcOptions().Value);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(new TestMvcOptions().Value);
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -1810,7 +1805,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             modelState.SetModelValue("other.key", "1", "1");
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindPropertyFromHeader_NoData_UsesFullPathAsKeyForModelStateErrors()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindPropertyFromHeader_WithPrefix_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindPropertyFromHeader_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindCollectionPropertyFromHeader_WithData_IsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindReadOnlyCollectionPropertyFromHeader_WithData_IsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var result = await argumentBinder.BindModelAsync(parameter, testContext);
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 expectedRawValue = expectedValue;
             }
 
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 

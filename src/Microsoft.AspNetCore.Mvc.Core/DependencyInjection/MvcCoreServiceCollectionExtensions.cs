@@ -172,7 +172,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
 
             // These are stateless
-            services.TryAddSingleton<IControllerArgumentBinder, DefaultControllerArgumentBinder>();
             services.TryAddSingleton<ControllerActionInvokerCache>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());
@@ -195,6 +194,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new DefaultObjectValidator(metadataProvider, options.ModelValidatorProviders);
             });
             services.TryAddSingleton<ClientValidatorCache>();
+            services.TryAddSingleton<ParameterBinder>();
 
             //
             // Random Infrastructure

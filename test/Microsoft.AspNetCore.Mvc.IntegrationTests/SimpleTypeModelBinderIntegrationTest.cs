@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindProperty_WithData_WithPrefix_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindProperty_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameter_WithData_GetsBound()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameter_WithMultipleValues_GetsBoundToFirstValue()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameter_NonConvertableValue_GetsError()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     binding.ModelBindingMessageProvider.AttemptedValueIsInvalidAccessor =
                         (value, name) => $"Hmm, '{ value }' is not a valid value for '{ name }'.";
                 });
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameter_WithEmptyData_DoesNotBind(Type parameterType)
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     binding.ModelBindingMessageProvider.ValueMustNotBeNullAccessor =
                         value => $"Hurts when '{ value }' is provided.";
                 });
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
 
             var parameter = new ParameterDescriptor
             {
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             // ModelBindingResult
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameter_WithEmptyData_BindsMutableAndNullableObjects(Type parameterType)
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameter_NoData_Fails()
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
 
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameter_FromFormData_BindsCorrectly(Dictionary<string, StringValues> personStore)
         {
             // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -511,7 +511,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = testContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
             // Assert
             // ModelBindingResult

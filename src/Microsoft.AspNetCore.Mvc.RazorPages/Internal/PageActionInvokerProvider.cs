@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly IActionDescriptorCollectionProvider _collectionProvider;
         private readonly IFilterProvider[] _filterProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
+        private readonly ParameterBinder _parameterBinder;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly HtmlHelperOptions _htmlHelperOptions;
@@ -51,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IRazorPageFactoryProvider razorPageFactoryProvider,
             IActionDescriptorCollectionProvider collectionProvider,
             IEnumerable<IFilterProvider> filterProviders,
+            ParameterBinder parameterBinder,
             IModelMetadataProvider modelMetadataProvider,
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<MvcOptions> mvcOptions,
@@ -69,6 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _collectionProvider = collectionProvider;
             _filterProviders = filterProviders.ToArray();
             _valueProviderFactories = mvcOptions.Value.ValueProviderFactories.ToArray();
+            _parameterBinder = parameterBinder;
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions.Value;
@@ -174,6 +177,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var pageFactory = _pageFactoryProvider.CreatePageFactory(compiledActionDescriptor);
             var pageDisposer = _pageFactoryProvider.CreatePageDisposer(compiledActionDescriptor);
+            var propertyBinder = PagePropertyBinderFactory.CreateBinder(
+                _parameterBinder,
+                _modelMetadataProvider,
+                compiledActionDescriptor);
 
             Func<PageContext, object> modelFactory = null;
             Action<PageContext, object> modelReleaser = null;
@@ -197,6 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 pageDisposer,
                 modelFactory,
                 modelReleaser,
+                propertyBinder,
                 pageStartFactories,
                 cachedFilters);
         }

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -282,7 +283,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var invoker = new TestControllerActionInvoker(
                 filters,
                 new MockControllerFactory(controller ?? this),
-                new TestControllerArgumentBinder(actionParameters: null),
+                new TestParameterBinder(actionParameters: null),
+                TestModelMetadataProvider.CreateDefaultProvider(),
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 diagnosticSource,
                 actionContext,
@@ -392,7 +394,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public TestControllerActionInvoker(
                 IFilterMetadata[] filters,
                 MockControllerFactory controllerFactory,
-                IControllerArgumentBinder argumentBinder,
+                ParameterBinder parameterBinder,
+                IModelMetadataProvider modelMetadataProvider,
                 ILogger logger,
                 DiagnosticSource diagnosticSource,
                 ActionContext actionContext,
@@ -400,7 +403,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 int maxAllowedErrorsInModelState)
                 : base(
                       controllerFactory,
-                      argumentBinder,
+                      parameterBinder,
+                      modelMetadataProvider,
                       logger,
                       diagnosticSource,
                       CreatControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
@@ -440,12 +444,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private class TestControllerArgumentBinder : IControllerArgumentBinder
+        private class TestParameterBinder : ParameterBinder
         {
             private readonly IDictionary<string, object> _actionParameters;
-            public TestControllerArgumentBinder(IDictionary<string, object> actionParameters)
+            public TestParameterBinder(IDictionary<string, object> actionParameters)
+                : base(
+                    new EmptyModelMetadataProvider(),
+                    TestModelBinderFactory.CreateDefault(),
+                    Mock.Of<IObjectModelValidator>())
             {
                 _actionParameters = actionParameters;
+            }
+
+            public override Task<ModelBindingResult> BindModelAsync(
+                ActionContext actionContext,
+                IValueProvider valueProvider,
+                ParameterDescriptor parameter,
+                object value)
+            {
+                if (_actionParameters.TryGetValue(parameter.Name, out var result))
+                {
+                    return Task.FromResult(ModelBindingResult.Success(result));
+                }
+
+                return Task.FromResult(ModelBindingResult.Failed());
             }
 
             public Task BindArgumentsAsync(

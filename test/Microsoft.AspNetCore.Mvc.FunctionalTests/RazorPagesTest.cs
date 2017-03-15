@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -191,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Act
             var response = await Client.SendAsync(request);
 
-                // Assert
+            // Assert
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -389,7 +390,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var url = "/HelloWorldWithAuth";
-            
+
             // Act
             var response = await Client.GetAsync(url);
 
@@ -417,7 +418,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task PageImport_IsDiscoveredWhenRootDirectoryIsNotSpecified()
         {
             // Test for https://github.com/aspnet/Mvc/issues/5915
-            //Arrange
+            // Arrange
             var expected = "Hello from CustomService!";
 
             // Act
@@ -425,6 +426,180 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task PropertiesOnPageAreBound()
+        {
+            // Arrange
+            var expected = "Id = 10, Name = Foo, Age = 25";
+            var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PagePropertyBinding/10")
+            {
+                Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+                {
+                    new KeyValuePair<string, string>("Name", "Foo"),
+                    new KeyValuePair<string, string>("Age", "25"),
+                }),
+            };
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith(expected, content.Trim());
+        }
+
+        [Fact]
+        public async Task PropertiesOnPageAreValidated()
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "Id = 27, Name = , Age = 325",
+                "The Name field is required.",
+                "The field Age must be between 0 and 99.",
+            };
+            var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PagePropertyBinding/27")
+            {
+                Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+                {
+                    new KeyValuePair<string, string>("Age", "325"),
+                }),
+            };
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            foreach (var item in expected)
+            {
+                Assert.Contains(item, content);
+            }
+        }
+
+        [Fact]
+        public async Task PropertiesOnPageModelAreBound()
+        {
+            // Arrange
+            var expected = "Id = 10, Name = Foo, Age = 25";
+            var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PageModelWithPropertyBinding/10")
+            {
+                Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+                {
+                    new KeyValuePair<string, string>("Name", "Foo"),
+                    new KeyValuePair<string, string>("Age", "25"),
+                }),
+            };
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith(expected, content.Trim());
+        }
+
+        [Fact]
+        public async Task PropertiesOnPageModelAreValidated()
+        {
+            // Arrange
+            var url = "Pages/PropertyBinding/PageModelWithPropertyBinding/27";
+            var expected = new[]
+            {
+                "Id = 27, Name = , Age = 325",
+                "The Name field is required.",
+                "The field Age must be between 0 and 99.",
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+                {
+                    new KeyValuePair<string, string>("Age", "325"),
+                }),
+            };
+
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            foreach (var item in expected)
+            {
+                Assert.Contains(item, content);
+            }
+        }
+
+        [Fact]
+        public async Task HandlerMethodArgumentsAndPropertiesAreModelBound()
+        {
+            // Arrange
+            var expected = "Id = 11, Name = Test-Name, Age = 32";
+            var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PageWithPropertyAndArgumentBinding?id=11")
+            {
+                Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+                {
+                    new KeyValuePair<string, string>("Name", "Test-Name"),
+                    new KeyValuePair<string, string>("Age", "32"),
+                }),
+            };
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith(expected, content.Trim());
+        }
+
+        [Fact]
+        public async Task PagePropertiesAreNotBoundInGetRequests()
+        {
+            // Arrange
+            var expected = "Id = 11, Name = , Age =";
+            var validationError = "The Name field is required.";
+            var request = new HttpRequestMessage(HttpMethod.Get, "Pages/PropertyBinding/PageWithPropertyAndArgumentBinding?id=11")
+            {
+                Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+                {
+                    new KeyValuePair<string, string>("Name", "Test-Name"),
+                    new KeyValuePair<string, string>("Age", "32"),
+                }),
+            };
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith(expected, content.Trim());
+            Assert.DoesNotContain(validationError, content);
+        }
+
+        private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
+        {
+            var getResponse = await Client.GetAsync(request.RequestUri);
+            Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+            var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
+
+            request.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            request.Headers.Add("RequestVerificationToken", formToken);
         }
 
         private static string GetCookie(HttpResponseMessage response)
