@@ -67,19 +67,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             get
             {
-                yield return new object[] { new WebSocketsTransport() };
-                yield return new object[] { new LongPollingTransport(new HttpClient()) };
+                yield return new object[] { new Func<ILoggerFactory, ITransport>(loggerFactory => new WebSocketsTransport(loggerFactory)) };
+                yield return new object[] { new Func<ILoggerFactory, ITransport>(loggerFactory => new LongPollingTransport(new HttpClient(), loggerFactory)) };
             }
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         [MemberData(nameof(Transports))]
-        public async Task ConnectionCanSendAndReceiveMessages(ITransport transport)
+        public async Task ConnectionCanSendAndReceiveMessages(Func<ILoggerFactory, ITransport> transportFactory)
         {
             const string message = "Major Key";
             var baseUrl = _serverFixture.BaseUrl;
             var loggerFactory = new LoggerFactory();
+            loggerFactory.AddXUnit(_output, LogLevel.Trace);
+
+            var transport = transportFactory(loggerFactory);
 
             using (var httpClient = new HttpClient())
             {
@@ -119,8 +122,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             get
             {
-                yield return new object[] { new string('A', 5 * 1024)};
-                yield return new object[] { new string('A', 5 * 1024 * 1024 + 32)};
+                yield return new object[] { new string('A', 5 * 1024) };
+                yield return new object[] { new string('A', 5 * 1024 * 1024 + 32) };
             }
         }
 

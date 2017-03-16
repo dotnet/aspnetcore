@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))

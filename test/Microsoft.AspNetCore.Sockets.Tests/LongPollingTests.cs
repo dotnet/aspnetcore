@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.IO.Pipelines;
 using System.Text;
@@ -51,11 +52,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal("T11:T:Hello World;", Encoding.UTF8.GetString(ms.ToArray()));
         }
 
-        [Fact]
-        public async Task MultipleFramesSentAsSingleResponse()
+        [Theory]
+        [InlineData(MessageFormat.Text, "T5:T:Hello;1:T: ;5:T:World;")]
+        [InlineData(MessageFormat.Binary, "QgAAAAAAAAAFAEhlbGxvAAAAAAAAAAEAIAAAAAAAAAAFAFdvcmxk")]
+        public async Task MultipleFramesSentAsSingleResponse(MessageFormat format, string expectedPayload)
         {
             var channel = Channel.CreateUnbounded<Message>();
             var context = new DefaultHttpContext();
+            if (format == MessageFormat.Binary)
+            {
+                context.Request.QueryString = QueryString.Create("supportsBinary", "true");
+            }
             var poll = new LongPollingTransport(channel, new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
@@ -78,7 +85,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             await poll.ProcessRequestAsync(context, context.RequestAborted);
 
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal("T5:T:Hello;1:T: ;5:T:World;", Encoding.UTF8.GetString(ms.ToArray()));
+
+            var payload = ms.ToArray();
+            var encoded = format == MessageFormat.Binary ?
+                Convert.ToBase64String(payload) :
+                Encoding.UTF8.GetString(payload);
+            Assert.Equal(expectedPayload, encoded);
         }
     }
 }

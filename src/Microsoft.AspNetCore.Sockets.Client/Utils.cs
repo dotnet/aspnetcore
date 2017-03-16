@@ -26,11 +26,19 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
 
             var builder = new UriBuilder(url);
+            var newQueryString = builder.Query;
             if (!string.IsNullOrEmpty(builder.Query))
             {
-                builder.Query += "&";
+                newQueryString += "&";
             }
-            builder.Query += qs;
+            newQueryString += qs;
+
+            if (newQueryString.Length > 0 && newQueryString[0] == '?')
+            {
+                newQueryString = newQueryString.Substring(1);
+            }
+
+            builder.Query = newQueryString;
             return builder.Uri;
         }
     }

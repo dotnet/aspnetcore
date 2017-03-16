@@ -38,8 +38,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                     return;
                 }
 
-                // TODO: Add support for binary protocol
-                var messageFormat = MessageFormat.Text;
+                // REVIEW: We could also use the 'Accept' header, in theory...
+                var messageFormat = string.Equals(context.Request.Query["supportsBinary"], "true", StringComparison.OrdinalIgnoreCase) ?
+                    MessageFormat.Binary :
+                    MessageFormat.Text;
                 context.Response.ContentType = MessageFormatter.GetContentType(messageFormat);
 
                 var writer = context.Response.Body.AsPipelineWriter();

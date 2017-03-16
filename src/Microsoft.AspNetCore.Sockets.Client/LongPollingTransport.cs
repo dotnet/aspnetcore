@@ -53,8 +53,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             _application = application;
 
-            // Start sending and polling
-            _poller = Poll(Utils.AppendPath(url, "poll"), _transportCts.Token);
+            // Start sending and polling (ask for binary if the server supports it)
+            var pollUrl = Utils.AppendQueryString(Utils.AppendPath(url, "poll"), "supportsBinary=true");
+            _poller = Poll(pollUrl, _transportCts.Token);
             _sender = SendMessages(Utils.AppendPath(url, "send"), _transportCts.Token);
 
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
@@ -110,11 +111,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         _logger.LogDebug("Received messages from the server");
 
+                        var messageFormat = MessageParser.GetFormatFromContentType(response.Content.Headers.ContentType.ToString());
+
                         // Until Pipeline starts natively supporting BytesReader, this is the easiest way to do this.
                         var payload = await response.Content.ReadAsByteArrayAsync();
                         if (payload.Length > 0)
                         {
-                            var messages = ParsePayload(payload);
+                            var messages = ParsePayload(payload, messageFormat);
 
                             foreach (var message in messages)
                             {
@@ -148,10 +151,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.LogInformation("Receive loop stopped");
         }
 
-        private IList<Message> ParsePayload(byte[] payload)
+        private IList<Message> ParsePayload(byte[] payload, MessageFormat messageFormat)
         {
             var reader = new BytesReader(payload);
-            var messageFormat = MessageParser.GetFormat(reader.Unread[0]);
+            if (messageFormat != MessageParser.GetFormatFromIndicator(reader.Unread[0]))
+            {
+                throw new FormatException($"Format indicator '{(char)reader.Unread[0]}' does not match format determined by Content-Type '{MessageFormatter.GetContentType(messageFormat)}'");
+            }
             reader.Advance(1);
 
             _parser.Reset();
