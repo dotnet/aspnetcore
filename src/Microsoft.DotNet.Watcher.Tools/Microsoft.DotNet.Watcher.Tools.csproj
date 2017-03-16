@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
+    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
     <AssemblyName>dotnet-watch</AssemblyName>
     <OutputType>exe</OutputType>
     <Description>Command line tool to watch for source file changes during development and restart the dotnet command.</Description>
