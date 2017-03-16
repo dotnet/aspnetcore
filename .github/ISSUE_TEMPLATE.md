@@ -1,5 +1,4 @@
-This repo is not closely monitored by product and development teams.
-If you are experiencing a product issue, please open the issue on one of these repositories instead.
+To address your issues more quickly, please open the issue in the most appropriate repository. These are some of the most common repos:
 
 Common ASP.NET and Entity Framework repos and projects:
 
