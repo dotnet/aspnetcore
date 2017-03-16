@@ -63,6 +63,8 @@ class MyGenerator extends yeoman.Base {
         if (isWindows) {
             assertNpmVersionIsAtLeast('3.0.0');
         }
+
+        assertDotNetSDKVersionIsAtLeast('1.0.0');
     }
 
     prompting() {
@@ -99,6 +101,7 @@ class MyGenerator extends yeoman.Base {
                 this._answers.templateConfig = templateConfig;
                 this._answers.namePascalCase = toPascalCase(answers.name);
                 this._answers.projectGuid = this.options['projectguid'] || uuid.v4();
+                this._answers.sdkVersion = getDotNetSDKVersion();
 
                 done();
             });
@@ -196,6 +199,27 @@ function assertNpmVersionIsAtLeast(minVersion: string) {
     if (!semver.gte(runningVersion, minVersion, /* loose */ true)) {
         console.error(`This generator requires NPM version ${minVersion} or later. You are running NPM version ${runningVersion}`);
         process.exit(1);
+    }
+}
+
+function assertDotNetSDKVersionIsAtLeast(minVersion: string) {
+    const runningVersion = getDotNetSDKVersion();
+    if (!runningVersion) {
+        console.error('Could not find dotnet tool on system path. Please install dotnet core SDK then try again.');
+        console.error('Try running "dotnet --version" to verify you have it.');
+        process.exit(1);
+    } else if (!semver.gte(runningVersion, minVersion, /* loose */ true)) {
+        console.error(`This generator requires dotnet SDK version ${minVersion} or later. You have version ${runningVersion}`);
+        console.error('Please update your dotnet SDK then try again. You can run "dotnet --version" to check your version.');
+        process.exit(1);
+    }
+}
+
+function getDotNetSDKVersion() {
+    try {
+        return execSync('dotnet --version').toString().replace(/\r|\n/g, '');
+    } catch (ex) {
+        return null;
     }
 }
 
