@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
+namespace Microsoft.AspNetCore.Sockets.Tests.Internal
 {
     internal class ArrayOutput : IOutput
     {

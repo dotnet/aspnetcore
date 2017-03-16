@@ -23,6 +23,11 @@ namespace Microsoft.AspNetCore.Sockets
 
         public Message(byte[] payload, MessageType type, bool endOfMessage)
         {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
             Type = type;
             EndOfMessage = endOfMessage;
             Payload = payload;

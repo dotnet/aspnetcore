@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="..\Common\TaskExtensions.cs" Link="TaskExtensions.cs" />
+    <Compile Include="..\Common\ArrayOutput.cs" Link="ArrayOutput.cs" />
   </ItemGroup>
 
   <ItemGroup>

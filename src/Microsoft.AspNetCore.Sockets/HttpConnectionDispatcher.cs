@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Text;
@@ -9,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Sockets.Internal;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.AspNetCore.Sockets.Transports;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -286,7 +289,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         private async Task ExecuteApplication(EndPoint endpoint, Connection connection)
         {
-            // Jump onto the thread pool thread so blocking user code doesn't block the setup of the 
+            // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
             // connection and transport
             await AwaitableThreadPool.Yield();
 
@@ -316,31 +319,52 @@ namespace Microsoft.AspNetCore.Sockets
                 return;
             }
 
-            // Collect the message and write it to the channel
-            // TODO: Need to use some kind of pooled memory here.
+            // Read the entire payload to a byte array for now because Pipelines and ReadOnlyBytes
+            // don't play well with each other yet.
             byte[] buffer;
             using (var stream = new MemoryStream())
             {
                 await context.Request.Body.CopyToAsync(stream);
+                await stream.FlushAsync();
                 buffer = stream.ToArray();
             }
 
-            var format =
-                string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
-                    ? MessageType.Binary
-                    : MessageType.Text;
+            IList<Message> messages;
+            if (string.Equals(context.Request.ContentType, MessageFormatter.TextContentType, StringComparison.OrdinalIgnoreCase))
+            {
+                var reader = new BytesReader(buffer);
+                messages = ParseSendBatch(ref reader, MessageFormat.Text);
+            }
+            else if (string.Equals(context.Request.ContentType, MessageFormatter.BinaryContentType, StringComparison.OrdinalIgnoreCase))
+            {
+                var reader = new BytesReader(buffer);
+                messages = ParseSendBatch(ref reader, MessageFormat.Binary);
+            }
+            else
+            {
+                // Legacy, single message raw format
 
-            var message = new Message(
-                buffer,
-                format,
-                endOfMessage: true);
+                var format =
+                    string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
+                        ? MessageType.Binary
+                        : MessageType.Text;
+                messages = new List<Message>()
+                {
+                    new Message(buffer, format, endOfMessage: true)
+                };
+            }
+
 
             // REVIEW: Do we want to return a specific status code here if the connection has ended?
-            while (await state.Application.Output.WaitToWriteAsync())
+            _logger.LogDebug("Received batch of {0} message(s) in '/send'", messages.Count);
+            foreach (var message in messages)
             {
-                if (state.Application.Output.TryWrite(message))
+                while (!state.Application.Output.TryWrite(message))
                 {
-                    break;
+                    if (!await state.Application.Output.WaitToWriteAsync())
+                    {
+                        return;
+                    }
                 }
             }
         }
@@ -406,6 +430,31 @@ namespace Microsoft.AspNetCore.Sockets
             }
 
             return connectionState;
+        }
+
+        private IList<Message> ParseSendBatch(ref BytesReader payload, MessageFormat messageFormat)
+        {
+            var messages = new List<Message>();
+
+            if (payload.Unread.Length == 0)
+            {
+                return messages;
+            }
+
+            if (payload.Unread[0] != MessageFormatter.GetFormatIndicator(messageFormat))
+            {
+                throw new FormatException($"Format indicator '{(char)payload.Unread[0]}' does not match format determined by Content-Type '{MessageFormatter.GetContentType(messageFormat)}'");
+            }
+
+            payload.Advance(1);
+
+            // REVIEW: This needs a little work. We could probably new up exactly the right parser, if we tinkered with the inheritance hierarchy a bit.
+            var parser = new MessageParser();
+            while (parser.TryParseMessage(ref payload, messageFormat, out var message))
+            {
+                messages.Add(message);
+            }
+            return messages;
         }
     }
 }

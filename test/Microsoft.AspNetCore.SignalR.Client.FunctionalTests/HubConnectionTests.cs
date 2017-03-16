@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
@@ -182,6 +183,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddConsole(_verbose ? LogLevel.Trace : LogLevel.Error);
+            loggerFactory.AddDebug(LogLevel.Trace);
 
             return loggerFactory;
         }

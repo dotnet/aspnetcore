@@ -1,9 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
-using Microsoft.Extensions.Logging;
 using System;
 using System.IO.Pipelines;
 using System.IO.Pipelines.Text.Primitives;
@@ -12,14 +9,14 @@ using System.Text.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Transports
 {
     public class LongPollingTransport : IHttpTransport
     {
-        // REVIEW: This size?
-        internal const int MaxBufferSize = 4096;
-
         public static readonly string Name = "longPolling";
         private readonly ReadableChannel<Message> _application;
         private readonly ILogger _logger;
