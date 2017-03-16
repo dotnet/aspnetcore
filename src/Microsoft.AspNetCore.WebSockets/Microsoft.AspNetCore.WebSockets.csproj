@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
   </ItemGroup>
 

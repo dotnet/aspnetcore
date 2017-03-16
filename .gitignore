@@ -23,10 +23,8 @@ nuget.exe
 *.*sdf
 *.ipch
 *.sln.ide
-project.lock.json
 /.vs/
 .testPublish/
 .build/
 autobahnreports/
-*.nuget.props
-*.nuget.targets
+.vscode/
