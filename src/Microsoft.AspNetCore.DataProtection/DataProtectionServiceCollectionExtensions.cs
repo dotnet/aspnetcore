@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (OSVersionUtil.IsWindows())
             {
-                services.AddSingleton<RegistryPolicyResolver>();
+                services.TryAddSingleton<RegistryPolicyResolver>();
             }
 
             services.TryAddEnumerable(
@@ -74,13 +74,13 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<DataProtectionOptions>, DataProtectionOptionsSetup>());
 
-            services.AddSingleton<IKeyManager, XmlKeyManager>();
+            services.TryAddSingleton<IKeyManager, XmlKeyManager>();
 
             // Internal services
-            services.AddSingleton<IDefaultKeyResolver, DefaultKeyResolver>();
-            services.AddSingleton<IKeyRingProvider, KeyRingProvider>();
+            services.TryAddSingleton<IDefaultKeyResolver, DefaultKeyResolver>();
+            services.TryAddSingleton<IKeyRingProvider, KeyRingProvider>();
 
-            services.AddSingleton<IDataProtectionProvider>(s =>
+            services.TryAddSingleton<IDataProtectionProvider>(s =>
             {
                 var dpOptions = s.GetRequiredService<IOptions<DataProtectionOptions>>();
                 var keyRingProvider = s.GetRequiredService<IKeyRingProvider>();
@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
 #if !NETSTANDARD1_3 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
-            services.AddSingleton<ICertificateResolver, CertificateResolver>();
+            services.TryAddSingleton<ICertificateResolver, CertificateResolver>();
 #endif
         }
     }
