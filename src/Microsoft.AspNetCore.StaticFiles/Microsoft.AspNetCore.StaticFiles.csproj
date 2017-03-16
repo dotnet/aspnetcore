@@ -11,11 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
