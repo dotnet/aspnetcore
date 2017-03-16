@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -197,6 +198,11 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Temp Data
             //
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IApplicationModelProvider, TempDataApplicationModelProvider>());
+            services.TryAddSingleton<SaveTempDataFilter>();
+            services.TryAddTransient<SaveTempDataPropertyFilter>();
+
             // This does caching so it should stay singleton
             services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();
 
@@ -208,8 +214,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // These are stateless so their lifetime isn't really important.
             services.TryAddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();
-            services.TryAddSingleton<SaveTempDataFilter>();
-
             services.TryAddSingleton(ArrayPool<ViewBufferValue>.Shared);
             services.TryAddScoped<IViewBufferScope, MemoryPoolViewBufferScope>();
         }

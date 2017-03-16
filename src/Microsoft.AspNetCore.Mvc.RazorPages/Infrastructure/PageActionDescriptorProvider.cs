@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Options;
 
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var index = parentDirectoryPath.LastIndexOf('/');
                 if (index == -1)
                 {
-                    parentDirectoryPath = string.Empty; 
+                    parentDirectoryPath = string.Empty;
                 }
                 else
                 {

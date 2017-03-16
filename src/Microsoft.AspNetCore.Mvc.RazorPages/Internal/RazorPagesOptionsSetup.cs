@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             // Support for [TempData] on properties
-            options.ConfigureFilter(new SaveTempDataPropertyFilter());
+            options.ConfigureFilter(new SaveTempDataPropertyFilterFactory());
             // Always require an antiforgery token on post
             options.ConfigureFilter(new AutoValidateAntiforgeryTokenAttribute());
         }

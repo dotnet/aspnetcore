@@ -3,8 +3,11 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    /// <summary>
+    /// Properties with the <see cref="TempDataAttribute"/> are stored in the <see cref="TempDataDictionary"/>.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public sealed class TempDataAttribute : Attribute
     {

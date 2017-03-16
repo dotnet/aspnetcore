@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 filterDescriptor =>
                 {
                     Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
-                    Assert.IsType<SaveTempDataPropertyFilter>(filterDescriptor.Filter);
+                    Assert.IsType<SaveTempDataPropertyFilterFactory>(filterDescriptor.Filter);
                 },
                 filterDescriptor =>
                 {
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 filterDescriptor =>
                 {
                     Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
-                    Assert.IsType<SaveTempDataPropertyFilter>(filterDescriptor.Filter);
+                    Assert.IsType<SaveTempDataPropertyFilterFactory>(filterDescriptor.Filter);
                 },
                 filterDescriptor =>
                 {
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 filterDescriptor =>
                 {
                     Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
-                    Assert.IsType<SaveTempDataPropertyFilter>(filterDescriptor.Filter);
+                    Assert.IsType<SaveTempDataPropertyFilterFactory>(filterDescriptor.Filter);
                 },
                 filterDescriptor =>
                 {

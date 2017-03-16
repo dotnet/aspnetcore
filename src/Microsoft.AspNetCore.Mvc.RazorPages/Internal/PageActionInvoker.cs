@@ -357,7 +357,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 propertyFilter.OriginalValues = originalValues;
                 propertyFilter.Subject = _page;
-                propertyFilter.Prefix = TempDataPropertyProvider.Prefix;
             }
 
             IActionResult result = null;

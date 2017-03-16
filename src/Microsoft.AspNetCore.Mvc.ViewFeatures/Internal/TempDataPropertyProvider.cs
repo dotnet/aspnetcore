@@ -6,10 +6,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class TempDataPropertyProvider
     {
@@ -18,6 +16,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         private ConcurrentDictionary<Type, IEnumerable<PropertyInfo>> _subjectProperties =
             new ConcurrentDictionary<Type, IEnumerable<PropertyInfo>>();
 
+        /// <summary>
+        /// Loads and tracks any changes to the properties of the <paramref name="subject"/>.
+        /// </summary>
+        /// <param name="subject">The properties of the subject are loaded and tracked. May be a <see cref="Controller"/>.</param>
+        /// <param name="tempData">The <see cref="ITempDataDictionary"/>.</param>
+        /// <returns></returns>
         public IDictionary<PropertyInfo, object> LoadAndTrackChanges(object subject, ITempDataDictionary tempData)
         {
             var properties = GetSubjectProperties(subject);
