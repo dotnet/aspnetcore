@@ -143,6 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var razorProjectItem = new DefaultRazorProjectItem(fileInfo, basePath: null, path: inputFile);
             var codeDocument = razorTemplateEngine.CreateCodeDocument(razorProjectItem);
             codeDocument.Items["SuppressUniqueIds"] = "test";
+            codeDocument.Items["NewLineString"] = "\r\n";
 
             // Act
             var csharpDocument = razorTemplateEngine.GenerateCode(codeDocument);
@@ -189,6 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var razorProjectItem = new DefaultRazorProjectItem(fileInfo, basePath: null, path: inputFile);
             var codeDocument = razorTemplateEngine.CreateCodeDocument(razorProjectItem);
             codeDocument.Items["SuppressUniqueIds"] = "test";
+            codeDocument.Items["NewLineString"] = "\r\n";
 
             // Act
             var csharpDocument = razorTemplateEngine.GenerateCode(codeDocument);
