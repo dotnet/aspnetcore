@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 
 namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
     public sealed class HtmlTargetElementAttribute : Attribute
     {
-        public const string ElementCatchAllTarget = TagHelperDescriptorProvider.ElementCatchAllTarget;
+        public const string ElementCatchAllTarget = "*";
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="HtmlTargetElementAttribute"/> class that targets all HTML

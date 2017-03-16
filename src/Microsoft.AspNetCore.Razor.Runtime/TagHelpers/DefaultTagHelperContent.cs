@@ -324,12 +324,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             return this;
         }
-
-        private string DebuggerToString()
-        {
-            return GetContent();
-        }
-
+        
         // Overrides Write(string) to find if the content written is empty/whitespace.
         private class EmptyOrWhiteSpaceWriter : TextWriter
         {
