@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26222.1
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA69F624-5398-4884-87E4-B816698CDE65}"
 EndProject
@@ -60,6 +60,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Sockets.Common.Tests", "test\Microsoft.AspNetCore.Sockets.Common.Tests\Microsoft.AspNetCore.Sockets.Common.Tests.csproj", "{B0D32729-48AA-4841-B52A-2A61B60EED61}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.TS", "client-ts\Microsoft.AspNetCore.SignalR.Client.TS\Microsoft.AspNetCore.SignalR.Client.TS.csproj", "{333526A4-633B-491A-AC45-CC62A0012D1C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{6CEC3DC2-5B01-45A8-8F0D-8531315DA90B}"
+	ProjectSection(SolutionItems) = preProject
+		test\Common\ArrayOutput.cs = test\Common\ArrayOutput.cs
+		test\Common\TaskExtensions.cs = test\Common\TaskExtensions.cs
+		test\Common\XUnitLoggerProvider.cs = test\Common\XUnitLoggerProvider.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -192,5 +199,6 @@ Global
 		{F3EFFD9F-DD85-48A2-9B11-83A133ECC099} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{B0D32729-48AA-4841-B52A-2A61B60EED61} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{333526A4-633B-491A-AC45-CC62A0012D1C} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{6CEC3DC2-5B01-45A8-8F0D-8531315DA90B} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 	EndGlobalSection
 EndGlobal

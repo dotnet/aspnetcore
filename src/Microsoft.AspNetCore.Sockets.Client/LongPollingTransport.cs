@@ -146,9 +146,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 // Make sure the send loop is terminated
                 _transportCts.Cancel();
+                _logger.LogInformation("Receive loop stopped");
             }
-
-            _logger.LogInformation("Receive loop stopped");
         }
 
         private IList<Message> ParsePayload(byte[] payload, MessageFormat messageFormat)
