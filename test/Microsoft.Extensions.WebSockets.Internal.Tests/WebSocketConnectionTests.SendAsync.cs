@@ -169,6 +169,38 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
             Assert.Equal(expectedRawFrame, data);
         }
 
+        [Fact]
+        public async Task WriteMultipleFrames()
+        {
+            var data = await RunSendTest(
+                producer: async (socket) =>
+                {
+                    await socket.SendAsync(CreateFrame(
+                        endOfMessage: true,
+                        opcode: WebSocketOpcode.Binary,
+                        payload: new byte[0])).OrTimeout();
+                    await socket.SendAsync(CreateFrame(
+                        endOfMessage: true,
+                        opcode: WebSocketOpcode.Binary,
+                        payload: new byte[] { 0x01 })).OrTimeout();
+                    await socket.SendAsync(CreateFrame(
+                        endOfMessage: true,
+                        opcode: WebSocketOpcode.Text,
+                        payload: new byte[0])).OrTimeout();
+                    await socket.SendAsync(CreateFrame(
+                        endOfMessage: true,
+                        opcode: WebSocketOpcode.Text,
+                        payload: Encoding.UTF8.GetBytes("Hello"))).OrTimeout();
+                }, options: DefaultTestOptions);
+            Assert.Equal(new byte[]
+            {
+                0x82, 0x00, // Frame 1
+                0x82, 0x01, 0x01, // Frame 2
+                0x81, 0x00, // Frame 3
+                0x81, 0x05, (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o' // Frame 4
+            }, data);
+        }
+
         private static async Task<byte[]> RunSendTest(Func<WebSocketConnection, Task> producer, WebSocketOptions options)
         {
             using (var factory = new PipeFactory())
