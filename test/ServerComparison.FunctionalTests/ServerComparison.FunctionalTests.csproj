@@ -5,7 +5,6 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net452</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
-    <RuntimeIdentifier Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,15 +12,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="0.3.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Dotnet.PlatformAbstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Net.Http.Headers" Version="1.2.0-*" />
-    <PackageReference Include="xunit" Version="2.2.0-*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(AspNetCoreLabsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Dotnet.PlatformAbstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
   </ItemGroup>
 
   <ItemGroup>

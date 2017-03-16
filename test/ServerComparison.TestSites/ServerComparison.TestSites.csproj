@@ -6,24 +6,19 @@
     <TargetFrameworks>net452;netcoreapp1.1</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
     <RuntimeIdentifiers>win7-x86;win7-x64;win81-x86;win81-x64;win10-x86;win10-x64;osx.10.10-x64;osx.10.11-x64;ubuntu.14.04-x64;ubuntu.15.04-x64;centos.7-x64;rhel.7.2-x64</RuntimeIdentifiers>
-    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Update="web.config" CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="1.0.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Net.Http.Headers" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(AspNetCoreModuleVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="$(ResponseCompressionVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
