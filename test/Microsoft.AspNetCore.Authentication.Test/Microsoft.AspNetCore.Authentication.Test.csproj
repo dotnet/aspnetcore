@@ -15,11 +15,11 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.MicrosoftAccount\Microsoft.AspNetCore.Authentication.MicrosoftAccount.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.OpenIdConnect\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.Twitter\Microsoft.AspNetCore.Authentication.Twitter.csproj" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
-    <PackageReference Include="xunit" Version="2.2.0-*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
   </ItemGroup>
 
   <ItemGroup>

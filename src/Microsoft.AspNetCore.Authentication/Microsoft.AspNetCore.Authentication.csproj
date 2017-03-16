@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core common types used by the various authentication middleware components.</Description>
-    <VersionPrefix>1.2.0</VersionPrefix>
     <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -12,14 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources"  Version="1.2.0-*" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources"  Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
