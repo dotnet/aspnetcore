@@ -58,6 +58,30 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
+                "@custom \"AString\"",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "\"AString\"", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_StringToken_ParserErrorForUnquotedValue()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var expectedError = new RazorError(
+                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
+                new SourceLocation(8, 0, 8),
+                length: 7);
+
+            // Act & Assert
+            ParseCodeBlockTest(
                 "@custom AString",
                 new[] { descriptor },
                 new DirectiveBlock(
@@ -67,7 +91,85 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
                     Factory.Span(SpanKind.Markup, "AString", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)), expectedError);
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_StringToken_ParserErrorForNonStringValue()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var expectedError = new RazorError(
+                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
+                new SourceLocation(8, 0, 8),
+                length: 6);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom {foo?}",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "{foo?}", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)), expectedError);
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_StringToken_ParserErrorForSingleQuotedValue()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var expectedError = new RazorError(
+                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
+                new SourceLocation(8, 0, 8),
+                length: 9);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom 'AString'",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "'AString'", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)), expectedError);
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_StringToken_ParserErrorForPartialQuotedValue()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var expectedError1 = new RazorError(
+                LegacyResources.ParseError_Unterminated_String_Literal,
+                new SourceLocation(15, 0, 15),
+                length: 1);
+            var expectedError2 = new RazorError(
+                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
+                new SourceLocation(8, 0, 8),
+                length: 8);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom AString\"",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "AString\"", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                expectedError1,
+                expectedError2);
         }
 
         [Fact]
@@ -82,7 +184,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom System.Text.Encoding.ASCIIEncoding Some_Member AString",
+                "@custom System.Text.Encoding.ASCIIEncoding Some_Member \"AString\"",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
@@ -100,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         .Accepts(AcceptedCharacters.NonWhiteSpace),
 
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "AString", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"AString\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[2]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace)));
         }
@@ -113,14 +215,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom Header { <p>F{o}o</p> }",
+                "@custom \"Header\" { <p>F{o}o</p> }",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "Header", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"Header\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.AllWhiteSpace),
@@ -146,14 +248,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom Name { foo(); bar(); }",
+                "@custom \"Name\" { foo(); bar(); }",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "Name", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"Name\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.AllWhiteSpace),
@@ -226,14 +328,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom hello ;  ",
+                "@custom \"hello\" ;  ",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "hello", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace),
                     Factory.Span(SpanKind.Markup, " ;  ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
@@ -246,19 +348,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
             var expectedErorr = new RazorError(
                 LegacyResources.FormatUnexpectedDirectiveLiteral("custom", Environment.NewLine),
-                new SourceLocation(14, 0, 14),
-                length: 5);
+                new SourceLocation(16, 0, 16),
+                length: 7);
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom hello world",
+                "@custom \"hello\" \"world\"",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "hello", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace),
 
@@ -273,19 +375,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
             var expectedErorr = new RazorError(
                 LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "{"),
-                new SourceLocation(14, 0, 14),
+                new SourceLocation(16, 0, 16),
                 length: 5);
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom Hello World { foo(); bar(); }",
+                "@custom \"Hello\" World { foo(); bar(); }",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "Hello", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace),
 
@@ -300,19 +402,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
             var expectedErorr = new RazorError(
                 LegacyResources.FormatUnexpectedEOFAfterDirective("custom", "{"),
-                new SourceLocation(13, 0, 13),
+                new SourceLocation(15, 0, 15),
                 length: 1);
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom Hello",
+                "@custom \"Hello\"",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "Hello", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace)),
                 expectedErorr);
@@ -325,19 +427,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
             var expectedErorr = new RazorError(
                 LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("custom", "}", "{"),
-                new SourceLocation(14, 0, 14),
+                new SourceLocation(16, 0, 16),
                 length: 1);
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom Hello {",
+                "@custom \"Hello\" {",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "Hello", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.AllWhiteSpace),
@@ -781,14 +883,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom simple-value",
+                "@custom \"simple-value\"",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "simple-value", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"simple-value\"", markup: false)
                         .Accepts(AcceptedCharacters.NonWhiteSpace)
                         .With(chunkGenerator)));
         }
@@ -802,14 +904,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom {formaction}?/{id}?",
+                "@custom \"{formaction}?/{id}?\"",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "{formaction}?/{id}?", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"{formaction}?/{id}?\"", markup: false)
                         .Accepts(AcceptedCharacters.NonWhiteSpace)
                         .With(chunkGenerator)));
         }
@@ -822,14 +924,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom {formaction}?/{id}? System.String",
+                "@custom \"{formaction}?/{id}?\" System.String",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "{formaction}?/{id}?", markup: false)
+                    Factory.Span(SpanKind.Markup, "\"{formaction}?/{id}?\"", markup: false)
                         .Accepts(AcceptedCharacters.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.First())),
                     Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
