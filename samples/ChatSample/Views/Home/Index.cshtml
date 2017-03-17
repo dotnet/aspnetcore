@@ -4,7 +4,9 @@
 
 <div id="chat-area">
     <ul id="messages"></ul>
-    <ul id="users"></ul>
+    <ul id="users">
+        <li><b>Users online</b></li>
+    </ul>
     <div class="clear">
     </div>
     <form id="sendmessage" action="#">
@@ -27,6 +29,35 @@ connection.onClosed = e => {
     }
 };
 
+connection.on('SetUsersOnline', function (usersOnline) {
+    for (var user in usersOnline) {
+        addUserOnline(user, usersOnline[user]);
+    }
+});
+
+connection.on('OnConnected', function (id, userName) {
+    addUserOnline(id, userName);
+    appendLine('User ' + userName + ' joined the chat');
+});
+
+connection.on('OnDisconnected', function (id, userName) {
+    appendLine('User ' + userName + ' left the chat');
+    document.getElementById(id).outerHTML = '';
+});
+
+connection.on('Send', function (userName, message) {
+    var nameElement = document.createElement('b');
+    nameElement.innerText = userName + ':';
+
+    var msgElement = document.createElement('span');
+    msgElement.innerText = ' ' + message;
+
+    var child = document.createElement('li');
+    child.appendChild(nameElement);
+    child.appendChild(msgElement);
+    document.getElementById('messages').appendChild(child);
+});
+
 connection.start(transportType).catch(err => appendLine(err, 'red'));
 
 document.getElementById('sendmessage').addEventListener('submit', event => {
@@ -44,6 +75,13 @@ function appendLine(line, color) {
     document.getElementById('messages').appendChild(child);
 }
 
+function addUserOnline(id, userName) {
+    var user = document.createElement('li');
+    user.innerText = userName;
+    user.id = id;
+    document.getElementById('users').appendChild(user);
+}
+
 function getParameterByName(name, url) {
     if (!url) {
         url = window.location.href;
@@ -54,5 +92,6 @@ function getParameterByName(name, url) {
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
-}
+});
+
 </script>
