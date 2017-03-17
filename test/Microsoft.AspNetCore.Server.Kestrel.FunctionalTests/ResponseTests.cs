@@ -632,14 +632,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task WhenAppWritesLessThanContentLengthErrorLogged()
         {
-            string errorMessage = null;
             var logTcs = new TaskCompletionSource<object>();
             var mockTrace = new Mock<IKestrelTrace>();
             mockTrace
                 .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
                 .Callback<string, Exception>((connectionId, ex) =>
                 {
-                    errorMessage = ex.Message;
                     logTcs.SetResult(null);
                 });
 
@@ -655,7 +653,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+
+                    // Don't use ReceiveEnd here, otherwise the FIN might
+                    // abort the request before the server checks the
+                    // response content length, in which case the check
+                    // will be skipped.
+                    await connection.Receive(
                         $"HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 13",
@@ -664,12 +667,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Wait for error message to be logged.
                     await logTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+
+                    // The server should close the connection in this situation.
+                    await connection.WaitForConnectionClose().TimeoutAfter(TimeSpan.FromSeconds(10));
                 }
             }
 
-            Assert.Equal(
-                $"Response Content-Length mismatch: too few bytes written (12 of 13).",
-                errorMessage);
+            mockTrace.Verify(trace =>
+                trace.ApplicationError(
+                    It.IsAny<string>(),
+                    It.Is<InvalidOperationException>(ex =>
+                        ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
+        }
+
+        [Fact]
+        public async Task WhenAppWritesLessThanContentLengthButRequestIsAbortedErrorNotLogged()
+        {
+            var abortTcs = new TaskCompletionSource<object>();
+            var mockTrace = new Mock<IKestrelTrace>();
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.RequestAborted.Register(() =>
+                {
+                    abortTcs.SetResult(null);
+                });
+                httpContext.Response.ContentLength = 12;
+                await httpContext.Response.WriteAsync("hello,");
+
+                // Wait until the request is aborted so we know Frame will skip the response content length check.
+                await abortTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+            }, new TestServiceContext { Log = mockTrace.Object }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 12",
+                        "",
+                        "hello,");
+                }
+            }
+
+            // Verify the request was really aborted. A timeout in the await inside
+            // the app func would cause a server error and skip the content length
+            // check altogether, making the test pass for the wrong reason.
+            Assert.True(abortTcs.Task.IsCompleted);
+
+            // With the server disposed we know all connections were drained and all messages were logged.
+            mockTrace.Verify(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<InvalidOperationException>()), Times.Never);
         }
 
         [Fact]

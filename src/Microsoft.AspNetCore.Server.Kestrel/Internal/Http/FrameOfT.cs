@@ -94,7 +94,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             try
                             {
                                 await _application.ProcessRequestAsync(context).ConfigureAwait(false);
-                                VerifyResponseContentLength();
+
+                                if (Volatile.Read(ref _requestAborted) == 0)
+                                {
+                                    VerifyResponseContentLength();
+                                }
                             }
                             catch (Exception ex)
                             {
