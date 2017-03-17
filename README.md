@@ -12,3 +12,7 @@ You can watch an introductory presentation here - [Introducing ASP.NET Core Sock
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
 
 **Note** To build the project locally at this time you will need the [TypeScript Compiler](https://www.typescriptlang.org/#download-links) on your path.
+
+The JavaScript client is being published to our dev npm registry. The module contains a browserfied version of the client. You can install the module using the following command:
+
+`npm install signalr-client --registry https://dotnet.myget.org/f/aspnetcore-ci-dev/npm/`
