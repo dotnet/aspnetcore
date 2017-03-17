@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                             // IIS Express tests are a bit flaky, some tests fail occasionally or get non-strict passes
                             // https://github.com/aspnet/WebSockets/issues/100
                             await tester.DeployTestAndAddToSpec(ServerType.IISExpress, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token, expectationConfig: expect => expect
+                                .OkOrFail("2.6", "6.22.22") // Getting some transient failures on the CI for these. See https://github.com/aspnet/WebSockets/issues/152
                                 .OkOrFail(Enumerable.Range(1, 20).Select(i => $"5.{i}").ToArray())); // 5.* occasionally fail on IIS express
                         }
 
