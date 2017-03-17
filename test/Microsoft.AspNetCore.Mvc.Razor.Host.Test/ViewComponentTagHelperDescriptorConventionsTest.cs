@@ -38,22 +38,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test
 
         private static TagHelperDescriptor CreateTagHelperDescriptor()
         {
-            var descriptor = new TagHelperDescriptor
-            {
-                TagName = "tag-name",
-                TypeName = "TypeName",
-                AssemblyName = "AssemblyName",
-            };
+            var descriptor = ITagHelperDescriptorBuilder.Create("TypeName", "AssemblyName")
+                .TagMatchingRule(rule =>
+                    rule.RequireTagName("tag-name"))
+                .Build();
+
 
             return descriptor;
         }
 
         private static TagHelperDescriptor CreateViewComponentTagHelperDescriptor()
         {
-            var descriptor = CreateTagHelperDescriptor();
-            descriptor.PropertyBag.Add(
-                ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey,
-                "ViewComponentName");
+            var descriptor = ITagHelperDescriptorBuilder.Create("TypeName", "AssemblyName")
+                .TagMatchingRule(rule =>
+                    rule.RequireTagName("tag-name"))
+                .AddMetadata(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "ViewComponentName")
+                .Build();
 
             return descriptor;
         }

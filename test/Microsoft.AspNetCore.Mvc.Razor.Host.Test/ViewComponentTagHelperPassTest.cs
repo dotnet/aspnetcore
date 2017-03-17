@@ -23,20 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor()
-                {
-                    AssemblyName = "TestAssembly",
-                    TypeName = "TestTagHelper",
-                    TagName = "p",
-                    Attributes = new TagHelperAttributeDescriptor[]
-                    {
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = "System.Int32",
-                            Name = "Foo",
-                        }
-                    }
-                }
+                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .BindAttribute(attribute =>
+                        attribute
+                            .Name("Foo")
+                            .TypeName("System.Int32"))
+                    .TagMatchingRule(rule =>
+                        rule.RequireTagName("p"))
+                    .Build()
             };
 
             var engine = CreateEngine(tagHelpers);
@@ -69,24 +63,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor()
-                {
-                    AssemblyName = "TestAssembly",
-                    TypeName = "TestTagHelper",
-                    TagName = "tagcloud",
-                    Attributes = new TagHelperAttributeDescriptor[]
-                    {
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = "System.Int32",
-                            Name = "Foo",
-                            PropertyName = "Foo",
-                        }
-                    }
-                }
+                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .BindAttribute(attribute =>
+                        attribute
+                            .Name("Foo")
+                            .TypeName("System.Int32")
+                            .PropertyName("Foo"))
+                    .TagMatchingRule(rule =>
+                        rule.RequireTagName("tagcloud"))
+                    .AddMetadata(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "TagCloud")
+                    .Build()
             };
-
-            tagHelpers[0].PropertyBag.Add(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "TagCloud");
 
             var engine = CreateEngine(tagHelpers);
             var pass = new ViewComponentTagHelperPass()
@@ -146,32 +133,18 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor()
-                {
-                    AssemblyName = "TestAssembly",
-                    TypeName = "TestTagHelper",
-                    TagName = "tagcloud",
-                    Attributes = new TagHelperAttributeDescriptor[]
-                    {
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = "System.Collections.Generic.Dictionary<System.String, System.Int32>",
-                            Name = "foo",
-                            PropertyName = "Tags",
-                            IsIndexer = false,
-                        },
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = "System.Collections.Generic.Dictionary<System.String, System.Int32>",
-                            Name = "foo-",
-                            PropertyName = "Tags",
-                            IsIndexer = true,
-                        }
-                    }
-                }
+                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .BindAttribute(attribute =>
+                        attribute
+                            .Name("Foo")
+                            .TypeName("System.Collections.Generic.Dictionary<System.String, System.Int32>")
+                            .PropertyName("Tags")
+                            .AsDictionary("foo-", "System.Int32"))
+                    .TagMatchingRule(rule =>
+                        rule.RequireTagName("tagcloud"))
+                    .AddMetadata(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "TagCloud")
+                    .Build()
             };
-
-            tagHelpers[0].PropertyBag.Add(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "TagCloud");
 
             var engine = CreateEngine(tagHelpers);
             var pass = new ViewComponentTagHelperPass()
@@ -231,38 +204,25 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor()
-                {
-                    AssemblyName = "TestAssembly",
-                    TypeName = "PTestTagHelper",
-                    TagName = "p",
-                    Attributes = new TagHelperAttributeDescriptor[]
-                    {
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = "System.Int32",
-                            Name = "Foo",
-                        }
-                    }
-                },
-                new TagHelperDescriptor()
-                {
-                    AssemblyName = "TestAssembly",
-                    TypeName = "TestTagHelper",
-                    TagName = "tagcloud",
-                    Attributes = new TagHelperAttributeDescriptor[]
-                    {
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = "System.Int32",
-                            Name = "Foo",
-                            PropertyName = "Foo",
-                        }
-                    }
-                }
+                ITagHelperDescriptorBuilder.Create("PTestTagHelper", "TestAssembly")
+                    .BindAttribute(attribute =>
+                        attribute
+                            .Name("Foo")
+                            .TypeName("System.Int32"))
+                    .TagMatchingRule(rule =>
+                        rule.RequireTagName("p"))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .BindAttribute(attribute =>
+                        attribute
+                            .Name("Foo")
+                            .TypeName("System.Int32")
+                            .PropertyName("Foo"))
+                    .TagMatchingRule(rule =>
+                        rule.RequireTagName("tagcloud"))
+                    .AddMetadata(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "TagCloud")
+                    .Build()
             };
-
-            tagHelpers[1].PropertyBag.Add(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "TagCloud");
 
             var engine = CreateEngine(tagHelpers);
             var pass = new ViewComponentTagHelperPass()

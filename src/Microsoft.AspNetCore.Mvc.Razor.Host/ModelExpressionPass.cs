@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 {
     public class ModelExpressionPass : RazorIRPassBase, IRazorIROptimizationPass
     {
+        private const string ModelExpressionTypeName = "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression";
+
         public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var visitor = new Visitor();
@@ -22,7 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
             {
-                if (string.Equals(node.Descriptor.TypeName, "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression", StringComparison.Ordinal))
+                if (string.Equals(node.Descriptor.TypeName, ModelExpressionTypeName, StringComparison.Ordinal) ||
+                    (node.IsIndexerNameMatch &&
+                     string.Equals(node.Descriptor.IndexerTypeName, ModelExpressionTypeName, StringComparison.Ordinal)))
                 {
                     var expression = new CSharpExpressionIRNode();
                     var builder = RazorIRBuilder.Create(expression);

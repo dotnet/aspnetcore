@@ -1,8 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Evolution;
@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             {
                 GenerateVCTHClass(visitor.Class, tagHelper.Value);
 
-                if (visitor.Fields.UsedTagHelperTypeNames.Remove(tagHelper.Value.TypeName))
+                var tagHelperTypeName = tagHelper.Value.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                if (visitor.Fields.UsedTagHelperTypeNames.Remove(tagHelperTypeName))
                 {
                     visitor.Fields.UsedTagHelperTypeNames.Add(GetVCTHFullName(visitor.Namespace, visitor.Class, tagHelper.Value));
                 }
@@ -77,14 +78,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             ClassDeclarationIRNode @class,
             TagHelperDescriptor tagHelper)
         {
-            var vcName = tagHelper.PropertyBag[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
+            var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
             return $"{@namespace.Content}.{@class.Name}.__Generated__{vcName}ViewComponentTagHelper";
         }
 
         private static string GetVCTHClassName(
             TagHelperDescriptor tagHelper)
         {
-            var vcName = tagHelper.PropertyBag[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
+            var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
             return $"__Generated__{vcName}ViewComponentTagHelper";
         }
 
@@ -143,18 +144,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 $"global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext",
                 "ViewContext");
 
-            var indexerAttributes = descriptor.Attributes.Where(a => a.IsIndexer);
-
-            foreach (var attribute in descriptor.Attributes)
+            foreach (var attribute in descriptor.BoundAttributes)
             {
-                if (attribute.IsIndexer)
-                {
-                    continue;
-                }
+                writer.WriteAutoPropertyDeclaration(
+                    "public", attribute.TypeName, attribute.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]);
 
-                writer.WriteAutoPropertyDeclaration("public", attribute.TypeName, attribute.PropertyName);
-
-                if (indexerAttributes.Any(a => string.Equals(a.PropertyName, attribute.PropertyName, StringComparison.Ordinal)))
+                if (attribute.IndexerTypeName != null)
                 {
                     writer.Write(" = ")
                         .WriteStartNewObject(attribute.TypeName)
@@ -199,11 +194,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
         private string[] GetMethodParameters(TagHelperDescriptor descriptor)
         {
-            var propertyNames = descriptor.Attributes.Where(a => !a.IsIndexer).Select(attribute => attribute.PropertyName);
+            var propertyNames = descriptor.BoundAttributes.Select(
+                attribute => attribute.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]);
             var joinedPropertyNames = string.Join(", ", propertyNames);
             var parametersString = $"new {{ { joinedPropertyNames } }}";
 
-            var viewComponentName = descriptor.PropertyBag[
+            var viewComponentName = descriptor.Metadata[
                 ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
             var methodParameters = new[] { $"\"{viewComponentName}\"", parametersString };
             return methodParameters;
@@ -211,9 +207,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
         private void BuildTargetElementString(CSharpCodeWriter writer, TagHelperDescriptor descriptor)
         {
+            Debug.Assert(descriptor.TagMatchingRules.Count() == 1);
+
+            var rule = descriptor.TagMatchingRules.First();
+
             writer.Write("[")
                 .WriteStartMethodInvocation("Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute")
-                .WriteStringLiteral(descriptor.FullTagName)
+                .WriteStringLiteral(rule.TagName)
                 .WriteLine(")]");
         }
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 if (ViewComponentTagHelperDescriptorConventions.IsViewComponentDescriptor(tagHelper))
                 {
                     // Capture all the VCTagHelpers (unique by type name) so we can generate a class for each one.
-                    var vcName = tagHelper.PropertyBag[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
+                    var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
                     TagHelpers[vcName] = tagHelper;
 
                     CreateTagHelpers.Add(node);

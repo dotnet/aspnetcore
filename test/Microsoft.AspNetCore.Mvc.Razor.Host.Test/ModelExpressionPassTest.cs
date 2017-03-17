@@ -25,21 +25,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor()
-                {
-                    AssemblyName = "TestAssembly",
-                    TypeName = "TestTagHelper",
-                    TagName = "p",
-                    Attributes = new TagHelperAttributeDescriptor[]
-                    {
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = "System.Int32",
-                            Name = "Foo",
-                        }
-
-                    }
-                }
+                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .BindAttribute(attribute =>
+                        attribute
+                            .Name("Foo")
+                            .TypeName("System.Int32"))
+                    .TagMatchingRule(rule =>
+                        rule.RequireTagName("p"))
+                    .Build()
             };
 
             var engine = CreateEngine(tagHelpers);
@@ -72,21 +65,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor()
-                {
-                    AssemblyName = "TestAssembly",
-                    TypeName = "TestTagHelper",
-                    TagName = "p",
-                    Attributes = new TagHelperAttributeDescriptor[]
-                    {
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = typeof(ModelExpression).FullName,
-                            Name = "Foo",
-                        }
-
-                    }
-                }
+                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .BindAttribute(attribute =>
+                        attribute
+                            .Name("Foo")
+                            .TypeName(typeof(ModelExpression).FullName))
+                    .TagMatchingRule(rule =>
+                        rule.RequireTagName("p"))
+                    .Build()
             };
 
             var engine = CreateEngine(tagHelpers);
@@ -124,21 +110,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor()
-                {
-                    AssemblyName = "TestAssembly",
-                    TypeName = "TestTagHelper",
-                    TagName = "p",
-                    Attributes = new TagHelperAttributeDescriptor[]
-                    {
-                        new TagHelperAttributeDescriptor()
-                        {
-                            TypeName = typeof(ModelExpression).FullName,
-                            Name = "Foo",
-                        }
-
-                    }
-                }
+                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .BindAttribute(attribute =>
+                        attribute
+                            .Name("Foo")
+                            .TypeName(typeof(ModelExpression).FullName))
+                    .TagMatchingRule(rule =>
+                        rule.RequireTagName("p"))
+                    .Build()
             };
 
             var engine = CreateEngine(tagHelpers);

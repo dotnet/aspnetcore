@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
     public static class ViewComponentTagHelperDescriptorConventions
     {
         /// <summary>
-        /// The key in a <see cref="TagHelperDescriptor.PropertyBag"/>  containing 
+        /// The key in a <see cref="TagHelperDescriptor.Metadata"/>  containing 
         /// the short name of a view component.
         /// </summary>
         public static readonly string ViewComponentNameKey = "ViewComponentName";
@@ -22,6 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
         /// <param name="descriptor">The <see cref="TagHelperDescriptor"/> to check.</param>
         /// <returns>Whether a <see cref="TagHelperDescriptor"/> represents a view component.</returns>
         public static bool IsViewComponentDescriptor(TagHelperDescriptor descriptor) =>
-            descriptor != null && descriptor.PropertyBag.ContainsKey(ViewComponentNameKey);
+            descriptor != null && descriptor.Metadata.ContainsKey(ViewComponentNameKey);
     }
 }
