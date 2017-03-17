@@ -112,9 +112,17 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 TriggerHostShutdown(hostExitTokenSource);
             };
-            HostProcess.Start();
-            HostProcess.BeginErrorReadLine();
-            HostProcess.BeginOutputReadLine();
+
+            try
+            {
+                HostProcess.Start();
+                HostProcess.BeginErrorReadLine();
+                HostProcess.BeginOutputReadLine();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error occurred while starting the process. Exception: {exception}", ex.ToString());
+            }
 
             if (HostProcess.HasExited)
             {
