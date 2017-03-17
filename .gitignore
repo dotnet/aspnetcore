@@ -41,3 +41,4 @@ site.min.css
 .vscode/
 signalr-client/
 dist/
+global.json
