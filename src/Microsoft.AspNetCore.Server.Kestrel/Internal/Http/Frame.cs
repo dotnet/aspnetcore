@@ -1253,29 +1253,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             try
             {
+                // Read raw target before mutating memory.
+                rawTarget = target.GetAsciiStringNonNullCharacters();
+
                 if (pathEncoded)
                 {
-                    // Read raw target before mutating memory.
-                    rawTarget = target.GetAsciiStringNonNullCharacters();
+                    // URI was encoded, unescape and then parse as UTF-8
+                    var pathLength = UrlEncoder.Decode(path, path);
 
-                    // URI was encoded, unescape and then parse as utf8
-                    int pathLength = UrlEncoder.Decode(path, path);
+                    // Removing dot segments must be done after unescaping. From RFC 3986:
+                    //
+                    // URI producing applications should percent-encode data octets that
+                    // correspond to characters in the reserved set unless these characters
+                    // are specifically allowed by the URI scheme to represent data in that
+                    // component.  If a reserved character is found in a URI component and
+                    // no delimiting role is known for that character, then it must be
+                    // interpreted as representing the data octet corresponding to that
+                    // character's encoding in US-ASCII.
+                    //
+                    // https://tools.ietf.org/html/rfc3986#section-2.2
+                    pathLength = PathNormalizer.RemoveDotSegments(path.Slice(0, pathLength));
+
                     requestUrlPath = GetUtf8String(path.Slice(0, pathLength));
                 }
                 else
                 {
-                    // URI wasn't encoded, parse as ASCII
-                    requestUrlPath = path.GetAsciiStringNonNullCharacters();
+                    var pathLength = PathNormalizer.RemoveDotSegments(path);
 
-                    if (query.Length == 0)
+                    if (path.Length == pathLength && query.Length == 0)
                     {
-                        // No need to allocate an extra string if the path didn't need
-                        // decoding and there's no query string following it.
-                        rawTarget = requestUrlPath;
+                        // If no decoding was required, no dot segments were removed and
+                        // there is no query, the request path is the same as the raw target
+                        requestUrlPath = rawTarget;
                     }
                     else
                     {
-                        rawTarget = target.GetAsciiStringNonNullCharacters();
+                        requestUrlPath = path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
                     }
                 }
             }
@@ -1286,7 +1299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             QueryString = query.GetAsciiStringNonNullCharacters();
             RawTarget = rawTarget;
-            Path = PathNormalizer.RemoveDotSegments(requestUrlPath);
+            Path = requestUrlPath;
         }
 
         private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
@@ -1360,7 +1373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 RejectRequestTarget(target);
             }
 
-            Path = PathNormalizer.RemoveDotSegments(uri.LocalPath);
+            Path = uri.LocalPath;
             // don't use uri.Query because we need the unescaped version
             QueryString = query.GetAsciiStringNonNullCharacters();
         }

@@ -93,6 +93,28 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
+        public static IEnumerable<string[]> RequestLineDotSegmentData => new[]
+        {
+            new[] { "GET /a/../b HTTP/1.1\r\n", "/a/../b", "/b", "" },
+            new[] { "GET /%61/../%62 HTTP/1.1\r\n", "/%61/../%62", "/b", "" },
+            new[] { "GET /a/%2E%2E/b HTTP/1.1\r\n", "/a/%2E%2E/b", "/b", "" },
+            new[] { "GET /%61/%2E%2E/%62 HTTP/1.1\r\n", "/%61/%2E%2E/%62", "/b", "" },
+            new[] { "GET /a?p=/a/../b HTTP/1.1\r\n", "/a?p=/a/../b", "/a", "?p=/a/../b" },
+            new[] { "GET /a?p=/a/%2E%2E/b HTTP/1.1\r\n", "/a?p=/a/%2E%2E/b", "/a", "?p=/a/%2E%2E/b" },
+            new[] { "GET http://example.com/a/../b HTTP/1.1\r\n", "http://example.com/a/../b", "/b", "" },
+            new[] { "GET http://example.com/%61/../%62 HTTP/1.1\r\n", "http://example.com/%61/../%62", "/b", "" },
+            new[] { "GET http://example.com/a/%2E%2E/b HTTP/1.1\r\n", "http://example.com/a/%2E%2E/b", "/b", "" },
+            new[] { "GET http://example.com/%61/%2E%2E/%62 HTTP/1.1\r\n", "http://example.com/%61/%2E%2E/%62", "/b", "" },
+            new[] { "GET http://example.com/a?p=/a/../b HTTP/1.1\r\n", "http://example.com/a?p=/a/../b", "/a", "?p=/a/../b" },
+            new[] { "GET http://example.com/a?p=/a/%2E%2E/b HTTP/1.1\r\n", "http://example.com/a?p=/a/%2E%2E/b", "/a", "?p=/a/%2E%2E/b" },
+            new[] { "GET http://example.com?p=/a/../b HTTP/1.1\r\n", "http://example.com?p=/a/../b", "/", "?p=/a/../b" },
+            new[] { "GET http://example.com?p=/a/%2E%2E/b HTTP/1.1\r\n", "http://example.com?p=/a/%2E%2E/b", "/", "?p=/a/%2E%2E/b" },
+
+            // Asterisk-form and authority-form should be unaffected and cause no issues
+            new[] { "OPTIONS * HTTP/1.1\r\n", "*", "", "" },
+            new[] { "CONNECT www.example.com HTTP/1.1\r\n", "www.example.com", "", "" },
+        };
+
         public static IEnumerable<string> RequestLineIncompleteData => new[]
         {
             "G",

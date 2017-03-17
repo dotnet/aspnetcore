@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ValidRequestLineData))]
+        [MemberData(nameof(RequestLineValidData))]
         public async Task TakeStartLineSetsFrameProperties(
             string requestLine,
             string expectedMethod,
@@ -269,6 +269,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal(expectedDecodedPath, _frame.Path);
             Assert.Equal(expectedQueryString, _frame.QueryString);
             Assert.Equal(expectedHttpVersion, _frame.HttpVersion);
+        }
+
+        [Theory]
+        [MemberData(nameof(RequestLineDotSegmentData))]
+        public async Task TakeStartLineRemovesDotSegmentsFromTarget(
+            string requestLine,
+            string expectedRawTarget,
+            string expectedDecodedPath,
+            string expectedQueryString)
+        {
+            var requestLineBytes = Encoding.ASCII.GetBytes(requestLine);
+            await _input.Writer.WriteAsync(requestLineBytes);
+            var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
+
+            var returnValue = _frame.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            _input.Reader.Advance(_consumed, _examined);
+
+            Assert.True(returnValue);
+            Assert.Equal(expectedRawTarget, _frame.RawTarget);
+            Assert.Equal(expectedDecodedPath, _frame.Path);
+            Assert.Equal(expectedQueryString, _frame.QueryString);
         }
 
         [Fact]
@@ -595,7 +616,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        public static IEnumerable<object> ValidRequestLineData => HttpParsingData.RequestLineValidData;
+        public static IEnumerable<object> RequestLineValidData => HttpParsingData.RequestLineValidData;
+
+        public static IEnumerable<object> RequestLineDotSegmentData => HttpParsingData.RequestLineDotSegmentData;
 
         public static TheoryData<string> TargetWithEncodedNullCharData
         {
