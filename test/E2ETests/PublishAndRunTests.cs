@@ -48,7 +48,7 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5031/", false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, "http://localhost:5032/", false)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, "http://localhost:5032/", false, Skip = "https://github.com/aspnet/MusicStore/issues/761")]
         public async Task NonWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
