@@ -33,7 +33,7 @@ export class Connection {
 
         this.transport = this.createTransport(transportName);
         this.transport.onDataReceived = this.dataReceivedCallback;
-        this.transport.onError = e => this.stopConnection(e);
+        this.transport.onClosed = e => this.stopConnection(e);
 
         try {
             this.connectionId = await this.httpClient.get(`${this.url}/negotiate?${this.queryString}`);

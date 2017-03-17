@@ -1,4 +1,4 @@
-import { DataReceived, ErrorHandler } from "./Common"
+import { DataReceived, TransportClosed } from "./Common"
 import { IHttpClient } from "./HttpClient"
 import * as Formatters from "./Formatters";
 
@@ -7,7 +7,7 @@ export interface ITransport {
     send(data: any): Promise<void>;
     stop(): void;
     onDataReceived: DataReceived;
-    onError: ErrorHandler;
+    onClosed: TransportClosed;
 }
 
 export class WebSocketTransport implements ITransport {
@@ -39,9 +39,12 @@ export class WebSocketTransport implements ITransport {
 
             webSocket.onclose = (event: CloseEvent) => {
                 // webSocket will be null if the transport did not start successfully
-                if (this.webSocket && (event.wasClean === false || event.code !== 1000)) {
-                    if (this.onError) {
-                        this.onError(event);
+                if (this.onClosed && this.webSocket) {
+                    if (event.wasClean === false || event.code !== 1000) {
+                        this.onClosed(new Error(`Websocket closed with status code: ${event.code} (${event.reason})`));
+                    }
+                    else {
+                        this.onClosed();
                     }
                 }
             }
@@ -65,7 +68,7 @@ export class WebSocketTransport implements ITransport {
     }
 
     onDataReceived: DataReceived;
-    onError: ErrorHandler;
+    onClosed: TransportClosed;
 }
 
 export class ServerSentEventsTransport implements ITransport {
@@ -98,8 +101,8 @@ export class ServerSentEventsTransport implements ITransport {
                         try {
                             message = Formatters.ServerSentEventsFormat.parse(e.data);
                         } catch (error) {
-                            if (this.onError) {
-                                this.onError(error);
+                            if (this.onClosed) {
+                                this.onClosed(error);
                             }
                             return;
                         }
@@ -109,12 +112,12 @@ export class ServerSentEventsTransport implements ITransport {
                     }
                 };
 
-                eventSource.onerror = (e: Event) => {
+                eventSource.onerror = (e: ErrorEvent) => {
                     reject();
 
                     // don't report an error if the transport did not start successfully
-                    if (this.eventSource && this.onError) {
-                        this.onError(e);
+                    if (this.eventSource && this.onClosed) {
+                        this.onClosed(new Error(e.message));
                     }
                 }
 
@@ -141,7 +144,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     onDataReceived: DataReceived;
-    onError: ErrorHandler;
+    onClosed: TransportClosed;
 }
 
 export class LongPollingTransport implements ITransport {
@@ -178,8 +181,8 @@ export class LongPollingTransport implements ITransport {
                     try {
                         messages = Formatters.TextMessageFormat.parse(pollXhr.response);
                     } catch (error) {
-                        if (this.onError) {
-                            this.onError(error);
+                        if (this.onClosed) {
+                            this.onClosed(error);
                         }
                         return;
                     }
@@ -192,24 +195,21 @@ export class LongPollingTransport implements ITransport {
                 this.poll(url);
             }
             else if (this.pollXhr.status == 204) {
-                // TODO: closed event?
+                if (this.onClosed) {
+                    this.onClosed();
+                }
             }
             else {
-                if (this.onError) {
-                    this.onError({
-                        status: pollXhr.status,
-                        statusText: pollXhr.statusText
-                    });
+                if (this.onClosed) {
+                    this.onClosed(new Error(`Status: ${pollXhr.status}, Message: ${pollXhr.responseText}`));
                 }
             }
         };
 
         pollXhr.onerror = () => {
-            if (this.onError) {
-                this.onError({
-                    status: pollXhr.status,
-                    statusText: pollXhr.statusText
-                });
+            if (this.onClosed) {
+                // network related error or denied cross domain request
+                this.onClosed(new Error("Sending HTTP request failed."));
             }
         };
 
@@ -237,5 +237,5 @@ export class LongPollingTransport implements ITransport {
     }
 
     onDataReceived: DataReceived;
-    onError: ErrorHandler;
+    onClosed: TransportClosed;
 }
