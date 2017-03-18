@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using BenchmarkDotNet.Attributes;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -21,21 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     {
         private static readonly byte[] _helloWorldPayload = Encoding.ASCII.GetBytes("Hello, World!");
 
-        private readonly TestFrame<object> _frame;
-
-        public ResponseHeadersWritingBenchmark()
-        {
-            _frame = MakeFrame();
-        }
-
-        public enum BenchmarkTypes
-        {
-            TechEmpowerPlaintext,
-            PlaintextChunked,
-            PlaintextWithCookie,
-            PlaintextChunkedWithCookie,
-            LiveAspNet
-        }
+        private TestFrame<object> _frame;
 
         [Params(
             BenchmarkTypes.TechEmpowerPlaintext,
@@ -119,9 +107,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return _frame.WriteAsync(new ArraySegment<byte>(_helloWorldPayload), default(CancellationToken));
         }
 
-        private TestFrame<object> MakeFrame()
+        [Setup]
+        public void Setup()
         {
-            var socketInput = new PipeFactory().Create();
+            var factory = new PipeFactory();
+            var input = factory.Create();
+            var output = factory.Create();
+            var socketOutput = new StreamSocketOutput(Stream.Null, output);
 
             var serviceContext = new ServiceContext
             {
@@ -129,23 +121,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ServerOptions = new KestrelServerOptions(),
                 Log = Mock.Of<IKestrelTrace>()
             };
+
             var listenerContext = new ListenerContext(serviceContext)
             {
                 ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
             };
+
             var connectionContext = new ConnectionContext(listenerContext)
             {
-                Input = socketInput,
-                Output = new MockSocketOutput(),
+                Input = input,
+                Output = socketOutput,
                 ConnectionControl = Mock.Of<IConnectionControl>()
             };
-            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = f => new Internal.Http.KestrelHttpParser(log: null);
+
+            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = f => new KestrelHttpParser(log: null);
 
             var frame = new TestFrame<object>(application: null, context: connectionContext);
             frame.Reset();
             frame.InitializeHeaders();
 
-            return frame;
+            // Start writing
+            var ignore = socketOutput.WriteOutputAsync();
+
+            _frame = frame;
+        }
+
+        public enum BenchmarkTypes
+        {
+            TechEmpowerPlaintext,
+            PlaintextChunked,
+            PlaintextWithCookie,
+            PlaintextChunkedWithCookie,
+            LiveAspNet
         }
     }
 }
