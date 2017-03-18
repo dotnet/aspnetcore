@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             // Prepare the first span
             var span = buffer.First.Span;
-            var lineIndex = span.IndexOfVectorized(ByteLF);
+            var lineIndex = span.SequentialIndexOf(ByteLF);
             if (lineIndex >= 0)
             {
                 consumed = buffer.Move(consumed, lineIndex + 1);
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 index = reader.Index;
                             }
 
-                            var endIndex = new Span<byte>(pBuffer + index, remaining).IndexOfVectorized(ByteLF);
+                            var endIndex = new Span<byte>(pBuffer + index, remaining).SequentialIndexOf(ByteLF);
                             var length = 0;
 
                             if (endIndex != -1)

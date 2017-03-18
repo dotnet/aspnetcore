@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
-    <CoreFxLabsPipelinesVersion>0.1.0-e170313-1</CoreFxLabsPipelinesVersion>
-    <CoreFxLabsVersion>0.1.0-e170313-1</CoreFxLabsVersion>
+    <CoreFxLabsPipelinesVersion>0.1.0-*</CoreFxLabsPipelinesVersion>
+    <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <LibUvVersion>1.9.1</LibUvVersion>
     <JsonNetVersion>9.0.1</JsonNetVersion>
