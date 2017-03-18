@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
     public class LibuvAwaitable<TRequest> : ICriticalNotifyCompletion where TRequest : UvRequest
     {
-        private readonly static Action CALLBACK_RAN = () => { };
+        private readonly static Action _callbackCompleted = () => { };
 
         private Action _callback;
 
@@ -20,20 +20,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         private int _status;
 
-        public static Action<TRequest, int, Exception, object> Callback = (req, status, error, state) =>
+        public static readonly Action<TRequest, int, Exception, object> Callback = (req, status, error, state) =>
         {
             var awaitable = (LibuvAwaitable<TRequest>)state;
 
             awaitable._exception = error;
             awaitable._status = status;
 
-            var continuation = Interlocked.Exchange(ref awaitable._callback, CALLBACK_RAN);
+            var continuation = Interlocked.Exchange(ref awaitable._callback, _callbackCompleted);
 
             continuation?.Invoke();
         };
 
         public LibuvAwaitable<TRequest> GetAwaiter() => this;
-        public bool IsCompleted => _callback == CALLBACK_RAN;
+        public bool IsCompleted => _callback == _callbackCompleted;
 
         public UvWriteResult GetResult()
         {
@@ -50,8 +50,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public void OnCompleted(Action continuation)
         {
-            if (_callback == CALLBACK_RAN ||
-                Interlocked.CompareExchange(ref _callback, continuation, null) == CALLBACK_RAN)
+            if (_callback == _callbackCompleted ||
+                Interlocked.CompareExchange(ref _callback, continuation, null) == _callbackCompleted)
             {
                 Task.Run(continuation);
             }
@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
     public struct UvWriteResult
     {
-        public int Status;
-        public Exception Error;
+        public int Status { get; }
+        public Exception Error { get; }
 
         public UvWriteResult(int status, Exception error)
         {

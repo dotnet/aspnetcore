@@ -105,15 +105,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void End(ProduceEndType endType)
         {
-            switch (endType)
+            if (endType == ProduceEndType.SocketShutdown)
             {
-                case ProduceEndType.SocketShutdown:
-                    // Graceful shutdown
-                    _pipe.Reader.CancelPendingRead();
-                    break;
-                case ProduceEndType.SocketDisconnect:
-                    // Not graceful
-                    break;
+                // Graceful shutdown
+                _pipe.Reader.CancelPendingRead();
             }
 
             lock (_contextLock)
