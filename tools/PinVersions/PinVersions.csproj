@@ -12,5 +12,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.1" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.3.0" />
   </ItemGroup>
 </Project>

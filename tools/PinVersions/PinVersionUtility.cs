@@ -40,32 +40,83 @@ namespace PinVersions
 
         public void Execute()
         {
+            var solutionPinMetadata = GetPinVersionMetadata();
+            foreach (var item in solutionPinMetadata)
+            {
+                var projectPinMetadata = item.Value;
+                var specProject = projectPinMetadata.PackageSpec;
+
+                if (!(projectPinMetadata.Packages.Any() || projectPinMetadata.CLIToolReferences.Any()))
+                {
+                    Console.WriteLine($"No package or tool references to pin for {specProject.FilePath}.");
+                    continue;
+                }
+
+                var projectFileInfo = new FileInfo(specProject.FilePath);
+                var pinnedReferencesFile = Path.Combine(
+                    specProject.RestoreMetadata.OutputPath,
+                    projectFileInfo.Name + ".pinnedversions.targets");
+
+                Directory.CreateDirectory(Path.GetDirectoryName(pinnedReferencesFile));
+
+                Console.WriteLine($"Pinning package versions for {specProject.FilePath}.");
+                var pinnedReferences = new XElement("ItemGroup");
+                foreach (var packageReference in projectPinMetadata.Packages)
+                {
+                    (var tfm, var libraryRange, var exactVersion) = packageReference;
+                    Console.WriteLine($"Pinning reference {libraryRange.Name}({libraryRange.VersionRange} to {exactVersion}.");
+                    var metadata = new List<XAttribute>
+                    {
+                        new XAttribute("Update", libraryRange.Name),
+                        new XAttribute("Version", exactVersion.ToNormalizedString()),
+                    };
+
+                    if (tfm != NuGetFramework.AnyFramework)
+                    {
+                        metadata.Add(new XAttribute("Condition", $"'$(TargetFramework)'=='{tfm.GetShortFolderName()}'"));
+                    }
+
+                    pinnedReferences.Add(new XElement("PackageReference", metadata));
+                }
+
+                foreach (var toolReference in projectPinMetadata.CLIToolReferences)
+                {
+                    (var libraryRange, var exactVersion) = toolReference;
+                    Console.WriteLine($"Pinning CLI Tool {libraryRange.Name}({libraryRange.VersionRange} to {exactVersion}.");
+                    var metadata = new List<XAttribute>
+                    {
+                        new XAttribute("Update", libraryRange.Name),
+                        new XAttribute("Version", exactVersion.ToNormalizedString()),
+                    };
+
+                    pinnedReferences.Add(new XElement("DotNetCliToolReference", metadata));
+                }
+
+                var pinnedVersionRoot = new XElement("Project", pinnedReferences);
+                File.WriteAllText(pinnedReferencesFile, pinnedVersionRoot.ToString());
+            }
+        }
+
+        private IDictionary<string, PinVersionMetadata> GetPinVersionMetadata()
+        {
             var repositoryDirectoryInfo = new DirectoryInfo(_repositoryRoot);
-            var knownProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var projects = new Dictionary<string, PinVersionMetadata>(StringComparer.OrdinalIgnoreCase);
+
             foreach (var slnFile in repositoryDirectoryInfo.EnumerateFiles("*.sln"))
             {
                 var graphSpec = _provider.GetDependencyGraphSpec(repositoryDirectoryInfo.Name, slnFile.FullName);
                 foreach (var specProject in graphSpec.Projects)
                 {
-                    if (!knownProjects.Add(specProject.FilePath) ||
-                       specProject.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
+                    if (!projects.TryGetValue(specProject.FilePath, out var pinMetadata))
                     {
-                        continue;
+                        pinMetadata = new PinVersionMetadata(specProject);
+                        projects[specProject.FilePath] = pinMetadata;
                     }
-
-                    var projectFileInfo = new FileInfo(specProject.FilePath);
-                    var pinnedReferencesFile = Path.Combine(
-                        specProject.RestoreMetadata.OutputPath,
-                        projectFileInfo.Name + ".pinnedversions.targets");
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(pinnedReferencesFile));
 
                     var allDependencies = specProject.Dependencies.Select(dependency => new { Dependency = dependency, FrameworkName = NuGetFramework.AnyFramework })
                         .Concat(specProject.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Select(dependency => new { Dependency = dependency, tfm.FrameworkName })))
                         .Where(d => d.Dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package));
 
-                    Console.WriteLine($"Pinning package versions for {specProject.FilePath}.");
-                    var packageReferencesItemGroup = new XElement("ItemGroup");
                     foreach (var dependency in allDependencies)
                     {
                         var reference = dependency.Dependency;
@@ -81,25 +132,24 @@ namespace PinVersions
                             continue;
                         }
 
-                        Console.WriteLine($"Pinning reference {reference.Name}({reference.LibraryRange.VersionRange} to {exactVersion}.");
-                        var metadata = new List<XAttribute>
+                        var projectStyle = specProject.RestoreMetadata.ProjectStyle;
+                        if (projectStyle == ProjectStyle.PackageReference)
                         {
-                            new XAttribute("Update", reference.Name),
-                            new XAttribute("Version", exactVersion.ToNormalizedString()),
-                        };
-
-                        if (dependency.FrameworkName != NuGetFramework.AnyFramework)
-                        {
-                            metadata.Add(new XAttribute("Condition", $"'$(TargetFramework)'=='{dependency.FrameworkName.GetShortFolderName()}'"));
+                            pinMetadata.Packages.Add((dependency.FrameworkName, reference.LibraryRange, exactVersion));
                         }
-
-                        packageReferencesItemGroup.Add(new XElement("PackageReference", metadata));
+                        else if (projectStyle == ProjectStyle.DotnetCliTool)
+                        {
+                            pinMetadata.CLIToolReferences.Add((reference.LibraryRange, exactVersion));
+                        }
+                        else
+                        {
+                            throw new NotSupportedException($"Unknown project style '{projectStyle}'.");
+                        }
                     }
-
-                    var pinnedVersionRoot = new XElement("Project", packageReferencesItemGroup);
-                    File.WriteAllText(pinnedReferencesFile, pinnedVersionRoot.ToString());
                 }
             }
+
+            return projects;
         }
 
         private NuGetVersion GetExactVersion(string name, VersionRange range)
@@ -136,6 +186,22 @@ namespace PinVersions
             }
 
             return null;
+        }
+
+        private struct PinVersionMetadata
+        {
+            public PinVersionMetadata(PackageSpec packageSpec)
+            {
+                PackageSpec = packageSpec;
+                Packages = new List<(NuGetFramework, LibraryRange, NuGetVersion)>();
+                CLIToolReferences = new List<(LibraryRange, NuGetVersion)>();
+            }
+
+            public PackageSpec PackageSpec { get; }
+
+            public List<(NuGetFramework, LibraryRange, NuGetVersion)> Packages { get; }
+
+            public List<(LibraryRange, NuGetVersion)> CLIToolReferences { get; }
         }
     }
 }
