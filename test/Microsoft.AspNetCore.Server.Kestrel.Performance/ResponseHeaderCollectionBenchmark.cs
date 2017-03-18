@@ -3,16 +3,16 @@
 
 using System.Runtime.CompilerServices;
 using System.Text;
-using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Testing;
+using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     [Config(typeof(CoreConfig))]
-    public class ResponseHeadersBenchmark
+    public class ResponseHeaderCollectionBenchmark
     {
         private const int InnerLoopCount = 512;
 
@@ -21,27 +21,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private FrameResponseHeaders _responseHeadersDirect;
         private HttpResponse _response;
 
-        [Params("ContentLengthNumeric", "ContentLengthString", "Plaintext", "Common", "Unknown")]
-        public string Type { get; set; }
+        public enum BenchmarkTypes
+        {
+            ContentLengthNumeric,
+            ContentLengthString,
+            Plaintext,
+            Common,
+            Unknown
+        }
+
+        [Params(
+            BenchmarkTypes.ContentLengthNumeric, 
+            BenchmarkTypes.ContentLengthString, 
+            BenchmarkTypes.Plaintext, 
+            BenchmarkTypes.Common, 
+            BenchmarkTypes.Unknown
+        )]
+        public BenchmarkTypes Type { get; set; }
 
         [Benchmark(OperationsPerInvoke = InnerLoopCount)]
         public void SetHeaders()
         {
             switch (Type)
             {
-                case "ContentLengthNumeric":
+                case BenchmarkTypes.ContentLengthNumeric:
                     ContentLengthNumeric(InnerLoopCount);
                     break;
-                case "ContentLengthString":
+                case BenchmarkTypes.ContentLengthString:
                     ContentLengthString(InnerLoopCount);
                     break;
-                case "Plaintext":
+                case BenchmarkTypes.Plaintext:
                     Plaintext(InnerLoopCount);
                     break;
-                case "Common":
+                case BenchmarkTypes.Common:
                     Common(InnerLoopCount);
                     break;
-                case "Unknown":
+                case BenchmarkTypes.Unknown:
                     Unknown(InnerLoopCount);
                     break;
             }
@@ -163,19 +178,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             switch (Type)
             {
-                case "ContentLengthNumeric":
+                case BenchmarkTypes.ContentLengthNumeric:
                     ContentLengthNumeric(1);
                     break;
-                case "ContentLengthString":
+                case BenchmarkTypes.ContentLengthString:
                     ContentLengthString(1);
                     break;
-                case "Plaintext":
+                case BenchmarkTypes.Plaintext:
                     Plaintext(1);
                     break;
-                case "Common":
+                case BenchmarkTypes.Common:
                     Common(1);
                     break;
-                case "Unknown":
+                case BenchmarkTypes.Unknown:
                     Unknown(1);
                     break;
             }

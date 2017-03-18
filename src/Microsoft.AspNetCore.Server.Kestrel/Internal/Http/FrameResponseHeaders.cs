@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             output.Write(_CrLf);
                             output.WriteAscii(kv.Key);
                             output.Write(_colonSpace);
-                            output.Write(value);
+                            output.WriteAscii(value);
                         }
                     }
                 }
