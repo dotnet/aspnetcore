@@ -18,3 +18,4 @@ node_modules
 .nuget
 .r
 .deps
+global.json
