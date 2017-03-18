@@ -12,51 +12,67 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
     /// </summary>
     public class KestrelTrace : IKestrelTrace
     {
-        private static readonly Action<ILogger, string, Exception> _connectionStart;
-        private static readonly Action<ILogger, string, Exception> _connectionStop;
-        private static readonly Action<ILogger, string, Exception> _connectionPause;
-        private static readonly Action<ILogger, string, Exception> _connectionResume;
-        private static readonly Action<ILogger, string, Exception> _connectionReadFin;
-        private static readonly Action<ILogger, string, Exception> _connectionWriteFin;
-        private static readonly Action<ILogger, string, int, Exception> _connectionWroteFin;
-        private static readonly Action<ILogger, string, Exception> _connectionKeepAlive;
-        private static readonly Action<ILogger, string, Exception> _connectionDisconnect;
-        private static readonly Action<ILogger, string, Exception> _applicationError;
-        private static readonly Action<ILogger, string, Exception> _connectionError;
-        private static readonly Action<ILogger, string, int, Exception> _connectionDisconnectedWrite;
-        private static readonly Action<ILogger, string, long, Exception> _connectionHeadResponseBodyWrite;
-        private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully;
-        private static readonly Action<ILogger, Exception> _notAllConnectionsAborted;
-        private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest;
-        private static readonly Action<ILogger, string, Exception> _connectionReset;
-        private static readonly Action<ILogger, string, Exception> _requestProcessingError;
+        private static readonly Action<ILogger, string, Exception> _connectionStart =
+            LoggerMessage.Define<string>(LogLevel.Debug, 1, @"Connection id ""{ConnectionId}"" started.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionStop =
+            LoggerMessage.Define<string>(LogLevel.Debug, 2, @"Connection id ""{ConnectionId}"" stopped.");
+
+        // ConnectionRead: Reserved: 3
+
+        private static readonly Action<ILogger, string, Exception> _connectionPause =
+            LoggerMessage.Define<string>(LogLevel.Debug, 4, @"Connection id ""{ConnectionId}"" paused.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionResume =
+            LoggerMessage.Define<string>(LogLevel.Debug, 5, @"Connection id ""{ConnectionId}"" resumed.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionReadFin =
+            LoggerMessage.Define<string>(LogLevel.Debug, 6, @"Connection id ""{ConnectionId}"" received FIN.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionWriteFin =
+            LoggerMessage.Define<string>(LogLevel.Debug, 7, @"Connection id ""{ConnectionId}"" sending FIN.");
+
+        private static readonly Action<ILogger, string, int, Exception> _connectionWroteFin =
+            LoggerMessage.Define<string, int>(LogLevel.Debug, 8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".");
+
+        private static readonly Action<ILogger, string, Exception> _connectionKeepAlive =
+            LoggerMessage.Define<string>(LogLevel.Debug, 9, @"Connection id ""{ConnectionId}"" completed keep alive response.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionDisconnect =
+            LoggerMessage.Define<string>(LogLevel.Debug, 10, @"Connection id ""{ConnectionId}"" disconnecting.");
+
+        // ConnectionWrite: Reserved: 11
+
+        // ConnectionWriteCallback: Reserved: 12
+
+        private static readonly Action<ILogger, string, Exception> _applicationError =
+            LoggerMessage.Define<string>(LogLevel.Error, 13, @"Connection id ""{ConnectionId}"": An unhandled exception was thrown by the application.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionError =
+            LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error.");
+
+        private static readonly Action<ILogger, string, int, Exception> _connectionDisconnectedWrite =
+            LoggerMessage.Define<string, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
+
+        private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully =
+            LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
+
+        private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest =
+            LoggerMessage.Define<string, string>(LogLevel.Information, 17, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
+
+        private static readonly Action<ILogger, string, long, Exception> _connectionHeadResponseBodyWrite =
+            LoggerMessage.Define<string, long>(LogLevel.Debug, 18, @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionReset =
+            LoggerMessage.Define<string>(LogLevel.Debug, 19, @"Connection id ""{ConnectionId}"" reset.");
+
+        private static readonly Action<ILogger, string, Exception> _requestProcessingError =
+            LoggerMessage.Define<string>(LogLevel.Information, 20, @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
+
+        private static readonly Action<ILogger, Exception> _notAllConnectionsAborted =
+            LoggerMessage.Define(LogLevel.Debug, 21, "Some connections failed to abort during server shutdown.");
 
         protected readonly ILogger _logger;
-
-        static KestrelTrace()
-        {
-            _connectionStart = LoggerMessage.Define<string>(LogLevel.Debug, 1, @"Connection id ""{ConnectionId}"" started.");
-            _connectionStop = LoggerMessage.Define<string>(LogLevel.Debug, 2, @"Connection id ""{ConnectionId}"" stopped.");
-            // ConnectionRead: Reserved: 3
-            _connectionPause = LoggerMessage.Define<string>(LogLevel.Debug, 4, @"Connection id ""{ConnectionId}"" paused.");
-            _connectionResume = LoggerMessage.Define<string>(LogLevel.Debug, 5, @"Connection id ""{ConnectionId}"" resumed.");
-            _connectionReadFin = LoggerMessage.Define<string>(LogLevel.Debug, 6, @"Connection id ""{ConnectionId}"" received FIN.");
-            _connectionWriteFin = LoggerMessage.Define<string>(LogLevel.Debug, 7, @"Connection id ""{ConnectionId}"" sending FIN.");
-            _connectionWroteFin = LoggerMessage.Define<string, int>(LogLevel.Debug, 8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".");
-            _connectionKeepAlive = LoggerMessage.Define<string>(LogLevel.Debug, 9, @"Connection id ""{ConnectionId}"" completed keep alive response.");
-            _connectionDisconnect = LoggerMessage.Define<string>(LogLevel.Debug, 10, @"Connection id ""{ConnectionId}"" disconnecting.");
-            // ConnectionWrite: Reserved: 11
-            // ConnectionWriteCallback: Reserved: 12
-            _applicationError = LoggerMessage.Define<string>(LogLevel.Error, 13, @"Connection id ""{ConnectionId}"": An unhandled exception was thrown by the application.");
-            _connectionError = LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error.");
-            _connectionDisconnectedWrite = LoggerMessage.Define<string, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
-            _notAllConnectionsClosedGracefully = LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
-            _connectionBadRequest = LoggerMessage.Define<string, string>(LogLevel.Information, 17, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
-            _connectionHeadResponseBodyWrite = LoggerMessage.Define<string, long>(LogLevel.Debug, 18, @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
-            _connectionReset = LoggerMessage.Define<string>(LogLevel.Debug, 19, @"Connection id ""{ConnectionId}"" reset.");
-            _requestProcessingError = LoggerMessage.Define<string>(LogLevel.Information, 20, @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
-            _notAllConnectionsAborted = LoggerMessage.Define(LogLevel.Debug, 21, "Some connections failed to abort during server shutdown.");
-        }
 
         public KestrelTrace(ILogger logger)
         {

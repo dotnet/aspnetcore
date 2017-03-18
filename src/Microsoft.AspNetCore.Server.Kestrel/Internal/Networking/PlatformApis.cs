@@ -10,15 +10,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 {
     public static class PlatformApis
     {
-        static PlatformApis()
-        {
-            IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-        }
+        public static bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        public static bool IsWindows { get; }
-
-        public static bool IsDarwin { get; }
+        public static bool IsDarwin { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long VolatileRead(ref long value)

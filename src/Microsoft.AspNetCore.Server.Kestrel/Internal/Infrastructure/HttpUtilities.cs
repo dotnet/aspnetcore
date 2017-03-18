@@ -41,29 +41,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         private readonly static ulong _mask5Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00 });
         private readonly static ulong _mask4Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 });
 
-        private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods = new Tuple<ulong, ulong, HttpMethod, int>[8];
-
-        private readonly static string[] _methodNames = new string[9];
-
-        static HttpUtilities()
+        private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
         {
-            _knownMethods[0] = Tuple.Create(_mask4Chars, _httpPutMethodLong, HttpMethod.Put, 3);
-            _knownMethods[1] = Tuple.Create(_mask5Chars, _httpPostMethodLong, HttpMethod.Post, 4);
-            _knownMethods[2] = Tuple.Create(_mask5Chars, _httpHeadMethodLong, HttpMethod.Head, 4);
-            _knownMethods[3] = Tuple.Create(_mask6Chars, _httpTraceMethodLong, HttpMethod.Trace, 5);
-            _knownMethods[4] = Tuple.Create(_mask6Chars, _httpPatchMethodLong, HttpMethod.Patch, 5);
-            _knownMethods[5] = Tuple.Create(_mask7Chars, _httpDeleteMethodLong, HttpMethod.Delete, 6);
-            _knownMethods[6] = Tuple.Create(_mask8Chars, _httpConnectMethodLong, HttpMethod.Connect, 7);
-            _knownMethods[7] = Tuple.Create(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7);
-            _methodNames[(byte)HttpMethod.Get] = HttpMethods.Get;
-            _methodNames[(byte)HttpMethod.Put] = HttpMethods.Put;
-            _methodNames[(byte)HttpMethod.Delete] = HttpMethods.Delete;
-            _methodNames[(byte)HttpMethod.Post] = HttpMethods.Post;
-            _methodNames[(byte)HttpMethod.Head] = HttpMethods.Head;
-            _methodNames[(byte)HttpMethod.Trace] = HttpMethods.Trace;
-            _methodNames[(byte)HttpMethod.Patch] = HttpMethods.Patch;
-            _methodNames[(byte)HttpMethod.Connect] = HttpMethods.Connect;
-            _methodNames[(byte)HttpMethod.Options] = HttpMethods.Options;
+            Tuple.Create(_mask4Chars, _httpPutMethodLong, HttpMethod.Put, 3),
+            Tuple.Create(_mask5Chars, _httpPostMethodLong, HttpMethod.Post, 4),
+            Tuple.Create(_mask5Chars, _httpHeadMethodLong, HttpMethod.Head, 4),
+            Tuple.Create(_mask6Chars, _httpTraceMethodLong, HttpMethod.Trace, 5),
+            Tuple.Create(_mask6Chars, _httpPatchMethodLong, HttpMethod.Patch, 5),
+            Tuple.Create(_mask7Chars, _httpDeleteMethodLong, HttpMethod.Delete, 6),
+            Tuple.Create(_mask8Chars, _httpConnectMethodLong, HttpMethod.Connect, 7),
+            Tuple.Create(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7),
+        };
+
+        private readonly static string[] _methodNames = CreateMethodNames();
+
+        private static string[] CreateMethodNames()
+        {
+            var methodNames = new string[9];
+            methodNames[(byte)HttpMethod.Get] = HttpMethods.Get;
+            methodNames[(byte)HttpMethod.Put] = HttpMethods.Put;
+            methodNames[(byte)HttpMethod.Delete] = HttpMethods.Delete;
+            methodNames[(byte)HttpMethod.Post] = HttpMethods.Post;
+            methodNames[(byte)HttpMethod.Head] = HttpMethods.Head;
+            methodNames[(byte)HttpMethod.Trace] = HttpMethods.Trace;
+            methodNames[(byte)HttpMethod.Patch] = HttpMethods.Patch;
+            methodNames[(byte)HttpMethod.Connect] = HttpMethods.Connect;
+            methodNames[(byte)HttpMethod.Options] = HttpMethods.Options;
+            return methodNames;
         }
 
         private unsafe static ulong GetAsciiStringAsLong(string str)
