@@ -20,18 +20,18 @@ describe("Text Message Formatter", () => {
     });
 
     ([
-        ["TABC", "Invalid length: 'ABC'"],
-        ["X1:T:A", "Unsupported message format: 'X'"],
-        ["T1:T:A;12ab34:", "Invalid length: '12ab34'"],
-        ["T1:T:A;1:asdf:", "Unknown type value: 'asdf'"],
-        ["T1:T:A;1::", "Message is incomplete"],
-        ["T1:T:A;1:AB:", "Message is incomplete"],
-        ["T1:T:A;5:T:A", "Message is incomplete"],
-        ["T1:T:A;5:T:AB", "Message is incomplete"],
-        ["T1:T:A;5:T:ABCDE", "Message is incomplete"],
-        ["T1:T:A;5:X:ABCDE", "Message is incomplete"],
-        ["T1:T:A;5:T:ABCDEF", "Message missing trailer character"],
-    ] as [[string, string]]).forEach(([payload, expected_error]) => {
+        ["TABC", new Error("Invalid length: 'ABC'")],
+        ["X1:T:A", new Error("Unsupported message format: 'X'")],
+        ["T1:T:A;12ab34:", new Error("Invalid length: '12ab34'")],
+        ["T1:T:A;1:asdf:", new Error("Unknown type value: 'asdf'")],
+        ["T1:T:A;1::", new Error("Message is incomplete")],
+        ["T1:T:A;1:AB:", new Error("Message is incomplete")],
+        ["T1:T:A;5:T:A", new Error("Message is incomplete")],
+        ["T1:T:A;5:T:AB", new Error("Message is incomplete")],
+        ["T1:T:A;5:T:ABCDE", new Error("Message is incomplete")],
+        ["T1:T:A;5:X:ABCDE", new Error("Message is incomplete")],
+        ["T1:T:A;5:T:ABCDEF", new Error("Message missing trailer character")],
+    ] as [[string, Error]]).forEach(([payload, expected_error]) => {
         it(`should fail to parse '${payload}'`, () => {
             expect(() => TextMessageFormat.parse(payload)).toThrow(expected_error);
         });
@@ -40,10 +40,10 @@ describe("Text Message Formatter", () => {
 
 describe("Server-Sent Events Formatter", () => {
     ([
-        ["", "Message is missing header"],
-        ["A", "Unknown type value: 'A'"],
-        ["BOO\r\nBlarg", "Unknown type value: 'BOO'"]
-    ] as [string, string][]).forEach(([payload, expected_error]) => {
+        ["", new Error("Message is missing header")],
+        ["A", new Error("Unknown type value: 'A'")],
+        ["BOO\r\nBlarg", new Error("Unknown type value: 'BOO'")]
+    ] as [string, Error][]).forEach(([payload, expected_error]) => {
         it(`should fail to parse '${payload}`, () => {
             expect(() => ServerSentEventsFormat.parse(payload)).toThrow(expected_error);
         });

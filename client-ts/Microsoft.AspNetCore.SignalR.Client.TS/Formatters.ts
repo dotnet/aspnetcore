@@ -22,7 +22,7 @@ export namespace ServerSentEventsFormat {
         // Binary messages require Base64-decoding and ArrayBuffer support, just like in the other formats below
 
         if (input.length == 0) {
-            throw "Message is missing header";
+            throw new Error("Message is missing header");
         }
 
         let [header, offset] = splitAt(input, "\n", 0);
@@ -36,7 +36,7 @@ export namespace ServerSentEventsFormat {
         // Parse the header
         var messageType = knownTypes[header];
         if (messageType === undefined) {
-            throw "Unknown type value: '" + header + "'";
+            throw new Error(`Unknown type value: '${header}'`);
         }
 
         if (messageType == MessageType.Binary) {
@@ -44,7 +44,7 @@ export namespace ServerSentEventsFormat {
             // This will require our own Base64-decoder because the browser
             // built-in one only decodes to strings and throws if invalid UTF-8
             // characters are found.
-            throw "TODO: Support for binary messages";
+            throw new Error("TODO: Support for binary messages");
         }
 
         // Create the message
@@ -70,13 +70,13 @@ export namespace TextMessageFormat {
         // parseInt is too leniant, we need a strict check to see if the string is an int
 
         if (!LengthRegex.test(lenStr)) {
-            throw `Invalid length: '${lenStr}'`;
+            throw new Error(`Invalid length: '${lenStr}'`);
         }
         let length = Number.parseInt(lenStr);
 
         // Required space is: 3 (type flag, ":", ";") + length (payload len)
         if (!hasSpace(input, offset, 3 + length)) {
-            throw "Message is incomplete";
+            throw new Error("Message is incomplete");
         }
 
         // Read the type
@@ -85,7 +85,7 @@ export namespace TextMessageFormat {
         // Parse the type
         var messageType = knownTypes[typeStr];
         if (messageType === undefined) {
-            throw "Unknown type value: '" + typeStr + "'";
+            throw new Error(`Unknown type value: '${typeStr}'`);
         }
 
         // Read the payload
@@ -94,7 +94,7 @@ export namespace TextMessageFormat {
 
         // Verify the final trailing character
         if (input[offset] != ';') {
-            throw "Message missing trailer character";
+            throw new Error("Message missing trailer character");
         }
         offset += 1;
 
@@ -103,7 +103,7 @@ export namespace TextMessageFormat {
             // This will require our own Base64-decoder because the browser
             // built-in one only decodes to strings and throws if invalid UTF-8
             // characters are found.
-            throw "TODO: Support for binary messages";
+            throw new Error("TODO: Support for binary messages");
         }
 
         return [offset, new Message(messageType, payload)];
@@ -115,7 +115,7 @@ export namespace TextMessageFormat {
         }
 
         if (input[0] != 'T') {
-            throw `Unsupported message format: '${input[0]}'`;
+            throw new Error(`Unsupported message format: '${input[0]}'`);
         }
 
         let messages = [];
