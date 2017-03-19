@@ -51,6 +51,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 return true;
             }
 
+            if (descriptorX == null ^ descriptorY == null)
+            {
+                return false;
+            }
+
             return descriptorX != null &&
                 string.Equals(descriptorX.Kind, descriptorY.Kind, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.AssemblyName, descriptorY.AssemblyName, StringComparison.Ordinal) &&
