@@ -301,7 +301,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             if (flushTask?.IsCompleted == false)
             {
                 OnPausePosted();
-                if (await flushTask.Value)
+                var result = await flushTask.Value;
+                // If the reader isn't complete then resume
+                if (!result.IsCompleted)
                 {
                     OnResumePosted();
                 }
