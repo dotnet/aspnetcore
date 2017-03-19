@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                               + "    var p = \"foo bar baz" + Environment.NewLine
                               + ";" + Environment.NewLine
                               + "}",
-                                BlockType.Statement, SpanKind.Code,
+                                BlockKind.Statement, SpanKind.Code,
                                 new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(21 + Environment.NewLine.Length, 1, 12),
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void ParseBlockTerminatesNormalStringAtEndOfFile()
         {
-            SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah", BlockType.Statement, SpanKind.Code,
+            SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah", BlockKind.Statement, SpanKind.Code,
                                 new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(20, 0, 20),
@@ -607,7 +607,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                               + "<p>Foo</p>" + Environment.NewLine
                               + "blah " + Environment.NewLine
                               + "blah",
-                                BlockType.Statement, SpanKind.Code,
+                                BlockKind.Statement, SpanKind.Code,
                                 new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(20, 0, 20),
@@ -684,7 +684,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 keyword + " (foo) { var foo = bar; if(foo != null) { bar(); } ",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(keyword, '}', '{'),

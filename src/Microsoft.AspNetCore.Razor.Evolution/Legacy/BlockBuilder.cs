@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public IParentChunkGenerator ChunkGenerator { get; set; }
 
-        public BlockType? Type { get; set; }
+        public BlockKind? Type { get; set; }
 
         public List<SyntaxTreeNode> Children { get; private set; }
 

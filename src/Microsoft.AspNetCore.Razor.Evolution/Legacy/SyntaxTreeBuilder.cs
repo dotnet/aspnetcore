@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         /// Starts a block of the specified type
         /// </summary>
         /// <param name="blockType">The type of the block to start</param>
-        public IDisposable StartBlock(BlockType blockType)
+        public IDisposable StartBlock(BlockKind blockType)
         {
             var builder = new BlockBuilder() { Type = blockType };
             _blockStack.Push(builder);

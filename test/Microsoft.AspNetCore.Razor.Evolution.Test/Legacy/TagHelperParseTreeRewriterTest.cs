@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var rootBlock = Assert.IsType<Block>(document);
             var child = Assert.Single(rootBlock.Children);
             var tagBlock = Assert.IsType<Block>(child);
-            Assert.Equal(BlockType.Tag, tagBlock.Type);
+            Assert.Equal(BlockKind.Tag, tagBlock.Type);
             Assert.Empty(errorSink.Errors);
 
             // Act

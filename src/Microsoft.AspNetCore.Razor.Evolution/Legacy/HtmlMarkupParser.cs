@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             using (PushSpanConfig(DefaultMarkupSpan))
             {
-                using (Context.Builder.StartBlock(BlockType.Markup))
+                using (Context.Builder.StartBlock(BlockKind.Markup))
                 {
                     Span.Start = CurrentLocation;
 
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     if (!EndOfFile && !atSpecialTag)
                     {
                         // Start a Block tag.  This is used to wrap things like <p> or <a class="btn"> etc.
-                        tagBlockWrapper = Context.Builder.StartBlock(BlockType.Tag);
+                        tagBlockWrapper = Context.Builder.StartBlock(BlockKind.Tag);
                     }
 
                     if (EndOfFile)
@@ -767,7 +767,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 // content (if the previous attribute was malformed).
                 Output(SpanKind.Markup);
 
-                using (Context.Builder.StartBlock(BlockType.Markup))
+                using (Context.Builder.StartBlock(BlockKind.Markup))
                 {
                     Accept(whitespace);
                     Accept(name);
@@ -782,7 +782,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             Output(SpanKind.Markup);
 
             // Start a new markup block for the attribute
-            using (Context.Builder.StartBlock(BlockType.Markup))
+            using (Context.Builder.StartBlock(BlockKind.Markup))
             {
                 AttributePrefix(whitespace, name, whitespaceAfterAttributeName);
             }
@@ -894,7 +894,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 if (NextIs(HtmlSymbolType.Transition))
                 {
                     // Wrapping this in a block so that the ConditionalAttributeCollapser doesn't rewrite it.
-                    using (Context.Builder.StartBlock(BlockType.Markup))
+                    using (Context.Builder.StartBlock(BlockKind.Markup))
                     {
                         Accept(prefix);
 
@@ -920,7 +920,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Span.ChunkGenerator = SpanChunkGenerator.Null;
 
                     // Dynamic value, start a new block and set the chunk generator
-                    using (Context.Builder.StartBlock(BlockType.Markup))
+                    using (Context.Builder.StartBlock(BlockKind.Markup))
                     {
                         Context.Builder.CurrentBlock.ChunkGenerator =
                             new DynamicAttributeBlockChunkGenerator(
@@ -1178,7 +1178,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                                 Accept(whiteSpace);
                                 Output(SpanKind.Markup); // Output the whitespace
 
-                                using (Context.Builder.StartBlock(BlockType.Tag))
+                                using (Context.Builder.StartBlock(BlockKind.Tag))
                                 {
                                     Accept(openAngle);
                                     Accept(solidus);
@@ -1267,7 +1267,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 {
                     Output(SpanKind.Markup);
 
-                    using (Context.Builder.StartBlock(BlockType.Tag))
+                    using (Context.Builder.StartBlock(BlockKind.Tag))
                     {
                         Span.EditHandler.AcceptedCharacters = endTagAcceptedCharacters;
 
@@ -1444,7 +1444,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             using (PushSpanConfig(DefaultMarkupSpan))
             {
-                using (Context.Builder.StartBlock(BlockType.Markup))
+                using (Context.Builder.StartBlock(BlockKind.Markup))
                 {
                     Span.Start = CurrentLocation;
 
@@ -1491,7 +1491,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 Output(SpanKind.Markup);
 
                 // Start tag block
-                var tagBlock = Context.Builder.StartBlock(BlockType.Tag);
+                var tagBlock = Context.Builder.StartBlock(BlockKind.Tag);
 
                 AcceptAndMoveNext(); // Accept '<'
 
@@ -1598,7 +1598,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             {
                 Span.Start = CurrentLocation;
 
-                using (Context.Builder.StartBlock(BlockType.Markup))
+                using (Context.Builder.StartBlock(BlockKind.Markup))
                 {
                     NextToken();
                     CaseSensitive = caseSensitive;

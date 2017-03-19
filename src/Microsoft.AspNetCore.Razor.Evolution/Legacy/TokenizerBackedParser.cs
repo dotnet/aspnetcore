@@ -614,7 +614,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             OutputSpanBeforeRazorComment();
             using (PushSpanConfig(CommentSpanConfig))
             {
-                using (Context.Builder.StartBlock(BlockType.Comment))
+                using (Context.Builder.StartBlock(BlockKind.Comment))
                 {
                     Context.Builder.CurrentBlock.ChunkGenerator = new RazorCommentChunkGenerator();
                     var start = CurrentStart;

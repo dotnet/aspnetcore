@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     {
         protected override bool CanRewrite(Block block)
         {
-            return block.Type == BlockType.Expression && Parent != null;
+            return block.Type == BlockKind.Expression && Parent != null;
         }
 
         protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)

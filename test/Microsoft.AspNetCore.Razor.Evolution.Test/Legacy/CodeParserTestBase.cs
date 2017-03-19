@@ -29,34 +29,34 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             ImplicitExpressionTest(input, expected, AcceptedCharacters.NonWhiteSpace, errors);
         }
 
-        internal override void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        internal override void SingleSpanBlockTest(string document, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
         {
-            SingleSpanBlockTest(document, blockType, spanType, acceptedCharacters, expectedError: null);
+            SingleSpanBlockTest(document, blockKind, spanType, acceptedCharacters, expectedError: null);
         }
 
-        internal override void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        internal override void SingleSpanBlockTest(string document, string spanContent, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
         {
-            SingleSpanBlockTest(document, spanContent, blockType, spanType, acceptedCharacters, expectedErrors: null);
+            SingleSpanBlockTest(document, spanContent, blockKind, spanType, acceptedCharacters, expectedErrors: null);
         }
 
-        internal override void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, params RazorError[] expectedError)
+        internal override void SingleSpanBlockTest(string document, BlockKind blockKind, SpanKind spanType, params RazorError[] expectedError)
         {
-            SingleSpanBlockTest(document, document, blockType, spanType, expectedError);
+            SingleSpanBlockTest(document, document, blockKind, spanType, expectedError);
         }
 
-        internal override void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, params RazorError[] expectedErrors)
+        internal override void SingleSpanBlockTest(string document, string spanContent, BlockKind blockKind, SpanKind spanType, params RazorError[] expectedErrors)
         {
-            SingleSpanBlockTest(document, spanContent, blockType, spanType, AcceptedCharacters.Any, expectedErrors ?? new RazorError[0]);
+            SingleSpanBlockTest(document, spanContent, blockKind, spanType, AcceptedCharacters.Any, expectedErrors ?? new RazorError[0]);
         }
 
-        internal override void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedError)
+        internal override void SingleSpanBlockTest(string document, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedError)
         {
-            SingleSpanBlockTest(document, document, blockType, spanType, acceptedCharacters, expectedError);
+            SingleSpanBlockTest(document, document, blockKind, spanType, acceptedCharacters, expectedError);
         }
 
-        internal override void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedErrors)
+        internal override void SingleSpanBlockTest(string document, string spanContent, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedErrors)
         {
-            var b = CreateSimpleBlockAndSpan(spanContent, blockType, spanType, acceptedCharacters);
+            var b = CreateSimpleBlockAndSpan(spanContent, blockKind, spanType, acceptedCharacters);
             ParseBlockTest(document, b, expectedErrors ?? new RazorError[0]);
         }
 

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             SingleSpanBlockTest(@"if(foo) {
     // bar } "" baz '
     zoop();
-}", BlockType.Statement, SpanKind.Code);
+}", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 @"if(foo) {
     /* bar } "" */ ' baz } '
     zoop();
-}", BlockType.Statement, SpanKind.Code);
+}", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "for(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "foreach(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "while(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "using(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "if(foo) { using(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); } }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code);
         }
 
@@ -132,14 +132,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "if(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code);
         }
 
         [Fact]
         public void ParseBlockAllowsEmptyBlockStatement()
         {
-            SingleSpanBlockTest("if(false) { }", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("if(false) { }", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "if(foo) { bar(); } /* Foo */ /* Bar */ else { baz(); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "if(foo) { bar(); } else if(bar) { baz(); } /* Foo */ /* Bar */ else { biz(); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             SingleSpanBlockTest(
                 "if(foo) { bar(); } /* Foo */ /* Bar */ else if(bar) { baz(); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code);
         }
 
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             SingleSpanBlockTest(@"if(foo) { bar(); }
 // Foo
 // Bar
-else { baz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+else { baz(); }", BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ else { baz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: Accept
             SingleSpanBlockTest(@"if(foo) { bar(); } else if(bar) { baz(); }
 // Foo
 // Bar
-else { biz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+else { biz(); }", BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -229,7 +229,7 @@ else { biz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: Accept
             SingleSpanBlockTest(@"if(foo) { bar(); }
 // Foo
 // Bar
-else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
+else if(bar) { baz(); }", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -243,7 +243,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
 }";
             const string document = ifStatement + elseIfBranch;
 
-            SingleSpanBlockTest(document, BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest(document, BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -256,7 +256,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
     Debug.WriteLine(@""bar } baz"");
 }";
             const string document = ifStatement + elseIfBranch + elseIfBranch + elseIfBranch + elseIfBranch;
-            SingleSpanBlockTest(document, BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest(document, BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -271,7 +271,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
             const string elseBranch = @" else { Debug.WriteLine(@""bar } baz""); }";
             const string document = ifStatement + elseIfBranch + elseIfBranch + elseBranch;
 
-            SingleSpanBlockTest(document, BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+            SingleSpanBlockTest(document, BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -299,7 +299,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
     Debug.WriteLine(@""foo } bar"");
 }";
 
-            SingleSpanBlockTest(document, BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest(document, BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -313,7 +313,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
             const string elseIfBranch = @" else if { foo(); }";
             const string document = ifBranch + elseIfBranch;
 
-            SingleSpanBlockTest(document, BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest(document, BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -321,7 +321,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         {
             SingleSpanBlockTest(
                 "do { var foo = bar; } while(foo != bar);",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -329,13 +329,13 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockCorrectlyParsesDoWhileBlockMissingSemicolon()
         {
-            SingleSpanBlockTest("do { var foo = bar; } while(foo != bar)", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("do { var foo = bar; } while(foo != bar)", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
         public void ParseBlockCorrectlyParsesDoWhileBlockMissingWhileCondition()
         {
-            SingleSpanBlockTest("do { var foo = bar; } while", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("do { var foo = bar; } while", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -343,7 +343,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         {
             SingleSpanBlockTest(
                 "do { var foo = bar; } while;",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -351,7 +351,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockCorrectlyParsesDoWhileBlockMissingWhileClauseEntirely()
         {
-            SingleSpanBlockTest("do { var foo = bar; } narf;", "do { var foo = bar; }", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("do { var foo = bar; } narf;", "do { var foo = bar; }", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -359,7 +359,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         {
             SingleSpanBlockTest(
                 "do { var foo = bar; } /* Foo */ /* Bar */ while(true);",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -370,7 +370,7 @@ else if(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
             SingleSpanBlockTest(@"do { var foo = bar; }
 // Foo
 // Bar
-while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+while(true);", BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -413,7 +413,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         return;
     default:
         return;
-}", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+}", BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -421,7 +421,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         {
             SingleSpanBlockTest(
                 "lock(foo) { Debug.WriteLine(@\"foo } bar\"); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -487,7 +487,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         [Fact]
         public void ParseBlockTerminatesUsingKeywordAtEOFAndOutputsFileCodeBlock()
         {
-            SingleSpanBlockTest("using                    ", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("using                    ", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -497,7 +497,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
             SingleSpanBlockTest(
                 document,
                 document,
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
@@ -512,7 +512,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
             SingleSpanBlockTest(
                 document,
                 document,
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 new RazorError(
                     LegacyResources.ParseError_BlockComment_Not_Terminated,
@@ -531,7 +531,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
             SingleSpanBlockTest(
                 document,
                 document,
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
@@ -542,7 +542,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenTryAndFinallyClause()
         {
-            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ finally { baz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ finally { baz(); }", BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -556,7 +556,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         {
             SingleSpanBlockTest(
                 "try { bar(); } catch(bar) { baz(); } /* Foo */ /* Bar */ finally { biz(); }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code,
                 acceptedCharacters: AcceptedCharacters.None);
         }
@@ -572,7 +572,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         [Fact]
         public void ParseBlockSupportsBlockCommentBetweenTryAndCatchClause()
         {
-            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ catch(bar) { baz(); }", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -587,7 +587,7 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
             SingleSpanBlockTest(@"try { bar(); }
 // Foo
 // Bar
-finally { baz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+finally { baz(); }", BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -596,7 +596,7 @@ finally { baz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: Acc
             SingleSpanBlockTest(@"try { bar(); } catch(bar) { baz(); }
 // Foo
 // Bar
-finally { biz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+finally { biz(); }", BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -605,13 +605,13 @@ finally { biz(); }", BlockType.Statement, SpanKind.Code, acceptedCharacters: Acc
             SingleSpanBlockTest(@"try { bar(); }
 // Foo
 // Bar
-catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
+catch(bar) { baz(); }", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
         public void ParseBlockSupportsTryStatementWithNoAdditionalClauses()
         {
-            SingleSpanBlockTest("try { var foo = new { } }", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("try { var foo = new { } }", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -633,7 +633,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockSupportsTryStatementWithOneCatchClause()
         {
-            SingleSpanBlockTest("try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -658,14 +658,14 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
             SingleSpanBlockTest(
                 "try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) " +
                 "{ var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }",
-                BlockType.Statement,
+                BlockKind.Statement,
                 SpanKind.Code);
         }
 
         [Fact]
         public void ParseBlockSupportsExceptionLessCatchClauses()
         {
-            SingleSpanBlockTest("try { var foo = new { } } catch { var foo = new { } }", BlockType.Statement, SpanKind.Code);
+            SingleSpanBlockTest("try { var foo = new { } } catch { var foo = new { } }", BlockKind.Statement, SpanKind.Code);
         }
 
         [Fact]
@@ -688,7 +688,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [Fact]
         public void ParseBlockSupportsTryStatementWithFinallyClause()
         {
-            SingleSpanBlockTest("try { var foo = new { } } finally { var foo = new { } }", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+            SingleSpanBlockTest("try { var foo = new { } } finally { var foo = new { } }", BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -712,14 +712,14 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockStopsParsingCatchClausesAfterFinallyBlock()
         {
             var expectedContent = "try { var foo = new { } } finally { var foo = new { } }";
-            SingleSpanBlockTest(expectedContent + " catch(Foo Bar Baz) { }", expectedContent, BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+            SingleSpanBlockTest(expectedContent + " catch(Foo Bar Baz) { }", expectedContent, BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
         public void ParseBlockDoesNotAllowMultipleFinallyBlocks()
         {
             var expectedContent = "try { var foo = new { } } finally { var foo = new { } }";
-            SingleSpanBlockTest(expectedContent + " finally { }", expectedContent, BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
+            SingleSpanBlockTest(expectedContent + " finally { }", expectedContent, BlockKind.Statement, SpanKind.Code, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]

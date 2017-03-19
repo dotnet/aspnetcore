@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void ParseDocumentOutputsWhitespaceOnlyContentAsSingleWhitespaceMarkupSpan()
         {
-            SingleSpanDocumentTest("          ", BlockType.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("          ", BlockKind.Markup, SpanKind.Markup);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void ParseDocumentParsesWholeContentAsOneSpanIfNoSwapCharacterEncountered()
         {
-            SingleSpanDocumentTest("foo baz", BlockType.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("foo baz", BlockKind.Markup, SpanKind.Markup);
         }
 
         [Fact]
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void ParseDocumentDoesNotSwitchToCodeOnEmailAddressInText()
         {
-            SingleSpanDocumentTest("anurse@microsoft.com", BlockType.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("anurse@microsoft.com", BlockKind.Markup, SpanKind.Markup);
         }
 
         [Fact]
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void ParseDocumentReturnsOneMarkupSegmentIfNoCodeBlocksEncountered()
         {
-            SingleSpanDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux", BlockType.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux", BlockKind.Markup, SpanKind.Markup);
         }
 
         [Fact]

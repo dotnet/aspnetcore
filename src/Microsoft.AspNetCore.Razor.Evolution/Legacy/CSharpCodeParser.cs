@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 Span.Start = CurrentLocation;
 
                 // Unless changed, the block is a statement block
-                using (Context.Builder.StartBlock(BlockType.Statement))
+                using (Context.Builder.StartBlock(BlockKind.Statement))
                 {
                     NextToken();
 
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     {
                         if (CurrentSymbol.Type == CSharpSymbolType.LeftParenthesis)
                         {
-                            Context.Builder.CurrentBlock.Type = BlockType.Expression;
+                            Context.Builder.CurrentBlock.Type = BlockKind.Expression;
                             Context.Builder.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                             ExplicitExpression();
                             return;
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                                         CurrentSymbol.Content.Length);
                                 }
 
-                                Context.Builder.CurrentBlock.Type = BlockType.Expression;
+                                Context.Builder.CurrentBlock.Type = BlockKind.Expression;
                                 Context.Builder.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                                 ImplicitExpression();
                                 return;
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     }
 
                     // Invalid character
-                    Context.Builder.CurrentBlock.Type = BlockType.Expression;
+                    Context.Builder.CurrentBlock.Type = BlockKind.Expression;
                     Context.Builder.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                     AddMarkerSymbolIfNecessary();
                     Span.ChunkGenerator = new ExpressionChunkGenerator();
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private void ImplicitExpression(AcceptedCharacters acceptedCharacters)
         {
-            Context.Builder.CurrentBlock.Type = BlockType.Expression;
+            Context.Builder.CurrentBlock.Type = BlockKind.Expression;
             Context.Builder.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
 
             using (PushSpanConfig(span =>
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Read whitespace, but not newlines
             // If we're not inserting a marker span, we don't need to capture whitespace
             if (!Context.WhiteSpaceIsSignificantToAncestorBlock &&
-                Context.Builder.CurrentBlock.Type != BlockType.Expression &&
+                Context.Builder.CurrentBlock.Type != BlockKind.Expression &&
                 captureWhitespaceToEndOfLine &&
                 !Context.DesignTimeMode &&
                 !IsNested)
@@ -637,7 +637,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private void Template()
         {
-            if (Context.Builder.ActiveBlocks.Any(block => block.Type == BlockType.Template))
+            if (Context.Builder.ActiveBlocks.Any(block => block.Type == BlockKind.Template))
             {
                 Context.ErrorSink.OnError(
                     CurrentStart,
@@ -645,7 +645,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     length: 1 /* @ */);
             }
             Output(SpanKind.Code);
-            using (Context.Builder.StartBlock(BlockType.Template))
+            using (Context.Builder.StartBlock(BlockKind.Template))
             {
                 Context.Builder.CurrentBlock.ChunkGenerator = new TemplateBlockChunkGenerator();
                 PutCurrentBack();
@@ -749,7 +749,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
             Span.ChunkGenerator = SpanChunkGenerator.Null;
-            Context.Builder.CurrentBlock.Type = BlockType.Directive;
+            Context.Builder.CurrentBlock.Type = BlockKind.Directive;
             CompleteBlock();
             Output(SpanKind.MetaCode);
         }
@@ -758,7 +758,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             HandleKeyword(topLevel, () =>
             {
-                Context.Builder.CurrentBlock.Type = BlockType.Expression;
+                Context.Builder.CurrentBlock.Type = BlockKind.Expression;
                 Context.Builder.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                 ImplicitExpression();
             });
@@ -846,7 +846,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private void UsingDeclaration()
         {
             // Set block type to directive
-            Context.Builder.CurrentBlock.Type = BlockType.Directive;
+            Context.Builder.CurrentBlock.Type = BlockKind.Directive;
 
             var start = CurrentStart;
             if (At(CSharpSymbolType.Identifier))
@@ -1484,7 +1484,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private void HandleDirective(DirectiveDescriptor descriptor)
         {
-            Context.Builder.CurrentBlock.Type = BlockType.Directive;
+            Context.Builder.CurrentBlock.Type = BlockKind.Directive;
             Context.Builder.CurrentBlock.ChunkGenerator = new DirectiveChunkGenerator(descriptor);
             AssertDirective(descriptor.Name);
 
@@ -1703,7 +1703,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var keywordStartLocation = Span.Start;
 
             // Set the block type
-            Context.Builder.CurrentBlock.Type = BlockType.Directive;
+            Context.Builder.CurrentBlock.Type = BlockKind.Directive;
 
             var keywordLength = Span.End.AbsoluteIndex - Span.Start.AbsoluteIndex;
 
@@ -1760,7 +1760,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             AcceptAndMoveNext();
 
             // Set the block type
-            Context.Builder.CurrentBlock.Type = BlockType.Directive;
+            Context.Builder.CurrentBlock.Type = BlockKind.Directive;
 
             var keywordLength = Span.End.AbsoluteIndex - Span.Start.AbsoluteIndex;
 

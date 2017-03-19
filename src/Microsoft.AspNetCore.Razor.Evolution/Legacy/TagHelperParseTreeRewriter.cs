@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 {
                     var childBlock = (Block)child;
 
-                    if (childBlock.Type == BlockType.Tag)
+                    if (childBlock.Type == BlockKind.Tag)
                     {
                         if (TryRewriteTagHelper(childBlock, errorSink))
                         {
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 {
                     var childBlock = (Block)child;
 
-                    if (childBlock.Type != BlockType.Markup)
+                    if (childBlock.Type != BlockKind.Markup)
                     {
                         // Anything other than markup blocks in the attribute area of tags mangles following attributes.
                         // It's also not supported by TagHelpers, bail early to avoid creating bad attribute value pairs.
@@ -762,7 +762,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             var child = tagBlock.Children[0];
 
-            if (tagBlock.Type != BlockType.Tag || tagBlock.Children.Count == 0 || !(child is Span))
+            if (tagBlock.Type != BlockKind.Tag || tagBlock.Children.Count == 0 || !(child is Span))
             {
                 return null;
             }
@@ -803,7 +803,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private static void EnsureTagBlock(Block tagBlock)
         {
-            Debug.Assert(tagBlock.Type == BlockType.Tag);
+            Debug.Assert(tagBlock.Type == BlockKind.Tag);
             Debug.Assert(tagBlock.Children.First() is Span);
         }
 

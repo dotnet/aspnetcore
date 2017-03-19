@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void ParseBlockSupportsCommentAsBlock()
         {
-            SingleSpanBlockTest("<!-- foo -->", BlockType.Markup, SpanKind.Markup, acceptedCharacters: AcceptedCharacters.None);
+            SingleSpanBlockTest("<!-- foo -->", BlockKind.Markup, SpanKind.Markup, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
@@ -398,19 +398,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void ParseBlockProperlyBalancesCommentStartAndEndTags()
         {
-            SingleSpanBlockTest("<!--<foo></bar>-->", BlockType.Markup, SpanKind.Markup, acceptedCharacters: AcceptedCharacters.None);
+            SingleSpanBlockTest("<!--<foo></bar>-->", BlockKind.Markup, SpanKind.Markup, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]
         public void ParseBlockTerminatesAtEOFWhenParsingComment()
         {
-            SingleSpanBlockTest("<!--<foo>", "<!--<foo>", BlockType.Markup, SpanKind.Markup);
+            SingleSpanBlockTest("<!--<foo>", "<!--<foo>", BlockKind.Markup, SpanKind.Markup);
         }
 
         [Fact]
         public void ParseBlockOnlyTerminatesCommentOnFullEndSequence()
         {
-            SingleSpanBlockTest("<!--<foo>--</bar>-->", BlockType.Markup, SpanKind.Markup, acceptedCharacters: AcceptedCharacters.None);
+            SingleSpanBlockTest("<!--<foo>--</bar>-->", BlockKind.Markup, SpanKind.Markup, acceptedCharacters: AcceptedCharacters.None);
         }
 
         [Fact]

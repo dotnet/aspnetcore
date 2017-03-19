@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
     internal class StatementBlock : Block
     {
-        private const BlockType ThisBlockType = BlockType.Statement;
+        private const BlockKind ThisBlockKind = BlockKind.Statement;
 
         public StatementBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, chunkGenerator)
+            : base(ThisBlockKind, children, chunkGenerator)
         {
         }
 
@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
     internal class DirectiveBlock : Block
     {
-        private const BlockType ThisBlockType = BlockType.Directive;
+        private const BlockKind ThisBlockKind = BlockKind.Directive;
 
         public DirectiveBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, chunkGenerator)
+            : base(ThisBlockKind, children, chunkGenerator)
         {
         }
 
@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
     internal class ExpressionBlock : Block
     {
-        private const BlockType ThisBlockType = BlockType.Expression;
+        private const BlockKind ThisBlockKind = BlockKind.Expression;
 
         public ExpressionBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, chunkGenerator)
+            : base(ThisBlockKind, children, chunkGenerator)
         {
         }
 
@@ -69,28 +69,28 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
     internal class MarkupTagBlock : Block
     {
-        private const BlockType ThisBlockType = BlockType.Tag;
+        private const BlockKind ThisBlockKind = BlockKind.Tag;
 
         public MarkupTagBlock(params SyntaxTreeNode[] children)
-            : base(ThisBlockType, children, ParentChunkGenerator.Null)
+            : base(ThisBlockKind, children, ParentChunkGenerator.Null)
         {
         }
     }
 
     internal class MarkupBlock : Block
     {
-        private const BlockType ThisBlockType = BlockType.Markup;
+        private const BlockKind ThisBlockKind = BlockKind.Markup;
 
         public MarkupBlock(
-            BlockType blockType,
+            BlockKind BlockKind,
             IParentChunkGenerator chunkGenerator,
             IReadOnlyList<SyntaxTreeNode> children)
-            : base(blockType, children, chunkGenerator)
+            : base(BlockKind, children, chunkGenerator)
         {
         }
 
         public MarkupBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
-            : this(ThisBlockType, chunkGenerator, children)
+            : this(ThisBlockKind, chunkGenerator, children)
         {
         }
 
@@ -170,10 +170,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
     internal class TemplateBlock : Block
     {
-        private const BlockType ThisBlockType = BlockType.Template;
+        private const BlockKind ThisBlockKind = BlockKind.Template;
 
         public TemplateBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, chunkGenerator)
+            : base(ThisBlockKind, children, chunkGenerator)
         {
         }
 
@@ -195,10 +195,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
     internal class CommentBlock : Block
     {
-        private const BlockType ThisBlockType = BlockType.Comment;
+        private const BlockKind ThisBlockKind = BlockKind.Comment;
 
         public CommentBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, chunkGenerator)
+            : base(ThisBlockKind, children, chunkGenerator)
         {
         }
 

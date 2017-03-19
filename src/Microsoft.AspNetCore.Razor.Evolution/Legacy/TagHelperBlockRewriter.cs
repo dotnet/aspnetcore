@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         {
                             var spanBuilder = new SpanBuilder(span);
 
-                            if (parentBlock.Type == BlockType.Expression &&
+                            if (parentBlock.Type == BlockKind.Expression &&
                                 (spanBuilder.Kind == SpanKind.Transition ||
                                 spanBuilder.Kind == SpanKind.MetaCode))
                             {
