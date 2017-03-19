@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     [Flags]
-    internal enum AcceptedCharacters
+    public enum AcceptedCharacters
     {
         None = 0,
         NewLine = 1,
