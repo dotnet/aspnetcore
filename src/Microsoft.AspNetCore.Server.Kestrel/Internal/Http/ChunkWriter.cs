@@ -51,13 +51,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public static int WriteBeginChunkBytes(ref WritableBuffer start, int dataCount)
         {
             var chunkSegment = BeginChunkBytes(dataCount);
-            start.Write(chunkSegment);
+            start.WriteFast(chunkSegment);
             return chunkSegment.Count;
         }
 
         public static void WriteEndChunkBytes(ref WritableBuffer start)
         {
-            start.Write(_endChunkBytes);
+            start.WriteFast(_endChunkBytes);
         }
     }
 }

@@ -891,8 +891,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var hasTransferEncoding = responseHeaders.HasTransferEncoding;
             var transferCoding = FrameHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding);
 
-            var end = Output.Alloc();
-
             if (_keepAlive && hasConnection)
             {
                 _keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) == ConnectionOptions.KeepAlive;
@@ -974,12 +972,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             }
 
-            end.Write(_bytesHttpVersion11);
-            end.Write(statusBytes);
-            responseHeaders.CopyTo(ref end);
-            end.Write(_bytesEndHeaders);
-
-            end.Commit();
+            var writableBuffer = Output.Alloc();
+            writableBuffer.WriteFast(_bytesHttpVersion11);
+            writableBuffer.WriteFast(statusBytes);
+            responseHeaders.CopyTo(ref writableBuffer);
+            writableBuffer.WriteFast(_bytesEndHeaders);
+            writableBuffer.Commit();
         }
 
         public void ParseRequest(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)

@@ -48,12 +48,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
                     if (chunk)
                     {
                         ChunkWriter.WriteBeginChunkBytes(ref writableBuffer, buffer.Count);
-                        writableBuffer.Write(buffer);
+                        writableBuffer.WriteFast(buffer);
                         ChunkWriter.WriteEndChunkBytes(ref writableBuffer);
                     }
                     else
                     {
-                        writableBuffer.Write(buffer);
+                        writableBuffer.WriteFast(buffer);
                     }
                 }
 
@@ -119,8 +119,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
                     {
                         _pipe.Reader.Advance(readResult.Buffer.End);
                     }
-
-                    // REVIEW: Should we flush here?
                 }
             }
             finally

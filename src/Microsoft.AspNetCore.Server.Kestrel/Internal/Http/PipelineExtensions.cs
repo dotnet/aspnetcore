@@ -95,6 +95,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return result;
         }
 
+        // Temporary until the fast write implementation propagates from corefx
+        public unsafe static void WriteFast(this WritableBuffer buffer, ReadOnlySpan<byte> source)
+        {
+            var dest = buffer.Memory.Span;
+            var destLength = dest.Length;
+
+            if (destLength == 0)
+            {
+                buffer.Ensure();
+
+                // Get the new span and length
+                dest = buffer.Memory.Span;
+                destLength = dest.Length;
+            }
+
+            var sourceLength = source.Length;
+            if (sourceLength <= destLength)
+            {
+                ref byte pSource = ref source.DangerousGetPinnableReference();
+                ref byte pDest = ref dest.DangerousGetPinnableReference();
+                Unsafe.CopyBlockUnaligned(ref pDest, ref pSource, (uint)sourceLength);
+                buffer.Advance(sourceLength);
+                return;
+            }
+
+            buffer.WriteMultiBuffer(source);
+        }
+
+        private static unsafe void WriteMultiBuffer(this WritableBuffer buffer, ReadOnlySpan<byte> source)
+        {
+            var remaining = source.Length;
+            var offset = 0;
+
+            fixed (byte* pSource = &source.DangerousGetPinnableReference())
+            {
+                while (remaining > 0)
+                {
+                    var writable = Math.Min(remaining, buffer.Memory.Length);
+
+                    buffer.Ensure(writable);
+
+                    if (writable == 0)
+                    {
+                        continue;
+                    }
+
+                    fixed (byte* pDest = &buffer.Memory.Span.DangerousGetPinnableReference())
+                    {
+                        Unsafe.CopyBlockUnaligned(pDest, pSource + offset, (uint)writable);
+                    }
+
+                    remaining -= writable;
+                    offset += writable;
+
+                    buffer.Advance(writable);
+                }
+            }
+        }
+
         public unsafe static void WriteAscii(this WritableBuffer buffer, string data)
         {
             if (!string.IsNullOrEmpty(data))
@@ -193,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             while (value != 0);
 
             var length = _maxULongByteLength - position;
-            buffer.Write(new ReadOnlySpan<byte>(byteBuffer, position, length));
+            buffer.WriteFast(new ReadOnlySpan<byte>(byteBuffer, position, length));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -274,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     i += 4;
                 }
 
-            trailing:
+                trailing:
                 for (; i < length; i++)
                 {
                     char ch = *(input + i);
