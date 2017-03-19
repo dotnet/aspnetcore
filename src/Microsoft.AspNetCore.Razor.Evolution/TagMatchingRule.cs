@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public abstract class TagMatchingRule
+    public abstract class TagMatchingRule : IEquatable<TagMatchingRule>
     {
         private IEnumerable<RazorDiagnostic> _allDiagnostics;
 
@@ -41,6 +42,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             return _allDiagnostics;
+        }
+
+        public bool Equals(TagMatchingRule other)
+        {
+            return TagMatchingRuleComparer.Default.Equals(this, other);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as TagMatchingRule);
+        }
+
+        public override int GetHashCode()
+        {
+            return TagMatchingRuleComparer.Default.GetHashCode(this);
         }
     }
 }

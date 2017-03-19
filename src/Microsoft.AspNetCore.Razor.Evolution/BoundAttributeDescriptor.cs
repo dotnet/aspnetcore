@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     /// <summary>
     /// A metadata class describing a tag helper attribute.
     /// </summary>
-    public abstract class BoundAttributeDescriptor
+    public abstract class BoundAttributeDescriptor : IEquatable<BoundAttributeDescriptor>
     {
         protected BoundAttributeDescriptor(string kind)
         {
@@ -48,6 +49,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 return anyErrors;
             }
+        }
+
+        public bool Equals(BoundAttributeDescriptor other)
+        {
+            return BoundAttributeDescriptorComparer.Default.Equals(this, other);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as BoundAttributeDescriptor);
+        }
+
+        public override int GetHashCode()
+        {
+            return BoundAttributeDescriptorComparer.Default.GetHashCode(this);
         }
     }
 }
