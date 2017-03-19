@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AspNetCoreLabsVersion>0.3.0-*</AspNetCoreLabsVersion>
     <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
-    <CoreFxLabsVersion>0.1.0-e170313-1</CoreFxLabsVersion>
+    <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <GoogleProtobufVersion>3.1.0</GoogleProtobufVersion>
     <JsonNetVersion>9.0.1</JsonNetVersion>

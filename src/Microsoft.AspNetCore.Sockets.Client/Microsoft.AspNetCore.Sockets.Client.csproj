@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="System.Text.Formatting" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabsVersion)" />
-    <PackageReference Include="System.IO.Pipelines.Text.Primitives" Version="0.1.0-e170311-1" />
+    <PackageReference Include="System.IO.Pipelines.Text.Primitives" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.Net.WebSockets.Client" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
   </ItemGroup>
