@@ -116,5 +116,36 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Assert
             Assert.Same(expected, codeDocument.Items[typeof(RazorCSharpDocument)]);
         }
+
+        [Fact]
+        public void GetTagHelperContext_ReturnsTagHelperContext()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = TagHelperDocumentContext.Create(null, new TagHelperDescriptor[0]);
+            codeDocument.Items[typeof(TagHelperDocumentContext)] = expected;
+
+            // Act
+            var actual = codeDocument.GetTagHelperContext();
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void SetTagHelperContext_SetsTagHelperContext()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = TagHelperDocumentContext.Create(null, new TagHelperDescriptor[0]);
+
+            // Act
+            codeDocument.SetTagHelperContext(expected);
+
+            // Assert
+            Assert.Same(expected, codeDocument.Items[typeof(TagHelperDocumentContext)]);
+        }
     }
 }

@@ -55,6 +55,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var tagHelperPrefix = ProcessTagHelperPrefix(directives, codeDocument, errorSink);
             var root = syntaxTree.Root;
 
+            var context = TagHelperDocumentContext.Create(tagHelperPrefix, descriptors);
+            codeDocument.SetTagHelperContext(context);
+
             if (descriptors.Count == 0)
             {
                 if (errorSink.Errors.Count == 0 && errorList.Count == 0)

@@ -11,6 +11,26 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     {
         private static object TagHelperPrefixKey = new object();
 
+        public static TagHelperDocumentContext GetTagHelperContext(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return (TagHelperDocumentContext)document.Items[typeof(TagHelperDocumentContext)];
+        }
+
+        public static void SetTagHelperContext(this RazorCodeDocument document, TagHelperDocumentContext context)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            document.Items[typeof(TagHelperDocumentContext)] = context;
+        }
+
         public static string GetTagHelperPrefix(this RazorCodeDocument document)
         {
             if (document == null)

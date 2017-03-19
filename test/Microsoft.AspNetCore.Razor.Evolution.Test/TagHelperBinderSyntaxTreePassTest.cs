@@ -229,6 +229,34 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
+        public void Execute_SetsTagHelperDocumentContext()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(builder =>
+            {
+                builder.Features.Add(new TestTagHelperFeature());
+            });
+
+            var pass = new TagHelperBinderSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+
+            // No taghelper directives here so nothing is resolved.
+            var sourceDocument = TestRazorSourceDocument.Create("Hello, world");
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+
+            // Act
+            var outputTree = pass.Execute(codeDocument, originalTree);
+
+            // Assert
+            var context = codeDocument.GetTagHelperContext();
+            Assert.Null(context.Prefix);
+            Assert.Empty(context.TagHelpers);
+        }
+
+        [Fact]
         public void Execute_AddsErrorWhenNoTagHelpersAreFoundInAssembly()
         {
             // Arrange
