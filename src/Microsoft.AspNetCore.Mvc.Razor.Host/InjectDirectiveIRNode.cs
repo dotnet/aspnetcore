@@ -31,16 +31,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             AcceptExtensionNode<InjectDirectiveIRNode>(this, visitor);
         }
 
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            return AcceptExtensionNode<InjectDirectiveIRNode, TResult>(this, visitor);
-        }
-
         public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
         {
             if (target == null)
