@@ -1,4 +1,18 @@
 {
+    "adx": {
+        "rules": [
+            "DefaultCompositeRule"
+        ],
+        "packages": {
+            "Microsoft.VisualStudio.LanguageServices.Razor": {
+                "Exclusions": {
+                    "WRONG_JSONNET_VERSION": {
+                        "Microsoft.VisualStudio.LanguageServices.Razor; .NETFramework,Version=v4.6": "This package intentionally depends on version 8.0.3 of Newtonsoft.Json because of the dependency on Visual Studio."
+                    }
+                }
+            }
+        }
+    },
     "adx-nonshipping": { // Packages written by the ADX team but that don't ship on NuGet.org (thus, no need to scan anything in them)
         "rules": [
             // Don't run any rules for packages the ADX team creates but doesn't ship.
