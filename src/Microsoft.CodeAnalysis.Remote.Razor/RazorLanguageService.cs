@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
     {
         [Obsolete("This will be removed as part of #976. ServiceHub still calls this constructor. Remove once ServiceHub can use the other one.")]
         public RazorLanguageService(Stream stream, IServiceProvider serviceProvider)
-            : base(serviceProvider, stream)
+            : base(stream, serviceProvider)
         {
         }
 
