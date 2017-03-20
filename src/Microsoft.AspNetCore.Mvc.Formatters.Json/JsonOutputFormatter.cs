@@ -97,6 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 ArrayPool = _charPool,
                 CloseOutput = false,
+                AutoCompleteOnClose = false
             };
 
             return jsonWriter;

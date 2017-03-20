@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
         /// <param name="options">The <see cref="IOptions{MvcJsonOptions}"/>.</param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/> for creating <see cref="T:char[]"/> buffers.</param>
         public JsonResultExecutor(
-            IHttpResponseStreamWriterFactory writerFactory, 
-            ILogger<JsonResultExecutor> logger, 
+            IHttpResponseStreamWriterFactory writerFactory,
+            ILogger<JsonResultExecutor> logger,
             IOptions<MvcJsonOptions> options,
             ArrayPool<char> charPool)
         {
@@ -124,6 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
                 {
                     jsonWriter.ArrayPool = _charPool;
                     jsonWriter.CloseOutput = false;
+                    jsonWriter.AutoCompleteOnClose = false;
 
                     var jsonSerializer = JsonSerializer.Create(serializerSettings);
                     jsonSerializer.Serialize(jsonWriter, result.Value);
