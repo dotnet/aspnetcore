@@ -9,5 +9,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     public abstract class RazorSyntaxFactsService
     {
         public abstract IReadOnlyList<ClassifiedSpan> GetClassifiedSpans(RazorSyntaxTree syntaxTree);
+
+        public abstract IReadOnlyList<TagHelperSpan> GetTagHelperSpans(RazorSyntaxTree syntaxTree);
     }
 }

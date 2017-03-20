@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -14,6 +15,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public override IReadOnlyList<ClassifiedSpan> GetClassifiedSpans(RazorSyntaxTree syntaxTree)
         {
+            if (syntaxTree == null)
+            {
+                throw new ArgumentNullException(nameof(syntaxTree));
+            }
+
             var spans = Flatten(syntaxTree);
 
             var result = new ClassifiedSpan[spans.Count];
@@ -79,6 +85,55 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     }
                 }
             }
+        }
+
+        public override IReadOnlyList<TagHelperSpan> GetTagHelperSpans(RazorSyntaxTree syntaxTree)
+        {
+            if (syntaxTree == null)
+            {
+                throw new ArgumentNullException(nameof(syntaxTree));
+            }
+
+            var results = new List<TagHelperSpan>();
+
+            List<Block> toProcess = new List<Block>();
+            List<Block> blockChildren = new List<Block>();
+            toProcess.Add(syntaxTree.Root);
+
+            for (var i = 0; i < toProcess.Count; i++)
+            {
+                var blockNode = toProcess[i];
+                TagHelperBlock tagHelperNode = blockNode as TagHelperBlock;
+                if (tagHelperNode != null)
+                {
+                    results.Add(new TagHelperSpan(
+                        new SourceSpan(
+                            tagHelperNode.Start.FilePath ?? syntaxTree.Source.FileName,
+                            tagHelperNode.Start.AbsoluteIndex,
+                            tagHelperNode.Start.LineIndex,
+                            tagHelperNode.Start.CharacterIndex,
+                            tagHelperNode.Length),
+                        tagHelperNode.Binding));
+                }
+
+                // collect all child blocks and inject into toProcess as a single InsertRange
+                foreach (SyntaxTreeNode curNode in blockNode.Children)
+                {
+                    Block curBlock = curNode as Block;
+                    if (curBlock != null)
+                    {
+                        blockChildren.Add(curBlock);
+                    }
+                }
+
+                if (blockChildren.Count > 0)
+                {
+                    toProcess.InsertRange(i + 1, blockChildren);
+                    blockChildren.Clear();
+                }
+            }
+
+            return results;
         }
     }
 }
