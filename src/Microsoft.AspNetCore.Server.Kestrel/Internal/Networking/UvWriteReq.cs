@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
@@ -68,9 +67,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
                 _pins.Add(GCHandle.Alloc(this, GCHandleType.Normal));
 
                 var nBuffers = 0;
-                foreach (var _ in buffer)
+                if (buffer.IsSingleSpan)
                 {
-                    nBuffers++;
+                    nBuffers = 1;
+                }
+                else
+                {
+                    foreach (var _ in buffer)
+                    {
+                        nBuffers++;
+                    }
                 }
 
                 var pBuffers = (Libuv.uv_buf_t*)_bufs;
@@ -82,19 +88,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
                     _pins.Add(gcHandle);
                     pBuffers = (Libuv.uv_buf_t*)gcHandle.AddrOfPinnedObject();
                 }
-                var index = 0;
-                foreach (var memory in buffer)
+
+                if (nBuffers == 1)
                 {
-                    // REVIEW: This isn't necessary for our default pool since the memory is 
-                    // already pinned but it also makes tests pass
+                    var memory = buffer.First;
                     var memoryHandle = memory.Pin();
                     _handles.Add(memoryHandle);
 
-                    // create and pin each segment being written
-                    pBuffers[index] = Libuv.buf_init(
-                        (IntPtr)memoryHandle.PinnedPointer,
-                        memory.Length);
-                    index++;
+                    // Fast path for single buffer
+                    pBuffers[0] = Libuv.buf_init(
+                            (IntPtr)memoryHandle.PinnedPointer,
+                            memory.Length);
+                }
+                else
+                {
+                    var index = 0;
+                    foreach (var memory in buffer)
+                    {
+                        // This won't actually pin the buffer since we're already using pinned memory
+                        var memoryHandle = memory.Pin();
+                        _handles.Add(memoryHandle);
+
+                        // create and pin each segment being written
+                        pBuffers[index] = Libuv.buf_init(
+                            (IntPtr)memoryHandle.PinnedPointer,
+                            memory.Length);
+                        index++;
+                    }
                 }
 
                 _callback = callback;

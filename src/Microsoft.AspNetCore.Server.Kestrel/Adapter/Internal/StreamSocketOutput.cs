@@ -109,10 +109,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
                             await _outputStream.FlushAsync();
                         }
 
-                        foreach (var memory in buffer)
+                        if (buffer.IsSingleSpan)
                         {
-                            var array = memory.GetArray();
+                            var array = buffer.First.GetArray();
                             await _outputStream.WriteAsync(array.Array, array.Offset, array.Count);
+                        }
+                        else
+                        {
+                            foreach (var memory in buffer)
+                            {
+                                var array = memory.GetArray();
+                                await _outputStream.WriteAsync(array.Array, array.Offset, array.Count);
+                            }
                         }
                     }
                     finally
