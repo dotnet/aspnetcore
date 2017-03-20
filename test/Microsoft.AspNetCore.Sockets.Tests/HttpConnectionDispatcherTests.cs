@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Internal;
+using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -177,16 +178,18 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.False(exists);
         }
 
-        [Fact]
-        public async Task RequestToActiveConnectionId409ForStreamingTransports()
+        [Theory]
+        [InlineData("/ws", true)]
+        [InlineData("/sse", false)]
+        public async Task RequestToActiveConnectionId409ForStreamingTransports(string path, bool isWebSocketRequest)
         {
             var manager = CreateConnectionManager();
             var state = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context1 = MakeRequest<TestEndPoint>("/sse", state);
-            var context2 = MakeRequest<TestEndPoint>("/sse", state);
+            var context1 = MakeRequest<TestEndPoint>(path, state, isWebSocketRequest: isWebSocketRequest);
+            var context2 = MakeRequest<TestEndPoint>(path, state, isWebSocketRequest: isWebSocketRequest);
 
             var request1 = dispatcher.ExecuteAsync<TestEndPoint>("", context1);
 
@@ -318,6 +321,34 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.False(exists);
         }
 
+        [Fact]
+        public async Task AttemptingToPollWhileAlreadyPollingReplacesTheCurrentPoll()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+
+            var context1 = MakeRequest<BlockingEndPoint>("/poll", state);
+            var task1 = dispatcher.ExecuteAsync<BlockingEndPoint>("", context1);
+            var context2 = MakeRequest<BlockingEndPoint>("/poll", state);
+            var task2 = dispatcher.ExecuteAsync<BlockingEndPoint>("", context2);
+
+            // Task 1 should finish when request 2 arrives
+            await task1.OrTimeout();
+
+            // Send a message from the app to complete Task 2
+            await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text));
+
+            await task2.OrTimeout();
+
+            // Verify the results
+            Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
+            Assert.Equal(string.Empty, GetContentAsString(context1.Response.Body));
+            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+            Assert.Equal("T12:T:Hello, World;", GetContentAsString(context2.Response.Body));
+        }
+
         [Theory]
         [InlineData("", "text", "Hello, World", "Hello, World", MessageType.Text)] // Legacy format
         [InlineData("", "binary", "Hello, World", "Hello, World", MessageType.Binary)] // Legacy format
@@ -384,7 +415,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             return messages;
         }
 
-        private static DefaultHttpContext MakeRequest<TEndPoint>(string path, ConnectionState state, string format = null) where TEndPoint : EndPoint
+        private static DefaultHttpContext MakeRequest<TEndPoint>(string path, ConnectionState state, string format = null, bool isWebSocketRequest = false) where TEndPoint : EndPoint
         {
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
@@ -399,12 +430,30 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
             var qs = new QueryCollection(values);
             context.Request.Query = qs;
+            context.Response.Body = new MemoryStream();
+
+            if (isWebSocketRequest)
+            {
+                // Add Test WebSocket feature
+                context.Features.Set<IHttpWebSocketConnectionFeature>(new TestWebSocketConnectionFeature());
+            }
+
             return context;
         }
 
         private static ConnectionManager CreateConnectionManager()
         {
             return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()));
+        }
+
+        private string GetContentAsString(Stream body)
+        {
+            Assert.True(body.CanSeek, "Can't get content of a non-seekable stream");
+            body.Seek(0, SeekOrigin.Begin);
+            using (var reader = new StreamReader(body))
+            {
+                return reader.ReadToEnd();
+            }
         }
     }
 

@@ -49,6 +49,8 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
                 output.Append(MessageFormatter.GetFormatIndicator(messageFormat));
 
+                // We're intentionally not checking cancellation here because we need to drain messages we've got so far,
+                // but it's too late to emit the 204 required by being cancelled.
                 while (_application.TryRead(out var message))
                 {
                     _logger.LogDebug("Writing {0} byte message to response", message.Payload.Length);

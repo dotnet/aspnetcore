@@ -47,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketSample", "samples\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Sockets.Client", "src\Microsoft.AspNetCore.Sockets.Client\Microsoft.AspNetCore.Sockets.Client.csproj", "{623FD372-36DE-41A9-A564-F6040D570DBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Client.Tests", "test\Microsoft.AspNetCore.Sockets.Client.Tests\Microsoft.AspNetCore.Client.Tests.csproj", "{B19C15A5-F5EA-4CA7-936B-1166ABEE35C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Client.Tests", "test\Microsoft.AspNetCore.SignalR.Client.Tests\Microsoft.AspNetCore.SignalR.Client.Tests.csproj", "{B19C15A5-F5EA-4CA7-936B-1166ABEE35C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Common", "src\Microsoft.AspNetCore.SignalR.Common\Microsoft.AspNetCore.SignalR.Common.csproj", "{E37324FF-6BAF-4243-BA80-7C024CF5F29D}"
 EndProject
