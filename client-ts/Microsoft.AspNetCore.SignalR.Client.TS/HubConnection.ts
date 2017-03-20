@@ -1,4 +1,5 @@
 import { ConnectionClosed } from "./Common"
+import { IConnection } from "./IConnection"
 import { Connection } from "./Connection"
 
 interface InvocationDescriptor {
@@ -16,16 +17,21 @@ interface InvocationResultDescriptor {
 export { Connection } from "./Connection"
 
 export class HubConnection {
-    private connection: Connection;
+    private connection: IConnection;
     private callbacks: Map<string, (invocationDescriptor: InvocationResultDescriptor) => void>;
     private methods: Map<string, (...args: any[]) => void>;
     private id: number;
 
-    constructor(url: string, queryString?: string) {
-        this.connection = new Connection(url, queryString);
+    static create(url: string, queryString?: string): HubConnection {
+        return new this(new Connection(url, queryString))
+    }
 
-        this.connection.dataReceived = data => {
-            this.dataReceived(data);
+    constructor(connection: IConnection);
+    constructor(url: string, queryString?: string);
+    constructor(connectionOrUrl: IConnection | string, queryString?: string) {
+        this.connection = typeof connectionOrUrl === "string" ? new Connection(connectionOrUrl, queryString) : connectionOrUrl;
+        this.connection.onDataReceived = data => {
+            this.onDataReceived(data);
         };
 
         this.callbacks = new Map<string, (invocationDescriptor: InvocationResultDescriptor) => void>();
@@ -33,7 +39,7 @@ export class HubConnection {
         this.id = 0;
     }
 
-    private dataReceived(data: any) {
+    private onDataReceived(data: any) {
         // TODO: separate JSON parsing
         // Can happen if a poll request was cancelled
         if (!data) {
@@ -101,7 +107,7 @@ export class HubConnection {
         this.methods[methodName] = method;
     }
 
-    set connectionClosed(callback: ConnectionClosed) {
-        this.connection.connectionClosed = callback;
+    set onClosed(callback: ConnectionClosed) {
+        this.connection.onClosed = callback;
     }
 }

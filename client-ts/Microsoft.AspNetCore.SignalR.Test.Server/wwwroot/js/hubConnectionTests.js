@@ -5,6 +5,10 @@ describe('hubConnection', () => {
         it(`over ${transportName} can invoke server method and receive result`, done => {
             const message = "Hi";
             let hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, 'formatType=json&format=text');
+            hubConnection.onClosed = error => {
+                expect(error).toBe(undefined);
+                done();
+            }
 
             hubConnection.start(transportName)
                 .then(() => {
@@ -17,7 +21,6 @@ describe('hubConnection', () => {
                     })
                     .then(() => {
                         hubConnection.stop();
-                        done();
                     })
                 })
                 .catch(() => {

@@ -5,14 +5,14 @@ describe('connection', () => {
             let connection = new signalR.Connection(ECHOENDPOINT_URL);
 
             let received = "";
-            connection.dataReceived = data => {
+            connection.onDataReceived = data => {
                 received += data;
                 if (data == message) {
                     connection.stop();
                 }
             }
 
-            connection.connectionClosed = error => {
+            connection.onClosed = error => {
                 expect(error).toBeUndefined();
                 done();
             }

@@ -1,4 +1,5 @@
 import { DataReceived, ConnectionClosed } from "./Common"
+import { IConnection } from "./IConnection"
 import { ITransport, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
 import { IHttpClient, HttpClient } from "./HttpClient"
 import { ISignalROptions } from "./ISignalROptions"
@@ -9,15 +10,13 @@ enum ConnectionState {
     Connected
 }
 
-export class Connection {
+export class Connection implements IConnection {
     private connectionState: ConnectionState;
     private url: string;
     private queryString: string;
     private connectionId: string;
     private httpClient: IHttpClient;
     private transport: ITransport;
-    private dataReceivedCallback: DataReceived = (data: any) => { };
-    private connectionClosedCallback: ConnectionClosed = (error?: any) => { };
 
     constructor(url: string, queryString: string = "", options: ISignalROptions = {}) {
         this.url = url;
@@ -32,7 +31,7 @@ export class Connection {
         }
 
         this.transport = this.createTransport(transportName);
-        this.transport.onDataReceived = this.dataReceivedCallback;
+        this.transport.onDataReceived = this.onDataReceived;
         this.transport.onClosed = e => this.stopConnection(e);
 
         try {
@@ -82,14 +81,12 @@ export class Connection {
         this.transport.stop();
         this.transport = null;
         this.connectionState = ConnectionState.Disconnected;
-        this.connectionClosedCallback(error);
+
+        if (this.onClosed) {
+            this.onClosed(error);
+        }
     }
 
-    set dataReceived(callback: DataReceived) {
-        this.dataReceivedCallback = callback;
-    }
-
-    set connectionClosed(callback: ConnectionClosed) {
-        this.connectionClosedCallback = callback;
-    }
+    onDataReceived: DataReceived;
+    onClosed: ConnectionClosed;
 }
