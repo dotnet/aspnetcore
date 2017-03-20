@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Setup]
         public void Setup()
         {
-            var connectionContext = new MockConnection(new KestrelServerOptions());
+            var connectionContext = new MockConnection();
             connectionContext.ListenerContext.ServiceContext.HttpParserFactory = frame => new KestrelHttpParser(frame.ConnectionContext.ListenerContext.ServiceContext.Log);
 
             Frame = new Frame<object>(application: null, context: connectionContext);

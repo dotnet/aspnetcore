@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private long GetOutputResponseBufferSize()
         {
-            var bufferSize = ServiceContext.ServerOptions.Limits.MaxRequestBufferSize;
+            var bufferSize = ServiceContext.ServerOptions.Limits.MaxResponseBufferSize;
             if (bufferSize == 0)
             {
                 // 0 = no buffering so we need to configure the pipe so the the writer waits on the reader directly

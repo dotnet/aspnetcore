@@ -16,11 +16,11 @@ namespace Microsoft.AspNetCore.Testing
     {
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
 
-        public MockConnection(KestrelServerOptions options)
+        public MockConnection()
         {
             ConnectionControl = this;
             RequestAbortedSource = new CancellationTokenSource();
-            ListenerContext = new ListenerContext(new ServiceContext {ServerOptions = options})
+            ListenerContext = new ListenerContext(new ServiceContext())
             {
                 ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
             };
