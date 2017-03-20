@@ -184,7 +184,7 @@
       SourceFiles="$(MSBuildThisFileDirectory)$(_RepositoryListFileName)"
       DestinationFiles="$(RepositoryFileWithCommit)" />
 
-    <XmlPoke2
+    <XmlPoke
       XmlInputPath="$(RepositoryFileWithCommit)"
       Query="//Repository[@Include='%(Repository.Identity)']/@Commit"
       Value="%(Repository.Commit)" />
