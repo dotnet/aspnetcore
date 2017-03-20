@@ -32,16 +32,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             visitor.VisitToken(this);
         }
 
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            return visitor.VisitToken(this);
-        }
-
         public enum TokenKind
         {
             Unknown,

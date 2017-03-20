@@ -23,15 +23,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             visitor.VisitTagHelper(this);
         }
-
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            return visitor.VisitTagHelper(this);
-        }
     }
 }

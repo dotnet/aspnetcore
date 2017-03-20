@@ -25,15 +25,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             visitor.VisitNamespace(this);
         }
-
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            return visitor.VisitNamespace(this);
-        }
     }
 }

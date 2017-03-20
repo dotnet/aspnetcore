@@ -26,11 +26,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             visitor.VisitChecksum(this);
         }
 
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            return visitor.VisitChecksum(this);
-        }
-
         public static ChecksumIRNode Create(RazorSourceDocument sourceDocument)
         {
             // See http://msdn.microsoft.com/en-us/library/system.codedom.codechecksumpragma.checksumalgorithmid.aspx

@@ -84,11 +84,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             {
                 throw new NotImplementedException();
             }
-
-            public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private class BasicIRNode2 : RazorIRNode
@@ -103,11 +98,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             {
                 throw new NotImplementedException();
             }
-
-            public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private class BasicIRNode3 : RazorIRNode
@@ -119,11 +109,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             public override SourceSpan? Source { get; set; }
 
             public override void Accept(RazorIRNodeVisitor visitor)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
             {
                 throw new NotImplementedException();
             }

@@ -91,11 +91,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     visitor.VisitDefault(this);
                 }
-
-                public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-                {
-                    return visitor.VisitDefault(this);
-                }
             }
         }
     }

@@ -224,11 +224,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             {
                 throw new NotImplementedException();
             }
-
-            public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

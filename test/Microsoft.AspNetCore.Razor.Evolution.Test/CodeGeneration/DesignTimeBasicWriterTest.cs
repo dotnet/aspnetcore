@@ -179,11 +179,6 @@ __o = i++;
                 throw new NotImplementedException();
             }
 
-            public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-            {
-                throw new NotImplementedException();
-            }
-
             public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
             {
                 throw new NotImplementedException();

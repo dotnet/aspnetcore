@@ -22,19 +22,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 typedVisitor.VisitExtension(node);
             }
         }
-
-        protected static TResult AcceptExtensionNode<TNode, TResult>(TNode node, RazorIRNodeVisitor<TResult> visitor) 
-            where TNode : ExtensionIRNode
-        {
-            var typedVisitor = visitor as IExtensionIRNodeVisitor<TNode, TResult>;
-            if (typedVisitor == null)
-            {
-                return visitor.VisitExtension(node);
-            }
-            else
-            {
-                return typedVisitor.VisitExtension(node);
-            }
-        }
     }
 }

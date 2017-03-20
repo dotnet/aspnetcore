@@ -25,16 +25,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             AcceptExtensionNode<TemplateIRNode>(this, visitor);
         }
 
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            if (visitor == null)
-            {
-                throw new ArgumentNullException(nameof(visitor));
-            }
-
-            return AcceptExtensionNode<TemplateIRNode, TResult>(this, visitor);
-        }
-
         public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
         {
             var extension = target.GetExtension<ITemplateTargetExtension>();

@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         public abstract SourceSpan? Source { get; set; }
 
-        public abstract void Accept(RazorIRNodeVisitor visitor);
-
-        public abstract TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor);
+        public abstract void Accept(RazorIRNodeVisitor visitor);        
     }
 }

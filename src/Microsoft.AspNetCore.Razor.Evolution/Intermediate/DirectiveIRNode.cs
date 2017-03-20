@@ -25,10 +25,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
             visitor.VisitDirective(this);
         }
-
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            return visitor.VisitDirective(this);
-        }
     }
 }

@@ -20,10 +20,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
             visitor.VisitAddPreallocatedTagHelperHtmlAttribute(this);
         }
-
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            return visitor.VisitAddPreallocatedTagHelperHtmlAttribute(this);
-        }
     }
 }

@@ -81,11 +81,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 ((DerivedIRNodeWalker)visitor).VisitBasic(this);
             }
 
-            public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-            {
-                throw new NotImplementedException();
-            }
-
             public override string ToString()
             {
                 return Name;

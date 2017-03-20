@@ -22,10 +22,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
             visitor.VisitDirectiveToken(this);
         }
-
-        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-        {
-            return visitor.VisitDirectiveToken(this);
-        }
     }
 }
