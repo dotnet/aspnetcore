@@ -10,7 +10,7 @@
 8. In the keys section add a new key. A key value will be generated. Save the value as "Client Secret"
 
 ## Configure the local environment
-1. Set environment ASPNETCORE_ENVIRONMENT to DEVELOPMENMT. ([Working with Multiple Environments](https://docs.asp.net/en/latest/fundamentals/environments.html))
+1. Set environment ASPNETCORE_ENVIRONMENT to DEVELOPMENT. ([Working with Multiple Environments](https://docs.asp.net/en/latest/fundamentals/environments.html))
 2. Set up user secrets:
 ```
 dotnet user-secrets set oidc:clientid <Client Id>
