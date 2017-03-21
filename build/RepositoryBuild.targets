@@ -41,6 +41,7 @@
     <MSBuild
       Projects="@(BatchedRepository)"
       BuildInParallel="$(BatchBuilds)"
+      StopOnFirstFailure="true"
       Targets="_BuildRepository"
       Properties="BuildGroup=%(BatchedRepository.BuildGroup)" />
   </Target>
