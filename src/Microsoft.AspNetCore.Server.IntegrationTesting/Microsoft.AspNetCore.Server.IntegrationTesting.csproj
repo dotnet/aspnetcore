@@ -10,6 +10,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;testing</PackageTags>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
