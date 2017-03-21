@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
-    public class ListCommand : ICommand
+    internal class ListCommand : ICommand
     {
         private readonly bool _jsonOutput;
 

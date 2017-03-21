@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
-    public class RemoveCommand : ICommand
+    internal class RemoveCommand : ICommand
     {
         private readonly string _keyName;
 

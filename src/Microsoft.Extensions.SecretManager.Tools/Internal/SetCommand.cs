@@ -9,7 +9,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
-    public class SetCommand
+    internal class SetCommand
     {
         public static void Configure(CommandLineApplication command, CommandLineOptions options, IConsole console)
         {

@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.CommandLineUtils
 {
-    public static class CommandLineApplicationExtensions
+    internal static class CommandLineApplicationExtensions
     {
         public static CommandOption HelpOption(this CommandLineApplication app)
             => app.HelpOption("-?|-h|--help");
