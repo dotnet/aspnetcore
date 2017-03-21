@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         ChunkWriter.WriteBeginChunkBytes(ref writableBuffer, buffer.Count);
                     }
 
-                    writableBuffer.Write(buffer);
+                    writableBuffer.WriteFast(buffer);
 
                     if (chunk)
                     {
