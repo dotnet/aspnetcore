@@ -63,6 +63,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 #if NET452
             // CoreCLR doesn't support an 'empty' name
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, string.Empty));
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
             // Arrange
