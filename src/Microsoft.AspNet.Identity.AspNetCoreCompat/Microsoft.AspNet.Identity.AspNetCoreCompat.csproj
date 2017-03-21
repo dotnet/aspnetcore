@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Description>A compatibility layer for sharing identity databases between Microsoft.AspNet.Identity.EntityFramework and Microsoft.AspNetCore.Identity.EntityFrameworkCore.</Description>
     <VersionPrefix>0.3.0</VersionPrefix>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFramework>net46</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
