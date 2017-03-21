@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var bytes = Encoding.ASCII.GetBytes(data[0]);
                 var buffer = socketInput.Writer.Alloc(2048);
                 ArraySegment<byte> block;
-                Assert.True(buffer.Memory.TryGetArray(out block));
+                Assert.True(buffer.Buffer.TryGetArray(out block));
                 Buffer.BlockCopy(bytes, 0, block.Array, block.Offset, bytes.Length);
                 buffer.Advance(bytes.Length);
                 await buffer.FlushAsync();
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 writeTcs = new TaskCompletionSource<byte[]>();
                 bytes = Encoding.ASCII.GetBytes(data[1]);
                 buffer = socketInput.Writer.Alloc(2048);
-                Assert.True(buffer.Memory.TryGetArray(out block));
+                Assert.True(buffer.Buffer.TryGetArray(out block));
                 Buffer.BlockCopy(bytes, 0, block.Array, block.Offset, bytes.Length);
                 buffer.Advance(bytes.Length);
                 await buffer.FlushAsync();

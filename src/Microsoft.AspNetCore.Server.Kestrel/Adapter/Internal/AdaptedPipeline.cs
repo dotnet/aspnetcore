@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 
                 try
                 {
-                    var array = block.Memory.GetArray();
+                    var array = block.Buffer.GetArray();
                     try
                     {
                         bytesRead = await _filteredStream.ReadAsync(array.Array, array.Offset, array.Count);

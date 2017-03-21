@@ -234,12 +234,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var currentWritableBuffer = Input.Writer.Alloc(MinAllocBufferSize);
             _currentWritableBuffer = currentWritableBuffer;
             void* dataPtr;
-            var tryGetPointer = currentWritableBuffer.Memory.TryGetPointer(out dataPtr);
+            var tryGetPointer = currentWritableBuffer.Buffer.TryGetPointer(out dataPtr);
             Debug.Assert(tryGetPointer);
 
             return handle.Libuv.buf_init(
                 (IntPtr)dataPtr,
-                currentWritableBuffer.Memory.Length);
+                currentWritableBuffer.Buffer.Length);
         }
 
         private static void ReadCallback(UvStreamHandle handle, int status, object state)

@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -85,12 +83,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return buffer.ToArray();
         }
 
-        public static ArraySegment<byte> GetArray(this Memory<byte> memory)
+        public static ArraySegment<byte> GetArray(this Buffer<byte> buffer)
         {
             ArraySegment<byte> result;
-            if (!memory.TryGetArray(out result))
+            if (!buffer.TryGetArray(out result))
             {
-                throw new InvalidOperationException("Memory backed by array was expected");
+                throw new InvalidOperationException("Buffer backed by array was expected");
             }
             return result;
         }
@@ -98,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         // Temporary until the fast write implementation propagates from corefx
         public unsafe static void WriteFast(this WritableBuffer buffer, ReadOnlySpan<byte> source)
         {
-            var dest = buffer.Memory.Span;
+            var dest = buffer.Buffer.Span;
             var destLength = dest.Length;
 
             if (destLength == 0)
@@ -106,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 buffer.Ensure();
 
                 // Get the new span and length
-                dest = buffer.Memory.Span;
+                dest = buffer.Buffer.Span;
                 destLength = dest.Length;
             }
 
@@ -132,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 while (remaining > 0)
                 {
-                    var writable = Math.Min(remaining, buffer.Memory.Length);
+                    var writable = Math.Min(remaining, buffer.Buffer.Length);
 
                     buffer.Ensure(writable);
 
@@ -141,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         continue;
                     }
 
-                    fixed (byte* pDest = &buffer.Memory.Span.DangerousGetPinnableReference())
+                    fixed (byte* pDest = &buffer.Buffer.Span.DangerousGetPinnableReference())
                     {
                         Unsafe.CopyBlockUnaligned(pDest, pSource + offset, (uint)writable);
                     }
@@ -158,16 +156,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (!string.IsNullOrEmpty(data))
             {
-                if (buffer.Memory.IsEmpty)
+                if (buffer.Buffer.IsEmpty)
                 {
                     buffer.Ensure();
                 }
 
                 // Fast path, try copying to the available memory directly
-                if (data.Length <= buffer.Memory.Length)
+                if (data.Length <= buffer.Buffer.Length)
                 {
                     fixed (char* input = data)
-                    fixed (byte* output = &buffer.Memory.Span.DangerousGetPinnableReference())
+                    fixed (byte* output = &buffer.Buffer.Span.DangerousGetPinnableReference())
                     {
                         EncodeAsciiCharsToBytes(input, output, data.Length);
                     }
@@ -186,15 +184,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             const byte AsciiDigitStart = (byte)'0';
 
-            if (buffer.Memory.IsEmpty)
+            if (buffer.Buffer.IsEmpty)
             {
                 buffer.Ensure();
             }
 
             // Fast path, try copying to the available memory directly
-            var bytesLeftInBlock = buffer.Memory.Length;
+            var bytesLeftInBlock = buffer.Buffer.Length;
             var simpleWrite = true;
-            fixed (byte* output = &buffer.Memory.Span.DangerousGetPinnableReference())
+            fixed (byte* output = &buffer.Buffer.Span.DangerousGetPinnableReference())
             {
                 var start = output;
                 if (number < 10 && bytesLeftInBlock >= 1)
@@ -266,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 while (remaining > 0)
                 {
-                    var writable = Math.Min(remaining, buffer.Memory.Length);
+                    var writable = Math.Min(remaining, buffer.Buffer.Length);
 
                     buffer.Ensure(writable);
 
@@ -275,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         continue;
                     }
 
-                    fixed (byte* output = &buffer.Memory.Span.DangerousGetPinnableReference())
+                    fixed (byte* output = &buffer.Buffer.Span.DangerousGetPinnableReference())
                     {
                         EncodeAsciiCharsToBytes(inputSlice, output, writable);
                     }

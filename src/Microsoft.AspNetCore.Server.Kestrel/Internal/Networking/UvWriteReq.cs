@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
         private LibuvAwaitable<UvWriteReq> _awaitable = new LibuvAwaitable<UvWriteReq>();
         private List<GCHandle> _pins = new List<GCHandle>(BUFFER_COUNT + 1);
-        private List<MemoryHandle> _handles = new List<MemoryHandle>(BUFFER_COUNT + 1);
+        private List<BufferHandle> _handles = new List<BufferHandle>(BUFFER_COUNT + 1);
 
         public UvWriteReq(IKestrelTrace logger) : base(logger)
         {
