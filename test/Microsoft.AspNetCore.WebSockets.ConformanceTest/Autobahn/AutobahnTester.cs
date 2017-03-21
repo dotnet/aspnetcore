@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             {
                 ApplicationBaseUriHint = baseUrl,
                 ApplicationType = ApplicationType.Portable,
-                TargetFramework = "netcoreapp1.1",
+                TargetFramework = "netcoreapp2.0",
                 EnvironmentName = environment,
                 SiteName = "HttpTestSite", // This is configured in the Http.config
                 ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
@@ -111,10 +111,6 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             _deployers.Add(deployer);
             cancellationToken.ThrowIfCancellationRequested();
 
-#if NET451
-            System.Net.ServicePointManager.ServerCertificateValidationCallback = (_, __, ___, ____) => true;
-            var client = new HttpClient();
-#else
             var handler = new HttpClientHandler();
             if (ssl)
             {
@@ -124,7 +120,6 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
             }
             var client = new HttpClient(handler);
-#endif
 
             // Make sure the server works
             var resp = await RetryHelper.RetryRequest(() =>

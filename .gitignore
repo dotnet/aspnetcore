@@ -28,3 +28,4 @@ nuget.exe
 .build/
 autobahnreports/
 .vscode/
+global.json
