@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/HttpSysServer/issues/263")]
         public void Server_MultipleOutstandingSyncRequests_Success()
         {
             int requestLimit = 10;
