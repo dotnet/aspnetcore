@@ -1,15 +1,6 @@
 language: csharp
-sudo: required
+sudo: false
 dist: trusty
-addons:
-  apt:
-    packages:
-    - gettext
-    - libcurl4-openssl-dev
-    - libicu-dev
-    - libssl-dev
-    - libunwind8
-    - zlib1g
 env:
   global:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -18,6 +9,7 @@ mono: none
 os:
   - linux
   - osx
+osx_image: xcode8.2
 branches:
   only:
     - master
@@ -28,9 +20,3 @@ before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
 script:
   - ./build.sh
-notifications:
-  webhooks:
-    secure: "wQWIB0w+JTMEcME/A3EkbE/kOEd2Ir6JLouu8GnKxpAYkkfgZTJvB39vDZlddcUX2KUIh1wEb+pymSYdVuY8IqgnOiafyNHMr+hOOmyijgGGDEgwFhc6kVg9QE9in1W6EhFc3Zc4q1lTTX8lI3y/fxv4ry4D6UDs7ddcDpBvpWk="
-  on_success: always
-  on_failure: always
-  on_start: always
