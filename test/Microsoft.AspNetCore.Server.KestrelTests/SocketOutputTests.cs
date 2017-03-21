@@ -320,9 +320,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.NotEmpty(completeQueue);
 
                 // Add more bytes to the write-behind buffer to prevent the next write from
-                var writableBuffer = socketOutput.Alloc();
-                writableBuffer.Write(halfWriteBehindBuffer);
-                writableBuffer.Commit();
+                socketOutput.Write((writableBuffer, state) =>
+                {
+                    writableBuffer.Write(state);
+                },
+                halfWriteBehindBuffer);
 
                 // Act
                 var writeTask2 = socketOutput.WriteAsync(halfWriteBehindBuffer, default(CancellationToken));
@@ -579,7 +581,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        [Fact(Skip = "Commit throws with a non channel backed writable buffer")]
+        [Fact]
         public async Task AllocCommitCanBeCalledAfterConnectionClose()
         {
             var mockLibuv = new MockLibuv();
@@ -608,8 +610,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 Assert.Equal(TaskStatus.RanToCompletion, connection.SocketClosed.Status);
 
-                var start = socketOutput.Alloc();
-                start.Commit();
+                var called = false;
+
+                socketOutput.Write<object>((buffer, state) =>
+                {
+                    called = true;
+                }, 
+                null);
+
+                Assert.False(called);
             }
         }
     }

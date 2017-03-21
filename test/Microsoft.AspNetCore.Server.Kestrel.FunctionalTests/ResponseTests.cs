@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -985,6 +986,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     await connection.ReceiveEnd("hello, world");
                 }
+            }
+        }
+
+        [Fact]
+        public async Task WriteAfterConnectionCloseNoops()
+        {
+            var connectionClosed = new ManualResetEventSlim();
+            var requestStarted = new ManualResetEventSlim();
+            var tcs = new TaskCompletionSource<object>();
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                try
+                {
+                    requestStarted.Set();
+                    connectionClosed.Wait();
+                    httpContext.Response.ContentLength = 12;
+                    await httpContext.Response.WriteAsync("hello, world");
+                    tcs.TrySetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+
+                    requestStarted.Wait();
+                    connection.Shutdown(SocketShutdown.Send);
+                    await connection.WaitForConnectionClose();
+                }
+
+                connectionClosed.Set();
+
+                await tcs.Task;
             }
         }
 

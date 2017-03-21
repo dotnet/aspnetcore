@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -18,6 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         Task WriteAsync(ArraySegment<byte> buffer, bool chunk = false, CancellationToken cancellationToken = default(CancellationToken));
         void Flush();
         Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken));
-        WritableBuffer Alloc();
+        void Write<T>(Action<WritableBuffer, T> write, T state);
     }
 }

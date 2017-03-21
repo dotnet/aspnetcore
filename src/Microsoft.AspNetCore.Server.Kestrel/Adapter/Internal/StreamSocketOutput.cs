@@ -83,9 +83,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
             return WriteAsync(default(ArraySegment<byte>), chunk: false, cancellationToken: cancellationToken);
         }
 
-        public WritableBuffer Alloc()
+        public void Write<T>(Action<WritableBuffer, T> callback, T state)
         {
-            return _pipe.Writer.Alloc();
+            lock (_sync)
+            {
+                if (_completed)
+                {
+                    return;
+                }
+
+                var buffer = _pipe.Writer.Alloc();
+                callback(buffer, state);
+                buffer.Commit();
+            }
         }
 
         public async Task WriteOutputAsync()

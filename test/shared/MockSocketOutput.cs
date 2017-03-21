@@ -12,12 +12,8 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class MockSocketOutput : ISocketOutput
     {
-        private PipeFactory _factory = new PipeFactory();
-        private IPipeWriter _writer;
-
         public MockSocketOutput()
         {
-            _writer = _factory.Create().Writer;
         }
 
         public void Write(ArraySegment<byte> buffer, bool chunk = false)
@@ -38,9 +34,9 @@ namespace Microsoft.AspNetCore.Testing
             return TaskCache.CompletedTask;
         }
 
-        public WritableBuffer Alloc()
+        public void Write<T>(Action<WritableBuffer, T> write, T state)
         {
-            return _writer.Alloc();
+
         }
     }
 }

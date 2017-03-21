@@ -186,17 +186,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return WriteAsync(_emptyData, cancellationToken);
         }
 
-        public WritableBuffer Alloc()
+        public void Write<T>(Action<WritableBuffer, T> callback, T state)
         {
             lock (_contextLock)
             {
                 if (_completed)
                 {
-                    // This is broken
-                    return default(WritableBuffer);
+                    return;
                 }
 
-                return _pipe.Writer.Alloc();
+                var buffer = _pipe.Writer.Alloc();
+                callback(buffer, state);
+                buffer.Commit();
             }
         }
 

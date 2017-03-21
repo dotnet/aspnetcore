@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
         private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
+        private static readonly Action<WritableBuffer, Frame> _writeHeaders = WriteResponseHeaders;
 
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -784,9 +785,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             _requestProcessingStatus = RequestProcessingStatus.ResponseStarted;
 
-            var statusBytes = ReasonPhrases.ToStatusBytes(StatusCode, ReasonPhrase);
-
-            CreateResponseHeader(statusBytes, appCompleted);
+            CreateResponseHeader(appCompleted);
         }
 
         protected Task TryProduceInvalidRequestResponse()
@@ -881,9 +880,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        private void CreateResponseHeader(
-            byte[] statusBytes,
-            bool appCompleted)
+        private void CreateResponseHeader(bool appCompleted)
         {
             var responseHeaders = FrameResponseHeaders;
             var hasConnection = responseHeaders.HasConnection;
@@ -972,12 +969,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             }
 
-            var writableBuffer = Output.Alloc();
+            Output.Write(_writeHeaders, this);
+        }
+
+        private static void WriteResponseHeaders(WritableBuffer writableBuffer, Frame frame)
+        {
+            var responseHeaders = frame.FrameResponseHeaders;
             writableBuffer.WriteFast(_bytesHttpVersion11);
+            var statusBytes = ReasonPhrases.ToStatusBytes(frame.StatusCode, frame.ReasonPhrase);
             writableBuffer.WriteFast(statusBytes);
             responseHeaders.CopyTo(ref writableBuffer);
             writableBuffer.WriteFast(_bytesEndHeaders);
-            writableBuffer.Commit();
         }
 
         public void ParseRequest(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
