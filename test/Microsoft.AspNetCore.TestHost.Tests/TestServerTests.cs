@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -117,6 +118,39 @@ namespace Microsoft.AspNetCore.TestHost
             var server = new TestServer(builder);
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("ApplicationServicesEqual:True", result);
+        }
+
+        [Fact]
+        public void TestServerConstructorWithFeatureCollectionAllowsInitializingServerFeatures()
+        {
+            // Arrange
+            var url = "http://localhost:8000/appName/serviceName";
+            var builder = new WebHostBuilder()
+                .UseUrls(url)
+                .Configure(applicationBuilder =>
+                {
+                    var serverAddressesFeature = applicationBuilder.ServerFeatures.Get<IServerAddressesFeature>();
+                    Assert.Contains(serverAddressesFeature.Addresses, s => string.Equals(s, url, StringComparison.Ordinal));
+                });
+
+
+            var featureCollection = new FeatureCollection();
+            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
+
+            // Act
+            new TestServer(builder, featureCollection);
+
+            // Assert
+            // Is inside configure callback
+        }
+
+        [Fact]
+        public void TestServerConstructorWithNullFeatureCollectionThrows()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(b => { });
+
+            Assert.Throws<ArgumentNullException>(() => new TestServer(builder, null));
         }
 
         public class TestService { }

@@ -21,7 +21,23 @@ namespace Microsoft.AspNetCore.TestHost
         private IHttpApplication<Context> _application;
 
         public TestServer(IWebHostBuilder builder)
+            : this(builder, new FeatureCollection())
         {
+        }
+
+        public TestServer(IWebHostBuilder builder, IFeatureCollection featureCollection)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+            if (featureCollection == null)
+            {
+                throw new ArgumentNullException(nameof(featureCollection));
+            }        
+        
+            Features = featureCollection;
+
             var host = builder.UseServer(this).Build();
             host.Start();
             _hostInstance = host;
@@ -37,7 +53,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-        IFeatureCollection IServer.Features { get; }
+        public IFeatureCollection Features { get; }
 
         public HttpMessageHandler CreateHandler()
         {
