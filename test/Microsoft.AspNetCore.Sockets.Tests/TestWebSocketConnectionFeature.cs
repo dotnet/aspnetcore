@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Buffers.Pools;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 {
     internal class TestWebSocketConnectionFeature : IHttpWebSocketConnectionFeature, IDisposable
     {
-        private PipeFactory _factory = new PipeFactory(ManagedBufferPool.Shared);
+        private PipeFactory _factory = new PipeFactory(BufferPool.Default);
 
         public bool IsWebSocketRequest => true;
 

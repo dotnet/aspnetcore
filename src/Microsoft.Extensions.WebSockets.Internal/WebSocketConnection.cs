@@ -585,7 +585,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
 
         private static void PingPayloadWriter(WritableBuffer output, Span<byte> maskingKey, int payloadLength, DateTime timestamp)
         {
-            var payload = output.Memory.Slice(0, payloadLength);
+            var payload = output.Buffer.Slice(0, payloadLength);
 
             // TODO: Don't put this string on the heap? Is there a way to do that without re-implementing ToString?
             // Ideally we'd like to render the string directly to the output buffer.
@@ -615,7 +615,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
         private static void CloseResultPayloadWriter(WritableBuffer output, Span<byte> maskingKey, int payloadLength, WebSocketCloseResult result)
         {
             // Write the close payload out
-            var payload = output.Memory.Slice(0, payloadLength).Span;
+            var payload = output.Buffer.Slice(0, payloadLength).Span;
             result.WriteTo(ref output);
 
             if (maskingKey.Length > 0)
@@ -666,7 +666,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
 
                 // Allocate a buffer
                 buffer = _outbound.Alloc(minimumSize: allocSize);
-                Debug.Assert(buffer.Memory.Length >= allocSize);
+                Debug.Assert(buffer.Buffer.Length >= allocSize);
 
                 // Write the opcode and FIN flag
                 var opcodeByte = (byte)opcode;
@@ -683,7 +683,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
                 if (_maskingKeyBuffer != null)
                 {
                     // Get a span of the output buffer for the masking key, write it there, then advance the write head.
-                    maskingKey = buffer.Memory.Slice(0, 4).Span;
+                    maskingKey = buffer.Buffer.Slice(0, 4).Span;
                     WriteMaskingKey(maskingKey);
                     buffer.Advance(4);
                 }
