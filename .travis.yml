@@ -6,12 +6,7 @@ services:
 addons:
   apt:
     packages:
-    - gettext
-    - libcurl4-openssl-dev
-    - libicu-dev
-    - libssl-dev
     - libunwind8
-    - zlib1g
 env:
   global:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -20,6 +15,7 @@ mono: none
 os:
   - linux
   - osx
+osx_image: xcode8.2
 branches:
   only:
     - master
