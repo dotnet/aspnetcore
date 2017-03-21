@@ -24,8 +24,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Watcher.To
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.SqlConfig.Tools", "src\Microsoft.Extensions.Caching.SqlConfig.Tools\Microsoft.Extensions.Caching.SqlConfig.Tools.csproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Tools.Tests", "test\Microsoft.Extensions.Tools.Tests\Microsoft.Extensions.Tools.Tests.csproj", "{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,10 +54,6 @@ Global
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +65,5 @@ Global
 		{7B331122-83B1-4F08-A119-DC846959844C} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9} = {66517987-2A5A-4330-B130-207039378FD4}
-		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 	EndGlobalSection
 EndGlobal
