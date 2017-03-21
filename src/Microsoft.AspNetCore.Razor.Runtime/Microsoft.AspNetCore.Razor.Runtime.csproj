@@ -13,6 +13,7 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;cshtml;razor;taghelper;taghelpers</PackageTags>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor\Microsoft.AspNetCore.Razor.csproj" />
