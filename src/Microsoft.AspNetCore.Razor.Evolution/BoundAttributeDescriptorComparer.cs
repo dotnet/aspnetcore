@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 string.Equals(descriptorX.Kind, descriptorY.Kind, StringComparison.Ordinal) &&
                 descriptorX.IsIndexerStringProperty == descriptorY.IsIndexerStringProperty &&
                 descriptorX.IsEnum == descriptorY.IsEnum &&
+                descriptorX.HasIndexer == descriptorY.HasIndexer &&
                 string.Equals(descriptorX.Name, descriptorY.Name, _stringComparison) &&
                 string.Equals(descriptorX.IndexerNamePrefix, descriptorY.IndexerNamePrefix, _stringComparison) &&
                 string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             hashCodeCombiner.Add(descriptor.Kind);
             hashCodeCombiner.Add(descriptor.IsIndexerStringProperty);
             hashCodeCombiner.Add(descriptor.IsEnum);
+            hashCodeCombiner.Add(descriptor.HasIndexer);
             hashCodeCombiner.Add(descriptor.Name, _stringComparer);
             hashCodeCombiner.Add(descriptor.IndexerNamePrefix, _stringComparer);
             hashCodeCombiner.Add(descriptor.TypeName, StringComparer.Ordinal);

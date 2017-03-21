@@ -1732,8 +1732,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 var dictionaryNamespace = typeof(IDictionary<,>).FullName;
                 dictionaryNamespace = dictionaryNamespace.Substring(0, dictionaryNamespace.IndexOf('`'));
 
-                // tagTelperType, expectedAttributeDescriptors
-                return new TheoryData<Type, IEnumerable<BoundAttributeDescriptor>>
+                // tagHelperType, expectedAttributeDescriptors, expectedDiagnostics
+                return new TheoryData<Type, IEnumerable<BoundAttributeDescriptor>, IEnumerable<RazorDiagnostic>>
                 {
                     {
                         typeof(DefaultValidHtmlAttributePrefix),
@@ -1745,7 +1745,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
                                 .AsDictionary("dictionary-property-", typeof(string).FullName)
                                 .Build()
-                        }
+                        },
+                        Enumerable.Empty<RazorDiagnostic>()
                     },
                     {
                         typeof(SingleValidHtmlAttributePrefix),
@@ -1757,7 +1758,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
                                 .AsDictionary("valid-name-", typeof(string).FullName)
                                 .Build()
-                        }
+                        },
+                        Enumerable.Empty<RazorDiagnostic>()
                     },
                     {
                         typeof(MultipleValidHtmlAttributePrefix),
@@ -1808,7 +1810,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
                                 .AsDictionary("valid-prefix6", typeof(string).FullName)
                                 .Build()
-                        }
+                        },
+                        Enumerable.Empty<RazorDiagnostic>()
                     },
                     {
                         typeof(SingleInvalidHtmlAttributePrefix),
@@ -1818,11 +1821,16 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name")
                                 .PropertyName(nameof(SingleInvalidHtmlAttributePrefix.StringProperty))
                                 .TypeName(typeof(string).FullName)
-                                .AddDiagnostic(
-                                    RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
-                                        typeof(SingleInvalidHtmlAttributePrefix).FullName, 
-                                        nameof(SingleInvalidHtmlAttributePrefix.StringProperty)))
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
+                                    typeof(SingleInvalidHtmlAttributePrefix).FullName,
+                                    nameof(SingleInvalidHtmlAttributePrefix.StringProperty)))
                                 .Build(),
+                        },
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
+                                typeof(SingleInvalidHtmlAttributePrefix).FullName,
+                                nameof(SingleInvalidHtmlAttributePrefix.StringProperty))
                         }
                     },
                     {
@@ -1841,7 +1849,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .AsDictionary("valid-prefix2-", typeof(string).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
-                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName, 
+                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty)))
                                 .Build(),
                             ITagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
@@ -1850,7 +1858,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .TypeName($"{typeof(IReadOnlyDictionary<,>).Namespace}.IReadOnlyDictionary<System.String, System.Object>")
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
-                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName, 
+                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.ReadOnlyDictionaryProperty)))
                                 .Build(),
                             ITagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
@@ -1859,7 +1867,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .TypeName(typeof(int).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
-                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName, 
+                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.IntProperty)))
                                 .Build(),
                             ITagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
@@ -1869,7 +1877,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .AsDictionary("valid-prefix5-", typeof(string).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
-                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName, 
+                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty)))
                                 .Build(),
                             ITagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
@@ -1878,7 +1886,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .AsDictionary("valid-prefix6", typeof(string).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
-                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName, 
+                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryAttributePrefix)))
                                 .Build(),
                             ITagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
@@ -1887,9 +1895,30 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .AsDictionary("invalid-name7-", typeof(object).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNull(
-                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName, 
+                                        typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributeName)))
                                 .Build(),
+                        },
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty)),
+                            RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.ReadOnlyDictionaryProperty)),
+                            RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.IntProperty)),
+                            RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty)),
+                            RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryAttributePrefix)),
+                            RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNull(
+                                typeof(MultipleInvalidHtmlAttributePrefix).FullName,
+                                nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributeName)),
                         }
                     },
                 };
@@ -1900,7 +1929,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         [MemberData(nameof(TagHelperWithPrefixData))]
         public void CreateDescriptor_WithPrefixes_ReturnsExpectedAttributeDescriptors(
             Type tagHelperType,
-            IEnumerable<BoundAttributeDescriptor> expectedAttributeDescriptors)
+            IEnumerable<BoundAttributeDescriptor> expectedAttributeDescriptors,
+            IEnumerable<RazorDiagnostic> expectedDiagnostics)
         {
             // Arrange
             var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
@@ -1914,6 +1944,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 expectedAttributeDescriptors,
                 descriptor.BoundAttributes,
                 BoundAttributeDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDiagnostics, descriptor.GetAllDiagnostics());
         }
 
         public static TheoryData HtmlConversionData

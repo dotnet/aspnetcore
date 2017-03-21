@@ -27,11 +27,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public string Name { get; protected set; }
 
-        public string IndexerNamePrefix { get; set; }
+        public string IndexerNamePrefix { get; protected set; }
 
         public string TypeName { get; protected set; }
 
         public string IndexerTypeName { get; protected set; }
+
+        public bool HasIndexer { get; protected set; }
 
         public string Documentation { get; protected set; }
 

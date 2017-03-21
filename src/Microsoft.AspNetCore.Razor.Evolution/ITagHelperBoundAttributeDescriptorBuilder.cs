@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
 
         private bool _isEnum;
+        private bool _hasIndexer;
         private string _indexerValueTypeName;
         private string _name;
         private string _propertyName;
@@ -88,6 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             _indexerNamePrefix = attributeNamePrefix;
             _indexerValueTypeName = valueTypeName;
+            _hasIndexer = true;
 
             return this;
         }
@@ -136,6 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 _typeName,
                 _indexerNamePrefix,
                 _indexerValueTypeName,
+                _hasIndexer,
                 _documentation,
                 displayName,
                 _metadata,
@@ -256,6 +259,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 string typeName,
                 string dictionaryAttributeNamePrefix,
                 string dictionaryValueTypeName,
+                bool hasIndexer,
                 string documentation,
                 string displayName,
                 Dictionary<string, string> metadata,
@@ -268,6 +272,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 TypeName = typeName;
                 IndexerNamePrefix = dictionaryAttributeNamePrefix;
                 IndexerTypeName = dictionaryValueTypeName;
+                HasIndexer = hasIndexer;
                 Documentation = documentation;
                 DisplayName = displayName;
                 Diagnostics = new List<RazorDiagnostic>(diagnostics);
