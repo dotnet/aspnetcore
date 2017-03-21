@@ -54,8 +54,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 return RazorDiagnostic.Create(error);
             }
 
-            throw new NotSupportedException(
-                Resources.FormatRazorDiagnosticJsonConverter_UnsupportedRazorDiagnosticType(typeof(RazorDiagnostic).Name, typeName));
+            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
@@ -41,9 +43,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     {
                         if (session != null)
                         {
-                            result = await session.InvokeAsync<TagHelperResolutionResult>(
+                            var jsonObject = await session.InvokeAsync<JObject>(
                                 "GetTagHelpersAsync",
                                 new object[] { project.Id.Id, "Foo", assemblyNameFilters, }).ConfigureAwait(false);
+
+                            result = GetTagHelperResolutionResult(jsonObject);
 
                             if (result != null)
                             {
@@ -80,6 +84,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     typeof(DefaultTagHelperResolver).FullName,
                     nameof(GetTagHelpersAsync),
                     exception);
+            }
+        }
+
+        private TagHelperResolutionResult GetTagHelperResolutionResult(JObject jsonObject)
+        {
+            var serializer = new JsonSerializer();
+            serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
+            serializer.Converters.Add(RazorDiagnosticJsonConverter.Instance);
+
+            using (var reader = jsonObject.CreateReader())
+            {
+                return serializer.Deserialize<TagHelperResolutionResult>(reader);
             }
         }
 
