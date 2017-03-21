@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
     public class ShutdownTests
     {
         [ConditionalFact]
+        //Disabled until https://github.com/aspnet/Hosting/issues/974 resolved.
+        [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public void ShutdownTest()
