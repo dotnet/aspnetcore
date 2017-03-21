@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             {
                 _callback = null;
                 _state = null;
-                Unpin(this);
+                UnpinGcHandles();
                 throw;
             }
         }
@@ -200,31 +200,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             {
                 _callback = null;
                 _state = null;
-                Unpin(this);
+                UnpinGcHandles();
                 throw;
             }
         }
 
-        private static void Unpin(UvWriteReq req)
+        // Safe handle has instance method called Unpin
+        // so using UnpinGcHandles to avoid conflict 
+        private void UnpinGcHandles()
         {
-            foreach (var pin in req._pins)
+            var pinList = _pins;
+            var count = pinList.Count;
+            for (var i = 0; i < count; i++)
             {
-                pin.Free();
+                pinList[i].Free();
             }
+            pinList.Clear();
 
-            foreach (var handle in req._handles)
+            var handleList = _handles;
+            count = handleList.Count;
+            for (var i = 0; i < count; i++)
             {
-                handle.Free();
+                handleList[i].Free();
             }
-
-            req._pins.Clear();
-            req._handles.Clear();
+            handleList.Clear();
         }
 
         private static void UvWriteCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvWriteReq>(ptr);
-            Unpin(req);
+            req.UnpinGcHandles();
 
             var callback = req._callback;
             req._callback = null;
