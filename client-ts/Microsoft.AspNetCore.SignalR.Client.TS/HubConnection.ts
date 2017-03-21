@@ -21,6 +21,7 @@ export class HubConnection {
     private callbacks: Map<string, (invocationDescriptor: InvocationResultDescriptor) => void>;
     private methods: Map<string, (...args: any[]) => void>;
     private id: number;
+    private connectionClosedCallback: ConnectionClosed;
 
     static create(url: string, queryString?: string): HubConnection {
         return new this(new Connection(url, queryString))
@@ -33,6 +34,9 @@ export class HubConnection {
         this.connection.onDataReceived = data => {
             this.onDataReceived(data);
         };
+        this.connection.onClosed = (error: Error) => {
+            this.onConnectionClosed(error);
+        }
 
         this.callbacks = new Map<string, (invocationDescriptor: InvocationResultDescriptor) => void>();
         this.methods = new Map<string, (...args: any[]) => void>();
@@ -48,7 +52,7 @@ export class HubConnection {
         var descriptor = JSON.parse(data);
         if (descriptor.Method === undefined) {
             let invocationResult: InvocationResultDescriptor = descriptor;
-            let callback = this.callbacks[invocationResult.Id];
+            let callback = this.callbacks.get(invocationResult.Id);
             if (callback != null) {
                 callback(invocationResult);
                 this.callbacks.delete(invocationResult.Id);
@@ -61,6 +65,23 @@ export class HubConnection {
                 // TODO: bind? args?
                 method.apply(this, invocation.Arguments);
             }
+        }
+    }
+
+    private onConnectionClosed(error: Error) {
+        let errorInvocationResult = {
+            Id: "-1",
+            Error: error ? error.message : "Invocation cancelled due to connection being closed.",
+            Result: null
+        } as InvocationResultDescriptor;
+
+        this.callbacks.forEach(callback => {
+            callback(errorInvocationResult);
+        });
+        this.callbacks.clear();
+
+        if (this.connectionClosedCallback) {
+            this.connectionClosedCallback(error);
         }
     }
 
@@ -83,20 +104,20 @@ export class HubConnection {
         };
 
         let p = new Promise<any>((resolve, reject) => {
-            this.callbacks[id] = (invocationResult: InvocationResultDescriptor) => {
+            this.callbacks.set(invocationDescriptor.Id, (invocationResult: InvocationResultDescriptor) => {
                 if (invocationResult.Error != null) {
                     reject(new Error(invocationResult.Error));
                 }
                 else {
                     resolve(invocationResult.Result);
                 }
-            };
+            });
 
             //TODO: separate conversion to enable different data formats
             this.connection.send(JSON.stringify(invocationDescriptor))
                 .catch(e => {
-                    // TODO: remove callback
                     reject(e);
+                    this.callbacks.delete(invocationDescriptor.Id);
                 });
         });
 
@@ -108,6 +129,6 @@ export class HubConnection {
     }
 
     set onClosed(callback: ConnectionClosed) {
-        this.connection.onClosed = callback;
+        this.connectionClosedCallback = callback;
     }
 }
