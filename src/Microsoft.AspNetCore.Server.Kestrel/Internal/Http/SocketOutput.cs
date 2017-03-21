@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _onFlushCallback = OnFlush;
         }
 
-        public async Task WriteAsync(
+        public Task WriteAsync(
             ArraySegment<byte> buffer,
             CancellationToken cancellationToken,
             bool chunk = false)
@@ -72,12 +72,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     _log.ConnectionDisconnectedWrite(_connectionId, buffer.Count, _lastWriteError);
 
-                    return;
+                    return TaskCache.CompletedTask;
                 }
 
                 if (_completed)
                 {
-                    return;
+                    return TaskCache.CompletedTask;
                 }
 
                 writableBuffer = _pipe.Writer.Alloc();
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 writableBuffer.Commit();
             }
 
-            await FlushAsync(writableBuffer);
+            return FlushAsync(writableBuffer);
         }
 
         public void End(ProduceEndType endType)
