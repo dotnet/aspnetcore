@@ -19,5 +19,17 @@ namespace Microsoft.AspNetCore.Builder.Internal
             app.Invoke(httpContext);
             Assert.Equal(httpContext.Response.StatusCode, 404);
         }
+
+        [Fact]
+        public void PropertiesDictionaryIsDistinctAfterNew()
+        {
+            var builder1 = new ApplicationBuilder(null);
+            builder1.Properties["test"] = "value1";
+
+            var builder2 = builder1.New();
+            builder2.Properties["test"] = "value2";
+
+            Assert.Equal(builder1.Properties["test"], "value1");
+        }
     }
 }

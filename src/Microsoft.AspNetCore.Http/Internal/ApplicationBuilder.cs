@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
 
         private ApplicationBuilder(ApplicationBuilder builder)
         {
-            Properties = builder.Properties;
+            Properties = new CopyOnWriteDictionary<string, object>(builder.Properties, EqualityComparer<string>.Default);
         }
 
         public IServiceProvider ApplicationServices
