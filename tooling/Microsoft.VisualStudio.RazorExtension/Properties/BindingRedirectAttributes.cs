@@ -4,6 +4,14 @@
 using Microsoft.VisualStudio.Shell;
 
 [assembly: ProvideBindingRedirection(
+    AssemblyName = "Microsoft.AspNetCore.Mvc.Razor.Extensions",
+    GenerateCodeBase = true,
+    PublicKeyToken = "adb9793829ddae60",
+    OldVersionLowerBound = "0.0.0.0",
+    OldVersionUpperBound = "1.2.0.0",
+    NewVersion = "1.2.0.0")]
+
+[assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.AspNetCore.Razor.Evolution",
     GenerateCodeBase = true,
     PublicKeyToken = "adb9793829ddae60",

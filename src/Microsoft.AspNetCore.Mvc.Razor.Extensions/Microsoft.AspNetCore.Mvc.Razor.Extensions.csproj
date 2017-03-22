@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core design time hosting infrastructure for the Razor view engine.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;cshtml;razor</PackageTags>

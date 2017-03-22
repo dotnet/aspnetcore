@@ -336,6 +336,14 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj">
+      <Name>Microsoft.AspNetCore.Mvc.Razor.Extensions</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj">
       <Project>{932f3c9c-a6c0-40d3-ba50-9309886242fc}</Project>
       <Name>Microsoft.AspNetCore.Razor.Evolution</Name>
@@ -400,6 +408,7 @@
   <!-- Workaround for https://github.com/dotnet/sdk/issues/433 -->
   <ItemGroup>
     <VSIXSourceItem Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Remote.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.AspNetCore.Razor.Evolution.dll" />
     <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Razor.dll" />
     <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
