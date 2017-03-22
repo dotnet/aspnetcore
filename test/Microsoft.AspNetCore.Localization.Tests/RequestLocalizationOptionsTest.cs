@@ -37,13 +37,9 @@ namespace Microsoft.AspNetCore.Localization.Tests
         {
             // Arrange
             var explicitCulture = new CultureInfo("fr-FR");
-#if NET452
-            Thread.CurrentThread.CurrentCulture = explicitCulture;
-            Thread.CurrentThread.CurrentUICulture = explicitCulture;
-#else
             CultureInfo.CurrentCulture = explicitCulture;
             CultureInfo.CurrentUICulture = explicitCulture;
-#endif
+
             // Act
             var options = new RequestLocalizationOptions();
 
@@ -78,13 +74,8 @@ namespace Microsoft.AspNetCore.Localization.Tests
         {
             // Arrange
             var explicitCulture = new CultureInfo("fr-FR");
-#if NET452
-            Thread.CurrentThread.CurrentCulture = explicitCulture;
-            Thread.CurrentThread.CurrentUICulture = explicitCulture;
-#else
             CultureInfo.CurrentCulture = explicitCulture;
             CultureInfo.CurrentUICulture = explicitCulture;
-#endif
 
             // Act
             var options = new RequestLocalizationOptions();
@@ -96,13 +87,8 @@ namespace Microsoft.AspNetCore.Localization.Tests
 
         public void Dispose()
         {
-#if NET452
-            Thread.CurrentThread.CurrentCulture = _initialCulture;
-            Thread.CurrentThread.CurrentUICulture = _initialUICulture;
-#else
             CultureInfo.CurrentCulture = _initialCulture;
             CultureInfo.CurrentUICulture = _initialUICulture;
-#endif
         }
     }
 }

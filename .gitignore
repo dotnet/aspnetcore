@@ -33,3 +33,4 @@ nuget.exe
 *launchSettings.json
 **/Resources/*.Designer.cs
 .vscode/
+global.json

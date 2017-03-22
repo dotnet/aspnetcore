@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
     <Description>Provides a request culture provider which gets culture and ui-culture from request's route data.</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;localization</PackageTags>

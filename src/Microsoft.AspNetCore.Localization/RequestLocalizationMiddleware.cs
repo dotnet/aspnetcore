@@ -126,13 +126,8 @@ namespace Microsoft.AspNetCore.Localization
 
         private static void SetCurrentThreadCulture(RequestCulture requestCulture)
         {
-#if NET451
-            Thread.CurrentThread.CurrentCulture = requestCulture.Culture;
-            Thread.CurrentThread.CurrentUICulture = requestCulture.UICulture;
-#else
             CultureInfo.CurrentCulture = requestCulture.Culture;
             CultureInfo.CurrentUICulture = requestCulture.UICulture;
-#endif
         }
 
         private static CultureInfo GetCultureInfo(

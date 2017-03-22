@@ -34,8 +34,11 @@ namespace LocalizationSample
                 new CultureInfo("zh"),
                 new CultureInfo("zh-CN")
             };
-#if !NETCOREAPP1_1
+#if NET46
             supportedCultures.Add(new CultureInfo("zh-CHT"));
+#elif NETCOREAPP2_0
+#else
+#error target frameworks need to be updated.
 #endif
             var options = new RequestLocalizationOptions
             {
@@ -146,8 +149,11 @@ $@"<!doctype html>
             await context.Response.WriteAsync($"    <option value=\"{new CultureInfo("ja-JP").Name}\">{new CultureInfo("ja-JP").DisplayName}</option>");
             await context.Response.WriteAsync($"    <option value=\"{new CultureInfo("zh").Name}\">{new CultureInfo("zh").DisplayName}</option>");
             await context.Response.WriteAsync($"    <option value=\"{new CultureInfo("zh-CN").Name}\">{new CultureInfo("zh-CN").DisplayName}</option>");
-#if NET451
+#if NET46
             await context.Response.WriteAsync($"    <option value=\"{new CultureInfo("zh-CHT").Name}\">{new CultureInfo("zh-CHT").DisplayName}</option>");
+#elif NETCOREAPP2_0
+#else
+#error target frameworks need to be updated.
 #endif
             await context.Response.WriteAsync($"    <option value=\"en-NOTREAL\">English (Not a real locale)</option>");
             await context.Response.WriteAsync($"    <option value=\"pp-NOTREAL\">Made-up (Not a real anything)</option>");
