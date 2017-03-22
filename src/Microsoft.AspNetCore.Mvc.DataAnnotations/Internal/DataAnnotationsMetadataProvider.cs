@@ -176,15 +176,20 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
                 // EnumDisplayNamesAndValues and EnumNamesAndValues
                 //
-                // Order EnumDisplayNamesAndValues to match Enum.GetNames(). That method orders by absolute value,
-                // then its behavior is undefined (but hopefully stable). Add to EnumNamesAndValues in same order but
-                // Dictionary does not guarantee order will be preserved.
+                // Order EnumDisplayNamesAndValues by DisplayAttribute.Order, then by the order of Enum.GetNames(). 
+                // That method orders by absolute value, then its behavior is undefined (but hopefully stable). 
+                // Add to EnumNamesAndValues in same order but Dictionary does not guarantee order will be preserved.
+
                 var groupedDisplayNamesAndValues = new List<KeyValuePair<EnumGroupAndName, string>>();
                 var namesAndValues = new Dictionary<string, string>();
                 var enumLocalizer = _stringLocalizerFactory?.Create(underlyingType);
-                foreach (var name in Enum.GetNames(underlyingType))
+
+                var enumFields = Enum.GetNames(underlyingType)
+                    .Select(name => underlyingType.GetField(name))
+                    .OrderBy(field => field.GetCustomAttribute<DisplayAttribute>(inherit: false)?.GetOrder() ?? 1000);
+
+                foreach (var field in enumFields)
                 {
-                    var field = underlyingType.GetField(name);
                     var groupName = GetDisplayGroup(field);
                     var value = ((Enum)field.GetValue(obj: null)).ToString("d");
 
@@ -193,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                             groupName,
                             () => GetDisplayName(field, enumLocalizer)),
                         value));
-                    namesAndValues.Add(name, value);
+                    namesAndValues.Add(field.Name, value);
                 }
 
                 displayMetadata.EnumGroupedDisplayNamesAndValues = groupedDisplayNamesAndValues;

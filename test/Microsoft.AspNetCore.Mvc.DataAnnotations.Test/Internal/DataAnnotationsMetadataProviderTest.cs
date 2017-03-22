@@ -977,6 +977,36 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
+        public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_ReflectsDisplayAttributeOrder()
+        {
+            // Arrange
+            var expectedKeyValuePairs = new List<KeyValuePair<EnumGroupAndName, string>>
+            {
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDisplayOrder.Three)), "2"),
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDisplayOrder.Two)), "1"),
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDisplayOrder.One)), "0"),
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDisplayOrder.Null)), "3"),
+            };
+
+            var provider = new DataAnnotationsMetadataProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
+
+            var key = ModelMetadataIdentity.ForType(typeof(EnumWithDisplayOrder));
+            var attributes = new object[0];
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
+
+            // Act
+            provider.CreateDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal(
+                expectedKeyValuePairs,
+                context.DisplayMetadata.EnumGroupedDisplayNamesAndValues,
+                KVPEnumGroupAndNameComparer.Instance);
+        }
+
+        [Fact]
         public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithNoIStringLocalizerAndNoResourceType()
         {
             // Arrange & Act
@@ -1316,6 +1346,20 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             [Display(Name = nameof(TestResources.DisplayAttribute_Name), ResourceType = typeof(TestResources))]
 #endif
             MinusTwo = -2,
+        }
+
+        private enum EnumWithDisplayOrder
+        {
+            [Display(Order = 3)]
+            One,
+
+            [Display(Order = 2)]
+            Two,
+
+            [Display(Order = 1)]
+            Three,
+
+            Null,
         }
 
         private enum EnumWithDuplicates
