@@ -302,6 +302,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // TODO: Verbose log
             _isDisposed = true;
             _nativeRequestContext.Dispose();
+            (User?.Identity as WindowsIdentity)?.Dispose();
             if (_nativeStream != null)
             {
                 _nativeStream.Dispose();

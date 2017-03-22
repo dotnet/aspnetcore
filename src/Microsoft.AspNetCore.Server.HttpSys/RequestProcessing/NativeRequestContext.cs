@@ -224,8 +224,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     && info->InfoType == HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
                     && info->pInfo->AuthStatus == HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
                 {
-                    return new WindowsPrincipal(new WindowsIdentity(info->pInfo->AccessToken,
-                        GetAuthTypeFromRequest(info->pInfo->AuthType).ToString()));
+                    // Duplicates AccessToken
+                    var identity = new WindowsIdentity(info->pInfo->AccessToken,
+                        GetAuthTypeFromRequest(info->pInfo->AuthType).ToString());
+
+                    // Close the original
+                    UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(info->pInfo->AccessToken);
+
+                    return new WindowsPrincipal(identity);
                 }
             }
 
