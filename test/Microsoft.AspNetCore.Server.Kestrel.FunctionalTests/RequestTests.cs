@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +20,6 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -32,6 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class RequestTests
     {
+        private const int _connectionStartedEventId = 1;
+        private const int _connectionResetEventId = 19;
         private const int _semaphoreWaitTimeout = 2500;
 
         [Theory]
@@ -242,17 +241,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ConnectionResetPriorToRequestIsLoggedAsDebug()
         {
-            var connectionStarted = new SemaphoreSlim(0);
-            var connectionResetLogged = new SemaphoreSlim(0);
-            var testSink = new ConnectionErrorTestSink(
-                () => connectionStarted.Release(), () => connectionResetLogged.Release(), () => { });
+            var connectionStartedTcs = new TaskCompletionSource<object>();
+
+            var mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
+                .Returns(true);
+            mockLogger
+                .Setup(logger => logger.Log(LogLevel.Debug, _connectionStartedEventId, It.IsAny<object>(), null, It.IsAny<Func<object, Exception, string>>()))
+                .Callback(() =>
+                {
+                    connectionStartedTcs.SetResult(null);
+                });
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"))
+                .Returns(mockLogger.Object);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsNotIn(new[] { "Microsoft.AspNetCore.Server.Kestrel" })))
+                .Returns(Mock.Of<ILogger>());
+
             var builder = new WebHostBuilder()
-                .UseLoggerFactory(new TestLoggerFactory(testSink, true))
+                .UseLoggerFactory(mockLoggerFactory.Object)
                 .UseKestrel()
                 .UseUrls($"http://127.0.0.1:0")
                 .Configure(app => app.Run(context =>
                 {
-                    return Task.FromResult(0);
+                    return TaskCache.CompletedTask;
                 }));
 
             using (var host = builder.Build())
@@ -262,40 +278,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+
                     // Wait until connection is established
-                    Assert.True(await connectionStarted.WaitAsync(_semaphoreWaitTimeout));
+                    await connectionStartedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
 
                     // Force a reset
                     socket.LingerState = new LingerOption(true, 0);
                 }
-
-                // Wait until connection error is logged
-                Assert.True(await connectionResetLogged.WaitAsync(_semaphoreWaitTimeout));
-
-                // Check the no log level higher than Debug was used for a reset before a request
-                Assert.Equal(LogLevel.Debug, testSink.MaxLogLevel);
-
-                // Check for expected message
-                Assert.NotNull(testSink.ConnectionResetMessage);
-                Assert.Contains("reset", testSink.ConnectionResetMessage);
             }
+
+            mockLogger.Verify(logger => logger.Log(LogLevel.Debug, _connectionResetEventId, It.IsAny<object>(), null, It.IsAny<Func<object, Exception, string>>()));
         }
 
         [Fact]
         public async Task ConnectionResetBetweenRequestsIsLoggedAsDebug()
         {
-            var connectionStarted = new SemaphoreSlim(0);
-            var connectionResetLogged = new SemaphoreSlim(0);
-            var testSink = new ConnectionErrorTestSink(
-                () => { }, () => connectionResetLogged.Release(), () => { });
+            var mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
+                .Returns(true);
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"))
+                .Returns(mockLogger.Object);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsNotIn(new[] { "Microsoft.AspNetCore.Server.Kestrel" })))
+                .Returns(Mock.Of<ILogger>());
+
+            var connectionStartedTcs = new TaskCompletionSource<object>();
+
             var builder = new WebHostBuilder()
-                .UseLoggerFactory(new TestLoggerFactory(testSink, true))
+                .UseLoggerFactory(mockLoggerFactory.Object)
                 .UseKestrel()
                 .UseUrls($"http://127.0.0.1:0")
                 .Configure(app => app.Run(context =>
                 {
-                    connectionStarted.Release();
-                    return Task.FromResult(0);
+                    connectionStartedTcs.SetResult(null);
+                    return TaskCache.CompletedTask;
                 }));
 
             using (var host = builder.Build())
@@ -308,39 +328,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n"));
 
                     // Wait until connection is established
-                    Assert.True(await connectionStarted.WaitAsync(_semaphoreWaitTimeout));
+                    await connectionStartedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
 
                     // Force a reset
                     socket.LingerState = new LingerOption(true, 0);
                 }
-
-                // Wait until connection error is logged
-                Assert.True(await connectionResetLogged.WaitAsync(_semaphoreWaitTimeout));
-
-                // Check the no log level higher than Debug was used for a reset between a requests
-                Assert.Equal(LogLevel.Debug, testSink.MaxLogLevel);
-
-                // Check for expected message
-                Assert.NotNull(testSink.ConnectionResetMessage);
-                Assert.Contains("reset", testSink.ConnectionResetMessage);
             }
+
+            mockLogger.Verify(logger => logger.Log(LogLevel.Debug, _connectionResetEventId, It.IsAny<object>(), null, It.IsAny<Func<object, Exception, string>>()));
         }
 
         [Fact]
-        public async Task ConnectionResetMidRequestIsLoggedAsInformation()
+        public async Task ConnectionResetMidRequestIsLoggedAsDebug()
         {
-            var connectionStarted = new SemaphoreSlim(0);
-            var connectionResetLogged = new SemaphoreSlim(0);
-            var requestProcessingErrorLogged = new SemaphoreSlim(0);
-            var testSink = new ConnectionErrorTestSink(
-                () => connectionStarted.Release(), () => connectionResetLogged.Release(), () => requestProcessingErrorLogged.Release());
+            var mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
+                .Returns(true);
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"))
+                .Returns(mockLogger.Object);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsNotIn(new[] { "Microsoft.AspNetCore.Server.Kestrel" })))
+                .Returns(Mock.Of<ILogger>());
+
+            var connectionStartedTcs = new TaskCompletionSource<object>();
+
             var builder = new WebHostBuilder()
-                .UseLoggerFactory(new TestLoggerFactory(testSink, true))
+                .UseLoggerFactory(mockLoggerFactory.Object)
                 .UseKestrel()
                 .UseUrls($"http://127.0.0.1:0")
-                .Configure(app => app.Run(context =>
+                .Configure(app => app.Run(async context =>
                 {
-                    return Task.FromResult(0);
+                    connectionStartedTcs.SetResult(null);
+                    await context.Request.Body.ReadAsync(new byte[1], 0, 1);
                 }));
 
             using (var host = builder.Build())
@@ -350,33 +373,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
-                    socket.Send(Encoding.ASCII.GetBytes("GET"));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n"));
 
                     // Wait until connection is established
-                    Assert.True(await connectionStarted.WaitAsync(_semaphoreWaitTimeout));
+                    await connectionStartedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
 
-                    // Ensure "GET" has been processed
-                    // Sadly, there is no event/log for starting request line processing
-                    await Task.Delay(1000);
-
-                    // Force a reset, give some time for the "GET" to be processed
+                    // Force a reset
                     socket.LingerState = new LingerOption(true, 0);
                 }
-
-                // Wait until connection error and request processingError is logged
-                var waitAsyncResults = await Task.WhenAll(connectionResetLogged.WaitAsync(_semaphoreWaitTimeout), requestProcessingErrorLogged.WaitAsync(_semaphoreWaitTimeout));
-
-                Assert.All(waitAsyncResults, Assert.True);
-
-                // Check the no log level lower than Information was used for a reset mid-request
-                Assert.Equal(LogLevel.Information, testSink.MaxLogLevel);
-
-                // Check for expected message
-                Assert.NotNull(testSink.ConnectionResetMessage);
-                Assert.Contains("reset", testSink.ConnectionResetMessage);
-                Assert.NotNull(testSink.RequestProcessingErrorMessage);
-                Assert.Contains("abnormal", testSink.RequestProcessingErrorMessage);
             }
+
+            mockLogger.Verify(logger => logger.Log(LogLevel.Debug, _connectionResetEventId, It.IsAny<object>(), null, It.IsAny<Func<object, Exception, string>>()));
         }
 
         [Fact]
@@ -616,68 +623,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var facts = JsonConvert.DeserializeObject<JObject>(connectionFacts);
                 Assert.Equal(expectAddress, facts["RemoteIPAddress"].Value<string>());
                 Assert.NotEmpty(facts["RemotePort"].Value<string>());
-            }
-        }
-
-        private class ConnectionErrorTestSink : ITestSink
-        {
-            private readonly Action _connectionStarted;
-            private readonly Action _connectionResetLogged;
-            private readonly Action _requestProcessingErrorLogged;
-
-            public ConnectionErrorTestSink(
-                Action connectionStarted,
-                Action connectionResetLogged,
-                Action requestProcessingErrorLogged)
-            {
-                _connectionStarted = connectionStarted;
-                _connectionResetLogged = connectionResetLogged;
-                _requestProcessingErrorLogged = requestProcessingErrorLogged;
-            }
-
-            public LogLevel MaxLogLevel { get; set; }
-
-            public string ConnectionResetMessage { get; set; }
-
-            public string RequestProcessingErrorMessage { get; set; }
-
-            public Func<BeginScopeContext, bool> BeginEnabled { get; set; }
-
-            public List<BeginScopeContext> Scopes { get; set; }
-
-            public Func<WriteContext, bool> WriteEnabled { get; set; }
-
-            public List<WriteContext> Writes { get; set; }
-
-            public void Begin(BeginScopeContext context)
-            {
-            }
-
-            public void Write(WriteContext context)
-            {
-                if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" && context.LogLevel > MaxLogLevel)
-                {
-                    MaxLogLevel = context.LogLevel;
-                }
-
-                const int connectionStartEventId = 1;
-                const int connectionResetEventId = 19;
-                const int requestProcessingErrorEventId = 20;
-
-                if (context.EventId.Id == connectionStartEventId)
-                {
-                    _connectionStarted();
-                }
-                else if (context.EventId.Id == connectionResetEventId)
-                {
-                    ConnectionResetMessage = context.Formatter(context.State, context.Exception);
-                    _connectionResetLogged();
-                }
-                else if (context.EventId.Id == requestProcessingErrorEventId)
-                {
-                    RequestProcessingErrorMessage = context.Formatter(context.State, context.Exception);
-                    _requestProcessingErrorLogged();
-                }
             }
         }
     }

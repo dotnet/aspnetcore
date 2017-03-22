@@ -1,9 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
@@ -101,6 +107,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 "405 Method Not Allowed",
                 "Method not allowed.",
                 $"Allow: {allowedMethod}");
+        }
+
+        [Fact]
+        public async Task BadRequestLogsAreNotHigherThanInformation()
+        {
+            var maxLogLevel = LogLevel.Trace;
+
+            var mockLogger = new Mock<ILogger>();
+            mockLogger
+                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
+                .Returns(true);
+            mockLogger
+                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
+                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, ex, formatter) =>
+                {
+                    maxLogLevel = logLevel > maxLogLevel ? logLevel : maxLogLevel;
+                });
+
+            using (var server = new TestServer(async context =>
+            {
+                await context.Request.Body.ReadAsync(new byte[1], 0, 1);
+            }, new TestServiceContext { Log = new KestrelTrace(mockLogger.Object) }))
+            {
+                using (var connection = new TestConnection(server.Port))
+                {
+                    await connection.SendAll(
+                        "GET ? HTTP/1.1",
+                        "",
+                        "");
+                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
+                }
+            }
+
+            const int badRequestEventId = 17;
+            mockLogger.Verify(logger => logger.Log(LogLevel.Information, badRequestEventId, It.IsAny<object>(), It.IsAny<BadHttpRequestException>(), It.IsAny<Func<object, Exception, string>>()));
+
+            Assert.Equal(LogLevel.Information, maxLogLevel);
         }
 
         private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage, string expectedAllowHeader = null)
