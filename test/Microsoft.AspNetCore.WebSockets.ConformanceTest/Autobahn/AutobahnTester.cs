@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
                 // Run the test (write something to the console so people know this will take a while...)
                 _logger.LogInformation("Now launching Autobahn Test Suite. This will take a while.");
-                var exitCode = await Wstest.Default.ExecAsync("-m fuzzingclient -s " + specFile, cancellationToken);
+                var exitCode = await Wstest.Default.ExecAsync("-m fuzzingclient -s " + specFile, cancellationToken, _loggerFactory.CreateLogger("wstest"));
                 if (exitCode != 0)
                 {
                     throw new Exception("wstest failed");
