@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
     public class ShutdownTests
     {
         [ConditionalFact]
-        //Disabled until https://github.com/aspnet/Hosting/issues/974 resolved.
-        [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public void ShutdownTest()
@@ -34,7 +32,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                 RuntimeArchitecture.x64)
             {
                 EnvironmentName = "Shutdown",
-                TargetFramework = "netcoreapp1.1",
+                TargetFramework = "netcoreapp2.0",
                 ApplicationType = ApplicationType.Portable,
                 PublishApplicationBeforeDeployment = true
             };
