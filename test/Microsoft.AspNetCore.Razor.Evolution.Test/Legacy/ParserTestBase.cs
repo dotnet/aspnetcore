@@ -34,26 +34,36 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         internal virtual RazorSyntaxTree ParseDocument(string document, bool designTime = false)
         {
-            using (var reader = new SeekableTextReader(document))
-            {
-                var options = RazorParserOptions.CreateDefaultOptions();
-                options.DesignTimeMode = designTime;
+            var source = TestRazorSourceDocument.Create(document);
+            var reader = new SeekableTextReader(document, filePath: null);
 
-                var parser = new RazorParser(options);
+            var context = new ParserContext(reader, designTime);
 
-                var tree = parser.Parse(TestRazorSourceDocument.Create(document));
-                var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
-                tree = defaultDirectivePass.Execute(codeDocument: null, syntaxTree: tree);
+            var codeParser = new CSharpCodeParser(context);
+            var markupParser = new HtmlMarkupParser(context);
 
-                return tree;
-            }
+            codeParser.HtmlParser = markupParser;
+            markupParser.CodeParser = codeParser;
+
+            markupParser.ParseDocument();
+
+            var root = context.Builder.Build();
+            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
+            var options = RazorParserOptions.CreateDefaultOptions();
+            options.DesignTimeMode = designTime;
+
+            var tree = RazorSyntaxTree.Create(root, source, diagnostics, options);
+            var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
+            tree = defaultDirectivePass.Execute(codeDocument: null, syntaxTree: tree);
+
+            return tree;
         }
 
         internal virtual RazorSyntaxTree ParseHtmlBlock(string document, bool designTime = false)
         {
             var source = TestRazorSourceDocument.Create(document);
 
-            using (var reader = new SeekableTextReader(document))
+            using (var reader = new SeekableTextReader(document, filePath: null))
             {
                 var context = new ParserContext(reader, designTime);
 
@@ -86,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             var source = TestRazorSourceDocument.Create(document);
 
-            using (var reader = new SeekableTextReader(document))
+            using (var reader = new SeekableTextReader(document, filePath: null))
             {
                 var context = new ParserContext(reader, designTime);
 

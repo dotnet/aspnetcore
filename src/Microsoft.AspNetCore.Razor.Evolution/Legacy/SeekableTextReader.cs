@@ -10,20 +10,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     {
         private readonly LineTrackingStringBuffer _buffer;
         private int _position = 0;
-        private SourceLocation _location = SourceLocation.Zero;
+        private SourceLocation _location;
         private char? _current;
 
-        public SeekableTextReader(string source) : this(source.ToCharArray()) { }
+        public SeekableTextReader(string source, string filePath) : this(source.ToCharArray(), filePath) { }
 
-        public SeekableTextReader(char[] source)
+        public SeekableTextReader(char[] source, string filePath)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            _buffer = new LineTrackingStringBuffer(source);
+            _buffer = new LineTrackingStringBuffer(source, filePath);
             UpdateState();
+
+            _location = new SourceLocation(filePath, 0, 0, 0);
         }
 
         public SourceLocation Location => _location;

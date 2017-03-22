@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var chars = new char[source.Length];
             source.CopyTo(0, chars, 0, source.Length);
 
-            var reader = new SeekableTextReader(chars);
+            var reader = new SeekableTextReader(chars, source.FileName);
 
             var context = new ParserContext(reader, Options.DesignTimeMode);
 

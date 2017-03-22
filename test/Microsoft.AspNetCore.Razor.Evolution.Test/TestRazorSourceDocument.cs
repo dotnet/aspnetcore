@@ -52,14 +52,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return stream;
         }
 
-        public static RazorSourceDocument Create(string content = "Hello, world!", Encoding encoding = null, bool normalizeNewLines = false)
+        public static RazorSourceDocument Create(string content = "Hello, world!", Encoding encoding = null, bool normalizeNewLines = false, string fileName = "test.cshtml")
         {
             if (normalizeNewLines)
             {
                 content = NormalizeNewLines(content);
             }
 
-            return new TestRazorSourceDocument(content, encoding ?? Encoding.UTF8, "test.cshtml");
+            return new TestRazorSourceDocument(content, encoding ?? Encoding.UTF8, fileName);
         }
 
         private static string NormalizeNewLines(string content)

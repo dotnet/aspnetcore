@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public virtual IEnumerable<TSymbol> TokenizeString(SourceLocation start, string input)
         {
-            using (var reader = new SeekableTextReader(input))
+            using (var reader = new SeekableTextReader(input, start.FilePath))
             {
                 var tok = CreateTokenizer(reader);
                 TSymbol sym;

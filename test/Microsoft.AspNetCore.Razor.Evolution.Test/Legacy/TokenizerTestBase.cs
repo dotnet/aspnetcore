@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var success = true;
             var output = new StringBuilder();
-            using (var source = new SeekableTextReader(input))
+            using (var source = new SeekableTextReader(input, filePath: null))
             {
                 var tokenizer = (Tokenizer<TSymbol, TSymbolType>)CreateTokenizer(source);
                 var counter = 0;

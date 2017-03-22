@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private IEnumerable<ISymbol> Tokenize(string content, bool markup)
         {
-            var tokenizer = MakeTokenizer(markup, new SeekableTextReader(content));
+            var tokenizer = MakeTokenizer(markup, new SeekableTextReader(content, filePath: null));
             ISymbol symbol;
             ISymbol last = null;
 

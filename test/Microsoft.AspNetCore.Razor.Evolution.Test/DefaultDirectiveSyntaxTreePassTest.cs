@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     @section Baz {
     }
 }";
-            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     @section Baz {
     }
 }";
-            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             var erroredOriginalTree = RazorSyntaxTree.Create(

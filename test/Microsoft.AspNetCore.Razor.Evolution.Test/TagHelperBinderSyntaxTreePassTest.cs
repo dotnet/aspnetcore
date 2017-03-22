@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 @addTagHelper *, TestAssembly
 <form>
     <input value='Hello' type='text' />";
-            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
 
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
@@ -1334,7 +1334,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 <form>
     <input value='Hello' type='text' />
 </form>";
-            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
             return sourceDocument;
         }
 

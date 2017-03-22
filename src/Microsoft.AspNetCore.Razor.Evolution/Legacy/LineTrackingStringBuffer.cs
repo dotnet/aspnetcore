@@ -11,20 +11,23 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     internal class LineTrackingStringBuffer
     {
         private readonly IList<TextLine> _lines;
+        private readonly string _filePath;
         private TextLine _currentLine;
         private TextLine _endLine;
 
-        public LineTrackingStringBuffer(string content)
-            : this(content.ToCharArray())
+        public LineTrackingStringBuffer(string content, string filePath)
+            : this(content.ToCharArray(), filePath)
         {
         }
 
-        public LineTrackingStringBuffer(char[] content)
+        public LineTrackingStringBuffer(char[] content, string filePath)
         {
             _endLine = new TextLine(0, 0);
             _lines = new List<TextLine>() { _endLine };
 
             Append(content);
+
+            _filePath = filePath;
         }
 
         public int Length
@@ -34,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public SourceLocation EndLocation
         {
-            get { return new SourceLocation(Length, _lines.Count - 1, _lines[_lines.Count - 1].Length); }
+            get { return new SourceLocation(_filePath, Length, _lines.Count - 1, _lines[_lines.Count - 1].Length); }
         }
 
         public CharacterReference CharAt(int absoluteIndex)
@@ -45,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 throw new ArgumentOutOfRangeException(nameof(absoluteIndex));
             }
             var idx = absoluteIndex - line.Start;
-            return new CharacterReference(line.Content[idx], new SourceLocation(absoluteIndex, line.Index, idx));
+            return new CharacterReference(line.Content[idx], new SourceLocation(_filePath, absoluteIndex, line.Index, idx));
         }
 
         private void Append(char[] content)
