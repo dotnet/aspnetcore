@@ -6,9 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,13 +22,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     {
         private const int _dataLength = 20 * 1024 * 1024;
 
+        private static readonly string[] _requestLines = new[]
+        {
+            "POST / HTTP/1.0\r\n",
+            $"Content-Length: {_dataLength}\r\n",
+            "\r\n"
+        };
+
         public static IEnumerable<object[]> LargeUploadData
         {
             get
             {
                 var maxRequestBufferSizeValues = new Tuple<long?, bool>[] {
-                    // Smallest buffer that can hold a POST request line to the root.
-                    Tuple.Create((long?)"POST / HTTP/1.1\r\n".Length, true),
+                    // Smallest buffer that can hold a test request line without causing
+                    // the server to hang waiting for the end of the request line or
+                    // a header line.
+                    Tuple.Create((long?)(_requestLines.Max(line => line.Length)), true),
 
                     // Small buffer, but large enough to hold all request headers.
                     Tuple.Create((long?)16 * 1024, true),
@@ -186,6 +193,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         options.Limits.MaxRequestLineSize = (int)maxRequestBufferSize;
                     }
+
+                    if (maxRequestBufferSize.HasValue &&
+                        maxRequestBufferSize.Value < options.Limits.MaxRequestHeadersTotalSize)
+                    {
+                        options.Limits.MaxRequestHeadersTotalSize = (int)maxRequestBufferSize;
+                    }
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Configure(app => app.Run(async context =>
@@ -246,9 +259,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             using (var writer = new StreamWriter(stream, Encoding.ASCII, bufferSize: 1024, leaveOpen: true))
             {
-                await writer.WriteAsync("POST / HTTP/1.0\r\n");
-                await writer.WriteAsync($"Content-Length: {contentLength}\r\n");
-                await writer.WriteAsync("\r\n");
+                foreach (var line in _requestLines)
+                {
+                    await writer.WriteAsync(line);
+                }
             }
         }
     }

@@ -24,25 +24,30 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void StartWithNonPositiveThreadCountThrows(int threadCount)
         {
             var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
-            var server = CreateServer(new KestrelServerOptions() { ThreadCount = threadCount }, testLogger);
 
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => StartDummyApplication(server));
+            using (var server = CreateServer(new KestrelServerOptions() { ThreadCount = threadCount }, testLogger))
+            {
+                var exception = Assert.Throws<ArgumentOutOfRangeException>(() => StartDummyApplication(server));
 
-            Assert.Equal("threadCount", exception.ParamName);
-            Assert.Equal(1, testLogger.CriticalErrorsLogged);
+                Assert.Equal("threadCount", exception.ParamName);
+                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+            }
         }
 
         [Fact]
         public void StartWithInvalidAddressThrows()
         {
             var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
-            var server = CreateServer(new KestrelServerOptions(), testLogger);
-            server.Features.Get<IServerAddressesFeature>().Addresses.Add("http:/asdf");
 
-            var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
+            using (var server = CreateServer(new KestrelServerOptions(), testLogger))
+            {
+                server.Features.Get<IServerAddressesFeature>().Addresses.Add("http:/asdf");
 
-            Assert.Contains("Invalid URL", exception.Message);
-            Assert.Equal(1, testLogger.CriticalErrorsLogged);
+                var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
+
+                Assert.Contains("Invalid URL", exception.Message);
+                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+            }
         }
 
         [Theory]
@@ -77,14 +82,37 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
             options.Limits.MaxRequestLineSize = maxRequestLineSize;
 
-            var server = CreateServer(options, testLogger);
+            using (var server = CreateServer(options, testLogger))
+            {
+                var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
 
-            var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
+                Assert.Equal(
+                    $"Maximum request buffer size ({maxRequestBufferSize}) must be greater than or equal to maximum request line size ({maxRequestLineSize}).",
+                    exception.Message);
+                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+            }
+        }
 
-            Assert.Equal(
-                $"Maximum request buffer size ({maxRequestBufferSize}) must be greater than or equal to maximum request line size ({maxRequestLineSize}).",
-                exception.Message);
-            Assert.Equal(1, testLogger.CriticalErrorsLogged);
+        [Theory]
+        [InlineData(1, 2)]
+        [InlineData(int.MaxValue - 1, int.MaxValue)]
+        public void StartWithMaxRequestBufferSizeLessThanMaxRequestHeadersTotalSizeThrows(long maxRequestBufferSize, int maxRequestHeadersTotalSize)
+        {
+            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
+            var options = new KestrelServerOptions();
+            options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
+            options.Limits.MaxRequestLineSize = (int)maxRequestBufferSize;
+            options.Limits.MaxRequestHeadersTotalSize = maxRequestHeadersTotalSize;
+
+            using (var server = CreateServer(options, testLogger))
+            {
+                var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
+
+                Assert.Equal(
+                    $"Maximum request buffer size ({maxRequestBufferSize}) must be greater than or equal to maximum request headers size ({maxRequestHeadersTotalSize}).",
+                    exception.Message);
+                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+            }
         }
 
         [Fact]

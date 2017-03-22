@@ -247,6 +247,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 throw new InvalidOperationException(
                     $"Maximum request buffer size ({Options.Limits.MaxRequestBufferSize.Value}) must be greater than or equal to maximum request line size ({Options.Limits.MaxRequestLineSize}).");
             }
+
+            if (Options.Limits.MaxRequestBufferSize.HasValue &&
+                Options.Limits.MaxRequestBufferSize < Options.Limits.MaxRequestHeadersTotalSize)
+            {
+                throw new InvalidOperationException(
+                    $"Maximum request buffer size ({Options.Limits.MaxRequestBufferSize.Value}) must be greater than or equal to maximum request headers size ({Options.Limits.MaxRequestHeadersTotalSize}).");
+            }
         }
 
         private void StartLocalhost(KestrelEngine engine, ServerAddress parsedAddress)
