@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
     <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(OwinVersion)" />
     <PackageReference Include="Microsoft.Owin.Testing" Version="$(OwinVersion)" />
+    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
   </ItemGroup>
