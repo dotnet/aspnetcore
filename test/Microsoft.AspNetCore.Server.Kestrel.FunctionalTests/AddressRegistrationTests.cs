@@ -562,6 +562,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                     else
                     {
+                        socketArgs.ConnectSocket?.Dispose();
                         return socketArgs.SocketError == SocketError.Success;
                     }
                 }
