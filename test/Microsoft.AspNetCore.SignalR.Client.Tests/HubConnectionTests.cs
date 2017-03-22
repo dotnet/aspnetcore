@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using Xunit;
+using System.IO;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -92,24 +93,43 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public async Task InvokeThrowsIfHubConnectionNotStarted()
         {
-            var hubConnection = new HubConnection(new Uri("http://fakeuri.org"), Mock.Of<IInvocationAdapter>(), Mock.Of<ILoggerFactory>());
+            var hubConnection = new HubConnection(new Uri("http://fakeuri.org"));
             var exception =
                 await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.Invoke<int>("test"));
-            Assert.Equal("Cannot invoke methods on non-started connections.", exception.Message);
+            Assert.Equal("Cannot send messages when the connection is not in the Connected state.", exception.Message);
         }
 
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public async Task InvokeThrowsIfHubConnectionDisposed()
         {
-            var hubConnection = new HubConnection(new Uri("http://fakeuri.org"), Mock.Of<IInvocationAdapter>(), Mock.Of<ILoggerFactory>());
+            var hubConnection = new HubConnection(new Uri("http://fakeuri.org"));
             await hubConnection.DisposeAsync();
 
             var exception =
                 await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.Invoke<int>("test"));
-                Assert.Equal("Cannot invoke methods on disposed connections.", exception.Message);
+                Assert.Equal("Cannot send messages when the connection is not in the Connected state.", exception.Message);
+        }
+
+        [Fact]
+        public async Task InvokeThrowsIfSerializingMessageFails()
+        {
+            var mockConnection = new Mock<IConnection>();
+
+            var exception = new InvalidOperationException();
+            var mockInvocationAdapter = new Mock<IInvocationAdapter>();
+            mockInvocationAdapter
+                .Setup(a => a.WriteMessageAsync(It.IsAny<InvocationMessage>(), It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromException(exception));
+
+            var hubConnection = new HubConnection(mockConnection.Object, mockInvocationAdapter.Object, null);
+            await hubConnection.StartAsync(Mock.Of<ITransport>());
+
+            var actualException =
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.Invoke<int>("test"));
+            Assert.Same(exception, actualException);
         }
 
         [Fact]

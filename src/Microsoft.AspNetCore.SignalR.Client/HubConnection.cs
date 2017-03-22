@@ -102,8 +102,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public Task<object> Invoke(string methodName, Type returnType, params object[] args) => Invoke(methodName, returnType, CancellationToken.None, args);
         public async Task<object> Invoke(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
-            // TODO: we should reject calls to here after the connection is "done" or has not been started (e.g. sending an invocation failed)
-
             _logger.LogTrace("Preparing invocation of '{0}', with return type '{1}' and {2} args", methodName, returnType.AssemblyQualifiedName, args.Length);
 
             // Create an invocation descriptor.
@@ -134,15 +132,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _logger.LogTrace("Invocation #{0}: {1} {2}({3})", descriptor.Id, returnType.FullName, methodName, argsList);
             }
 
-            var ms = new MemoryStream();
-            await _adapter.WriteMessageAsync(descriptor, ms, cancellationToken);
+            try
+            {
+                var ms = new MemoryStream();
+                await _adapter.WriteMessageAsync(descriptor, ms, cancellationToken);
 
-            _logger.LogInformation("Sending Invocation #{0}", descriptor.Id);
+                _logger.LogInformation("Sending Invocation #{0}", descriptor.Id);
 
-            // TODO: Format.Text - who, where and when decides about the format of outgoing messages
-            // TODO HIGH: Handle return value/Exception from SendAsync
-            await _connection.SendAsync(ms.ToArray(), MessageType.Text, cancellationToken);
-            _logger.LogInformation("Sending Invocation #{0} complete", descriptor.Id);
+                // TODO: Format.Text - who, where and when decides about the format of outgoing messages
+                await _connection.SendAsync(ms.ToArray(), MessageType.Text, cancellationToken);
+                _logger.LogInformation("Sending Invocation #{0} complete", descriptor.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(0, ex, "Sending Invocation #{0} failed", descriptor.Id);
+                irq.Completion.TrySetException(ex);
+                lock (_pendingCallsLock)
+                {
+                    _pendingCalls.Remove(descriptor.Id);
+                }
+            }
 
             // Return the completion task. It will be completed by ReceiveMessages when the response is received.
             return await irq.Completion.Task;
@@ -294,7 +303,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public InvocationRequest(CancellationToken cancellationToken, Type resultType)
             {
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 Completion = tcs;
                 CancellationToken = cancellationToken;
                 Registration = cancellationToken.Register(() => tcs.TrySetCanceled());
