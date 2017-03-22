@@ -9,7 +9,7 @@ module.exports = (env) => {
     return [{
         stats: { modules: false },
         entry: { 'main': './ClientApp/boot.tsx' },
-        resolve: { extensions: [ '.js', '.jsx', '.ts', '.tsx' ] },
+        resolve: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
         output: {
             path: path.join(__dirname, bundleOutputDir),
             filename: '[name].js',
@@ -17,7 +17,7 @@ module.exports = (env) => {
         },
         module: {
             rules: [
-                { test: /\.ts(x?)$/, include: /ClientApp/, use: 'babel-loader' },
+                { test: /\.ts(x?)$/, include: /ClientApp/, use: { loader: 'babel-loader', options: { cacheDirectory: true } } },
                 { test: /\.tsx?$/, include: /ClientApp/, use: 'awesome-typescript-loader?silent=true' },
                 { test: /\.css$/, use: isDevBuild ? ['style-loader', 'css-loader'] : ExtractTextPlugin.extract({ use: 'css-loader' }) },
                 { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' }
