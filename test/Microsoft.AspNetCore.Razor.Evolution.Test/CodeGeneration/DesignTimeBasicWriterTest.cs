@@ -124,11 +124,12 @@ __o = i++;
         {
             // Arrange
             var writer = new DesignTimeBasicWriter();
+            var sourceDocument = TestRazorSourceDocument.Create("       @i++");
 
             var context = new CSharpRenderingContext()
             {
                 Options = RazorParserOptions.CreateDefaultOptions(),
-                SourceDocument = TestRazorSourceDocument.Create("       @i++"),
+                CodeDocument = RazorCodeDocument.Create(sourceDocument),
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 

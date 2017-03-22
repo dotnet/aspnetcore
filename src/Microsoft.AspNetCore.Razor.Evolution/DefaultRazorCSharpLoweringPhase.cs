@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var renderingContext = new CSharpRenderingContext()
             {
                 Writer = codeWriter,
-                SourceDocument = codeDocument.Source,
+                CodeDocument = codeDocument,
                 Options = irDocument.Options,
             };
 

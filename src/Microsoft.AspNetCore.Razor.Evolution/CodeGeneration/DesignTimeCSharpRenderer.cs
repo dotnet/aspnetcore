@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                         var token = node.Children[i] as RazorIRToken;
                         if (token != null && token.IsCSharp)
                         {
-                            AddLineMappingFor(token);
+                            Context.AddLineMappingFor(token);
                             Context.Writer.Write(token.Content);
                         }
                         else
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                     var padding = BuildOffsetPadding(0, node.Source.Value, Context);
                     Context.Writer.Write(padding);
 
-                    AddLineMappingFor(node);
+                    Context.AddLineMappingFor(node);
                     Context.Writer.Write(node.Content);
                 }
             }
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 {
                     case DirectiveTokenKind.Type:
 
-                        AddLineMappingFor(node);
+                        Context.AddLineMappingFor(node);
                         Context.Writer
                             .Write(node.Content)
                             .Write(" ")
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                             .Write(typeof(object).FullName)
                             .Write(" ");
 
-                        AddLineMappingFor(node);
+                        Context.AddLineMappingFor(node);
                         Context.Writer
                             .Write(node.Content)
                             .WriteLine(" = null;");
@@ -142,13 +142,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
                         if (node.Content.StartsWith("\"", StringComparison.Ordinal))
                         {
-                            AddLineMappingFor(node);
+                            Context.AddLineMappingFor(node);
                             Context.Writer.Write(node.Content);
                         }
                         else
                         {
                             Context.Writer.Write("\"");
-                            AddLineMappingFor(node);
+                            Context.AddLineMappingFor(node);
                             Context.Writer
                                 .Write(node.Content)
                                 .Write("\"");
@@ -287,21 +287,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             }
         }
 
-        private void AddLineMappingFor(RazorIRNode node)
-        {
-            if (node.Source == null)
-            {
-                return;
-            }
-
-            var source = node.Source.Value;
-            
-            var generatedLocation = new SourceSpan(Context.Writer.GetCurrentSourceLocation(), source.Length);
-            var lineMapping = new LineMapping(source, generatedLocation);
-
-            Context.LineMappings.Add(lineMapping);
-        }
-
         private void RenderTagHelperAttributeInline(
             RazorIRNode node,
             SourceSpan documentLocation)
@@ -317,7 +302,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             {
                 if (node.Source != null)
                 {
-                    AddLineMappingFor(node);
+                    Context.AddLineMappingFor(node);
                 }
 
                 Context.Writer.Write(((HtmlContentIRNode)node).Content);
@@ -326,7 +311,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             {
                 if (node.Source != null)
                 {
-                    AddLineMappingFor(node);
+                    Context.AddLineMappingFor(node);
                 }
 
                 Context.Writer.Write(token.Content);

@@ -18,10 +18,14 @@ using System.Text;
 
 #line default
 #line hidden
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_DesignTime
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_DesignTime : Hello
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
+        ((System.Action)(() => {
+Hello __typeHelper = null;
+        }
+        ))();
         }
         #pragma warning restore 219
         private static System.Object __o = null;

@@ -19,7 +19,7 @@ using System.Text;
 
 #line default
 #line hidden
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_Runtime
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_Runtime : Hello
     {
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()

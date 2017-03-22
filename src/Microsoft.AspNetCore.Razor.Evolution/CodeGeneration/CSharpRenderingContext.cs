@@ -39,7 +39,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         internal IList<RazorDiagnostic> Diagnostics { get; } = new List<RazorDiagnostic>();
 
-        internal RazorSourceDocument SourceDocument { get; set; }
+        internal RazorCodeDocument CodeDocument { get; set; }
+
+        internal RazorSourceDocument SourceDocument => CodeDocument?.Source;
 
         internal RazorParserOptions Options { get; set; }
 
@@ -58,6 +60,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             if (node.Source == null)
             {
                 return;
+            }
+
+            var imports = CodeDocument.GetImportSyntaxTrees();
+            if (imports != null)
+            {
+                for (var i = 0; i < imports.Count; i++)
+                {
+                    if (string.Equals(imports[i].Source.FileName, node.Source.Value.FilePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // We don't want to generate line mappings for imports.
+                        return;
+                    }
+                }
             }
 
             var source = node.Source.Value;
