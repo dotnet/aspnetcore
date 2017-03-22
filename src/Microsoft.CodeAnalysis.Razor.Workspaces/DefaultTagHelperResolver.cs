@@ -1,11 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -41,7 +39,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             foreach (var type in types)
             {
-                if (assemblyNameFilters.Contains(type.ContainingAssembly.Identity.Name))
+                if (assemblyNameFilters == null || assemblyNameFilters.Contains(type.ContainingAssembly.Identity.Name))
                 {
                     var descriptor = factory.CreateDescriptor(type);
 
