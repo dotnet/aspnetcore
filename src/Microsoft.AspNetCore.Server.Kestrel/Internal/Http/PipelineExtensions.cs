@@ -94,7 +94,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         // Temporary until the fast write implementation propagates from corefx
-        public unsafe static void WriteFast(this WritableBuffer buffer, ReadOnlySpan<byte> source)
+        public unsafe static void WriteFast(this WritableBuffer buffer, byte[] source)
+        {
+            buffer.WriteFast(source, 0, source.Length);
+        }
+
+        public unsafe static void WriteFast(this WritableBuffer buffer, ArraySegment<byte> source)
+        {
+            buffer.WriteFast(source.Array, source.Offset, source.Count);
+        }
+
+        public unsafe static void WriteFast(this WritableBuffer buffer, byte[] source, int offset, int length)
         {
             var dest = buffer.Buffer.Span;
             var destLength = dest.Length;
@@ -108,74 +118,79 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 destLength = dest.Length;
             }
 
-            var sourceLength = source.Length;
+            var sourceLength = length;
             if (sourceLength <= destLength)
             {
-                ref byte pSource = ref source.DangerousGetPinnableReference();
+                ref byte pSource = ref source[offset];
                 ref byte pDest = ref dest.DangerousGetPinnableReference();
                 Unsafe.CopyBlockUnaligned(ref pDest, ref pSource, (uint)sourceLength);
                 buffer.Advance(sourceLength);
                 return;
             }
 
-            buffer.WriteMultiBuffer(source);
+            buffer.WriteMultiBuffer(source, offset, length);
         }
 
-        private static unsafe void WriteMultiBuffer(this WritableBuffer buffer, ReadOnlySpan<byte> source)
+        private static unsafe void WriteMultiBuffer(this WritableBuffer buffer, byte[] source, int offset, int length)
         {
-            var remaining = source.Length;
-            var offset = 0;
+            var remaining = length;
 
-            fixed (byte* pSource = &source.DangerousGetPinnableReference())
+            while (remaining > 0)
             {
-                while (remaining > 0)
+                var writable = Math.Min(remaining, buffer.Buffer.Length);
+
+                buffer.Ensure(writable);
+
+                if (writable == 0)
                 {
-                    var writable = Math.Min(remaining, buffer.Buffer.Length);
-
-                    buffer.Ensure(writable);
-
-                    if (writable == 0)
-                    {
-                        continue;
-                    }
-
-                    fixed (byte* pDest = &buffer.Buffer.Span.DangerousGetPinnableReference())
-                    {
-                        Unsafe.CopyBlockUnaligned(pDest, pSource + offset, (uint)writable);
-                    }
-
-                    remaining -= writable;
-                    offset += writable;
-
-                    buffer.Advance(writable);
+                    continue;
                 }
+
+                ref byte pSource = ref source[offset];
+                ref byte pDest = ref buffer.Buffer.Span.DangerousGetPinnableReference();
+
+                Unsafe.CopyBlockUnaligned(ref pDest, ref pSource, (uint)writable);
+
+                remaining -= writable;
+                offset += writable;
+
+                buffer.Advance(writable);
             }
         }
 
         public unsafe static void WriteAscii(this WritableBuffer buffer, string data)
         {
-            if (!string.IsNullOrEmpty(data))
+            if (string.IsNullOrEmpty(data))
             {
-                if (buffer.Buffer.IsEmpty)
+                return;
+            }
+
+            var dest = buffer.Buffer.Span;
+            var destLength = dest.Length;
+            var sourceLength = data.Length;
+
+            if (destLength == 0)
+            {
+                buffer.Ensure();
+
+                dest = buffer.Buffer.Span;
+                destLength = dest.Length;
+            }
+
+            // Fast path, try copying to the available memory directly
+            if (sourceLength <= destLength)
+            {
+                fixed (char* input = data)
+                fixed (byte* output = &dest.DangerousGetPinnableReference())
                 {
-                    buffer.Ensure();
+                    EncodeAsciiCharsToBytes(input, output, sourceLength);
                 }
 
-                // Fast path, try copying to the available memory directly
-                if (data.Length <= buffer.Buffer.Length)
-                {
-                    fixed (char* input = data)
-                    fixed (byte* output = &buffer.Buffer.Span.DangerousGetPinnableReference())
-                    {
-                        EncodeAsciiCharsToBytes(input, output, data.Length);
-                    }
-
-                    buffer.Advance(data.Length);
-                }
-                else
-                {
-                    buffer.WriteAsciiMultiWrite(data);
-                }
+                buffer.Advance(sourceLength);
+            }
+            else
+            {
+                buffer.WriteAsciiMultiWrite(data);
             }
         }
 
@@ -184,15 +199,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             const byte AsciiDigitStart = (byte)'0';
 
-            if (buffer.Buffer.IsEmpty)
+            var span = buffer.Buffer.Span;
+            var bytesLeftInBlock = span.Length;
+
+            if (bytesLeftInBlock == 0)
             {
                 buffer.Ensure();
+
+                span = buffer.Buffer.Span;
+                bytesLeftInBlock = span.Length;
             }
 
             // Fast path, try copying to the available memory directly
-            var bytesLeftInBlock = buffer.Buffer.Length;
             var simpleWrite = true;
-            fixed (byte* output = &buffer.Buffer.Span.DangerousGetPinnableReference())
+            fixed (byte* output = &span.DangerousGetPinnableReference())
             {
                 var start = output;
                 if (number < 10 && bytesLeftInBlock >= 1)
@@ -250,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             while (value != 0);
 
             var length = _maxULongByteLength - position;
-            buffer.WriteFast(new ReadOnlySpan<byte>(byteBuffer, position, length));
+            buffer.WriteFast(new ArraySegment<byte>(byteBuffer, position, length));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

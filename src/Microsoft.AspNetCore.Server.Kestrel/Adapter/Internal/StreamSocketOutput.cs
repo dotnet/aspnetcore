@@ -118,8 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
                         {
                             await _outputStream.FlushAsync();
                         }
-
-                        if (buffer.IsSingleSpan)
+                        else if (buffer.IsSingleSpan)
                         {
                             var array = buffer.First.GetArray();
                             await _outputStream.WriteAsync(array.Array, array.Offset, array.Count);
@@ -135,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
                     }
                     finally
                     {
-                        _pipe.Reader.Advance(readResult.Buffer.End);
+                        _pipe.Reader.Advance(buffer.End);
                     }
                 }
             }

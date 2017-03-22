@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             var value = _headers._{header.Identifier}[i];
                             if (value != null)
                             {{
-                                output.WriteFast(new Span<byte>(_headerBytes, {header.BytesOffset}, {header.BytesCount}));
+                                output.WriteFast(_headerBytes, {header.BytesOffset}, {header.BytesCount});
                                 output.WriteAscii(value);
                             }}
                         }}
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }}{(header.Identifier == "Server" ? $@"
                 if ((tempBits & {1L << 63}L) != 0)
                 {{
-                    output.WriteFast(new Span<byte>(_headerBytes, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesOffset}, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesCount}));
+                    output.WriteFast(_headerBytes, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesOffset}, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesCount});
                     output.WriteNumeric((ulong)ContentLength.Value);
 
                     if((tempBits & ~{1L << 63}L) == 0)
