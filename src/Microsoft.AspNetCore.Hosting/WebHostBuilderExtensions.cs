@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -91,6 +92,29 @@ namespace Microsoft.AspNetCore.Hosting
                 configure(options);
                 services.Replace(ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(new DefaultServiceProviderFactory(options)));
             });
+        }
+
+        /// <summary>
+        /// Configures and use a <see cref="LoggerFactory"/> for the web host.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="configure">A callback used to configure the <see cref="LoggerFactory"/> that will be added as a singleton and used by the application.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseLoggerFactory(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, LoggerFactory> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            hostBuilder.UseLoggerFactory(context =>
+            {
+                var loggerFactory = new LoggerFactory();
+                configure(context, loggerFactory);
+                return loggerFactory;
+            });
+
+            return hostBuilder;
         }
     }
 }

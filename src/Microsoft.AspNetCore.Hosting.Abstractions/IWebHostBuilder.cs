@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -39,6 +40,13 @@ namespace Microsoft.AspNetCore.Hosting
         IWebHostBuilder ConfigureLogging(Action<ILoggerFactory> configureLogging);
 
         /// <summary>
+        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
+        /// </summary>
+        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        IWebHostBuilder ConfigureLogging<T>(Action<T> configureLogging) where T : ILoggerFactory;
+
+        /// <summary>
         /// Add or replace a setting in the configuration.
         /// </summary>
         /// <param name="key">The key of the setting to add or replace.</param>
@@ -52,5 +60,21 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="key">The key of the setting to look up.</param>
         /// <returns>The value the setting currently contains.</returns>
         string GetSetting(string key);
+
+        /// <summary>
+        /// Adds a delegate to construct the <see cref="ILoggerFactory"/> that will be registered
+        /// as a singleton and used by the application.
+        /// </summary>
+        /// <param name="createLoggerFactory">The delegate that constructs an <see cref="IConfigurationBuilder" /></param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        IWebHostBuilder UseLoggerFactory(Func<WebHostBuilderContext, ILoggerFactory> createLoggerFactory);
+
+
+        /// <summary>
+        /// Adds a delegate for configuring the <see cref="IConfigurationBuilder"/> that will construct an <see cref="IConfiguration"/>.
+        /// </summary>
+        /// <param name="configureDelegate">The delegate for configuring the <see cref="IConfigurationBuilder" /> that will be used to construct an <see cref="IConfiguration" />.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        IWebHostBuilder ConfigureConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate);
     }
 }

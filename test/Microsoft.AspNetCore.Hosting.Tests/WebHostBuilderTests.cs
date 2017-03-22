@@ -220,6 +220,140 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void UseLoggerFactoryDelegateIsHonored()
+        {
+            var loggerFactory = new LoggerFactory();
+
+            var hostBuilder = new WebHostBuilder()
+                .UseLoggerFactory(_ => loggerFactory)
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+
+            Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
+        }
+
+        [Fact]
+        public void UseLoggerFactoryFuncAndConfigureLoggingCompose()
+        {
+            var callCount = 0; //Verify that multiple configureLogging calls still compose correctly.
+            var loggerFactory = new LoggerFactory();
+            var hostBuilder = new WebHostBuilder()
+                .UseLoggerFactory(_ => loggerFactory)
+                .ConfigureLogging(factory =>
+                {
+                    Assert.Equal(0, callCount++);
+                })
+                .ConfigureLogging(factory =>
+                {
+                    Assert.Equal(1, callCount++);
+                })
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+            var host = (WebHost)hostBuilder.Build();
+            Assert.Equal(2, callCount);
+            Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
+        }
+
+        [Fact]
+        public void ConfigureLoggingCalledIfLoggerFactoryTypeMatches()
+        {
+            var callCount = 0;
+            var hostBuilder = new WebHostBuilder()
+                .UseLoggerFactory(_ => new SubLoggerFactory())
+                .ConfigureLogging<CustomLoggerFactory>(factory =>
+                {
+                    Assert.Equal(0, callCount++);
+                })
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+            Assert.Equal(1, callCount);
+        }
+
+        [Fact]
+        public void ConfigureLoggingNotCalledIfLoggerFactoryTypeDoesNotMatches()
+        {
+            var callCount = 0;
+            var hostBuilder = new WebHostBuilder()
+                .UseLoggerFactory(_ => new NonSubLoggerFactory())
+                .ConfigureLogging<CustomLoggerFactory>(factory =>
+                {
+                    Assert.Equal(0, callCount++);
+                })
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+            Assert.Equal(0, callCount);
+        }
+
+        [Fact]
+        public void CanUseCustomLoggerFactory()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .ConfigureCustomLogger(factory =>
+                {
+                    factory.CustomConfigureMethod();
+                })
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+            var host = (WebHost)hostBuilder.Build();
+            Assert.IsType(typeof(CustomLoggerFactory), host.Services.GetService<ILoggerFactory>());
+        }
+
+        [Fact]
+        public void ThereIsAlwaysConfiguration()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+            var host = (WebHost)hostBuilder.Build();
+
+            Assert.NotNull(host.Services.GetService<IConfiguration>());
+        }
+
+        [Fact]
+        public void ConfigureConfigurationSettingsPropagated()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseSetting("key1", "value1")
+                .ConfigureConfiguration((context, configBuilder) =>
+                {
+                    var config = configBuilder.Build();
+                    Assert.Equal("value1", config["key1"]);
+                })
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+            var host = (WebHost)hostBuilder.Build();
+        }
+
+        [Fact]
+        public void CanConfigureConfigurationAndRetrieveFromDI()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .ConfigureConfiguration((_, configBuilder) =>
+                {
+                    configBuilder
+                        .AddInMemoryCollection(
+                            new KeyValuePair<string, string>[]
+                            {
+                                new KeyValuePair<string, string>("key1", "value1")
+                            })
+                        .AddEnvironmentVariables();
+                })
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+            var host = (WebHost)hostBuilder.Build();
+
+            var config = host.Services.GetService<IConfiguration>();
+            Assert.NotNull(config);
+            Assert.Equal("value1", config["key1"]);
+        }
+
+        [Fact]
         public void DoNotCaptureStartupErrorsByDefault()
         {
             var hostBuilder = new WebHostBuilder()

@@ -1,0 +1,20 @@
+[
+  {
+    "OldTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "NewTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "NewMemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureLogging<T0>(System.Action<T0> configureLogging) where T0 : Microsoft.Extensions.Logging.ILoggerFactory",
+    "Kind": "Addition"
+  },
+  {
+    "OldTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "NewTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "NewMemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder UseLoggerFactory(System.Func<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Logging.ILoggerFactory> createLoggerFactory)",
+    "Kind": "Addition"
+  },
+  {
+    "OldTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "NewTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "NewMemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Configuration.IConfigurationBuilder> configureDelegate)",
+    "Kind": "Addition"
+  }
+]
