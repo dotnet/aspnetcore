@@ -11,30 +11,43 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public class RazorProjectTest
     {
+        [Fact]
+        public void NormalizeAndEnsureValidPath_DoesNotModifyPath()
+        {
+            // Arrange
+            var project = new TestRazorProject(new Dictionary<string, RazorProjectItem>());
+
+            // Act
+            var path = project.NormalizeAndEnsureValidPath("/Views/Home/Index.cshtml");
+
+            // Assert
+            Assert.Equal("/Views/Home/Index.cshtml", path);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void EnsureValidPath_ThrowsIfPathIsNullOrEmpty(string path)
+        public void NormalizeAndEnsureValidPath_ThrowsIfPathIsNullOrEmpty(string path)
         {
             // Arrange
             var project = new TestRazorProject(new Dictionary<string, RazorProjectItem>());
 
             // Act and Assert
-            ExceptionAssert.ThrowsArgumentNullOrEmptyString(() => project.EnsureValidPath(path), "path");
+            ExceptionAssert.ThrowsArgumentNullOrEmptyString(() => project.NormalizeAndEnsureValidPath(path), "path");
         }
 
         [Theory]
         [InlineData("foo")]
         [InlineData("~/foo")]
         [InlineData("\\foo")]
-        public void EnsureValidPath_ThrowsIfPathDoesNotStartWithForwardSlash(string path)
+        public void NormalizeAndEnsureValidPath_ThrowsIfPathDoesNotStartWithForwardSlash(string path)
         {
             // Arrange
             var project = new TestRazorProject(new Dictionary<string, RazorProjectItem>());
 
             // Act and Assert
             ExceptionAssert.ThrowsArgument(
-                () => project.EnsureValidPath(path),
+                () => project.NormalizeAndEnsureValidPath(path),
                 "path",
                 "Path must begin with a forward slash '/'.");
         }
@@ -338,7 +351,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 return item;
             }
 
-            public new void EnsureValidPath(string path) => base.EnsureValidPath(path);
+            public new string NormalizeAndEnsureValidPath(string path) => base.NormalizeAndEnsureValidPath(path);
         }
     }
 }

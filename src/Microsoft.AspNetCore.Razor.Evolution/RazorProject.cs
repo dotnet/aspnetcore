@@ -59,8 +59,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// </remarks>
         public virtual IEnumerable<RazorProjectItem> FindHierarchicalItems(string basePath, string path, string fileName)
         {
-            EnsureValidPath(basePath);
-            EnsureValidPath(path);
+            basePath = NormalizeAndEnsureValidPath(basePath);
+            path = NormalizeAndEnsureValidPath(path);
             if (string.IsNullOrEmpty(fileName))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(fileName));
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// Performs validation for paths passed to methods of <see cref="RazorProject"/>.
         /// </summary>
         /// <param name="path">The path to validate.</param>
-        protected virtual void EnsureValidPath(string path)
+        protected virtual string NormalizeAndEnsureValidPath(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -120,6 +120,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 throw new ArgumentException(Resources.RazorProject_PathMustStartWithForwardSlash, nameof(path));
             }
+
+            return path;
         }
     }
 }

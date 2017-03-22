@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
@@ -11,6 +12,57 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     {
         private static string TestFolder { get; } =
             Path.Combine(TestProject.GetProjectDirectory(), "TestFiles", "FileSystemRazorProject");
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void NormalizeAndEnsureValidPath_ThrowsIfPathIsNullOrEmpty(string path)
+        {
+            // Arrange
+            var project = new TestFileSystemRazorProject("C:/some/test/path/root");
+
+            // Act and Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmptyString(() => project.NormalizeAndEnsureValidPath(path), "path");
+        }
+
+        [Fact]
+        public void NormalizeAndEnsureValidPath_NormalizesToAbsolutePath()
+        {
+            // Arrange
+            var project = new TestFileSystemRazorProject("C:/some/test/path/root");
+
+            // Act
+            var absolutePath = project.NormalizeAndEnsureValidPath("file.cshtml");
+
+            // Assert
+            Assert.Equal("C:/some/test/path/root/file.cshtml", absolutePath);
+        }
+
+        [Fact]
+        public void NormalizeAndEnsureValidPath_NormalizesToAbsolutePathWithoutForwardSlash()
+        {
+            // Arrange
+            var project = new TestFileSystemRazorProject("C:/some/test/path/root");
+
+            // Act
+            var absolutePath = project.NormalizeAndEnsureValidPath("/file.cshtml");
+
+            // Assert
+            Assert.Equal("C:/some/test/path/root/file.cshtml", absolutePath);
+        }
+
+        [Fact]
+        public void NormalizeAndEnsureValidPath_NormalizesToForwardSlashes()
+        {
+            // Arrange
+            var project = new TestFileSystemRazorProject(@"C:\some\test\path\root");
+
+            // Act
+            var absolutePath = project.NormalizeAndEnsureValidPath(@"something\file.cshtml");
+
+            // Assert
+            Assert.Equal("C:/some/test/path/root/something/file.cshtml", absolutePath);
+        }
 
         [Fact]
         public void EnumerateItems_DiscoversAllCshtmlFiles()
@@ -103,6 +155,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Assert
             Assert.False(file.Exists);
+        }
+
+        private class TestFileSystemRazorProject : FileSystemRazorProject
+        {
+            public TestFileSystemRazorProject(string root) : base(root)
+            {
+            }
+
+            public new string NormalizeAndEnsureValidPath(string path) => base.NormalizeAndEnsureValidPath(path);
         }
     }
 }

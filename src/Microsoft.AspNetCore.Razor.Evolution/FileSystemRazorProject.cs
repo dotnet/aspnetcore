@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(root));
             }
 
-            Root = root.TrimEnd('/', '\\');
+            Root = root.Replace('\\', '/').TrimEnd('/');
         }
 
         /// <summary>
@@ -36,10 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// <inheritdoc />
         public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
         {
-            EnsureValidPath(basePath);
-
-            Debug.Assert(basePath.StartsWith("/"));
-            var absoluteBasePath = Path.Combine(Root, basePath.Substring(1));
+            var absoluteBasePath = NormalizeAndEnsureValidPath(basePath);
 
             var directory = new DirectoryInfo(absoluteBasePath);
             if (!directory.Exists)
@@ -53,17 +49,38 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     var relativePath = file.FullName.Substring(absoluteBasePath.Length).Replace(Path.DirectorySeparatorChar, '/');
                     return new FileSystemRazorProjectItem(basePath, relativePath, file);
-                 });
+                });
         }
 
         /// <inheritdoc />
         public override RazorProjectItem GetItem(string path)
         {
-            EnsureValidPath(path);
+            var absolutePath = NormalizeAndEnsureValidPath(path);
 
-            Debug.Assert(path.StartsWith("/"));
-            var absolutePath = Path.Combine(Root, path.Substring(1));
             return new FileSystemRazorProjectItem("/", path, new FileInfo(absolutePath));
+        }
+
+        protected override string NormalizeAndEnsureValidPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(path));
+            }
+
+            var absolutePath = path;
+            if (!absolutePath.StartsWith(Root, StringComparison.OrdinalIgnoreCase))
+            {
+                if (path[0] == '/' || path[0] == '\\')
+                {
+                    path = path.Substring(1);
+                }
+
+                absolutePath = Path.Combine(Root, path);
+            }
+
+            absolutePath = absolutePath.Replace('\\', '/');
+
+            return absolutePath;
         }
     }
 }
