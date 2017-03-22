@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             "microsoft.aspnetcore.mvc.formatters.xml",
             "microsoft.aspnetcore.mvc.localization",
             "microsoft.aspnetcore.mvc.razor",
-            "microsoft.aspnetcore.mvc.razor.host",
+            "microsoft.aspnetcore.mvc.razor.extensions",
             "microsoft.aspnetcore.mvc.razorpages",
             "microsoft.aspnetcore.mvc.taghelpers",
             "microsoft.aspnetcore.mvc.viewfeatures"

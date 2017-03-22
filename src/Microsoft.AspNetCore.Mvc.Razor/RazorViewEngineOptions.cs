@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -31,8 +32,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// locate Razor files.
         /// </summary>
         /// <remarks>
-        /// At startup, this is initialized to include an instance of <see cref="PhysicalFileProvider"/> that is
-        /// rooted at the application root.
+        /// At startup, this is initialized to include an instance of
+        /// <see cref="IHostingEnvironment.ContentRootFileProvider"/> that is rooted at the application root.
         /// </remarks>
         public IList<IFileProvider> FileProviders { get; } = new List<IFileProvider>();
 

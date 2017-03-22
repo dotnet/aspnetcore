@@ -4,6 +4,7 @@
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Moq;
 using Xunit;
