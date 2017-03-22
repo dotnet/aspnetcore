@@ -5,7 +5,7 @@ AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/lk5hyg6gki03h
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/WebSockets.svg?branch=dev)](https://travis-ci.org/aspnet/WebSockets)
 
-Contains a managed implementation of the WebSocket protocol, along with client and server integration components.
+Contains a managed implementation of the WebSocket protocol, along with server integration components.
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
 
