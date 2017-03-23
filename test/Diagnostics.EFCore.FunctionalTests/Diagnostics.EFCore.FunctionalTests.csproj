@@ -7,7 +7,7 @@
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <!-- Mitigation for long path issues in the app.config -->
+    <!-- Mitigation for long path issues -->
     <AssemblyName>Diagnostics.EFCore.FunctionalTests</AssemblyName>
   </PropertyGroup>
 

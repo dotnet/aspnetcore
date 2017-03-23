@@ -1,48 +1,48 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26127.0
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{509A6F36-AD80-4A18-B5B1-717D38DFF29D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{ACAA0157-A8C4-4152-93DE-90CCDF304087}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WelcomePageSample", "samples\WelcomePageSample\WelcomePageSample.csproj", "{C5F59CBA-DF2D-4983-8CBB-11B6AF21B416}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WelcomePageSample", "samples\WelcomePageSample\WelcomePageSample.csproj", "{C5F59CBA-DF2D-4983-8CBB-11B6AF21B416}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics", "src\Microsoft.AspNetCore.Diagnostics\Microsoft.AspNetCore.Diagnostics.csproj", "{68A1F0E1-ECCE-46D1-B20F-C43EE5B097DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics", "src\Microsoft.AspNetCore.Diagnostics\Microsoft.AspNetCore.Diagnostics.csproj", "{68A1F0E1-ECCE-46D1-B20F-C43EE5B097DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeveloperExceptionPageSample", "samples\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj", "{589AC17F-9455-4764-8F82-FCD2AE58DA14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeveloperExceptionPageSample", "samples\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj", "{589AC17F-9455-4764-8F82-FCD2AE58DA14}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2AF90579-B118-4583-AE88-672EFACB5BC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Tests", "test\Microsoft.AspNetCore.Diagnostics.Tests\Microsoft.AspNetCore.Diagnostics.Tests.csproj", "{994351B4-7B2A-4139-8B72-72C5BB5CC618}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Tests", "test\Microsoft.AspNetCore.Diagnostics.Tests\Microsoft.AspNetCore.Diagnostics.Tests.csproj", "{994351B4-7B2A-4139-8B72-72C5BB5CC618}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExceptionHandlerSample", "samples\ExceptionHandlerSample\ExceptionHandlerSample.csproj", "{427CDB36-78B0-4583-9EBC-7F283DE60355}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExceptionHandlerSample", "samples\ExceptionHandlerSample\ExceptionHandlerSample.csproj", "{427CDB36-78B0-4583-9EBC-7F283DE60355}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj", "{4F5A6A72-FFE4-49C4-B4C6-58132CFCB9FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj", "{4F5A6A72-FFE4-49C4-B4C6-58132CFCB9FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests", "test\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.csproj", "{5486117B-A742-49E0-94FC-12B76F061803}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests", "test\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.csproj", "{5486117B-A742-49E0-94FC-12B76F061803}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests", "test\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.csproj", "{2F9B479D-8247-4210-804B-78E6DD5C3E98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Elm", "src\Microsoft.AspNetCore.Diagnostics.Elm\Microsoft.AspNetCore.Diagnostics.Elm.csproj", "{624B0019-956A-4157-B008-270C5B229553}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Elm", "src\Microsoft.AspNetCore.Diagnostics.Elm\Microsoft.AspNetCore.Diagnostics.Elm.csproj", "{624B0019-956A-4157-B008-270C5B229553}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatusCodePagesSample", "samples\StatusCodePagesSample\StatusCodePagesSample.csproj", "{CC1F5841-FE10-4DDB-8477-C4DE92BA759F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatusCodePagesSample", "samples\StatusCodePagesSample\StatusCodePagesSample.csproj", "{CC1F5841-FE10-4DDB-8477-C4DE92BA759F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "src\Microsoft.AspNetCore.Diagnostics.Abstractions\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj", "{83FFB65A-97B1-45AA-BCB8-3F43966BC8A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "src\Microsoft.AspNetCore.Diagnostics.Abstractions\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj", "{83FFB65A-97B1-45AA-BCB8-3F43966BC8A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElmPageSample", "samples\ElmPageSample\ElmPageSample.csproj", "{FFD28DCF-C24F-4C59-9B6B-F3B74CE13129}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElmPageSample", "samples\ElmPageSample\ElmPageSample.csproj", "{FFD28DCF-C24F-4C59-9B6B-F3B74CE13129}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseErrorPageSample", "samples\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj", "{FF7F11A1-14E7-4948-A853-2487D99DE0C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseErrorPageSample", "samples\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj", "{FF7F11A1-14E7-4948-A853-2487D99DE0C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.MiddlewareAnalysis", "src\Microsoft.AspNetCore.MiddlewareAnalysis\Microsoft.AspNetCore.MiddlewareAnalysis.csproj", "{C2DEDD37-D1EB-4819-9A9C-475E37A52358}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.MiddlewareAnalysis", "src\Microsoft.AspNetCore.MiddlewareAnalysis\Microsoft.AspNetCore.MiddlewareAnalysis.csproj", "{C2DEDD37-D1EB-4819-9A9C-475E37A52358}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiddlewareAnalysisSample", "samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj", "{95981429-F212-44E1-83AA-32DA9E2A517C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiddlewareAnalysisSample", "samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj", "{95981429-F212-44E1-83AA-32DA9E2A517C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.MiddlewareAnalysis.Tests", "test\Microsoft.AspNetCore.MiddlewareAnalysis.Tests\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj", "{B0166AED-738F-42EE-AF4D-C487C8B21521}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.MiddlewareAnalysis.Tests", "test\Microsoft.AspNetCore.MiddlewareAnalysis.Tests\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj", "{B0166AED-738F-42EE-AF4D-C487C8B21521}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibraryWithPortablePdbs", "test\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.csproj", "{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.FunctionalTests", "test\Microsoft.AspNetCore.Diagnostics.FunctionalTests\Microsoft.AspNetCore.Diagnostics.FunctionalTests.csproj", "{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diagnostics.EFCore.FunctionalTests", "test\Diagnostics.EFCore.FunctionalTests\Diagnostics.EFCore.FunctionalTests.csproj", "{043C5272-D7F7-4DB1-830F-5DC93CC0878E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibraryWithPortablePdbs", "test\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.csproj", "{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diagnostics.FunctionalTests", "test\Diagnostics.FunctionalTests\Diagnostics.FunctionalTests.csproj", "{C142A666-D932-4E0D-8D18-5B08944C1077}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -128,18 +128,6 @@ Global
 		{5486117B-A742-49E0-94FC-12B76F061803}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5486117B-A742-49E0-94FC-12B76F061803}.Release|x86.ActiveCfg = Release|Any CPU
 		{5486117B-A742-49E0-94FC-12B76F061803}.Release|x86.Build.0 = Release|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Debug|x86.Build.0 = Debug|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|x86.ActiveCfg = Release|Any CPU
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98}.Release|x86.Build.0 = Release|Any CPU
 		{624B0019-956A-4157-B008-270C5B229553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{624B0019-956A-4157-B008-270C5B229553}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{624B0019-956A-4157-B008-270C5B229553}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -236,18 +224,6 @@ Global
 		{B0166AED-738F-42EE-AF4D-C487C8B21521}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B0166AED-738F-42EE-AF4D-C487C8B21521}.Release|x86.ActiveCfg = Release|Any CPU
 		{B0166AED-738F-42EE-AF4D-C487C8B21521}.Release|x86.Build.0 = Release|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Debug|x86.Build.0 = Debug|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Release|x86.ActiveCfg = Release|Any CPU
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}.Release|x86.Build.0 = Release|Any CPU
 		{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -260,6 +236,30 @@ Global
 		{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}.Release|x86.ActiveCfg = Release|Any CPU
 		{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}.Release|x86.Build.0 = Release|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Debug|x86.Build.0 = Debug|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Release|x86.ActiveCfg = Release|Any CPU
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E}.Release|x86.Build.0 = Release|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Debug|x86.Build.0 = Debug|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Release|x86.ActiveCfg = Release|Any CPU
+		{C142A666-D932-4E0D-8D18-5B08944C1077}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -272,7 +272,6 @@ Global
 		{427CDB36-78B0-4583-9EBC-7F283DE60355} = {ACAA0157-A8C4-4152-93DE-90CCDF304087}
 		{4F5A6A72-FFE4-49C4-B4C6-58132CFCB9FE} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
 		{5486117B-A742-49E0-94FC-12B76F061803} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
-		{2F9B479D-8247-4210-804B-78E6DD5C3E98} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
 		{624B0019-956A-4157-B008-270C5B229553} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
 		{CC1F5841-FE10-4DDB-8477-C4DE92BA759F} = {ACAA0157-A8C4-4152-93DE-90CCDF304087}
 		{83FFB65A-97B1-45AA-BCB8-3F43966BC8A3} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
@@ -281,7 +280,8 @@ Global
 		{C2DEDD37-D1EB-4819-9A9C-475E37A52358} = {509A6F36-AD80-4A18-B5B1-717D38DFF29D}
 		{95981429-F212-44E1-83AA-32DA9E2A517C} = {ACAA0157-A8C4-4152-93DE-90CCDF304087}
 		{B0166AED-738F-42EE-AF4D-C487C8B21521} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
-		{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
 		{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
+		{043C5272-D7F7-4DB1-830F-5DC93CC0878E} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
+		{C142A666-D932-4E0D-8D18-5B08944C1077} = {2AF90579-B118-4583-AE88-672EFACB5BC4}
 	EndGlobalSection
 EndGlobal
