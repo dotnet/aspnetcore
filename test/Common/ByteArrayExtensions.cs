@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Collections.Generic;
-using System.Collections.Sequences;
 
 namespace System
 {
@@ -11,6 +10,11 @@ namespace System
     {
         public static ReadOnlyBytes ToChunkedReadOnlyBytes(this byte[] data, int chunkSize)
         {
+            if (chunkSize == 0)
+            {
+                return new ReadOnlyBytes(data);
+            }
+
             var chunks = new List<byte[]>();
             for (var i = 0; i < data.Length; i += chunkSize)
             {

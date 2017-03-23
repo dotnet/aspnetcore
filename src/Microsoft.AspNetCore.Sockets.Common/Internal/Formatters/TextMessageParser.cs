@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             else
             {
                 // Copy as much as possible from the Unread buffer
-                var toCopy = Math.Min(_state.Length, buffer.Unread.Length);
+                var toCopy = Math.Min(_state.Length - _state.Read, buffer.Unread.Length);
                 buffer.Unread.Slice(0, toCopy).CopyTo(_state.Payload.Slice(_state.Read));
                 _state.Read += toCopy;
                 buffer.Advance(toCopy);

@@ -42,3 +42,4 @@ site.min.css
 signalr-client/
 dist/
 global.json
+BenchmarkDotNet.Artifacts/

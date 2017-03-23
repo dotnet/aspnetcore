@@ -66,9 +66,7 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
                     /* body: */ 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x20, 0x45, 0x72, 0x72, 0x6F, 0x72
             };
             var parser = new MessageParser();
-            var buffer = chunkSize > 0 ?
-                encoded.ToChunkedReadOnlyBytes(chunkSize) :
-                new ReadOnlyBytes(encoded);
+            var buffer = encoded.ToChunkedReadOnlyBytes(chunkSize);
             var reader = new BytesReader(buffer);
 
             var messages = new List<Message>();

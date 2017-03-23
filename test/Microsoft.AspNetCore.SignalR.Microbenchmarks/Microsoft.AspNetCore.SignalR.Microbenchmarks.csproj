@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\ByteArrayExtensions.cs" Link="ByteArrayExtensions.cs" />
+    <Compile Include="..\Common\ArrayOutput.cs" Link="ArrayOutput.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Sockets.Common\Microsoft.AspNetCore.Sockets.Common.csproj" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.10.3" />
+  </ItemGroup>
+
+</Project>

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="..\Common\ArrayOutput.cs" Link="ArrayOutput.cs" />
+    <Compile Include="..\Common\ByteArrayExtensions.cs" Link="ByteArrayExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

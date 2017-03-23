@@ -14,18 +14,19 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
     public class TextMessageParserTests
     {
         [Theory]
-        [InlineData("0:T:;", MessageType.Text, "")]
-        [InlineData("3:T:ABC;", MessageType.Text, "ABC")]
-        [InlineData("11:T:A\nR\rC\r\n;DEF;", MessageType.Text, "A\nR\rC\r\n;DEF")]
-        [InlineData("0:C:;", MessageType.Close, "")]
-        [InlineData("17:C:Connection Closed;", MessageType.Close, "Connection Closed")]
-        [InlineData("0:E:;", MessageType.Error, "")]
-        [InlineData("12:E:Server Error;", MessageType.Error, "Server Error")]
-        public void ReadTextMessage(string encoded, MessageType messageType, string payload)
+        [InlineData(0, "0:T:;", MessageType.Text, "")]
+        [InlineData(0, "3:T:ABC;", MessageType.Text, "ABC")]
+        [InlineData(0, "11:T:A\nR\rC\r\n;DEF;", MessageType.Text, "A\nR\rC\r\n;DEF")]
+        [InlineData(0, "0:C:;", MessageType.Close, "")]
+        [InlineData(0, "17:C:Connection Closed;", MessageType.Close, "Connection Closed")]
+        [InlineData(0, "0:E:;", MessageType.Error, "")]
+        [InlineData(0, "12:E:Server Error;", MessageType.Error, "Server Error")]
+        [InlineData(4, "12:T:Hello, World;", MessageType.Text, "Hello, World")]
+        public void ReadTextMessage(int chunkSize, string encoded, MessageType messageType, string payload)
         {
             var parser = new MessageParser();
             var buffer = Encoding.UTF8.GetBytes(encoded);
-            var reader = new BytesReader(buffer);
+            var reader = new BytesReader(buffer.ToChunkedReadOnlyBytes(chunkSize));
 
             Assert.True(parser.TryParseMessage(ref reader, MessageFormat.Text, out var message));
             Assert.Equal(reader.Index, buffer.Length);
