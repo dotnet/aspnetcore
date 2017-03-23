@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static IEnumerable<ApplicationPart> DiscoverAssemblyParts(string entryPointAssemblyName)
         {
             var entryAssembly = Assembly.Load(new AssemblyName(entryPointAssemblyName));
-            var context = DependencyContext.Load(Assembly.Load(new AssemblyName(entryPointAssemblyName)));
+            var context = DependencyContext.Load(entryAssembly);
 
             return GetCandidateAssemblies(entryAssembly, context).Select(p => new AssemblyPart(p));
         }
