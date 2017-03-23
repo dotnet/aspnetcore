@@ -252,6 +252,50 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task CanCallInheritedHubMethodFromInheritingHub()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<InheritedHub>>();
+
+            using (var client = new TestClient(serviceProvider))
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                var result = await client.Invoke<InvocationResultDescriptor>(nameof(InheritedHub.BaseMethod), "string").OrTimeout();
+
+                Assert.Equal("string", result.Result);
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task CanCallOverridenVirtualHubMethod()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<InheritedHub>>();
+
+            using (var client = new TestClient(serviceProvider))
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                var result = await client.Invoke<InvocationResultDescriptor>(nameof(InheritedHub.VirtualMethod), 10).OrTimeout();
+
+                Assert.Equal(0L, result.Result);
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task CannotCallOverriddenBaseHubMethod()
         {
             var serviceProvider = CreateServiceProvider();
@@ -270,6 +314,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 client.Dispose();
 
                 await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public void HubsCannotHaveOverloadedMethods()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            try
+            {
+                var endPoint = serviceProvider.GetService<HubEndPoint<InvalidHub>>();
+                Assert.True(false);
+            }
+            catch (NotSupportedException ex)
+            {
+                Assert.Equal("Duplicate definitions of 'OverloadedMethod'. Overloading is not supported.", ex.Message);
             }
         }
 
@@ -543,6 +603,38 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public override Task OnDisconnectedAsync(Exception e)
             {
                 return TaskCache.CompletedTask;
+            }
+        }
+
+        private class InheritedHub : BaseHub
+        {
+            public override int VirtualMethod(int num)
+            {
+                return num - 10;
+            }
+        }
+
+        private class BaseHub : Hub
+        {
+            public string BaseMethod(string message)
+            {
+                return message;
+            }
+
+            public virtual int VirtualMethod(int num)
+            {
+                return num;
+            }
+        }
+
+        private class InvalidHub : Hub
+        {
+            public void OverloadedMethod(int num)
+            {
+            }
+
+            public void OverloadedMethod(string message)
+            {
             }
         }
 

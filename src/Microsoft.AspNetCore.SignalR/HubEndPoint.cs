@@ -307,25 +307,24 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void DiscoverHubMethods()
         {
-            var typeInfo = typeof(THub).GetTypeInfo();
-
-            foreach (var methodInfo in typeInfo.DeclaredMethods.Where(m => IsHubMethod(m)))
+            var hubType = typeof(THub);
+            foreach (var methodInfo in hubType.GetMethods().Where(m => IsHubMethod(m)))
             {
                 var methodName = methodInfo.Name;
 
                 if (_methods.ContainsKey(methodName))
                 {
-                    throw new NotSupportedException($"Duplicate definitions of '{methodInfo.Name}'. Overloading is not supported.");
+                    throw new NotSupportedException($"Duplicate definitions of '{methodName}'. Overloading is not supported.");
                 }
 
-                var executor = ObjectMethodExecutor.Create(methodInfo, typeInfo);
+                var executor = ObjectMethodExecutor.Create(methodInfo, hubType.GetTypeInfo());
                 _methods[methodName] = new HubMethodDescriptor(executor);
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug("Hub method '{methodName}' is bound", methodName);
                 }
-            };
+            }
         }
 
         private static bool IsHubMethod(MethodInfo methodInfo)
