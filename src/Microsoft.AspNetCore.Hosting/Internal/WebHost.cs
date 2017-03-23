@@ -122,23 +122,21 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _logger.Started();
 
+            // Log the fact that we did load hosting startup assemblies.
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                foreach (var assembly in _options.HostingStartupAssemblies)
+                {
+                    _logger.LogDebug("Loaded hosting startup assembly {assemblyName}", assembly);
+                }
+            }
+
             // REVIEW: Is this the right place to log these errors?
             if (_hostingStartupErrors != null)
             {
                 foreach (var exception in _hostingStartupErrors.InnerExceptions)
                 {
                     _logger.HostingStartupAssemblyError(exception);
-                }
-            }
-            else
-            {
-                // If there were no errors then just log the fact that we did load hosting startup assemblies.
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    foreach (var assembly in _options.HostingStartupAssemblies)
-                    {
-                        _logger.LogDebug("Loaded hosting startup assembly {assemblyName}", assembly);
-                    }
                 }
             }
         }
