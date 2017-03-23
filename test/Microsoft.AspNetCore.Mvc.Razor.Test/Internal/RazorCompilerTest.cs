@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             Assert.Equal(viewPath, failure.SourceFilePath);
             Assert.Collection(failure.Messages,
                 message => Assert.StartsWith(
-                    @"(1,22): Error RZ9999: Unterminated string literal.",
-                    message.FormattedMessage),
+                    @"Unterminated string literal.",
+                    message.Message),
                 message => Assert.StartsWith(
-                    @"(1,14): Error RZ9999: The explicit expression block is missing a closing "")"" character.",
-                    message.FormattedMessage));
+                    @"The explicit expression block is missing a closing "")"" character.",
+                    message.Message));
         }
 
         [Fact]
@@ -141,21 +141,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var compilationResult = compiler.GetCompilationFailedResult(codeDocument, csharpDocument.Diagnostics);
 
             // Assert
-            // This expectation is incorrect. https://github.com/aspnet/Razor/issues/1069 needs to be fixed,
-            // which should cause this test to fail.
-            var failure = Assert.Single(compilationResult.CompilationFailures);
-            Assert.Equal(viewPath, failure.SourceFilePath);
-            Assert.Collection(failure.Messages,
-                message =>
+            Assert.Collection(
+                compilationResult.CompilationFailures,
+                failure =>
                 {
-                    Assert.Equal(@"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.", 
-                        message.Message);
+                    Assert.Equal(viewPath, failure.SourceFilePath);
+                    Assert.Collection(failure.Messages,
+                        message =>
+                        {
+                            Assert.Equal(@"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.",
+                                message.Message);
+                        });
                 },
-                message =>
+                failure =>
                 {
-                    Assert.Equal(@"The explicit expression block is missing a closing "")"" character.  Make sure you have a matching "")"" character for all the ""("" characters within this block, and that none of the "")"" characters are being interpreted as markup.", 
-                        message.Message);
-
+                    Assert.Equal(importsFilePath, failure.SourceFilePath);
+                    Assert.Collection(failure.Messages,
+                        message =>
+                        {
+                            Assert.Equal(@"The explicit expression block is missing a closing "")"" character.  Make sure you have a matching "")"" character for all the ""("" characters within this block, and that none of the "")"" characters are being interpreted as markup.",
+                            message.Message);
+                        });
                 });
         }
 
