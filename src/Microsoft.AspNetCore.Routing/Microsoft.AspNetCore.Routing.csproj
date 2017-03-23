@@ -6,7 +6,7 @@
 Commonly used types:
 Microsoft.AspNetCore.Routing.Route
 Microsoft.AspNetCore.Routing.RouteCollection</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>

@@ -5,7 +5,7 @@
 Commonly used types:
 Microsoft.AspNetCore.Routing.IRouter
 Microsoft.AspNetCore.Routing.RouteData</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>

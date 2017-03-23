@@ -37,3 +37,4 @@ nuget.exe
 node_modules
 **/[Cc]ompiler/[Rr]esources/**/*.js
 *launchSettings.json
+global.json
