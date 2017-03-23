@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -16,9 +18,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
+
+[assembly: HostingStartup(typeof(WebHostBuilderTests.TestHostingStartup))]
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -588,6 +593,121 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Equal(factory, factoryFromHost);
         }
 
+        [Fact]
+        public void Build_RunsHostingStartupAssembliesIfSpecified()
+        {
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(false)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(WebHostBuilderTests).GetTypeInfo().Assembly.FullName)
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            var host = (WebHost)builder.Build();
+
+            Assert.Equal("1", builder.GetSetting("testhostingstartup"));
+        }
+
+        [Fact]
+        public void Build_RunsHostingStartupAssembliesBeforeApplication()
+        {
+            var startup = new StartupVerifyServiceA();
+            var startupAssemblyName = typeof(WebHostBuilderTests).GetTypeInfo().Assembly.GetName().Name;
+
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(false)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(WebHostBuilderTests).GetTypeInfo().Assembly.FullName)
+                .UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<IStartup>(startup);
+                })
+                .UseServer(new TestServer());
+
+            var host = (WebHost)builder.Build();
+
+            Assert.NotNull(startup.ServiceADescriptor);
+            Assert.NotNull(startup.ServiceA);
+        }
+
+        [Fact]
+        public void Build_ConfigureLoggingInHostingStartupWorks()
+        {
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(false)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(WebHostBuilderTests).GetTypeInfo().Assembly.FullName)
+                .Configure(app =>
+                {
+                    var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
+                    var logger = loggerFactory.CreateLogger(nameof(WebHostBuilderTests));
+                    logger.LogInformation("From startup");
+                })
+                .UseServer(new TestServer());
+
+            var host = (WebHost)builder.Build();
+            var sink = host.Services.GetRequiredService<ITestSink>();
+            Assert.True(sink.Writes.Any(w => w.State.ToString() == "From startup"));
+        }
+
+        [Fact]
+        public void Build_DoesNotRunHostingStartupAssembliesDoNotRunIfNotSpecified()
+        {
+            var builder = CreateWebHostBuilder()
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            var host = (WebHost)builder.Build();
+
+            Assert.Null(builder.GetSetting("testhostingstartup"));
+        }
+
+        [Fact]
+        public void Build_ThrowsIfUnloadableAssemblyNameInHostingStartupAssemblies()
+        {
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(false)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, "SomeBogusName")
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            var ex = Assert.Throws<AggregateException>(() => (WebHost)builder.Build());
+            Assert.IsType<InvalidOperationException>(ex.InnerExceptions[0]);
+            Assert.IsType<FileNotFoundException>(ex.InnerExceptions[0].InnerException);
+        }
+
+        [Fact]
+        public void Build_DoesNotThrowIfUnloadableAssemblyNameInHostingStartupAssembliesAndCaptureStartupErrorsTrue()
+        {
+            var provider = new TestLoggerProvider();
+            var builder = CreateWebHostBuilder()
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddProvider(provider);
+                })
+                .CaptureStartupErrors(true)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, "SomeBogusName")
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+                var context = provider.Sink.Writes.FirstOrDefault(s => s.EventId.Id == LoggerEventIds.HostingStartupAssemblyException);
+                Assert.NotNull(context);
+            }
+        }
+
+        [Fact]
+        public void HostingStartupTypeCtorThrowsIfNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => new HostingStartupAttribute(null));
+        }
+
+        [Fact]
+        public void HostingStartupTypeCtorThrowsIfNotIHosting()
+        {
+            Assert.Throws<ArgumentException>(() => new HostingStartupAttribute(typeof(WebHostTests)));
+        }
+
         private static void StaticConfigureMethod(IApplicationBuilder app)
         { }
 
@@ -643,6 +763,52 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
+        internal class StartupVerifyServiceA : IStartup
+        {
+            internal ServiceA ServiceA { get; set; }
+
+            internal ServiceDescriptor ServiceADescriptor { get; set; }
+
+            public IServiceProvider ConfigureServices(IServiceCollection services)
+            {
+                ServiceADescriptor = services.FirstOrDefault(s => s.ServiceType == typeof(ServiceA));
+
+                return services.BuildServiceProvider();
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+                ServiceA = app.ApplicationServices.GetService<ServiceA>();
+            }
+        }
+
+        public class TestHostingStartup : IHostingStartup
+        {
+            public void Configure(IWebHostBuilder builder)
+            {
+                var loggerProvider = new TestLoggerProvider();
+                builder.UseSetting("testhostingstartup", "1")
+                       .ConfigureServices(services => services.AddSingleton<ServiceA>())
+                       .ConfigureServices(services => services.AddSingleton<ITestSink>(loggerProvider.Sink))
+                       .ConfigureLogging(lf => lf.AddProvider(loggerProvider));
+            }
+        }
+
+        public class TestLoggerProvider : ILoggerProvider
+        {
+            public TestSink Sink { get; set; } = new TestSink();
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                return new TestLogger(categoryName, Sink, enabled: true);
+            }
+
+            public void Dispose()
+            {
+
+            }
+        }
+
         private class ServiceC
         {
             public ServiceC(ServiceD serviceD)
@@ -651,17 +817,17 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private class ServiceD
+        internal class ServiceD
         {
 
         }
 
-        private class ServiceA
+        internal class ServiceA
         {
 
         }
 
-        private class ServiceB
+        internal class ServiceB
         {
 
         }

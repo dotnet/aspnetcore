@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private readonly IServiceProvider _hostingServiceProvider;
         private readonly WebHostOptions _options;
         private readonly IConfiguration _config;
+        private readonly AggregateException _hostingStartupErrors;
 
         private IServiceProvider _applicationServices;
         private RequestDelegate _application;
@@ -47,7 +48,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             IServiceCollection appServices,
             IServiceProvider hostingServiceProvider,
             WebHostOptions options,
-            IConfiguration config)
+            IConfiguration config,
+            AggregateException hostingStartupErrors)
         {
             if (appServices == null)
             {
@@ -65,6 +67,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             _config = config;
+            _hostingStartupErrors = hostingStartupErrors;
             _options = options;
             _applicationServiceCollection = appServices;
             _hostingServiceProvider = hostingServiceProvider;
@@ -118,6 +121,26 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _hostedServiceExecutor.Start();
 
             _logger.Started();
+
+            // REVIEW: Is this the right place to log these errors?
+            if (_hostingStartupErrors != null)
+            {
+                foreach (var exception in _hostingStartupErrors.InnerExceptions)
+                {
+                    _logger.HostingStartupAssemblyError(exception);
+                }
+            }
+            else
+            {
+                // If there were no errors then just log the fact that we did load hosting startup assemblies.
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    foreach (var assembly in _options.HostingStartupAssemblies)
+                    {
+                        _logger.LogDebug("Loaded hosting startup assembly {assemblyName}", assembly);
+                    }
+                }
+            }
         }
 
         private void EnsureApplicationServices()

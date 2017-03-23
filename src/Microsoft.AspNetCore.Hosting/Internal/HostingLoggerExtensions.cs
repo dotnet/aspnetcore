@@ -26,6 +26,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 exception: exception);
         }
 
+        public static void HostingStartupAssemblyError(this ILogger logger, Exception exception)
+        {
+            logger.ApplicationError(
+                eventId: LoggerEventIds.HostingStartupAssemblyException,
+                message: "Hosting startup assembly exception",
+                exception: exception);
+        }
+
         public static void ApplicationError(this ILogger logger, EventId eventId, string message, Exception exception)
         {
             var reflectionTypeLoadException = exception as ReflectionTypeLoadException;

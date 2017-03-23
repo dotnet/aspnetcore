@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
@@ -26,9 +27,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             Environment = configuration[WebHostDefaults.EnvironmentKey];
             WebRoot = configuration[WebHostDefaults.WebRootKey];
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
+            HostingStartupAssemblies = configuration[WebHostDefaults.HostingStartupAssembliesKey]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
         }
 
         public string ApplicationName { get; set; }
+
+        public IReadOnlyList<string> HostingStartupAssemblies { get; set; }
 
         public bool DetailedErrors { get; set; }
 

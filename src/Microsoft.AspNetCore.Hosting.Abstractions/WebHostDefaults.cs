@@ -7,7 +7,8 @@ namespace Microsoft.AspNetCore.Hosting
     {
         public static readonly string ApplicationKey = "applicationName";
         public static readonly string StartupAssemblyKey = "startupAssembly";
-        
+        public static readonly string HostingStartupAssembliesKey = "hostingStartupAssemblies";
+
         public static readonly string DetailedErrorsKey = "detailedErrors";
         public static readonly string EnvironmentKey = "environment";
         public static readonly string WebRootKey = "webroot";
