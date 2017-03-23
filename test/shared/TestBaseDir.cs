@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.StaticFiles
     public static class TestDirectory
     {
         public static readonly string BaseDirectory
-#if NET452
+#if NET46
         = AppDomain.CurrentDomain.BaseDirectory;
 #else
         = AppContext.BaseDirectory;
