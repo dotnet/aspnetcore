@@ -27,14 +27,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         public override RazorProjectItem GetItem(string path)
         {
-            EnsureValidPath(path);
+            path = NormalizeAndEnsureValidPath(path);
             var fileInfo = _provider.GetFileInfo(path);
             return new DefaultRazorProjectItem(fileInfo, basePath: string.Empty, path: path);
         }
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string path)
         {
-            EnsureValidPath(path);
+            path = NormalizeAndEnsureValidPath(path);
             return EnumerateFiles(_provider.GetDirectoryContents(path), path, prefix: string.Empty);
         }
 
