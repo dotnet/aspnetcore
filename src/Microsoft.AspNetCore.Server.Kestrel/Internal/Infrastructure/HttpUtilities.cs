@@ -270,23 +270,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// <param name="knownScheme">A reference to the known scheme, if the input matches any</param>
         /// <returns>True when memory starts with known http or https schema</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
+        public static unsafe bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
         {
-            if (span.TryRead<ulong>(out var value))
+            fixed (byte* data = &span.DangerousGetPinnableReference())
             {
-                if ((value & _mask7Chars) == _httpSchemeLong)
+                return GetKnownHttpScheme(data, span.Length, out knownScheme);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe bool GetKnownHttpScheme(byte* location, int length, out HttpScheme knownScheme)
+        {
+            if (length >= sizeof(ulong))
+            {
+                var scheme = *(ulong*)location;
+                if ((scheme & _mask7Chars) == _httpSchemeLong)
                 {
                     knownScheme = HttpScheme.Http;
                     return true;
                 }
 
-                if (value == _httpsSchemeLong)
+                if (scheme == _httpsSchemeLong)
                 {
                     knownScheme = HttpScheme.Https;
                     return true;
                 }
             }
-
             knownScheme = HttpScheme.Unknown;
             return false;
         }
