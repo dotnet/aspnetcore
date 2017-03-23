@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
              for(var i = 0; i < 5; i++) {
 
-
 #line default
 #line hidden
                 WriteLiteral("                <script id=\"nestedScriptTag\" type=\"text/html\">\r\n                    ");
@@ -80,7 +79,6 @@ __TestNamespace_InputTagHelper2.Checked = true;
                 WriteLiteral("\r\n                </script>\r\n");
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
             }
-
 
 #line default
 #line hidden

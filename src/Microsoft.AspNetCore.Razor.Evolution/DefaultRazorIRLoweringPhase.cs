@@ -388,11 +388,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
             {
-                _builder.Add(new CSharpStatementIRNode()
+                var statementNode = new CSharpStatementIRNode()
+                {
+                    Source = BuildSourceSpanFromNode(span)
+                };
+                _builder.Push(statementNode);
+
+                _builder.Add(new RazorIRToken()
                 {
                     Content = span.Content,
+                    Kind = RazorIRToken.TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(span),
                 });
+
+                _builder.Pop();
             }
 
             public override void VisitMarkupSpan(MarkupChunkGenerator chunkGenerator, Span span)
@@ -437,21 +446,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Source = BuildSourceSpanFromNode(span),
                 });
             }
-            private void Combine(HtmlContentIRNode node, Span span)
-            {
-                node.Content = node.Content + span.Content;
-                if (node.Source != null)
-                {
-                    Debug.Assert(node.Source.Value.FilePath != null);
-
-                    node.Source = new SourceSpan(
-                        node.Source.Value.FilePath,
-                        node.Source.Value.AbsoluteIndex,
-                        node.Source.Value.LineIndex,
-                        node.Source.Value.CharacterIndex,
-                        node.Content.Length);
-                }
-            }
 
             public override void VisitTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
             {
@@ -489,6 +483,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 AddExecuteTagHelpers();
 
                 _builder.Pop(); // Pop TagHelperIRNode
+            }
+
+            private void Combine(HtmlContentIRNode node, Span span)
+            {
+                node.Content = node.Content + span.Content;
+                if (node.Source != null)
+                {
+                    Debug.Assert(node.Source.Value.FilePath != null);
+
+                    node.Source = new SourceSpan(
+                        node.Source.Value.FilePath,
+                        node.Source.Value.AbsoluteIndex,
+                        node.Source.Value.LineIndex,
+                        node.Source.Value.CharacterIndex,
+                        node.Content.Length);
+                }
             }
 
             private void DeclareTagHelperFields(TagHelperBlock block)

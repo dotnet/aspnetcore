@@ -6,5 +6,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_FunctionsBlockMinimal_Runtime -  - 
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [4] FunctionsBlockMinimal.cshtml) - \n\n
-            CSharpStatement - (4:2,0 [1] FunctionsBlockMinimal.cshtml) - 	
-            CSharpStatement - (16:2,12 [55] FunctionsBlockMinimal.cshtml) - \nstring foo(string input) {\n	return input + "!";\n}\n
+            CSharpStatement - (4:2,0 [1] FunctionsBlockMinimal.cshtml)
+                RazorIRToken - (4:2,0 [1] FunctionsBlockMinimal.cshtml) - CSharp - 	
+            CSharpStatement - (16:2,12 [55] FunctionsBlockMinimal.cshtml)
+                RazorIRToken - (16:2,12 [55] FunctionsBlockMinimal.cshtml) - CSharp - \nstring foo(string input) {\n	return input + "!";\n}\n

@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
   
     var code = "some code";
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");

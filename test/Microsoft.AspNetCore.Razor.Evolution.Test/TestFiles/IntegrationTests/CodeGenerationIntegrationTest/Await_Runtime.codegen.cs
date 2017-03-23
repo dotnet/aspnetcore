@@ -95,7 +95,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         return "Bar";
     }
 
-
 #line default
 #line hidden
     }

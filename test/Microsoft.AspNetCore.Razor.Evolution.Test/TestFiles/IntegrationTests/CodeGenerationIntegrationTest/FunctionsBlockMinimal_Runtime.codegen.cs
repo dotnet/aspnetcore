@@ -18,7 +18,6 @@ string foo(string input) {
 	return input + "!";
 }
 
-
 #line default
 #line hidden
     }

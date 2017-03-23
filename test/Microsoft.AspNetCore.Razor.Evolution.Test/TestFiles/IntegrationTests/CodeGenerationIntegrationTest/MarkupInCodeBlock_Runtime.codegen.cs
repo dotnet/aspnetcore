@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
   
     for(int i = 1; i <= 10; i++) {
 
-
 #line default
 #line hidden
             WriteLiteral("        <p>Hello from C#, #");
@@ -25,7 +24,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             WriteLiteral("</p>\r\n");
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml"
     }
-
 
 #line default
 #line hidden

@@ -5,23 +5,31 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Templates_DesignTime -  - 
             DirectiveTokenHelper - 
-                CSharpStatement -  - #pragma warning disable 219
-                CSharpStatement -  - private void __RazorDirectiveTokenHelpers__() {
-                CSharpStatement -  - }
-                CSharpStatement -  - #pragma warning restore 219
-            CSharpStatement -  - private static System.Object __o = null;
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (278:8,1 [4] Templates.cshtml) - \n\n
-                CSharpStatement - (284:10,2 [34] Templates.cshtml) - \n    Func<dynamic, object> foo = 
+                CSharpStatement - (284:10,2 [34] Templates.cshtml)
+                    RazorIRToken - (284:10,2 [34] Templates.cshtml) - CSharp - \n    Func<dynamic, object> foo = 
                 Template - (325:11,39 [16] Templates.cshtml)
                     HtmlContent - (325:11,39 [11] Templates.cshtml) - This works 
                     CSharpExpression - (337:11,51 [4] Templates.cshtml)
                         RazorIRToken - (337:11,51 [4] Templates.cshtml) - CSharp - item
                     HtmlContent - (341:11,55 [1] Templates.cshtml) - !
-                CSharpStatement - (349:11,63 [7] Templates.cshtml) - ;\n    
+                CSharpStatement - (349:11,63 [7] Templates.cshtml)
+                    RazorIRToken - (349:11,63 [7] Templates.cshtml) - CSharp - ;\n    
                 CSharpExpression - (357:12,5 [7] Templates.cshtml)
                     RazorIRToken - (357:12,5 [7] Templates.cshtml) - CSharp - foo("")
-                CSharpStatement - (364:12,12 [2] Templates.cshtml) - \n
+                CSharpStatement - (364:12,12 [2] Templates.cshtml)
+                    RazorIRToken - (364:12,12 [2] Templates.cshtml) - CSharp - \n
                 HtmlContent - (369:14,0 [8] Templates.cshtml) - \n<ul>\n
                 CSharpExpression - (379:16,2 [31] Templates.cshtml)
                     RazorIRToken - (379:16,2 [11] Templates.cshtml) - CSharp - Repeat(10, 
@@ -66,9 +74,11 @@ Document -
                         CSharpExpression - (688:40,15 [4] Templates.cshtml)
                             RazorIRToken - (688:40,15 [4] Templates.cshtml) - CSharp - item
                         HtmlContent - (692:40,19 [10] Templates.cshtml) - \n        
-                        CSharpStatement - (704:41,10 [18] Templates.cshtml) - var parent = item;
+                        CSharpStatement - (704:41,10 [18] Templates.cshtml)
+                            RazorIRToken - (704:41,10 [18] Templates.cshtml) - CSharp - var parent = item;
                         HtmlContent - (725:42,0 [53] Templates.cshtml) -         <ul>\n            <li>Child Items... ?</li>\n
                         HtmlContent - (839:45,0 [24] Templates.cshtml) -         </ul>\n    </li>
                     RazorIRToken - (863:46,9 [1] Templates.cshtml) - CSharp - )
                 HtmlContent - (864:46,10 [8] Templates.cshtml) - \n</ul> 
-            CSharpStatement - (12:0,12 [265] Templates.cshtml) - \n    public HelperResult Repeat(int times, Func<int, object> template) {\n        return new HelperResult((writer) => {\n            for(int i = 0; i < times; i++) {\n                ((HelperResult)template(i)).WriteTo(writer);\n            }\n        });\n    }\n
+            CSharpStatement - (12:0,12 [265] Templates.cshtml)
+                RazorIRToken - (12:0,12 [265] Templates.cshtml) - CSharp - \n    public HelperResult Repeat(int times, Func<int, object> template) {\n        return new HelperResult((writer) => {\n            for(int i = 0; i < times; i++) {\n                ((HelperResult)template(i)).WriteTo(writer);\n            }\n        });\n    }\n

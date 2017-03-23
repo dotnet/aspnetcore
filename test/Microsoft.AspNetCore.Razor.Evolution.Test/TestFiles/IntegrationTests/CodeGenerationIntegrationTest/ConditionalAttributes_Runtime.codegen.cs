@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     var ch = true;
     var cls = "bar";
 
-
 #line default
 #line hidden
             WriteLiteral("    <a href=\"Foo\" />\r\n    <p");

@@ -5,19 +5,25 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedScriptTagTagHelpers_DesignTime -  - 
             DirectiveTokenHelper - 
-                CSharpStatement -  - #pragma warning disable 219
-                CSharpStatement -  - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
                 DirectiveToken - (14:0,14 [17] NestedScriptTagTagHelpers.cshtml) - "*, TestAssembly"
-                CSharpStatement -  - }
-                CSharpStatement -  - #pragma warning restore 219
-            CSharpStatement -  - private static System.Object __o = null;
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [108] NestedScriptTagTagHelpers.cshtml) - \n\n<script type="text/html">\n    <div data-animation="fade" class="randomNonTagHelperAttribute">\n        
                 TagHelper - (139:4,8 [433] NestedScriptTagTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
                         HtmlContent - (180:4,49 [14] NestedScriptTagTagHelpers.cshtml) - \n            
-                        CSharpStatement - (195:5,13 [46] NestedScriptTagTagHelpers.cshtml) - for(var i = 0; i < 5; i++) {\n                
+                        CSharpStatement - (195:5,13 [46] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (195:5,13 [46] NestedScriptTagTagHelpers.cshtml) - CSharp - for(var i = 0; i < 5; i++) {\n                
                         HtmlContent - (241:6,16 [68] NestedScriptTagTagHelpers.cshtml) - <script id="nestedScriptTag" type="text/html">\n                    
                         TagHelper - (309:7,20 [86] NestedScriptTagTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.StartTagOnly
@@ -36,7 +42,8 @@ Document -
                                 HtmlContent - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - true
                             ExecuteTagHelpers - 
                         HtmlContent - (395:7,106 [27] NestedScriptTagTagHelpers.cshtml) - \n                </script>
-                        CSharpStatement - (422:8,25 [15] NestedScriptTagTagHelpers.cshtml) - \n            }
+                        CSharpStatement - (422:8,25 [15] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (422:8,25 [15] NestedScriptTagTagHelpers.cshtml) - CSharp - \n            }
                         HtmlContent - (437:9,13 [131] NestedScriptTagTagHelpers.cshtml) - \n            <script type="text/javascript">\n                var tag = '<input checked="true">';\n            </script>\n        
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes

@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         throw foo;
     }
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");

@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         Output.Write("<p>Hello from C#, #" + i.ToString() + "</p>");
     }
 
-
 #line default
 #line hidden
         }

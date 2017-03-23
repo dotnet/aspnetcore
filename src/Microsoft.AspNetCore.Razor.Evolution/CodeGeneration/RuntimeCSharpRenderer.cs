@@ -7,6 +7,7 @@ using System.Linq;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
@@ -209,25 +210,41 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void VisitCSharpStatement(CSharpStatementIRNode node)
         {
-            if (string.IsNullOrWhiteSpace(node.Content))
+            var isWhitespaceToken = node.Children.All(child =>
+                child is RazorIRToken token && string.IsNullOrWhiteSpace(token.Content));
+
+            if (isWhitespaceToken)
             {
                 return;
             }
 
+            IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                using (Context.Writer.BuildLinePragma(node.Source.Value))
+                linePragmaScope = Context.Writer.BuildLinePragma(node.Source.Value);
+                var padding = BuildOffsetPadding(0, node.Source.Value, Context);
+                Context.Writer.Write(padding);
+            }
+
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is RazorIRToken token && token.IsCSharp)
                 {
-                    var padding = BuildOffsetPadding(0, node.Source.Value, Context);
-                    Context.Writer
-                        .Write(padding)
-                        .WriteLine(node.Content);
+                    Context.Writer.Write(token.Content);
+                }
+                else
+                {
+                    // There may be something else inside the statement like an extension node.
+                    Visit(node.Children[i]);
                 }
             }
-            else
+
+            if (linePragmaScope == null)
             {
-                Context.Writer.WriteLine(node.Content);
+                Context.Writer.WriteLine();
             }
+
+            linePragmaScope?.Dispose();
         }
 
         public override void VisitTagHelper(TagHelperIRNode node)

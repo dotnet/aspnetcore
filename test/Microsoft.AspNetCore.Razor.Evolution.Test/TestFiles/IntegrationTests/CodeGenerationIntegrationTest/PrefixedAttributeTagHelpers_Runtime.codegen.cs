@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         { "name", "value" },
     };
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");

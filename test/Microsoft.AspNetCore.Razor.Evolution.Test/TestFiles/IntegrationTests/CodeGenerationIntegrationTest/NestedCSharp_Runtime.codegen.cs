@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
      foreach (var result in (dynamic)Url)
     {
 
-
 #line default
 #line hidden
             WriteLiteral("        <div>\r\n            ");

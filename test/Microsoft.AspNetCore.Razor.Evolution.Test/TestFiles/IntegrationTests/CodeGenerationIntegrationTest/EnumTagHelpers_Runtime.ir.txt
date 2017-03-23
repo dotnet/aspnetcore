@@ -7,7 +7,8 @@ Document -
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.CatchAllTagHelper
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] EnumTagHelpers.cshtml) - \n
-                CSharpStatement - (37:2,2 [39] EnumTagHelpers.cshtml) - \n    var enumValue = MyEnum.MyValue;\n
+                CSharpStatement - (37:2,2 [39] EnumTagHelpers.cshtml)
+                    RazorIRToken - (37:2,2 [39] EnumTagHelpers.cshtml) - CSharp - \n    var enumValue = MyEnum.MyValue;\n
                 HtmlContent - (79:5,0 [2] EnumTagHelpers.cshtml) - \n
                 TagHelper - (81:6,0 [33] EnumTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing

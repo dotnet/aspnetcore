@@ -5,12 +5,17 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DuplicateAttributeTagHelpers_DesignTime -  - 
             DirectiveTokenHelper - 
-                CSharpStatement -  - #pragma warning disable 219
-                CSharpStatement -  - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
                 DirectiveToken - (14:0,14 [17] DuplicateAttributeTagHelpers.cshtml) - "*, TestAssembly"
-                CSharpStatement -  - }
-                CSharpStatement -  - #pragma warning restore 219
-            CSharpStatement -  - private static System.Object __o = null;
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] DuplicateAttributeTagHelpers.cshtml) - \n\n

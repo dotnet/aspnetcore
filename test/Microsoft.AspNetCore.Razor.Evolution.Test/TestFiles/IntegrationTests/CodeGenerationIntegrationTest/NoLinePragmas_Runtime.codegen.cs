@@ -13,13 +13,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
   
     int i = 1;
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
  while(i <= 10) {
-
 
 #line default
 #line hidden
@@ -34,20 +32,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     i += 1;
 }
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
  if(i == 11) {
 
-
 #line default
 #line hidden
             WriteLiteral("    <p>We wrote 10 lines!</p>\r\n");
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
 }
-
 
 #line default
 #line hidden
@@ -56,14 +51,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
  switch(i) {
     case 11:
 
-
 #line default
 #line hidden
             WriteLiteral("        <p>No really, we wrote 10 lines!</p>\r\n");
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
         break;
     default:
-
 
 #line default
 #line hidden
@@ -72,13 +65,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         break;
 }
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
 #line 23 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
  for(int j = 1; j <= 10; j += 2) {
-
 
 #line default
 #line hidden
@@ -92,20 +83,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
 }
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
 #line 27 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
  try {
 
-
 #line default
 #line hidden
             WriteLiteral("    <p>That time, we wrote 5 lines!</p>\r\n");
 #line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
 } catch(Exception ex) {
-
 
 #line default
 #line hidden
@@ -120,7 +108,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 }
 
 
-
 #line default
 #line hidden
             WriteLiteral("<p>i is now ");
@@ -132,7 +119,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             WriteLiteral("</p>\r\n\r\n");
 #line 36 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml"
  lock(new object()) {
-
 
 #line default
 #line hidden

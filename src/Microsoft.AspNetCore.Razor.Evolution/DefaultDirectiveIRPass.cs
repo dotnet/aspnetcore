@@ -48,10 +48,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 var sectionIndex = node.Parent.Children.IndexOf(node);
                 node.Parent.Children.Remove(node);
 
-                var defineSectionEndStatement = new CSharpStatementIRNode()
-                {
-                    Content = "});",
-                };
+                var defineSectionEndStatement = new CSharpStatementIRNode();
+                RazorIRBuilder.Create(defineSectionEndStatement)
+                    .Add(new RazorIRToken()
+                    {
+                        Kind = RazorIRToken.TokenKind.CSharp,
+                        Content = "});"
+                    });
+
                 node.Parent.Children.Insert(sectionIndex, defineSectionEndStatement);
 
                 foreach (var child in node.Children.Except(node.Tokens).Reverse())
@@ -61,10 +65,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 var lambdaContent = designTime ? "__razor_section_writer" : string.Empty;
                 var sectionName = node.Tokens.FirstOrDefault()?.Content;
-                var defineSectionStartStatement = new CSharpStatementIRNode()
-                {
-                    Content = /* ORIGINAL: DefineSectionMethodName */ $"DefineSection(\"{sectionName}\", async ({lambdaContent}) => {{",
-                };
+                var defineSectionStartStatement = new CSharpStatementIRNode();
+                RazorIRBuilder.Create(defineSectionStartStatement)
+                    .Add(new RazorIRToken()
+                    {
+                        Kind = RazorIRToken.TokenKind.CSharp,
+                        Content = $"DefineSection(\"{sectionName}\", async ({lambdaContent}) => {{"
+                    });
 
                 node.Parent.Children.Insert(sectionIndex, defineSectionStartStatement);
             }

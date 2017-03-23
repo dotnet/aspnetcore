@@ -46,11 +46,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var writer = new CSharpCodeWriter();
             WriteClass(writer, tagHelper);
 
-            @class.Children.Add(new CSharpStatementIRNode()
+            var statement = new CSharpStatementIRNode()
             {
-                Content = writer.Builder.ToString(),
-                Parent = @class,
-            });
+                Parent = @class
+            };
+            RazorIRBuilder.Create(statement)
+                .Add(new RazorIRToken()
+                {
+                    Content = writer.Builder.ToString()
+                });
+
+            @class.Children.Add(statement);
         }
 
         private void RewriteCreateNode(

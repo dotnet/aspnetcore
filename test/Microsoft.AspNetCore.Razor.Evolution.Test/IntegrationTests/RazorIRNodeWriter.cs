@@ -36,11 +36,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             WriteContentNode(node, node.Prefix);
         }
 
-        public override void VisitCSharpStatement(CSharpStatementIRNode node)
-        {
-            WriteContentNode(node, node.Content);
-        }
-
         public override void VisitToken(RazorIRToken node)
         {
             WriteContentNode(node, node.Kind.ToString(), node.Content);

@@ -135,7 +135,6 @@ WriteTo(__razor_template_writer, item);
         });
     }
 
-
 #line default
 #line hidden
     }

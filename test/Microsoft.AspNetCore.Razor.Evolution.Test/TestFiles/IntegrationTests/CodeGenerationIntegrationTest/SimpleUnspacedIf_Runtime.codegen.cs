@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
  if (true)
 {
 
-
 #line default
 #line hidden
             WriteLiteral("\t<div></div>\r\n");

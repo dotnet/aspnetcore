@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
   
     var enumValue = MyEnum.MyValue;
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");

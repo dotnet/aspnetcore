@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/HiddenSpansInCode.cshtml"
      @Da
 
-
 #line default
 #line hidden
         }

@@ -7,9 +7,11 @@ Document -
             DeclareTagHelperFields -  - TestNamespace.MyTagHelper - TestNamespace.NestedTagHelper
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] TagHelpersInSection.cshtml) - \n
-                CSharpStatement - (37:2,2 [31] TagHelpersInSection.cshtml) - \n    var code = "some code";\n
+                CSharpStatement - (37:2,2 [31] TagHelpersInSection.cshtml)
+                    RazorIRToken - (37:2,2 [31] TagHelpersInSection.cshtml) - CSharp - \n    var code = "some code";\n
                 HtmlContent - (71:5,0 [2] TagHelpersInSection.cshtml) - \n
-                CSharpStatement -  - DefineSection("MySection", async () => {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - DefineSection("MySection", async () => {
                 HtmlContent - (93:6,20 [21] TagHelpersInSection.cshtml) - \n    <div>\n        
                 TagHelper - (114:8,8 [245] TagHelpersInSection.cshtml)
                     InitializeTagHelperStructure -  - mytaghelper - TagMode.StartTagAndEndTag
@@ -35,4 +37,5 @@ Document -
                                 RazorIRToken - (203:8,97 [12] TagHelpersInSection.cshtml) - CSharp - DateTime.Now
                     ExecuteTagHelpers - 
                 HtmlContent - (359:11,22 [14] TagHelpersInSection.cshtml) - \n    </div>\n
-                CSharpStatement -  - });
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - });

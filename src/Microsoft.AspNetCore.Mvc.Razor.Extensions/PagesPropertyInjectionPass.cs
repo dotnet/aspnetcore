@@ -22,18 +22,28 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @class = visitor.Class;
 
             var viewDataType = $"global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<{modelType}>";
-            var vddProperty = new CSharpStatementIRNode
+            var vddProperty = new CSharpStatementIRNode()
             {
-                Content = $"public {viewDataType} ViewData => ({viewDataType})PageContext?.ViewData;",
-                Parent = @class,
+                Parent = @class
             };
-            var modelProperty = new CSharpStatementIRNode
-            {
-                Content = $"public {modelType} Model => ViewData.Model;",
-                Parent = @class,
-            };
-
+            RazorIRBuilder.Create(vddProperty)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = $"public {viewDataType} ViewData => ({viewDataType})PageContext?.ViewData;",
+                });
             @class.Children.Add(vddProperty);
+
+            var modelProperty = new CSharpStatementIRNode()
+            {
+                Parent = @class
+            };
+            RazorIRBuilder.Create(modelProperty)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = $"public {modelType} Model => ViewData.Model;",
+                });
             @class.Children.Add(modelProperty);
         }
 

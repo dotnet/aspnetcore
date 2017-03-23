@@ -31,19 +31,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var beginNode = new CSharpStatementIRNode()
             {
-                Content = string.Format("{0}({1}, {2}, {3});",
-                    beginContextMethodName,
-                    item.Source.AbsoluteIndex.ToString(CultureInfo.InvariantCulture),
-                    item.Source.Length.ToString(CultureInfo.InvariantCulture),
-                    item.IsLiteral ? "true" : "false"),
                 Parent = item.Node.Parent
             };
+            RazorIRBuilder.Create(beginNode)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = string.Format("{0}({1}, {2}, {3});",
+                        beginContextMethodName,
+                        item.Source.AbsoluteIndex.ToString(CultureInfo.InvariantCulture),
+                        item.Source.Length.ToString(CultureInfo.InvariantCulture),
+                        item.IsLiteral ? "true" : "false")
+                });
 
             var endNode = new CSharpStatementIRNode()
             {
-                Content = string.Format("{0}();", endContextMethodName),
                 Parent = item.Node.Parent
             };
+            RazorIRBuilder.Create(endNode)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = string.Format("{0}();", endContextMethodName)
+                });
 
             var nodeIndex = item.Node.Parent.Children.IndexOf(item.Node);
             item.Node.Parent.Children.Insert(nodeIndex, beginNode);

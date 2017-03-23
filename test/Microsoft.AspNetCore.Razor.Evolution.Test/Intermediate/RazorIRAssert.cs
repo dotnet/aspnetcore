@@ -79,7 +79,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             try
             {
                 var statement = Assert.IsType<CSharpStatementIRNode>(node);
-                Assert.Equal(expected, statement.Content);
+                var content = new StringBuilder();
+                for (var i = 0; i < statement.Children.Count; i++)
+                {
+                    var token = Assert.IsType<RazorIRToken>(statement.Children[i]);
+                    Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
+                    content.Append(token.Content);
+                }
+
+                Assert.Equal(expected, content.ToString());
             }
             catch (XunitException e)
             {
@@ -221,7 +229,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             try
             {
                 var beginNode = Assert.IsType<CSharpStatementIRNode>(node);
-                Assert.Equal($"BeginContext({expected});", beginNode.Content);
+                var content = new StringBuilder();
+                for (var i = 0; i < beginNode.Children.Count; i++)
+                {
+                    var token = Assert.IsType<RazorIRToken>(beginNode.Children[i]);
+                    Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
+                    content.Append(token.Content);
+                }
+
+                Assert.Equal($"BeginContext({expected});", content.ToString());
             }
             catch (XunitException e)
             {
@@ -234,7 +250,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             try
             {
                 var endNode = Assert.IsType<CSharpStatementIRNode>(node);
-                Assert.Equal("EndContext();", endNode.Content);
+                var content = new StringBuilder();
+                for (var i = 0; i < endNode.Children.Count; i++)
+                {
+                    var token = Assert.IsType<RazorIRToken>(endNode.Children[i]);
+                    Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
+                    content.Append(token.Content);
+                }
+                Assert.Equal("EndContext();", content.ToString());
             }
             catch (XunitException e)
             {

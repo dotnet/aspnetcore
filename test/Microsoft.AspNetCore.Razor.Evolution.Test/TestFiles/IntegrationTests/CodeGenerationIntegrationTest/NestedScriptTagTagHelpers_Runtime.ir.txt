@@ -13,8 +13,10 @@ Document -
                 TagHelper - (139:4,8 [433] NestedScriptTagTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
                         HtmlContent - (180:4,49 [2] NestedScriptTagTagHelpers.cshtml) - \n
-                        CSharpStatement - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml) -             
-                        CSharpStatement - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml) - for(var i = 0; i < 5; i++) {\n
+                        CSharpStatement - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml) - CSharp -             
+                        CSharpStatement - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml) - CSharp - for(var i = 0; i < 5; i++) {\n
                         HtmlContent - (225:6,0 [84] NestedScriptTagTagHelpers.cshtml) -                 <script id="nestedScriptTag" type="text/html">\n                    
                         TagHelper - (309:7,20 [86] NestedScriptTagTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.StartTagOnly
@@ -31,7 +33,8 @@ Document -
                                 HtmlContent - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - true
                             ExecuteTagHelpers - 
                         HtmlContent - (395:7,106 [29] NestedScriptTagTagHelpers.cshtml) - \n                </script>\n
-                        CSharpStatement - (424:9,0 [15] NestedScriptTagTagHelpers.cshtml) -             }\n
+                        CSharpStatement - (424:9,0 [15] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (424:9,0 [15] NestedScriptTagTagHelpers.cshtml) - CSharp -             }\n
                         HtmlContent - (439:10,0 [129] NestedScriptTagTagHelpers.cshtml) -             <script type="text/javascript">\n                var tag = '<input checked="true">';\n            </script>\n        
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1

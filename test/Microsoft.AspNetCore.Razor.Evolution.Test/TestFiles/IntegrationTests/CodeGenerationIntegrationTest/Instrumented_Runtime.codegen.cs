@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
                          ;
 
-
 #line default
 #line hidden
             WriteLiteral("    ");
@@ -31,7 +30,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             WriteLiteral("\r\n");
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  while(i <= 10) {
-
 
 #line default
 #line hidden
@@ -46,20 +44,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     i += 1;
 }
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  if(i == 11) {
 
-
 #line default
 #line hidden
             WriteLiteral("    <p>We wrote 10 lines!</p>\r\n");
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 }
-
 
 #line default
 #line hidden
@@ -68,14 +63,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
  switch(i) {
     case 11:
 
-
 #line default
 #line hidden
             WriteLiteral("        <p>No really, we wrote 10 lines!</p>\r\n");
 #line 20 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
         break;
     default:
-
 
 #line default
 #line hidden
@@ -84,13 +77,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         break;
 }
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
 #line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  for(int j = 1; j <= 10; j += 2) {
-
 
 #line default
 #line hidden
@@ -104,20 +95,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 }
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
 #line 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  try {
 
-
 #line default
 #line hidden
             WriteLiteral("    <p>That time, we wrote 5 lines!</p>\r\n");
 #line 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 } catch(Exception ex) {
-
 
 #line default
 #line hidden
@@ -131,13 +119,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 }
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
 #line 36 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  lock(new object()) {
-
 
 #line default
 #line hidden

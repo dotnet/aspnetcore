@@ -3,19 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
     public class CSharpStatementIRNode : RazorIRNode
     {
-        public override IList<RazorIRNode> Children { get; } = EmptyArray;
+        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }
 
         public override SourceSpan? Source { get; set; }
-
-        public string Content { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {

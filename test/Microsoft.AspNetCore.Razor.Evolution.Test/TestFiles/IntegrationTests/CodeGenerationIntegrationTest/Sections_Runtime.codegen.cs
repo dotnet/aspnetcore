@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
   
     Layout = "_SectionTestLayout.cshtml"
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n<div>This is in the Body>\r\n\r\n");

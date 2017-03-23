@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         return _rand.Next();
     }
 
-
 #line default
 #line hidden
     }

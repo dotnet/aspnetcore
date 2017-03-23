@@ -98,6 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal(3, @class.Children.Count);
 
             var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
+            var tokenNode = vcthClass.Children[0] as RazorIRToken;
             Assert.Equal(
                 @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
@@ -119,7 +120,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     }
 }
 ",
-                vcthClass.Content,
+                tokenNode.Content,
                 ignoreLineEndingDifferences: true);
         }
 
@@ -168,6 +169,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             Assert.Equal(3, @class.Children.Count);
 
             var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
+            var tokenNode = vcthClass.Children[0] as RazorIRToken;
             Assert.Equal(
                 @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
@@ -190,7 +192,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     }
 }
 ",
-                vcthClass.Content,
+                tokenNode.Content,
                 ignoreLineEndingDifferences: true);
         }
 
@@ -252,6 +254,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             Assert.Equal(3, @class.Children.Count);
 
             var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
+            var tokenNode = vcthClass.Children[0] as RazorIRToken;
             Assert.Equal(
                 @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
@@ -273,7 +276,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     }
 }
 ",
-                vcthClass.Content,
+                tokenNode.Content,
                 ignoreLineEndingDifferences: true);
         }
 

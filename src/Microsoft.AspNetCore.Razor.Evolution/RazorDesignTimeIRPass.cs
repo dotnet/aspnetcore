@@ -25,10 +25,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitClass(ClassDeclarationIRNode node)
             {
-                var designTimeHelperDeclaration = new CSharpStatementIRNode()
-                {
-                    Content = $"private static {typeof(object).FullName} {DesignTimeVariable} = null;",
-                };
+                var designTimeHelperDeclaration = new CSharpStatementIRNode();
+                RazorIRBuilder.Create(designTimeHelperDeclaration)
+                    .Add(new RazorIRToken()
+                    {
+                        Kind = RazorIRToken.TokenKind.CSharp,
+                        Content = $"private static {typeof(object).FullName} {DesignTimeVariable} = null;"
+                    });
 
                 node.Children.Insert(0, designTimeHelperDeclaration);
 
@@ -51,28 +54,40 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 public DirectiveTokenHelperIRNode()
                 {
-                    var disableWarningPragma = new CSharpStatementIRNode()
-                    {
-                        Content = "#pragma warning disable 219",
-                    };
+                    var disableWarningPragma = new CSharpStatementIRNode();
+                    RazorIRBuilder.Create(disableWarningPragma)
+                        .Add(new RazorIRToken()
+                        {
+                            Kind = RazorIRToken.TokenKind.CSharp,
+                            Content = "#pragma warning disable 219",
+                        });
                     Children.Add(disableWarningPragma);
 
-                    var methodStartNode = new CSharpStatementIRNode()
-                    {
-                        Content = "private void " + DirectiveTokenHelperMethodName + "() {"
-                    };
+                    var methodStartNode = new CSharpStatementIRNode();
+                    RazorIRBuilder.Create(methodStartNode)
+                        .Add(new RazorIRToken()
+                        {
+                            Kind = RazorIRToken.TokenKind.CSharp,
+                            Content = "private void " + DirectiveTokenHelperMethodName + "() {"
+                        });
                     Children.Add(methodStartNode);
 
-                    var methodEndNode = new CSharpStatementIRNode()
-                    {
-                        Content = "}"
-                    };
+                    var methodEndNode = new CSharpStatementIRNode();
+                    RazorIRBuilder.Create(methodEndNode)
+                        .Add(new RazorIRToken()
+                        {
+                            Kind = RazorIRToken.TokenKind.CSharp,
+                            Content = "}"
+                        });
                     Children.Add(methodEndNode);
 
-                    var restoreWarningPragma = new CSharpStatementIRNode()
-                    {
-                        Content = "#pragma warning restore 219",
-                    };
+                    var restoreWarningPragma = new CSharpStatementIRNode();
+                    RazorIRBuilder.Create(restoreWarningPragma)
+                        .Add(new RazorIRToken()
+                        {
+                            Kind = RazorIRToken.TokenKind.CSharp,
+                            Content = "#pragma warning restore 219",
+                        });
                     Children.Add(restoreWarningPragma);
                 }
 

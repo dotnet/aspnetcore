@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ImplicitExpression.cshtml"
  for(int i = 1; i <= 10; i++) {
 
-
 #line default
 #line hidden
             WriteLiteral("    <p>This is item #");

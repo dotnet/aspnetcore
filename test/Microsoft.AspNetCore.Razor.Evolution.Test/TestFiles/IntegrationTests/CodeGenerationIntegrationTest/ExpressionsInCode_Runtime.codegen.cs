@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     object foo = null;
     string bar = "Foo";
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");
@@ -33,13 +32,11 @@ Write(foo);
         
 } else {
 
-
 #line default
 #line hidden
             WriteLiteral("    <p>Foo is Null!</p>\r\n");
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
 }
-
 
 #line default
 #line hidden
@@ -58,7 +55,6 @@ Write(bar.Replace("F", "B"));
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
                             
 }
-
 
 #line default
 #line hidden

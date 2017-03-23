@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     var @class = "container-fluid";
     var @int = 1;
 
-
 #line default
 #line hidden
             WriteLiteral("\r\n");

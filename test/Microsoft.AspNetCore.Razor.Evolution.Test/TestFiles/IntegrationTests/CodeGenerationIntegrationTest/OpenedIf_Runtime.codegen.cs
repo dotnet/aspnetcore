@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/OpenedIf.cshtml"
  if (true) { 
 
-
 #line default
 #line hidden
             WriteLiteral("</body>\r\n</html>");

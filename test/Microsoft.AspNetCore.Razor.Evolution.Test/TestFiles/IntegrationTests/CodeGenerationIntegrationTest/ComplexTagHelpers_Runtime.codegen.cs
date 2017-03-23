@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     var checkbox = "checkbox";
 
 
-
 #line default
 #line hidden
             WriteLiteral("    <div class=\"randomNonTagHelperAttribute\">\r\n        ");
@@ -54,7 +53,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
              if (false)
             {
-
 
 #line default
 #line hidden
@@ -97,7 +95,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             }
             else
             {
-
 
 #line default
 #line hidden
@@ -210,7 +207,6 @@ __TestNamespace_InputTagHelper2.Checked = true;
                 WriteLiteral("\r\n");
 #line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
             }
-
 
 #line default
 #line hidden
