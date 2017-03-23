@@ -9,9 +9,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -95,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerOptions = new KestrelServerOptions(),
-                Log = Mock.Of<IKestrelTrace>()
+                Log = new MockTrace()
             };
             var listenerContext = new ListenerContext(serviceContext)
             {
@@ -105,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 Input = socketInput,
                 Output = new MockSocketOutput(),
-                ConnectionControl = Mock.Of<IConnectionControl>()
+                ConnectionControl = new MockConnectionControl()
             };
             connectionContext.ListenerContext.ServiceContext.HttpParserFactory = f => new Internal.Http.KestrelHttpParser(log: null);
 

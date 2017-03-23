@@ -14,6 +14,18 @@ namespace Microsoft.AspNetCore.Testing
         {
         }
 
+        public HttpVersion HttpVersionEnum
+        {
+            get => _httpVersion;
+            set => _httpVersion = value;
+        }
+
+        public bool KeepAlive
+        {
+            get => _keepAlive;
+            set => _keepAlive = value;
+        }
+
         public Task ProduceEndAsync()
         {
             return ProduceEnd();

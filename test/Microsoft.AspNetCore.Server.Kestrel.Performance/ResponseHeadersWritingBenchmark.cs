@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -39,6 +38,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _frame.Reset();
             _frame.StatusCode = 200;
+            _frame.HttpVersionEnum = HttpVersion.Http11;
+            _frame.KeepAlive = true;
 
             Task writeTask = Task.CompletedTask;
             switch (Type)
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerOptions = new KestrelServerOptions(),
-                Log = Mock.Of<IKestrelTrace>()
+                Log = new MockTrace()
             };
 
             var listenerContext = new ListenerContext(serviceContext)
@@ -131,10 +132,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 Input = input,
                 Output = socketOutput,
-                ConnectionControl = Mock.Of<IConnectionControl>()
+                ConnectionControl = new MockConnectionControl()
             };
 
             connectionContext.ListenerContext.ServiceContext.HttpParserFactory = f => new KestrelHttpParser(log: null);
+            connectionContext.ListenerContext.ServiceContext.ServerOptions = new KestrelServerOptions();
 
             var frame = new TestFrame<object>(application: null, context: connectionContext);
             frame.Reset();
