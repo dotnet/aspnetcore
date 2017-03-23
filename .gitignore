@@ -38,3 +38,4 @@ node_modules
 .build/
 .testPublish/
 .vscode
+global.json
