@@ -30,4 +30,3 @@ project.lock.json
 .build/
 *.nuget.props
 *.nuget.targets
-global.json
