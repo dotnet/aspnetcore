@@ -339,6 +339,9 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
 
             Assert.Equal(1, store.Count());
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
         private List<LogInfo> NodeLogs(ScopeNode node, List<LogInfo> logs)
