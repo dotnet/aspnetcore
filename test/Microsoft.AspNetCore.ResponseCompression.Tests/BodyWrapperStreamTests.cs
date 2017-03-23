@@ -133,6 +133,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             Assert.Equal(buffer, written);
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
         private class MockResponseCompressionProvider: IResponseCompressionProvider
