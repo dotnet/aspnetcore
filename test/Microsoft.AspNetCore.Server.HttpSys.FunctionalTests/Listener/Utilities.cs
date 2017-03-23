@@ -28,8 +28,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
 #if NET452
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
-#else
+#elif NETCOREAPP2_0
             IsWin8orLater = (new Version(RuntimeEnvironment.OperatingSystemVersion) >= win8Version);
+#else
+#error Target framework needs to be updated
 #endif
         }
 

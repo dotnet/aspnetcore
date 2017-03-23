@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
 #if NET452
                     return !string.IsNullOrEmpty(System.DirectoryServices.ActiveDirectory.Domain.GetComputerDomain().Name);
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
                 }
                 catch

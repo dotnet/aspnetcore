@@ -186,10 +186,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Abort();
                 Assert.True(canceled.WaitOne(interval), "Aborted");
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-#if !NETCOREAPP1_1
+#if NET452
                 // HttpClient re-tries the request because it doesn't know if the request was received.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Abort();
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }

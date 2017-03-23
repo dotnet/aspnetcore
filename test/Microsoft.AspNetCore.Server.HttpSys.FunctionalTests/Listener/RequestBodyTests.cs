@@ -72,6 +72,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Equal("Hello World", response);
             }
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
         [ConditionalFact]

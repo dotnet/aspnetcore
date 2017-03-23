@@ -111,8 +111,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         {
 #if NET452
             WebRequestHandler handler = new WebRequestHandler();
-#else
+#elif NETCOREAPP2_0
             WinHttpHandler handler = new WinHttpHandler();
+#else
+#error Target framework needs to be updated
 #endif
             handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
             if (cert != null)
@@ -129,8 +131,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         {
 #if NET452
             WebRequestHandler handler = new WebRequestHandler();
-#else
+#elif NETCOREAPP2_0
             WinHttpHandler handler = new WinHttpHandler();
+#else
+#error Target framework needs to be updated
 #endif
             handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
             using (HttpClient client = new HttpClient(handler))

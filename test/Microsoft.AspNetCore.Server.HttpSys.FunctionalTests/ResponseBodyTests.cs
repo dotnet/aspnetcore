@@ -89,8 +89,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Stream stream = httpContext.Response.Body;
 #if NET452
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
-#else
+#elif NETCOREAPP2_0
                 await stream.WriteAsync(new byte[10], 0, 10);
+#else
+#error Target framework needs to be updated
 #endif
                 stream.Write(new byte[10], 0, 10);
                 await stream.WriteAsync(new byte[10], 0, 10);
@@ -249,6 +251,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
             }
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
         [ConditionalFact]
         public async Task ResponseBody_WriteAsync_TriggersOnStarting()
