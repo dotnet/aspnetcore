@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.DataProtection
             });
         }
 
-#if !NETCOREAPP1_1 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if NET452 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
         [ConditionalFact]
         [ConditionalRunTestOnlyIfLocalAppDataAvailable]
         [ConditionalRunTestOnlyOnWindows]
@@ -149,6 +149,9 @@ namespace Microsoft.AspNetCore.DataProtection
                 }
             });
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
         /// <summary>

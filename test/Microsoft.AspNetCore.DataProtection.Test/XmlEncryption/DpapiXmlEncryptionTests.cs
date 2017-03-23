@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             XmlAssert.Equal(originalXml, roundTrippedElement);
         }
 
-#if !NETCOREAPP1_1
+#if NET452
         [ConditionalFact]
         [ConditionalRunTestOnlyOnWindows]
         public void Encrypt_CurrentUser_Decrypt_ImpersonatedAsAnonymous_Fails()
@@ -53,6 +53,9 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             ExceptionAssert2.ThrowsCryptographicException(() =>
                 AnonymousImpersonation.Run(() => decryptor.Decrypt(encryptedXmlInfo.EncryptedElement)));
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
     }
 }

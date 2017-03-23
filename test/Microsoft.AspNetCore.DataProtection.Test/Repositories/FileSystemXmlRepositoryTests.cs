@@ -159,10 +159,12 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private static string GetLocalApplicationData()
         {
-#if NETCOREAPP1_1
+#if NETCOREAPP2_0
             return Environment.GetEnvironmentVariable("LOCALAPPDATA");
-#else
+#elif NET452
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+#else
+#error Target framework needs to be updated
 #endif
         }
 
