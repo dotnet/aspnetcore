@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.Equal(File.ReadAllBytes(path), written);
         }
 
-#if NET452
+#if NET46
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

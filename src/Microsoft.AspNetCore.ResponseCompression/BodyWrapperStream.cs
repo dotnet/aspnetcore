@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
         }
 
-#if NET451
+#if NET46
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, Object state)
         {
             var tcs = new TaskCompletionSource<object>(state);
@@ -184,6 +184,9 @@ namespace Microsoft.AspNetCore.ResponseCompression
             var task = (Task)asyncResult;
             task.GetAwaiter().GetResult();
         }
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated
 #endif
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)

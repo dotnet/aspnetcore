@@ -32,3 +32,4 @@ project.lock.json
 .vscode/
 *.nuget.props
 *.nuget.targets
+global.json

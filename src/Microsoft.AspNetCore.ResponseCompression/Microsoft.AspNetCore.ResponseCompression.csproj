@@ -5,7 +5,7 @@
   <PropertyGroup>
     <VersionPrefix>1.1.0</VersionPrefix>
     <Description>ASP.NET Core middleware for HTTP Response compression.</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
   </PropertyGroup>

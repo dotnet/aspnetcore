@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Buffering
                 return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
             }
         }
-#if !NETSTANDARD1_3
+#if NET46
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             if (_isBuffering)
@@ -184,6 +184,9 @@ namespace Microsoft.AspNetCore.Buffering
                 _innerStream.EndWrite(asyncResult);
             }
         }
+#elif NETSTANDARD1_3
+#else
+#error target frameworks need to be updated
 #endif
         public override void Flush()
         {
