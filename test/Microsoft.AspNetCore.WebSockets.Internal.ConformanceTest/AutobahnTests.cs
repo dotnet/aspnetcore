@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest
             _output = output;
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "Too flaky. See https://github.com/aspnet/SignalR/issues/336")]
         [SkipIfWsTestNotPresent]
         public async Task AutobahnTestSuite()
         {
