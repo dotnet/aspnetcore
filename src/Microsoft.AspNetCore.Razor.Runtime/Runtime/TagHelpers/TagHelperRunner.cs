@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     public class TagHelperRunner
     {
         /// <summary>
-        /// Calls the <see cref="ITagHelper.ProcessAsync"/> method on <see cref="ITagHelper"/>s.
+        /// Calls the <see cref="ITagHelperComponent.ProcessAsync"/> method on <see cref="ITagHelper"/>s.
         /// </summary>
         /// <param name="executionContext">Contains information associated with running <see cref="ITagHelper"/>s.
         /// </param>

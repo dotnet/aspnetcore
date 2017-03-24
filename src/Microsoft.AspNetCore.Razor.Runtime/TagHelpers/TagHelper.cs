@@ -7,15 +7,28 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     /// <summary>
-    /// Class used to filter matching HTML elements.
+    /// An abstract base class for <see cref="ITagHelper"/>.
     /// </summary>
     public abstract class TagHelper : ITagHelper
     {
-        /// <inheritdoc />
+        /// <summary>
+        /// When a set of <see cref="ITagHelper"/>s are executed, their <see cref="Init(TagHelperContext)"/>'s
+        /// are first invoked in the specified <see cref="Order"/>; then their
+        /// <see cref="ProcessAsync(TagHelperContext, TagHelperOutput)"/>'s are invoked in the specified
+        /// <see cref="Order"/>. Lower values are executed first.
+        /// </summary>
         /// <remarks>Default order is <c>0</c>.</remarks>
         public virtual int Order { get; } = 0;
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Initializes the <see cref="ITagHelper"/> with the given <paramref name="context"/>. Additions to
+        /// <see cref="TagHelperContext.Items"/> should be done within this method to ensure they're added prior to
+        /// executing the children.
+        /// </summary>
+        /// <param name="context">Contains information associated with the current HTML tag.</param>
+        /// <remarks>When more than one <see cref="ITagHelper"/> runs on the same element,
+        /// <see cref="M:TagHelperOutput.GetChildContentAsync"/> may be invoked prior to <see cref="ProcessAsync"/>.
+        /// </remarks>
         public virtual void Init(TagHelperContext context)
         {
         }

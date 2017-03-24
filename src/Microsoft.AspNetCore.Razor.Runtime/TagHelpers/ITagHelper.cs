@@ -1,41 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     /// <summary>
     /// Contract used to filter matching HTML elements.
+    /// Marker interface for <see cref="TagHelper"/>s.
     /// </summary>
-    public interface ITagHelper
+    public interface ITagHelper : ITagHelperComponent
     {
-        /// <summary>
-        /// When a set of<see cref= "ITagHelper" /> s are executed, their<see cref="Init(TagHelperContext)"/>'s
-        /// are first invoked in the specified <see cref="Order"/>; then their
-        /// <see cref="ProcessAsync(TagHelperContext, TagHelperOutput)"/>'s are invoked in the specified
-        /// <see cref="Order"/>. Lower values are executed first.
-        /// </summary>
-        int Order { get; }
-
-        /// <summary>
-        /// Initializes the <see cref="ITagHelper"/> with the given <paramref name="context"/>. Additions to
-        /// <see cref="TagHelperContext.Items"/> should be done within this method to ensure they're added prior to
-        /// executing the children.
-        /// </summary>
-        /// <param name="context">Contains information associated with the current HTML tag.</param>
-        /// <remarks>When more than one <see cref="ITagHelper"/> runs on the same element,
-        /// <see cref="M:TagHelperOutput.GetChildContentAsync"/> may be invoked prior to <see cref="ProcessAsync"/>.
-        /// </remarks>
-        void Init(TagHelperContext context);
-
-        /// <summary>
-        /// Asynchronously executes the <see cref="ITagHelper"/> with the given <paramref name="context"/> and
-        /// <paramref name="output"/>.
-        /// </summary>
-        /// <param name="context">Contains information associated with the current HTML tag.</param>
-        /// <param name="output">A stateful HTML element used to generate an HTML tag.</param>
-        /// <returns>A <see cref="Task"/> that on completion updates the <paramref name="output"/>.</returns>
-        Task ProcessAsync(TagHelperContext context, TagHelperOutput output);
     }
 }
