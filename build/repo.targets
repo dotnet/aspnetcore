@@ -1,4 +1,4 @@
-<Project>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <NuGetPublishVolatileFeed>https://dotnet.myget.org/F/aspnetcore-volatile-dev/api/v2/package</NuGetPublishVolatileFeed>
 
@@ -17,6 +17,10 @@
     <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>
     <BuildDependsOn>$(BuildDependsOn);CloneRepositories;BuildRepositories</BuildDependsOn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PackagePublisher" Version="1.0.1-*" />
+  </ItemGroup>
 
   <Import
     Project="$(_DependencyRepositoryList)"
@@ -100,8 +104,18 @@
       Condition="'$(CloneRepositoryCommit)'!=''" />
   </Target>
 
+  <Target Name="_ResolvePackagePublisherPath" DependsOnTargets="RunResolvePackageDependencies">
+    <ItemGroup>
+      <PackagePublisherPath Include="%(PackageDefinitions.ResolvedPath)" Condition="'%(PackageDefinitions.Name)'=='PackagePublisher'" />
+    </ItemGroup>
+ 
+   <PropertyGroup>
+      <_PackagePublisherPath>@(PackagePublisherPath)\PackagePublisher.exe</_PackagePublisherPath>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="BuildRepositories"
-     DependsOnTargets="_FilterRepositories;_FindDotNetPath;_GenerateRestoreGraphSpecs;_GenerateBuildGraph;_UpdateNuGetConfig;_CreateRepositoriesListWithCommits">
+     DependsOnTargets="_FilterRepositories;_FindDotNetPath;_ResolvePackagePublisherPath;_GenerateRestoreGraphSpecs;_GenerateBuildGraph;_UpdateNuGetConfig;_CreateRepositoriesListWithCommits">
 
     <PropertyGroup>
       <_BuildRepositoryProperties>
@@ -117,7 +131,8 @@
         _CloneRepositoryRoot=$(_CloneRepositoryRoot);
         _DependencyPackagesDirectory=$(_DependencyPackagesDirectory);
         _RepositoryBuildTargets=$(_RepositoryBuildTargets);
-        _RestoreGraphSpecsDirectory=$(_RestoreGraphSpecsDirectory)
+        _RestoreGraphSpecsDirectory=$(_RestoreGraphSpecsDirectory);
+        PackagePublisherPath=$(_PackagePublisherPath)
       </_BuildRepositoryProperties>
 
       <_BuildRepositoryProperties Condition="'$(PublishPackages)'=='true'">
