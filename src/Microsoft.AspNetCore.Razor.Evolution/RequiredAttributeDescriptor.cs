@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public ValueComparisonMode ValueComparison { get; protected set; }
 
+        public string DisplayName { get; protected set; }
+
         public IReadOnlyList<RazorDiagnostic> Diagnostics { get; protected set; }
 
         public bool HasAnyErrors

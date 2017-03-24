@@ -72,11 +72,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 diagnostics.UnionWith(_diagnostics);
             }
 
+            var displayName = _nameComparison == RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch ? string.Concat(_name, "...") : _name;
             var rule = new DefaultTagHelperRequiredAttributeDescriptor(
                 _name,
                 _nameComparison,
                 _value,
                 _valueComparison,
+                displayName,
                 diagnostics);
 
             return rule;
@@ -128,12 +130,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 NameComparisonMode nameComparison,
                 string value,
                 ValueComparisonMode valueComparison,
+                string displayName,
                 IEnumerable<RazorDiagnostic> diagnostics)
             {
                 Name = name;
                 NameComparison = nameComparison;
                 Value = value;
                 ValueComparison = valueComparison;
+                DisplayName = displayName;
                 Diagnostics = new List<RazorDiagnostic>(diagnostics);
             }
         }

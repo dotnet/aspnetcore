@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 descriptorX.ValueComparison == descriptorY.ValueComparison &&
                 string.Equals(descriptorX.Name, descriptorY.Name, _stringComparison) &&
                 string.Equals(descriptorX.Value, descriptorY.Value, StringComparison.Ordinal) &&
+                string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal) &&
                 Enumerable.SequenceEqual(descriptorX.Diagnostics, descriptorY.Diagnostics);
         }
 
@@ -74,6 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             hashCodeCombiner.Add(descriptor.ValueComparison);
             hashCodeCombiner.Add(descriptor.Name, _stringComparer);
             hashCodeCombiner.Add(descriptor.Value, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.DisplayName, StringComparer.Ordinal);
 
             return hashCodeCombiner.CombinedHash;
         }
