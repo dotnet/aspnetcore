@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var engine = RazorEngine.CreateEmpty((b) =>
             {
                 b.Phases.Add(phase);
-                b.Features.Add(new MyConfigureParserOptions());
+                b.Features.Add(new MyParserOptionsFeature());
             });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var engine = RazorEngine.CreateEmpty((b) =>
             {
                 b.Phases.Add(phase);
-                b.Features.Add(new MyConfigureParserOptions());
+                b.Features.Add(new MyParserOptionsFeature());
             });
 
             var imports = new[]
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); });
         }
 
-        private class MyConfigureParserOptions : IRazorConfigureParserFeature
+        private class MyParserOptionsFeature : IRazorParserOptionsFeature
         {
             public RazorEngine Engine { get; set; }
 

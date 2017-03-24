@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         internal static void AddDesignTimeDefaults(IRazorEngineBuilder builder)
         {
-            builder.Features.Add(new ConfigureDesignTimeOptions());
+            builder.Features.Add(new DesignTimeParserOptionsFeature());
             builder.Features.Add(new RazorDesignTimeIRPass());
         }
 
@@ -116,17 +116,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public abstract IReadOnlyList<IRazorEnginePhase> Phases { get; }
 
         public abstract void Process(RazorCodeDocument document);
-
-        internal class ConfigureDesignTimeOptions : IRazorConfigureParserFeature
-        {
-            public RazorEngine Engine { get; set; }
-
-            public int Order { get; set; }
-
-            public void Configure(RazorParserOptions options)
-            {
-                options.DesignTimeMode = true;
-            }
-        }
     }
 }

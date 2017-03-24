@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal interface IRazorConfigureParserFeature : IRazorEngineFeature
+    public interface IRazorParserOptionsFeature : IRazorEngineFeature
     {
         int Order { get; }
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class DefaultRazorDirectiveFeature : IRazorDirectiveFeature, IRazorConfigureParserFeature
+    internal class DefaultRazorDirectiveFeature : IRazorDirectiveFeature, IRazorParserOptionsFeature
     {
         public ICollection<DirectiveDescriptor> Directives { get; } = new List<DirectiveDescriptor>();
 
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public int Order => 100;
 
-        void IRazorConfigureParserFeature.Configure(RazorParserOptions options)
+        void IRazorParserOptionsFeature.Configure(RazorParserOptions options)
         {
             options.Directives.Clear();
 

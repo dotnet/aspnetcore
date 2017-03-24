@@ -7,11 +7,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultRazorParsingPhase : RazorEnginePhaseBase, IRazorParsingPhase
     {
-        private IRazorConfigureParserFeature[] _parserOptionsCallbacks;
+        private IRazorParserOptionsFeature[] _parserOptionsCallbacks;
 
         protected override void OnIntialized()
         {
-            _parserOptionsCallbacks = Engine.Features.OfType<IRazorConfigureParserFeature>().ToArray();
+            _parserOptionsCallbacks = Engine.Features.OfType<IRazorParserOptionsFeature>().ToArray();
         }
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
