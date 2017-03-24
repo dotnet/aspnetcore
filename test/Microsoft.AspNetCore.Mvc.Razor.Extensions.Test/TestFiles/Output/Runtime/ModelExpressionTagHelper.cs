@@ -29,7 +29,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 #line default
 #line hidden
-    public class TestFiles_Input_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Razor.RazorPage<DateTime>
+    public class TestFiles_Input_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
         #line hidden
         #pragma warning disable 0414

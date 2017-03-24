@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
             @class.Name = ClassName.GetClassNameFromPath(filePath);
-            @class.BaseType = "global::Microsoft.AspNetCore.Razor.RazorPage<TModel>";
+            @class.BaseType = "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
             @class.AccessModifier = "public";
             @namespace.Content = "AspNetCore";
             method.Name = "ExecuteAsync";

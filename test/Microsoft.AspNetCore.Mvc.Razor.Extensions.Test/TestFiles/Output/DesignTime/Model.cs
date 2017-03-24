@@ -28,7 +28,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 #line default
 #line hidden
-    public class TestFiles_Input_Model_cshtml : global::Microsoft.AspNetCore.Razor.RazorPage<System.Collections.IEnumerable>
+    public class TestFiles_Input_Model_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {

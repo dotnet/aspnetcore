@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal("global::Microsoft.AspNetCore.RazorPages.Page", visitor.Class.BaseType);
+            Assert.Equal("global::Microsoft.AspNetCore.Mvc.RazorPages.Page", visitor.Class.BaseType);
             Assert.Equal("public", visitor.Class.AccessModifier);
             Assert.Equal("Test_cshtml", visitor.Class.Name);
         }

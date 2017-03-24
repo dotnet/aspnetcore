@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FileName;
 
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
-            @class.BaseType = "global::Microsoft.AspNetCore.RazorPages.Page";
+            @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";
             @class.Name = ClassName.GetClassNameFromPath(filePath);
             @class.AccessModifier = "public";
             @namespace.Content = "AspNetCore";

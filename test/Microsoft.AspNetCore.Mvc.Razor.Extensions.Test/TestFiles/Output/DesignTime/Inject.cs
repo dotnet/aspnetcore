@@ -33,7 +33,7 @@ using MyNamespace;
 
 #line default
 #line hidden
-    public class TestFiles_Input_Inject_cshtml : global::Microsoft.AspNetCore.Razor.RazorPage<dynamic>
+    public class TestFiles_Input_Inject_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
