@@ -125,14 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var engine = RazorEngine.Create(b =>
             {
-                InjectDirective.Register(b);
-                ModelDirective.Register(b);
-
-                b.AddTargetExtension(new InjectDirectiveTargetExtension());
-
-                b.Features.Add(new ModelExpressionPass());
-                b.Features.Add(new MvcViewDocumentClassifierPass());
-                b.Features.Add(new DefaultInstrumentationPass());
+                RazorExtensions.Register(b);
 
                 b.Features.Add(new DefaultTagHelperFeature());
                 b.Features.Add(GetMetadataReferenceFeature());
@@ -173,13 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var engine = RazorEngine.CreateDesignTime(b =>
             {
-                InjectDirective.Register(b);
-                ModelDirective.Register(b);
-
-                b.AddTargetExtension(new InjectDirectiveTargetExtension());
-
-                b.Features.Add(new ModelExpressionPass());
-                b.Features.Add(new MvcViewDocumentClassifierPass());
+                RazorExtensions.Register(b);
 
                 b.Features.Add(new DefaultTagHelperFeature());
                 b.Features.Add(GetMetadataReferenceFeature());
