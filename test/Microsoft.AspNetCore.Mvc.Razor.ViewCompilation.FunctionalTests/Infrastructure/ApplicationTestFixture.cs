@@ -63,11 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 RuntimeArchitecture.x64)
             {
                 PublishApplicationBeforeDeployment = true,
-#if NETCOREAPP1_1
-                TargetFramework = "netcoreapp1.1",
-#else
-#error the target framework needs to be updated.
-#endif
+                TargetFramework = "netcoreapp2.0",
 #if DEBUG
                 Configuration = "Debug",
 #else
