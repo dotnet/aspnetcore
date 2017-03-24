@@ -26,13 +26,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _output = output;
         }
 
+#if NET46
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5050/", ApplicationType.Standalone)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5051/", ApplicationType.Portable)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5051/", ApplicationType.Portable)]
+        public Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        {
+            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
+        }
+#endif
+
+#if NETCOREAPP2_0
+        [ConditionalTheory(Skip = "No test configuration enabled")]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5050/", ApplicationType.Standalone)]
         // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
-        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/", ApplicationType.Standalone)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/", ApplicationType.Standalone)]
+        public Task NtlmAuthentication_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        {
+            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
+        }
+#endif
+
         public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             var factory = new LoggerFactory().AddDebug();
