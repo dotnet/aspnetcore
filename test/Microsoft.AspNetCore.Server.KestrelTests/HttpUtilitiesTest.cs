@@ -120,11 +120,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             });
         }
 
-        private void TestKnownStringsInterning(string input, string expected, Func<Span<byte>, string> action)
+        private void TestKnownStringsInterning(string input, string expected, Func<byte[], string> action)
         {
             // Act
-            var knownString1 = action(new Span<byte>(Encoding.ASCII.GetBytes(input)));
-            var knownString2 = action(new Span<byte>(Encoding.ASCII.GetBytes(input)));
+            var knownString1 = action(Encoding.ASCII.GetBytes(input));
+            var knownString2 = action(Encoding.ASCII.GetBytes(input));
 
             // Assert
             Assert.Equal(knownString1, expected);
