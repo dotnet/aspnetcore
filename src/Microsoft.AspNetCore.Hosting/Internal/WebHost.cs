@@ -131,7 +131,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
-            // REVIEW: Is this the right place to log these errors?
             if (_hostingStartupErrors != null)
             {
                 foreach (var exception in _hostingStartupErrors.InnerExceptions)
