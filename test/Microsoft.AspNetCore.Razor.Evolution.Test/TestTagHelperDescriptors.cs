@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNetCore.Razor.Evolution;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 {
@@ -46,8 +47,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             get
             {
-                var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
-                var inputCheckedPropertyInfo = typeof(TestType).GetProperty("Checked");
+                var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
+                var inputCheckedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
 
                 return new[]
                 {
@@ -292,8 +293,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             get
             {
-                var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
-                var inputCheckedPropertyInfo = typeof(TestType).GetProperty("Checked");
+                var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
+                var inputCheckedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
                 return new[]
                 {
                     CreateTagHelperDescriptor(
@@ -399,7 +400,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             get
             {
-                var propertyInfo = typeof(TestType).GetProperty("BoundProperty");
+                var propertyInfo = typeof(TestType).GetRuntimeProperty("BoundProperty");
                 return new[]
                 {
                     CreateTagHelperDescriptor(
@@ -422,9 +423,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             get
             {
-                var pAgePropertyInfo = typeof(TestType).GetProperty("Age");
-                var inputTypePropertyInfo = typeof(TestType).GetProperty("Type");
-                var checkedPropertyInfo = typeof(TestType).GetProperty("Checked");
+                var pAgePropertyInfo = typeof(TestType).GetRuntimeProperty("Age");
+                var inputTypePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
+                var checkedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
 
                 return new[]
                 {

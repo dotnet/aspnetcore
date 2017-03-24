@@ -35,5 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             return value;
         }
+
+        public new string NormalizeAndEnsureValidPath(string path) => base.NormalizeAndEnsureValidPath(path);
     }
 }

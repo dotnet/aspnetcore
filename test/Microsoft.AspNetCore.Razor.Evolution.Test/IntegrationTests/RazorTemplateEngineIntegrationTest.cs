@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             {
                 Content = content,
             };
-            var project = new TestRazorProject(new[] { projectItem });
+            var project = new TestRazorProject(new[]{ projectItem });
             var razorEngine = RazorEngine.Create();
             var templateEngine = new RazorTemplateEngine(razorEngine, project);
 

@@ -16,9 +16,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class RazorEngineTest
+    public class CodeGenerationTests
     {
-        private static Assembly _assembly = typeof(RazorEngineTest).GetTypeInfo().Assembly;
+        private static Assembly _assembly = typeof(CodeGenerationTests).GetTypeInfo().Assembly;
 
         #region Runtime
         [Fact]
@@ -61,6 +61,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorEngine_ModelExpressionTagHelper_Runtime()
         {
             RunRuntimeTest("ModelExpressionTagHelper");
+        }
+
+        [Fact]
+        public void RazorEngine_RazorPages_Runtime()
+        {
+            RunRuntimeTest("RazorPages", BuildDivDescriptors());
         }
         #endregion
 
@@ -112,9 +118,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             RunDesignTimeTest("ModelExpressionTagHelper");
         }
+
+        [Fact]
+        public void RazorEngine_RazorPages_DesignTime()
+        {
+            RunDesignTimeTest("RazorPages", BuildDivDescriptors());
+        }
         #endregion
 
-        private static void RunRuntimeTest(string testName)
+        private static void RunRuntimeTest(string testName, IEnumerable<TagHelperDescriptor> descriptors = null)
         {
             // Arrange
             var inputFile = "TestFiles/Input/" + testName + ".cshtml";
@@ -125,8 +137,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 RazorExtensions.Register(b);
 
-                b.Features.Add(new DefaultTagHelperFeature());
                 b.Features.Add(GetMetadataReferenceFeature());
+
+                if (descriptors != null)
+                {
+                    b.AddTagHelpers(descriptors);
+                }
+                else
+                {
+                    b.Features.Add(new DefaultTagHelperFeature());
+                }
+
             });
 
             var inputContent = ResourceFile.ReadResource(_assembly, inputFile, sourceFile: true);
@@ -155,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 #endif
         }
 
-        private static void RunDesignTimeTest(string testName)
+        private static void RunDesignTimeTest(string testName, IEnumerable<TagHelperDescriptor> descriptors = null)
         {
             // Arrange
             var inputFile = "TestFiles/Input/" + testName + ".cshtml";
@@ -169,8 +190,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 RazorExtensions.Register(b);
 
-                b.Features.Add(new DefaultTagHelperFeature());
                 b.Features.Add(GetMetadataReferenceFeature());
+
+                if (descriptors != null)
+                {
+                    b.AddTagHelpers(descriptors);
+                }
+                else
+                {
+                    b.Features.Add(new DefaultTagHelperFeature());
+                }
             });
 
             var inputContent = ResourceFile.ReadResource(_assembly, inputFile, sourceFile: true);
@@ -203,9 +232,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 #endif
         }
 
+        private static IEnumerable<TagHelperDescriptor> BuildDivDescriptors()
+        {
+            return new List<TagHelperDescriptor> {
+                BuildDescriptor("div", "DivTagHelper", "TestAssembly"),
+                BuildDescriptor("a", "UrlResolutionTagHelper", "Microsoft.AspNetCore.Mvc.Razor")
+            };
+        }
+
+        private static TagHelperDescriptor BuildDescriptor(
+            string tagName,
+            string typeName,
+            string assemblyName)
+        {
+            return ITagHelperDescriptorBuilder.Create(typeName, assemblyName)
+                .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName))
+                .Build();
+        }
+
         private static IRazorEngineFeature GetMetadataReferenceFeature()
         {
-            var currentAssembly = typeof(RazorEngineTest).GetTypeInfo().Assembly;
+            var currentAssembly = typeof(CodeGenerationTests).GetTypeInfo().Assembly;
             var dependencyContext = DependencyContext.Load(currentAssembly);
 
             var references = dependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths())

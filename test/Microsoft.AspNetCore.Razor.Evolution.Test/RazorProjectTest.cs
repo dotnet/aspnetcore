@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void NormalizeAndEnsureValidPath_DoesNotModifyPath()
         {
             // Arrange
-            var project = new TestRazorProject(new Dictionary<string, RazorProjectItem>());
+            var project = new TestRazorProject();
 
             // Act
             var path = project.NormalizeAndEnsureValidPath("/Views/Home/Index.cshtml");
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void NormalizeAndEnsureValidPath_ThrowsIfPathIsNullOrEmpty(string path)
         {
             // Arrange
-            var project = new TestRazorProject(new Dictionary<string, RazorProjectItem>());
+            var project = new TestRazorProject();
 
             // Act and Assert
             ExceptionAssert.ThrowsArgumentNullOrEmptyString(() => project.NormalizeAndEnsureValidPath(path), "path");
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void NormalizeAndEnsureValidPath_ThrowsIfPathDoesNotStartWithForwardSlash(string path)
         {
             // Arrange
-            var project = new TestRazorProject(new Dictionary<string, RazorProjectItem>());
+            var project = new TestRazorProject();
 
             // Act and Assert
             ExceptionAssert.ThrowsArgument(
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void FindHierarchicalItems_ReturnsEmptySequenceIfPathIsAtRoot()
         {
             // Arrange
-            var project = new TestRazorProject(new Dictionary<string, RazorProjectItem>());
+            var project = new TestRazorProject();
 
             // Act
             var result = project.FindHierarchicalItems("/", "File.cshtml");
@@ -72,11 +72,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/Views/Home/Index.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { $"/{fileName}", CreateProjectItem($"/{fileName}") },
-                { $"/Views/{fileName}", CreateProjectItem($"/Views/{fileName}") },
-                { $"/Views/Home/{fileName}", CreateProjectItem($"/Views/Home/{fileName}") },
+                CreateProjectItem($"/{fileName}"),
+                CreateProjectItem($"/Views/{fileName}"),
+                CreateProjectItem($"/Views/Home/{fileName}")
             };
             var project = new TestRazorProject(items);
 
@@ -96,9 +96,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/Index.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+                CreateProjectItem("/File.cshtml")
             };
             var project = new TestRazorProject(items);
 
@@ -116,13 +116,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/Areas/MyArea/Views/Home/File.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { "/Areas/MyArea/Views/Home/File.cshtml", CreateProjectItem("/Areas/MyArea/Views/Home/File.cshtml") },
-                { "/Areas/MyArea/Views/File.cshtml", CreateProjectItem("/Areas/MyArea/Views/File.cshtml") },
-                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
-                { "/Areas/File.cshtml", CreateProjectItem("/Areas/File.cshtml") },
-                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+                CreateProjectItem("/Areas/MyArea/Views/Home/File.cshtml"),
+                CreateProjectItem("/Areas/MyArea/Views/File.cshtml"),
+                CreateProjectItem("/Areas/MyArea/File.cshtml"),
+                CreateProjectItem("/Areas/File.cshtml"),
+                CreateProjectItem("/File.cshtml"),
             };
             var project = new TestRazorProject(items);
 
@@ -143,9 +143,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/File.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+                 CreateProjectItem("/File.cshtml")
             };
             var project = new TestRazorProject(items);
 
@@ -161,10 +161,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/Areas/MyArea/Views/Home/Test.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
-                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+                CreateProjectItem("/Areas/MyArea/File.cshtml"),
+                CreateProjectItem("/File.cshtml")
             };
             var project = new TestRazorProject(items);
 
@@ -208,10 +208,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/Areas/MyArea/Views/Home/Test.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
-                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+                CreateProjectItem("/Areas/MyArea/File.cshtml"),
+                CreateProjectItem("/File.cshtml")
             };
             var project = new TestRazorProject(items);
 
@@ -250,10 +250,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/Areas/MyArea/Views/Home/Test.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
-                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+                CreateProjectItem("/Areas/MyArea/File.cshtml"),
+                CreateProjectItem("/File.cshtml")
             };
             var project = new TestRazorProject(items);
 
@@ -282,10 +282,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/Areas/MyArea/Views/Home/Test.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
-                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+                CreateProjectItem("/Areas/MyArea/File.cshtml"),
+                CreateProjectItem("/File.cshtml"),
             };
             var project = new TestRazorProject(items);
 
@@ -308,10 +308,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var basePath = "/Pages";
             var path = "/Areas/MyArea/Views/Home/Test.cshtml";
-            var items = new Dictionary<string, RazorProjectItem>
+            var items = new List<RazorProjectItem>
             {
-                { "/Areas/MyArea/File.cshtml", CreateProjectItem("/Areas/MyArea/File.cshtml") },
-                { "/File.cshtml", CreateProjectItem("/File.cshtml") },
+                CreateProjectItem("/Areas/MyArea/File.cshtml"),
+                CreateProjectItem("/File.cshtml"),
             };
             var project = new TestRazorProject(items);
 
@@ -328,30 +328,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             projectItem.SetupGet(f => f.Path).Returns(path);
             projectItem.SetupGet(f => f.Exists).Returns(true);
             return projectItem.Object;
-        }
-
-        private class TestRazorProject : RazorProject
-        {
-            private readonly Dictionary<string, RazorProjectItem> _items;
-
-            public TestRazorProject(Dictionary<string, RazorProjectItem> items)
-            {
-                _items = items;
-            }
-
-            public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath) => throw new NotImplementedException();
-
-            public override RazorProjectItem GetItem(string path)
-            {
-                if (!_items.TryGetValue(path, out var item))
-                {
-                    item = new NotFoundProjectItem("", path);
-                }
-
-                return item;
-            }
-
-            public new string NormalizeAndEnsureValidPath(string path) => base.NormalizeAndEnsureValidPath(path);
         }
     }
 }

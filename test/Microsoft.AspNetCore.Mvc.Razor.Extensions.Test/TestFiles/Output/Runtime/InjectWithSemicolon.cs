@@ -36,21 +36,21 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
         {
         }
         #pragma warning restore 1998
-        [global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]
+        [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public MyService<MyModel> Html2 { get; private set; }
-        [global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]
+        [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public MyApp MyPropertyName2 { get; private set; }
-        [global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]
+        [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public MyService<MyModel> Html { get; private set; }
-        [global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]
+        [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public MyApp MyPropertyName { get; private set; }
-        [global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]
+        [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
-        [global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]
+        [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.IUrlHelper Url { get; private set; }
-        [global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]
+        [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.IViewComponentHelper Component { get; private set; }
-        [global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]
+        [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json { get; private set; }
     }
 }

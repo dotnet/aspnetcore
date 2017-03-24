@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal(
-                "[global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
+                "[global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
                 "public PropertyType PropertyName { get; private set; }" + Environment.NewLine,
                 context.Writer.Builder.ToString());
         }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Assert.Equal(
                 "#line 2 \"test-path\"" + Environment.NewLine +
-                "[global::Microsoft.AspNetCore.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
+                "[global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
                 "public PropertyType<ModelType> PropertyName { get; private set; }" + Environment.NewLine + Environment.NewLine +
                 "#line default" + Environment.NewLine +
                 "#line hidden" + Environment.NewLine,
