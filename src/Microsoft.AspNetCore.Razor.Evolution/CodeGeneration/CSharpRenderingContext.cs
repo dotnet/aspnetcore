@@ -62,17 +62,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 return;
             }
 
-            var imports = CodeDocument.GetImportSyntaxTrees();
-            if (imports != null)
+            if (SourceDocument.FileName != null &&
+                !string.Equals(SourceDocument.FileName, node.Source.Value.FilePath, StringComparison.OrdinalIgnoreCase))
             {
-                for (var i = 0; i < imports.Count; i++)
-                {
-                    if (string.Equals(imports[i].Source.FileName, node.Source.Value.FilePath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // We don't want to generate line mappings for imports.
-                        return;
-                    }
-                }
+                // We don't want to generate line mappings for imports.
+                return;
             }
 
             var source = node.Source.Value;
