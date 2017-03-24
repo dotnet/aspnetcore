@@ -1,11 +1,12 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26127.0
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore", "src\Microsoft.AspNetCore\Microsoft.AspNetCore.csproj", "{6F3D43F7-9546-4B41-AF04-CF4708B62051}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore", "src\Microsoft.AspNetCore\Microsoft.AspNetCore.csproj", "{6F3D43F7-9546-4B41-AF04-CF4708B62051}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.All", "src\Microsoft.AspNetCore.All\Microsoft.AspNetCore.All.csproj", "{CC8F551E-213A-45E8-AECA-507C4DB4F164}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,11 +18,16 @@ Global
 		{6F3D43F7-9546-4B41-AF04-CF4708B62051}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F3D43F7-9546-4B41-AF04-CF4708B62051}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F3D43F7-9546-4B41-AF04-CF4708B62051}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC8F551E-213A-45E8-AECA-507C4DB4F164}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC8F551E-213A-45E8-AECA-507C4DB4F164}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC8F551E-213A-45E8-AECA-507C4DB4F164}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC8F551E-213A-45E8-AECA-507C4DB4F164}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6F3D43F7-9546-4B41-AF04-CF4708B62051} = {ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}
+		{CC8F551E-213A-45E8-AECA-507C4DB4F164} = {ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}
 	EndGlobalSection
 EndGlobal

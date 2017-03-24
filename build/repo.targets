@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="common.props" />
+
+  <PropertyGroup>
+    <CompileDependsOn Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">
+      $(CompileDependsOn);
+      BuildPackageCache
+    </CompileDependsOn>
+  </PropertyGroup>
+
+  <Target Name="BuildPackageCache">
+
+    <PropertyGroup>
+      <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.All\</MetaPackagePath>
+      <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.All.csproj</MetaPackageFile>
+      <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
+      <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
+      <OutputZip>$(RepositoryRoot)artifacts\AspNetCorePackageCache.$(AspNetCoreVersion).zip</OutputZip>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(OutputPath)" />
+    <RemoveDir Directories="$(WorkingDirectory)" />
+    <Exec Command="dotnet cache --entries $(MetaPackageFile) --framework netcoreapp2.0 --runtime win7-x64 --output $(OutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)" />
+
+    <ItemGroup>
+      <PackageCacheFiles Include="$(OutputPath)**\*" />
+    </ItemGroup>
+    <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)" />
+  </Target>
+</Project>
