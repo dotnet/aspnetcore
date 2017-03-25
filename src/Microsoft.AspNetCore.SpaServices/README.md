@@ -788,14 +788,14 @@ Caveats:
 
 ## Debugging your JavaScript/TypeScript code when it runs on the server
 
-When you're using NodeServices or the server-side prerendering feature included in the project templates in this repo, your JavaScript/TypeScript code will execute on the server in a background instance of Node.js. You can enable debugging on that Node.js instance. Here's how to do it.
+When you're using NodeServices or the server-side prerendering feature included in the project templates in this repo, your JavaScript/TypeScript code will execute on the server in a background instance of Node.js. You can enable debugging via [V8 Inspector Integration](https://nodejs.org/api/debugger.html#debugger_v8_inspector_integration_for_node_js) on that Node.js instance. Here's how to do it.
 
 First, in your `Startup.cs` file, in the `ConfigureServices` method, add the following:
 
 ```
 services.AddNodeServices(options => {
     options.LaunchWithDebugging = true;
-    options.DebuggingPort = 5858;
+    options.DebuggingPort = 9229;
 });
 ```
 
@@ -803,21 +803,20 @@ Now, run your application from that command line (e.g., `dotnet run`). Then in a
 
 In the console, you should see all the normal trace messages appear, plus among them will be:
 
-      -----
-      *** Node.js debugging is enabled ***
-      Debugger listening on port 5858
+```
+warn: Microsoft.AspNetCore.NodeServices[0]
+      Debugger listening on port 9229.
+warn: Microsoft.AspNetCore.NodeServices[0]
+      Warning: This is an experimental feature and could change at any time.
+warn: Microsoft.AspNetCore.NodeServices[0]
+      To start debugging, open the following URL in Chrome:
+warn: Microsoft.AspNetCore.NodeServices[0]
+          chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=127.0.0.1:9229/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
 
-      To debug, run:
-         node-inspector
-      
-      If you haven't yet installed node-inspector, you can do so as follows:
-         npm install -g node-inspector
-      -----
+As per instructions open the URL in Chrome. Alternatively you can go to the `Sources` tab of the Dev Tools (at http://localhost:5000) and connect to the Node instance under `Threads` in the right sidebar.
 
-In some other command line window, follow those instructions (i.e., install `node-inspector` as it describes, then run `node-inspector`). Then you can open a browser at `http://127.0.0.1:8080/?port=5858` and you'll see the debugger UI.
+By expanding the `webpack://` entry in the sidebar, you'll be able to find your original source code (it's using source maps), and then set breakpoints in it. When you re-run your app in another browser window, your breakpoints will be hit, then you can debug the server-side execution just like you'd debug client-side execution. It looks like this:
 
-By expanding the `webpack://` entry in the sidebar, you'll be able to find your original TypeScript code (it's using source maps), and then set breakpoints in it. When you re-run your app in another browser window, your breakpoints will be hit, then you can debug the server-side execution just like you'd debug client-side execution. It looks like this:
+![screenshot from 2017-03-25 13-33-26](https://cloud.githubusercontent.com/assets/1596280/24324604/ab888a7e-115f-11e7-89d1-1586acf5e35c.png)
 
-![screen shot 2016-07-26 at 18 56 12](https://cloud.githubusercontent.com/assets/1101362/17149317/a6f7d00c-5362-11e6-969c-4c3a9bbc33f7.png)
-
-(Note: although this looks like Chrome's native debugger for client-side code, it is actually a JavaScript-powered debugger UI that's connected to the server-side runtime)

@@ -27,16 +27,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         protected readonly ILogger OutputLogger;
 
         private const string ConnectionEstablishedMessage = "[Microsoft.AspNetCore.NodeServices:Listening]";
-        private const string DebuggingStartedMessageFormat = @"-----
-*** Node.js debugging is enabled ***
-{0}
-
-To debug, run:
-   node-inspector{1}
-
-If you haven't yet installed node-inspector, you can do so as follows:
-   npm install -g node-inspector
------";
         private readonly TaskCompletionSource<object> _connectionIsReadySource = new TaskCompletionSource<object>();
         private bool _disposed;
         private readonly StringAsTempFile _entryPointScript;
@@ -215,8 +205,8 @@ If you haven't yet installed node-inspector, you can do so as follows:
         /// <param name="projectPath">The root path of the project. This is used when locating Node.js modules relative to the project root.</param>
         /// <param name="commandLineArguments">Command-line arguments to be passed to the Node.js process.</param>
         /// <param name="environmentVars">Environment variables to be set on the Node.js process.</param>
-        /// <param name="launchWithDebugging">If true, passes a flag to the Node.js process telling it to accept V8 debugger connections.</param>
-        /// <param name="debuggingPort">If debugging is enabled, the Node.js process should listen for V8 debugger connections on this port.</param>
+        /// <param name="launchWithDebugging">If true, passes a flag to the Node.js process telling it to accept V8 Inspector connections.</param>
+        /// <param name="debuggingPort">If debugging is enabled, the Node.js process should listen for V8 Inspector connections on this port.</param>
         /// <returns></returns>
         protected virtual ProcessStartInfo PrepareNodeProcessStartInfo(
             string entryPointFilename, string projectPath, string commandLineArguments,
@@ -226,7 +216,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
             string debuggingArgs;
             if (launchWithDebugging)
             {
-                debuggingArgs = debuggingPort != default(int) ? $"--debug={debuggingPort} " : "--debug ";
+                debuggingArgs = debuggingPort != default(int) ? $"--inspect={debuggingPort} " : "--inspect ";
                 _nodeDebuggingPort = debuggingPort;
             }
             else
@@ -389,10 +379,13 @@ If you haven't yet installed node-inspector, you can do so as follows:
             {
                 if (evt.Data != null)
                 {
-                    if (IsDebuggerListeningMessage(evt.Data))
+                    if (IsDebuggerMessage(evt.Data))
                     {
-                        var debugPortArg = _nodeDebuggingPort.HasValue ? $" --debug-port={_nodeDebuggingPort.Value}" : string.Empty;
-                        OutputLogger.LogWarning(string.Format(DebuggingStartedMessageFormat, evt.Data, debugPortArg));
+                        OutputLogger.LogWarning(evt.Data);
+                    }
+                    else if (IsWarning(evt.Data))
+                    {
+                        OutputLogger.LogWarning(evt.Data);
                     }
                     else if (!initializationIsCompleted)
                     {
@@ -411,9 +404,17 @@ If you haven't yet installed node-inspector, you can do so as follows:
             _nodeProcess.BeginErrorReadLine();
         }
 
-        private static bool IsDebuggerListeningMessage(string message)
+        private static bool IsDebuggerMessage(string message)
         {
-            return message.StartsWith("Debugger listening ", StringComparison.OrdinalIgnoreCase);
+            return message.StartsWith("Debugger attached", StringComparison.OrdinalIgnoreCase) ||
+                message.StartsWith("Debugger listening ", StringComparison.OrdinalIgnoreCase) ||
+                message.StartsWith("To start debugging", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("chrome-devtools:");
+        }
+
+        private static bool IsWarning(string message)
+        {
+            return message.StartsWith("Warning:", StringComparison.OrdinalIgnoreCase);
         }
 
         private FileSystemWatcher BeginFileWatcher(string rootDir)
