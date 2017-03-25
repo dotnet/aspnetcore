@@ -583,8 +583,10 @@ namespace Microsoft.Extensions.WebSockets.Internal
             return closeResult;
         }
 
-        private static void PingPayloadWriter(WritableBuffer output, Span<byte> maskingKey, int payloadLength, DateTime timestamp)
+        private static unsafe void PingPayloadWriter(WritableBuffer output, uint maskingKeyValue, int payloadLength, DateTime timestamp)
         {
+            var maskingKey = new Span<byte>(&maskingKeyValue, sizeof(uint));
+
             var payload = output.Buffer.Slice(0, payloadLength);
 
             // TODO: Don't put this string on the heap? Is there a way to do that without re-implementing ToString?
@@ -612,8 +614,10 @@ namespace Microsoft.Extensions.WebSockets.Internal
             output.Advance(payloadLength);
         }
 
-        private static void CloseResultPayloadWriter(WritableBuffer output, Span<byte> maskingKey, int payloadLength, WebSocketCloseResult result)
+        private static unsafe void CloseResultPayloadWriter(WritableBuffer output, uint maskingKeyValue, int payloadLength, WebSocketCloseResult result)
         {
+            var maskingKey = new Span<byte>(&maskingKeyValue, sizeof(uint));
+
             // Write the close payload out
             var payload = output.Buffer.Slice(0, payloadLength).Span;
             result.WriteTo(ref output);
@@ -624,8 +628,10 @@ namespace Microsoft.Extensions.WebSockets.Internal
             }
         }
 
-        private static void AppendPayloadWriter(WritableBuffer output, Span<byte> maskingKey, int payloadLength, ReadableBuffer payload)
+        private static unsafe void AppendPayloadWriter(WritableBuffer output, uint maskingKeyValue, int payloadLength, ReadableBuffer payload)
         {
+            var maskingKey = new Span<byte>(&maskingKeyValue, sizeof(uint));
+
             if (maskingKey.Length > 0)
             {
                 // Mask the payload in it's own buffer
@@ -635,7 +641,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
             output.Append(payload);
         }
 
-        private Task SendCoreAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, Span<byte>, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
+        private Task SendCoreAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, uint, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
         {
             if (_sendLock.Wait(0))
             {
@@ -647,13 +653,13 @@ namespace Microsoft.Extensions.WebSockets.Internal
             }
         }
 
-        private async Task SendCoreWaitForLockAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, Span<byte>, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
+        private async Task SendCoreWaitForLockAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, uint, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
         {
             await _sendLock.WaitAsync(cancellationToken);
             await SendCoreLockAcquiredAsync(fin, opcode, payloadAllocLength, payloadLength, payloadWriter, payload, cancellationToken);
         }
 
-        private async Task SendCoreLockAcquiredAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, Span<byte>, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
+        private async Task SendCoreLockAcquiredAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, uint, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
         {
             try
             {
@@ -679,17 +685,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
                 // Write the length and mask flag
                 WritePayloadLength(payloadLength, buffer);
 
-                var maskingKey = Span<byte>.Empty;
-                if (_maskingKeyBuffer != null)
-                {
-                    // Get a span of the output buffer for the masking key, write it there, then advance the write head.
-                    maskingKey = buffer.Buffer.Slice(0, 4).Span;
-                    WriteMaskingKey(maskingKey);
-                    buffer.Advance(4);
-                }
-
-                // Write the payload
-                payloadWriter(buffer, maskingKey, payloadLength, payload);
+                WritePayload(ref buffer, payloadLength, payloadWriter, payload);
 
                 // Flush.
                 await buffer.FlushAsync();
@@ -698,6 +694,28 @@ namespace Microsoft.Extensions.WebSockets.Internal
             {
                 // Unlock.
                 _sendLock.Release();
+            }
+        }
+
+        private void WritePayload<T>(ref WritableBuffer buffer, int payloadLength, Action<WritableBuffer, uint, int, T> payloadWriter, T payload)
+        {
+            var maskingKey = Span<byte>.Empty;
+            var keySize = sizeof(uint);
+
+            if (_maskingKeyBuffer != null)
+            {
+                // Get a span of the output buffer for the masking key, write it there, then advance the write head.
+                maskingKey = buffer.Buffer.Slice(0, keySize).Span;
+                WriteMaskingKey(maskingKey);
+                buffer.Advance(keySize);
+
+                // Write the payload
+                payloadWriter(buffer, maskingKey.Read<uint>(), payloadLength, payload);
+            }
+            else
+            {
+                // Write the payload un-masked
+                payloadWriter(buffer, 0, payloadLength, payload);
             }
         }
 

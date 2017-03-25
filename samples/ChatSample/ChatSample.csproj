@@ -3,7 +3,7 @@
   <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <UserSecretsId>aspnet-ChatSample-f11cf018-e0a8-49fa-b749-4c0eb5c9150b</UserSecretsId>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
     <!-- Don't create a NuGet package -->

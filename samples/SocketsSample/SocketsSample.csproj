@@ -3,8 +3,8 @@
   <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">$(PackageTargetFallback);portable-net45+win8+wp8+wpa81</PackageTargetFallback>
+    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(PackageTargetFallback);portable-net45+win8+wp8+wpa81</PackageTargetFallback>
     <!-- Don't create a NuGet package -->
     <IsPackable>false</IsPackable>
   </PropertyGroup>

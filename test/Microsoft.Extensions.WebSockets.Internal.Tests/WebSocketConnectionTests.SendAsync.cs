@@ -143,15 +143,15 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
             Assert.Equal(0x85, data[1]);
 
             // We don't know the mask, so we have to read it in order to verify this frame
-            var mask = data.Slice(2, 4);
-            var actualPayload = data.Slice(6);
+            var mask = new byte[] { data[2], data[3], data[4], data[5] };
+            var actualPayload = new byte[data.Length - 6];
 
             // Unmask the payload
             for (int i = 0; i < actualPayload.Length; i++)
             {
-                actualPayload[i] = (byte)(mask[i % 4] ^ actualPayload[i]);
+                actualPayload[i] = (byte)(mask[i % 4] ^ data[i + 6]);
             }
-            Assert.Equal(new byte[] { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E }, actualPayload.ToArray());
+            Assert.Equal(new byte[] { 0x0A, 0x0B, 0x0C, 0x0D, 0x0E }, actualPayload);
         }
 
         [Theory]

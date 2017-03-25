@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
             {
                 ApplicationBaseUriHint = baseUrl,
                 ApplicationType = ApplicationType.Portable,
-                TargetFramework = "netcoreapp1.1",
+                TargetFramework = "netcoreapp2.0",
                 EnvironmentName = "Development"
             };
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
 #if NET46
             System.Net.ServicePointManager.ServerCertificateValidationCallback = (_, __, ___, ____) => true;
             var client = new HttpClient();
-#else
+#elif NETCOREAPP2_0
             var handler = new HttpClientHandler();
             if (ssl)
             {
@@ -121,6 +121,8 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
                 handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
             }
             var client = new HttpClient(handler);
+#else
+#error Target framework needs to be updated
 #endif
 
             // Make sure the server works

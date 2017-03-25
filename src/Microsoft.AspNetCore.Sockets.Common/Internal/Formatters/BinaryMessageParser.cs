@@ -20,19 +20,28 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         {
             if (_state.Length == null)
             {
-                var length = buffer.TryReadBytes(sizeof(long))?.ToSingleSpan();
-                if (length == null || length.Value.Length < sizeof(long))
+                var lengthBuffer = buffer.TryReadBytes(sizeof(long));
+
+                if (lengthBuffer == null)
                 {
                     message = default(Message);
                     return false;
                 }
 
-                var longLength = length.Value.ReadBigEndian<long>();
+                var length = lengthBuffer.Value.ToSingleSpan();
+
+                if (length.Length < sizeof(long))
+                {
+                    message = default(Message);
+                    return false;
+                }
+
+                var longLength = length.ReadBigEndian<long>();
                 if (longLength > Int32.MaxValue)
                 {
                     throw new FormatException("Messages over 2GB in size are not supported");
                 }
-                buffer.Advance(length.Value.Length);
+                buffer.Advance(length.Length);
                 _state.Length = (int)longLength;
             }
 

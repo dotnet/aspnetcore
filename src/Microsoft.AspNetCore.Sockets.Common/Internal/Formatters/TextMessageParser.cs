@@ -86,17 +86,20 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         private bool TryReadLength(ref BytesReader buffer)
         {
             // Read until the first ':' to find the length
-            var lengthSpan = buffer.ReadBytesUntil((byte)TextMessageFormatter.FieldDelimiter)?.ToSingleSpan();
-            if (lengthSpan == null)
+            var lengthBuffer = buffer.ReadBytesUntil((byte)TextMessageFormatter.FieldDelimiter);
+
+            if (lengthBuffer == null)
             {
                 // Insufficient data
                 return false;
             }
 
+            var lengthSpan = lengthBuffer.Value.ToSingleSpan();
+
             // Parse the length
-            if (!PrimitiveParser.TryParseInt32(lengthSpan.Value, out var length, out var consumedByLength, encoder: TextEncoder.Utf8) || consumedByLength < lengthSpan.Value.Length)
+            if (!PrimitiveParser.TryParseInt32(lengthSpan, out var length, out var consumedByLength, encoder: TextEncoder.Utf8) || consumedByLength < lengthSpan.Length)
             {
-                if (TextEncoder.Utf8.TryDecode(lengthSpan.Value, out var lengthString, out _))
+                if (TextEncoder.Utf8.TryDecode(lengthSpan, out var lengthString, out _))
                 {
                     throw new FormatException($"Invalid length: '{lengthString}'");
                 }
