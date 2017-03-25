@@ -17,10 +17,3 @@ Source Location: (69:2,29 [3] TestFiles/IntegrationTests/CodeGenerationIntegrati
 Generated Location: (1050:28,38 [3] )
 |a+b|
 
-Source Location: (80:2,40 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml)
-|
-|
-Generated Location: (1236:33,49 [2] )
-|
-|
-

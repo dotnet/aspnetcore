@@ -5,7 +5,5 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_UnfinishedExpressionInCode_Runtime -  - 
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (2:0,2 [2] UnfinishedExpressionInCode.cshtml) - \n
                 CSharpExpression - (5:1,1 [9] UnfinishedExpressionInCode.cshtml)
                     RazorIRToken - (5:1,1 [9] UnfinishedExpressionInCode.cshtml) - CSharp - DateTime.
-                CSharpStatement - (14:1,10 [2] UnfinishedExpressionInCode.cshtml) - \n

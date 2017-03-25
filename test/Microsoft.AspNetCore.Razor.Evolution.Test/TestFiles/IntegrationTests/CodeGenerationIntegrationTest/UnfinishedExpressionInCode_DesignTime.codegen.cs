@@ -13,18 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UnfinishedExpressionInCode.cshtml"
-  
-
-#line default
-#line hidden
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UnfinishedExpressionInCode.cshtml"
 __o = DateTime.;
-
-#line default
-#line hidden
-#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UnfinishedExpressionInCode.cshtml"
-          
 
 #line default
 #line hidden

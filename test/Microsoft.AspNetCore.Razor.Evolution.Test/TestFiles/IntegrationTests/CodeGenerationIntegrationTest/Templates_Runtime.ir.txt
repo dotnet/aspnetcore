@@ -15,7 +15,6 @@ Document -
                 CSharpStatement - (349:11,63 [7] Templates.cshtml) - ;\n    
                 CSharpExpression - (357:12,5 [7] Templates.cshtml)
                     RazorIRToken - (357:12,5 [7] Templates.cshtml) - CSharp - foo("")
-                CSharpStatement - (364:12,12 [2] Templates.cshtml) - \n
                 HtmlContent - (369:14,0 [8] Templates.cshtml) - \n<ul>\n
                 CSharpExpression - (379:16,2 [31] Templates.cshtml)
                     RazorIRToken - (379:16,2 [11] Templates.cshtml) - CSharp - Repeat(10, 
@@ -53,14 +52,13 @@ Document -
                         HtmlContent - (613:33,27 [18] Templates.cshtml) -  of markup<br />\n
                     RazorIRToken - (631:34,0 [1] Templates.cshtml) - CSharp - )
                 HtmlContent - (632:34,1 [22] Templates.cshtml) - \n</p>\n\n\n<ul>\n    
-                CSharpExpression - (655:39,5 [141] Templates.cshtml)
+                CSharpExpression - (655:39,5 [133] Templates.cshtml)
                     RazorIRToken - (655:39,5 [11] Templates.cshtml) - CSharp - Repeat(10, 
-                    Template - (667:39,17 [129] Templates.cshtml)
+                    Template - (667:39,17 [121] Templates.cshtml)
                         HtmlContent - (667:39,17 [20] Templates.cshtml) - <li>\n        Item #
                         CSharpExpression - (688:40,15 [4] Templates.cshtml)
                             RazorIRToken - (688:40,15 [4] Templates.cshtml) - CSharp - item
                         HtmlContent - (692:40,19 [2] Templates.cshtml) - \n
-                        CSharpStatement - (694:41,0 [8] Templates.cshtml) -         
                         CSharpStatement - (704:41,10 [18] Templates.cshtml) - var parent = item;
                         HtmlContent - (725:42,0 [53] Templates.cshtml) -         <ul>\n            <li>Child Items... ?</li>\n
                         HtmlContent - (839:45,0 [24] Templates.cshtml) -         </ul>\n    </li>

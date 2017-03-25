@@ -21,20 +21,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                    
-    
-
-#line default
-#line hidden
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
          __o = cls;
-
-#line default
-#line hidden
-#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                      
-    
 
 #line default
 #line hidden
@@ -43,20 +31,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                          
-    
-
-#line default
-#line hidden
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
          __o = cls;
-
-#line default
-#line hidden
-#line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                          
-    
 
 #line default
 #line hidden
@@ -65,20 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                                           
-    
-
-#line default
-#line hidden
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                    __o = ch;
-
-#line default
-#line hidden
-#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                                               
-    
 
 #line default
 #line hidden
@@ -97,42 +61,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                                           
-    
-
-#line default
-#line hidden
-#line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                      
-    
-
-#line default
-#line hidden
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
             __o = Url.Content("~/Scripts/jquery-1.6.2.min.js");
 
 #line default
 #line hidden
-#line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                                                                                                
-    
-
-#line default
-#line hidden
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
             __o = Url.Content("~/Scripts/modernizr-2.0.6-development-only.js");
-
-#line default
-#line hidden
-#line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                                                                                                                
-    
-
-#line default
-#line hidden
-#line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-                                                                                                                   
 
 #line default
 #line hidden

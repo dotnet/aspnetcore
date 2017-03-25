@@ -11,11 +11,9 @@ Document -
                 CSharpStatement -  - #pragma warning restore 219
             CSharpStatement -  - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (2:0,2 [6] NestedCSharp.cshtml) - \n    
                 CSharpStatement - (9:1,5 [53] NestedCSharp.cshtml) - foreach (var result in (dynamic)Url)\n    {\n        
                 HtmlContent - (62:3,8 [19] NestedCSharp.cshtml) - <div>\n            
                 CSharpExpression - (82:4,13 [16] NestedCSharp.cshtml)
                     RazorIRToken - (82:4,13 [16] NestedCSharp.cshtml) - CSharp - result.SomeValue
                 HtmlContent - (98:4,29 [17] NestedCSharp.cshtml) - .\n        </div>
                 CSharpStatement - (115:5,14 [7] NestedCSharp.cshtml) - \n    }
-                CSharpStatement - (122:6,5 [2] NestedCSharp.cshtml) - \n

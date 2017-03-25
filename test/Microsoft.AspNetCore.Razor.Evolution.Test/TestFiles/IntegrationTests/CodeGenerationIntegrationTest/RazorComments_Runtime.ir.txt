@@ -7,7 +7,6 @@ Document -
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (36:0,36 [17] RazorComments.cshtml) - \n<p>This should 
                 HtmlContent - (62:1,24 [17] RazorComments.cshtml) -  be shown</p>\n\n
-                CSharpStatement - (81:3,2 [6] RazorComments.cshtml) - \n    
                 CSharpStatement - (122:4,39 [22] RazorComments.cshtml) - \n    Exception foo = 
                 CSharpStatement - (173:5,49 [58] RazorComments.cshtml) -  null;\n    if(foo != null) {\n        throw foo;\n    }\n
                 HtmlContent - (234:10,0 [2] RazorComments.cshtml) - \n

@@ -17,4 +17,3 @@ Document -
                 HtmlContent - (63:2,23 [4] CodeBlockWithTextElement.cshtml) - bar 
                 CSharpExpression - (69:2,29 [3] CodeBlockWithTextElement.cshtml)
                     RazorIRToken - (69:2,29 [3] CodeBlockWithTextElement.cshtml) - CSharp - a+b
-                CSharpStatement - (80:2,40 [2] CodeBlockWithTextElement.cshtml) - \n

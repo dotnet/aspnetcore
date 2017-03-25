@@ -16,9 +16,7 @@ Document -
                     HtmlContent - (35:2,15 [10] Instrumented.cshtml) - <p>Bar</p>
                 CSharpStatement - (45:2,25 [7] Instrumented.cshtml) - ;\n    
                 HtmlContent - (54:3,6 [14] Instrumented.cshtml) - Hello, World\n
-                CSharpStatement - (68:4,0 [4] Instrumented.cshtml) -     
                 HtmlContent - (72:4,4 [19] Instrumented.cshtml) - <p>Hello, World</p>
-                CSharpStatement - (91:4,23 [2] Instrumented.cshtml) - \n
                 HtmlContent - (96:6,0 [2] Instrumented.cshtml) - \n
                 CSharpStatement - (99:7,1 [22] Instrumented.cshtml) - while(i <= 10) {\n    
                 HtmlContent - (121:8,4 [19] Instrumented.cshtml) - <p>Hello from C#, #

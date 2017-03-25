@@ -18,16 +18,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/OpenedIf.cshtml"
-       
-
-#line default
-#line hidden
-#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/OpenedIf.cshtml"
-       
-
-#line default
-#line hidden
         }
         #pragma warning restore 1998
     }

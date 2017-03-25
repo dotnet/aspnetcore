@@ -65,12 +65,6 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                                                                          
-                
-
-#line default
-#line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
@@ -80,12 +74,6 @@ System.Object __typeHelper = "*, TestAssembly";
 #line hidden
             __TestNamespace_InputTagHelper.Type = string.Empty;
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
-#line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                                                                  
-                
-
-#line default
-#line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"

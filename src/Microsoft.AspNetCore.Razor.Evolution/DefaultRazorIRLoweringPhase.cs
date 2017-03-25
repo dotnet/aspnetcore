@@ -369,8 +369,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 if (span.Symbols.Count == 1)
                 {
-                    var symbol = span.Symbols[0] as CSharpSymbol;
-                    if (symbol != null &&
+                    if (span.Symbols[0] is CSharpSymbol symbol &&
                         symbol.Type == CSharpSymbolType.Unknown &&
                         symbol.Content.Length == 0)
                     {
@@ -389,6 +388,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
             {
+                if (span.Symbols.Count == 1)
+                {
+                    if (span.Symbols[0] is CSharpSymbol symbol &&
+                        symbol.Type == CSharpSymbolType.Unknown &&
+                        symbol.Content.Length == 0)
+                    {
+                        // We don't want to create IR nodes for marker symbols.
+                        return;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(span.Content))
+                {
+                    return;
+                }
+
                 _builder.Add(new CSharpStatementIRNode()
                 {
                     Content = span.Content,
