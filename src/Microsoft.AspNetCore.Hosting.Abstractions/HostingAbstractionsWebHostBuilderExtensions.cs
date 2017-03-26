@@ -146,6 +146,18 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// Indicate whether the host should listen on the URLs configured on the <see cref="IWebHostBuilder"/>
+        /// instead of those configured on the <see cref="IServer"/>.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="preferHostingUrls"><c>true</c> to prefer URLs configured on the <see cref="IWebHostBuilder"/>; otherwise <c>false</c>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder PreferHostingUrls(this IWebHostBuilder hostBuilder, bool preferHostingUrls)
+        {
+            return hostBuilder.UseSetting(WebHostDefaults.PreferHostingUrls, preferHostingUrls ? "true" : "false");
+        }
+
+        /// <summary>
         /// Start the web host and listen on the specified urls.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to start.</param>

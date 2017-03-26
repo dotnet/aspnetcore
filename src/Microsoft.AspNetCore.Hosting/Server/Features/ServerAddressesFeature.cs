@@ -8,5 +8,7 @@ namespace Microsoft.AspNetCore.Hosting.Server.Features
     public class ServerAddressesFeature : IServerAddressesFeature
     {
         public ICollection<string> Addresses { get; } = new List<string>();
+
+        public bool PreferHostingUrls { get; set; }
     }
 }

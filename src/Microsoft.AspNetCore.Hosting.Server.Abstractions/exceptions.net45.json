@@ -1,0 +1,14 @@
+[
+  {
+    "OldTypeId": "public interface Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
+    "NewTypeId": "public interface Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
+    "NewMemberId": "System.Boolean get_PreferHostingUrls()",
+    "Kind": "Addition"
+  },
+  {
+    "OldTypeId": "public interface Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
+    "NewTypeId": "public interface Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
+    "NewMemberId": "System.Void set_PreferHostingUrls(System.Boolean value)",
+    "Kind": "Addition"
+  }
+]

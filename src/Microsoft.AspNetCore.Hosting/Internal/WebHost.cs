@@ -249,12 +249,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 Server = _applicationServices.GetRequiredService<IServer>();
 
-                var addresses = Server.Features?.Get<IServerAddressesFeature>()?.Addresses;
+                var serverAddressesFeature = Server.Features?.Get<IServerAddressesFeature>();
+                var addresses = serverAddressesFeature?.Addresses;
                 if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
                 {
                     var urls = _config[WebHostDefaults.ServerUrlsKey] ?? _config[DeprecatedServerUrlsKey];
                     if (!string.IsNullOrEmpty(urls))
                     {
+                        serverAddressesFeature.PreferHostingUrls = _options.PreferHostingUrls;
+
                         foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                         {
                             addresses.Add(value);

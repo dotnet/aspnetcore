@@ -9,9 +9,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class WebHostOptions
     {
-        public WebHostOptions()
-        {
-        }
+        public WebHostOptions() { }
 
         public WebHostOptions(IConfiguration configuration)
         {
@@ -28,6 +26,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             WebRoot = configuration[WebHostDefaults.WebRootKey];
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
             HostingStartupAssemblies = configuration[WebHostDefaults.HostingStartupAssembliesKey]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+            PreferHostingUrls = ParseBool(configuration, WebHostDefaults.PreferHostingUrls);
         }
 
         public string ApplicationName { get; set; }
@@ -39,12 +38,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public bool CaptureStartupErrors { get; set; }
 
         public string Environment { get; set; }
-        
+
         public string StartupAssembly { get; set; }
 
         public string WebRoot { get; set; }
 
         public string ContentRootPath { get; set; }
+
+        public bool PreferHostingUrls { get; set; }
 
         private static bool ParseBool(IConfiguration configuration, string key)
         {

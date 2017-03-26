@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 hostingEnvironment.WebRootFileProvider = new NullFileProvider();
             }
-            
+
             hostingEnvironment.EnvironmentName =
                 options.Environment ??
                 hostingEnvironment.EnvironmentName;
