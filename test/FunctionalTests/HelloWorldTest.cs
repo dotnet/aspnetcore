@@ -16,22 +16,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     // Uses ports ranging 5061 - 5069.
     public class HelloWorldTests
     {
-#if NET46
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5061/", ServerType.Kestrel, ApplicationType.Portable)]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/", ServerType.Kestrel, ApplicationType.Portable)]
         public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, ApplicationType applicationType)
         {
             return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, delegateServer, applicationType);
         }
-#endif
 
-#if NETCOREAPP2_0
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5063/", ServerType.Kestrel, ApplicationType.Portable)]
         // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5064/", ServerType.Kestrel, ApplicationType.Standalone)]
@@ -40,13 +37,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, delegateServer, applicationType);
         }
-#endif
 
         [ConditionalTheory]
         [SkipIfEnvironmentVariableNotEnabled("IIS_VARIATIONS_ENABLED")]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [SkipIfCurrentRuntimeIsCoreClr]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5069/", ServerType.Kestrel, ApplicationType.Portable)]
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5070/", ServerType.Kestrel, ApplicationType.Standalone)]
         public Task HelloWorld_IIS(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, ApplicationType applicationType)

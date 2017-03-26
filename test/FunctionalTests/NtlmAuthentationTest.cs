@@ -26,21 +26,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _output = output;
         }
 
-#if NET46
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5051/", ApplicationType.Portable)]
         public Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
         }
-#endif
 
-#if NETCOREAPP2_0
         [ConditionalTheory(Skip = "No test configuration enabled")]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5050/", ApplicationType.Standalone)]
         // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/", ApplicationType.Standalone)]
@@ -48,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
         }
-#endif
 
         public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
