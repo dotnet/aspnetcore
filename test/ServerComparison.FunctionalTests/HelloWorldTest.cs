@@ -53,7 +53,7 @@ namespace ServerComparison.FunctionalTests
         [SkipIfEnvironmentVariableNotEnabled("IIS_VARIATIONS_ENABLED")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [SkipIfCurrentRuntimeIsCoreClr]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         [InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5072/", ApplicationType.Portable)]
         //[InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5073/", ApplicationType.Portable)]
         public Task HelloWorld_IIS_X86(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
