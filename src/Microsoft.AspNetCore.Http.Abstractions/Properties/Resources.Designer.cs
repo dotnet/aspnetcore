@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         /// <summary>
         /// No public '{0}' method found.
         /// </summary>
-        internal static string FormatException_UseMiddlewareNoInvokeMethod(object p0)
+        internal static string FormatException_UseMiddlewareNoInvokeMethod(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNoInvokeMethod"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNoInvokeMethod"), p0, p1);
         }
 
         /// <summary>
@@ -53,9 +53,9 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         /// <summary>
         /// '{0}' does not return an object of type '{1}'.
         /// </summary>
-        internal static string FormatException_UseMiddlewareNonTaskReturnType(object p0, object p1)
+        internal static string FormatException_UseMiddlewareNonTaskReturnType(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNonTaskReturnType"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNonTaskReturnType"), p0, p1, p2);
         }
 
         /// <summary>
@@ -69,9 +69,9 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         /// <summary>
         /// The '{0}' method's first argument must be of type '{1}'.
         /// </summary>
-        internal static string FormatException_UseMiddlewareNoParameters(object p0, object p1)
+        internal static string FormatException_UseMiddlewareNoParameters(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNoParameters"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNoParameters"), p0, p1, p2);
         }
 
         /// <summary>
@@ -85,9 +85,9 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         /// <summary>
         /// Multiple public '{0}' methods are available.
         /// </summary>
-        internal static string FormatException_UseMiddleMutlipleInvokes(object p0)
+        internal static string FormatException_UseMiddleMutlipleInvokes(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddleMutlipleInvokes"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddleMutlipleInvokes"), p0, p1);
         }
 
         /// <summary>

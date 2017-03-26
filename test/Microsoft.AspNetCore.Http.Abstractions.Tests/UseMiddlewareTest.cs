@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http.Abstractions;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http
@@ -16,60 +17,137 @@ namespace Microsoft.AspNetCore.Http
         [Fact]
         public void UseMiddleware_WithNoParameters_ThrowsException()
         {
-            var mockServiceProvider = new DummyServiceProvider();
-            var builder = new ApplicationBuilder(mockServiceProvider);
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareNoParametersStub));
             var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
 
-            Assert.Equal(Resources.FormatException_UseMiddlewareNoParameters("Invoke", nameof(HttpContext)), exception.Message);
+            Assert.Equal(
+                Resources.FormatException_UseMiddlewareNoParameters(
+                    UseMiddlewareExtensions.InvokeMethodName,
+                    UseMiddlewareExtensions.InvokeAsyncMethodName,
+                    nameof(HttpContext)),
+                exception.Message);
+        }
+
+        [Fact]
+        public void UseMiddleware_AsyncWithNoParameters_ThrowsException()
+        {
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
+            builder.UseMiddleware(typeof(MiddlewareAsyncNoParametersStub));
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            Assert.Equal(
+                Resources.FormatException_UseMiddlewareNoParameters(
+                    UseMiddlewareExtensions.InvokeMethodName,
+                    UseMiddlewareExtensions.InvokeAsyncMethodName,
+                    nameof(HttpContext)),
+                exception.Message);
         }
 
         [Fact]
         public void UseMiddleware_NonTaskReturnType_ThrowsException()
         {
-            var mockServiceProvider = new DummyServiceProvider();
-            var builder = new ApplicationBuilder(mockServiceProvider);
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareNonTaskReturnStub));
             var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
-            Assert.Equal(Resources.FormatException_UseMiddlewareNonTaskReturnType("Invoke", nameof(Task)), exception.Message);
+
+            Assert.Equal(
+                Resources.FormatException_UseMiddlewareNonTaskReturnType(
+                    UseMiddlewareExtensions.InvokeMethodName,
+                    UseMiddlewareExtensions.InvokeAsyncMethodName,
+                    nameof(Task)),
+                exception.Message);
         }
 
         [Fact]
-        public void UseMiddleware_NoInvokeMethod_ThrowsException()
+        public void UseMiddleware_AsyncNonTaskReturnType_ThrowsException()
         {
-            var mockServiceProvider = new DummyServiceProvider();
-            var builder = new ApplicationBuilder(mockServiceProvider);
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
+            builder.UseMiddleware(typeof(MiddlewareAsyncNonTaskReturnStub));
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            Assert.Equal(
+                Resources.FormatException_UseMiddlewareNonTaskReturnType(
+                    UseMiddlewareExtensions.InvokeMethodName,
+                    UseMiddlewareExtensions.InvokeAsyncMethodName,
+                    nameof(Task)),
+                exception.Message);
+        }
+
+        [Fact]
+        public void UseMiddleware_NoInvokeOrInvokeAsyncMethod_ThrowsException()
+        {
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareNoInvokeStub));
             var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
-            Assert.Equal(Resources.FormatException_UseMiddlewareNoInvokeMethod("Invoke"), exception.Message);
+
+            Assert.Equal(
+                Resources.FormatException_UseMiddlewareNoInvokeMethod(
+                    UseMiddlewareExtensions.InvokeMethodName,
+                    UseMiddlewareExtensions.InvokeAsyncMethodName),
+                exception.Message);
         }
 
         [Fact]
         public void UseMiddleware_MutlipleInvokeMethods_ThrowsException()
         {
-            var mockServiceProvider = new DummyServiceProvider();
-            var builder = new ApplicationBuilder(mockServiceProvider);
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareMultipleInvokesStub));
             var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
-            Assert.Equal(Resources.FormatException_UseMiddleMutlipleInvokes("Invoke"), exception.Message);
+
+            Assert.Equal(
+                Resources.FormatException_UseMiddleMutlipleInvokes(
+                    UseMiddlewareExtensions.InvokeMethodName,
+                    UseMiddlewareExtensions.InvokeAsyncMethodName),
+                exception.Message);
+        }
+
+        [Fact]
+        public void UseMiddleware_MutlipleInvokeAsyncMethods_ThrowsException()
+        {
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
+            builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAsyncStub));
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            Assert.Equal(
+                Resources.FormatException_UseMiddleMutlipleInvokes(
+                    UseMiddlewareExtensions.InvokeMethodName,
+                    UseMiddlewareExtensions.InvokeAsyncMethodName),
+                exception.Message);
+        }
+
+        [Fact]
+        public void UseMiddleware_MutlipleInvokeAndInvokeAsyncMethods_ThrowsException()
+        {
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
+            builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAndInvokeAsyncStub));
+            var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            Assert.Equal(
+                Resources.FormatException_UseMiddleMutlipleInvokes(
+                    UseMiddlewareExtensions.InvokeMethodName,
+                    UseMiddlewareExtensions.InvokeAsyncMethodName),
+                exception.Message);
         }
 
         [Fact]
         public async Task UseMiddleware_ThrowsIfArgCantBeResolvedFromContainer()
         {
-            var mockServiceProvider = new DummyServiceProvider();
-            var builder = new ApplicationBuilder(mockServiceProvider);
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareInjectInvokeNoService));
             var app = builder.Build();
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app(new DefaultHttpContext()));
-            Assert.Equal(Resources.FormatException_InvokeMiddlewareNoService(typeof(object), typeof(MiddlewareInjectInvokeNoService)), exception.Message);
+            Assert.Equal(
+                Resources.FormatException_InvokeMiddlewareNoService(
+                    typeof(object),
+                    typeof(MiddlewareInjectInvokeNoService)),
+                exception.Message);
         }
 
         [Fact]
         public void UseMiddlewareWithInvokeArg()
         {
-            var mockServiceProvider = new DummyServiceProvider();
-            var builder = new ApplicationBuilder(mockServiceProvider);
+            var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareInjectInvoke));
             var app = builder.Build();
             app(new DefaultHttpContext());
@@ -126,7 +204,11 @@ namespace Microsoft.AspNetCore.Http
                 await app(context);
             });
 
-            Assert.Equal(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(typeof(BadMiddlewareFactory), typeof(Middleware)), exception.Message);
+            Assert.Equal(
+                Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(
+                    typeof(BadMiddlewareFactory),
+                    typeof(Middleware)),
+                exception.Message);
         }
 
         [Fact]
@@ -153,7 +235,7 @@ namespace Microsoft.AspNetCore.Http
 
         public class Middleware : IMiddleware
         {
-            public async Task Invoke(HttpContext context, RequestDelegate next)
+            public async Task InvokeAsync(HttpContext context, RequestDelegate next)
             {
                 context.Items["before"] = true;
                 await next(context);
@@ -180,15 +262,9 @@ namespace Microsoft.AspNetCore.Http
 
         public class BadMiddlewareFactory : IMiddlewareFactory
         {
-            public IMiddleware Create(Type middlewareType)
-            {
-                return null;
-            }
+            public IMiddleware Create(Type middlewareType) => null;
 
-            public void Release(IMiddleware middleware)
-            {
-
-            }
+            public void Release(IMiddleware middleware) { }
         }
 
         private class DummyServiceProvider : IServiceProvider
@@ -214,9 +290,7 @@ namespace Microsoft.AspNetCore.Http
 
         public class MiddlewareInjectWithOutAndRefParams
         {
-            public MiddlewareInjectWithOutAndRefParams(RequestDelegate next)
-            {
-            }
+            public MiddlewareInjectWithOutAndRefParams(RequestDelegate next) { }
 
             public Task Invoke(HttpContext context, ref IServiceProvider sp1, out IServiceProvider sp2)
             {
@@ -228,74 +302,76 @@ namespace Microsoft.AspNetCore.Http
 
         private class MiddlewareInjectInvokeNoService
         {
-            public MiddlewareInjectInvokeNoService(RequestDelegate next)
-            {
-            }
+            public MiddlewareInjectInvokeNoService(RequestDelegate next) { }
 
-            public Task Invoke(HttpContext context, object value)
-            {
-                return Task.FromResult(0);
-            }
+            public Task Invoke(HttpContext context, object value) => TaskCache.CompletedTask;
         }
 
         private class MiddlewareInjectInvoke
         {
-            public MiddlewareInjectInvoke(RequestDelegate next)
-            {
-            }
+            public MiddlewareInjectInvoke(RequestDelegate next) { }
 
-            public Task Invoke(HttpContext context, IServiceProvider provider)
-            {
-                return Task.FromResult(0);
-            }
+            public Task Invoke(HttpContext context, IServiceProvider provider) => TaskCache.CompletedTask;
         }
 
         private class MiddlewareNoParametersStub
         {
-            public MiddlewareNoParametersStub(RequestDelegate next)
-            {
-            }
+            public MiddlewareNoParametersStub(RequestDelegate next) { }
 
-            public Task Invoke()
-            {
-                return Task.FromResult(0);
-            }
+            public Task Invoke() => TaskCache.CompletedTask;
+        }
+
+        private class MiddlewareAsyncNoParametersStub
+        {
+            public MiddlewareAsyncNoParametersStub(RequestDelegate next) { }
+
+            public Task InvokeAsync() => TaskCache.CompletedTask;
         }
 
         private class MiddlewareNonTaskReturnStub
         {
-            public MiddlewareNonTaskReturnStub(RequestDelegate next)
-            {
-            }
+            public MiddlewareNonTaskReturnStub(RequestDelegate next) { }
 
-            public int Invoke()
-            {
-                return 0;
-            }
+            public int Invoke() => 0;
+        }
+
+        private class MiddlewareAsyncNonTaskReturnStub
+        {
+            public MiddlewareAsyncNonTaskReturnStub(RequestDelegate next) { }
+
+            public int InvokeAsync() => 0;
         }
 
         private class MiddlewareNoInvokeStub
         {
-            public MiddlewareNoInvokeStub(RequestDelegate next)
-            {
-            }
+            public MiddlewareNoInvokeStub(RequestDelegate next) { }
         }
 
         private class MiddlewareMultipleInvokesStub
         {
-            public MiddlewareMultipleInvokesStub(RequestDelegate next)
-            {
-            }
+            public MiddlewareMultipleInvokesStub(RequestDelegate next) { }
 
-            public Task Invoke(HttpContext context)
-            {
-                return Task.FromResult(0);
-            }
+            public Task Invoke(HttpContext context) => TaskCache.CompletedTask;
 
-            public Task Invoke(HttpContext context, int i)
-            {
-                return Task.FromResult(0);
-            }
+            public Task Invoke(HttpContext context, int i) => TaskCache.CompletedTask;
+        }
+
+        private class MiddlewareMultipleInvokeAsyncStub
+        {
+            public MiddlewareMultipleInvokeAsyncStub(RequestDelegate next) { }
+
+            public Task InvokeAsync(HttpContext context) => TaskCache.CompletedTask;
+
+            public Task InvokeAsync(HttpContext context, int i) => TaskCache.CompletedTask;
+        }
+
+        private class MiddlewareMultipleInvokeAndInvokeAsyncStub
+        {
+            public MiddlewareMultipleInvokeAndInvokeAsyncStub(RequestDelegate next) { }
+
+            public Task Invoke(HttpContext context) => TaskCache.CompletedTask;
+
+            public Task InvokeAsync(HttpContext context) => TaskCache.CompletedTask;
         }
     }
 }

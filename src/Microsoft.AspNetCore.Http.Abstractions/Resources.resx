@@ -121,16 +121,16 @@
     <value>'{0}' is not available.</value>
   </data>
   <data name="Exception_UseMiddlewareNoInvokeMethod" xml:space="preserve">
-    <value>No public '{0}' method found.</value>
+    <value>No public '{0}' or '{1}' method found.</value>
   </data>
   <data name="Exception_UseMiddlewareNonTaskReturnType" xml:space="preserve">
-    <value>'{0}' does not return an object of type '{1}'.</value>
+    <value>'{0}' or '{1}' does not return an object of type '{2}'.</value>
   </data>
   <data name="Exception_UseMiddlewareNoParameters" xml:space="preserve">
-    <value>The '{0}' method's first argument must be of type '{1}'.</value>
+    <value>The '{0}' or '{1}' method's first argument must be of type '{2}'.</value>
   </data>
   <data name="Exception_UseMiddleMutlipleInvokes" xml:space="preserve">
-    <value>Multiple public '{0}' methods are available.</value>
+    <value>Multiple public '{0}' or '{1}' methods are available.</value>
   </data>
   <data name="Exception_PathMustStartWithSlash" xml:space="preserve">
     <value>The path in '{0}' must start with '/'.</value>

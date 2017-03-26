@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class UseMiddlewareExtensions
     {
-        private const string InvokeMethodName = "Invoke";
+        internal const string InvokeMethodName = "Invoke";
+        internal const string InvokeAsyncMethodName = "InvokeAsync";
 
         private static readonly MethodInfo GetServiceInfo = typeof(UseMiddlewareExtensions).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
 
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             if (typeof(IMiddleware).GetTypeInfo().IsAssignableFrom(middleware.GetTypeInfo()))
             {
-                // IMiddleware doesn't support passing args directly since it's 
+                // IMiddleware doesn't support passing args directly since it's
                 // activated from the container
                 if (args.Length > 0)
                 {
@@ -58,27 +59,31 @@ namespace Microsoft.AspNetCore.Builder
             return app.Use(next =>
             {
                 var methods = middleware.GetMethods(BindingFlags.Instance | BindingFlags.Public);
-                var invokeMethods = methods.Where(m => string.Equals(m.Name, InvokeMethodName, StringComparison.Ordinal)).ToArray();
+                var invokeMethods = methods.Where(m =>
+                    string.Equals(m.Name, InvokeMethodName, StringComparison.Ordinal)
+                    || string.Equals(m.Name, InvokeAsyncMethodName, StringComparison.Ordinal)
+                    ).ToArray();
+
                 if (invokeMethods.Length > 1)
                 {
-                    throw new InvalidOperationException(Resources.FormatException_UseMiddleMutlipleInvokes(InvokeMethodName));
+                    throw new InvalidOperationException(Resources.FormatException_UseMiddleMutlipleInvokes(InvokeMethodName, InvokeAsyncMethodName));
                 }
 
                 if (invokeMethods.Length == 0)
                 {
-                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoInvokeMethod(InvokeMethodName));
+                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoInvokeMethod(InvokeMethodName, InvokeAsyncMethodName));
                 }
 
                 var methodinfo = invokeMethods[0];
                 if (!typeof(Task).IsAssignableFrom(methodinfo.ReturnType))
                 {
-                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNonTaskReturnType(InvokeMethodName, nameof(Task)));
+                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNonTaskReturnType(InvokeMethodName, InvokeAsyncMethodName, nameof(Task)));
                 }
 
                 var parameters = methodinfo.GetParameters();
                 if (parameters.Length == 0 || parameters[0].ParameterType != typeof(HttpContext))
                 {
-                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoParameters(InvokeMethodName, nameof(HttpContext)));
+                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoParameters(InvokeMethodName, InvokeAsyncMethodName, nameof(HttpContext)));
                 }
 
                 var ctorArgs = new object[args.Length + 1];
@@ -127,7 +132,7 @@ namespace Microsoft.AspNetCore.Builder
 
                     try
                     {
-                        await middleware.Invoke(context, next);
+                        await middleware.InvokeAsync(context, next);
                     }
                     finally
                     {
@@ -140,12 +145,12 @@ namespace Microsoft.AspNetCore.Builder
         private static Func<T, HttpContext, IServiceProvider, Task> Compile<T>(MethodInfo methodinfo, ParameterInfo[] parameters)
         {
             // If we call something like
-            // 
+            //
             // public class Middleware
             // {
             //    public Task Invoke(HttpContext context, ILoggerFactory loggeryFactory)
             //    {
-            //         
+            //
             //    }
             // }
             //
