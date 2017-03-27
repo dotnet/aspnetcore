@@ -53,22 +53,13 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
             {
                 await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
 
-                // Windows-only IIS tests, and Kestrel SSL tests (due to: https://github.com/aspnet/WebSockets/issues/102)
+                // Windows-only WebListener tests, and Kestrel SSL tests (due to: https://github.com/aspnet/WebSockets/issues/102)
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
 
                     if (IsWindows8OrHigher())
                     {
-                        if (IsIISExpress10Installed())
-                        {
-                            // IIS Express tests are a bit flaky, some tests fail occasionally or get non-strict passes
-                            // https://github.com/aspnet/WebSockets/issues/100
-                            await tester.DeployTestAndAddToSpec(ServerType.IISExpress, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token, expectationConfig: expect => expect
-                                .OkOrFail("2.6", "6.22.22") // Getting some transient failures on the CI for these. See https://github.com/aspnet/WebSockets/issues/152
-                                .OkOrFail(Enumerable.Range(1, 20).Select(i => $"5.{i}").ToArray())); // 5.* occasionally fail on IIS express
-                        }
-
                         // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?
                         // For now, just allow the non-strict response, it's not a failure.
                         await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
