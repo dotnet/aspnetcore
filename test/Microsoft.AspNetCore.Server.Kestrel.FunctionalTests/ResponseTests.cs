@@ -684,20 +684,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task WhenAppWritesLessThanContentLengthButRequestIsAbortedErrorNotLogged()
         {
-            var abortTcs = new TaskCompletionSource<object>();
+            var requestAborted = new SemaphoreSlim(0);
             var mockTrace = new Mock<IKestrelTrace>();
 
             using (var server = new TestServer(async httpContext =>
             {
                 httpContext.RequestAborted.Register(() =>
                 {
-                    abortTcs.SetResult(null);
+                    requestAborted.Release(2);
                 });
+
                 httpContext.Response.ContentLength = 12;
                 await httpContext.Response.WriteAsync("hello,");
 
                 // Wait until the request is aborted so we know Frame will skip the response content length check.
-                await abortTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+                await requestAborted.WaitAsync(TimeSpan.FromSeconds(10));
             }, new TestServiceContext { Log = mockTrace.Object }))
             {
                 using (var connection = server.CreateConnection())
@@ -713,12 +714,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "hello,");
                 }
-            }
 
-            // Verify the request was really aborted. A timeout in the await inside
-            // the app func would cause a server error and skip the content length
-            // check altogether, making the test pass for the wrong reason.
-            Assert.True(abortTcs.Task.IsCompleted);
+                // Verify the request was really aborted. A timeout in
+                // the app would cause a server error and skip the content length
+                // check altogether, making the test pass for the wrong reason.
+                // Await before disposing the server to prevent races between the
+                // abort triggered by the connection RST and the abort called when
+                // disposing the server.
+                await requestAborted.WaitAsync(TimeSpan.FromSeconds(10));
+            }
 
             // With the server disposed we know all connections were drained and all messages were logged.
             mockTrace.Verify(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<InvalidOperationException>()), Times.Never);
