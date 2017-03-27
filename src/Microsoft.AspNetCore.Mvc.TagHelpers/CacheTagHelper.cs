@@ -104,10 +104,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                                 // such that the tokens are inherited.
 
                                 result = ProcessContentAsync(output);
-                                content = await result;
 
                                 entry.SetOptions(options);
                                 entry.Value = result;
+
+                                content = await result;
                             }
                         }
                         catch
