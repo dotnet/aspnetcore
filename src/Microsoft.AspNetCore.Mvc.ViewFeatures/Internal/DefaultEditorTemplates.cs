@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         private static IHtmlContent GenerateTextBox(IHtmlHelper htmlHelper, object value, object htmlAttributes)
         {
             return htmlHelper.TextBox(
-                current: null,
+                expression: null,
                 value: value,
                 format: null,
                 htmlAttributes: htmlAttributes);

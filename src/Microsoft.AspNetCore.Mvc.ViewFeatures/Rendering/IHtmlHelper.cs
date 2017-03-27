@@ -634,16 +634,16 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         IHtmlContent TextArea(string expression, string value, int rows, int columns, object htmlAttributes);
 
         /// <summary>
-        /// Returns an &lt;input&gt; element of type "text" for the specified <paramref name="current"/>. Adds a
+        /// Returns an &lt;input&gt; element of type "text" for the specified <paramref name="expression"/>. Adds a
         /// "value" attribute to the element containing the first non-<c>null</c> value found in:
         /// the <see cref="ActionContext.ModelState"/> entry with full name,
         /// the <paramref name="value"/> parameter,
         /// the <see cref="ViewData"/> entry with full name,
-        /// the <paramref name="current"/> evaluated against <see cref="ViewDataDictionary.Model"/>, or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>, or
         /// the <paramref name="htmlAttributes"/> dictionary entry with key "value".
         /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
-        /// <param name="current">Expression name, relative to the current model.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
         /// <param name="format">
         /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the "value"
@@ -655,11 +655,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
-        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="current"/> to set
-        /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="current"/> to set element's "id"
+        /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
+        /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
         /// </remarks>
-        IHtmlContent TextBox(string current, object value, string format, object htmlAttributes);
+        IHtmlContent TextBox(string expression, object value, string format, object htmlAttributes);
 
         /// <summary>
         /// Returns the validation message if an error exists in the <see cref="ModelStateDictionary"/> object
