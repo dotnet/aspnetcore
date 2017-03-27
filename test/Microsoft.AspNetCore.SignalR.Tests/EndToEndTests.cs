@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             const string message = "Major Key";
             var baseUrl = _serverFixture.BaseUrl;
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddXUnit(_output, LogLevel.Trace);
+            loggerFactory.AddXunit(_output, LogLevel.Trace);
 
             var transport = transportFactory(loggerFactory);
 
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var baseUrl = _serverFixture.BaseUrl;
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddXUnit(_output, LogLevel.Debug);
+            loggerFactory.AddXunit(_output, LogLevel.Debug);
 
             var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
             try

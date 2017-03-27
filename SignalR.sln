@@ -65,7 +65,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{6CEC3D
 	ProjectSection(SolutionItems) = preProject
 		test\Common\ArrayOutput.cs = test\Common\ArrayOutput.cs
 		test\Common\TaskExtensions.cs = test\Common\TaskExtensions.cs
-		test\Common\XUnitLoggerProvider.cs = test\Common\XUnitLoggerProvider.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client-ts", "client-ts", "{3A76C5A2-79ED-49BC-8BDC-6A3A766FFA1B}"

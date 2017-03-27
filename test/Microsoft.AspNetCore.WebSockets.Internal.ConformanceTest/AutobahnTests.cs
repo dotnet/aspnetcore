@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest
 
             if (string.Equals(Environment.GetEnvironmentVariable("AUTOBAHN_SUITES_LOG"), "1", StringComparison.Ordinal))
             {
-                loggerFactory.AddXUnit(_output);
+                loggerFactory.AddXunit(_output);
                 loggerFactory.AddConsole();
                 _output.WriteLine("Logging enabled");
             }
