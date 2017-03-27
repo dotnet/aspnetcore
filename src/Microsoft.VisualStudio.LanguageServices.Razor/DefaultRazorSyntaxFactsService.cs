@@ -70,7 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     {
                         // These aren't in document order, sort them first and then dig in
                         List<SyntaxTreeNode> attributeNodes = tagHelperNode.Attributes.Select(kvp => kvp.Value).Where(att => att != null).ToList();
-                        attributeNodes.Sort((x, y) => x.Start.AbsoluteIndex.CompareTo(y.Start));
+                        attributeNodes.Sort((x, y) => x.Start.AbsoluteIndex.CompareTo(y.Start.AbsoluteIndex));
 
                         foreach (SyntaxTreeNode curNode in attributeNodes)
                         {
