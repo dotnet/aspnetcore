@@ -12,9 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../Microsoft.AspNetCore.Razor.Evolution/Microsoft.AspNetCore.Razor.Evolution.csproj" />
-
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>

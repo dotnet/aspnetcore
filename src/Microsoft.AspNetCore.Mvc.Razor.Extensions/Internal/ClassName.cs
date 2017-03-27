@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
-using Microsoft.Extensions.Primitives;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Internal
 {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Internal
                 inputName = "_" + inputName;
             }
 
-            var builder = new InplaceStringBuilder(inputName.Length);
+            var builder = new StringBuilder(inputName.Length);
             for (var i = 0; i < inputName.Length; i++)
             {
                 var ch = inputName[i];
