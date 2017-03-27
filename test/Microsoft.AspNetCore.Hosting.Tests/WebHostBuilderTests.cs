@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Hosting
             var host = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build();
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 await AssertResponseContains(server.RequestDelegate, "MissingStartupAssembly");
             }
         }
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Hosting
             var host = builder.UseServer(server).UseStartup<StartupStaticCtorThrows>().Build();
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 await AssertResponseContains(server.RequestDelegate, "Exception from static constructor");
             }
         }
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Hosting
             var host = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
         }
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Hosting
             var host = builder.UseServer(server).UseStartup<StartupThrowTypeLoadException>().Build();
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 await AssertResponseContains(server.RequestDelegate, "Message from the LoaderException</div>");
             }
         }
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Hosting
             var host = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 var services = host.Services.GetServices<IApplicationLifetime>();
                 Assert.NotNull(services);
                 Assert.NotEmpty(services);
@@ -110,7 +111,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void DefaultObjectPoolProvider_IsRegistered()
+        public async Task DefaultObjectPoolProvider_IsRegistered()
         {
             var server = new TestServer();
             var host = CreateWebHostBuilder()
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build();
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 Assert.IsType<DefaultObjectPoolProvider>(host.Services.GetService<ObjectPoolProvider>());
             }
         }
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Hosting
             var host = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 await AssertResponseContains(server.RequestDelegate, "Exception from ConfigureServices");
             }
         }
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Hosting
             var host = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 await AssertResponseContains(server.RequestDelegate, "Exception from Configure");
             }
         }
@@ -810,7 +811,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void Build_DoesNotThrowIfUnloadableAssemblyNameInHostingStartupAssembliesAndCaptureStartupErrorsTrue()
+        public async Task Build_DoesNotThrowIfUnloadableAssemblyNameInHostingStartupAssembliesAndCaptureStartupErrorsTrue()
         {
             var provider = new TestLoggerProvider();
             var builder = CreateWebHostBuilder()
@@ -825,7 +826,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = builder.Build())
             {
-                host.Start();
+                await host.StartAsync();
                 var context = provider.Sink.Writes.FirstOrDefault(s => s.EventId.Id == LoggerEventIds.HostingStartupAssemblyException);
                 Assert.NotNull(context);
             }
@@ -879,7 +880,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             }
 
-            public void Start<TContext>(IHttpApplication<TContext> application)
+            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
             {
                 RequestDelegate = async ctx =>
                 {
@@ -895,6 +896,13 @@ namespace Microsoft.AspNetCore.Hosting
                     }
                     application.DisposeContext(httpContext, null);
                 };
+
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
             }
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.TestHost
             Features = featureCollection;
 
             var host = builder.UseServer(this).Build();
-            host.Start();
+            host.StartAsync().GetAwaiter().GetResult();
             _hostInstance = host;
         }
 
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-        void IServer.Start<TContext>(IHttpApplication<TContext> application)
+        Task IServer.StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             _application = new ApplicationWrapper<Context>((IHttpApplication<Context>)application, () =>
             {
@@ -100,6 +101,13 @@ namespace Microsoft.AspNetCore.TestHost
                     throw new ObjectDisposedException(GetType().FullName);
                 }
             });
+
+            return Task.CompletedTask;
+        }
+
+        Task IServer.StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
 
         private class ApplicationWrapper<TContext> : IHttpApplication<TContext>

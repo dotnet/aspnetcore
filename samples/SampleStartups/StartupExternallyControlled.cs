@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -34,8 +36,9 @@ namespace SampleStartups
                 .Start(_urls.ToArray());
         }
 
-        public void Stop()
+        public async Task StopAsync()
         {
+            await _host.StopAsync(TimeSpan.FromSeconds(5));
             _host.Dispose();
         }
 

@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -38,6 +40,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private IServiceProvider _applicationServices;
         private RequestDelegate _application;
         private ILogger<WebHost> _logger;
+
+        private bool _stopped;
 
         // Used for testing only
         internal WebHostOptions Options => _options;
@@ -100,7 +104,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
-        public virtual void Start()
+        public virtual async Task StartAsync(CancellationToken cancellationToken)
         {
             HostingEventSource.Log.HostStart();
             _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
@@ -112,7 +116,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _hostedServiceExecutor = _applicationServices.GetRequiredService<HostedServiceExecutor>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            Server.Start(new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory));
+            var hostingApp = new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory);
+            await Server.StartAsync(hostingApp, cancellationToken);
 
             // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
@@ -267,23 +272,51 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
-        public void Dispose()
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
+            if (_stopped)
+            {
+                return;
+            }
+            _stopped = true;
+
             _logger?.Shutdown();
+
+            if (!cancellationToken.CanBeCanceled)
+            {
+                cancellationToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
+            }
 
             // Fire IApplicationLifetime.Stopping
             _applicationLifetime?.StopApplication();
 
+            await Server?.StopAsync(cancellationToken);
+
             // Fire the IHostedService.Stop
             _hostedServiceExecutor?.Stop();
-
-            (_hostingServiceProvider as IDisposable)?.Dispose();
-            (_applicationServices as IDisposable)?.Dispose();
 
             // Fire IApplicationLifetime.Stopped
             _applicationLifetime?.NotifyStopped();
 
             HostingEventSource.Log.HostStop();
+        }
+
+        public void Dispose()
+        {
+            if (!_stopped)
+            {
+                try
+                {
+                    this.StopAsync().GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    _logger?.ServerShutdownException(ex);
+                }
+            }
+
+            (_applicationServices as IDisposable)?.Dispose();
+            (_hostingServiceProvider as IDisposable)?.Dispose();
         }
     }
 }

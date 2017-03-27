@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -24,6 +26,13 @@ namespace Microsoft.AspNetCore.Hosting
         /// <summary>
         /// Starts listening on the configured addresses.
         /// </summary>
-        void Start();
+        Task StartAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Attempt to gracefully stop the host.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task StopAsync(CancellationToken cancellationToken);
     }
 }

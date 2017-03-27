@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Configuration;
 
 namespace ServerComparison.TestSites
 {
@@ -36,8 +37,14 @@ namespace ServerComparison.TestSites
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
-        public void Start<TContext>(IHttpApplication<TContext> application)
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 }

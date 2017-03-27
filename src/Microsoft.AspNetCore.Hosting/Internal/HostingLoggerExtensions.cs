@@ -82,6 +82,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
+        public static void ServerShutdownException(this ILogger logger, Exception ex)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(
+                    eventId: LoggerEventIds.ServerShutdownException,
+                    exception: ex,
+                    message: "Server shutdown exception");
+            }
+        }
 
         private class HostingLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {

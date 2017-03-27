@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
@@ -27,6 +28,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
             HostingStartupAssemblies = configuration[WebHostDefaults.HostingStartupAssembliesKey]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
             PreferHostingUrls = ParseBool(configuration, WebHostDefaults.PreferHostingUrls);
+
+            var timeout = configuration[WebHostDefaults.ShutdownTimeoutKey];
+            if (!string.IsNullOrEmpty(timeout)
+                && int.TryParse(timeout, NumberStyles.None, CultureInfo.InvariantCulture, out var seconds))
+            {
+                ShutdownTimeout = TimeSpan.FromSeconds(seconds);
+            }
         }
 
         public string ApplicationName { get; set; }
@@ -46,6 +54,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public string ContentRootPath { get; set; }
 
         public bool PreferHostingUrls { get; set; }
+
+        public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         private static bool ParseBool(IConfiguration configuration, string key)
         {

@@ -3,6 +3,8 @@
 
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -166,7 +168,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHost Start(this IWebHostBuilder hostBuilder, params string[] urls)
         {
             var host = hostBuilder.UseUrls(urls).Build();
-            host.Start();
+            host.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
             return host;
         }
     }
