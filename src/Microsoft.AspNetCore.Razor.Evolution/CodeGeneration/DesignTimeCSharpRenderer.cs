@@ -79,16 +79,27 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         {
             if (node.Source != null)
             {
-                using (Context.Writer.BuildLinePragma(node.Source.Value))
+                IDisposable linePragmaScope = null;
+                if (!string.IsNullOrWhiteSpace(node.Content))
                 {
-                    var padding = BuildOffsetPadding(0, node.Source.Value, Context);
-                    Context.Writer.Write(padding);
+                    linePragmaScope = Context.Writer.BuildLinePragma(node.Source.Value);
+                }
 
-                    Context.AddLineMappingFor(node);
-                    Context.Writer.Write(node.Content);
+                var padding = BuildOffsetPadding(0, node.Source.Value, Context);
+                Context.Writer.Write(padding);
+                Context.AddLineMappingFor(node);
+                Context.Writer.Write(node.Content);
+
+                if (linePragmaScope != null)
+                {
+                    linePragmaScope.Dispose();
+                }
+                else
+                {
+                    Context.Writer.WriteLine();
                 }
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(node.Content))
             {
                 Context.Writer.WriteLine(node.Content);
             }

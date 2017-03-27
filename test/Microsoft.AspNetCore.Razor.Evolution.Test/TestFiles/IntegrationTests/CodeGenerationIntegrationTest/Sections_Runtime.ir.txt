@@ -23,6 +23,7 @@ Document -
                 HtmlContent - (224:13,0 [2] Sections.cshtml) - \n
                 CSharpStatement -  - DefineSection("NestedDelegates", async () => {
                 HtmlContent - (252:14,26 [2] Sections.cshtml) - \n
+                CSharpStatement - (254:15,0 [4] Sections.cshtml) -     
                 CSharpStatement - (260:15,6 [27] Sections.cshtml) -  Func<dynamic, object> f = 
                 Template - (288:15,34 [17] Sections.cshtml)
                     HtmlContent - (288:15,34 [6] Sections.cshtml) - <span>

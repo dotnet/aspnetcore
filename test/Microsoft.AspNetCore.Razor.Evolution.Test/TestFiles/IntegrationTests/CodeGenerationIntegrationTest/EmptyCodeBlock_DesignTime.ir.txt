@@ -12,3 +12,4 @@ Document -
             CSharpStatement -  - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] EmptyCodeBlock.cshtml) - This is markup\n\n
+                CSharpStatement - (20:2,2 [0] EmptyCodeBlock.cshtml) - 

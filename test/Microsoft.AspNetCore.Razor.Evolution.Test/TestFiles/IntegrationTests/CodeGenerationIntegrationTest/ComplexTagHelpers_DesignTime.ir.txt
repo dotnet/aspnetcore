@@ -57,6 +57,7 @@ Document -
                                     ExecuteTagHelpers - 
                             CreateTagHelper -  - TestNamespace.PTagHelper
                             ExecuteTagHelpers - 
+                        CSharpStatement - (474:15,74 [18] ComplexTagHelpers.cshtml) - \n                
                         TagHelper - (492:16,16 [50] ComplexTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                             CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -68,6 +69,7 @@ Document -
                                 CSharpExpression - (507:16,31 [30] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (507:16,31 [30] ComplexTagHelpers.cshtml) - CSharp - true ? "checkbox" : "anything"
                             ExecuteTagHelpers - 
+                        CSharpStatement - (542:16,66 [18] ComplexTagHelpers.cshtml) - \n                
                         TagHelper - (560:17,16 [81] ComplexTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.StartTagOnly
                             CreateTagHelper -  - TestNamespace.InputTagHelper

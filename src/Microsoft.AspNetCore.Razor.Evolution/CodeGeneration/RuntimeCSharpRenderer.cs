@@ -209,6 +209,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void VisitCSharpStatement(CSharpStatementIRNode node)
         {
+            if (string.IsNullOrWhiteSpace(node.Content))
+            {
+                return;
+            }
+
             if (node.Source != null)
             {
                 using (Context.Writer.BuildLinePragma(node.Source.Value))

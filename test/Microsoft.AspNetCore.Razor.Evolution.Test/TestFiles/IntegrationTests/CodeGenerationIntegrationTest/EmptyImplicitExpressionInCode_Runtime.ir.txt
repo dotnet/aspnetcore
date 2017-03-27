@@ -5,4 +5,6 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyImplicitExpressionInCode_Runtime -  - 
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [6] EmptyImplicitExpressionInCode.cshtml) - \n    
                 CSharpExpression - 
+                CSharpStatement - (9:1,5 [2] EmptyImplicitExpressionInCode.cshtml) - \n

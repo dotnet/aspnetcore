@@ -9,4 +9,5 @@ Document -
                 HtmlContent - (140:10,0 [26] FunctionsBlock.cshtml) - \nHere's a random number: 
                 CSharpExpression - (167:11,25 [11] FunctionsBlock.cshtml)
                     RazorIRToken - (167:11,25 [11] FunctionsBlock.cshtml) - CSharp - RandomInt()
+            CSharpStatement - (12:0,12 [4] FunctionsBlock.cshtml) - \n\n
             CSharpStatement - (33:4,12 [104] FunctionsBlock.cshtml) - \n    Random _rand = new Random();\n    private int RandomInt() {\n        return _rand.Next();\n    }\n

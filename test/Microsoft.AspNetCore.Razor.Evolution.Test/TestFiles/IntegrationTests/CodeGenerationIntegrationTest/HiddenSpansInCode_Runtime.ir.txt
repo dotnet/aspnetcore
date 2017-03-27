@@ -5,4 +5,5 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_HiddenSpansInCode_Runtime -  - 
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [6] HiddenSpansInCode.cshtml) - \n    
                 CSharpStatement - (9:1,5 [5] HiddenSpansInCode.cshtml) - @Da\n

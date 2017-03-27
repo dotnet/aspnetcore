@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+              
+    
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/HiddenSpansInCode.cshtml"
      @Da
 

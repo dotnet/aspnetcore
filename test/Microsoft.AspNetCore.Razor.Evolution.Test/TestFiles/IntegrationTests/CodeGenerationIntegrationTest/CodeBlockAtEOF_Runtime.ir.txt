@@ -5,3 +5,4 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CodeBlockAtEOF_Runtime -  - 
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [0] CodeBlockAtEOF.cshtml) - 

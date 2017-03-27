@@ -22,90 +22,97 @@ Source Location: (357:12,5 [7] TestFiles/IntegrationTests/CodeGenerationIntegrat
 Generated Location: (1305:36,6 [7] )
 |foo("")|
 
+Source Location: (364:12,12 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
+|
+|
+Generated Location: (1370:40,24 [2] )
+|
+|
+
 Source Location: (379:16,2 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |Repeat(10, |
-Generated Location: (1438:41,6 [11] )
+Generated Location: (1466:43,6 [11] )
 |Repeat(10, |
 
 Source Location: (402:16,25 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |item|
-Generated Location: (1653:43,25 [4] )
+Generated Location: (1681:45,25 [4] )
 |item|
 
 Source Location: (411:16,34 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |)|
-Generated Location: (1695:48,1 [1] )
+Generated Location: (1723:50,1 [1] )
 |)|
 
 Source Location: (430:20,1 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |Repeat(10,
     |
-Generated Location: (1822:53,6 [16] )
+Generated Location: (1850:55,6 [16] )
 |Repeat(10,
     |
 
 Source Location: (463:21,21 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |item|
-Generated Location: (2038:56,21 [4] )
+Generated Location: (2066:58,21 [4] )
 |item|
 
 Source Location: (484:22,0 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |)|
-Generated Location: (2080:61,1 [1] )
+Generated Location: (2108:63,1 [1] )
 |)|
 
 Source Location: (501:26,1 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |Repeat(10,
     |
-Generated Location: (2207:66,6 [16] )
+Generated Location: (2235:68,6 [16] )
 |Repeat(10,
     |
 
 Source Location: (535:27,22 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |item|
-Generated Location: (2424:69,22 [4] )
+Generated Location: (2452:71,22 [4] )
 |item|
 
 Source Location: (557:28,0 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |)|
-Generated Location: (2466:74,1 [1] )
+Generated Location: (2494:76,1 [1] )
 |)|
 
 Source Location: (574:32,1 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |Repeat(10,
     |
-Generated Location: (2593:79,6 [16] )
+Generated Location: (2621:81,6 [16] )
 |Repeat(10,
     |
 
 Source Location: (609:33,23 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |item|
-Generated Location: (2811:82,23 [4] )
+Generated Location: (2839:84,23 [4] )
 |item|
 
 Source Location: (631:34,0 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |)|
-Generated Location: (2853:87,1 [1] )
+Generated Location: (2881:89,1 [1] )
 |)|
 
 Source Location: (655:39,5 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |Repeat(10, |
-Generated Location: (2980:92,6 [11] )
+Generated Location: (3008:94,6 [11] )
 |Repeat(10, |
 
 Source Location: (688:40,15 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |item|
-Generated Location: (3185:94,15 [4] )
+Generated Location: (3213:96,15 [4] )
 |item|
 
 Source Location: (704:41,10 [18] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |var parent = item;|
-Generated Location: (3319:99,10 [18] )
+Generated Location: (3347:101,10 [18] )
 |var parent = item;|
 
 Source Location: (863:46,9 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
 |)|
-Generated Location: (3374:104,1 [1] )
+Generated Location: (3402:106,1 [1] )
 |)|
 
 Source Location: (12:0,12 [265] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml)
@@ -118,7 +125,7 @@ Source Location: (12:0,12 [265] TestFiles/IntegrationTests/CodeGenerationIntegra
         });
     }
 |
-Generated Location: (3555:111,12 [265] )
+Generated Location: (3583:113,12 [265] )
 |
     public HelperResult Repeat(int times, Func<int, object> template) {
         return new HelperResult((writer) => {

@@ -29,6 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+                
+                                   
+
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  while(i <= 10) {
     

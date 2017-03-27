@@ -28,11 +28,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+                                                           
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
                                              __o = await Foo();
 
 #line default
 #line hidden
+                                                                               
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
                                            __o = await;
 
@@ -63,11 +65,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+                                                              
 #line 24 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
                                                 __o = await Foo(boolValue: false);
 
 #line default
 #line hidden
+                                                                                                  
 #line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
                                               __o = await ("wrrronggg");
 

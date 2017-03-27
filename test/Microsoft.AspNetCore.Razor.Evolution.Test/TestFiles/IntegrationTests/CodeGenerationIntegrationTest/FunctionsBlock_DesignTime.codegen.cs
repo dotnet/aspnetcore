@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line hidden
         }
         #pragma warning restore 1998
+                    
+
+
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml"
             
     Random _rand = new Random();

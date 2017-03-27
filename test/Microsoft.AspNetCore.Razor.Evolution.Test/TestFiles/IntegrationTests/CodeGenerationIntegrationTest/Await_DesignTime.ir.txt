@@ -20,10 +20,12 @@ Document -
                 HtmlContent - (259:10,50 [43] Await.cshtml) - </p>\n    <p>Basic Asynchronous Statement: 
                 CSharpStatement - (304:11,39 [14] Await.cshtml) -  await Foo(); 
                 HtmlContent - (319:11,54 [50] Await.cshtml) - </p>\n    <p>Basic Asynchronous Statement Nested: 
+                CSharpStatement - (371:12,46 [1] Await.cshtml) -  
                 HtmlContent - (372:12,47 [3] Await.cshtml) - <b>
                 CSharpExpression - (376:12,51 [11] Await.cshtml)
                     RazorIRToken - (376:12,51 [11] Await.cshtml) - CSharp - await Foo()
                 HtmlContent - (387:12,62 [4] Await.cshtml) - </b>
+                CSharpStatement - (391:12,66 [1] Await.cshtml) -  
                 HtmlContent - (393:12,68 [54] Await.cshtml) - </p>\n    <p>Basic Incomplete Asynchronous Statement: 
                 CSharpExpression - (448:13,49 [5] Await.cshtml)
                     RazorIRToken - (448:13,49 [5] Await.cshtml) - CSharp - await
@@ -41,10 +43,12 @@ Document -
                 HtmlContent - (827:21,82 [55] Await.cshtml) - </p>\n    <p>Advanced Asynchronous Statement Extended: 
                 CSharpStatement - (884:22,51 [21] Await.cshtml) -  await Foo.Bar(1, 2) 
                 HtmlContent - (906:22,73 [53] Await.cshtml) - </p>\n    <p>Advanced Asynchronous Statement Nested: 
+                CSharpStatement - (961:23,49 [1] Await.cshtml) -  
                 HtmlContent - (962:23,50 [3] Await.cshtml) - <b>
                 CSharpExpression - (966:23,54 [27] Await.cshtml)
                     RazorIRToken - (966:23,54 [27] Await.cshtml) - CSharp - await Foo(boolValue: false)
                 HtmlContent - (993:23,81 [4] Await.cshtml) - </b>
+                CSharpStatement - (997:23,85 [1] Await.cshtml) -  
                 HtmlContent - (999:23,87 [57] Await.cshtml) - </p>\n    <p>Advanced Incomplete Asynchronous Statement: 
                 CSharpExpression - (1057:24,52 [19] Await.cshtml)
                     RazorIRToken - (1057:24,52 [19] Await.cshtml) - CSharp - await ("wrrronggg")

@@ -13,6 +13,7 @@ Document -
                 TagHelper - (139:4,8 [433] NestedScriptTagTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
                         HtmlContent - (180:4,49 [2] NestedScriptTagTagHelpers.cshtml) - \n
+                        CSharpStatement - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml) -             
                         CSharpStatement - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml) - for(var i = 0; i < 5; i++) {\n
                         HtmlContent - (225:6,0 [84] NestedScriptTagTagHelpers.cshtml) -                 <script id="nestedScriptTag" type="text/html">\n                    
                         TagHelper - (309:7,20 [86] NestedScriptTagTagHelpers.cshtml)

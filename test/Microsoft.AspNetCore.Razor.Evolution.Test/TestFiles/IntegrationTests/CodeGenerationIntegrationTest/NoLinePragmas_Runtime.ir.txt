@@ -39,6 +39,7 @@ Document -
                     RazorIRToken - (500:29,35 [10] NoLinePragmas.cshtml) - CSharp - ex.Message
                 HtmlContent - (511:29,46 [6] NoLinePragmas.cshtml) - </p>\n
                 CSharpStatement - (517:30,0 [5] NoLinePragmas.cshtml) - }\n\n
+                CSharpStatement - (556:32,34 [2] NoLinePragmas.cshtml) - \n
                 HtmlContent - (558:33,0 [12] NoLinePragmas.cshtml) - <p>i is now 
                 CSharpExpression - (571:33,13 [1] NoLinePragmas.cshtml)
                     RazorIRToken - (571:33,13 [1] NoLinePragmas.cshtml) - CSharp - i

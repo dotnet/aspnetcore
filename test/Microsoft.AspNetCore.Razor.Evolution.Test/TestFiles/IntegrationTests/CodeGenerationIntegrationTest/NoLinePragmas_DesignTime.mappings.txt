@@ -122,22 +122,27 @@ Generated Location: (3128:109,50 [7] )
 
 |
 
+Source Location: (556:32,34 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml)
+||
+Generated Location: (3212:115,46 [0] )
+||
+
 Source Location: (571:33,13 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml)
 |i|
-Generated Location: (3269:116,13 [1] )
+Generated Location: (3317:117,13 [1] )
 |i|
 
 Source Location: (581:35,1 [26] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml)
 |lock(new object()) {
     |
-Generated Location: (3395:121,1 [26] )
+Generated Location: (3443:122,1 [26] )
 |lock(new object()) {
     |
 
 Source Location: (654:36,51 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml)
 |
 }|
-Generated Location: (3595:127,51 [3] )
+Generated Location: (3643:128,51 [3] )
 |
 }|
 

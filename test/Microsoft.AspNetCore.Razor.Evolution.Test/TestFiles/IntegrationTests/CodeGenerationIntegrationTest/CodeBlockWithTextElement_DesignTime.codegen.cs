@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+                                                             
+
         }
         #pragma warning restore 1998
     }

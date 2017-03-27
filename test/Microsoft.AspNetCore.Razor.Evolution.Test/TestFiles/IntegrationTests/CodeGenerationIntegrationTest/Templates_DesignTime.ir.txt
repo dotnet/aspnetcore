@@ -21,6 +21,7 @@ Document -
                 CSharpStatement - (349:11,63 [7] Templates.cshtml) - ;\n    
                 CSharpExpression - (357:12,5 [7] Templates.cshtml)
                     RazorIRToken - (357:12,5 [7] Templates.cshtml) - CSharp - foo("")
+                CSharpStatement - (364:12,12 [2] Templates.cshtml) - \n
                 HtmlContent - (369:14,0 [8] Templates.cshtml) - \n<ul>\n
                 CSharpExpression - (379:16,2 [31] Templates.cshtml)
                     RazorIRToken - (379:16,2 [11] Templates.cshtml) - CSharp - Repeat(10, 
