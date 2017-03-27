@@ -38,3 +38,4 @@ node_modules
 *.orig
 .vscode/
 global.json
+BenchmarkDotNet.Artifacts/
