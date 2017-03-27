@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
 
             _fileProvider = fileProvider;
-            _cache = new MemoryCache(new MemoryCacheOptions { CompactOnMemoryPressure = false });
+            _cache = new MemoryCache(new MemoryCacheOptions());
         }
 
         /// <summary>

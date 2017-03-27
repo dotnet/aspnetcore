@@ -78,10 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _htmlEncoder = htmlEncoder;
             _logger = loggerFactory.CreateLogger<RazorViewEngine>();
             _razorProject = razorProject;
-            ViewLookupCache = new MemoryCache(new MemoryCacheOptions
-            {
-                CompactOnMemoryPressure = false
-            });
+            ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
         }
 
         /// <summary>
