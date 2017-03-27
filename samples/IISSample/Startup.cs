@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -76,7 +76,6 @@ namespace IISSample
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
