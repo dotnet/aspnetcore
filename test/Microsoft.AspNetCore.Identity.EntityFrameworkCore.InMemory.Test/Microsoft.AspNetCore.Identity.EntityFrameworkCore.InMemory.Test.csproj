@@ -5,8 +5,6 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,8 +24,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
-    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Globalization.Extensions" Version="$(CoreFxVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
   </ItemGroup>
