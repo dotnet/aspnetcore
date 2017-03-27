@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal class ObjectMethodExecutor
     {
-        private object[] _parameterDefaultValues;
-        private ActionExecutorAsync _executorAsync;
-        private ActionExecutor _executor;
+        private readonly object[] _parameterDefaultValues;
+        private readonly ActionExecutorAsync _executorAsync;
+        private readonly ActionExecutor _executor;
 
         private static readonly MethodInfo _convertOfTMethod =
             typeof(ObjectMethodExecutor).GetRuntimeMethods().Single(methodInfo => methodInfo.Name == nameof(ObjectMethodExecutor.Convert));
@@ -27,12 +27,26 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 throw new ArgumentNullException(nameof(methodInfo));
             }
+
             MethodInfo = methodInfo;
             TargetTypeInfo = targetTypeInfo;
             ActionParameters = methodInfo.GetParameters();
             MethodReturnType = methodInfo.ReturnType;
             IsMethodAsync = typeof(Task).IsAssignableFrom(MethodReturnType);
             TaskGenericType = IsMethodAsync ? GetTaskInnerTypeOrNull(MethodReturnType) : null;
+
+            if (IsMethodAsync && TaskGenericType != null)
+            {
+                // For backwards compatibility we're creating a sync-executor for an async method.
+                _executor = GetExecutor(methodInfo, targetTypeInfo);
+                _executorAsync = GetExecutorAsync(TaskGenericType, methodInfo, targetTypeInfo);
+            }
+            else
+            {
+                _executor = GetExecutor(methodInfo, targetTypeInfo);
+            }
+
+            _parameterDefaultValues = GetParameterDefaultValues(ActionParameters);
         }
 
         private delegate Task<object> ActionExecutorAsync(object target, object[] parameters);
@@ -54,29 +68,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public bool IsMethodAsync { get; }
 
-        private ActionExecutorAsync TaskOfTActionExecutorAsync
-        {
-            get
-            {
-                if (_executorAsync == null)
-                {
-                    _executorAsync = GetExecutorAsync(TaskGenericType, MethodInfo, TargetTypeInfo);
-                }
-
-                return _executorAsync;
-            }
-        }
-
         public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo)
         {
             var executor = new ObjectMethodExecutor(methodInfo, targetTypeInfo);
-            executor._executor = GetExecutor(methodInfo, targetTypeInfo);
             return executor;
         }
 
         public Task<object> ExecuteAsync(object target, object[] parameters)
         {
-            return TaskOfTActionExecutorAsync(target, parameters);
+            return _executorAsync(target, parameters);
         }
 
         public object Execute(object target, object[] parameters)
@@ -90,8 +90,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
-
-            EnsureParameterDefaultValues();
 
             return _parameterDefaultValues[index];
         }
@@ -221,42 +219,40 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return CastToObject<T>(task);
         }
 
-        private void EnsureParameterDefaultValues()
+        private static object[] GetParameterDefaultValues(ParameterInfo[] parameters)
         {
-            if (_parameterDefaultValues == null)
+            var values = new object[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
             {
-                var count = ActionParameters.Length;
-                _parameterDefaultValues = new object[count];
+                var parameterInfo = parameters[i];
+                object defaultValue;
 
-                for (var i = 0; i < count; i++)
+                if (parameterInfo.HasDefaultValue)
                 {
-                    var parameterInfo = ActionParameters[i];
-                    object defaultValue;
-
-                    if (parameterInfo.HasDefaultValue)
+                    defaultValue = parameterInfo.DefaultValue;
+                }
+                else
+                {
+                    var defaultValueAttribute = parameterInfo
+                        .GetCustomAttribute<DefaultValueAttribute>(inherit: false);
+ 
+                    if (defaultValueAttribute?.Value == null)
                     {
-                        defaultValue = parameterInfo.DefaultValue;
+                        defaultValue = parameterInfo.ParameterType.GetTypeInfo().IsValueType
+                            ? Activator.CreateInstance(parameterInfo.ParameterType)
+                            : null;
                     }
                     else
                     {
-                        var defaultValueAttribute = parameterInfo
-                            .GetCustomAttribute<DefaultValueAttribute>(inherit: false);
-
-                        if (defaultValueAttribute?.Value == null)
-                        {
-                            defaultValue = parameterInfo.ParameterType.GetTypeInfo().IsValueType
-                                ? Activator.CreateInstance(parameterInfo.ParameterType)
-                                : null;
-                        }
-                        else
-                        {
-                            defaultValue = defaultValueAttribute.Value;
-                        }
+                        defaultValue = defaultValueAttribute.Value;
                     }
-
-                    _parameterDefaultValues[i] = defaultValue;
                 }
+
+                values[i] = defaultValue;
             }
+
+            return values;
         }
     }
 }
