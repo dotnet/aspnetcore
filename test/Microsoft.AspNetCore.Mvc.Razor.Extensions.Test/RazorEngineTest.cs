@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.Extensions.FileProviders;
 using Moq;
 using Xunit;
 
@@ -132,12 +131,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
 
             var inputContent = ResourceFile.ReadResource(_assembly, inputFile, sourceFile: true);
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(inputFile, inputContent);
-            var fileInfo = fileProvider.GetFileInfo(inputFile);
-            var razorTemplateEngine = new MvcRazorTemplateEngine(engine, GetRazorProject(fileProvider));
-            var razorProjectItem = new DefaultRazorProjectItem(fileInfo, basePath: null, path: inputFile);
-            var codeDocument = razorTemplateEngine.CreateCodeDocument(razorProjectItem);
+            var item = new TestRazorProjectItem(inputFile) { Content = inputContent, };
+            var project = new TestRazorProject(new List<RazorProjectItem>()
+            {
+                item,
+            });
+
+            var razorTemplateEngine = new MvcRazorTemplateEngine(engine, project);
+            var codeDocument = razorTemplateEngine.CreateCodeDocument(item);
             codeDocument.Items["SuppressUniqueIds"] = "test";
             codeDocument.Items["NewLineString"] = "\r\n";
 
@@ -173,12 +174,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
 
             var inputContent = ResourceFile.ReadResource(_assembly, inputFile, sourceFile: true);
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(inputFile, inputContent);
-            var fileInfo = fileProvider.GetFileInfo(inputFile);
-            var razorTemplateEngine = new MvcRazorTemplateEngine(engine, GetRazorProject(fileProvider));
-            var razorProjectItem = new DefaultRazorProjectItem(fileInfo, basePath: null, path: inputFile);
-            var codeDocument = razorTemplateEngine.CreateCodeDocument(razorProjectItem);
+            var item = new TestRazorProjectItem(inputFile) { Content = inputContent, };
+            var project = new TestRazorProject(new List<RazorProjectItem>()
+            {
+                item,
+            });
+
+            var razorTemplateEngine = new MvcRazorTemplateEngine(engine, project);
+            var codeDocument = razorTemplateEngine.CreateCodeDocument(item);
             codeDocument.Items["SuppressUniqueIds"] = "test";
             codeDocument.Items["NewLineString"] = "\r\n";
 
@@ -208,11 +211,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
                 .ToList<MetadataReference>();
 
-            var syntaxTree = CreateTagHelperSyntaxTree(); 
+            var syntaxTree = CreateTagHelperSyntaxTree();
             var compilation = CSharpCompilation.Create("Microsoft.AspNetCore.Mvc.Razor", syntaxTree, references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
             var stream = new MemoryStream();
-            var compilationResult = compilation.Emit(stream, options: new EmitOptions() );
+            var compilationResult = compilation.Emit(stream, options: new EmitOptions());
             stream.Position = 0;
 
             Assert.True(compilationResult.Success);
@@ -236,38 +239,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }}";
 
             return new SyntaxTree[] { CSharpSyntaxTree.ParseText(text) };
-        }
-
-        private static RazorProject GetRazorProject(IFileProvider fileProvider)
-        {
-            var razorProject = new Mock<RazorProject>();
-
-            return razorProject.Object;
-        }
-    }
-
-    public class DefaultRazorProjectItem : RazorProjectItem
-    {
-        public DefaultRazorProjectItem(IFileInfo fileInfo, string basePath, string path)
-        {
-            FileInfo = fileInfo;
-            BasePath = basePath;
-            Path = path;
-        }
-
-        public IFileInfo FileInfo { get; }
-
-        public override string BasePath { get; }
-
-        public override string Path { get; }
-
-        public override string PhysicalPath { get; }
-
-        public override bool Exists => FileInfo.Exists;
-
-        public override Stream Read()
-        {
-            return FileInfo.CreateReadStream();
         }
     }
 }

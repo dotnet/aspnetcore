@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions.Internal;
 using Microsoft.AspNetCore.Razor.Evolution;
-using Microsoft.Extensions.FileProviders;
 using Moq;
 using Xunit;
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                GetRazorProject(new TestFileProvider()));
+                new TestRazorProject());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                GetRazorProject(new TestFileProvider()));
+                new TestRazorProject());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Arrange
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                GetRazorProject(new TestFileProvider()));
+                new TestRazorProject());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
@@ -91,11 +91,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             // Arrange
             var path = "/Views/Home/Index.cshtml";
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(path, "Hello world");
+            var item = new TestRazorProjectItem(path)
+            {
+                Content = "Hello world",
+            };
+            var project = new TestRazorProject(new List<RazorProjectItem>() { item, });
+
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                GetRazorProject(fileProvider));
+                project);
 
             // Act
             var codeDocument = mvcRazorTemplateEngine.CreateCodeDocument(path);
@@ -109,18 +113,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var contentChars = new char[imports.Length];
             imports.CopyTo(0, contentChars, 0, imports.Length);
             return new string(contentChars);
-        }
-
-        private static RazorProject GetRazorProject(IFileProvider fileProvider)
-        {
-            var razorProject = new Mock<RazorProject>();
-            razorProject.Setup(s => s.GetItem(It.IsAny<string>()))
-                .Returns((string path) => {
-                    var fileInfo = fileProvider.GetFileInfo(path);
-                    return new DefaultRazorProjectItem(fileInfo, null, path);
-                });
-
-            return razorProject.Object;
         }
     }
 }
