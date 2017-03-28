@@ -1,6 +1,7 @@
 namespace AspNetCore
 {
     #line hidden
+    using TModel = global::System.Object;
     using System;
     using System.Threading.Tasks;
 #line 2 ""
@@ -28,12 +29,12 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 #line default
 #line hidden
-#line 1 "TestFiles/Input/Inject.cshtml"
+#line 1 "/TestFiles/Input/Inject.cshtml"
 using MyNamespace;
 
 #line default
 #line hidden
-    public class TestFiles_Input_Inject_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class _TestFiles_Input_Inject_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {

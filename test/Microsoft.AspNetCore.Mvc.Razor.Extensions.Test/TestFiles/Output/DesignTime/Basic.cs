@@ -1,6 +1,7 @@
 namespace AspNetCore
 {
     #line hidden
+    using TModel = global::System.Object;
     using System;
     using System.Threading.Tasks;
 #line 2 ""
@@ -28,7 +29,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 #line default
 #line hidden
-    public class TestFiles_Input_Basic_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class _TestFiles_Input_Basic_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -82,12 +83,12 @@ System.Object __typeHelper = "Microsoft.AspNetCore.Razor.TagHelpers.UrlResolutio
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 1 "TestFiles/Input/Basic.cshtml"
+#line 1 "/TestFiles/Input/Basic.cshtml"
        __o = logo;
 
 #line default
 #line hidden
-#line 3 "TestFiles/Input/Basic.cshtml"
+#line 3 "/TestFiles/Input/Basic.cshtml"
 __o = Html.Input("SomeKey");
 
 #line default

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
         {
             builder.AddDirective(Directive);
-            builder.Features.Add(new Pass());
+            builder.Features.Add(new Pass(builder.DesignTime));
             return builder;
         }
 
@@ -58,6 +58,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         internal class Pass : RazorIRPassBase, IRazorDirectiveClassifierPass
         {
+            private readonly bool _designTime;
+
+            public Pass(bool designTime)
+            {
+                _designTime = designTime;
+            }
+
             // Runs after the @inherits directive
             public override int Order => 5;
 
@@ -65,6 +72,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 var visitor = new Visitor();
                 var modelType = GetModelType(irDocument, visitor);
+
+                if (_designTime)
+                {
+                    // Alias the TModel token to a known type ('object' if the model type is unknown).
+                    // This allows design time compilation to succeed for Razor files where the token isn't replaced.
+                    var typeName = modelType == "dynamic" ? $"global::{typeof(object).FullName}" : modelType;
+                    var usingNode = new UsingStatementIRNode()
+                    {
+                        Content = $"TModel = {typeName}"
+                    };
+
+                    visitor.Namespace?.Children.Insert(0, usingNode);
+                }
 
                 var baseType = visitor.Class?.BaseType?.Replace("<TModel>", "<" + modelType + ">");
                 for (var i = visitor.InheritsDirectives.Count - 1; i >= 0; i--)
@@ -85,11 +105,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private class Visitor : RazorIRNodeWalker
         {
+            public NamespaceDeclarationIRNode Namespace { get; private set; }
+
             public ClassDeclarationIRNode Class { get; private set; }
 
             public IList<DirectiveIRNode> InheritsDirectives { get; } = new List<DirectiveIRNode>();
 
             public IList<DirectiveIRNode> ModelDirectives { get; } = new List<DirectiveIRNode>();
+
+            public override void VisitNamespace(NamespaceDeclarationIRNode node)
+            {
+                if (Namespace == null)
+                {
+                    Namespace = node;
+                }
+
+                base.VisitNamespace(node);
+            }
 
             public override void VisitClass(ClassDeclarationIRNode node)
             {

@@ -1,6 +1,7 @@
 namespace AspNetCore
 {
     #line hidden
+    using TModel = MyModel;
     using System;
     using System.Threading.Tasks;
 #line 2 ""
@@ -28,7 +29,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 #line default
 #line hidden
-    public class TestFiles_Input_InjectWithSemicolon_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
+    public class _TestFiles_Input_InjectWithSemicolon_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {

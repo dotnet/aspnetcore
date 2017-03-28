@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.DependencyModel;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
@@ -131,13 +130,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
 
             var inputContent = ResourceFile.ReadResource(_assembly, inputFile, sourceFile: true);
-            var item = new TestRazorProjectItem(inputFile) { Content = inputContent, };
+            var item = new TestRazorProjectItem("/" + inputFile) { Content = inputContent, };
             var project = new TestRazorProject(new List<RazorProjectItem>()
             {
                 item,
             });
 
             var razorTemplateEngine = new MvcRazorTemplateEngine(engine, project);
+            razorTemplateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var codeDocument = razorTemplateEngine.CreateCodeDocument(item);
             codeDocument.Items["SuppressUniqueIds"] = "test";
             codeDocument.Items["NewLineString"] = "\r\n";
@@ -174,13 +174,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
 
             var inputContent = ResourceFile.ReadResource(_assembly, inputFile, sourceFile: true);
-            var item = new TestRazorProjectItem(inputFile) { Content = inputContent, };
+            var item = new TestRazorProjectItem("/" + inputFile) { Content = inputContent, };
             var project = new TestRazorProject(new List<RazorProjectItem>()
             {
                 item,
             });
 
             var razorTemplateEngine = new MvcRazorTemplateEngine(engine, project);
+            razorTemplateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var codeDocument = razorTemplateEngine.CreateCodeDocument(item);
             codeDocument.Items["SuppressUniqueIds"] = "test";
             codeDocument.Items["NewLineString"] = "\r\n";

@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 ");
 
             var engine = CreateEngine();
-            var pass = new ModelDirective.Pass()
+            var pass = new ModelDirective.Pass(designTime: false)
             {
                 Engine = engine,
             };
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 ");
 
             var engine = CreateEngine();
-            var pass = new ModelDirective.Pass()
+            var pass = new ModelDirective.Pass(designTime: false)
             {
                 Engine = engine,
             };
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 ");
 
             var engine = CreateEngine();
-            var pass = new ModelDirective.Pass()
+            var pass = new ModelDirective.Pass(designTime: false)
             {
                 Engine = engine,
             };
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 ");
 
             var engine = CreateEngine();
-            var pass = new ModelDirective.Pass()
+            var pass = new ModelDirective.Pass(designTime: false)
             {
                 Engine = engine,
             };
@@ -154,6 +154,65 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("BaseType<dynamic>", @class.BaseType);
         }
 
+        [Fact]
+        public void ModelDirectivePass_DesignTime_AddsTModelUsingStatement()
+        {
+            // Arrange
+            var codeDocument = CreateDocument(@"
+@inherits BaseType<TModel>
+");
+
+            var engine = CreateEngine();
+            var pass = new ModelDirective.Pass(designTime: true)
+            {
+                Engine = engine,
+            };
+
+            var irDocument = CreateIRDocument(engine, codeDocument);
+
+            // Act
+            pass.Execute(codeDocument, irDocument);
+
+            // Assert
+            var @class = FindClassNode(irDocument);
+            Assert.NotNull(@class);
+            Assert.Equal("BaseType<dynamic>", @class.BaseType);
+
+            var @namespace = FindNamespaceNode(irDocument);
+            var usingNode = Assert.IsType<UsingStatementIRNode>(@namespace.Children[0]);
+            Assert.Equal($"TModel = global::{typeof(object).FullName}", usingNode.Content);
+        }
+
+        [Fact]
+        public void ModelDirectivePass_DesignTime_WithModel_AddsTModelUsingStatement()
+        {
+            // Arrange
+            var codeDocument = CreateDocument(@"
+@inherits BaseType<TModel>
+@model SomeType
+");
+
+            var engine = CreateEngine();
+            var pass = new ModelDirective.Pass(designTime: true)
+            {
+                Engine = engine,
+            };
+
+            var irDocument = CreateIRDocument(engine, codeDocument);
+
+            // Act
+            pass.Execute(codeDocument, irDocument);
+
+            // Assert
+            var @class = FindClassNode(irDocument);
+            Assert.NotNull(@class);
+            Assert.Equal("BaseType<SomeType>", @class.BaseType);
+
+            var @namespace = FindNamespaceNode(irDocument);
+            var usingNode = Assert.IsType<UsingStatementIRNode>(@namespace.Children[0]);
+            Assert.Equal($"TModel = SomeType", usingNode.Content);
+        }
+
         private RazorCodeDocument CreateDocument(string content)
         {
             var source = RazorSourceDocument.Create(content, "test.cshtml");
@@ -163,6 +222,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         private ClassDeclarationIRNode FindClassNode(RazorIRNode node)
         {
             var visitor = new ClassNodeVisitor();
+            visitor.Visit(node);
+            return visitor.Node;
+        }
+
+        private NamespaceDeclarationIRNode FindNamespaceNode(RazorIRNode node)
+        {
+            var visitor = new NamespaceNodeVisitor();
             visitor.Visit(node);
             return visitor.Node;
         }
@@ -212,6 +278,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             public ClassDeclarationIRNode Node { get; set; }
 
             public override void VisitClass(ClassDeclarationIRNode node)
+            {
+                Node = node;
+            }
+        }
+
+        private class NamespaceNodeVisitor : RazorIRNodeWalker
+        {
+            public NamespaceDeclarationIRNode Node { get; set; }
+
+            public override void VisitNamespace(NamespaceDeclarationIRNode node)
             {
                 Node = node;
             }

@@ -1,6 +1,7 @@
 namespace AspNetCore
 {
     #line hidden
+    using TModel = DateTime;
     using System;
     using System.Threading.Tasks;
 #line 2 ""
@@ -28,7 +29,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 #line default
 #line hidden
-    public class TestFiles_Input_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
+    public class _TestFiles_Input_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -92,13 +93,13 @@ System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTes
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper>();
-#line 5 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
+#line 5 "/TestFiles/Input/ModelExpressionTagHelper.cshtml"
 __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Now);
 
 #line default
 #line hidden
             __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper>();
-#line 6 "TestFiles/Input/ModelExpressionTagHelper.cshtml"
+#line 6 "/TestFiles/Input/ModelExpressionTagHelper.cshtml"
 __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => Model);
 
 #line default

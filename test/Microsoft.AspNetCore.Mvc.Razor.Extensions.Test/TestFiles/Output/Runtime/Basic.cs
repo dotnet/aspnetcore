@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/Input/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "54a70ff4c6d27ac6cdc6725cb6bab12012015729"
+#pragma checksum "/TestFiles/Input/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "54a70ff4c6d27ac6cdc6725cb6bab12012015729"
 namespace AspNetCore
 {
     #line hidden
@@ -29,7 +29,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 #line default
 #line hidden
-    public class TestFiles_Input_Basic_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class _TestFiles_Input_Basic_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
@@ -38,7 +38,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
             WriteLiteral("<div");
             EndContext();
             BeginWriteAttribute("class", " class=\"", 4, "\"", 17, 1);
-#line 1 "TestFiles/Input/Basic.cshtml"
+#line 1 "/TestFiles/Input/Basic.cshtml"
 WriteAttributeValue("", 12, logo, 12, 5, false);
 
 #line default
@@ -48,7 +48,7 @@ WriteAttributeValue("", 12, logo, 12, 5, false);
             WriteLiteral(">\r\n    Hello world\r\n    ");
             EndContext();
             BeginContext(43, 21, false);
-#line 3 "TestFiles/Input/Basic.cshtml"
+#line 3 "/TestFiles/Input/Basic.cshtml"
 Write(Html.Input("SomeKey"));
 
 #line default
