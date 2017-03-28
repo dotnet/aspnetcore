@@ -93,9 +93,9 @@ function addLine(line, color) {
     document.getElementById('messages').appendChild(child);
 }
 
-let transport = getParameterByName('transport') || 'webSockets';
+let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 
-document.getElementById('head1').innerHTML = transport;
+document.getElementById('head1').innerHTML = signalR.TransportType[transportType];
 
 let connection = new signalR.HubConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
 connection.on('Send', msg => {
@@ -112,7 +112,7 @@ connection.onClosed = e => {
 }
 
 click('connect', event => {
-    connection.start(transport)
+    connection.start(transportType)
         .then(() => {
             isConnected = true;
             addLine('Connected successfully', 'green');

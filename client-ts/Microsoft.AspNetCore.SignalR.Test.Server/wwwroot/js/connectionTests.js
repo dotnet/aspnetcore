@@ -1,6 +1,6 @@
 describe('connection', () => {
-    eachTransport(transportName => {
-        it(`over ${transportName} can send and receive messages`, done => {
+    eachTransport(transportType => {
+        it(`over ${signalR.TransportType[transportType]} can send and receive messages`, done => {
             const message = "Hello World!";
             let connection = new signalR.Connection(ECHOENDPOINT_URL);
 
@@ -17,7 +17,7 @@ describe('connection', () => {
                 done();
             }
 
-            connection.start(transportName)
+            connection.start(transportType)
                 .then(() => {
                     connection.send(message);
                 })

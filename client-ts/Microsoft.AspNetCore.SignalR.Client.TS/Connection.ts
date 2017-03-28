@@ -1,6 +1,6 @@
 import { DataReceived, ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
-import { ITransport, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
+import { ITransport, TransportType, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
 import { IHttpClient, HttpClient } from "./HttpClient"
 import { ISignalROptions } from "./ISignalROptions"
 
@@ -26,14 +26,14 @@ export class Connection implements IConnection {
         this.connectionState = ConnectionState.Initial;
     }
 
-    async start(transportName: string = "webSockets"): Promise<void> {
+    async start(transportType: TransportType = TransportType.WebSockets): Promise<void> {
         if (this.connectionState != ConnectionState.Initial) {
             throw new Error("Cannot start a connection that is not in the 'Initial' state.");
         }
 
         this.connectionState = ConnectionState.Connecting;
 
-        this.transport = this.createTransport(transportName);
+        this.transport = this.createTransport(transportType);
         this.transport.onDataReceived = this.onDataReceived;
         this.transport.onClosed = e => this.stopConnection(e);
 
@@ -44,21 +44,21 @@ export class Connection implements IConnection {
             this.connectionState = ConnectionState.Connected;
         }
         catch(e) {
-            console.log("Failed to start the connection.")
+            console.log("Failed to start the connection. " + e)
             this.connectionState = ConnectionState.Disconnected;
             this.transport = null;
             throw e;
         };
     }
 
-    private createTransport(transportName: string): ITransport {
-        if (transportName === "webSockets") {
+    private createTransport(transportType: TransportType): ITransport {
+        if (transportType === TransportType.WebSockets) {
             return new WebSocketTransport();
         }
-        if (transportName === "serverSentEvents") {
+        if (transportType === TransportType.ServerSentEvents) {
             return new ServerSentEventsTransport(this.httpClient);
         }
-        if (transportName === "longPolling") {
+        if (transportType === TransportType.LongPolling) {
             return new LongPollingTransport(this.httpClient);
         }
 

@@ -2,6 +2,12 @@ import { DataReceived, TransportClosed } from "./Common"
 import { IHttpClient } from "./HttpClient"
 import * as Formatters from "./Formatters";
 
+export enum TransportType {
+    WebSockets,
+    ServerSentEvents,
+    LongPolling
+}
+
 export interface ITransport {
     connect(url: string, queryString: string): Promise<void>;
     send(data: any): Promise<void>;

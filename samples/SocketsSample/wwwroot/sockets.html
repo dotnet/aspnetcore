@@ -17,9 +17,9 @@
     <script src="utils.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            let transport = getParameterByName('transport') || 'webSockets';
+            let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 
-            document.getElementById('transportName').innerHTML = transport;
+            document.getElementById('transportName').innerHTML = signalR.TransportType[transportType];
 
             let url = `http://${document.location.host}/chat`
             let connection = new signalR.Connection(url);
@@ -36,7 +36,7 @@
                 event.preventDefault();
             });
 
-            connection.start(transport).then(() => {
+            connection.start(transportType).then(() => {
                 console.log("Opened");
             }, () => {
                 console.log("Error opening connection");

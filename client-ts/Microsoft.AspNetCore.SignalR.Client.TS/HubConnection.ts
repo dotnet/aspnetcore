@@ -1,6 +1,7 @@
 import { ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
 import { Connection } from "./Connection"
+import { TransportType } from "./Transports"
 
 interface InvocationDescriptor {
     readonly Id: string;
@@ -15,6 +16,7 @@ interface InvocationResultDescriptor {
 }
 
 export { Connection } from "./Connection"
+export { TransportType } from "./Transports"
 
 export class HubConnection {
     private connection: IConnection;
@@ -85,8 +87,8 @@ export class HubConnection {
         }
     }
 
-    start(transportName? :string): Promise<void> {
-        return this.connection.start(transportName);
+    start(transportType?: TransportType): Promise<void> {
+        return this.connection.start(transportType);
     }
 
     stop(): void {

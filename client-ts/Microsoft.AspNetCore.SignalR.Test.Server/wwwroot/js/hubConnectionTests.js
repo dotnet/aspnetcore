@@ -1,8 +1,8 @@
 const TESTHUBENDPOINT_URL = `http://${document.location.host}/testhub`;
 
 describe('hubConnection', () => {
-    eachTransport(transportName => {
-        it(`over ${transportName} can invoke server method and receive result`, done => {
+    eachTransport(transportType => {
+        it(`over ${signalR.TransportType[transportType]} can invoke server method and receive result`, done => {
             const message = "Hi";
             let hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, 'formatType=json&format=text');
             hubConnection.onClosed = error => {
@@ -10,7 +10,7 @@ describe('hubConnection', () => {
                 done();
             }
 
-            hubConnection.start(transportName)
+            hubConnection.start(transportType)
                 .then(() => {
                     hubConnection.invoke('Echo', message)
                     .then(result => {
@@ -29,11 +29,11 @@ describe('hubConnection', () => {
                 });
         });
 
-        it(`over ${transportName} rethrows an exception from the server`, done => {
+        it(`over ${signalR.TransportType[transportType]} rethrows an exception from the server`, done => {
             const errorMessage = "An error occurred.";
             let hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, 'formatType=json&format=text');
 
-            hubConnection.start(transportName)
+            hubConnection.start(transportType)
                 .then(() => {
                     hubConnection.invoke('ThrowException', errorMessage)
                         .then(() => {
@@ -54,7 +54,7 @@ describe('hubConnection', () => {
                 });
         });
 
-        it(`over ${transportName} can receive server calls`, done => {
+        it(`over ${signalR.TransportType[transportType]} can receive server calls`, done => {
             let client = new signalR.HubConnection(TESTHUBENDPOINT_URL, 'formatType=json&format=text');
             const message = "Hello SignalR";
 
@@ -65,7 +65,7 @@ describe('hubConnection', () => {
                 });
             });
 
-            client.start(transportName)
+            client.start(transportType)
                 .then(() => {
                     return Promise.all([client.invoke('InvokeWithString', message), callbackPromise]);
                 })
