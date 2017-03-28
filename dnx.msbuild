@@ -52,9 +52,12 @@
 
         <Message Text="%(UnsignedPackages.Identity)" Importance="high" />
 
-        <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul" />
-        <Exec Command="$(UnzipCommand) -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity) > nul" />
-        <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul" />
+        <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul"
+            Condition=" '@(UnsignedPackages)' != '' " />
+        <Exec Command="$(UnzipCommand) -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity) > nul"
+            Condition=" '@(UnsignedSymbolPackages)' != '' " />
+        <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul"
+            Condition=" '@(UnsignedVSIXPath)' != '' " />
 
         <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
     </Target>
@@ -265,10 +268,10 @@
         <Error Text="PUSH_NUGET_EXE is not set" Condition="'$(PUSH_NUGET_EXE)' == ''" />
         <Exec Command="$(PUSH_NUGET_EXE) restore CreateTimestampFreePackages.sln" />
         <MSBuild Projects="src\CreateTimestampFreePackages\CreateTimestampFreePackages.csproj" Properties="Configuration=$(Configuration)" />
-        <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT)" />        
+        <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT)" />
     </Target>
 
-    <Target Name="NuGetVerifyTimestampFreePackages" DependsOnTargets="CreateTimestampFreePackages" Condition="'$(VerifySignatures)' != 'false'">       
+    <Target Name="NuGetVerifyTimestampFreePackages" DependsOnTargets="CreateTimestampFreePackages" Condition="'$(VerifySignatures)' != 'false'">
         <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(TimestampFreePackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
         <RemoveDir Directories="$(CommandsPath)"/>
     </Target>
