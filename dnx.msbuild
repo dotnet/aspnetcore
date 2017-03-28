@@ -9,6 +9,7 @@
 
     <PropertyGroup>
         <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
+        <BuildToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</BuildToolsFeed>
         <CoherenceDestinationDir>$(ArtifactsPath)coherence\</CoherenceDestinationDir>
         <CoherenceSignedDestinationDir>$(ArtifactsPath)Signed\</CoherenceSignedDestinationDir>
     </PropertyGroup>
@@ -254,10 +255,7 @@
     </Target>
 
     <Target Name="InstallNuGetPackageVerifier" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' != 'false'">
-        <PropertyGroup>
-            <DnxToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</DnxToolsFeed>
-        </PropertyGroup>
-        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(DnxToolsFeed) -out $(CommandsPath)"/>
+        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
     </Target>
 
     <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="RebuildPackages; InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
@@ -279,13 +277,15 @@
     <Target Name="NuGetVerify" DependsOnTargets="InstallNuGetPackageVerifier;NuGetVerifyTimestampPackages;NuGetVerifyTimestampFreePackages" />
 
     <Target Name="PushPackages" DependsOnTargets="NuGetVerifyTimestampFreePackages">
-        <ItemGroup>
-            <DirectoryContainingPackages Include="$(CoherenceSignedDestinationDir)Packages\" />
-            <DirectoryContainingPackages Include="$(CoherenceDestinationDir)ext\" />
-            <DirectoryContainingPackages Include="$(CoherenceDestinationDir)noship\" />
-        </ItemGroup>
+        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre PackagePublisher -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
 
-        <Exec Command="$(PUSH_NUGET_EXE) push -Source $(NUGET_FEED) -ApiKey $(APIKEY) %(DirectoryContainingPackages.Identity)*.nupkg" />
+        <PropertyGroup>
+            <PackagePublisherBinary>$(CommandsPath)\PackagePublisher\PackagePublisher.exe</PackagePublisherBinary>
+        </PropertyGroup>
+
+        <Exec Command="$(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(NUGET_FEED)" />
+        <Exec Command="$(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(NUGET_FEED)" />
+        <Exec Command="$(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(NUGET_FEED)" />
     </Target>
 
     <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
