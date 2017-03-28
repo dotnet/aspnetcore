@@ -2,7 +2,7 @@ import * as React from 'react';
 import { NavMenu } from './NavMenu';
 
 export interface LayoutProps {
-    body: React.ReactElement<any>;
+    children?: React.ReactNode;
 }
 
 export class Layout extends React.Component<LayoutProps, {}> {
@@ -13,7 +13,7 @@ export class Layout extends React.Component<LayoutProps, {}> {
                     <NavMenu />
                 </div>
                 <div className='col-sm-9'>
-                    { this.props.body }
+                    { this.props.children }
                 </div>
             </div>
         </div>;
