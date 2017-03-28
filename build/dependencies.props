@@ -3,7 +3,7 @@
     <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <DependencyModelVersion>1.1.0</DependencyModelVersion>
-    <JsonNetVersion>9.0.1</JsonNetVersion>
+    <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
     <MoqVersion>4.6.36-alpha</MoqVersion>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <RazorCodeAnalysisVersion>1.0.0-*</RazorCodeAnalysisVersion>

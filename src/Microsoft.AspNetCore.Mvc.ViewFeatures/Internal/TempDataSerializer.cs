@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Dictionary<string, object> tempDataDictionary = null;
 
             using (var memoryStream = new MemoryStream(value))
-            using (var writer = new BsonReader(memoryStream))
+            using (var reader = new BsonDataReader(memoryStream))
             {
-                tempDataDictionary = _jsonSerializer.Deserialize<Dictionary<string, object>>(writer);
+                tempDataDictionary = _jsonSerializer.Deserialize<Dictionary<string, object>>(reader);
                 if (tempDataDictionary == null)
                 {
                     return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
                 using (var memoryStream = new MemoryStream())
                 {
-                    using (var writer = new BsonWriter(memoryStream))
+                    using (var writer = new BsonDataWriter(memoryStream))
                     {
                         _jsonSerializer.Serialize(writer, values);
                         return memoryStream.ToArray();
