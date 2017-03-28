@@ -26,7 +26,7 @@ describe('hubConnection', () => {
                 .catch(() => {
                     fail();
                     done();
-                })
+                });
         });
 
         it(`over ${transportName} rethrows an exception from the server`, done => {
@@ -51,32 +51,32 @@ describe('hubConnection', () => {
                 .catch(() => {
                     fail();
                     done();
-                })
+                });
         });
 
         it(`over ${transportName} can receive server calls`, done => {
             let client = new signalR.HubConnection(TESTHUBENDPOINT_URL, 'formatType=json&format=text');
             const message = "Hello SignalR";
 
-            client.on("Message", msg => {
-                expect(msg).toBe(message);
-                client.stop();
-                done();
+            let callbackPromise = new Promise((resolve, reject) => {
+                client.on("Message", msg => {
+                    expect(msg).toBe(message);
+                    resolve();
+                });
             });
 
             client.start(transportName)
                 .then(() => {
-                    client.invoke('InvokeWithString', message)
-                        .catch(e => {
-                            fail();
-                            client.stop();
-                            done();
-                        });
+                    return Promise.all([client.invoke('InvokeWithString', message), callbackPromise]);
+                })
+                .then(() => {
+                    stop();
+                    done();
                 })
                 .catch(e => {
                     fail();
                     done();
-                })
+                });
         });
     });
 });

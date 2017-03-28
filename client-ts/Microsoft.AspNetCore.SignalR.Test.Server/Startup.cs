@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
+            loggerFactory.AddDebug(LogLevel.Trace);
 
             if (env.IsDevelopment())
             {
