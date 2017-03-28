@@ -78,13 +78,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void VisitCSharpStatement(CSharpStatementIRNode node)
         {
-            var isWhitespaceToken = node.Children.All(child =>
-                child is RazorIRToken token && string.IsNullOrWhiteSpace(token.Content));
+            // We can't remove this yet, because it's still used recursively in a few places.
+            var isWhitespaceStatement = true;
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                var token = node.Children[i] as RazorIRToken;
+                if (token == null || !string.IsNullOrWhiteSpace(token.Content))
+                {
+                    isWhitespaceStatement = false;
+                    break;
+                }
+            }
 
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                if (!isWhitespaceToken)
+                if (!isWhitespaceStatement)
                 {
                     linePragmaScope = Context.Writer.BuildLinePragma(node.Source.Value);
                 }
@@ -92,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 var padding = BuildOffsetPadding(0, node.Source.Value, Context);
                 Context.Writer.Write(padding);
             }
-            else if (isWhitespaceToken)
+            else if (isWhitespaceStatement)
             {
                 // Don't write whitespace if there is no line mapping for it.
                 return;
@@ -102,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             {
                 if (node.Children[i] is RazorIRToken token && token.IsCSharp)
                 {
-                    Context.AddLineMappingFor(node);
+                    Context.AddLineMappingFor(token);
                     Context.Writer.Write(token.Content);
                 }
                 else

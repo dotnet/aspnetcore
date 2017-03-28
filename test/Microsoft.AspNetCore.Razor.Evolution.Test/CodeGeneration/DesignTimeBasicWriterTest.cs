@@ -168,6 +168,177 @@ __o = i++;
                 ignoreLineEndingDifferences: true);
         }
 
+        [Fact]
+        public void WriteCSharpStatement_WhitespaceContent_DoesNothing()
+        {
+            // Arrange
+            var writer = new DesignTimeBasicWriter();
+
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+            };
+
+            var node = new CSharpStatementIRNode();
+            RazorIRBuilder.Create(node)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = "  \t"
+                });
+
+            // Act
+            writer.WriteCSharpStatement(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Empty(csharp);
+        }
+
+        [Fact]
+        public void WriteCSharpStatement_WhitespaceContentWithSource_WritesContent()
+        {
+            // Arrange
+            var writer = new DesignTimeBasicWriter();
+
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var node = new CSharpStatementIRNode()
+            {
+                Source = new SourceSpan("test.cshtml", 0, 0, 0, 3),
+            };
+            RazorIRBuilder.Create(node)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = "    "
+                });
+
+            // Act
+            writer.WriteCSharpStatement(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"    
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteCSharpStatement_SkipsLinePragma_WithoutSource()
+        {
+            // Arrange
+            var writer = new DesignTimeBasicWriter();
+
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+            };
+
+            var node = new CSharpStatementIRNode();
+            RazorIRBuilder.Create(node)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = "if (true) { }"
+                });
+
+            // Act
+            writer.WriteCSharpStatement(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"if (true) { }
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteCSharpStatement_WritesLinePragma_WithSource()
+        {
+            // Arrange
+            var writer = new DesignTimeBasicWriter();
+
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var node = new CSharpStatementIRNode()
+            {
+                Source = new SourceSpan("test.cshtml", 0, 0, 0, 13),
+            };
+            RazorIRBuilder.Create(node)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = "if (true) { }",
+                });
+
+            // Act
+            writer.WriteCSharpStatement(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"#line 1 ""test.cshtml""
+if (true) { }
+
+#line default
+#line hidden
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteCSharpStatement_WritesPadding_WithSource()
+        {
+            // Arrange
+            var writer = new DesignTimeBasicWriter();
+
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var node = new CSharpStatementIRNode()
+            {
+                Source = new SourceSpan("test.cshtml", 0, 0, 0, 17),
+            };
+            RazorIRBuilder.Create(node)
+                .Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = "    if (true) { }",
+                });
+
+            // Act
+            writer.WriteCSharpStatement(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"#line 1 ""test.cshtml""
+    if (true) { }
+
+#line default
+#line hidden
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
         private class MyExtensionIRNode : ExtensionIRNode
         {
             public override IList<RazorIRNode> Children => throw new NotImplementedException();
