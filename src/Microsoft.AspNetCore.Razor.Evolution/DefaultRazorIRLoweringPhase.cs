@@ -530,7 +530,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     var attributeValueNode = attribute.Value;
                     var associatedDescriptors = descriptors.Where(descriptor =>
-                        descriptor.BoundAttributes.Any(attributeDescriptor => attributeDescriptor.CanMatchName(attribute.Name)));
+                        descriptor.BoundAttributes.Any(attributeDescriptor => TagHelperMatchingConventions.CanSatisfyBoundAttribute(attribute.Name, attributeDescriptor)));
 
                     if (associatedDescriptors.Any() && renderedBoundAttributeNames.Add(attribute.Name))
                     {
@@ -544,7 +544,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         foreach (var associatedDescriptor in associatedDescriptors)
                         {
                             var associatedAttributeDescriptor = associatedDescriptor.BoundAttributes.First(
-                                attributeDescriptor => attributeDescriptor.CanMatchName(attribute.Name));
+                                attributeDescriptor => TagHelperMatchingConventions.CanSatisfyBoundAttribute(attribute.Name, attributeDescriptor));
                             var tagHelperTypeName = associatedDescriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
                             var attributePropertyName = associatedAttributeDescriptor.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey];
 
@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 Binding = tagHelperBinding,
                                 ValueStyle = attribute.ValueStyle,
                                 Source = BuildSourceSpanFromNode(attributeValueNode),
-                                IsIndexerNameMatch = associatedAttributeDescriptor.IsIndexerNameMatch(attribute.Name),
+                                IsIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(attribute.Name, associatedAttributeDescriptor),
                             };
 
                             _builder.Push(setTagHelperProperty);

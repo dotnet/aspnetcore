@@ -720,7 +720,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(AttributeTargetingTagHelper),
                         CreateTagHelperDescriptor(
-                            TagHelperDescriptorProvider.ElementCatchAllTarget,
+                            TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(AttributeTargetingTagHelper).FullName,
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleBuilder>[]
@@ -731,7 +731,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultiAttributeTargetingTagHelper),
                         CreateTagHelperDescriptor(
-                            TagHelperDescriptorProvider.ElementCatchAllTarget,
+                            TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(MultiAttributeTargetingTagHelper).FullName,
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleBuilder>[]
@@ -747,7 +747,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultiAttributeAttributeTargetingTagHelper),
                         CreateTagHelperDescriptor(
-                            TagHelperDescriptorProvider.ElementCatchAllTarget,
+                            TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(MultiAttributeAttributeTargetingTagHelper).FullName,
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleBuilder>[]
@@ -764,7 +764,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(InheritedAttributeTargetingTagHelper),
                         CreateTagHelperDescriptor(
-                            TagHelperDescriptorProvider.ElementCatchAllTarget,
+                            TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(InheritedAttributeTargetingTagHelper).FullName,
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleBuilder>[]
@@ -856,7 +856,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(AttributeWildcardTargetingTagHelper),
                         CreateTagHelperDescriptor(
-                            TagHelperDescriptorProvider.ElementCatchAllTarget,
+                            TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(AttributeWildcardTargetingTagHelper).FullName,
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleBuilder>[]
@@ -870,7 +870,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultiAttributeWildcardTargetingTagHelper),
                         CreateTagHelperDescriptor(
-                            TagHelperDescriptorProvider.ElementCatchAllTarget,
+                            TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(MultiAttributeWildcardTargetingTagHelper).FullName,
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleBuilder>[]

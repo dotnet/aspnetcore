@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             bool expectedResult)
         {
             // Act
-            var result = ((RequiredAttributeDescriptor)requiredAttributeDescriptor).IsMatch(attributeName, attributeValue);
+            var result = TagHelperMatchingConventions.SatisfiesRequiredAttribute(attributeName, attributeValue, (RequiredAttributeDescriptor)requiredAttributeDescriptor);
 
             // Assert
             Assert.Equal(expectedResult, result);

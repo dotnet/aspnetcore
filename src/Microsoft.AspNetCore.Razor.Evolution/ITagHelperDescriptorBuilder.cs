@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                         yield return diagnostic;
                     }
-                    else if (name != TagHelperDescriptorProvider.ElementCatchAllTarget)
+                    else if (name != TagHelperMatchingConventions.ElementCatchAllName)
                     {
                         foreach (var character in name)
                         {

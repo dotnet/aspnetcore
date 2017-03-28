@@ -115,20 +115,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 var catchAllDescriptor = ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
-                        .RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget)
+                        .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
                         .RequireAttribute(attribute => attribute.Name("class")))
                     .Build();
                 var catchAllDescriptor2 = ITagHelperDescriptorBuilder.Create("CatchAllTagHelper2", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
-                        .RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget)
+                        .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
                         .RequireAttribute(attribute => attribute.Name("custom"))
                         .RequireAttribute(attribute => attribute.Name("class")))
                     .Build();
                 var catchAllWildcardPrefixDescriptor = ITagHelperDescriptorBuilder.Create("CatchAllWildCardAttribute", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
-                        .RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget)
+                        .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
                         .RequireAttribute(attribute => 
                             attribute
                             .Name("prefix-")
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var catchAllDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget))
+                .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new[] { catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider("th", descriptors);
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var catchAllDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget))
+                .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new[] { catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider("th:", descriptors);
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 .TagMatchingRule(rule => rule.RequireTagName("span"))
                 .Build();
             var catchAllDescriptor = ITagHelperDescriptorBuilder.Create("foo3", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget))
+                .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
             var provider = new TagHelperDescriptorProvider(null, descriptors);
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var multiRuleDescriptor = ITagHelperDescriptorBuilder.Create("foo", "SomeAssembly")
                 .TagMatchingRule(rule => rule
-                    .RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget)
+                    .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
                     .RequireParentTag("body"))
                 .TagMatchingRule(rule => rule
                     .RequireTagName("div"))

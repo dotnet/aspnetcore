@@ -371,7 +371,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             if (attibute.ConstructorArguments.Length == 0)
             {
-                return TagHelperDescriptorProvider.ElementCatchAllTarget;
+                return TagHelperMatchingConventions.ElementCatchAllName;
             }
             else
             {
