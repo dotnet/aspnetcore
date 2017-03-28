@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace ServerComparison.FunctionalTests
@@ -16,6 +17,13 @@ namespace ServerComparison.FunctionalTests
     // Uses ports ranging 5061 - 5069.
     public class HelloWorldTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public HelloWorldTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         // Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -63,10 +71,11 @@ namespace ServerComparison.FunctionalTests
 
         public async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
+            var loggerName = string.Format("HelloWorld:{0}:{1}:{2}:{3}", serverType, runtimeFlavor, architecture, applicationType);
+            Console.WriteLine("Running test for " + loggerName);
             var logger = new LoggerFactory()
-                            .AddConsole()
-                            .CreateLogger(string.Format("HelloWorld:{0}:{1}:{2}:{3}", serverType, runtimeFlavor, architecture, applicationType));
-
+                            .AddXunit(_output)
+                            .CreateLogger(loggerName);
             using (logger.BeginScope("HelloWorldTest"))
             {
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)

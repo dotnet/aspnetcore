@@ -15,6 +15,7 @@ using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace ServerComparison.FunctionalTests
@@ -24,6 +25,12 @@ namespace ServerComparison.FunctionalTests
     {
         // NGinx's default min size is 20 bytes
         private static readonly string HelloWorldBody = "Hello World;" + new string('a', 20);
+        private readonly ITestOutputHelper _output;
+
+        public ResponseCompressionTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -119,9 +126,11 @@ namespace ServerComparison.FunctionalTests
 
         public async Task ResponseCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, bool hostCompression)
         {
+            var loggerName = string.Format("ResponseCompression:{0}:{1}:{2}:{3}", serverType, runtimeFlavor, architecture, applicationType);
+            Console.WriteLine("Running test for " + loggerName);
             var logger = new LoggerFactory()
-                            .AddConsole()
-                            .CreateLogger(string.Format("ResponseCompression:{0}:{1}:{2}:{3}", serverType, runtimeFlavor, architecture, applicationType));
+                            .AddXunit(_output)
+                            .CreateLogger(loggerName);
 
             using (logger.BeginScope("ResponseCompressionTest"))
             {

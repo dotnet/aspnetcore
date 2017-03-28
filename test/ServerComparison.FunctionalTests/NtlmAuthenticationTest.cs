@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace ServerComparison.FunctionalTests
@@ -18,6 +19,13 @@ namespace ServerComparison.FunctionalTests
     // Uses ports ranging 5050 - 5060.
     public class NtlmAuthenticationTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public NtlmAuthenticationTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [ConditionalTheory, Trait("ServerComparison.FunctionalTests", "ServerComparison.FunctionalTests")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -29,9 +37,11 @@ namespace ServerComparison.FunctionalTests
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5053/", ApplicationType.Standalone)]
         public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
+            var loggerName = string.Format("Ntlm:{0}:{1}:{2}:{3}", serverType, runtimeFlavor, architecture, applicationType);
+            Console.WriteLine("Running test for " + loggerName);
             var logger = new LoggerFactory()
-                            .AddConsole()
-                            .CreateLogger(string.Format("Ntlm:{0}:{1}:{2}:{3}", serverType, runtimeFlavor, architecture, applicationType));
+                            .AddXunit(_output)
+                            .CreateLogger(loggerName);
 
             using (logger.BeginScope("NtlmAuthenticationTest"))
             {

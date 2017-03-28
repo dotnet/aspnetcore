@@ -12,6 +12,7 @@ using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace ServerComparison.FunctionalTests
@@ -19,6 +20,13 @@ namespace ServerComparison.FunctionalTests
     // Uses ports ranging 5080 - 5099.
     public class ResponseTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public ResponseTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -156,9 +164,11 @@ namespace ServerComparison.FunctionalTests
 
         public async Task ResponseFormats(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType)
         {
+            var loggerName = string.Format("ResponseFormats:{0}:{1}:{2}:{3}", serverType, runtimeFlavor, architecture, applicationType);
+            Console.WriteLine("Running test for " + loggerName);
             var logger = new LoggerFactory()
-                            .AddConsole()
-                            .CreateLogger(string.Format("ResponseFormats:{0}:{1}:{2}:{3}", serverType, runtimeFlavor, architecture, applicationType));
+                            .AddXunit(_output)
+                            .CreateLogger(loggerName);
 
             using (logger.BeginScope("ResponseFormatsTest"))
             {
