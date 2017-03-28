@@ -83,6 +83,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 executableArgs = $"run --framework {targetFramework} {DotnetArgumentSeparator}";
             }
 
+            if (uri.Port != 0)
+            {
+                // shows output from netstat/lsof. May be useful if the port is already in use
+                PortHelper.LogPortStatus(Logger, uri.Port);
+            }
+
             executableArgs += $" --server.urls {uri} "
             + $" --server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNetCore.Server.HttpSys" : "Microsoft.AspNetCore.Server.Kestrel")}";
 
