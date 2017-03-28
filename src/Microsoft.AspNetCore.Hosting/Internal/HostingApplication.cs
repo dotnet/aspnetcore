@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             return new Context
             {
                 HttpContext = httpContext,
-                Scope = scope,
+                Scope = scope,   // Scope can be null if logging is not on.   
                 StartTimestamp = startTimestamp,
             };
         }
