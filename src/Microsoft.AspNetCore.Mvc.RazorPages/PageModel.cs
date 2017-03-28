@@ -3,8 +3,11 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,14 +16,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public abstract class PageModel
     {
         private PageArgumentBinder _binder;
+        private IUrlHelper _urlHelper;
 
+        /// <summary>
+        /// Gets or sets the <see cref="PageArgumentBinder"/>.
+        /// </summary>
         public PageArgumentBinder Binder
         {
             get
             {
                 if (_binder == null)
                 {
-                    _binder = PageContext.HttpContext.RequestServices.GetRequiredService<PageArgumentBinder>();
+                    _binder = HttpContext?.RequestServices?.GetRequiredService<PageArgumentBinder>();
                 }
 
                 return _binder;
@@ -37,11 +44,66 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        public Page Page => PageContext.Page;
+        /// <summary>
+        /// Gets or sets the <see cref="IUrlHelper"/>.
+        /// </summary>
+        public IUrlHelper Url
+        {
+            get
+            {
+                if (_urlHelper == null)
+                {
+                    var factory = HttpContext?.RequestServices?.GetRequiredService<IUrlHelperFactory>();
+                    _urlHelper = factory?.GetUrlHelper(PageContext);
+                }
 
+                return _urlHelper;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _urlHelper = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="RazorPages.Page"/> instance this model belongs to.
+        /// </summary>
+        public Page Page => PageContext?.Page;
+
+        /// <summary>
+        /// Gets the <see cref="RazorPages.PageContext"/>.
+        /// </summary>
         [PageContext]
         public PageContext PageContext { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="ViewContext"/>.
+        /// </summary>
+        public ViewContext ViewContext => PageContext;
+
+        /// <summary>
+        /// Gets the <see cref="Http.HttpContext"/>.
+        /// </summary>
+        public HttpContext HttpContext => PageContext?.HttpContext;
+
+        /// <summary>
+        /// Gets the <see cref="HttpRequest"/>.
+        /// </summary>
+        public HttpRequest Request => HttpContext?.Request;
+
+        /// <summary>
+        /// Gets the <see cref="HttpResponse"/>.
+        /// </summary>
+        public HttpResponse Response => HttpContext?.Response;
+
+        /// <summary>
+        /// Gets the <see cref="ModelStateDictionary"/>.
+        /// </summary>
         public ModelStateDictionary ModelState => PageContext.ModelState;
 
         /// <summary>
@@ -50,34 +112,75 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <remarks>Returns null if <see cref="PageContext"/> is null.</remarks>
         public ITempDataDictionary TempData => PageContext?.TempData;
 
+        /// <summary>
+        /// Gets the <see cref="ViewDataDictionary"/>.
+        /// </summary>
         public ViewDataDictionary ViewData => PageContext?.ViewData;
 
-        protected Task<T> BindAsync<T>(string name)
+        /// <summary>
+        /// Binds the model with the specified <paramref name="name"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The model type.</typeparam>
+        /// <param name="name">The model name.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns the bound model.</returns>
+        protected internal Task<TModel> BindAsync<TModel>(string name)
         {
-            return Binder.BindModelAsync<T>(PageContext, name);
+            return Binder.BindModelAsync<TModel>(PageContext, name);
         }
 
-        protected Task<T> BindAsync<T>(T @default, string name)
+        /// <summary>
+        /// Binds the model with the specified <paramref name="name"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The model type.</typeparam>
+        /// <param name="name">The model name.</param>
+        /// <param name="default">The default model value.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns the bound model.</returns>
+        protected internal Task<TModel> BindAsync<TModel>(TModel @default, string name)
         {
-            return Binder.BindModelAsync<T>(PageContext, @default, name);
+            return Binder.BindModelAsync(PageContext, @default, name);
         }
 
-        protected Task<bool> TryUpdateModelAsync<T>(T value)
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current
+        /// <see cref="IValueProvider"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal Task<bool> TryUpdateModelAsync<TModel>(TModel model)
         {
-            return Binder.TryUpdateModelAsync<T>(PageContext, value);
+            return Binder.TryUpdateModelAsync(PageContext, model);
         }
 
-        protected Task<bool> TryUpdateModelAsync<T>(T value, string name)
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the controller's current
+        /// <see cref="IValueProvider"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="name">The model name.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal Task<bool> TryUpdateModelAsync<TModel>(TModel model, string name)
         {
-            return Binder.TryUpdateModelAsync<T>(PageContext, value, name);
+            return Binder.TryUpdateModelAsync(PageContext, model, name);
         }
 
-        protected IActionResult Redirect(string url)
+        /// <summary>
+        /// Creates a <see cref="RedirectResult"/> object that redirects (<see cref="StatusCodes.Status302Found"/>)
+        /// to the specified <paramref name="url"/>.
+        /// </summary>
+        /// <param name="url">The URL to redirect to.</param>
+        /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
+        protected internal RedirectResult Redirect(string url)
         {
             return new RedirectResult(url);
         }
 
-        protected IActionResult View()
+        /// <summary>
+        /// Creates a <see cref="PageViewResult"/> object that renders the page.
+        /// </summary>
+        /// <returns>The <see cref="PageViewResult"/>.</returns>
+        protected internal PageViewResult View()
         {
             return new PageViewResult(Page);
         }

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -35,14 +36,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
         private IUrlHelper _urlHelper;
 
-        public ViewContext ViewContext { get; set; }
+        public virtual ViewContext ViewContext { get; set; }
 
         public string Layout { get; set; }
-
-        /// <summary>
-        /// An <see cref="HttpContext"/> representing the current request execution.
-        /// </summary>
-        public HttpContext Context => ViewContext?.HttpContext;
 
         /// <summary>
         /// Gets the <see cref="TextWriter"/> that the page is writing output to.
@@ -101,7 +97,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
         /// </summary>
-        public virtual ClaimsPrincipal User => Context?.User;
+        public virtual ClaimsPrincipal User => ViewContext?.HttpContext?.User;
+
+        /// <summary>
+        /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="ViewContext"/>.
+        /// </summary>
+        /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
+        public ITempDataDictionary TempData => ViewContext?.TempData;
 
         protected Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
 
@@ -282,7 +284,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             if (_urlHelper == null)
             {
-                var services = Context.RequestServices;
+                var services = ViewContext?.HttpContext.RequestServices;
                 var factory = services.GetRequiredService<IUrlHelperFactory>();
                 _urlHelper = factory.GetUrlHelper(ViewContext);
             }
@@ -707,7 +709,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
 
             await Output.FlushAsync();
-            await Context.Response.Body.FlushAsync();
+            await ViewContext?.HttpContext.Response.Body.FlushAsync();
             return HtmlString.Empty;
         }
 
@@ -719,8 +721,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// before <see cref="RazorPageBase.FlushAsync"/> flushes the headers. </remarks>
         public virtual HtmlString SetAntiforgeryCookieAndHeader()
         {
-            var antiforgery = Context.RequestServices.GetRequiredService<IAntiforgery>();
-            antiforgery.SetCookieTokenAndHeader(Context);
+            var antiforgery = ViewContext?.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+            antiforgery.SetCookieTokenAndHeader(ViewContext?.HttpContext);
 
             return HtmlString.Empty;
         }

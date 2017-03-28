@@ -3,10 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
@@ -22,6 +23,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// The <see cref="RazorPages.PageContext"/>.
         /// </summary>
         public PageContext PageContext { get; set; }
+
+        /// <inheritdoc />
+        public override ViewContext ViewContext
+        {
+            get => PageContext;
+            set
+            {
+                PageContext = (PageContext)value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Http.HttpContext"/>.
+        /// </summary>
+        public HttpContext HttpContext => PageContext?.HttpContext;
+
+        /// <summary>
+        /// Gets the <see cref="HttpRequest"/>.
+        /// </summary>
+        public HttpRequest Request => HttpContext?.Request;
+
+        /// <summary>
+        /// Gets the <see cref="HttpResponse"/>.
+        /// </summary>
+        public HttpResponse Response => HttpContext?.Response;
 
         /// <summary>
         /// Gets or sets the <see cref="PageArgumentBinder"/>.
@@ -53,12 +79,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets the <see cref="ModelStateDictionary"/>.
         /// </summary>
         public ModelStateDictionary ModelState => PageContext?.ModelState;
-
-        /// <summary>
-        /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="PageContext"/>.
-        /// </summary>
-        /// <remarks>Returns null if <see cref="PageContext"/> is null.</remarks>
-        public ITempDataDictionary TempData => PageContext?.TempData;
 
         /// <inheritdoc />
         public override void EnsureRenderedBodyOrSections()

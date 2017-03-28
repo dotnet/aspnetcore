@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -30,10 +31,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="ViewContext"/>.
+        /// An <see cref="HttpContext"/> representing the current request execution.
         /// </summary>
-        /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
-        public ITempDataDictionary TempData => ViewContext?.TempData;
+        public HttpContext Context => ViewContext?.HttpContext;
 
         /// <summary>
         /// In a Razor layout page, renders the portion of a content page that is not within a named section.
