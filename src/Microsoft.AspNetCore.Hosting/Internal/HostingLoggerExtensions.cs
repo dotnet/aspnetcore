@@ -15,11 +15,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
     {
         public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
-            // to avoid allocation, return a null scope if the logger is not on at least to some degree.   
+            // To avoid allocation, return a null scope if the logger is not on at least to some degree.   
             if (logger.IsEnabled(LogLevel.Critical))
+            {
                 return logger.BeginScope(new HostingLogScope(httpContext));
-            else
-                return null;
+            }
+            return null;
         }
 
         public static void ApplicationError(this ILogger logger, Exception exception)
