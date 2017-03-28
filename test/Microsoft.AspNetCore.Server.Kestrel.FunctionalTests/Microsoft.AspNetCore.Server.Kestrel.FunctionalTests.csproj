@@ -40,10 +40,10 @@
   </ItemGroup>
 
   <Target Name="DefinePlatformConstants" BeforeTargets="CoreCompile">
-    <GetOSPlatform>
+    <Sdk_GetOSPlatform>
       <!-- Returns {Linux, macOS, Windows} -->
       <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
-    </GetOSPlatform>
+    </Sdk_GetOSPlatform>
 
     <PropertyGroup>
       <DefineConstants>$(DefineConstants);$(OSPlatform.ToUpperInvariant())</DefineConstants>
