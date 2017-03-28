@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Task<string> responseTask;
             ManualResetEvent received = new ManualResetEvent(false);
             string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            using (var server = Utilities.CreateHttpServer(out address, httpContext =>
                 {
                     received.Set();
                     httpContext.Response.ContentLength = 11;
@@ -82,9 +82,32 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 responseTask = SendRequestAsync(address);
                 Assert.True(received.WaitOne(10000));
+                await server.StopAsync(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
             }
             string response = await responseTask;
             Assert.Equal("Hello World", response);
+        }
+
+        [ConditionalFact]
+        public async Task Server_DisposeWithoutStopDuringRequest_Aborts()
+        {
+            Task<string> responseTask;
+            var received = new ManualResetEvent(false);
+            var stopped = new ManualResetEvent(false);
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                received.Set();
+                Assert.True(stopped.WaitOne(TimeSpan.FromSeconds(10)));
+                httpContext.Response.ContentLength = 11;
+                return httpContext.Response.WriteAsync("Hello World");
+            }))
+            {
+                responseTask = SendRequestAsync(address);
+                Assert.True(received.WaitOne(TimeSpan.FromSeconds(10)));
+            }
+            stopped.Set();
+            await Assert.ThrowsAsync<HttpRequestException>(async () => await responseTask);
         }
 
         [ConditionalFact]
@@ -95,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             bool? shutdown = null;
             var waitForShutdown = new ManualResetEvent(false);
             string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            using (var server = Utilities.CreateHttpServer(out address, httpContext =>
             {
                 received.Set();
                 shutdown = waitForShutdown.WaitOne(TimeSpan.FromSeconds(15));
@@ -105,8 +128,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 responseTask = SendRequestAsync(address);
                 Assert.True(received.WaitOne(TimeSpan.FromSeconds(10)));
+                Assert.False(shutdown.HasValue);
+                await server.StopAsync(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
             }
-            Assert.False(shutdown.HasValue);
             waitForShutdown.Set();
             await Assert.ThrowsAsync<HttpRequestException>(async () => await responseTask);
         }
@@ -271,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             using (server)
             {
-                server.Start(new DummyApplication());
+                await server.StartAsync(new DummyApplication(), CancellationToken.None);
                 string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }

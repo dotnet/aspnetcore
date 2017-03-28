@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private bool _stopping;
         private int _outstandingRequests;
-        private ManualResetEvent _shutdownSignal;
+        private TaskCompletionSource<object> _shutdownSignal;
 
         private readonly ServerAddressesFeature _serverAddresses;
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _processRequest = new Action<object>(ProcessRequestAsync);
             _maxAccepts = _options.MaxAccepts;
             EnableResponseCaching = _options.EnableResponseCaching;
-            _shutdownSignal = new ManualResetEvent(false);
+            _shutdownSignal = new TaskCompletionSource<object>();
         }
 
         internal HttpSysListener Listener { get; }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public IFeatureCollection Features { get; }
 
-        public void Start<TContext>(IHttpApplication<TContext> application)
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             if (application == null)
             {
@@ -124,6 +124,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Listener.Start();
 
             ActivateRequestProcessingLimits();
+
+            return Task.CompletedTask;
         }
 
         private void ActivateRequestProcessingLimits()
@@ -224,7 +226,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     if (Interlocked.Decrement(ref _outstandingRequests) == 0 && _stopping)
                     {
-                        _shutdownSignal.Set();
+                        LogHelper.LogInfo(_logger, "All requests drained.");
+                        _shutdownSignal.TrySetResult(0);
                     }
                 }
             }
@@ -242,24 +245,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             context.Dispose();
         }
 
-        public void Dispose()
+        public Task StopAsync(CancellationToken cancellationToken)
         {
             _stopping = true;
             // Wait for active requests to drain
             if (_outstandingRequests > 0)
             {
                 LogHelper.LogInfo(_logger, "Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
-                var drained = _shutdownSignal.WaitOne(Listener.Options.ShutdownTimeout);
-                if (drained)
-                {
-                    LogHelper.LogInfo(_logger, "All requests drained successfully.");
-                }
-                else
+
+                var waitForStop = new TaskCompletionSource<object>();
+                cancellationToken.Register(() =>
                 {
                     LogHelper.LogInfo(_logger, "Timed out, terminating " + _outstandingRequests + " request(s).");
-                }
+                    waitForStop.TrySetResult(0);
+                });
+
+                return Task.WhenAny(_shutdownSignal.Task, waitForStop.Task);
             }
-            // All requests are finished
+
+            return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            _stopping = true;
             Listener.Dispose();
         }
 

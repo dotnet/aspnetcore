@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
@@ -312,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
             }
 
-            server.Start(new DummyApplication(app));
+            server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
             return server;
         }
 

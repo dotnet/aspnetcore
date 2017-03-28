@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     server.Listener.Options.Authentication.AllowAnonymous = allowAnonymous;
                     try
                     {
-                        server.Start(new DummyApplication(app));
+                        server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
                         return server;
                     }
                     catch (HttpSysException)
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory());
             server.Features.Get<IServerAddressesFeature>().Addresses.Add(UrlPrefix.Create(scheme, host, port, path).ToString());
-            server.Start(new DummyApplication(app));
+            server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
             return server;
         }
     }

@@ -79,12 +79,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        /// <summary>
-        /// The amount of time to wait for active requests to drain while the server is shutting down.
-        /// New requests will receive a 503 response in this time period. The default is 5 seconds.
-        /// </summary>
-        public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
-
         internal void SetRequestQueueLimit(RequestQueue requestQueue)
         {
             _requestQueue = requestQueue;

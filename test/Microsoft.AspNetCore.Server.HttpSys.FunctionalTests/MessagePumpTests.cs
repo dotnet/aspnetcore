@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 serverAddressesFeature.PreferHostingUrls = true;
                 server.Listener.Options.UrlPrefixes.Add(serverAddress);
 
-                server.Start(new DummyApplication());
+                server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
 
                 Assert.Equal(overrideAddress, serverAddressesFeature.Addresses.Single());
             }
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 serverAddressesFeature.Addresses.Add(overrideAddress);
                 server.Listener.Options.UrlPrefixes.Add(serverAddress);
 
-                server.Start(new DummyApplication());
+                server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
 
                 Assert.Equal(serverAddress, serverAddressesFeature.Addresses.Single());
             }
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 serverAddressesFeature.PreferHostingUrls = true;
                 server.Listener.Options.UrlPrefixes.Add(serverAddress);
 
-                server.Start(new DummyApplication());
+                server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
 
                 Assert.Equal(serverAddress, serverAddressesFeature.Addresses.Single());
             }
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 serverAddressesFeature.Addresses.Add(serverAddress);
                 server.Listener.Options.UrlPrefixes.Add(overrideAddress);
 
-                server.Start(new DummyApplication());
+                server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
 
                 Assert.Equal(overrideAddress, serverAddressesFeature.Addresses.Single());
             }
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
                 serverAddressesFeature.Addresses.Add(serverAddress);
 
-                server.Start(new DummyApplication());
+                server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
             }
         }
 
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             using (var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory()))
             {
-                server.Start(new DummyApplication());
+                server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
 
                 Assert.Equal(Constants.DefaultServerAddress, server.Features.Get<IServerAddressesFeature>().Addresses.Single());
             }
