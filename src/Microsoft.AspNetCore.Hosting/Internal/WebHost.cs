@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _applicationLifetime = _applicationServices.GetRequiredService<IApplicationLifetime>() as ApplicationLifetime;
             _hostedServiceExecutor = _applicationServices.GetRequiredService<HostedServiceExecutor>();
-            var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
+            var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             Server.Start(new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory));
 
