@@ -32,58 +32,6 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel> __typeHelper = null;
-        }
-        ))();
-        ((System.Action)(() => {
-System.Object Html = null;
-        }
-        ))();
-        ((System.Action)(() => {
-global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper __typeHelper = null;
-        }
-        ))();
-        ((System.Action)(() => {
-System.Object Json = null;
-        }
-        ))();
-        ((System.Action)(() => {
-global::Microsoft.AspNetCore.Mvc.IViewComponentHelper __typeHelper = null;
-        }
-        ))();
-        ((System.Action)(() => {
-System.Object Component = null;
-        }
-        ))();
-        ((System.Action)(() => {
-global::Microsoft.AspNetCore.Mvc.IUrlHelper __typeHelper = null;
-        }
-        ))();
-        ((System.Action)(() => {
-System.Object Url = null;
-        }
-        ))();
-        ((System.Action)(() => {
-global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider __typeHelper = null;
-        }
-        ))();
-        ((System.Action)(() => {
-System.Object ModelExpressionProvider = null;
-        }
-        ))();
-        ((System.Action)(() => {
-System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor";
-        }
-        ))();
-        ((System.Action)(() => {
-System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor";
-        }
-        ))();
-        ((System.Action)(() => {
-System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor";
-        }
-        ))();
         }
         #pragma warning restore 219
         private static System.Object __o = null;
