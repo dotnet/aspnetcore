@@ -81,9 +81,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var importContent = GetContent(imports)
                 .Split(new[] { Environment.NewLine }, StringSplitOptions.None)
                 .Where(line => line.StartsWith("@addTagHelper"));
-            var addTagHelper = Assert.Single(importContent);
-            Assert.Equal("@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor",
-                addTagHelper);
+            Assert.Contains("@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor", importContent);
+            Assert.Contains("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor", importContent);
+            Assert.Contains("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor", importContent);
         }
 
         [Fact]

@@ -52,6 +52,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 writer.WriteLine("@inject global::Microsoft.AspNetCore.Mvc.IUrlHelper Url");
                 writer.WriteLine("@inject global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider");
                 writer.WriteLine("@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor");
+                writer.WriteLine("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor");
+                writer.WriteLine("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor");
                 writer.Flush();
 
                 stream.Position = 0;
