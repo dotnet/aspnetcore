@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(hostBuilder));
             }
 
-            hostBuilder.UseIISIntegration();
             hostBuilder.ConfigureLogging(loggerFactory => loggerFactory.AddAzureWebAppDiagnostics());
 
             return hostBuilder;

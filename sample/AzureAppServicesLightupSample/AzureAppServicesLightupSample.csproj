@@ -8,11 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.AzureAppServicesIntegration\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.AzureLightup\Microsoft.AspNetCore.AzureLightup.csproj" />
   </ItemGroup>
 
 </Project>
