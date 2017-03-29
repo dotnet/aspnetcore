@@ -5,9 +5,10 @@ import { IHttpClient, HttpClient } from "./HttpClient"
 import { ISignalROptions } from "./ISignalROptions"
 
 enum ConnectionState {
-    Disconnected,
+    Initial,
     Connecting,
-    Connected
+    Connected,
+    Disconnected
 }
 
 export class Connection implements IConnection {
@@ -22,13 +23,15 @@ export class Connection implements IConnection {
         this.url = url;
         this.queryString = queryString;
         this.httpClient = options.httpClient || new HttpClient();
-        this.connectionState = ConnectionState.Disconnected;
+        this.connectionState = ConnectionState.Initial;
     }
 
     async start(transportName: string = "webSockets"): Promise<void> {
-        if (this.connectionState != ConnectionState.Disconnected) {
-            throw new Error("Cannot start a connection that is not in the 'Disconnected' state");
+        if (this.connectionState != ConnectionState.Initial) {
+            throw new Error("Cannot start a connection that is not in the 'Initial' state.");
         }
+
+        this.connectionState = ConnectionState.Connecting;
 
         this.transport = this.createTransport(transportName);
         this.transport.onDataReceived = this.onDataReceived;
