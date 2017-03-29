@@ -383,10 +383,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                     {
                         OutputLogger.LogWarning(evt.Data);
                     }
-                    else if (IsWarning(evt.Data))
-                    {
-                        OutputLogger.LogWarning(evt.Data);
-                    }
                     else if (!initializationIsCompleted)
                     {
                         _connectionIsReadySource.SetException(
@@ -410,11 +406,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 message.StartsWith("Debugger listening ", StringComparison.OrdinalIgnoreCase) ||
                 message.StartsWith("To start debugging", StringComparison.OrdinalIgnoreCase) ||
                 message.Contains("chrome-devtools:");
-        }
-
-        private static bool IsWarning(string message)
-        {
-            return message.StartsWith("Warning:", StringComparison.OrdinalIgnoreCase);
         }
 
         private FileSystemWatcher BeginFileWatcher(string rootDir)
