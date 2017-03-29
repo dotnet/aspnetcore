@@ -77,6 +77,14 @@ System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResol
         }
         ))();
         ((System.Action)(() => {
+System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor";
+        }
+        ))();
+        ((System.Action)(() => {
+System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor";
+        }
+        ))();
+        ((System.Action)(() => {
 System.Collections.IEnumerable __typeHelper = null;
         }
         ))();

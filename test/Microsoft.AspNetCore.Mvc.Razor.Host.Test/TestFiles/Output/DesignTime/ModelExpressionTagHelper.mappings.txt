@@ -1,40 +1,40 @@
 Source Location: (7:0,7 [8] TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |DateTime|
-Generated Location: (2101:79,0 [8] )
+Generated Location: (2463:87,0 [8] )
 |DateTime|
 
 Source Location: (33:2,14 [91] TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Host.Test|
-Generated Location: (2222:83,30 [91] )
+Generated Location: (2584:91,30 [91] )
 |Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Host.Test|
 
 Source Location: (140:3,14 [102] TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Microsoft.AspNetCore.Mvc.Razor.DictionaryPrefixTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Host.Test|
-Generated Location: (2407:87,30 [102] )
+Generated Location: (2769:95,30 [102] )
 |Microsoft.AspNetCore.Mvc.Razor.DictionaryPrefixTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Host.Test|
 
 Source Location: (263:5,17 [3] TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Now|
-Generated Location: (3397:100,133 [3] )
+Generated Location: (3759:108,133 [3] )
 |Now|
 
 Source Location: (290:6,18 [5] TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Model|
-Generated Location: (3764:106,125 [5] )
+Generated Location: (4126:114,125 [5] )
 |Model|
 
 Source Location: (322:8,19 [5] TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Model|
-Generated Location: (4183:112,153 [5] )
+Generated Location: (4545:120,153 [5] )
 |Model|
 
 Source Location: (357:9,19 [4] TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Hour|
-Generated Location: (4611:118,161 [4] )
+Generated Location: (4973:126,161 [4] )
 |Hour|
 
 Source Location: (378:9,40 [6] TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Minute|
-Generated Location: (4873:123,163 [6] )
+Generated Location: (5235:131,163 [6] )
 |Minute|
 

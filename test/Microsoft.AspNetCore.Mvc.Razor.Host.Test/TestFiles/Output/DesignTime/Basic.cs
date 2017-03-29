@@ -76,6 +76,14 @@ System.Object ModelExpressionProvider = null;
 System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor";
         }
         ))();
+        ((System.Action)(() => {
+System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor";
+        }
+        ))();
+        ((System.Action)(() => {
+System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor";
+        }
+        ))();
         }
         #pragma warning restore 219
         private static System.Object __o = null;
