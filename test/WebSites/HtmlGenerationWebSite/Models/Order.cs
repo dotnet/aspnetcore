@@ -55,5 +55,7 @@ namespace HtmlGenerationWebSite.Models
             get;
             set;
         }
+
+        public IList<Product> ProductDetails { get; } = new List<Product>();
     }
 }

@@ -28,6 +28,34 @@
             @Html.ListBoxFor(m => m.Products, productSelectList)
         </div>
         <div>
+            @if (Model.ProductDetails.Count > 0)
+            {
+                <table>
+                    <tr>
+                        <th>
+                            @Html.LabelFor(m => m.ProductDetails.FirstOrDefault().Number)
+                        </th>
+                        <th>
+                            @Html.LabelFor(m => m.ProductDetails.FirstOrDefault().ProductName)
+                        </th>
+                    </tr>
+                    @for (var i = 0; i < Model.ProductDetails.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(m => m.ProductDetails[i].Number, htmlAttributes: new { type = "number" })
+                                @Html.ValidationMessageFor(m => m.ProductDetails[i].Number, message: null, htmlAttributes: new { @class = "text-danger", style = "" })
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(m => m.ProductDetails[i].ProductName)
+                                @Html.ValidationMessageFor(m => m.ProductDetails[i].ProductName, message: null, htmlAttributes: new { @class = "text-danger", style = "" })
+                            </td>
+                        </tr>
+                    }
+                </table>
+            }
+        </div>
+        <div>
             @Html.LabelFor(m => m.SubstituteProducts, htmlAttributes: new { @class = "order" })
             @* Use same select list as Products. Selection when Products is non-null is not used here. *@
             @Html.ListBoxFor(m => m.SubstituteProducts, productSelectList)

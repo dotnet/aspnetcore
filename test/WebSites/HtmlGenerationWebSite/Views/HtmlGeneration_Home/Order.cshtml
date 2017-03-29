@@ -1,4 +1,4 @@
-@model HtmlGenerationWebSite.Models.Order
+﻿@model HtmlGenerationWebSite.Models.Order
 
 @{
     ViewBag.Title = "Order Page";
@@ -32,6 +32,34 @@
             <label asp-for="Products" class="order"></label>
             @{ var @object = "multiple"; }
             <select asp-for="@Model.Products" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)" multiple="@(@object)"></select>
+        </div>
+        <div>
+            @if (Model.ProductDetails.Count > 0)
+            {
+                <table>
+                    <tr>
+                        <th>
+                            <label asp-for="ProductDetails.FirstOrDefault().Number"></label>
+                        </th>
+                        <th>
+                            <label asp-for="ProductDetails.FirstOrDefault().ProductName"></label>
+                        </th>
+                    </tr>
+                    @for (var i = 0; i < Model.ProductDetails.Count; i++)
+                    {
+                    <tr>
+                        <td>
+                            <input asp-for="ProductDetails[i].Number" />
+                            <span asp-validation-for="ProductDetails[i].Number" class="text-danger" style=""></span>
+                        </td>
+                        <td>
+                            <input asp-for="ProductDetails[i].ProductName" />
+                            <span asp-validation-for="ProductDetails[i].ProductName" class="text-danger" style=""></span>
+                        </td>
+                    </tr>
+                    }
+                </table>
+            }
         </div>
         <div>
             <label asp-for="SubstituteProducts" class="order"></label>
