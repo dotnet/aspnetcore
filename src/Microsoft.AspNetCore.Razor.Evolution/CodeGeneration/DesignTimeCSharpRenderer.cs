@@ -110,8 +110,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             const string TypeHelper = "__typeHelper";
 
             var tokenKind = node.Descriptor.Kind;
-            if (node.Source == null)
+            if (!node.Source.HasValue ||
+                !string.Equals(
+                    Context.SourceDocument.FileName,
+                    node.Source.Value.FilePath,
+                    StringComparison.OrdinalIgnoreCase))
             {
+                // We don't want to handle directives from imports.
                 return;
             }
 

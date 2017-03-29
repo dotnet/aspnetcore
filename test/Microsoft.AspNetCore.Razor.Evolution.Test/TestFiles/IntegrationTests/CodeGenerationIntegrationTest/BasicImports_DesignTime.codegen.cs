@@ -22,10 +22,6 @@ using System.Text;
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-Hello __typeHelper = null;
-        }
-        ))();
         }
         #pragma warning restore 219
         private static System.Object __o = null;
