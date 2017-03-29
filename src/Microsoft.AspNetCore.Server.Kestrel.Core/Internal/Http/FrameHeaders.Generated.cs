@@ -7772,7 +7772,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 17, 14);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7798,7 +7798,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 31, 8);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7819,7 +7819,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 133, 16);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7845,7 +7845,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 350, 10);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7877,7 +7877,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 0, 17);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7898,7 +7898,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 39, 14);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7919,7 +7919,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 53, 10);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7940,7 +7940,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 63, 11);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7966,7 +7966,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 74, 21);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7987,7 +7987,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 95, 11);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8008,7 +8008,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 106, 7);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8029,7 +8029,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 113, 11);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8050,7 +8050,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 124, 9);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8071,7 +8071,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 149, 20);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8092,7 +8092,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 169, 20);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8113,7 +8113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 189, 20);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8134,7 +8134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 209, 15);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8155,7 +8155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 224, 17);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8176,7 +8176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 241, 11);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8197,7 +8197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 252, 17);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8218,7 +8218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 269, 17);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8239,7 +8239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 286, 7);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8260,7 +8260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 293, 8);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8281,7 +8281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 301, 12);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8302,7 +8302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 313, 22);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8323,7 +8323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 335, 15);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8344,7 +8344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 360, 14);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8365,7 +8365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 374, 8);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8386,7 +8386,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 382, 20);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8407,7 +8407,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 402, 36);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8428,7 +8428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 438, 32);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8449,7 +8449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 470, 32);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8470,7 +8470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 502, 31);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8491,7 +8491,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 533, 33);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8512,7 +8512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if (value != null)
                             {
                                 output.WriteFast(_headerBytes, 566, 26);
-                                output.WriteAscii(value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }

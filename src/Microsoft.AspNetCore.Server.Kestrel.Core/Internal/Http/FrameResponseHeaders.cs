@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         if (value != null)
                         {
                             output.WriteFast(_CrLf);
-                            output.WriteAscii(kv.Key);
+                            output.WriteAsciiNoValidation(kv.Key);
                             output.WriteFast(_colonSpace);
-                            output.WriteAscii(value);
+                            output.WriteAsciiNoValidation(value);
                         }
                     }
                 }

@@ -158,7 +158,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        public unsafe static void WriteAscii(this WritableBuffer buffer, string data)
+        /// <summary>
+        /// Write string characters as ASCII without validating that characters fall in the ASCII range
+        /// </summary>
+        /// <remarks>
+        /// ASCII character validation is done by <see cref="FrameHeaders.ValidateHeaderCharacters(string)"/>
+        /// </remarks>
+        /// <param name="buffer">the buffer</param>
+        /// <param name="data">The string to write</param>
+        public unsafe static void WriteAsciiNoValidation(this WritableBuffer buffer, string data)
         {
             if (string.IsNullOrEmpty(data))
             {
