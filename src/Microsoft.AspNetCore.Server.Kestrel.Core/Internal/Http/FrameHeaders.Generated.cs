@@ -2661,6 +2661,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return;
             }
             
+            if ((tempBits & 2L) != 0)
+            {
+                _headers._Connection = default(StringValues);
+                if((tempBits & ~2L) == 0)
+                {
+                    return;
+                }
+                tempBits &= ~2L;
+            }
+            
             if ((tempBits & 524288L) != 0)
             {
                 _headers._Accept = default(StringValues);
@@ -2699,16 +2709,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     return;
                 }
                 tempBits &= ~1L;
-            }
-            
-            if ((tempBits & 2L) != 0)
-            {
-                _headers._Connection = default(StringValues);
-                if((tempBits & ~2L) == 0)
-                {
-                    return;
-                }
-                tempBits &= ~2L;
             }
             
             if ((tempBits & 4L) != 0)
@@ -3511,6 +3511,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 var stringValue = new StringValues(value);
                 switch (keyLength)
                 {
+                    case 10:
+                        {
+                            if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u)))
+                            {
+                                if ((_bits & 2L) != 0)
+                                {
+                                    _headers._Connection = AppendValue(_headers._Connection, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2L;
+                                    _headers._Connection = stringValue;
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUL[0] & 16131858680330051551uL) == 4992030374873092949uL) && ((pUS[4] & 57311u) == 21582u)))
+                            {
+                                if ((_bits & 549755813888L) != 0)
+                                {
+                                    _headers._UserAgent = AppendValue(_headers._UserAgent, value);
+                                }
+                                else
+                                {
+                                    _bits |= 549755813888L;
+                                    _headers._UserAgent = stringValue;
+                                }
+                                return;
+                            }
+                        }
+                        break;
+                
                     case 6:
                         {
                             if ((((pUI[0] & 3755991007u) == 1162036033u) && ((pUS[2] & 57311u) == 21584u)))
@@ -3541,24 +3573,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 {
                                     _bits |= 134217728L;
                                     _headers._Host = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 10:
-                        {
-                            if ((((pUL[0] & 16131858680330051551uL) == 4992030374873092949uL) && ((pUS[4] & 57311u) == 21582u)))
-                            {
-                                if ((_bits & 549755813888L) != 0)
-                                {
-                                    _headers._UserAgent = AppendValue(_headers._UserAgent, value);
-                                }
-                                else
-                                {
-                                    _bits |= 549755813888L;
-                                    _headers._UserAgent = stringValue;
                                 }
                                 return;
                             }
@@ -3652,38 +3666,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                         break;
                 
-                    case 10:
-                        {
-                            if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u)))
-                            {
-                                if ((_bits & 2L) != 0)
-                                {
-                                    _headers._Connection = AppendValue(_headers._Connection, value);
-                                }
-                                else
-                                {
-                                    _bits |= 2L;
-                                    _headers._Connection = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u)))
-                            {
-                                if ((_bits & 8L) != 0)
-                                {
-                                    _headers._KeepAlive = AppendValue(_headers._KeepAlive, value);
-                                }
-                                else
-                                {
-                                    _bits |= 8L;
-                                    _headers._KeepAlive = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
                     case 4:
                         {
                             if ((((pUI[0] & 3755991007u) == 1163149636u)))
@@ -3710,6 +3692,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 {
                                     _bits |= 67108864L;
                                     _headers._From = stringValue;
+                                }
+                                return;
+                            }
+                        }
+                        break;
+                
+                    case 10:
+                        {
+                            if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u)))
+                            {
+                                if ((_bits & 8L) != 0)
+                                {
+                                    _headers._KeepAlive = AppendValue(_headers._KeepAlive, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8L;
+                                    _headers._KeepAlive = stringValue;
                                 }
                                 return;
                             }

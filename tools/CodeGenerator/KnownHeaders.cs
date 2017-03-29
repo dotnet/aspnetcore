@@ -128,9 +128,9 @@ namespace CodeGenerator
             var requestPrimaryHeaders = new[]
             {
                 "Accept",
+                "Connection",
                 "Host",
                 "User-Agent"
-
             };
             var responsePrimaryHeaders = new[]
             {
