@@ -3,6 +3,7 @@
     <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
     <AspNetCoreLabsVersion>0.3.0-*</AspNetCoreLabsVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
+    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
