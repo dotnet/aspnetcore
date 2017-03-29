@@ -1,4 +1,3 @@
 /node_modules/
-project.lock.json
 /wwwroot/dist/
 /Properties/launchSettings.json
