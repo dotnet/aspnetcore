@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     /// A <see cref="TagHelperComponentTagHelper"/> targeting the &lt;body&gt; HTML element.
     /// </summary>
     [HtmlTargetElement("body")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public class BodyTagHelper : TagHelperComponentTagHelper
     {
         /// <summary>
