@@ -138,12 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                         if (!AssemblyContainsTagHelpers(parsed.AssemblyName, tagHelpers))
                         {
-                            errorSink.OnError(
-                                parsed.AssemblyNameLocation,
-                                Resources.FormatTagHelperAssemblyCouldNotBeResolved(parsed.AssemblyName),
-                                parsed.AssemblyName.Length);
-
-                            // Skip this one, it's an error
+                            // No tag helpers in the assembly.
                             break;
                         }
 
@@ -170,12 +165,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                         if (!AssemblyContainsTagHelpers(parsed.AssemblyName, tagHelpers))
                         {
-                            errorSink.OnError(
-                                parsed.AssemblyNameLocation,
-                                Resources.FormatTagHelperAssemblyCouldNotBeResolved(parsed.AssemblyName),
-                                parsed.AssemblyName.Length);
-
-                            // Skip this one, it's an error
+                            // No tag helpers in the assembly.
                             break;
                         }
 

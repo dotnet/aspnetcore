@@ -257,40 +257,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
-        public void Execute_AddsErrorWhenNoTagHelpersAreFoundInAssembly()
-        {
-            // Arrange
-            var engine = RazorEngine.Create(builder =>
-            {
-                builder.Features.Add(new TestTagHelperFeature());
-            });
-
-            var pass = new TagHelperBinderSyntaxTreePass()
-            {
-                Engine = engine,
-            };
-
-            var sourceDocument = CreateTestSourceDocument();
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
-
-            var expectedError = RazorDiagnostic.Create(
-                new RazorError(
-                    Resources.FormatTagHelperAssemblyCouldNotBeResolved("TestAssembly"),
-                    new SourceLocation(Environment.NewLine.Length + 17, 1, 1),
-                    length: 12));
-
-            // Act
-            var outputTree = pass.Execute(codeDocument, originalTree);
-
-            // Assert
-            Assert.Same(originalTree.Root, outputTree.Root);
-
-            var error = Assert.Single(outputTree.Diagnostics);
-            Assert.Equal(expectedError, error);
-        }
-
-        [Fact]
         public void Execute_RecreatesSyntaxTreeOnResolverErrors()
         {
             // Arrange

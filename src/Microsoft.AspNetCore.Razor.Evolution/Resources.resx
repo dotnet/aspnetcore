@@ -144,9 +144,6 @@
   <data name="TagHelperAssemblyNameCannotBeEmptyOrNull" xml:space="preserve">
     <value>Tag helper directive assembly name cannot be null or empty.</value>
   </data>
-  <data name="TagHelperAssemblyCouldNotBeResolved" xml:space="preserve">
-    <value>The assembly '{0}' could not be resolved or contains no tag helpers.</value>
-  </data>
   <data name="RazorProject_PathMustStartWithForwardSlash" xml:space="preserve">
     <value>Path must begin with a forward slash '/'.</value>
   </data>

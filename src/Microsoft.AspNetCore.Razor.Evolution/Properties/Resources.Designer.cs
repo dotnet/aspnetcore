@@ -137,20 +137,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             => GetString("TagHelperAssemblyNameCannotBeEmptyOrNull");
 
         /// <summary>
-        /// The assembly '{0}' could not be resolved or contains no tag helpers.
-        /// </summary>
-        internal static string TagHelperAssemblyCouldNotBeResolved
-        {
-            get => GetString("TagHelperAssemblyCouldNotBeResolved");
-        }
-
-        /// <summary>
-        /// The assembly '{0}' could not be resolved or contains no tag helpers.
-        /// </summary>
-        internal static string FormatTagHelperAssemblyCouldNotBeResolved(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperAssemblyCouldNotBeResolved"), p0);
-
-        /// <summary>
         /// Path must begin with a forward slash '/'.
         /// </summary>
         internal static string RazorProject_PathMustStartWithForwardSlash
