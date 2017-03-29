@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         public bool ReactHotModuleReplacement { get; set; }
 
         /// <summary> 
-        /// Specifies additional options to be passed to the Webpack Hot Middleware client 
+        /// Specifies additional options to be passed to the Webpack Hot Middleware client, if used.
         /// </summary> 
         public IDictionary<string, string> HotModuleReplacementClientOptions { get; set; } 
 

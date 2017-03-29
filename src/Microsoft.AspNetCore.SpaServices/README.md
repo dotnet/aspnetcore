@@ -636,7 +636,7 @@ This is [documented in detail on the Webpack site](https://webpack.github.io/doc
 #### Passing options to the Webpack Hot Middleware client
 
 You can configure the [Webpack Hot Middleware client](https://github.com/glenjamin/webpack-hot-middleware#client)
-by modifying your `UseWebpackDevMiddleware` call to include `HotModuleReplacementClientOptions`:
+by using the `HotModuleReplacementClientOptions` property on `WebpackDevMiddlewareOptions`:
 
 ```csharp
 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
@@ -647,7 +647,9 @@ app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
 });
 ```
 
-**Note**: The `path` option will be ignored, because it is controlled by the `HotModuleReplacementEndpoint` setting.
+For the list of available options, please see [Webpack Hot Middleware docs](https://github.com/glenjamin/webpack-hot-middleware#client).
+
+**Note**: The `path` option cannot be overridden this way - it is controlled by the `HotModuleReplacementEndpoint` setting.
 
 ## Routing helper: MapSpaFallbackRoute
 
