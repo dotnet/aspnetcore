@@ -19,21 +19,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             {
                 var i = 3;
                 var value = "Test";
-                var Model = new TestModel();
                 var key = "TestModel";
                 var myModels = new List<TestModel>();
                 var models = new List<TestModel>();
                 var modelTest = new TestModel();
                 var modelType = typeof(TestModel);
 
-                return new TheoryData<Expression, string>
+                var data = new TheoryData<Expression, string>
                 {
                     {
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory),
-                        "SelectedCategory"
-                    },
-                    {
-                        (Expression<Func<TestModel, Category>>)(m => Model.SelectedCategory),
                         "SelectedCategory"
                     },
                     {
@@ -55,10 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     {
                         (Expression<Func<TestModel, string>>)(model => value),
                         "value"
-                    },
-                    {
-                        (Expression<Func<TestModel, TestModel>>)(m => Model),
-                        string.Empty
                     },
                     {
                         (Expression<Func<TestModel, int>>)(model => models[0].SelectedCategory.CategoryId),
@@ -120,7 +111,57 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         (Expression<Func<IList<TestModel>, int>>)(model => model.FirstOrDefault().PreferredCategories.FirstOrDefault().CategoryId),
                         "CategoryId"
                     },
+                    // Constants are not supported.
+                    {
+                        // Namespace never appears in expresison name. "Model" there doesn't matter.
+                        (Expression<Func<TestModel, int>>)(m => Microsoft.AspNetCore.Mvc.ViewFeatures.Model.Constants.WoodstockYear),
+                        string.Empty
+                    },
+                    {
+                        // Class name never appears in expresion name. "Model" there doesn't matter.
+                        (Expression<Func<TestModel, int>>)(m => Model.Constants.WoodstockYear),
+                        string.Empty
+                    },
+                    // ExpressionHelper treats static properties like other member accesses. Similarly to
+                    // RazorPage.Model, name "Model" is ignored at LHS of these expressions. This is a rare case because
+                    // static properties are the only leftmost member accesses that can reach beyond the current class.
+                    {
+                        (Expression<Func<TestModel, string>>)(m => Model.Constants.Model.Name),
+                        "Name"
+                    },
+                    {
+                        (Expression<Func<TestModel, string>>)(m => AStaticClass.Model),
+                        string.Empty
+                    },
+                    {
+                        (Expression<Func<TestModel, string>>)(m => AStaticClass.Test),
+                        "Test"
+                    },
+                    {
+                        (Expression<Func<TestModel, string>>)(m => AnotherStaticClass.Model.Name),
+                        "Name"
+                    },
+                    {
+                        (Expression<Func<TestModel, string>>)(m => AnotherStaticClass.Test.Name),
+                        "Test.Name"
+                    },
                 };
+
+                {
+                    // Nearly impossible in a .cshtml file because model is a keyword.
+                    var model = "Some string";
+                    data.Add((Expression<Func<TestModel, string>>)(m => model), string.Empty);
+                }
+
+                {
+                    // Model property in RazorPage is "special" (in a good way).
+                    var Model = new TestModel();
+                    data.Add((Expression<Func<TestModel, TestModel>>)(m => Model), string.Empty);
+                    data.Add((Expression<Func<TestModel, TestModel>>)(model => Model), string.Empty);
+                    data.Add((Expression<Func<TestModel, Category>>)(m => Model.SelectedCategory), "SelectedCategory");
+                }
+
+                return data;
             }
         }
 
@@ -377,6 +418,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             public string MainCategory { get; set; }
             public string SubCategory { get; set; }
+        }
+
+        private static class AStaticClass
+        {
+            public static string Model { get; set; }
+            public static string Test { get; set; }
+        }
+
+        private static class AnotherStaticClass
+        {
+            public static Model.Model Model { get; set; }
+            public static Model.Model Test { get; set; }
         }
     }
 }
