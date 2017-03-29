@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
+    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
     <ResponseCompressionVersion>1.1.0-*</ResponseCompressionVersion>
     <AspNetCoreLabsVersion>0.3.0-*</AspNetCoreLabsVersion>
     <AspNetCoreModuleVersion>1.0.0-*</AspNetCoreModuleVersion>
