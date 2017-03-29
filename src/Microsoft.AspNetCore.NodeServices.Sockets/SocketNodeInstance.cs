@@ -179,6 +179,7 @@ namespace Microsoft.AspNetCore.NodeServices.Sockets
             using (var jsonWriter = new JsonTextWriter(streamWriter))
             {
                 jsonWriter.CloseOutput = false;
+                jsonWriter.AutoCompleteOnClose = false;
 
                 var serializer = JsonSerializer.Create(jsonSerializerSettings);
                 serializer.Serialize(jsonWriter, serializableObject);
