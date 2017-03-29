@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -29,14 +30,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         private readonly IPipe _input;
         private readonly TestFrame<object> _frame;
         private readonly ServiceContext _serviceContext;
-        private readonly ConnectionContext _connectionContext;
+        private readonly FrameContext _frameContext;
         private readonly PipeFactory _pipelineFactory;
         private ReadCursor _consumed;
         private ReadCursor _examined;
 
         private class TestFrame<TContext> : Frame<TContext>
         {
-            public TestFrame(IHttpApplication<TContext> application, ConnectionContext context)
+            public TestFrame(IHttpApplication<TContext> application, FrameContext context)
             : base(application, context)
             {
             }
@@ -49,29 +50,23 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public FrameTests()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
             _pipelineFactory = new PipeFactory();
             _input = _pipelineFactory.Create();
 
-            _serviceContext = new ServiceContext
+            _serviceContext = new TestServiceContext();
+
+            _frameContext = new FrameContext
             {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                HttpParserFactory = frame => new KestrelHttpParser(trace),
-                Log = trace
-            };
-            var listenerContext = new ListenerContext(_serviceContext)
-            {
-                ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
-            };
-            _connectionContext = new ConnectionContext(listenerContext)
-            {
-                Input = _input,
-                Output = new MockSocketOutput(),
-                ConnectionControl = Mock.Of<IConnectionControl>()
+                ServiceContext = _serviceContext,
+                ConnectionInformation = new MockConnectionInformation()
             };
 
-            _frame = new TestFrame<object>(application: null, context: _connectionContext);
+            _frame = new TestFrame<object>(application: null, context: _frameContext)
+            {
+                Input = _input.Reader,
+                Output = new MockSocketOutput()
+            };
+
             _frame.Reset();
             _frame.InitializeHeaders();
         }
@@ -295,8 +290,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public async Task ParseRequestStartsRequestHeadersTimeoutOnFirstByteAvailable()
         {
-            var connectionControl = new Mock<IConnectionControl>();
-            _connectionContext.ConnectionControl = connectionControl.Object;
+            var connectionInfo = (MockConnectionInformation)_frameContext.ConnectionInformation;
+            var connectionControl = new Mock<ITimeoutControl>();
+            connectionInfo.TimeoutControl = connectionControl.Object;
 
             await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("G"));
 
@@ -418,8 +414,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void RequestProcessingAsyncEnablesKeepAliveTimeout()
         {
-            var connectionControl = new Mock<IConnectionControl>();
-            _connectionContext.ConnectionControl = connectionControl.Object;
+            var connectionInfo = (MockConnectionInformation)_frameContext.ConnectionInformation;
+            var connectionControl = new Mock<ITimeoutControl>();
+            connectionInfo.TimeoutControl = connectionControl.Object;
 
             var requestProcessingTask = _frame.RequestProcessingAsync();
 
@@ -635,7 +632,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        public static TheoryData<string, string> TargetInvalidData 
+        public static TheoryData<string, string> TargetInvalidData
             => HttpParsingData.TargetInvalidData;
 
         public static TheoryData<string, HttpMethod> MethodNotAllowedTargetData
@@ -684,6 +681,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 return data;
             }
+        }
+
+        private class MockConnectionInformation : IConnectionInformation
+        {
+            public ListenOptions ListenOptions { get; }
+            public IPEndPoint RemoteEndPoint { get; }
+            public IPEndPoint LocalEndPoint { get; }
+            public PipeFactory PipeFactory { get; }
+            public IScheduler InputWriterScheduler { get; }
+            public IScheduler OutputWriterScheduler { get; }
+            public ITimeoutControl TimeoutControl { get; set; } = Mock.Of<ITimeoutControl>();
         }
     }
 }

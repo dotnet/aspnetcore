@@ -61,9 +61,11 @@ namespace SampleApp
 
                     // The following section should be used to demo sockets
                     //options.ListenUnixSocket("/tmp/kestrel-test.sock");
-
+                })
+                .UseLibuv(options =>
+                {
                     // Uncomment the following line to change the default number of libuv threads for all endpoints.
-                    //options.ThreadCount = 4;
+                    options.ThreadCount = 4;
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()

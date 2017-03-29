@@ -1,0 +1,32 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
+{
+    internal static class Constants
+    {
+        public const int MaxExceptionDetailSize = 128;
+
+        /// <summary>
+        /// The IPEndPoint Kestrel will bind to if nothing else is specified.
+        /// </summary>
+        public static readonly string DefaultServerAddress = "http://localhost:5000";
+
+        /// <summary>
+        /// Prefix of host name used to specify Unix sockets in the configuration.
+        /// </summary>
+        public const string UnixPipeHostPrefix = "unix:/";
+
+        /// <summary>
+        /// Prefix of host name used to specify pipe file descriptor in the configuration.
+        /// </summary>
+        public const string PipeDescriptorPrefix = "pipefd:";
+
+        /// <summary>
+        /// Prefix of host name used to specify socket descriptor in the configuration.
+        /// </summary>
+        public const string SocketDescriptorPrefix = "sockfd:";
+
+        public const string ServerName = "Kestrel";
+    }
+}

@@ -7,7 +7,6 @@ using System.Net.Sockets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -17,9 +16,7 @@ namespace Microsoft.AspNetCore.Testing
     public class TestServer : IDisposable
     {
         private KestrelEngine _engine;
-        private IDisposable _server;
         private ListenOptions _listenOptions;
-        private Frame<HttpContext> _frame;
 
         public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
@@ -43,33 +40,27 @@ namespace Microsoft.AspNetCore.Testing
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions, IHttpContextFactory httpContextFactory)
         {
-            Context = context;
             _listenOptions = listenOptions;
 
-            context.FrameFactory = connectionContext =>
-            {
-                _frame = new Frame<HttpContext>(new DummyApplication(app, httpContextFactory), connectionContext);
-                return _frame;
-            };
+            Context = context;
+            Context.App = app;
+            Context.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(Context, new DummyApplication(app, httpContextFactory));
 
             try
             {
-                _engine = new KestrelEngine(context);
-                _engine.Start(1);
-                _server = _engine.CreateServer(_listenOptions);
+                _engine = new KestrelEngine(context.TransportContext, _listenOptions);
+                _engine.BindAsync().Wait();
             }
             catch
             {
-                _server?.Dispose();
-                _engine?.Dispose();
+                _engine.UnbindAsync().Wait();
+                _engine.StopAsync().Wait();
                 throw;
             }
         }
 
         public int Port => _listenOptions.IPEndPoint.Port;
         public AddressFamily AddressFamily => _listenOptions.IPEndPoint.AddressFamily;
-
-        public Frame<HttpContext> Frame => _frame;
 
         public TestServiceContext Context { get; }
 
@@ -80,8 +71,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public void Dispose()
         {
-            _server.Dispose();
-            _engine.Dispose();
+            _engine.UnbindAsync().Wait();
+            _engine.StopAsync().Wait();
         }
     }
 }

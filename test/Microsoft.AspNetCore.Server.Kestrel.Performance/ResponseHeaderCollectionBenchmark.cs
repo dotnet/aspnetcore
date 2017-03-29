@@ -3,11 +3,11 @@
 
 using System.Runtime.CompilerServices;
 using System.Text;
+using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Testing;
-using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -167,10 +167,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Setup]
         public void Setup()
         {
-            var connectionContext = new MockConnection();
-            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = f => new KestrelHttpParser(f.ConnectionContext.ListenerContext.ServiceContext.Log);
-            connectionContext.ListenerContext.ServiceContext.ServerOptions = new KestrelServerOptions();
-            var frame = new Frame<object>(application: null, context: connectionContext);
+            var serviceContext = new ServiceContext
+            {
+                HttpParserFactory = f => new KestrelHttpParser(f.ServiceContext.Log),
+                ServerOptions = new KestrelServerOptions()
+            };
+            var frameContext = new FrameContext
+            {
+                ServiceContext = serviceContext,
+                ConnectionInformation = new MockConnectionInformation()
+            };
+
+            var frame = new Frame<object>(application: null, frameContext: frameContext);
+
             frame.Reset();
             frame.InitializeHeaders();
             _responseHeadersDirect = (FrameResponseHeaders)frame.ResponseHeaders;

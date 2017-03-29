@@ -20,13 +20,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     /// </summary>
     public class NetworkingTests
     {
-        private readonly Libuv _uv;
+        private readonly LibuvFunctions _uv;
         private readonly IKestrelTrace _logger;
         public NetworkingTests()
         {
-            var engine = new KestrelEngine(new TestServiceContext());
-            _uv = engine.Libuv;
-            _logger = engine.Log;
+            _uv = new LibuvFunctions();
+            _logger = new TestKestrelTrace();
         }
 
         [Fact]
@@ -171,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                                 var req = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
                                 req.Init(loop);
                                 var block = ReadableBuffer.Create(new byte[] { 65, 66, 67, 68, 69 });
-                
+
                                 await req.WriteAsync(
                                     tcp2,
                                     block);

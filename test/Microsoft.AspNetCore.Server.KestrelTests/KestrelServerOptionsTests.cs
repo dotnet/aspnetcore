@@ -53,21 +53,5 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.True(o1.ListenOptions[0].NoDelay);
             Assert.False(o1.ListenOptions[1].NoDelay);
         }
-
-        [Fact]
-        public void SetThreadCountUsingProcessorCount()
-        {
-            // Ideally we'd mock Environment.ProcessorCount to test edge cases.
-            var expected = Clamp(Environment.ProcessorCount >> 1, 1, 16);
-
-            var information = new KestrelServerOptions();
-
-            Assert.Equal(expected, information.ThreadCount);
-        }
-
-        private static int Clamp(int value, int min, int max)
-        {
-            return value < min ? min : value > max ? max : value;
-        }
     }
 }

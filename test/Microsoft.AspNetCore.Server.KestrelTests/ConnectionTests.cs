@@ -1,18 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -22,43 +18,40 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public async Task DoesNotEndConnectionOnZeroRead()
         {
-            var mockLibuv = new MockLibuv();
-            var serviceContext = new TestServiceContext
+            using (var mockConnectionHandler = new MockConnectionHandler())
             {
-                FrameFactory = connectionContext => new Frame<HttpContext>(
-                    new DummyApplication(httpContext => TaskCache.CompletedTask), connectionContext)
-            };
+                var mockLibuv = new MockLibuv();
+                var serviceContext = new TestServiceContext();
+                serviceContext.TransportContext.ConnectionHandler = mockConnectionHandler;
 
-            // Ensure ProcessRequestAsync runs inline with the ReadCallback
-            serviceContext.ThreadPool = new InlineLoggingThreadPool(serviceContext.Log);
+                var engine = new KestrelEngine(mockLibuv, serviceContext.TransportContext, null);
+                var thread = new KestrelThread(engine);
 
-            using (var engine = new KestrelEngine(mockLibuv, serviceContext))
-            {
-                engine.Start(count: 1);
-
-                var listenerContext = new ListenerContext(serviceContext)
+                try
                 {
-                    ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-                    Thread = engine.Threads[0]
-                };
+                    await thread.StartAsync();
+                    await thread.PostAsync(_ =>
+                    {
+                        var listenerContext = new ListenerContext(serviceContext.TransportContext)
+                        {
+                            Thread = thread
+                        };
+                        var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, serviceContext.Log);
+                        var connection = new Connection(listenerContext, socket);
+                        connection.Start();
 
-                Connection connection = null;
-                await listenerContext.Thread.PostAsync(_ =>
-                {
-                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, serviceContext.Log);
-                    connection = new Connection(listenerContext, socket);
-                    connection.Start();
+                        LibuvFunctions.uv_buf_t ignored;
+                        mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out ignored);
+                        mockLibuv.ReadCallback(socket.InternalGetHandle(), 0, ref ignored);
+                    }, (object)null);
 
-                    Libuv.uv_buf_t ignored;
-                    mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out ignored);
-                    // This runs the ProcessRequestAsync inline
-                    mockLibuv.ReadCallback(socket.InternalGetHandle(), 0, ref ignored);
-
-                    var readAwaitable = connection.Input.Reader.ReadAsync();
-
+                    var readAwaitable = await mockConnectionHandler.Input.Reader.ReadAsync();
                     Assert.False(readAwaitable.IsCompleted);
-                }, (object)null);
-                connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                }
+                finally
+                {
+                    await thread.StopAsync(TimeSpan.FromSeconds(1));
+                }
             }
         }
     }

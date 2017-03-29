@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var trace = new TestKestrelTrace();
 
             var loop = new UvLoopHandle(trace);
-            loop.Init(new Libuv());
+            loop.Init(new LibuvFunctions());
 
             var timer = new UvTimerHandle(trace);
             timer.Init(loop, (a, b) => { });
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var trace = new TestKestrelTrace();
 
             var loop = new UvLoopHandle(trace);
-            loop.Init(new Libuv());
+            loop.Init(new LibuvFunctions());
 
             var timer = new UvTimerHandle(trace);
             timer.Init(loop, (callback, handle) => { });

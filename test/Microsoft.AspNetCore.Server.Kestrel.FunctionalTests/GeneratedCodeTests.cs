@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public void GeneratedCodeIsUpToDate()
         {
-            const string frameHeadersGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel/Internal/Http/FrameHeaders.Generated.cs";
-            const string frameGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel/Internal/Http/Frame.Generated.cs";
+            const string frameHeadersGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel.Core/Internal/Http/FrameHeaders.Generated.cs";
+            const string frameGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel.Core/Internal/Http/Frame.Generated.cs";
 
             var testFrameHeadersGeneratedPath = Path.GetTempFileName();
             var testFrameGeneratedPath = Path.GetTempFileName();

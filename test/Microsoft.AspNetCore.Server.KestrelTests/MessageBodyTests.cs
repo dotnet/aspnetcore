@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;
@@ -281,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // The block returned by IncomingStart always has at least 2048 available bytes,
                 // so no need to bounds check in this test.
-                var socketInput = input.FrameContext.Input;
+                var socketInput = input.Pipe;
                 var bytes = Encoding.ASCII.GetBytes(data[0]);
                 var buffer = socketInput.Writer.Alloc(2048);
                 ArraySegment<byte> block;

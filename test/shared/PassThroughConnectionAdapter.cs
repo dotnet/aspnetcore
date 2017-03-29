@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
-using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Testing
 {

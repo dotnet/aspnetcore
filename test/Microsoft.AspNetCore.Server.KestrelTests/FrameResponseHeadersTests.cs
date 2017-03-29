@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Net;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -20,21 +18,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void InitialDictionaryIsEmpty()
         {
-            var serverOptions = new KestrelServerOptions();
-
-            var serviceContext = new ServiceContext
+            var frameContext = new FrameContext
             {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = serverOptions,
-                HttpParserFactory = f => new NoopHttpParser(),
+                ServiceContext = new TestServiceContext()
             };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
-            };
-            var connectionContext = new ConnectionContext(listenerContext);
 
-            var frame = new Frame<object>(application: null, context: connectionContext);
+            var frame = new Frame<object>(application: null, frameContext: frameContext);
 
             frame.InitializeHeaders();
 
@@ -287,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             public void Reset()
             {
-                
+
             }
         }
     }

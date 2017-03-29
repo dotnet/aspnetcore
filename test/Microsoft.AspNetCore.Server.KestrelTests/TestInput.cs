@@ -4,58 +4,43 @@
 using System;
 using System.IO.Pipelines;
 using System.Text;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    class TestInput : IConnectionControl, IFrameControl, IDisposable
+    class TestInput : ITimeoutControl, IFrameControl, IDisposable
     {
         private MemoryPool _memoryPool;
         private PipeFactory _pipelineFactory;
 
         public TestInput()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                HttpParserFactory = frame => new KestrelHttpParser(trace),
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                ConnectionControl = this
-            };
-            var context = new Frame<object>(null, connectionContext);
-            FrameContext = context;
+            var innerContext = new FrameContext { ServiceContext = new TestServiceContext() };
+
+            FrameContext = new Frame<object>(null, innerContext);
             FrameContext.FrameControl = this;
-            FrameContext.ConnectionContext.ListenerContext.ServiceContext.Log = trace;
 
             _memoryPool = new MemoryPool();
             _pipelineFactory = new PipeFactory();
-            FrameContext.Input = _pipelineFactory.Create(); ;
+            Pipe = _pipelineFactory.Create();
+            FrameContext.Input = Pipe.Reader;
         }
+
+        public IPipe Pipe { get;  }
 
         public Frame FrameContext { get; set; }
 
         public void Add(string text, bool fin = false)
         {
             var data = Encoding.ASCII.GetBytes(text);
-            FrameContext.Input.Writer.WriteAsync(data).Wait();
+            Pipe.Writer.WriteAsync(data).Wait();
             if (fin)
             {
-                FrameContext.Input.Writer.Complete();
+                Pipe.Writer.Complete();
             }
         }
 

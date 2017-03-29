@@ -15,8 +15,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
-using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Xunit;
@@ -38,35 +36,40 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         };
 
         [Fact]
-        public void EngineCanStartAndStop()
+        public async Task EngineCanStartAndStop()
         {
-            var engine = new KestrelEngine(new TestServiceContext());
-            engine.Start(1);
-            engine.Dispose();
+            var serviceContext = new TestServiceContext();
+
+            // The engine can no longer start threads without binding to an endpoint.
+            var engine = new KestrelEngine(serviceContext.TransportContext,
+                new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
+
+            await engine.BindAsync();
+            await engine.StopAsync();
         }
 
         [Theory]
         [MemberData(nameof(ConnectionAdapterData))]
-        public void ListenerCanCreateAndDispose(ListenOptions listenOptions)
+        public async Task ListenerCanCreateAndDispose(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext();
             testContext.App = TestApp.EchoApp;
-            var engine = new KestrelEngine(testContext);
-            engine.Start(1);
-            var started = engine.CreateServer(listenOptions);
-            started.Dispose();
-            engine.Dispose();
+            var engine = new KestrelEngine(testContext.TransportContext, listenOptions);
+
+            await engine.BindAsync();
+            await engine.UnbindAsync();
+            await engine.StopAsync();
         }
 
         [Theory]
         [MemberData(nameof(ConnectionAdapterData))]
-        public void ConnectionCanReadAndWrite(ListenOptions listenOptions)
+        public async Task ConnectionCanReadAndWrite(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext();
             testContext.App = TestApp.EchoApp;
-            var engine = new KestrelEngine(testContext);
-            engine.Start(1);
-            var started = engine.CreateServer(listenOptions);
+            var engine = new KestrelEngine(testContext.TransportContext, listenOptions);
+
+            await engine.BindAsync();
 
             var socket = TestConnection.CreateConnectedLoopbackSocket(listenOptions.IPEndPoint.Port);
             var data = "Hello World";
@@ -78,8 +81,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 read += socket.Receive(buffer, read, buffer.Length - read, SocketFlags.None);
             }
             socket.Dispose();
-            started.Dispose();
-            engine.Dispose();
+
+            await engine.UnbindAsync();
+            await engine.StopAsync();
         }
 
         [Theory]
@@ -798,7 +802,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.True(onStartingCalled);
             Assert.Equal(1, testLogger.ApplicationErrorsLogged);
         }
-        
+
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes(ListenOptions listenOptions)
         {

@@ -10,6 +10,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -17,13 +18,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class MultipleLoopTests
     {
-        private readonly Libuv _uv;
+        private readonly LibuvFunctions _uv;
         private readonly IKestrelTrace _logger;
         public MultipleLoopTests()
         {
-            var engine = new KestrelEngine(new TestServiceContext());
-            _uv = engine.Libuv;
-            _logger = engine.Log;
+            _uv = new LibuvFunctions();
+            _logger = new TestKestrelTrace();
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var writeRequest = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
                 writeRequest.Init(loop);
-                
+
                 await writeRequest.WriteAsync(
                     serverConnectionPipe,
                     ReadableBuffer.Create(new byte[] { 1, 2, 3, 4 }));
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         (handle2, cb, state2) => buf,
                         (handle2, status2, state2) =>
                         {
-                            if (status2 == Constants.EOF)
+                            if (status2 == TestConstants.EOF)
                             {
                                 clientConnectionPipe.Dispose();
                             }
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         (handle2, cb, state2) => buf,
                         (handle2, status2, state2) =>
                         {
-                            if (status2 == Constants.EOF)
+                            if (status2 == TestConstants.EOF)
                             {
                                 clientConnectionPipe.Dispose();
                                 return;
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                                 (handle3, cb, state3) => buf2,
                                 (handle3, status3, state3) =>
                                 {
-                                    if (status3 == Constants.EOF)
+                                    if (status3 == TestConstants.EOF)
                                     {
                                         clientConnectionTcp.Dispose();
                                     }

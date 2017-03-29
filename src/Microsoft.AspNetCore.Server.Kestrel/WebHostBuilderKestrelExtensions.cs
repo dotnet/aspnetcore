@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
         {
+            hostBuilder.UseLibuv();
+
             return hostBuilder.ConfigureServices(services =>
             {
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();

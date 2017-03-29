@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -120,25 +118,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerOptions = new KestrelServerOptions(),
-                Log = new MockTrace()
+                Log = new MockTrace(),
+                HttpParserFactory = f => new KestrelHttpParser(log: null)
             };
 
-            var listenerContext = new ListenerContext(serviceContext)
+            var frameContext = new FrameContext
             {
-                ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
+                ServiceContext = serviceContext,
+                ConnectionInformation = new MockConnectionInformation()
             };
 
-            var connectionContext = new ConnectionContext(listenerContext)
+            var socketOutputProducer = new SocketOutputProducer(output.Writer, null, null, null);
+            var frame = new TestFrame<object>(application: null, context: frameContext)
             {
-                Input = input,
+                Input = input.Reader,
                 Output = socketOutput,
-                ConnectionControl = new MockConnectionControl()
+                LifetimeControl = new ConnectionLifetimeControl(null, output.Reader, socketOutputProducer, serviceContext.Log)
             };
 
-            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = f => new KestrelHttpParser(log: null);
-            connectionContext.ListenerContext.ServiceContext.ServerOptions = new KestrelServerOptions();
-
-            var frame = new TestFrame<object>(application: null, context: connectionContext);
             frame.Reset();
             frame.InitializeHeaders();
 

@@ -1,11 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO.Pipelines;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -21,11 +20,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Setup]
         public void Setup()
         {
-            var connectionContext = new MockConnection();
-            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = frame => new KestrelHttpParser(frame.ConnectionContext.ListenerContext.ServiceContext.Log);
-            connectionContext.ListenerContext.ServiceContext.ServerOptions = new KestrelServerOptions();
+            var serviceContext = new ServiceContext
+            {
+                HttpParserFactory = f => new KestrelHttpParser(f.ServiceContext.Log),
+                ServerOptions = new KestrelServerOptions()
+            };
+            var frameContext = new FrameContext
+            {
+                ServiceContext = serviceContext,
+                ConnectionInformation = new MockConnectionInformation()
+            };
 
-            Frame = new Frame<object>(application: null, context: connectionContext);
+            Frame = new Frame<object>(application: null, frameContext: frameContext);
             PipelineFactory = new PipeFactory();
             Pipe = PipelineFactory.Create();
         }

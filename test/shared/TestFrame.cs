@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class TestFrame<TContext> : Frame<TContext>
     {
-        public TestFrame(IHttpApplication<TContext> application, ConnectionContext context)
+        public TestFrame(IHttpApplication<TContext> application, FrameContext context)
         : base(application, context)
         {
         }

@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Testing
@@ -18,12 +16,9 @@ namespace Microsoft.AspNetCore.Testing
 
         public MockConnection()
         {
-            ConnectionControl = this;
+            TimeoutControl = this;
             RequestAbortedSource = new CancellationTokenSource();
-            ListenerContext = new ListenerContext(new ServiceContext())
-            {
-                ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
-            };
+            ListenerContext = new ListenerContext(new LibuvTransportContext());
         }
 
         public override Task AbortAsync(Exception error = null)

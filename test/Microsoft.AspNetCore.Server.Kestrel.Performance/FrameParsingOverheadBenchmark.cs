@@ -5,8 +5,8 @@ using System;
 using System.IO.Pipelines;
 using System.Text;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -21,11 +21,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Setup]
         public void Setup()
         {
-            var connectionContext = new MockConnection();
-            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = frame => NullParser.Instance;
-            connectionContext.ListenerContext.ServiceContext.ServerOptions = new KestrelServerOptions();
+            var serviceContext = new ServiceContext
+            {
+                HttpParserFactory = _ => NullParser.Instance,
+                ServerOptions = new KestrelServerOptions()
+            };
+            var frameContext = new FrameContext
+            {
+                ServiceContext = serviceContext,
+                ConnectionInformation = new MockConnectionInformation()
+            };
 
-            _frame = new Frame<object>(application: null, context: connectionContext);
+            _frame = new Frame<object>(application: null, frameContext: frameContext);
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = InnerLoopCount)]

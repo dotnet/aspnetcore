@@ -20,7 +20,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task OneToTenThreads(int threadCount)
         {
             var hostBuilder = new WebHostBuilder()
-                .UseKestrel(options =>
+                .UseKestrel()
+                .UseLibuv(options =>
                 {
                     options.ThreadCount = threadCount;
                 })

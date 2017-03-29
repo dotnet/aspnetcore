@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -16,20 +18,31 @@ namespace Microsoft.AspNetCore.Testing
 
         public TestServiceContext()
         {
-            AppLifetime = new LifetimeNotImplemented();
             Log = new TestKestrelTrace();
             ThreadPool = new LoggingThreadPool(Log);
             DateHeaderValueManager = new DateHeaderValueManager(systemClock: new MockSystemClock());
             DateHeaderValue = DateHeaderValueManager.GetDateHeaderValues().String;
-            HttpParserFactory = frame => new KestrelHttpParser(Log);
+            HttpParserFactory = frame => new KestrelHttpParser(frame.ServiceContext.Log);
             ServerOptions = new KestrelServerOptions
             {
-                AddServerHeader = false,
-                ShutdownTimeout = TimeSpan.FromSeconds(5)
+                AddServerHeader = false
+            };
+
+            TransportContext = new LibuvTransportContext
+            {
+                AppLifetime = new LifetimeNotImplemented(),
+                Log = Log,
+                Options = new LibuvTransportOptions
+                {
+                    ThreadCount = 1,
+                    ShutdownTimeout = TimeSpan.FromSeconds(5)
+                }
             };
         }
 
         public string DateHeaderValue { get; }
+
+        public LibuvTransportContext TransportContext { get; }
 
         public RequestDelegate App
         {
@@ -39,11 +52,8 @@ namespace Microsoft.AspNetCore.Testing
             }
             set
             {
+                TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(this, new DummyApplication(value));
                 _app = value;
-                FrameFactory = connectionContext =>
-                {
-                    return new Frame<HttpContext>(new DummyApplication(_app), connectionContext);
-                };
             }
         }
     }

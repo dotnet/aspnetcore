@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 {
     class MockSocket : UvStreamHandle
     {
-        public MockSocket(Libuv uv, int threadId, IKestrelTrace logger) : base(logger)
+        public MockSocket(LibuvFunctions uv, int threadId, IKestrelTrace logger) : base(logger)
         {
             CreateMemory(uv, threadId, IntPtr.Size);
         }

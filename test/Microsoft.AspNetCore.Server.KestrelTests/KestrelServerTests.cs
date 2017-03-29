@@ -7,6 +7,7 @@ using System.Net;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Transport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -18,22 +19,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class KestrelServerTests
     {
-        [Theory]
-        [InlineData(0)]
-        [InlineData(-1337)]
-        public void StartWithNonPositiveThreadCountThrows(int threadCount)
-        {
-            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
-
-            using (var server = CreateServer(new KestrelServerOptions() { ThreadCount = threadCount }, testLogger))
-            {
-                var exception = Assert.Throws<ArgumentOutOfRangeException>(() => StartDummyApplication(server));
-
-                Assert.Equal("threadCount", exception.ParamName);
-                Assert.Equal(1, testLogger.CriticalErrorsLogged);
-            }
-        }
-
         [Fact]
         public void StartWithInvalidAddressThrows()
         {
@@ -119,20 +104,35 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void LoggerCategoryNameIsKestrelServerNamespace()
         {
             var mockLoggerFactory = new Mock<ILoggerFactory>();
-            new KestrelServer(Options.Create<KestrelServerOptions>(null), new LifetimeNotImplemented(), mockLoggerFactory.Object);
+            new KestrelServer(Options.Create<KestrelServerOptions>(null), Mock.Of<ITransportFactory>(), mockLoggerFactory.Object);
             mockLoggerFactory.Verify(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
+        }
+
+        [Fact]
+        public void StartWithNoTrasnportFactoryThrows()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new KestrelServer(Options.Create<KestrelServerOptions>(null), null, Mock.Of<ILoggerFactory>()));
+
+            Assert.Equal("transportFactory", exception.ParamName);
         }
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
-            var lifetime = new LifetimeNotImplemented();
-
-            return new KestrelServer(Options.Create(options), lifetime, new KestrelTestLoggerFactory(testLogger));
+            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new KestrelTestLoggerFactory(testLogger));
         }
 
         private static void StartDummyApplication(IServer server)
         {
             server.Start(new DummyApplication(context => TaskCache.CompletedTask));
+        }
+
+        private class MockTransportFactory : ITransportFactory
+        {
+            public ITransport Create(ListenOptions listenOptions, IConnectionHandler handler)
+            {
+                return Mock.Of<ITransport>();
+            }
         }
     }
 }
