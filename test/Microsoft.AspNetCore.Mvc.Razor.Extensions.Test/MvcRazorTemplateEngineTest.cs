@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         [Fact]
-        public void GetDefaultImports_IncludesUrlTagHelper()
+        public void GetDefaultImports_IncludesDefaultTagHelpers()
         {
             // Arrange
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var importContent = GetContent(imports)
                 .Split(new[] { Environment.NewLine }, StringSplitOptions.None)
                 .Where(line => line.StartsWith("@addTagHelper"));
-            Assert.Contains("@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor", importContent);
+            Assert.Contains("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor", importContent);
             Assert.Contains("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor", importContent);
             Assert.Contains("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor", importContent);
         }
