@@ -24,7 +24,7 @@
 
     </Target>
 
-    <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="$(Clean)">
+    <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="Clean">
         <MakeDir Directories="$(OutputPath)" />
         <MakeDir Directories="$(CoherenceDestinationDir)" />
         <MakeDir Directories="$(CoherenceDestinationDir)vsix" />
@@ -47,18 +47,17 @@
             <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
         </ItemGroup>
 
+        <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
+        <Error Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
+
         <PropertyGroup>
             <UnzipCommand>$(DNXToolsPath)7za.exe x -y -scsUTF-8</UnzipCommand>
         </PropertyGroup>
 
-        <Message Text="%(UnsignedPackages.Identity)" Importance="high" />
-
-        <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul"
-            Condition=" '@(UnsignedPackages)' != '' " />
+        <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul" />
         <Exec Command="$(UnzipCommand) -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity) > nul"
             Condition=" '@(UnsignedSymbolPackages)' != '' " />
-        <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul"
-            Condition=" '@(UnsignedVSIXPath)' != '' " />
+        <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul" />
 
         <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
     </Target>
