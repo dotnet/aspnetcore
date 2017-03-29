@@ -46,7 +46,7 @@ namespace ServerComparison.FunctionalTests
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "NtlmAuthentication.config", nginxConfig: null),
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp1.1",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 
@@ -154,7 +154,7 @@ namespace ServerComparison.FunctionalTests
         }
     }
 }
-#elif NETCOREAPP1_1
+#elif NETCOREAPP2_0
 #else
 #error target frameworks need to be updated
 #endif

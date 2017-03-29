@@ -137,7 +137,7 @@ namespace ServerComparison.FunctionalTests
                         hostCompression ? "http.config" : "NoCompression.config",
                         hostCompression ? "nginx.conf" : "NoCompression.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp1.1",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 

@@ -172,7 +172,7 @@ namespace ServerComparison.FunctionalTests
                     EnvironmentName = "Responses",
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp1.1",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 

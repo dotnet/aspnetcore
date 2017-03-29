@@ -67,7 +67,7 @@ namespace ServerComparison.FunctionalTests
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp1.1",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 
