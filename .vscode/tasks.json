@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "env": {
+      "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "true"
+    }
+  },
+  "tasks": [
+    {
+      "taskName": "Restore: solution",
+      "command": "dotnet",
+      "args": [
+        "restore"
+      ]
+    },
+    {
+      "taskName": "Compile: solution",
+      "isBuildCommand": true,
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceRoot}/KestrelHttpServer.sln"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "taskName": "Compile: CodeGenerator",
+      "command": "dotnet",
+      "args": [
+        "build"
+      ],
+      "options": {
+        "cwd": "${workspaceRoot}/tools/CodeGenerator/"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "taskName": "Run: CodeGenerator",
+      "command": "dotnet",
+      "args": [
+        "run"
+      ],
+      "options": {
+        "cwd": "${workspaceRoot}/tools/CodeGenerator/"
+      }
+    },
+    {
+      "taskName": "Run: Benchmarks",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "-c",
+        "Release"
+      ],
+      "options": {
+        "cwd": "${workspaceRoot}/test/Microsoft.AspNetCore.Server.Kestrel.Performance/"
+      }
+    },
+    {
+      "taskName": "Test: KestrelTests",
+      "isTestCommand": true,
+      "command": "dotnet",
+      "args": [
+        "test",
+        "-f",
+        "netcoreapp1.1"
+      ],
+      "options": {
+        "cwd": "${workspaceRoot}/test/Microsoft.AspNetCore.Server.KestrelTests"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "taskName": "Test: FunctionalTests",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "-f",
+        "netcoreapp1.1"
+      ],
+      "options": {
+        "cwd": "${workspaceRoot}/test/Microsoft.AspNetCore.Server.Kestrel.FunctionalTests"
+      },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

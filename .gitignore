@@ -8,7 +8,6 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
-.vscode/
 *.user
 *.suo
 *.cache
@@ -26,8 +25,6 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
-project.lock.json
-runtimes/
 .build/
 .testPublish/
 launchSettings.json
