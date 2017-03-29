@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             {
                 if (evt.Data != null)
                 {
-                    if (IsDebuggerMessage(evt.Data))
+                    if (_launchWithDebugging && IsDebuggerMessage(evt.Data))
                     {
                         OutputLogger.LogWarning(evt.Data);
                     }
