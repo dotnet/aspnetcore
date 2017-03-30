@@ -35,32 +35,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public IServiceProvider ApplicationServices { get; set; }
 
         /// <summary>
-        /// <para>
-        /// This property is obsolete and will be removed in a future version.
-        /// Use <c>Limits.MaxRequestBufferSize</c> instead.
-        /// </para>
-        /// <para>
-        /// Gets or sets the maximum size of the request buffer.
-        /// </para>
-        /// </summary>
-        /// <remarks>
-        /// When set to null, the size of the request buffer is unlimited.
-        /// Defaults to 1,048,576 bytes (1 MB).
-        /// </remarks>
-        [Obsolete("This property is obsolete and will be removed in a future version. Use Limits.MaxRequestBufferSize instead.")]
-        public long? MaxRequestBufferSize
-        {
-            get
-            {
-                return Limits.MaxRequestBufferSize;
-            }
-            set
-            {
-                Limits.MaxRequestBufferSize = value;
-            }
-        }
-
-        /// <summary>
         /// Provides access to request limit options.
         /// </summary>
         public KestrelServerLimits Limits { get; } = new KestrelServerLimits();
