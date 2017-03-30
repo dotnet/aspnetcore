@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return null;
             }
-            return key.Normalize().ToUpperInvariant();
+            return key.ToUpperInvariant();
         }
     }
 }
