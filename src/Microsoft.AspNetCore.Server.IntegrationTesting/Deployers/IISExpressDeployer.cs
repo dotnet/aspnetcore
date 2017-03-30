@@ -291,6 +291,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 StopTimer();
             }
+
+            // If by this point, the host process is still running (somehow), throw an error.
+            // A test failure is better than a silent hang and unknown failure later on
+            if(!_hostProcess.HasExited)
+            {
+                throw new Exception($"iisexpress Process {_hostProcess.Id} failed to shutdown");
+            }
         }
     }
 }
