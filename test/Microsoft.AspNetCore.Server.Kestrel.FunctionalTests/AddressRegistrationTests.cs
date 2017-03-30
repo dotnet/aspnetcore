@@ -289,9 +289,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 dataset.Add($"http://*:{port}/", _ => new[] { $"http://127.0.0.1:{port}/" });
                 dataset.Add($"http://+:{port}/", _ => new[] { $"http://127.0.0.1:{port}/" });
 
-                // Path after port
-                dataset.Add($"http://127.0.0.1:{port}/base/path", _ => new[] { $"http://127.0.0.1:{port}/base/path" });
-
                 // Dynamic port and non-loopback addresses
                 dataset.Add("http://127.0.0.1:0/", GetTestUrls);
                 dataset.Add($"http://{Dns.GetHostName()}:0/", GetTestUrls);
@@ -410,10 +407,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // Explicit IPv4 and IPv6 on same port
                 dataset.Add($"http://127.0.0.1:{port}/;http://[::1]:{port}/",
                     _ => new[] { $"http://127.0.0.1:{port}/", $"http://[::1]:{port}/" });
-
-                // Path after port
-                dataset.Add($"http://[::1]:{port}/base/path",
-                    _ => new[] { $"http://[::1]:{port}/base/path" });
 
                 // Dynamic port and non-loopback addresses
                 var ipv6Addresses = GetIPAddresses()

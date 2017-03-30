@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
+using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -31,6 +32,42 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
 
                 Assert.Contains("Invalid URL", exception.Message);
+                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+            }
+        }
+
+        [Fact]
+        public void StartWithHttpsAddressThrows()
+        {
+            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
+
+            using (var server = CreateServer(new KestrelServerOptions(), testLogger))
+            {
+                server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
+
+                var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
+
+                Assert.Equal(
+                    $"HTTPS endpoints can only be configured using {nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.Listen)}().",
+                    exception.Message);
+                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+            }
+        }
+
+        [Fact]
+        public void StartWithPathBaseInAddressThrows()
+        {
+            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
+
+            using (var server = CreateServer(new KestrelServerOptions(), testLogger))
+            {
+                server.Features.Get<IServerAddressesFeature>().Addresses.Add("http://127.0.0.1:0/base");
+
+                var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
+
+                Assert.Equal(
+                    $"A path base can only be configured using {nameof(IApplicationBuilder)}.UsePathBase().",
+                    exception.Message);
                 Assert.Equal(1, testLogger.CriticalErrorsLogged);
             }
         }
