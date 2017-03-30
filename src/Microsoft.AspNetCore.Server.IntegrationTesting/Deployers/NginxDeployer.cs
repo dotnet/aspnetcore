@@ -29,16 +29,18 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             using (Logger.BeginScope("Deploy"))
             {
                 _configFile = Path.GetTempFileName();
-                var uri = new Uri(DeploymentParameters.ApplicationBaseUriHint);
+                var uri = string.IsNullOrEmpty(DeploymentParameters.ApplicationBaseUriHint) ?
+                    TestUriHelper.BuildTestUri() :
+                    new Uri(DeploymentParameters.ApplicationBaseUriHint);
 
-                var redirectUri = $"http://localhost:{TestUriHelper.GetNextPort()}";
+                var redirectUri = TestUriHelper.BuildTestUri();
 
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
                     DotnetPublish();
                 }
 
-                var (appUri, exitToken) = await StartSelfHostAsync(new Uri(redirectUri));
+                var (appUri, exitToken) = await StartSelfHostAsync(redirectUri);
 
                 SetupNginx(appUri.ToString(), uri);
 
