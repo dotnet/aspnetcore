@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Testing
             return TaskCache.CompletedTask;
         }
 
-        public override void OnSocketClosed()
+        public override void Close()
         {
             _socketClosedTcs.SetResult(null);
         }

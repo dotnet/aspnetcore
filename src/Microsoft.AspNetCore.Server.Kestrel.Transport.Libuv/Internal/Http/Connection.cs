@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private static readonly Action<UvStreamHandle, int, object> _readCallback =
             (handle, status, state) => ReadCallback(handle, status, state);
-        
+
         private static readonly Func<UvStreamHandle, int, object, LibuvFunctions.uv_buf_t> _allocCallback =
             (handle, suggestedsize, state) => AllocCallback(handle, suggestedsize, state);
 
@@ -80,6 +80,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 // Start socket prior to applying the ConnectionAdapter
                 _socket.ReadStart(_allocCallback, _readCallback, this);
                 _lastTimestamp = Thread.Loop.Now();
+
+                // This *must* happen after socket.ReadStart
+                // The socket output consumer is the only thing that can close the connection. If the 
+                // output pipe is already closed by the time we start then it's fine since, it'll close gracefully afterwards.
+                var ignore = Output.StartWrites();
             }
             catch (Exception e)
             {
@@ -100,8 +105,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         // Called on Libuv thread
-        public virtual void OnSocketClosed()
+        public virtual void Close()
         {
+            _socket.Dispose();
+
+            Log.ConnectionStop(ConnectionId);
+
             KestrelEventSource.Log.ConnectionStop(this);
 
             Input.Complete(new TaskCanceledException("The request was aborted"));

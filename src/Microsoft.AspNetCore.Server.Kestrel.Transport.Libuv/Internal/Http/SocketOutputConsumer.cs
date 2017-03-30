@@ -37,8 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _connectionId = connectionId;
             _log = log;
             _writeReqPool = thread.WriteReqPool;
-
-            var ignore = StartWrites();
         }
 
         public async Task StartWrites()
@@ -56,7 +54,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         var writeResult = await writeReq.WriteAsync(_socket, buffer);
                         _writeReqPool.Return(writeReq);
 
-                        // REVIEW: Locking here, do we need to take the context lock?
                         OnWriteCompleted(writeResult.Status, writeResult.Error);
                     }
 
@@ -80,9 +77,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // We're done reading
             _pipe.Complete();
 
-            _socket.Dispose();
-            _connection.OnSocketClosed();
-            _log.ConnectionStop(_connectionId);
+            // Close the connection
+            _connection.Close();
         }
 
         private void OnWriteCompleted(int writeStatus, Exception writeError)
@@ -124,13 +120,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var shutdownReq = new UvShutdownReq(_log);
             shutdownReq.Init(_thread.Loop);
             shutdownReq.Shutdown(_socket, (req, status, state) =>
-                {
-                    req.Dispose();
-                    _log.ConnectionWroteFin(_connectionId, status);
+            {
+                req.Dispose();
+                _log.ConnectionWroteFin(_connectionId, status);
 
-                    tcs.TrySetResult(null);
-                },
-                this);
+                tcs.TrySetResult(null);
+            },
+            this);
 
             return tcs.Task;
         }

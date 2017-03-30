@@ -527,6 +527,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var socket = new MockSocket(_mockLibuv, _kestrelThread.Loop.ThreadId, new TestKestrelTrace());
             var socketOutput = new SocketOutputProducer(pipe.Writer, frame, "0", trace);
             var consumer = new SocketOutputConsumer(pipe.Reader, _kestrelThread, socket, connection ?? new MockConnection(), "0", trace);
+            var ignore = consumer.StartWrites();
 
             return socketOutput;
         }
