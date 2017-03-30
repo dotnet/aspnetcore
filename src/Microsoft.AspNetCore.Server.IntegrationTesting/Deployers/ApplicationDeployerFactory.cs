@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,36 +15,31 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// Creates a deployer instance based on settings in <see cref="DeploymentParameters"/>.
         /// </summary>
         /// <param name="deploymentParameters"></param>
-        /// <param name="logger"></param>
+        /// <param name="loggerFactory"></param>
         /// <returns></returns>
-        public static IApplicationDeployer Create(DeploymentParameters deploymentParameters, ILogger logger)
+        public static IApplicationDeployer Create(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
         {
             if (deploymentParameters == null)
             {
                 throw new ArgumentNullException(nameof(deploymentParameters));
             }
 
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             switch (deploymentParameters.ServerType)
             {
                 case ServerType.IISExpress:
-                    return new IISExpressDeployer(deploymentParameters, logger);
-#if NET46
+                    return new IISExpressDeployer(deploymentParameters, loggerFactory.CreateLogger<IISExpressDeployer>());
                 case ServerType.IIS:
-                    return new IISDeployer(deploymentParameters, logger);
-#elif NETSTANDARD1_3
-#else
-#error Target framework needs to be updated.
-#endif
+                    throw new NotSupportedException("The IIS deployer is no longer supported");
                 case ServerType.WebListener:
                 case ServerType.Kestrel:
-                    return new SelfHostDeployer(deploymentParameters, logger);
+                    return new SelfHostDeployer(deploymentParameters, loggerFactory.CreateLogger<SelfHostDeployer>());
                 case ServerType.Nginx:
-                    return new NginxDeployer(deploymentParameters, logger);
+                    return new NginxDeployer(deploymentParameters, loggerFactory.CreateLogger<NginxDeployer>());
                 default:
                     throw new NotSupportedException(
                         string.Format("Found no deployers suitable for server type '{0}' with the current runtime.",

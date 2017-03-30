@@ -7,7 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
@@ -73,76 +75,82 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        public override DeploymentResult Deploy()
+        public override async Task<DeploymentResult> DeployAsync()
         {
-            if (_isDisposed)
+            using (Logger.BeginScope("Deploy"))
             {
-                throw new ObjectDisposedException("This instance of deployer has already been disposed.");
+                if (_isDisposed)
+                {
+                    throw new ObjectDisposedException("This instance of deployer has already been disposed.");
+                }
+
+                // Publish the app to a local temp folder on the machine where the test is running
+                DotnetPublish();
+
+                if (_deploymentParameters.ServerType == ServerType.IIS)
+                {
+                    UpdateWebConfig();
+                }
+
+                var folderId = Guid.NewGuid().ToString();
+                _deployedFolderPathInFileShare = Path.Combine(_deploymentParameters.RemoteServerFileSharePath, folderId);
+
+                DirectoryCopy(
+                    _deploymentParameters.PublishedApplicationRootPath,
+                    _deployedFolderPathInFileShare,
+                    copySubDirs: true);
+                Logger.LogInformation($"Copied the locally published folder to the file share path '{_deployedFolderPathInFileShare}'");
+
+                await RunScriptAsync("StartServer");
+
+                return new DeploymentResult
+                {
+                    ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint,
+                    DeploymentParameters = DeploymentParameters
+                };
             }
-
-            // Publish the app to a local temp folder on the machine where the test is running
-            DotnetPublish();
-
-            if (_deploymentParameters.ServerType == ServerType.IIS)
-            {
-                UpdateWebConfig();
-            }
-
-            var folderId = Guid.NewGuid().ToString();
-            _deployedFolderPathInFileShare = Path.Combine(_deploymentParameters.RemoteServerFileSharePath, folderId);
-
-            DirectoryCopy(
-                _deploymentParameters.PublishedApplicationRootPath,
-                _deployedFolderPathInFileShare,
-                copySubDirs: true);
-            Logger.LogInformation($"Copied the locally published folder to the file share path '{_deployedFolderPathInFileShare}'");
-
-            RunScript("StartServer");
-
-            return new DeploymentResult
-            {
-                ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint,
-                DeploymentParameters = DeploymentParameters
-            };
         }
 
         public override void Dispose()
         {
-            if (_isDisposed)
+            using (Logger.BeginScope("Dispose"))
             {
-                return;
-            }
+                if (_isDisposed)
+                {
+                    return;
+                }
 
-            _isDisposed = true;
+                _isDisposed = true;
 
-            try
-            {
-                Logger.LogInformation($"Stopping the application on the server '{_deploymentParameters.ServerName}'");
-                RunScript("StopServer");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(0, "Failed to stop the server.", ex);
-            }
+                try
+                {
+                    Logger.LogInformation($"Stopping the application on the server '{_deploymentParameters.ServerName}'");
+                    RunScriptAsync("StopServer").Wait();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(0, "Failed to stop the server.", ex);
+                }
 
-            try
-            {
-                Logger.LogInformation($"Deleting the deployed folder '{_deployedFolderPathInFileShare}'");
-                Directory.Delete(_deployedFolderPathInFileShare, recursive: true);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(0, $"Failed to delete the deployed folder '{_deployedFolderPathInFileShare}'.", ex);
-            }
+                try
+                {
+                    Logger.LogInformation($"Deleting the deployed folder '{_deployedFolderPathInFileShare}'");
+                    Directory.Delete(_deployedFolderPathInFileShare, recursive: true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(0, $"Failed to delete the deployed folder '{_deployedFolderPathInFileShare}'.", ex);
+                }
 
-            try
-            {
-                Logger.LogInformation($"Deleting the locally published folder '{DeploymentParameters.PublishedApplicationRootPath}'");
-                Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, recursive: true);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(0, $"Failed to delete the locally published folder '{DeploymentParameters.PublishedApplicationRootPath}'.", ex);
+                try
+                {
+                    Logger.LogInformation($"Deleting the locally published folder '{DeploymentParameters.PublishedApplicationRootPath}'");
+                    Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, recursive: true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(0, $"Failed to delete the locally published folder '{DeploymentParameters.PublishedApplicationRootPath}'.", ex);
+                }
             }
         }
 
@@ -176,92 +184,92 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 environmentVariablesSection.Add(environmentVariable);
             }
 
+            if(Logger.IsEnabled(LogLevel.Trace))
+            {
+                Logger.LogTrace($"Config File Content:{Environment.NewLine}===START CONFIG==={Environment.NewLine}{{configContent}}{Environment.NewLine}===END CONFIG===", webConfig.ToString());
+            }
+
             using (var fileStream = File.Open(webConfigFilePath, FileMode.Open))
             {
                 webConfig.Save(fileStream);
             }
         }
 
-        private void RunScript(string serverAction)
+        private async Task RunScriptAsync(string serverAction)
         {
-            var remotePSSessionHelperScript = _scripts.Value.RemotePSSessionHelper;
-
-            string executablePath = null;
-            string executableParameters = null;
-            var applicationName = new DirectoryInfo(DeploymentParameters.ApplicationPath).Name;
-            if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
+            using (Logger.BeginScope($"RunScript:{serverAction}"))
             {
-                executablePath = "dotnet.exe";
-                executableParameters = Path.Combine(_deployedFolderPathInFileShare, applicationName + ".dll");
-            }
-            else
-            {
-                executablePath = Path.Combine(_deployedFolderPathInFileShare, applicationName + ".exe");
-            }
+                var remotePSSessionHelperScript = _scripts.Value.RemotePSSessionHelper;
 
-            var parameterBuilder = new StringBuilder();
-            parameterBuilder.Append($"\"{remotePSSessionHelperScript}\"");
-            parameterBuilder.Append($" -serverName {_deploymentParameters.ServerName}");
-            parameterBuilder.Append($" -accountName {_deploymentParameters.ServerAccountName}");
-            parameterBuilder.Append($" -accountPassword {_deploymentParameters.ServerAccountPassword}");
-            parameterBuilder.Append($" -deployedFolderPath {_deployedFolderPathInFileShare}");
-
-            if (!string.IsNullOrEmpty(_deploymentParameters.DotnetRuntimePath))
-            {
-                parameterBuilder.Append($" -dotnetRuntimePath \"{_deploymentParameters.DotnetRuntimePath}\"");
-            }
-
-            parameterBuilder.Append($" -executablePath \"{executablePath}\"");
-
-            if (!string.IsNullOrEmpty(executableParameters))
-            {
-                parameterBuilder.Append($" -executableParameters \"{executableParameters}\"");
-            }
-
-            parameterBuilder.Append($" -serverType {_deploymentParameters.ServerType}");
-            parameterBuilder.Append($" -serverAction {serverAction}");
-            parameterBuilder.Append($" -applicationBaseUrl {_deploymentParameters.ApplicationBaseUriHint}");
-            var environmentVariables = string.Join("`,", _deploymentParameters.EnvironmentVariables.Select(envVariable => $"{envVariable.Key}={envVariable.Value}"));
-            parameterBuilder.Append($" -environmentVariables \"{environmentVariables}\"");
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "powershell.exe",
-                Arguments = parameterBuilder.ToString(),
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                RedirectStandardInput = true
-            };
-
-            using (var runScriptsOnRemoteServerProcess = new Process() { StartInfo = startInfo })
-            {
-                runScriptsOnRemoteServerProcess.EnableRaisingEvents = true;
-                runScriptsOnRemoteServerProcess.ErrorDataReceived += (sender, dataArgs) =>
+                string executablePath = null;
+                string executableParameters = null;
+                var applicationName = new DirectoryInfo(DeploymentParameters.ApplicationPath).Name;
+                if (DeploymentParameters.ApplicationType == ApplicationType.Portable)
                 {
-                    if (!string.IsNullOrEmpty(dataArgs.Data))
-                    {
-                        Logger.LogWarning($"[{_deploymentParameters.ServerName}]: {dataArgs.Data}");
-                    }
+                    executablePath = "dotnet.exe";
+                    executableParameters = Path.Combine(_deployedFolderPathInFileShare, applicationName + ".dll");
+                }
+                else
+                {
+                    executablePath = Path.Combine(_deployedFolderPathInFileShare, applicationName + ".exe");
+                }
+
+                var parameterBuilder = new StringBuilder();
+                parameterBuilder.Append($"\"{remotePSSessionHelperScript}\"");
+                parameterBuilder.Append($" -serverName {_deploymentParameters.ServerName}");
+                parameterBuilder.Append($" -accountName {_deploymentParameters.ServerAccountName}");
+                parameterBuilder.Append($" -accountPassword {_deploymentParameters.ServerAccountPassword}");
+                parameterBuilder.Append($" -deployedFolderPath {_deployedFolderPathInFileShare}");
+
+                if (!string.IsNullOrEmpty(_deploymentParameters.DotnetRuntimePath))
+                {
+                    parameterBuilder.Append($" -dotnetRuntimePath \"{_deploymentParameters.DotnetRuntimePath}\"");
+                }
+
+                parameterBuilder.Append($" -executablePath \"{executablePath}\"");
+
+                if (!string.IsNullOrEmpty(executableParameters))
+                {
+                    parameterBuilder.Append($" -executableParameters \"{executableParameters}\"");
+                }
+
+                parameterBuilder.Append($" -serverType {_deploymentParameters.ServerType}");
+                parameterBuilder.Append($" -serverAction {serverAction}");
+                parameterBuilder.Append($" -applicationBaseUrl {_deploymentParameters.ApplicationBaseUriHint}");
+                var environmentVariables = string.Join("`,", _deploymentParameters.EnvironmentVariables.Select(envVariable => $"{envVariable.Key}={envVariable.Value}"));
+                parameterBuilder.Append($" -environmentVariables \"{environmentVariables}\"");
+
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = parameterBuilder.ToString(),
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true
                 };
 
-                runScriptsOnRemoteServerProcess.OutputDataReceived += (sender, dataArgs) =>
+                using (var runScriptsOnRemoteServerProcess = new Process() { StartInfo = startInfo })
                 {
-                    if (!string.IsNullOrEmpty(dataArgs.Data))
+                    var processExited = new TaskCompletionSource<object>();
+
+                    runScriptsOnRemoteServerProcess.EnableRaisingEvents = true;
+                    runScriptsOnRemoteServerProcess.Exited += (sender, exitedArgs) =>
                     {
-                        Logger.LogInformation($"[{_deploymentParameters.ServerName}]: {dataArgs.Data}");
+                        Logger.LogInformation($"[{_deploymentParameters.ServerName} {serverAction} stdout]: script complete");
+                        processExited.TrySetResult(null);
+                    };
+
+                    runScriptsOnRemoteServerProcess.StartAndCaptureOutAndErrToLogger(serverAction, Logger);
+
+                    await processExited.Task.OrTimeout(TimeSpan.FromMinutes(1));
+                    runScriptsOnRemoteServerProcess.WaitForExit((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+
+                    if (runScriptsOnRemoteServerProcess.HasExited && runScriptsOnRemoteServerProcess.ExitCode != 0)
+                    {
+                        throw new Exception($"Failed to execute the script on '{_deploymentParameters.ServerName}'.");
                     }
-                };
-
-                runScriptsOnRemoteServerProcess.Start();
-                runScriptsOnRemoteServerProcess.BeginErrorReadLine();
-                runScriptsOnRemoteServerProcess.BeginOutputReadLine();
-                runScriptsOnRemoteServerProcess.WaitForExit((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
-
-                if (runScriptsOnRemoteServerProcess.HasExited && runScriptsOnRemoteServerProcess.ExitCode != 0)
-                {
-                    throw new Exception($"Failed to execute the script on '{_deploymentParameters.ServerName}'.");
                 }
             }
         }

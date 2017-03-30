@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -16,11 +17,12 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void ShutdownTest()
+        public async Task ShutdownTest()
         {
             var logger = new LoggerFactory()
                 .AddConsole()
                 .CreateLogger(nameof(ShutdownTest));
+            logger.LogInformation("Started test: {testName}", nameof(ShutdownTest));
 
             var applicationPath = Path.Combine(TestProjectHelpers.GetSolutionRoot(), "test",
                 "Microsoft.AspNetCore.Hosting.TestSites");
@@ -39,10 +41,10 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
             using (var deployer = new SelfHostDeployer(deploymentParameters, logger))
             {
-                deployer.Deploy();
+                await deployer.DeployAsync();
 
                 // Wait for application to start
-                System.Threading.Thread.Sleep(1000);
+                await Task.Delay(1000);
 
                 string output = string.Empty;
                 deployer.HostProcess.OutputDataReceived += (sender, args) => output += args.Data + '\n';

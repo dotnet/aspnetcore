@@ -1,10 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Logging;
 
@@ -23,105 +24,79 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
         }
 
-        public override DeploymentResult Deploy()
+        public override async Task<DeploymentResult> DeployAsync()
         {
-            _configFile = Path.GetTempFileName();
-            var uri = new Uri(DeploymentParameters.ApplicationBaseUriHint);
-
-            var redirectUri = $"http://localhost:{TestUriHelper.FindFreePort()}";
-
-            if (DeploymentParameters.PublishApplicationBeforeDeployment)
+            using (Logger.BeginScope("Deploy"))
             {
-                DotnetPublish();
-            }
+                _configFile = Path.GetTempFileName();
+                var uri = new Uri(DeploymentParameters.ApplicationBaseUriHint);
 
-            var exitToken = StartSelfHost(new Uri(redirectUri));
+                var redirectUri = $"http://localhost:{TestUriHelper.GetNextPort()}";
 
-            SetupNginx(redirectUri, uri);
-
-            // Wait for App to be loaded since Nginx returns 502 instead of 503 when App isn't loaded
-            // Target actual address to avoid going through Nginx proxy
-            using (var httpClient = new HttpClient())
-            {
-                var response = RetryHelper.RetryRequest(() =>
+                if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
-                    return httpClient.GetAsync(redirectUri);
-                }, Logger, exitToken).Result;
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new InvalidOperationException("Deploy failed");
+                    DotnetPublish();
                 }
-            }
 
-            return new DeploymentResult
-            {
-                ContentRoot = DeploymentParameters.ApplicationPath,
-                DeploymentParameters = DeploymentParameters,
-                ApplicationBaseUri = uri.ToString(),
-                HostShutdownToken = exitToken
-            };
+                var (appUri, exitToken) = await StartSelfHostAsync(new Uri(redirectUri));
+
+                SetupNginx(appUri.ToString(), uri);
+
+                Logger.LogInformation("Application ready at URL: {appUrl}", uri);
+
+                // Wait for App to be loaded since Nginx returns 502 instead of 503 when App isn't loaded
+                // Target actual address to avoid going through Nginx proxy
+                using (var httpClient = new HttpClient())
+                {
+                    var response = await RetryHelper.RetryRequest(() =>
+                    {
+                        return httpClient.GetAsync(redirectUri);
+                    }, Logger, exitToken);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new InvalidOperationException("Deploy failed");
+                    }
+                }
+
+                return new DeploymentResult
+                {
+                    ContentRoot = DeploymentParameters.ApplicationPath,
+                    DeploymentParameters = DeploymentParameters,
+                    ApplicationBaseUri = uri.ToString(),
+                    HostShutdownToken = exitToken
+                };
+            }
         }
 
         private void SetupNginx(string redirectUri, Uri originalUri)
         {
-            // copy nginx.conf template and replace pertinent information
-            DeploymentParameters.ServerConfigTemplateContent = DeploymentParameters.ServerConfigTemplateContent
-                .Replace("[user]", Environment.GetEnvironmentVariable("LOGNAME"))
-                .Replace("[errorlog]", Path.Combine(DeploymentParameters.ApplicationPath, "nginx.error.log"))
-                .Replace("[accesslog]", Path.Combine(DeploymentParameters.ApplicationPath, "nginx.access.log"))
-                .Replace("[listenPort]", originalUri.Port.ToString())
-                .Replace("[redirectUri]", redirectUri)
-                .Replace("[pidFile]", Path.Combine(DeploymentParameters.ApplicationPath, Guid.NewGuid().ToString()));
-            File.WriteAllText(_configFile, DeploymentParameters.ServerConfigTemplateContent);
-
-            var startInfo = new ProcessStartInfo
+            using (Logger.BeginScope("SetupNginx"))
             {
-                FileName = "nginx",
-                Arguments = $"-c {_configFile}",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                // Trying a work around for https://github.com/aspnet/Hosting/issues/140.
-                RedirectStandardInput = true
-            };
-
-            using (var runNginx = new Process() { StartInfo = startInfo })
-            {
-                runNginx.ErrorDataReceived += (sender, dataArgs) =>
+                // copy nginx.conf template and replace pertinent information
+                var pidFile = Path.Combine(DeploymentParameters.ApplicationPath, $"{Guid.NewGuid()}.nginx.pid");
+                var errorLog = Path.Combine(DeploymentParameters.ApplicationPath, "nginx.error.log");
+                var accessLog = Path.Combine(DeploymentParameters.ApplicationPath, "nginx.access.log");
+                DeploymentParameters.ServerConfigTemplateContent = DeploymentParameters.ServerConfigTemplateContent
+                    .Replace("[user]", Environment.GetEnvironmentVariable("LOGNAME"))
+                    .Replace("[errorlog]", errorLog)
+                    .Replace("[accesslog]", accessLog)
+                    .Replace("[listenPort]", originalUri.Port.ToString())
+                    .Replace("[redirectUri]", redirectUri)
+                    .Replace("[pidFile]", pidFile);
+                Logger.LogDebug("Using PID file: {pidFile}", pidFile);
+                Logger.LogDebug("Using Error Log file: {errorLog}", pidFile);
+                Logger.LogDebug("Using Access Log file: {accessLog}", pidFile);
+                if (Logger.IsEnabled(LogLevel.Trace))
                 {
-                    if (!string.IsNullOrEmpty(dataArgs.Data))
-                    {
-                        Logger.LogWarning("nginx: " + dataArgs.Data);
-                    }
-                };
-                runNginx.OutputDataReceived += (sender, dataArgs) =>
-                {
-                    if (!string.IsNullOrEmpty(dataArgs.Data))
-                    {
-                        Logger.LogInformation("nginx: " + dataArgs.Data);
-                    }
-                };
-                runNginx.Start();
-                runNginx.BeginErrorReadLine();
-                runNginx.BeginOutputReadLine();
-                runNginx.WaitForExit(_waitTime);
-                if (runNginx.ExitCode != 0)
-                {
-                    throw new Exception("Failed to start Nginx");
+                    Logger.LogTrace($"Config File Content:{Environment.NewLine}===START CONFIG==={Environment.NewLine}{{configContent}}{Environment.NewLine}===END CONFIG===", DeploymentParameters.ServerConfigTemplateContent);
                 }
-            }
-        }
+                File.WriteAllText(_configFile, DeploymentParameters.ServerConfigTemplateContent);
 
-        public override void Dispose()
-        {
-            if (!string.IsNullOrEmpty(_configFile))
-            {
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = "nginx",
-                    Arguments = $"-s stop -c {_configFile}",
+                    Arguments = $"-c {_configFile}",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardError = true,
@@ -132,14 +107,58 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 using (var runNginx = new Process() { StartInfo = startInfo })
                 {
-                    runNginx.Start();
+                    runNginx.StartAndCaptureOutAndErrToLogger("nginx start", Logger);
                     runNginx.WaitForExit(_waitTime);
+                    if (runNginx.ExitCode != 0)
+                    {
+                        throw new Exception("Failed to start nginx");
+                    }
+
+                    // Read the PID file
+                    if(!File.Exists(pidFile))
+                    {
+                        Logger.LogWarning("Unable to find nginx PID file: {pidFile}", pidFile);
+                    }
+                    else
+                    {
+                        var pid = File.ReadAllText(pidFile);
+                        Logger.LogInformation("nginx process ID {pid} started", pid);
+                    }
+                }
+            }
+        }
+
+        public override void Dispose()
+        {
+            using (Logger.BeginScope("Dispose"))
+            {
+                if (!string.IsNullOrEmpty(_configFile))
+                {
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "nginx",
+                        Arguments = $"-s stop -c {_configFile}",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        // Trying a work around for https://github.com/aspnet/Hosting/issues/140.
+                        RedirectStandardInput = true
+                    };
+
+                    using (var runNginx = new Process() { StartInfo = startInfo })
+                    {
+                        runNginx.StartAndCaptureOutAndErrToLogger("nginx stop", Logger);
+                        runNginx.WaitForExit(_waitTime);
+                        Logger.LogInformation("nginx stop command issued");
+                    }
+
+                    Logger.LogDebug("Deleting config file: {configFile}", _configFile);
+                    File.Delete(_configFile);
                 }
 
-                File.Delete(_configFile);
+                base.Dispose();
             }
-
-            base.Dispose();
         }
     }
 }

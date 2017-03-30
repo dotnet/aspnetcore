@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -34,69 +36,75 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         protected ILogger Logger { get; }
 
-        public abstract DeploymentResult Deploy();
+        public abstract Task<DeploymentResult> DeployAsync();
 
         protected void DotnetPublish(string publishRoot = null)
         {
-            if (string.IsNullOrEmpty(DeploymentParameters.TargetFramework))
+            using (Logger.BeginScope("dotnet-publish"))
             {
-                throw new Exception($"A target framework must be specified in the deployment parameters for applications that require publishing before deployment");
+                if (string.IsNullOrEmpty(DeploymentParameters.TargetFramework))
+                {
+                    throw new Exception($"A target framework must be specified in the deployment parameters for applications that require publishing before deployment");
+                }
+
+                DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+                var parameters = $"publish "
+                    + $" --output \"{DeploymentParameters.PublishedApplicationRootPath}\""
+                    + $" --framework {DeploymentParameters.TargetFramework}"
+                    + $" --configuration {DeploymentParameters.Configuration}"
+                    + $" {DeploymentParameters.AdditionalPublishParameters}";
+
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = DotnetCommandName,
+                    Arguments = parameters,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    WorkingDirectory = DeploymentParameters.ApplicationPath,
+                };
+
+                AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.PublishEnvironmentVariables);
+
+                var hostProcess = new Process() { StartInfo = startInfo };
+
+                Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
+
+                hostProcess.StartAndCaptureOutAndErrToLogger("dotnet-publish", Logger);
+
+                hostProcess.WaitForExit();
+
+                if (hostProcess.ExitCode != 0)
+                {
+                    var message = $"{DotnetCommandName} publish exited with exit code : {hostProcess.ExitCode}";
+                    Logger.LogError(message);
+                    throw new Exception(message);
+                }
+
+                Logger.LogInformation($"{DotnetCommandName} publish finished with exit code : {hostProcess.ExitCode}");
             }
-
-            DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-            var parameters = $"publish "
-                + $" --output \"{DeploymentParameters.PublishedApplicationRootPath}\""
-                + $" --framework {DeploymentParameters.TargetFramework}"
-                + $" --configuration {DeploymentParameters.Configuration}"
-                + $" {DeploymentParameters.AdditionalPublishParameters}";
-
-            Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = DotnetCommandName,
-                Arguments = parameters,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                WorkingDirectory = DeploymentParameters.ApplicationPath,
-            };
-
-            AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.PublishEnvironmentVariables);
-
-            var hostProcess = new Process() { StartInfo = startInfo };
-            hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogWarning(dataArgs.Data ?? string.Empty); };
-            hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data ?? string.Empty); };
-            hostProcess.Start();
-            hostProcess.BeginErrorReadLine();
-            hostProcess.BeginOutputReadLine();
-            hostProcess.WaitForExit();
-
-            if (hostProcess.ExitCode != 0)
-            {
-                throw new Exception($"{DotnetCommandName} publish exited with exit code : {hostProcess.ExitCode}");
-            }
-
-            Logger.LogInformation($"{DotnetCommandName} publish finished with exit code : {hostProcess.ExitCode}");
         }
 
         protected void CleanPublishedOutput()
         {
-            if (DeploymentParameters.PreservePublishedApplicationForDebugging)
+            using (Logger.BeginScope("CleanPublishedOutput"))
             {
-                Logger.LogWarning(
-                    "Skipping deleting the locally published folder as property " +
-                    $"'{nameof(DeploymentParameters.PreservePublishedApplicationForDebugging)}' is set to 'true'.");
-            }
-            else
-            {
-                RetryHelper.RetryOperation(
-                    () => Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true),
-                    e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
-                    retryCount: 3,
-                    retryDelayMilliseconds: 100);
+                if (DeploymentParameters.PreservePublishedApplicationForDebugging)
+                {
+                    Logger.LogWarning(
+                        "Skipping deleting the locally published folder as property " +
+                        $"'{nameof(DeploymentParameters.PreservePublishedApplicationForDebugging)}' is set to 'true'.");
+                }
+                else
+                {
+                    RetryHelper.RetryOperation(
+                        () => Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true),
+                        e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
+                        retryCount: 3,
+                        retryDelayMilliseconds: 100);
+                }
             }
         }
 
@@ -150,16 +158,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         protected void InvokeUserApplicationCleanup()
         {
-            if (DeploymentParameters.UserAdditionalCleanup != null)
+            using (Logger.BeginScope("UserAdditionalCleanup"))
             {
-                // User cleanup.
-                try
+                if (DeploymentParameters.UserAdditionalCleanup != null)
                 {
-                    DeploymentParameters.UserAdditionalCleanup(DeploymentParameters);
-                }
-                catch (Exception exception)
-                {
-                    Logger.LogWarning("User cleanup code failed with exception : {exception}", exception.Message);
+                    // User cleanup.
+                    try
+                    {
+                        DeploymentParameters.UserAdditionalCleanup(DeploymentParameters);
+                    }
+                    catch (Exception exception)
+                    {
+                        Logger.LogWarning("User cleanup code failed with exception : {exception}", exception.Message);
+                    }
                 }
             }
         }

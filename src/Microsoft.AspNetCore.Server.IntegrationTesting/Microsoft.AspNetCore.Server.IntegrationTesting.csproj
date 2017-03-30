@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.</Description>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
