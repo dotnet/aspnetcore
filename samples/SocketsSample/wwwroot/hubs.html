@@ -117,14 +117,16 @@ click('connect', event => {
             isConnected = true;
             addLine('Connected successfully', 'green');
         })
-    .catch(err => {
-        addLine(err, 'red');
-    });
+        .catch(err => {
+            addLine(err, 'red');
+        });
 });
 
 click('disconnect', event => {
-    connection.stop();
-    isConnected = false;
+    connection.stop()
+        .then(() => {
+            isConnected = false;
+        });
 });
 
 click('broadcast', event => {

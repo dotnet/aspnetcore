@@ -3,6 +3,7 @@ import { Connection } from "../Microsoft.AspNetCore.SignalR.Client.TS/Connection
 import { ISignalROptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/ISignalROptions"
 
 describe("Connection", () => {
+
     it("starting connection fails if getting id fails", async (done) => {
         let options: ISignalROptions = {
             httpClient: <IHttpClient>{
@@ -92,5 +93,33 @@ describe("Connection", () => {
             expect(e.message).toBe("Cannot start a connection that is not in the 'Initial' state.");
             done();
         }
+    });
+
+    it("can stop a starting connection", async (done) => {
+        let options: ISignalROptions = {
+            httpClient: <IHttpClient>{
+                get(url: string): Promise<string> {
+                    connection.stop();
+                    return Promise.resolve("");
+                }
+            }
+        } as ISignalROptions;
+
+        var connection = new Connection("http://tempuri.org", undefined, options);
+
+        try {
+            await connection.start();
+            done();
+        }
+        catch (e) {
+            fail();
+            done();
+        }
+    });
+
+    it("can stop a non-started connection", async (done) => {
+        var connection = new Connection("http://tempuri.org");
+        await connection.stop();
+        done();
     });
 });

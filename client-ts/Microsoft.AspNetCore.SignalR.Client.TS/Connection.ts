@@ -18,6 +18,7 @@ export class Connection implements IConnection {
     private connectionId: string;
     private httpClient: IHttpClient;
     private transport: ITransport;
+    private startPromise: Promise<void>;
 
     constructor(url: string, queryString: string = "", options: ISignalROptions = {}) {
         this.url = url;
@@ -28,20 +29,33 @@ export class Connection implements IConnection {
 
     async start(transportType: TransportType = TransportType.WebSockets): Promise<void> {
         if (this.connectionState != ConnectionState.Initial) {
-            throw new Error("Cannot start a connection that is not in the 'Initial' state.");
+            return Promise.reject(new Error("Cannot start a connection that is not in the 'Initial' state."));
         }
 
         this.connectionState = ConnectionState.Connecting;
 
-        this.transport = this.createTransport(transportType);
-        this.transport.onDataReceived = this.onDataReceived;
-        this.transport.onClosed = e => this.stopConnection(e);
+        this.startPromise = this.startInternal(transportType);
+        return this.startPromise;
+    }
 
+    private async startInternal(transportType: TransportType): Promise<void> {
         try {
             this.connectionId = await this.httpClient.get(`${this.url}/negotiate?${this.queryString}`);
+
+            // the user tries to stop the the connection when it is being started
+            if (this.connectionState == ConnectionState.Disconnected) {
+                return;
+            }
+
             this.queryString = `id=${this.connectionId}`;
+
+            this.transport = this.createTransport(transportType);
+            this.transport.onDataReceived = this.onDataReceived;
+            this.transport.onClosed = e => this.stopConnection(true, e);
             await this.transport.connect(this.url, this.queryString);
-            this.connectionState = ConnectionState.Connected;
+            // only change the state if we were connecting to not overwrite
+            // the state if the connection is already marked as Disconnected
+            this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
         }
         catch(e) {
             console.log("Failed to start the connection. " + e)
@@ -65,27 +79,44 @@ export class Connection implements IConnection {
         throw new Error("No valid transports requested.");
     }
 
+    private changeState(from: ConnectionState, to: ConnectionState): Boolean {
+        if (this.connectionState == from) {
+            this.connectionState = to;
+            return true;
+        }
+        return false;
+    }
+
     send(data: any): Promise<void> {
         if (this.connectionState != ConnectionState.Connected) {
             throw new Error("Cannot send data if the connection is not in the 'Connected' State");
         }
+
         return this.transport.send(data);
     }
 
-    stop(): void {
-        if (this.connectionState != ConnectionState.Connected) {
-            throw new Error("Cannot stop the connection if it is not in the 'Connected' State");
-        }
-
-        this.stopConnection();
-    }
-
-    private stopConnection(error?: any) {
-        this.transport.stop();
-        this.transport = null;
+    async stop(): Promise<void> {
+        let previousState = this.connectionState;
         this.connectionState = ConnectionState.Disconnected;
 
-        if (this.onClosed) {
+        try {
+            await this.startPromise;
+        }
+        catch (e) {
+            // this exception is returned to the user as a rejected Promise from the start method
+        }
+        this.stopConnection(/*raiseClosed*/ previousState == ConnectionState.Connected);
+    }
+
+    private stopConnection(raiseClosed: Boolean, error?: any) {
+        if (this.transport) {
+            this.transport.stop();
+            this.transport = null;
+        }
+
+        this.connectionState = ConnectionState.Disconnected;
+
+        if (raiseClosed && this.onClosed) {
             this.onClosed(error);
         }
     }

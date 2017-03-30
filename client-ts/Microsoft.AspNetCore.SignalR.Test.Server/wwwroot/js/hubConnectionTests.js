@@ -44,9 +44,11 @@ describe('hubConnection', () => {
                             expect(e.message).toBe(errorMessage);
                         })
                         .then(() => {
-                            hubConnection.stop();
-                            done();
+                            return hubConnection.stop();
                         })
+                        .then(() => {
+                            done();
+                        });
                 })
                 .catch(() => {
                     fail();
@@ -70,7 +72,9 @@ describe('hubConnection', () => {
                     return Promise.all([client.invoke('InvokeWithString', message), callbackPromise]);
                 })
                 .then(() => {
-                    stop();
+                    return stop();
+                })
+                .then(() => {
                     done();
                 })
                 .catch(e => {
