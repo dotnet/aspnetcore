@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -189,17 +190,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var result = new List<RazorSourceDocument>();
 
-            var importsFileName = Options.ImportsFileName;
-            if (!string.IsNullOrEmpty(importsFileName))
+
+            var importProjectItems = GetImportItems(projectItem);
+            foreach (var importItem in importProjectItems)
             {
-                var importProjectItems = Project.FindHierarchicalItems(projectItem.Path, importsFileName);
-                foreach (var importItem in importProjectItems)
+                if (importItem.Exists)
                 {
-                    if (importItem.Exists)
-                    {
-                        // We want items in descending order. FindHierarchicalItems returns items in ascending order.
-                        result.Insert(0, RazorSourceDocument.ReadFrom(importItem));
-                    }
+                    // We want items in descending order. FindHierarchicalItems returns items in ascending order.
+                    result.Insert(0, RazorSourceDocument.ReadFrom(importItem));
                 }
             }
 
@@ -209,6 +207,42 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the sequence of imports with the name specified by <see cref="RazorTemplateEngineOptions.ImportsFileName" />
+        /// that apply to <paramref name="path"/>.
+        /// </summary>
+        /// <param name="path">The path to look up import items for.</param>
+        /// <returns>A sequence of <see cref="RazorProjectItem"/> instances that apply to the
+        /// <paramref name="path"/>.</returns>
+        public IEnumerable<RazorProjectItem> GetImportItems(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(path));
+            }
+
+            var projectItem = Project.GetItem(path);
+            return GetImportItems(projectItem);
+        }
+
+        /// <summary>
+        /// Gets the sequence of imports with the name specified by <see cref="RazorTemplateEngineOptions.ImportsFileName" />
+        /// that apply to <paramref name="projectItem"/>.
+        /// </summary>
+        /// <param name="projectItem">The <see cref="RazorProjectItem"/> to look up import items for.</param>
+        /// <returns>A sequence of <see cref="RazorProjectItem"/> instances that apply to the
+        /// <paramref name="projectItem"/>.</returns>
+        public virtual IEnumerable<RazorProjectItem> GetImportItems(RazorProjectItem projectItem)
+        {
+            var importsFileName = Options.ImportsFileName;
+            if (!string.IsNullOrEmpty(importsFileName))
+            {
+                return Project.FindHierarchicalItems(projectItem.Path, importsFileName);
+            }
+
+            return Enumerable.Empty<RazorProjectItem>();
         }
     }
 }

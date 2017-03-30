@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -214,6 +215,53 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Assert
             Assert.Collection(codeDocument.Imports,
                 import => Assert.Same(defaultImport, import));
+        }
+
+        [Fact]
+        public void GetImportItems_WithPath_ReturnsAllImportsForFile()
+        {
+            // Arrange
+            var expected = new[] { "/Views/Home/MyImport.cshtml", "/Views/MyImport.cshtml", "/MyImport.cshtml" };
+            var project = new TestRazorProject();
+            var razorEngine = RazorEngine.Create();
+            var templateEngine = new RazorTemplateEngine(razorEngine, project)
+            {
+                Options =
+                {
+                    ImportsFileName = "MyImport.cshtml"
+                }
+            };
+
+            // Act
+            var imports = templateEngine.GetImportItems("/Views/Home/Index.cshtml");
+
+            // Assert
+            var paths = imports.Select(i => i.Path);
+            Assert.Equal(expected, paths);
+        }
+
+        [Fact]
+        public void GetImportItems_WithItem_ReturnsAllImportsForFile()
+        {
+            // Arrange
+            var expected = new[] { "/Views/Home/MyImport.cshtml", "/Views/MyImport.cshtml", "/MyImport.cshtml" };
+            var projectItem = new TestRazorProjectItem("/Views/Home/Index.cshtml");
+            var project = new TestRazorProject(new[] { projectItem });
+            var razorEngine = RazorEngine.Create();
+            var templateEngine = new RazorTemplateEngine(razorEngine, project)
+            {
+                Options =
+                {
+                    ImportsFileName = "MyImport.cshtml"
+                }
+            };
+
+            // Act
+            var imports = templateEngine.GetImportItems(projectItem);
+
+            // Assert
+            var paths = imports.Select(i => i.Path);
+            Assert.Equal(expected, paths);
         }
     }
 }
