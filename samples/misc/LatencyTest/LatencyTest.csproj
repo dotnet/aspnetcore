@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <IsPackable>false</IsPackable>
+    <OutputType>exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
