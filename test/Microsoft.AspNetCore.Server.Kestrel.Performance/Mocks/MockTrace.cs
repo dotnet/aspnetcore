@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class MockTrace : IKestrelTrace
     {
-        public void ApplicationError(string connectionId, Exception ex) { }
+        public void ApplicationError(string connectionId, string requestId, Exception ex) { }
         public IDisposable BeginScope<TState>(TState state) => null;
         public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex) { }
         public void ConnectionDisconnect(string connectionId) { }

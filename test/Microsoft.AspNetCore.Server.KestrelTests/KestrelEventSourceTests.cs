@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 using System.Reflection;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void ExistsWithCorrectId()
         {
-            var esType = typeof(LibuvTransportFactory).GetTypeInfo().Assembly.GetType(
+            var esType = typeof(KestrelServer).GetTypeInfo().Assembly.GetType(
                 "Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.KestrelEventSource",
                 throwOnError: true,
                 ignoreCase: false

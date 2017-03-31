@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -561,6 +562,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     else
                     {
                         Assert.Equal(queryValue, queryTcs.Task.Result["q"]);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AppCanSetTraceIdentifier()
+        {
+            const string knownId = "xyz123";
+            using (var server = new TestServer(async context =>
+            {
+                context.TraceIdentifier = knownId;
+                await context.Response.WriteAsync(context.TraceIdentifier);
+            }))
+            {
+                var requestId = await HttpClientSlim.GetStringAsync($"http://{server.EndPoint}")
+                    .TimeoutAfter(TimeSpan.FromSeconds(10));
+                Assert.Equal(knownId, requestId);
+            }
+        }
+
+        [Fact]
+        public async Task TraceIdentifierIsUnique()
+        {
+            const int IdentifierLength = 13;
+            const int iterations = 10;
+
+            using (var server = new TestServer(async context =>
+            {
+                Assert.Equal(IdentifierLength, Encoding.ASCII.GetByteCount(context.TraceIdentifier));
+                context.Response.ContentLength = IdentifierLength;
+                await context.Response.WriteAsync(context.TraceIdentifier);
+            }))
+            {
+                var usedIds = new ConcurrentBag<string>();
+                var uri = $"http://{server.EndPoint}";
+
+                // requests on separate connections in parallel
+                Parallel.For(0, iterations, async i =>
+                {
+                    var id = await HttpClientSlim.GetStringAsync(uri);
+                    Assert.DoesNotContain(id, usedIds.ToArray());
+                    usedIds.Add(id);
+                });
+
+                // requests on same connection
+                using (var connection = server.CreateConnection())
+                {
+                    var buffer = new char[IdentifierLength];
+                    for (var i = 0; i < iterations; i++)
+                    {
+                        await connection.Send("GET / HTTP/1.1",
+                            "",
+                            "");
+
+                        await connection.Receive($"HTTP/1.1 200 OK",
+                           $"Date: {server.Context.DateHeaderValue}",
+                           $"Content-Length: {IdentifierLength}",
+                           "",
+                           "").TimeoutAfter(TimeSpan.FromSeconds(10));
+
+                        var read = await connection.Reader.ReadAsync(buffer, 0, IdentifierLength);
+                        Assert.Equal(IdentifierLength, read);
+                        var id = new string(buffer, 0, read);
+                        Assert.DoesNotContain(id, usedIds.ToArray());
+                        usedIds.Add(id);
                     }
                 }
             }

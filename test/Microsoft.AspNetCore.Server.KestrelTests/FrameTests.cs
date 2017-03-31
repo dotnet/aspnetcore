@@ -124,6 +124,33 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
+        public void ResetResetsTraceIdentifier()
+        {
+            _frame.TraceIdentifier = "xyz";
+
+            _frame.Reset();
+
+            var nextId = ((IFeatureCollection)_frame).Get<IHttpRequestIdentifierFeature>().TraceIdentifier;
+            Assert.NotEqual("xyz", nextId);
+
+            _frame.Reset();
+            var secondId = ((IFeatureCollection)_frame).Get<IHttpRequestIdentifierFeature>().TraceIdentifier;
+            Assert.NotEqual(nextId, secondId);
+        }
+
+        [Fact]
+        public void TraceIdentifierGeneratesWhenNull()
+        {
+            _frame.TraceIdentifier = null;
+            var id = _frame.TraceIdentifier;
+            Assert.NotNull(id);
+            Assert.Equal(id, _frame.TraceIdentifier);
+
+            _frame.TraceIdentifier = null;
+            Assert.NotEqual(id, _frame.TraceIdentifier);
+        }
+
+        [Fact]
         public async Task ResetResetsHeaderLimits()
         {
             const string headerLine1 = "Header-1: value1\r\n";

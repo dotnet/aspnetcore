@@ -47,6 +47,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             public IPipeWriter Input { get; set; }
             public IPipeReader Output { get; set; }
 
+            public void OnConnectionClosed()
+            {
+                throw new NotImplementedException();
+            }
+
             public Task StopAsync()
             {
                 throw new NotImplementedException();

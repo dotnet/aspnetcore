@@ -73,6 +73,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             }
         }
 
+        public void OnConnectionClosed()
+        {
+            Log.ConnectionStop(ConnectionId);
+            KestrelEventSource.Log.ConnectionStop(this);
+        }
+
         public async Task StopAsync()
         {
             await _frameStartedTcs.Task;

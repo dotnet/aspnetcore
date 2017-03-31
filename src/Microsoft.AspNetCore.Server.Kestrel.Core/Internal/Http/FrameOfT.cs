@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Exceptions;
 using Microsoft.Extensions.Logging;
 
@@ -95,6 +96,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         {
                             try
                             {
+                                KestrelEventSource.Log.RequestStart(this);
+
                                 await _application.ProcessRequestAsync(context).ConfigureAwait(false);
 
                                 if (Volatile.Read(ref _requestAborted) == 0)
@@ -113,6 +116,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             }
                             finally
                             {
+                                KestrelEventSource.Log.RequestStop(this);
+
                                 // Trigger OnStarting if it hasn't been called yet and the app hasn't
                                 // already failed. If an OnStarting callback throws we can go through
                                 // our normal error handling in ProduceEnd.

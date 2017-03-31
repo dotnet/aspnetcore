@@ -71,9 +71,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _connectionContext = ConnectionHandler.OnConnection(this);
                 ConnectionId = _connectionContext.ConnectionId;
 
-                Log.ConnectionStart(ConnectionId);
-                KestrelEventSource.Log.ConnectionStart(this);
-
                 Input = _connectionContext.Input;
                 Output = new SocketOutputConsumer(_connectionContext.Output, Thread, _socket, this, ConnectionId, Log);
 
@@ -82,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _lastTimestamp = Thread.Loop.Now();
 
                 // This *must* happen after socket.ReadStart
-                // The socket output consumer is the only thing that can close the connection. If the 
+                // The socket output consumer is the only thing that can close the connection. If the
                 // output pipe is already closed by the time we start then it's fine since, it'll close gracefully afterwards.
                 var ignore = Output.StartWrites();
             }
@@ -109,9 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             _socket.Dispose();
 
-            Log.ConnectionStop(ConnectionId);
-
-            KestrelEventSource.Log.ConnectionStop(this);
+            _connectionContext.OnConnectionClosed();
 
             Input.Complete(new TaskCanceledException("The request was aborted"));
             _socketClosedTcs.TrySetResult(null);

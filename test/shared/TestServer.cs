@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
+        public IPEndPoint EndPoint => _listenOptions.IPEndPoint;
         public int Port => _listenOptions.IPEndPoint.Port;
         public AddressFamily AddressFamily => _listenOptions.IPEndPoint.AddressFamily;
 

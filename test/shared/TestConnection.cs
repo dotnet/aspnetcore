@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.Testing
             Create(port, addressFamily);
         }
 
+        public StreamReader Reader => _reader;
+
         public void Create(int port, AddressFamily addressFamily)
         {
             _socket = CreateConnectedLoopbackSocket(port, addressFamily);

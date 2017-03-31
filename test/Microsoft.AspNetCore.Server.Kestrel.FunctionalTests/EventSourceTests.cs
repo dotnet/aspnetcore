@@ -27,10 +27,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task EmitsConnectionStartAndStop()
         {
             string connectionId = null;
+            string requestId = null;
             int port;
             using (var server = new TestServer(context =>
             {
                 connectionId = context.Features.Get<IHttpConnectionFeature>().ConnectionId;
+                requestId = context.TraceIdentifier;
                 return Task.CompletedTask;
             }))
             {
@@ -47,16 +49,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             // capture list here as other tests executing in parallel may log events
             Assert.NotNull(connectionId);
+            Assert.NotNull(requestId);
+
             var events = _listener.EventData.Where(e => e != null && GetProperty(e, "connectionId") == connectionId).ToList();
 
-            var start = Assert.Single(events, e => e.EventName == "ConnectionStart");
-            Assert.All(new[] { "connectionId", "scheme", "remoteEndPoint", "localEndPoint" }, p => Assert.Contains(p, start.PayloadNames));
-            Assert.Equal("http", GetProperty(start, "scheme"));
-            Assert.Equal($"127.0.0.1:{port}", GetProperty(start, "localEndPoint"));
-
-            var stop = Assert.Single(events, e => e.EventName == "ConnectionStop");
-            Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, stop.PayloadNames));
-            Assert.Same(KestrelEventSource.Log, stop.EventSource);
+            {
+                var start = Assert.Single(events, e => e.EventName == "ConnectionStart");
+                Assert.All(new[] { "connectionId", "scheme", "remoteEndPoint", "localEndPoint" }, p => Assert.Contains(p, start.PayloadNames));
+                Assert.Equal("http", GetProperty(start, "scheme"));
+                Assert.Equal($"127.0.0.1:{port}", GetProperty(start, "localEndPoint"));
+            }
+            {
+                var stop = Assert.Single(events, e => e.EventName == "ConnectionStop");
+                Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, stop.PayloadNames));
+                Assert.Same(KestrelEventSource.Log, stop.EventSource);
+            }
+            {
+                var requestStart = Assert.Single(events, e => e.EventName == "RequestStart");
+                Assert.All(new[] { "connectionId", "requestId" }, p => Assert.Contains(p, requestStart.PayloadNames));
+                Assert.Equal(requestId, GetProperty(requestStart, "requestId"));
+                Assert.Same(KestrelEventSource.Log, requestStart.EventSource);
+            }
+            {
+                var requestStop = Assert.Single(events, e => e.EventName == "RequestStop");
+                Assert.All(new[] { "connectionId", "requestId" }, p => Assert.Contains(p, requestStop.PayloadNames));
+                Assert.Equal(requestId, GetProperty(requestStop, "requestId"));
+                Assert.Same(KestrelEventSource.Log, requestStop.EventSource);
+            }
         }
 
         private string GetProperty(EventWrittenEventArgs data, string propName)

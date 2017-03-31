@@ -61,8 +61,9 @@ namespace CodeGenerator
                 typeof(IHttpRequestFeature),
                 typeof(IHttpResponseFeature),
                 typeof(IHttpUpgradeFeature),
+                typeof(IHttpRequestIdentifierFeature),
                 typeof(IHttpRequestLifetimeFeature),
-                typeof(IHttpConnectionFeature)
+                typeof(IHttpConnectionFeature),
             };
 
             return $@"// Copyright (c) .NET Foundation. All rights reserved.

@@ -45,8 +45,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         // ConnectionWriteCallback: Reserved: 12
 
-        private static readonly Action<ILogger, string, Exception> _applicationError =
-            LoggerMessage.Define<string>(LogLevel.Error, 13, @"Connection id ""{ConnectionId}"": An unhandled exception was thrown by the application.");
+        private static readonly Action<ILogger, string, string, Exception> _applicationError =
+            LoggerMessage.Define<string, string>(LogLevel.Error, 13, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": An unhandled exception was thrown by the application.");
 
         private static readonly Action<ILogger, string, Exception> _connectionError =
             LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error.");
@@ -142,9 +142,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             // Reserved: Event ID 12
         }
 
-        public virtual void ApplicationError(string connectionId, Exception ex)
+        public virtual void ApplicationError(string connectionId, string traceIdentifier, Exception ex)
         {
-            _applicationError(_logger, connectionId, ex);
+            _applicationError(_logger, connectionId, traceIdentifier, ex);
         }
 
         public virtual void ConnectionError(string connectionId, Exception ex)

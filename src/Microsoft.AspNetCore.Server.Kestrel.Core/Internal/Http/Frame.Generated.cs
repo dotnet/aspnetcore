@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _currentIHttpRequestFeature = this;
             _currentIHttpResponseFeature = this;
             _currentIHttpUpgradeFeature = this;
+            _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestLifetimeFeature = this;
             _currentIHttpConnectionFeature = this;
             
-            _currentIHttpRequestIdentifierFeature = null;
             _currentIServiceProvidersFeature = null;
             _currentIHttpAuthenticationFeature = null;
             _currentIQueryFeature = null;

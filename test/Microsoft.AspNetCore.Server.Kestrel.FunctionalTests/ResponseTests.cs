@@ -635,8 +635,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var logTcs = new TaskCompletionSource<object>();
             var mockTrace = new Mock<IKestrelTrace>();
             mockTrace
-                .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
-                .Callback<string, Exception>((connectionId, ex) =>
+                .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
+                .Callback<string, string, Exception>((connectionId, requestId, ex) =>
                 {
                     logTcs.SetResult(null);
                 });
@@ -675,6 +675,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             mockTrace.Verify(trace =>
                 trace.ApplicationError(
+                    It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.Is<InvalidOperationException>(ex =>
                         ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
@@ -724,7 +725,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             // With the server disposed we know all connections were drained and all messages were logged.
-            mockTrace.Verify(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<InvalidOperationException>()), Times.Never);
+            mockTrace.Verify(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()), Times.Never);
         }
 
         [Fact]

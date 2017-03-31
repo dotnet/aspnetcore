@@ -21,7 +21,24 @@
         "build",
         "${workspaceRoot}/KestrelHttpServer.sln"
       ],
-      "problemMatcher": "$msCompile"
+      "problemMatcher": "$msCompile",
+      // these have to defined here because of https://github.com/Microsoft/vscode/issues/20740
+      "osx": {
+        "options": {
+          "env": {
+            // The location of .NET Framework reference assembiles.
+            // These may not be installed yet if you have not run build.sh.
+            "ReferenceAssemblyRoot": "${env.HOME}/.nuget/packages/netframeworkreferenceassemblies/4.6.1/content"
+          }
+        }
+      },
+      "linux": {
+        "options": {
+          "env": {
+            "ReferenceAssemblyRoot": "${env.HOME}/.nuget/packages/netframeworkreferenceassemblies/4.6.1/content"
+          }
+        }
+      }
     },
     {
       "taskName": "Compile: CodeGenerator",

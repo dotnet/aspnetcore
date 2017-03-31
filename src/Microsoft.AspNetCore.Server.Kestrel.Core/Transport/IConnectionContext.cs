@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport
         IPipeReader Output { get; }
 
         // TODO: Remove these (Use Pipes instead?)
+        void OnConnectionClosed();
         Task StopAsync();
         void Abort(Exception ex);
         void Timeout();

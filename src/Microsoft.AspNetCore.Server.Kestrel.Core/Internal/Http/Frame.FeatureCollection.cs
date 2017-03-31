@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                  IHttpResponseFeature,
                                  IHttpUpgradeFeature,
                                  IHttpConnectionFeature,
-                                 IHttpRequestLifetimeFeature
+                                 IHttpRequestLifetimeFeature,
+                                 IHttpRequestIdentifierFeature
     {
         // NOTE: When feature interfaces are added to or removed from this Frame class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -75,188 +76,89 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         string IHttpRequestFeature.Protocol
         {
-            get
-            {
-                return HttpVersion;
-            }
-
-            set
-            {
-                HttpVersion = value;
-            }
+            get => HttpVersion;
+            set => HttpVersion = value;
         }
 
         string IHttpRequestFeature.Scheme
         {
-            get
-            {
-                return Scheme ?? "http";
-            }
-
-            set
-            {
-                Scheme = value;
-            }
+            get => Scheme ?? "http";
+            set => Scheme = value;
         }
 
         string IHttpRequestFeature.Method
         {
-            get
-            {
-                return Method;
-            }
-
-            set
-            {
-                Method = value;
-            }
+            get => Method;
+            set => Method = value;
         }
 
         string IHttpRequestFeature.PathBase
         {
-            get
-            {
-                return PathBase ?? "";
-            }
-
-            set
-            {
-                PathBase = value;
-            }
+            get => PathBase ?? "";
+            set => PathBase = value;
         }
 
         string IHttpRequestFeature.Path
         {
-            get
-            {
-                return Path;
-            }
-
-            set
-            {
-                Path = value;
-            }
+            get => Path;
+            set => Path = value;
         }
 
         string IHttpRequestFeature.QueryString
         {
-            get
-            {
-                return QueryString;
-            }
-
-            set
-            {
-                QueryString = value;
-            }
+            get => QueryString;
+            set => QueryString = value;
         }
 
         string IHttpRequestFeature.RawTarget
         {
-            get
-            {
-                return RawTarget;
-            }
-            set
-            {
-                RawTarget = value;
-            }
+            get => RawTarget;
+            set => RawTarget = value;
         }
 
         IHeaderDictionary IHttpRequestFeature.Headers
         {
-            get
-            {
-                return RequestHeaders;
-            }
-
-            set
-            {
-                RequestHeaders = value;
-            }
+            get => RequestHeaders;
+            set => RequestHeaders = value;
         }
 
         Stream IHttpRequestFeature.Body
         {
-            get
-            {
-                return RequestBody;
-            }
-
-            set
-            {
-                RequestBody = value;
-            }
+            get => RequestBody;
+            set => RequestBody = value;
         }
 
         int IHttpResponseFeature.StatusCode
         {
-            get
-            {
-                return StatusCode;
-            }
-
-            set
-            {
-                StatusCode = value;
-            }
+            get => StatusCode;
+            set => StatusCode = value;
         }
 
         string IHttpResponseFeature.ReasonPhrase
         {
-            get
-            {
-                return ReasonPhrase;
-            }
-
-            set
-            {
-                ReasonPhrase = value;
-            }
+            get => ReasonPhrase;
+            set => ReasonPhrase = value;
         }
 
         IHeaderDictionary IHttpResponseFeature.Headers
         {
-            get
-            {
-                return ResponseHeaders;
-            }
-
-            set
-            {
-                ResponseHeaders = value;
-            }
+            get => ResponseHeaders;
+            set => ResponseHeaders = value;
         }
 
         Stream IHttpResponseFeature.Body
         {
-            get
-            {
-                return ResponseBody;
-            }
-
-            set
-            {
-                ResponseBody = value;
-            }
+            get => ResponseBody;
+            set => ResponseBody = value;
         }
 
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
-            get
-            {
-                return RequestAborted;
-            }
-            set
-            {
-                RequestAborted = value;
-            }
+            get => RequestAborted;
+            set => RequestAborted = value;
         }
 
-        bool IHttpResponseFeature.HasStarted
-        {
-            get { return HasResponseStarted; }
-        }
+        bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => _upgrade;
 
@@ -266,38 +168,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         IPAddress IHttpConnectionFeature.RemoteIpAddress
         {
-            get { return RemoteIpAddress; }
-            set { RemoteIpAddress = value; }
+            get => RemoteIpAddress;
+            set => RemoteIpAddress = value;
         }
 
         IPAddress IHttpConnectionFeature.LocalIpAddress
         {
-            get { return LocalIpAddress; }
-            set { LocalIpAddress = value; }
+            get => LocalIpAddress;
+            set => LocalIpAddress = value;
         }
 
         int IHttpConnectionFeature.RemotePort
         {
-            get { return RemotePort; }
-            set { RemotePort = value; }
+            get => RemotePort;
+            set => RemotePort = value;
         }
 
         int IHttpConnectionFeature.LocalPort
         {
-            get { return LocalPort; }
-            set { LocalPort = value; }
+            get => LocalPort;
+            set => LocalPort = value;
         }
 
         string IHttpConnectionFeature.ConnectionId
         {
-            get { return ConnectionIdFeature; }
-            set { ConnectionIdFeature = value; }
+            get => ConnectionIdFeature;
+            set => ConnectionIdFeature = value;
+        }
+
+        string IHttpRequestIdentifierFeature.TraceIdentifier
+        {
+            get => TraceIdentifier;
+            set => TraceIdentifier = value;
         }
 
         object IFeatureCollection.this[Type key]
         {
-            get { return FastFeatureGet(key); }
-            set { FastFeatureSet(key, value); }
+            get => FastFeatureGet(key);
+            set => FastFeatureSet(key, value);
         }
 
         TFeature IFeatureCollection.Get<TFeature>()
