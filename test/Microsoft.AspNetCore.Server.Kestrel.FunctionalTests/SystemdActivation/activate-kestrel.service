@@ -5,4 +5,4 @@ Requires=activate-kestrel.socket
 ExecStart=/usr/bin/dotnet SampleApp.dll
 WorkingDirectory=/publish
 NonBlocking=true
-
+Environment="DOTNET_RUNTIME_ID=ubuntu.14.04-x64"

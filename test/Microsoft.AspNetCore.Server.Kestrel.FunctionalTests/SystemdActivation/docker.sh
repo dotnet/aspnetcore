@@ -3,8 +3,8 @@
 set -e
 
 scriptDir=$(dirname "${BASH_SOURCE[0]}")
-~/.dotnet/dotnet publish -f netcoreapp1.1 ./samples/SampleApp/
-cp -R ./samples/SampleApp/bin/Debug/netcoreapp1.1/publish/ $scriptDir
+~/.dotnet/dotnet publish -f netcoreapp2.0 ./samples/SampleApp/
+cp -R ./samples/SampleApp/bin/Debug/netcoreapp2.0/publish/ $scriptDir
 cp -R ~/.dotnet/ $scriptDir
 
 image=$(docker build -qf $scriptDir/Dockerfile $scriptDir)

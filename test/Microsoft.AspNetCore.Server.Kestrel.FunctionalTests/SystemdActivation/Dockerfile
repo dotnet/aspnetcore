@@ -1,7 +1,11 @@
-FROM microsoft/dotnet:1.1-runtime-deps
+FROM microsoft/dotnet-nightly:2.0-runtime-deps
 
 # The "container" environment variable is read by systemd.
 ENV container=docker
+
+# We're copying assets from an ubuntu machine over the container make the RID
+# match
+ENV DOTNET_RUNTIME_ID=ubuntu.14.04-x64
 
 # This is required by systemd and won't work without "dotnet run --privileged".
 VOLUME ["/sys/fs/cgroup"]
