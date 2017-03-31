@@ -70,6 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
         }
 
         /// <summary>

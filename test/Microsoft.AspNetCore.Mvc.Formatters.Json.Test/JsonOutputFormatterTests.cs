@@ -401,6 +401,49 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(expectedOutput, content);
         }
 
+        [Theory]
+        [InlineData("application/json", false, "application/json")]
+        [InlineData("application/json", true, "application/json")]
+        [InlineData("application/xml", false, null)]
+        [InlineData("application/xml", true, null)]
+        [InlineData("application/*", false, "application/json")]
+        [InlineData("text/*", false, "text/json")]
+        [InlineData("custom/*", false, null)]
+        [InlineData("application/json;v=2", false, null)]
+        [InlineData("application/json;v=2", true, null)]
+        [InlineData("application/some.entity+json", false, null)]
+        [InlineData("application/some.entity+json", true, "application/some.entity+json")]
+        [InlineData("application/some.entity+json;v=2", true, "application/some.entity+json;v=2")]
+        [InlineData("application/some.entity+xml", true, null)]
+        public void CanWriteResult_ReturnsExpectedValueForMediaType(
+            string mediaType,
+            bool isServerDefined,
+            string expectedResult)
+        {
+            // Arrange
+            var formatter = new JsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared);
+            
+            var body = new MemoryStream();
+            var actionContext = GetActionContext(MediaTypeHeaderValue.Parse(mediaType), body);
+            var outputFormatterContext = new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                new object())
+            {
+                ContentType = new StringSegment(mediaType),
+                ContentTypeIsServerDefined = isServerDefined,
+            };
+
+            // Act
+            var actualCanWriteValue = formatter.CanWriteResult(outputFormatterContext);
+
+            // Assert
+            var expectedContentType = expectedResult ?? mediaType;
+            Assert.Equal(expectedResult != null, actualCanWriteValue);
+            Assert.Equal(new StringSegment(expectedContentType), outputFormatterContext.ContentType);
+        }
+
         private static Encoding CreateOrGetSupportedEncoding(
             JsonOutputFormatter formatter,
             string encodingAsString,

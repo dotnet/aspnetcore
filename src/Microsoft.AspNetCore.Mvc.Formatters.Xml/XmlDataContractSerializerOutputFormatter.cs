@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationXml);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextXml);
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyXmlSyntax);
 
             WriterSettings = writerSettings;
 

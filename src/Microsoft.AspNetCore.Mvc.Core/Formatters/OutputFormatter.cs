@@ -49,24 +49,35 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 return null;
             }
+            
+            List<string> mediaTypes = null;
 
-            if (contentType == null)
+            var parsedContentType = contentType != null ? new MediaType(contentType) : default(MediaType);
+
+            foreach (var mediaType in SupportedMediaTypes)
             {
-                // If contentType is null, then any type we support is valid.
-                return SupportedMediaTypes;
-            }
-            else
-            {
-                List<string> mediaTypes = null;
-
-                var parsedContentType = new MediaType(contentType);
-
-                // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
-                // requested and formatter supports "text/plain". Treat contentType like it came from an Accept header.
-                foreach (var mediaType in SupportedMediaTypes)
+                var parsedMediaType = new MediaType(mediaType);
+                if (parsedMediaType.HasWildcard)
                 {
-                    var parsedMediaType = new MediaType(mediaType);
-                    if (parsedMediaType.IsSubsetOf(parsedContentType))
+                    // For supported media types that are wildcard patterns, confirm that the requested
+                    // media type satisfies the wildcard pattern (e.g., if "text/entity+json;v=2" requested
+                    // and formatter supports "text/*+json").
+                    // Treat contentType like it came from a [Produces] attribute.
+                    if (contentType != null && parsedContentType.IsSubsetOf(parsedMediaType))
+                    {
+                        if (mediaTypes == null)
+                        {
+                            mediaTypes = new List<string>();
+                        }
+
+                        mediaTypes.Add(contentType);
+                    }
+                }
+                else
+                {
+                    // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
+                    // requested and formatter supports "text/plain". Treat contentType like it came from an Accept header.
+                    if (contentType == null || parsedMediaType.IsSubsetOf(parsedContentType))
                     {
                         if (mediaTypes == null)
                         {
@@ -76,9 +87,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         mediaTypes.Add(mediaType);
                     }
                 }
-
-                return mediaTypes;
             }
+
+            return mediaTypes;
         }
 
         /// <inheritdoc />
@@ -112,17 +123,36 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             else
             {
-                // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
-                // requested and formatter supports "text/plain". contentType is typically what we got in an Accept
-                // header.
+                // Confirm this formatter 
                 var parsedContentType = new MediaType(context.ContentType);
                 for (var i = 0; i < SupportedMediaTypes.Count; i++)
                 {
                     var supportedMediaType = new MediaType(SupportedMediaTypes[i]);
-                    if (supportedMediaType.IsSubsetOf(parsedContentType))
+                    if (supportedMediaType.HasWildcard)
                     {
-                        context.ContentType = new StringSegment(SupportedMediaTypes[i]);
-                        return true;
+                        // For supported media types that are wildcard patterns, confirm that the requested
+                        // media type satisfies the wildcard pattern (e.g., if "text/entity+json;v=2" requested
+                        // and formatter supports "text/*+json").
+                        // We only do this when comparing against server-defined content types (e.g., those
+                        // from [Produces] or Response.ContentType), otherwise we'd potentially be reflecting
+                        // back arbitrary Accept header values.
+                        if (context.ContentTypeIsServerDefined
+                            && parsedContentType.IsSubsetOf(supportedMediaType))
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        // For supported media types that are not wildcard patterns, confirm that this formatter
+                        // supports a more specific media type than requested e.g. OK if "text/*" requested and
+                        // formatter supports "text/plain".
+                        // contentType is typically what we got in an Accept header.
+                        if (supportedMediaType.IsSubsetOf(parsedContentType))
+                        {
+                            context.ContentType = new StringSegment(SupportedMediaTypes[i]);
+                            return true;
+                        }
                     }
                 }
             }

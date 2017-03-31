@@ -22,7 +22,14 @@ namespace ApiExplorerWebSite
         }
 
         [HttpGet]
-        [Produces("application/hal+json", "text/hal+json")]
+        [Produces("application/hal+custom", "application/hal+json")]
+        public Product WildcardMatch()
+        {
+            return null;
+        }
+
+        [HttpGet]
+        [Produces("application/custom", "text/hal+bson")]
         public Product NoMatch()
         {
             return null;

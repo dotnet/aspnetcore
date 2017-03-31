@@ -123,5 +123,47 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedString, product.SampleString);
         }
+
+        [Fact]
+        public async Task JsonSyntaxSuffix_SelectsActionConsumingJson()
+        {
+            // Arrange
+            var input = "{SampleString:\"some input\"}";
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/ConsumesAttribute_MediaTypeSuffix/CreateProduct");
+            request.Content = new StringContent(input, Encoding.UTF8, "application/vnd.example+json");
+
+            // Act
+            var response = await Client.SendAsync(request);
+            var product = JsonConvert.DeserializeObject<Product>(await response.Content.ReadAsStringAsync());
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Read from JSON: some input", product.SampleString);
+        }
+
+        [ConditionalFact]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task XmlSyntaxSuffix_SelectsActionConsumingXml()
+        {
+            // Arrange
+            var input = "<Product xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                "xmlns=\"http://schemas.datacontract.org/2004/07/BasicWebSite.Models\">" +
+                "<SampleString>some input</SampleString></Product>";
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/ConsumesAttribute_MediaTypeSuffix/CreateProduct");
+            request.Content = new StringContent(input, Encoding.UTF8, "application/vnd.example+xml");
+
+            // Act
+            var response = await Client.SendAsync(request);
+            var product = JsonConvert.DeserializeObject<Product>(await response.Content.ReadAsStringAsync());
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Read from XML: some input", product.SampleString);
+        }
     }
 }

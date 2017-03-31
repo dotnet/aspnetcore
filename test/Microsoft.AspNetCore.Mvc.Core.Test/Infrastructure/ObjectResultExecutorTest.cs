@@ -343,6 +343,100 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void SelectFormatter_WithAcceptHeaderOnly_SetsContentTypeIsServerDefinedToFalse()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+
+            var formatters = new List<IOutputFormatter>
+            {
+                new ServerContentTypeOnlyFormatter()
+            };
+
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null);
+
+            context.HttpContext.Request.Headers[HeaderNames.Accept] = "text/custom";
+
+            // Act
+            var formatter = executor.SelectFormatter(
+                context,
+                new MediaTypeCollection { },
+                formatters);
+
+            // Assert
+            Assert.Null(formatter);
+        }
+
+        [Fact]
+        public void SelectFormatter_WithAcceptHeaderAndContentTypes_SetsContentTypeIsServerDefinedWhenExpected()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+
+            var formatters = new List<IOutputFormatter>
+            {
+                new ServerContentTypeOnlyFormatter()
+            };
+            
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null);
+
+            context.HttpContext.Request.Headers[HeaderNames.Accept] = "text/custom, text/custom2";
+
+            var serverDefinedContentTypes = new MediaTypeCollection();
+            serverDefinedContentTypes.Add("text/other");
+            serverDefinedContentTypes.Add("text/custom2");
+
+            // Act
+            var formatter = executor.SelectFormatter(
+                context,
+                serverDefinedContentTypes,
+                formatters);
+
+            // Assert
+            Assert.Same(formatters[0], formatter);
+            Assert.Equal(new StringSegment("text/custom2"), context.ContentType);
+        }
+
+        [Fact]
+        public void SelectFormatter_WithContentTypesOnly_SetsContentTypeIsServerDefinedToTrue()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+
+            var formatters = new List<IOutputFormatter>
+            {
+                new ServerContentTypeOnlyFormatter()
+            };
+
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null);
+
+            var serverDefinedContentTypes = new MediaTypeCollection();
+            serverDefinedContentTypes.Add("text/custom");
+
+            // Act
+            var formatter = executor.SelectFormatter(
+                context,
+                serverDefinedContentTypes,
+                formatters);
+
+            // Assert
+            Assert.Same(formatters[0], formatter);
+            Assert.Equal(new StringSegment("text/custom"), context.ContentType);
+        }
+
+        [Fact]
         public async Task ExecuteAsync_NoFormatterFound_Returns406()
         {
             // Arrange
@@ -419,6 +513,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [InlineData(new[] { "*/*" }, "*/*")]
         [InlineData(new[] { "application/xml", "*/*", "application/json" }, "*/*")]
         [InlineData(new[] { "*/*", "application/json" }, "*/*")]
+        [InlineData(new[] { "application/json", "application/*+json" }, "application/*+json")]
+        [InlineData(new[] { "application/entiy+json;*", "application/json" }, "application/entiy+json;*")]
         public async Task ExecuteAsync_MatchAllContentType_Throws(string[] contentTypes, string invalidContentType)
         {
             // Arrange
@@ -654,6 +750,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 SelectedOutputFormatter = base.SelectFormatter(formatterContext, contentTypes, formatters);
                 return SelectedOutputFormatter;
+            }
+        }
+
+        private class ServerContentTypeOnlyFormatter : OutputFormatter
+        {
+            public override bool CanWriteResult(OutputFormatterCanWriteContext context)
+            {
+                // This test formatter matches if and only if the content type is specified
+                // as "server defined". This lets tests identify what value the ObjectResultExecutor
+                // passed for that flag.
+                return context.ContentTypeIsServerDefined;
+            }
+
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+            {
+                return Task.FromResult(0);
             }
         }
     }

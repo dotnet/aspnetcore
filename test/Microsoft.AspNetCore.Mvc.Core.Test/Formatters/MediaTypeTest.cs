@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("application/json")]
         [InlineData("application /json")]
         [InlineData(" application / json ")]
-        public void Constructor_CanParseParameterlessMediaTypes(string mediaType)
+        public void Constructor_CanParseParameterlessSuffixlessMediaTypes(string mediaType)
         {
             // Arrange & Act
             var result = new MediaType(mediaType, 0, mediaType.Length);
@@ -24,23 +25,54 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(new StringSegment("json"), result.SubType);
         }
 
+        public static IEnumerable<string[]> MediaTypesWithSuffixes
+        {
+            get
+            {
+                return new List<string[]>
+                {
+                    // See https://tools.ietf.org/html/rfc6838#section-4.2 for allowed names spec
+                    new[] { "application/json", "json", null },
+                    new[] { "application/json+", "json", "" },
+                    new[] { "application/+json", "", "json" },
+                    new[] { "application/entitytype+json", "entitytype", "json" },
+                    new[] { "  application /  vnd.com-pany.some+entity!.v2+js.#$&^_n  ; q=\"0.3+1\"", "vnd.com-pany.some+entity!.v2", "js.#$&^_n" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof (MediaTypesWithSuffixes))]
+        public void Constructor_CanParseSuffixedMediaTypes(
+            string mediaType,
+            string expectedSubTypeWithoutSuffix,
+            string expectedSubtypeSuffix)
+        {
+            // Arrange & Act
+            var result = new MediaType(mediaType);
+
+            // Assert
+            Assert.Equal(new StringSegment(expectedSubTypeWithoutSuffix), result.SubTypeWithoutSuffix);
+            Assert.Equal(new StringSegment(expectedSubtypeSuffix), result.SubTypeSuffix);
+        }
+
         public static TheoryData<string> MediaTypesWithParameters
         {
             get
             {
                 return new TheoryData<string>
                 {
-                    "application/json;format=pretty;charset=utf-8;q=0.8",
-                    "application/json;format=pretty;charset=\"utf-8\";q=0.8",
-                    "application/json;format=pretty;charset=utf-8; q=0.8 ",
-                    "application/json;format=pretty;charset=utf-8 ; q=0.8 ",
-                    "application/json;format=pretty; charset=utf-8 ; q=0.8 ",
-                    "application/json;format=pretty ; charset=utf-8 ; q=0.8 ",
-                    "application/json; format=pretty ; charset=utf-8 ; q=0.8 ",
-                    "application/json; format=pretty ; charset=utf-8 ; q=  0.8 ",
-                    "application/json; format=pretty ; charset=utf-8 ; q  =  0.8 ",
-                    " application /  json; format =  pretty ; charset = utf-8 ; q  =  0.8 ",
-                    " application /  json; format =  \"pretty\" ; charset = \"utf-8\" ; q  =  \"0.8\" ",
+                    "application/json+bson;format=pretty;charset=utf-8;q=0.8",
+                    "application/json+bson;format=pretty;charset=\"utf-8\";q=0.8",
+                    "application/json+bson;format=pretty;charset=utf-8; q=0.8 ",
+                    "application/json+bson;format=pretty;charset=utf-8 ; q=0.8 ",
+                    "application/json+bson;format=pretty; charset=utf-8 ; q=0.8 ",
+                    "application/json+bson;format=pretty ; charset=utf-8 ; q=0.8 ",
+                    "application/json+bson; format=pretty ; charset=utf-8 ; q=0.8 ",
+                    "application/json+bson; format=pretty ; charset=utf-8 ; q=  0.8 ",
+                    "application/json+bson; format=pretty ; charset=utf-8 ; q  =  0.8 ",
+                    " application /  json+bson; format =  pretty ; charset = utf-8 ; q  =  0.8 ",
+                    " application /  json+bson; format =  \"pretty\" ; charset = \"utf-8\" ; q  =  \"0.8\" ",
                 };
             }
         }
@@ -54,7 +86,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.Equal(new StringSegment("application"), result.Type);
-            Assert.Equal(new StringSegment("json"), result.SubType);
+            Assert.Equal(new StringSegment("json+bson"), result.SubType);
+            Assert.Equal(new StringSegment("json"), result.SubTypeWithoutSuffix);
+            Assert.Equal(new StringSegment("bson"), result.SubTypeSuffix);
             Assert.Equal(new StringSegment("pretty"), result.GetParameter("format"));
             Assert.Equal(new StringSegment("0.8"), result.GetParameter("q"));
             Assert.Equal(new StringSegment("utf-8"), result.GetParameter("charset"));
@@ -171,6 +205,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("application/json", "application/json;format=indent;charset=utf-8")]
         [InlineData("application/json;format=indent;charset=utf-8", "application/json;format=indent;charset=utf-8")]
         [InlineData("application/json;charset=utf-8;format=indent", "application/json;format=indent;charset=utf-8")]
+        [InlineData("application/*", "application/json")]
+        [InlineData("application/*", "application/entitytype+json;v=2")]
+        [InlineData("application/*;v=2", "application/entitytype+json;v=2")]
+        [InlineData("application/json;*", "application/json;v=2")]
+        [InlineData("application/json;v=2;*", "application/json;v=2;charset=utf-8")]
+        [InlineData("*/*", "application/json")]
+        [InlineData("application/entity+json", "application/entity+json")]
+        [InlineData("application/*+json", "application/entity+json")]
+        [InlineData("application/*", "application/entity+json")]
         public void IsSubsetOf_ReturnsTrueWhenExpected(string set, string subset)
         {
             // Arrange
@@ -188,6 +231,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("application/json;charset=utf-8", "application/json")]
         [InlineData("application/json;format=indent;charset=utf-8", "application/json")]
         [InlineData("application/json;format=indent;charset=utf-8", "application/json;charset=utf-8")]
+        [InlineData("application/*", "text/json")]
+        [InlineData("application/*;v=2", "application/json")]
+        [InlineData("application/*;v=2", "application/json;v=1")]
+        [InlineData("application/json;v=2;*", "application/json;v=1")]
+        [InlineData("application/entity+json", "application/entity+txt")]
+        [InlineData("application/entity+json", "application/entity.v2+json")]
+        [InlineData("application/*+json", "application/entity+txt")]
+        [InlineData("application/entity+*", "application/entity.v2+json")]
+        [InlineData("application/*+*", "application/json")]
+        [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
         public void IsSubsetOf_ReturnsFalseWhenExpected(string set, string subset)
         {
             // Arrange
@@ -255,6 +309,48 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("*/*", true)]
+        [InlineData("text/*", true)]
+        [InlineData("text/*+suffix", true)]
+        [InlineData("text/*+", true)]
+        [InlineData("text/*+*", true)]
+        [InlineData("text/json+suffix", false)]
+        [InlineData("*/json+*", false)]
+        public void MatchesAllSubTypesWithoutSuffix_ReturnsExpectedResult(string value, bool expectedReturnValue)
+        {
+            // Arrange
+            var mediaType = new MediaType(value);
+
+            // Act
+            var result = mediaType.MatchesAllSubTypesWithoutSuffix;
+
+            // Assert
+            Assert.Equal(expectedReturnValue, result);
+        }
+
+        [Theory]
+        [InlineData("*/*", true)]
+        [InlineData("text/*", true)]
+        [InlineData("text/entity+*", false)] // We don't support wildcards on suffixes
+        [InlineData("text/*+json", true)]
+        [InlineData("text/entity+json;*", true)]
+        [InlineData("text/entity+json;v=3;*", true)]
+        [InlineData("text/entity+json;v=3;q=0.8", false)]
+        [InlineData("text/json", false)]
+        [InlineData("text/json;param=*", false)] // * is the literal value of the param
+        public void HasWildcard_ReturnsTrueWhenExpected(string value, bool expectedReturnValue)
+        {
+            // Arrange
+            var mediaType = new MediaType(value);
+
+            // Act
+            var result = mediaType.HasWildcard;
+
+            // Assert
+            Assert.Equal(expectedReturnValue, result);
         }
 
         [Theory]

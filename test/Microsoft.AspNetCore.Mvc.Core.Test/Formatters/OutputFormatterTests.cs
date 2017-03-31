@@ -75,13 +75,47 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.False(result);
         }
 
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void CanWriteResult_MatchesWildcardsOnlyWhenContentTypeProvidedByServer(
+            bool contentTypeProvidedByServer, bool shouldMatchWildcards)
+        {
+            // Arrange
+            var formatter = new TypeSpecificFormatter();
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+xml"));
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+json"));
+            formatter.SupportedTypes.Add(typeof(string));
+
+            var requestedContentType = "application/vnd.test.entity+json;v=2";
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                "Hello, world!")
+            {
+                ContentType = new StringSegment(requestedContentType),
+                ContentTypeIsServerDefined = contentTypeProvidedByServer,
+            };
+
+            // Act
+            var result = formatter.CanWriteResult(context);
+
+            // Assert
+            Assert.Equal(shouldMatchWildcards, result);
+            Assert.Equal(requestedContentType, context.ContentType.ToString());
+        }
+
         [Fact]
-        public void GetSupportedContentTypes_ReturnsAllContentTypes_WithContentTypeNull()
+        public void GetSupportedContentTypes_ReturnsAllNonWildcardContentTypes_WithContentTypeNull()
         {
             // Arrange
             var formatter = new TestOutputFormatter();
             formatter.SupportedMediaTypes.Clear();
             formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("*/*"));
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/*"));
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain;*"));
             formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
 
             // Act
@@ -96,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public void GetSupportedContentTypes_ReturnsMatchingContentTypes_WithContentType()
+        public void GetSupportedContentTypes_ReturnsMoreSpecificMatchingContentTypes_WithContentType()
         {
             // Arrange
             var formatter = new TestOutputFormatter();
@@ -116,18 +150,39 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public void GetSupportedContentTypes_ReturnsMatchingContentTypes_NoMatches()
+        public void GetSupportedContentTypes_ReturnsMatchingWildcardContentTypes_WithContentType()
         {
             // Arrange
             var formatter = new TestOutputFormatter();
 
             formatter.SupportedMediaTypes.Clear();
             formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+json"));
             formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
 
             // Act
             var contentTypes = formatter.GetSupportedContentTypes(
-                "application/xml",
+                "application/vnd.test+json;v=2",
+                typeof(int));
+
+            // Assert
+            var contentType = Assert.Single(contentTypes);
+            Assert.Equal("application/vnd.test+json;v=2", contentType.ToString());
+        }
+
+        [Fact]
+        public void GetSupportedContentTypes_ReturnsMatchingContentTypes_NoMatches()
+        {
+            // Arrange
+            var formatter = new TestOutputFormatter();
+
+            formatter.SupportedMediaTypes.Clear();
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+xml"));
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+
+            // Act
+            var contentTypes = formatter.GetSupportedContentTypes(
+                "application/vnd.test+bson",
                 typeof(int));
 
             // Assert

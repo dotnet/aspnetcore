@@ -106,8 +106,8 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             Assert.Collection(options.InputFormatters,
-                formatter => Assert.IsType<JsonInputFormatter>(formatter),
-                formatter => Assert.IsType<JsonPatchInputFormatter>(formatter));
+                formatter => Assert.IsType<JsonPatchInputFormatter>(formatter),
+                formatter => Assert.IsType<JsonInputFormatter>(formatter));
         }
 
         [Fact]

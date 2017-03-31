@@ -126,8 +126,7 @@ namespace Microsoft.AspNetCore.Mvc
             foreach (var arg in completeArgs)
             {
                 var contentType = new MediaType(arg);
-                if (contentType.MatchesAllTypes ||
-                    contentType.MatchesAllSubTypes)
+                if (contentType.HasWildcard)
                 {
                     throw new InvalidOperationException(
                         Resources.FormatMatchAllContentTypeIsNotAllowed(arg));

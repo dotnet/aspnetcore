@@ -57,6 +57,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public virtual StringSegment ContentType { get; set; }
 
         /// <summary>
+        /// Gets or sets a value to indicate whether the content type was specified by server-side code.
+        /// This allows <see cref="IOutputFormatter.CanWriteResult(OutputFormatterCanWriteContext)"/> to
+        /// implement stricter filtering on content types that, for example, are being considered purely
+        /// of an incoming Accept header.
+        /// </summary>
+        public virtual bool ContentTypeIsServerDefined { get; set; }
+
+        /// <summary>
         /// Gets or sets the object to write to the response.
         /// </summary>
         public virtual object Object { get; protected set; }

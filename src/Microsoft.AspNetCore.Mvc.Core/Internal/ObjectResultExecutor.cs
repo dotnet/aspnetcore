@@ -302,6 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             foreach (var formatter in formatters)
             {
                 formatterContext.ContentType = new StringSegment();
+                formatterContext.ContentTypeIsServerDefined = false;
                 if (formatter.CanWriteResult(formatterContext))
                 {
                     return formatter;
@@ -349,6 +350,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 var mediaType = sortedAcceptHeaders[i];
                 formatterContext.ContentType = mediaType.MediaType;
+                formatterContext.ContentTypeIsServerDefined = false;
                 for (var j = 0; j < formatters.Count; j++)
                 {
                     var formatter = formatters[j];
@@ -401,6 +403,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 foreach (var contentType in acceptableContentTypes)
                 {
                     formatterContext.ContentType = new StringSegment(contentType);
+                    formatterContext.ContentTypeIsServerDefined = true;
                     if (formatter.CanWriteResult(formatterContext))
                     {
                         return formatter;
@@ -446,6 +449,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         {
                             var formatter = formatters[k];
                             formatterContext.ContentType = new StringSegment(possibleOutputContentTypes[j]);
+                            formatterContext.ContentTypeIsServerDefined = true;
                             if (formatter.CanWriteResult(formatterContext))
                             {
                                 return formatter;
@@ -469,8 +473,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 var contentType = contentTypes[i];
                 var parsedContentType = new MediaType(contentType);
-                if (parsedContentType.MatchesAllTypes ||
-                    parsedContentType.MatchesAllSubTypes)
+                if (parsedContentType.HasWildcard)
                 {
                     var message = Resources.FormatObjectResult_MatchAllContentType(
                         contentType,

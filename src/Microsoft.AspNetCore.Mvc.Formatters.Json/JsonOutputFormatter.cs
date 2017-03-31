@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SupportedEncodings.Add(Encoding.Unicode);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
         }
 
         /// <summary>

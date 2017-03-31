@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [MemberData(nameof(TypesForCanWriteResult))]
-        public void CanWriteResult_ReturnsExpectedOutput(object input, Type declaredType, bool expectedOutput)
+        public void CanWriteResult_ReturnsExpectedValueForObjectType(object input, Type declaredType, bool expectedOutput)
         {
             // Arrange
             var formatter = new XmlDataContractSerializerOutputFormatter();
@@ -389,6 +389,42 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             // Assert
             Assert.Equal(expectedOutput, result);
+        }
+
+        [ConditionalTheory]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [InlineData("application/xml", false, "application/xml")]
+        [InlineData("application/xml", true, "application/xml")]
+        [InlineData("application/other", false, null)]
+        [InlineData("application/other", true, null)]
+        [InlineData("application/*", false, "application/xml")]
+        [InlineData("text/*", false, "text/xml")]
+        [InlineData("custom/*", false, null)]
+        [InlineData("application/xml;v=2", false, null)]
+        [InlineData("application/xml;v=2", true, null)]
+        [InlineData("application/some.entity+xml", false, null)]
+        [InlineData("application/some.entity+xml", true, "application/some.entity+xml")]
+        [InlineData("application/some.entity+xml;v=2", true, "application/some.entity+xml;v=2")]
+        [InlineData("application/some.entity+other", true, null)]
+        public void CanWriteResult_ReturnsExpectedValueForMediaType(
+            string mediaType,
+            bool isServerDefined,
+            string expectedResult)
+        {
+            // Arrange
+            var formatter = new XmlDataContractSerializerOutputFormatter();
+            var outputFormatterContext = GetOutputFormatterContext(new object(), typeof(object));
+            outputFormatterContext.ContentType = new StringSegment(mediaType);
+            outputFormatterContext.ContentTypeIsServerDefined = isServerDefined;
+
+            // Act
+            var actualCanWriteValue = formatter.CanWriteResult(outputFormatterContext);
+
+            // Assert
+            var expectedContentType = expectedResult ?? mediaType;
+            Assert.Equal(expectedResult != null, actualCanWriteValue);
+            Assert.Equal(new StringSegment(expectedContentType), outputFormatterContext.ContentType);
         }
 
         public static IEnumerable<object[]> TypesForGetSupportedContentTypes

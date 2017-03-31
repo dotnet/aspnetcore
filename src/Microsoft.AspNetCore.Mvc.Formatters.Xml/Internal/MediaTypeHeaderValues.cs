@@ -12,5 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 
         public static readonly MediaTypeHeaderValue TextXml
             = MediaTypeHeaderValue.Parse("text/xml").CopyAsReadOnly();
+
+        public static readonly MediaTypeHeaderValue ApplicationAnyXmlSyntax
+            = MediaTypeHeaderValue.Parse("application/*+xml").CopyAsReadOnly();
     }
 }

@@ -818,6 +818,25 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ApiExplorer_ResponseContentType_WildcardMatch()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/ApiExplorerResponseContentType/WildcardMatch");
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var responseType = Assert.Single(description.SupportedResponseTypes);
+            Assert.Equal(1, responseType.ResponseFormats.Count);
+
+            var responseFormat = responseType.ResponseFormats[0];
+            Assert.Equal("application/hal+json", responseFormat.MediaType);
+            Assert.Equal(typeof(JsonOutputFormatter).FullName, responseFormat.FormatterType);
+        }
+
+        [Fact]
         public async Task ApiExplorer_ResponseContentType_NoMatch()
         {
             // Arrange & Act
