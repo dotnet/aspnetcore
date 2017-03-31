@@ -820,7 +820,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 new TestOptionsManager<HtmlHelperOptions>(),
                 new TestOptionsManager<RazorPagesOptions>(razorPagesOptions ?? new RazorPagesOptions()),
                 Mock.Of<IPageHandlerMethodSelector>(),
-                new TempDataPropertyProvider(),
                 razorProject,
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance);

@@ -611,7 +611,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var invoker = new PageActionInvoker(
                 selector,
-                new TempDataPropertyProvider(),
                 diagnosticSource,
                 logger,
                 pageContext,

@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         private readonly IPageHandlerMethodSelector _selector;
         private readonly PageContext _pageContext;
-        private readonly TempDataPropertyProvider _propertyProvider;
 
         private Page _page;
         private object _model;
@@ -30,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         public PageActionInvoker(
             IPageHandlerMethodSelector handlerMethodSelector,
-            TempDataPropertyProvider propertyProvider,
             DiagnosticSource diagnosticSource,
             ILogger logger,
             PageContext pageContext,
@@ -45,7 +43,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                   valueProviderFactories)
         {
             _selector = handlerMethodSelector;
-            _propertyProvider = propertyProvider;
             _pageContext = pageContext;
             CacheEntry = cacheEntry;
         }
@@ -359,11 +356,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 }
             }
 
-            var originalValues = _propertyProvider.LoadAndTrackChanges(_page, _pageContext.TempData);
             if (propertyFilter != null)
             {
-                propertyFilter.OriginalValues = originalValues;
                 propertyFilter.Subject = _page;
+                propertyFilter.ApplyTempDataChanges(_pageContext.HttpContext);
             }
 
             IActionResult result = null;

@@ -25,24 +25,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 ["TempDataProperty-Test"] = "FirstValue"
             };
 
-            var factory = new Mock<ITempDataDictionaryFactory>();
-            factory.Setup(f => f.GetTempData(httpContext))
-                .Returns(tempData);
-
-            var filter = new SaveTempDataPropertyFilter(factory.Object);
+            var filter = CreateSaveTempDataPropertyFilter(httpContext, tempData);
 
             var controller = new TestController();
-            var controllerType = controller.GetType().GetTypeInfo();
 
-            var propertyHelper1 = new PropertyHelper(controllerType.GetProperty(nameof(TestController.Test)));
-            var propertyHelper2 = new PropertyHelper(controllerType.GetProperty(nameof(TestController.Test2)));
-            var propertyHelpers = new List<PropertyHelper>
-            {
-                propertyHelper1,
-                propertyHelper2,
-            };
-
-            filter.PropertyHelpers = propertyHelpers;
+            filter.PropertyHelpers = BuildPropertyHelpers<TestController>();
             var context = new ActionExecutingContext(
                 new ActionContext
                 {
@@ -75,23 +62,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 ["TempDataProperty-Test"] = "FirstValue"
             };
 
-            var factory = new Mock<ITempDataDictionaryFactory>();
-            factory.Setup(f => f.GetTempData(httpContext))
-                .Returns(tempData);
-
-            var filter = new SaveTempDataPropertyFilter(factory.Object);
+            var filter = CreateSaveTempDataPropertyFilter(httpContext, tempData: tempData);
             var controller = new TestController();
-            var controllerType = controller.GetType().GetTypeInfo();
 
-            var propertyHelper1 = new PropertyHelper(controllerType.GetProperty(nameof(TestController.Test)));
-            var propertyHelper2 = new PropertyHelper(controllerType.GetProperty(nameof(TestController.Test2)));
-            var propertyHelpers = new List<PropertyHelper>
-            {
-                propertyHelper1,
-                propertyHelper2,
-            };
-
-            filter.PropertyHelpers = propertyHelpers;
+            filter.PropertyHelpers = BuildPropertyHelpers<TestController>();
 
             var context = new ActionExecutingContext(
                 new ActionContext
@@ -111,6 +85,72 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Assert
             Assert.Equal("FirstValue", controller.Test);
             Assert.Equal(0, controller.Test2);
+        }
+
+        [Fact]
+        public void ApplyTempDataChanges_SetsPropertyValue()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+
+            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+            {
+                { "TempDataProperty-Test", "Value" }
+            };
+            tempData.Save();
+
+            var controller = new TestControllerStrings()
+            {
+                TempData = tempData,
+            };
+
+            var provider = CreateSaveTempDataPropertyFilter(httpContext, tempData: tempData);
+            provider.Subject = controller;
+            provider.PropertyHelpers = BuildPropertyHelpers<TestControllerStrings>();
+
+            // Act
+            provider.ApplyTempDataChanges(httpContext);
+
+            // Assert
+            Assert.Equal("Value", controller.Test);
+            Assert.Null(controller.Test2);
+        }
+
+        private IList<PropertyHelper> BuildPropertyHelpers<TSubject>()
+        {
+            var subjectType = typeof(TSubject);
+
+            var properties = subjectType.GetProperties(
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+            var result = new List<PropertyHelper>();
+
+            foreach (var property in properties)
+            {
+                result.Add(new PropertyHelper(property));
+            }
+
+            return result;
+        }
+
+        private SaveTempDataPropertyFilter CreateSaveTempDataPropertyFilter(
+            HttpContext httpContext,
+            TempDataDictionary tempData)
+        {
+            var factory = new Mock<ITempDataDictionaryFactory>();
+            factory.Setup(f => f.GetTempData(httpContext))
+                .Returns(tempData);
+
+            return new SaveTempDataPropertyFilter(factory.Object);
+        }
+
+        public class TestControllerStrings : Controller
+        {
+            [TempData]
+            public string Test { get; set; }
+
+            [TempData]
+            public string Test2 { get; set; }
         }
 
         public class TestController : Controller

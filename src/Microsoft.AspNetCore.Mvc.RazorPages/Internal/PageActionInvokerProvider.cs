@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly HtmlHelperOptions _htmlHelperOptions;
         private readonly RazorPagesOptions _razorPagesOptions;
         private readonly IPageHandlerMethodSelector _selector;
-        private readonly TempDataPropertyProvider _propertyProvider;
         private readonly RazorProject _razorProject;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ILogger<PageActionInvoker> _logger;
@@ -59,7 +58,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IOptions<HtmlHelperOptions> htmlHelperOptions,
             IOptions<RazorPagesOptions> razorPagesOptions,
             IPageHandlerMethodSelector selector,
-            TempDataPropertyProvider propertyProvider,
             RazorProject razorProject,
             DiagnosticSource diagnosticSource,
             ILoggerFactory loggerFactory)
@@ -77,7 +75,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _htmlHelperOptions = htmlHelperOptions.Value;
             _razorPagesOptions = razorPagesOptions.Value;
             _selector = selector;
-            _propertyProvider = propertyProvider;
             _razorProject = razorProject;
             _diagnosticSource = diagnosticSource;
             _logger = loggerFactory.CreateLogger<PageActionInvoker>();
@@ -159,7 +156,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             return new PageActionInvoker(
                 _selector,
-                _propertyProvider,
                 _diagnosticSource,
                 _logger,
                 pageContext,

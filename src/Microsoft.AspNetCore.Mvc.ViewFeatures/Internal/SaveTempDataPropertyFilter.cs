@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Internal;
 
@@ -26,6 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public IDictionary<PropertyInfo, object> OriginalValues { get; set; }
 
+        /// <summary>
+        /// Puts the modified values of <see cref="Subject"/> into <paramref name="tempData"/>.
+        /// </summary>
+        /// <param name="tempData">The <see cref="ITempDataDictionary"/> to be updated.</param>
         public void OnTempDataSaving(ITempDataDictionary tempData)
         {
             if (Subject != null && OriginalValues != null)
@@ -44,37 +49,65 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
         }
 
-        public void OnActionExecuting(ActionExecutingContext context)
+        /// <summary>
+        /// Applies values from TempData from <paramref name="httpContext"/> to the <see cref="Subject"/>.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> used to find TempData.</param>
+        public void ApplyTempDataChanges(HttpContext httpContext)
         {
-            if (PropertyHelpers == null)
+            if (Subject == null)
             {
-                throw new ArgumentNullException(nameof(PropertyHelpers));
+                throw new ArgumentNullException(nameof(Subject));
             }
 
+            var tempData = _factory.GetTempData(httpContext);
+
+            if (OriginalValues == null)
+            {
+                OriginalValues = new Dictionary<PropertyInfo, object>();
+            }
+
+            SetPropertyVaules(tempData, Subject);
+        }
+
+        /// <inheritdoc />
+        public void OnActionExecuting(ActionExecutingContext context)
+        {
             Subject = context.Controller;
             var tempData = _factory.GetTempData(context.HttpContext);
 
             OriginalValues = new Dictionary<PropertyInfo, object>();
 
+            SetPropertyVaules(tempData, Subject);
+        }
+
+        /// <inheritdoc />
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
+        }
+
+        private void SetPropertyVaules(ITempDataDictionary tempData, object subject)
+        {
+            if (PropertyHelpers == null)
+            {
+                return;
+            }
+
             for (var i = 0; i < PropertyHelpers.Count; i++)
             {
-                var property = PropertyHelpers[i].Property;
+                var property = PropertyHelpers[i];
                 var value = tempData[Prefix + property.Name];
 
-                OriginalValues[property] = value;
+                OriginalValues[property.Property] = value;
 
-                var propertyTypeInfo = property.PropertyType.GetTypeInfo();
+                var propertyTypeInfo = property.Property.PropertyType.GetTypeInfo();
 
                 var isReferenceTypeOrNullable = !propertyTypeInfo.IsValueType || Nullable.GetUnderlyingType(property.GetType()) != null;
                 if (value != null || isReferenceTypeOrNullable)
                 {
-                    property.SetValue(Subject, value);
+                    property.SetValue(subject, value);
                 }
             }
-        }
-
-        public void OnActionExecuted(ActionExecutedContext context)
-        {
         }
     }
 }

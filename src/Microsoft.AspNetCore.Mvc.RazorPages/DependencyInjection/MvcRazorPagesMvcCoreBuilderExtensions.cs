@@ -81,9 +81,6 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action executors
             services.TryAddSingleton<PageResultExecutor>();
             services.TryAddSingleton<RedirectToPageResultExecutor>();
-
-            // Random infrastructure
-            services.TryAddSingleton<TempDataPropertyProvider>();
         }
     }
 }
