@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Server.Kestrel.Core\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj" />
   </ItemGroup>

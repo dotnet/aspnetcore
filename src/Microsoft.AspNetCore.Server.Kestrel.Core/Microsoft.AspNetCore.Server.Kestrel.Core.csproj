@@ -13,9 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Libuv" Version="$(LibUvVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />

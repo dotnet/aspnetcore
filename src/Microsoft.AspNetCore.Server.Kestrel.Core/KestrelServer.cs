@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
@@ -24,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 {
     public class KestrelServer : IServer
     {
-        //private Stack<IDisposable> _disposables;
         private readonly List<ITransport> _transports = new List<ITransport>();
 
         private readonly ILogger _logger;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _logger = loggerFactory.CreateLogger(typeof(KestrelServer).GetTypeInfo().Namespace);
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
-            Features.Set<IServerAddressesFeature>(_serverAddresses);
+            Features.Set(_serverAddresses);
             Features.Set(InternalOptions);
         }
 
@@ -278,11 +278,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             catch (AggregateException ex) when (ex.InnerException is AddressInUseException)
             {
-                    throw new IOException($"Failed to bind to address {parsedAddress} on the IPv4 loopback interface: port already in use.", ex);
+                throw new IOException($"Failed to bind to address {parsedAddress} on the IPv4 loopback interface: port already in use.", ex);
             }
             catch (AggregateException ex)
             {
-                _logger.LogWarning(0,  $"Unable to bind to {parsedAddress} on the IPv4 loopback interface: ({ex.Message})");
+                _logger.LogWarning(0, $"Unable to bind to {parsedAddress} on the IPv4 loopback interface: ({ex.Message})");
                 exceptions.Add(ex.InnerException);
             }
 
