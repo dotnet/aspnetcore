@@ -210,10 +210,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void VisitCSharpStatement(CSharpStatementIRNode node)
         {
-            var isWhitespaceToken = node.Children.All(child =>
-                child is RazorIRToken token && string.IsNullOrWhiteSpace(token.Content));
+            // We can't remove this yet, because it's still used recursively in a few places.
+            var isWhitespaceStatement = true;
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                var token = node.Children[i] as RazorIRToken;
+                if (token == null || !string.IsNullOrWhiteSpace(token.Content))
+                {
+                    isWhitespaceStatement = false;
+                    break;
+                }
+            }
 
-            if (isWhitespaceToken)
+            if (isWhitespaceStatement)
             {
                 return;
             }

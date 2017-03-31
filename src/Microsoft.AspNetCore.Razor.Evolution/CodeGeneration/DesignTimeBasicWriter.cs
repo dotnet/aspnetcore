@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
@@ -71,7 +72,55 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void WriteCSharpStatement(CSharpRenderingContext context, CSharpStatementIRNode node)
         {
-            throw new NotImplementedException();
+            var isWhitespaceStatement = true;
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                var token = node.Children[i] as RazorIRToken;
+                if (token == null || !string.IsNullOrWhiteSpace(token.Content))
+                {
+                    isWhitespaceStatement = false;
+                    break;
+                }
+            }
+
+            IDisposable linePragmaScope = null;
+            if (node.Source != null)
+            {
+                if (!isWhitespaceStatement)
+                {
+                    linePragmaScope = context.Writer.BuildLinePragma(node.Source.Value);
+                }
+
+                context.Writer.WritePadding(0, node.Source.Value, context);
+            }
+            else if (isWhitespaceStatement)
+            {
+                // Don't write whitespace if there is no line mapping for it.
+                return;
+            }
+
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                {
+                    context.AddLineMappingFor(token);
+                    context.Writer.Write(token.Content);
+                }
+                else
+                {
+                    // There may be something else inside the statement like an extension node.
+                    context.RenderNode(node.Children[i]);
+                }
+            }
+
+            if (linePragmaScope != null)
+            {
+                linePragmaScope.Dispose();
+            }
+            else
+            {
+                context.Writer.WriteLine();
+            }
         }
 
         public override void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIRNode node)

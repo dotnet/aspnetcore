@@ -183,6 +183,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 Context.BasicWriter.WriteCSharpExpression(Context, node);
             }
 
+            public override void VisitCSharpStatement(CSharpStatementIRNode node)
+            {
+                Context.BasicWriter.WriteCSharpStatement(Context, node);
+            }
+
             public override void VisitDefault(RazorIRNode node)
             {
                 // This is a temporary bridge to the renderer, which allows us to move functionality piecemeal
