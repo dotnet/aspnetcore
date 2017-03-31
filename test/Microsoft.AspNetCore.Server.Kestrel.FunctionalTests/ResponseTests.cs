@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 readException = await Assert.ThrowsAsync<BadHttpRequestException>(
                     async () => await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1));
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 await httpContext.Response.WriteAsync("hello, ");
                 await httpContext.Response.WriteAsync("world");
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 httpContext.Response.StatusCode = statusCode;
                 return TaskCache.CompletedTask;
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var server = new TestServer(httpContext =>
             {
                 return TaskCache.CompletedTask;
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -880,7 +880,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 httpContext.Response.ContentLength = 42;
                 return TaskCache.CompletedTask;
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -908,7 +908,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.ContentLength = 12;
                 await httpContext.Response.WriteAsync("hello, world");
                 await flushed.WaitAsync();
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -939,7 +939,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
                 flushed.Wait();
                 return TaskCache.CompletedTask;
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -970,7 +970,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await httpContext.Response.WriteAsync("");
                 flushed.Wait();
                 await httpContext.Response.WriteAsync("hello, world");
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1013,7 +1013,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     tcs.TrySetException(ex);
                 }
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1053,7 +1053,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await httpContext.Response.WriteAsync(ex.Message);
                     responseWritten.Release();
                 }
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1084,7 +1084,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 httpContext.Response.Headers["Transfer-Encoding"] = responseTransferEncoding;
                 await httpContext.Response.WriteAsync("hello, world");
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1131,7 +1131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.Headers["Connection"] = "keep-alive";
                 httpContext.Response.Headers["Transfer-Encoding"] = responseTransferEncoding;
                 await httpContext.Response.WriteAsync("hello, world");
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1177,7 +1177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // App would have to chunk manually, but here we don't care
                 await httpContext.Response.WriteAsync("hello, world");
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1225,7 +1225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // If OnStarting is not run before verifying writes, an error response will be sent.
                 httpContext.Response.Body.Write(response, 0, response.Length);
                 return TaskCache.CompletedTask;
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1266,7 +1266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.Body.Write(response, 0, response.Length / 2);
                 httpContext.Response.Body.Write(response, response.Length / 2, response.Length - response.Length / 2);
                 return TaskCache.CompletedTask;
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1307,7 +1307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // If OnStarting is not run before verifying writes, an error response will be sent.
                 return httpContext.Response.Body.WriteAsync(response, 0, response.Length);
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1347,7 +1347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // If OnStarting is not run before verifying writes, an error response will be sent.
                 await httpContext.Response.Body.WriteAsync(response, 0, response.Length / 2);
                 await httpContext.Response.Body.WriteAsync(response, response.Length / 2, response.Length - response.Length / 2);
-            }, new TestServiceContext()))
+            }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1364,6 +1364,162 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "hello,",
                         "6",
                         " world",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WhenResponseAlreadyStartedResponseEndedBeforeConsumingRequestBody()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync("hello, world");
+            }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Content-Length: 1",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "");
+
+                    // If the expected behavior is regressed, this will hang because the
+                    // server will try to consume the request body before flushing the chunked
+                    // terminator.
+                    await connection.Receive(
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task WhenResponseNotStartedResponseEndedAfterConsumingRequestBody()
+        {
+            using (var server = new TestServer(httpContext => TaskCache.CompletedTask))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "gg");
+
+                    // If the expected behavior is regressed, this will receive
+                    // a success response because the server flushed the response
+                    // before reading the malformed chunk header in the request.
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Sending100ContinueDoesNotStartResponse()
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                return httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
+            }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: chunked",
+                        "Expect: 100-continue",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 100 Continue",
+                        "",
+                        "");
+
+                    // Let the app finish
+                    await connection.Send(
+                        "1",
+                        "a",
+                        "");
+
+                    // This will be consumed by Frame when it attempts to
+                    // consume the request body and will cause an error.
+                    await connection.Send(
+                        "gg");
+
+                    // If 100 Continue sets Frame.HasResponseStarted to true,
+                    // a success response will be produced before the server sees the
+                    // bad chunk header above, making this test fail.
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Sending100ContinueAndResponseSendsChunkTerminatorBeforeConsumingRequestBody()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
+                await httpContext.Response.WriteAsync("hello, world");
+            }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Content-Length: 2",
+                        "Expect: 100-continue",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 100 Continue",
+                        "",
+                        "");
+
+                    await connection.Send(
+                        "a");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "");
+
+                    // If the expected behavior is regressed, this will hang because the
+                    // server will try to consume the request body before flushing the chunked
+                    // terminator.
+                    await connection.Receive(
                         "0",
                         "",
                         "");

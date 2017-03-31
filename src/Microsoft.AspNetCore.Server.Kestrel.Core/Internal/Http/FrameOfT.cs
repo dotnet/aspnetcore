@@ -135,16 +135,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             {
                                 ResumeStreams();
 
+                                if (HasResponseStarted)
+                                {
+                                    // If the response has already started, call ProduceEnd() before
+                                    // consuming the rest of the request body to prevent
+                                    // delaying clients waiting for the chunk terminator:
+                                    //
+                                    // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
+                                    //
+                                    // ProduceEnd() must be called before _application.DisposeContext(), to ensure
+                                    // HttpContext.Response.StatusCode is correctly set when
+                                    // IHttpContextFactory.Dispose(HttpContext) is called.
+                                    await ProduceEnd();
+                                }
+
                                 if (_keepAlive)
                                 {
                                     // Finish reading the request body in case the app did not.
                                     await messageBody.Consume();
                                 }
 
-                                // ProduceEnd() must be called before _application.DisposeContext(), to ensure
-                                // HttpContext.Response.StatusCode is correctly set when
-                                // IHttpContextFactory.Dispose(HttpContext) is called.
-                                await ProduceEnd();
+                                if (!HasResponseStarted)
+                                {
+                                    await ProduceEnd();
+                                }
                             }
                             else if (!HasResponseStarted)
                             {
