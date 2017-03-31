@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                     runScriptsOnRemoteServerProcess.StartAndCaptureOutAndErrToLogger(serverAction, Logger);
 
-                    await processExited.Task.OrTimeout(TimeSpan.FromMinutes(1));
+                    await processExited.Task.OrTimeout(TimeSpan.FromMinutes(5));
                     runScriptsOnRemoteServerProcess.WaitForExit((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
 
                     if (runScriptsOnRemoteServerProcess.HasExited && runScriptsOnRemoteServerProcess.ExitCode != 0)
