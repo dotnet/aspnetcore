@@ -17,7 +17,7 @@
 
   <Target Name="_LocateMSBuildExe" Condition="Exists('$(MSBuildProgramFiles32)')">
     <ItemGroup>
-      <MSBuild15ExePaths Include="$(MSBuildProgramFiles32)\Microsoft Visual Studio\2017*\**\MSBuild\15.0\Bin\MSBuild.exe" />
+      <MSBuild15ExePaths Include="$(MSBuildProgramFiles32)\Microsoft Visual Studio\**\MSBuild\15.0\Bin\MSBuild.exe" />
     </ItemGroup>
 
     <Warning
