@@ -5,7 +5,7 @@
     <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
-    <LibUvVersion>1.9.1</LibUvVersion>
+    <LibUvVersion>1.10.0-*</LibUvVersion>
     <JsonNetVersion>9.0.1</JsonNetVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
