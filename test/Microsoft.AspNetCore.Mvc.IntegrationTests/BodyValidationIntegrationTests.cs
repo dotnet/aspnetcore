@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(2, products.Count());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/6058")]
         public async Task ModelMetadataTypeAttribute_InvalidPropertiesAndSubPropertiesOnBaseClass_HasModelStateErrors()
         {
             // Arrange
