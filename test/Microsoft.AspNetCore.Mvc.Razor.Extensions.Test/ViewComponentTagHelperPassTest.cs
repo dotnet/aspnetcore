@@ -122,6 +122,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
+            Assert.Equal(tokenNode.Kind, RazorIRToken.TokenKind.CSharp);
         }
 
         [Fact]
@@ -194,6 +195,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
+            Assert.Equal(tokenNode.Kind, RazorIRToken.TokenKind.CSharp);
         }
 
         [Fact]
@@ -278,6 +280,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
+            Assert.Equal(tokenNode.Kind, RazorIRToken.TokenKind.CSharp);
         }
 
         private RazorCodeDocument CreateDocument(string content)

@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             RazorIRBuilder.Create(statement)
                 .Add(new RazorIRToken()
                 {
+                    Kind = RazorIRToken.TokenKind.CSharp,
                     Content = writer.Builder.ToString()
                 });
 
