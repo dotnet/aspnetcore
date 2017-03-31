@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -356,10 +357,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task FromBodyAndRequiredOnProperty_EmptyBody_AddsModelStateError()
+        public async Task FromBodyAllowingEmptyInputAndRequiredOnProperty_EmptyBody_AddsModelStateError()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -381,6 +381,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var addressRequired = ValidationAttributeUtil.GetRequiredErrorMessage("Address");
 
+            var optionsAccessor = testContext.GetService<IOptions<MvcOptions>>();
+            optionsAccessor.Value.AllowEmptyInputInBodyModelBinding = true;
+            
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(optionsAccessor.Value);
+
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
 
@@ -396,10 +401,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task FromBodyOnActionParameter_EmptyBody_BindsToNullValue()
+        public async Task FromBodyAllowingEmptyInputOnActionParameter_EmptyBody_BindsToNullValue()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -420,6 +424,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var httpContext = testContext.HttpContext;
             var modelState = testContext.ModelState;
+
+            var optionsAccessor = testContext.GetService<IOptions<MvcOptions>>();
+            optionsAccessor.Value.AllowEmptyInputInBodyModelBinding = true;
+            
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(optionsAccessor.Value);
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
@@ -582,6 +591,63 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Json.NET currently throws an Exception with a Message starting with "Could not convert string to
             // integer: not a number." but do not tie test to a particular Json.NET build.
             Assert.NotEmpty(error.Exception.Message);
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        public async Task FromBodyWithEmptyBody_JsonFormatterAddsModelErrorWhenExpected(
+            bool allowEmptyInputInBodyModelBindingSetting, bool expectedModelStateIsValid)
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo
+                {
+                    BinderModelName = "CustomParameter",
+                },
+                ParameterType = typeof(Person5)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
+                    request.ContentType = "application/json";
+                });
+
+            var optionsAccessor = testContext.GetService<IOptions<MvcOptions>>();
+            optionsAccessor.Value.AllowEmptyInputInBodyModelBinding = allowEmptyInputInBodyModelBindingSetting;
+            var modelState = testContext.ModelState;
+
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(optionsAccessor.Value);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<Person5>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            
+            if (expectedModelStateIsValid)
+            {
+                Assert.True(modelState.IsValid);
+            }
+            else
+            {
+                Assert.False(modelState.IsValid);
+                var entry = Assert.Single(modelState);
+                Assert.Equal("CustomParameter.Address", entry.Key);
+                var street = entry.Value;
+                Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
+                var error = Assert.Single(street.Errors);
+
+                // Since the message doesn't come from DataAnnotations, we don't have a way to get the
+                // exact string, so just check it's nonempty.
+                Assert.NotEmpty(error.ErrorMessage);
+            }
         }
 
         private class Person2

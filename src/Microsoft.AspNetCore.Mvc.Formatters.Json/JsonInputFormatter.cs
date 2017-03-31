@@ -158,7 +158,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                     if (successful)
                     {
-                        return InputFormatterResult.SuccessAsync(model);
+                        if (model == null && !context.TreatEmptyInputAsDefaultValue)
+                        {
+                            // Some nonempty inputs might deserialize as null, for example whitespace,
+                            // or the JSON-encoded value "null". The upstream BodyModelBinder needs to
+                            // be notified that we don't regard this as a real input so it can register
+                            // a model binding error.
+                            return InputFormatterResult.NoValueAsync();
+                        }
+                        else
+                        {
+                            return InputFormatterResult.SuccessAsync(model);
+                        }
                     }
 
                     return InputFormatterResult.FailureAsync();

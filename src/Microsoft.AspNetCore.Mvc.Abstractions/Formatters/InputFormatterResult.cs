@@ -10,23 +10,31 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class InputFormatterResult
     {
-        private static readonly InputFormatterResult _failure = new InputFormatterResult();
+        private static readonly InputFormatterResult _failure = new InputFormatterResult(hasError: true);
+        private static readonly InputFormatterResult _noValue = new InputFormatterResult(hasError: false);
         private static readonly Task<InputFormatterResult> _failureAsync = Task.FromResult(_failure);
+        private static readonly Task<InputFormatterResult> _noValueAsync = Task.FromResult(_noValue);
 
-        private InputFormatterResult()
+        private InputFormatterResult(bool hasError)
         {
-            HasError = true;
+            HasError = hasError;
         }
 
         private InputFormatterResult(object model)
         {
             Model = model;
+            IsModelSet = true;
         }
 
         /// <summary>
         /// Gets an indication whether the <see cref="IInputFormatter.ReadAsync"/> operation had an error.
         /// </summary>
         public bool HasError { get; }
+
+        /// <summary>
+        /// Gets an indication whether a value for the <see cref="Model"/> property was supplied.
+        /// </summary>
+        public bool IsModelSet { get; }
 
         /// <summary>
         /// Gets the deserialized <see cref="object"/>.
@@ -88,6 +96,32 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public static Task<InputFormatterResult> SuccessAsync(object model)
         {
             return Task.FromResult(Success(model));
+        }
+
+        /// <summary>
+        /// Returns an <see cref="InputFormatterResult"/> indicating the <see cref="IInputFormatter.ReadAsync"/>
+        /// operation produced no value.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="InputFormatterResult"/> indicating the <see cref="IInputFormatter.ReadAsync"/>
+        /// operation produced no value.
+        /// </returns>
+        public static InputFormatterResult NoValue()
+        {
+            return _noValue;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="Task"/> that on completion provides an <see cref="InputFormatterResult"/> indicating
+        /// the <see cref="IInputFormatter.ReadAsync"/> operation produced no value.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Task"/> that on completion provides an <see cref="InputFormatterResult"/> indicating the
+        /// <see cref="IInputFormatter.ReadAsync"/> operation produced no value.
+        /// </returns>
+        public static Task<InputFormatterResult> NoValueAsync()
+        {
+            return _noValueAsync;
         }
     }
 }

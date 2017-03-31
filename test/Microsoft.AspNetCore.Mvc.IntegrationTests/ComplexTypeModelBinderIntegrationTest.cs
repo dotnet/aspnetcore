@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -134,7 +135,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoBodyData()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -148,8 +148,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 request.ContentType = "application/json";
             });
 
+            var optionsAccessor = testContext.GetService<IOptions<MvcOptions>>();
+            optionsAccessor.Value.AllowEmptyInputInBodyModelBinding = true;
+
             var modelState = testContext.ModelState;
             var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(optionsAccessor.Value);
 
             // Act
             var modelBindingResult = await parameterBinder.BindModelAsync(testContext, valueProvider, parameter);

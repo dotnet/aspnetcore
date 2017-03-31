@@ -342,6 +342,40 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.IsType<TooManyModelErrorsException>(error.Exception);
         }
 
+        [Theory]
+        [InlineData("null", true, true)]
+        [InlineData("null", false, false)]
+        [InlineData(" ", true, true)]
+        [InlineData(" ", false, false)]
+        public async Task ReadAsync_WithInputThatDeserializesToNull_SetsModelOnlyIfAllowingEmptyInput(string content, bool allowEmptyInput, bool expectedIsModelSet)
+        {
+            // Arrange
+            var logger = GetLogger();
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(object));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader,
+                treatEmptyInputAsDefaultValue: allowEmptyInput);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            Assert.Equal(expectedIsModelSet, result.IsModelSet);
+            Assert.Null(result.Model);
+        }
+
         [Fact]
         public void Constructor_UsesSerializerSettings()
         {

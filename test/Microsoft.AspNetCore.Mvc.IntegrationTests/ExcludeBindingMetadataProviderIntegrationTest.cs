@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     public class ExcludeBindingMetadataProviderIntegrationTest
     {
-        [Fact]
+        [Fact(Skip = "See issue #6110")]
         public async Task BindParameter_WithTypeProperty_IsNotBound()
         {
             // Arrange

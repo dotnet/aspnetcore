@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     {
         private Func<string, string> _missingBindRequiredValueAccessor;
         private Func<string> _missingKeyOrValueAccessor;
+        private Func<string> _missingRequestBodyRequiredValueAccessor;
         private Func<string, string> _valueMustNotBeNullAccessor;
         private Func<string, string, string> _attemptedValueIsInvalidAccessor;
         private Func<string, string> _unknownValueIsInvalidAccessor;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         {
             MissingBindRequiredValueAccessor = Resources.FormatModelBinding_MissingBindRequiredMember;
             MissingKeyOrValueAccessor = Resources.FormatKeyValuePair_BothKeyAndValueMustBePresent;
+            MissingRequestBodyRequiredValueAccessor = Resources.FormatModelBinding_MissingRequestBodyRequiredMember;
             ValueMustNotBeNullAccessor = Resources.FormatModelBinding_NullValueNotValid;
             AttemptedValueIsInvalidAccessor = Resources.FormatModelState_AttemptedValueIsInvalid;
             UnknownValueIsInvalidAccessor = Resources.FormatModelState_UnknownValueIsInvalid;
@@ -47,6 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             MissingBindRequiredValueAccessor = originalProvider.MissingBindRequiredValueAccessor;
             MissingKeyOrValueAccessor = originalProvider.MissingKeyOrValueAccessor;
+            MissingRequestBodyRequiredValueAccessor = originalProvider.MissingRequestBodyRequiredValueAccessor;
             ValueMustNotBeNullAccessor = originalProvider.ValueMustNotBeNullAccessor;
             AttemptedValueIsInvalidAccessor = originalProvider.AttemptedValueIsInvalidAccessor;
             UnknownValueIsInvalidAccessor = originalProvider.UnknownValueIsInvalidAccessor;
@@ -87,6 +90,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 }
 
                 _missingKeyOrValueAccessor = value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public Func<string> MissingRequestBodyRequiredValueAccessor
+        {
+            get
+            {
+                return _missingRequestBodyRequiredValueAccessor;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _missingRequestBodyRequiredValueAccessor = value;
             }
         }
 

@@ -80,6 +80,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
+        [InlineData("application/json", "")]
+        [InlineData("application/json", "    ")]
+        public async Task JsonInputFormatter_ReturnsBadRequest_ForEmptyRequestBody(
+            string requestContentType,
+            string jsonInput)
+        {
+            // Arrange
+            var content = new StringContent(jsonInput, Encoding.UTF8, requestContentType);
+
+            // Act
+            var response = await Client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Theory]
         [InlineData("\"I'm a JSON string!\"")]
         [InlineData("true")]
         [InlineData("\"\"")] // Empty string

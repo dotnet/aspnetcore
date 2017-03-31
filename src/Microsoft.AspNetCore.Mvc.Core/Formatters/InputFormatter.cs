@@ -105,7 +105,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var request = context.HttpContext.Request;
             if (request.ContentLength == 0)
             {
-                return InputFormatterResult.SuccessAsync(GetDefaultValueForType(context.ModelType));
+                if (context.TreatEmptyInputAsDefaultValue)
+                {
+                    return InputFormatterResult.SuccessAsync(GetDefaultValueForType(context.ModelType));
+                }
+
+                return InputFormatterResult.NoValueAsync();
             }
 
             return ReadRequestBodyAsync(context);

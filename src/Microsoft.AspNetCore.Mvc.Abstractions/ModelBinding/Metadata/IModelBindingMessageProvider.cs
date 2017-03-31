@@ -25,6 +25,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         Func<string> MissingKeyOrValueAccessor { get; }
 
         /// <summary>
+        /// Error message the model binding system adds when no value is provided for the request body,
+        /// but a value is required.
+        /// </summary>
+        /// <value>Default <see cref="string"/> is "A non-empty request body is required.".</value>
+        Func<string> MissingRequestBodyRequiredValueAccessor { get; }
+
+        /// <summary>
         /// Error message the model binding system adds when a <c>null</c> value is bound to a
         /// non-<see cref="Nullable"/> property.
         /// </summary>

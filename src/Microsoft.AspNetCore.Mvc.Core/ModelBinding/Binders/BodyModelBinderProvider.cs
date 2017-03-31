@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IList<IInputFormatter> _formatters;
         private readonly IHttpRequestStreamReaderFactory _readerFactory;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly MvcOptions _options;
 
         /// <summary>
         /// Creates a new <see cref="BodyModelBinderProvider"/>.
@@ -36,6 +37,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="readerFactory">The <see cref="IHttpRequestStreamReaderFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public BodyModelBinderProvider(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory)
+            : this(formatters, readerFactory, loggerFactory, options: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="BodyModelBinderProvider"/>.
+        /// </summary>
+        /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
+        /// <param name="readerFactory">The <see cref="IHttpRequestStreamReaderFactory"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="options">The <see cref="MvcOptions"/>.</param>
+        public BodyModelBinderProvider(
+            IList<IInputFormatter> formatters,
+            IHttpRequestStreamReaderFactory readerFactory,
+            ILoggerFactory loggerFactory,
+            MvcOptions options)
         {
             if (formatters == null)
             {
@@ -50,6 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _formatters = formatters;
             _readerFactory = readerFactory;
             _loggerFactory = loggerFactory;
+            _options = options;
         }
 
         /// <inheritdoc />
@@ -71,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         typeof(IInputFormatter).FullName));
                 }
 
-                return new BodyModelBinder(_formatters, _readerFactory, _loggerFactory);
+                return new BodyModelBinder(_formatters, _readerFactory, _loggerFactory, _options);
             }
 
             return null;

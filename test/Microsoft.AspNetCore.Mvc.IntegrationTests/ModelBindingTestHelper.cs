@@ -53,16 +53,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             else
             {
                 var metadataProvider = TestModelMetadataProvider.CreateProvider(options.ModelMetadataDetailsProviders);
-                return GetParameterBinder(metadataProvider, binderProvider);
+                return GetParameterBinder(metadataProvider, binderProvider, options);
             }
         }
 
         public static ParameterBinder GetParameterBinder(
             IModelMetadataProvider metadataProvider,
-            IModelBinderProvider binderProvider = null)
+            IModelBinderProvider binderProvider = null,
+            MvcOptions mvcOptions = null)
         {
             var services = GetServices();
-            var options = services.GetRequiredService<IOptions<MvcOptions>>();
+            var options = mvcOptions != null
+                ? Options.Create(mvcOptions)
+                : services.GetRequiredService<IOptions<MvcOptions>>();
 
             if (binderProvider != null)
             {

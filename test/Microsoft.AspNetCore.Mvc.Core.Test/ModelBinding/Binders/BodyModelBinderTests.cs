@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -113,6 +114,79 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.False(bindingContext.Result.IsModelSet);
+        }
+
+        [Fact]
+        public async Task BindModel_NoValueResult_SetsModelStateError()
+        {
+            // Arrange
+            var mockInputFormatter = new Mock<IInputFormatter>();
+            mockInputFormatter.Setup(f => f.CanRead(It.IsAny<InputFormatterContext>()))
+                .Returns(true);
+            mockInputFormatter.Setup(o => o.ReadAsync(It.IsAny<InputFormatterContext>()))
+                .Returns(InputFormatterResult.NoValueAsync());
+            var inputFormatter = mockInputFormatter.Object;
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d =>
+            {
+                d.BindingSource = BindingSource.Body;
+                d.ModelBindingMessageProvider.MissingRequestBodyRequiredValueAccessor =
+                    () => "Customized error message";
+            });
+
+            var bindingContext = GetBindingContext(
+                typeof(Person),
+                metadataProvider: provider);
+            bindingContext.BinderModelName = "custom";
+
+            var binder = CreateBinder(new[] { inputFormatter });
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.Null(bindingContext.Result.Model);
+            Assert.False(bindingContext.Result.IsModelSet);
+            Assert.False(bindingContext.ModelState.IsValid);
+
+            // Key is the bindermodelname because this was a top-level binding.
+            var entry = Assert.Single(bindingContext.ModelState);
+            Assert.Equal("custom", entry.Key);
+            Assert.Equal("Customized error message", entry.Value.Errors.Single().ErrorMessage);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task BindModel_PassesAllowEmptyInputOptionViaContext(bool treatEmptyInputAsDefaultValueOption)
+        {
+            // Arrange
+            var mockInputFormatter = new Mock<IInputFormatter>();
+            mockInputFormatter.Setup(f => f.CanRead(It.IsAny<InputFormatterContext>()))
+                .Returns(true);
+            mockInputFormatter.Setup(o => o.ReadAsync(It.IsAny<InputFormatterContext>()))
+                .Returns(InputFormatterResult.NoValueAsync())
+                .Verifiable();
+            var inputFormatter = mockInputFormatter.Object;
+
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+
+            var bindingContext = GetBindingContext(
+                typeof(Person),
+                metadataProvider: provider);
+            bindingContext.BinderModelName = "custom";
+
+            var binder = CreateBinder(new[] { inputFormatter }, treatEmptyInputAsDefaultValueOption);
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            mockInputFormatter.Verify(formatter => formatter.ReadAsync(
+                It.Is<InputFormatterContext>(ctx => ctx.TreatEmptyInputAsDefaultValue == treatEmptyInputAsDefaultValueOption)),
+                Times.Once);
         }
 
         [Fact]
@@ -316,11 +390,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return bindingContext;
         }
 
-        private static BodyModelBinder CreateBinder(IList<IInputFormatter> formatters)
+        private static BodyModelBinder CreateBinder(IList<IInputFormatter> formatters, bool treatEmptyInputAsDefaultValueOption = false)
         {
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            return new BodyModelBinder(formatters, new TestHttpRequestStreamReaderFactory(), loggerFactory);
+            var options = new MvcOptions { AllowEmptyInputInBodyModelBinding = treatEmptyInputAsDefaultValueOption };
+            return new BodyModelBinder(formatters, new TestHttpRequestStreamReaderFactory(), loggerFactory, options);
         }
 
         private class Person
