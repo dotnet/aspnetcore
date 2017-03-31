@@ -123,7 +123,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             else
             {
-                // Confirm this formatter 
                 var parsedContentType = new MediaType(context.ContentType);
                 for (var i = 0; i < SupportedMediaTypes.Count; i++)
                 {

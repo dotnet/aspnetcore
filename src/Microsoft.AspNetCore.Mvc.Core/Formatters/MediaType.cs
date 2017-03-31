@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Gets the type of the <see cref="MediaType"/>.
         /// </summary>
         /// <example>
-        /// For the media type <c>"application/json"</c>, the property gives the value <c>"application"</c>.
+        /// For the media type <c>"application/json"</c>, this property gives the value <c>"application"</c>.
         /// </example>
         public StringSegment Type { get; }
 
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Gets the subtype of the <see cref="MediaType"/>.
         /// </summary>
         /// <example>
-        /// For the media type <c>"application/vnd.example+json"</c>, the property gives the value
+        /// For the media type <c>"application/vnd.example+json"</c>, this property gives the value
         /// <c>"vnd.example+json"</c>.
         /// </example>
         public StringSegment SubType { get; private set; }
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Gets the subtype of the <see cref="MediaType"/>, excluding any structured syntax suffix.
         /// </summary>
         /// <example>
-        /// For the media type <c>"application/vnd.example+json"</c>, the property gives the value
+        /// For the media type <c>"application/vnd.example+json"</c>, this property gives the value
         /// <c>"vnd.example"</c>.
         /// </example>
         public StringSegment SubTypeWithoutSuffix { get; private set; }
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Gets the structured syntax suffix of the <see cref="MediaType"/> if it has one.
         /// </summary>
         /// <example>
-        /// For the media type <c>"application/vnd.example+json"</c>, the property gives the value
+        /// For the media type <c>"application/vnd.example+json"</c>, this property gives the value
         /// <c>"json"</c>.
         /// </example>
         public StringSegment SubTypeSuffix { get; private set; }
