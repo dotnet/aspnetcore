@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static string GetTestSitesPath()
         {
             return Path.GetFullPath(
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
                 "..", // tfm
                 "..", // debug
                 "..", // obj

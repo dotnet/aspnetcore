@@ -16,7 +16,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    // Uses ports ranging 5050 - 5060.
     public class NtlmAuthenticationTests
     {
         private readonly ITestOutputHelper _output;
@@ -29,28 +28,29 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5051/", ApplicationType.Portable)]
-        public Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
+            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
         }
 
         [ConditionalTheory(Skip = "No test configuration enabled")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5050/", ApplicationType.Standalone)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone)]
         // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/", ApplicationType.Standalone)]
-        public Task NtlmAuthentication_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task NtlmAuthentication_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
+            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
         }
 
-        public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            var factory = new LoggerFactory().AddDebug();
-            factory.AddProvider(new XunitLoggerProvider(_output));
-            var logger = factory.CreateLogger($"NtlmAuthentication:{serverType}:{runtimeFlavor}:{architecture}");
+            var loggerFactory = new LoggerFactory()
+                .AddXunit(_output)
+                .AddDebug();
+            var logger = loggerFactory.CreateLogger($"NtlmAuthentication:{serverType}:{runtimeFlavor}:{architecture}");
 
             using (logger.BeginScope("NtlmAuthenticationTest"))
             {
@@ -60,7 +60,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
-                    ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
@@ -71,9 +70,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         : null
                 };
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
-                    var deploymentResult = deployer.Deploy();
+                    var deploymentResult = await deployer.DeployAsync();
                     var httpClientHandler = new HttpClientHandler();
                     var httpClient = new HttpClient(httpClientHandler)
                     {

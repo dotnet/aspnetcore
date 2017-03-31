@@ -14,9 +14,18 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    // IisExpress preregisteres 44300-44399 ports.
+    // IIS Express preregisteres 44300-44399 ports with SSL bindings.
+    // So these tests always have to use ports in this range, and we can't rely on OS-allocated ports without a whole lot of ceremony around
+    // creating self-signed certificates and registering SSL bindings with HTTP.sys
     public class HttpsTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public HttpsTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
@@ -39,10 +48,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public async Task HttpsHelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            var logger = new LoggerFactory()
-                            .AddConsole()
-                            .AddDebug()
-                            .CreateLogger($"HttpsHelloWorld:{serverType}:{runtimeFlavor}:{architecture}");
+            var loggerFactory = new LoggerFactory()
+                .AddConsole()
+                .AddDebug();
+            var logger = loggerFactory.CreateLogger($"HttpsHelloWorld:{serverType}:{runtimeFlavor}:{architecture}");
 
             using (logger.BeginScope("HttpsHelloWorldTest"))
             {
@@ -56,9 +65,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     ApplicationType = applicationType
                 };
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
-                    var deploymentResult = deployer.Deploy();
+                    var deploymentResult = await deployer.DeployAsync();
                     var handler = new HttpClientHandler();
                     handler.ServerCertificateCustomValidationCallback = (a, b, c, d) => true;
                     var httpClient = new HttpClient(handler)
@@ -111,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44401/", ApplicationType.Portable)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44301/", ApplicationType.Portable)]
         public Task Https_HelloWorld_ClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: true);
@@ -120,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44400/", ApplicationType.Standalone)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44302/", ApplicationType.Standalone)]
         public Task Https_HelloWorld_ClientCert_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: true);
@@ -128,10 +137,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public async Task HttpsHelloWorldCerts(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType, bool sendClientCert)
         {
-Console.WriteLine("Running test");
-            var logger = new LoggerFactory()
-                            .AddConsole()
-                            .CreateLogger($"HttpsHelloWorldCerts:{serverType}:{runtimeFlavor}:{architecture}");
+            var loggerFactory = new LoggerFactory()
+                .AddXunit(_output)
+                .AddDebug();
+            var logger = loggerFactory.CreateLogger($"HttpsHelloWorldCerts:{serverType}:{runtimeFlavor}:{architecture}");
 
             using (logger.BeginScope("HttpsHelloWorldTest"))
             {
@@ -145,9 +154,9 @@ Console.WriteLine("Running test");
                     ApplicationType = applicationType
                 };
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
-                    var deploymentResult = deployer.Deploy();
+                    var deploymentResult = await deployer.DeployAsync();
                     var handler = new HttpClientHandler();
                     handler.ServerCertificateCustomValidationCallback = (a, b, c, d) => true;
                     handler.ClientCertificateOptions = ClientCertificateOption.Manual;
