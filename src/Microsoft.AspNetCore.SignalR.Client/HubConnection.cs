@@ -212,6 +212,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             if (!_handlers.TryGetValue(invocationDescriptor.Method, out InvocationHandler handler))
             {
                 _logger.LogWarning("Failed to find handler for '{0}' method", invocationDescriptor.Method);
+                return;
             }
 
             // TODO: Return values

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -245,6 +246,30 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             var thrown = await Assert.ThrowsAsync(exception.GetType(), async () => await invokeTask);
             Assert.Same(exception, thrown);
+        }
+
+        [Fact]
+        public async Task DoesNotThrowWhenClientMethodCalledButNoInvocationHandlerHasBeenSetUp()
+        {
+            var mockConnection = new Mock<IConnection>();
+
+            var invocationDescriptor = new InvocationDescriptor
+            {
+                Method = "NonExistingMethod123",
+                Arguments = new object[] { true, "arg2", 123 },
+                Id = Guid.NewGuid().ToString()
+            };
+
+            var mockInvocationAdapter = new Mock<IInvocationAdapter>();
+            mockInvocationAdapter
+                .Setup(a => a.ReadMessageAsync(It.IsAny<Stream>(), It.IsAny<IInvocationBinder>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult((InvocationMessage)invocationDescriptor));
+
+            var hubConnection = new HubConnection(mockConnection.Object, mockInvocationAdapter.Object, null);
+            await hubConnection.StartAsync(Mock.Of<ITransport>());
+
+            mockConnection.Raise(c => c.Received += null, new object[] { new byte[] { }, MessageType.Text });
+            mockInvocationAdapter.Verify(a => a.ReadMessageAsync(It.IsAny<Stream>(), It.IsAny<IInvocationBinder>(), It.IsAny<CancellationToken>()), Times.Once());
         }
     }
 }
