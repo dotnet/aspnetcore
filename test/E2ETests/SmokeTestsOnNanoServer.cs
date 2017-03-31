@@ -1,9 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using E2ETests.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
@@ -18,14 +17,15 @@ namespace E2ETests
     public class SmokeTestsOnNanoServerUsingStandaloneRuntime : IDisposable
     {
         private readonly SmokeTestsOnNanoServer _smokeTestsOnNanoServer;
-        private readonly XunitLogger _logger;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly RemoteDeploymentConfig _remoteDeploymentConfig;
 
         public SmokeTestsOnNanoServerUsingStandaloneRuntime(ITestOutputHelper output)
         {
-            _logger = new XunitLogger(output, LogLevel.Information);
+            _loggerFactory = new LoggerFactory()
+                .AddXunit(output);
             _remoteDeploymentConfig = RemoteDeploymentConfigHelper.GetConfiguration();
-            _smokeTestsOnNanoServer = new SmokeTestsOnNanoServer(output, _remoteDeploymentConfig, _logger);
+            _smokeTestsOnNanoServer = new SmokeTestsOnNanoServer(output, _remoteDeploymentConfig, _loggerFactory);
         }
 
         [ConditionalTheory, Trait("E2ETests", "NanoServer")]
@@ -43,7 +43,7 @@ namespace E2ETests
 
         public void Dispose()
         {
-            _logger.Dispose();
+            _loggerFactory.Dispose();
         }
     }
 
@@ -56,15 +56,16 @@ namespace E2ETests
     {
         private readonly SmokeTestsOnNanoServer _smokeTestsOnNanoServer;
         private readonly RemoteDeploymentConfig _remoteDeploymentConfig;
-        private readonly XunitLogger _logger;
+        private readonly ILoggerFactory _loggerFactory;
 
         public SmokeTestsOnNanoServerUsingSharedRuntime(
             DotnetRuntimeSetupTestFixture dotnetRuntimeSetupTestFixture, ITestOutputHelper output)
         {
-            _logger = new XunitLogger(output, LogLevel.Information);
+            _loggerFactory = new LoggerFactory()
+                .AddXunit(output);
             _remoteDeploymentConfig = RemoteDeploymentConfigHelper.GetConfiguration();
             _remoteDeploymentConfig.DotnetRuntimePathOnShare = dotnetRuntimeSetupTestFixture.DotnetRuntimePathOnShare;
-            _smokeTestsOnNanoServer = new SmokeTestsOnNanoServer(output, _remoteDeploymentConfig, _logger);
+            _smokeTestsOnNanoServer = new SmokeTestsOnNanoServer(output, _remoteDeploymentConfig, _loggerFactory);
         }
 
         [ConditionalTheory, Trait("E2Etests", "NanoServer")]
@@ -82,7 +83,7 @@ namespace E2ETests
 
         public void Dispose()
         {
-            _logger.Dispose();
+            _loggerFactory.Dispose();
         }
 
         // Copies dotnet runtime to the target server's file share.
@@ -234,12 +235,12 @@ namespace E2ETests
 
     class SmokeTestsOnNanoServer
     {
-        private readonly XunitLogger _logger;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly RemoteDeploymentConfig _remoteDeploymentConfig;
 
-        public SmokeTestsOnNanoServer(ITestOutputHelper output, RemoteDeploymentConfig config, XunitLogger logger)
+        public SmokeTestsOnNanoServer(ITestOutputHelper output, RemoteDeploymentConfig config, ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _loggerFactory = loggerFactory;
             _remoteDeploymentConfig = config;
         }
 
@@ -248,41 +249,51 @@ namespace E2ETests
             string applicationBaseUrl,
             ApplicationType applicationType)
         {
-            using (_logger.BeginScope(nameof(SmokeTestsOnNanoServerUsingStandaloneRuntime)))
+            var testName = $"SmokeTestsOnNanoServer:{serverType}:{applicationType}";
+            try
             {
-                var deploymentParameters = new RemoteWindowsDeploymentParameters(
-                    Helpers.GetApplicationPath(applicationType),
-                    _remoteDeploymentConfig.DotnetRuntimePathOnShare,
-                    serverType,
-                    RuntimeFlavor.CoreClr,
-                    RuntimeArchitecture.x64,
-                    _remoteDeploymentConfig.FileSharePath,
-                    _remoteDeploymentConfig.ServerName,
-                    _remoteDeploymentConfig.AccountName,
-                    _remoteDeploymentConfig.AccountPassword)
+                Console.WriteLine($"Started {testName}");
+                var logger = _loggerFactory.CreateLogger(testName);
+                using (logger.BeginScope(nameof(SmokeTestsOnNanoServerUsingStandaloneRuntime)))
                 {
-                    TargetFramework = "netcoreapp1.1",
-                    ApplicationBaseUriHint = applicationBaseUrl,
-                    ApplicationType = applicationType
-                };
+                    var deploymentParameters = new RemoteWindowsDeploymentParameters(
+                        Helpers.GetApplicationPath(applicationType),
+                        _remoteDeploymentConfig.DotnetRuntimePathOnShare,
+                        serverType,
+                        RuntimeFlavor.CoreClr,
+                        RuntimeArchitecture.x64,
+                        _remoteDeploymentConfig.FileSharePath,
+                        _remoteDeploymentConfig.ServerName,
+                        _remoteDeploymentConfig.AccountName,
+                        _remoteDeploymentConfig.AccountPassword)
+                    {
+                        TargetFramework = "netcoreapp1.1",
+                        ApplicationBaseUriHint = applicationBaseUrl,
+                        ApplicationType = applicationType
+                    };
 
-                if (applicationType == ApplicationType.Standalone)
-                {
-                    // Unable to use the RuntimeEnvironment.GetRuntimeIdentifier API here as NanoServer which is
-                    // part of Windows Server 2016 has a RID of 'win10-x64' where as the CI servers currently
-                    // run on Windows Server 2012 or less, which have different RIDs.
-                    deploymentParameters.AdditionalPublishParameters = "-r win10-x64";
+                    if (applicationType == ApplicationType.Standalone)
+                    {
+                        // Unable to use the RuntimeEnvironment.GetRuntimeIdentifier API here as NanoServer which is
+                        // part of Windows Server 2016 has a RID of 'win10-x64' where as the CI servers currently
+                        // run on Windows Server 2012 or less, which have different RIDs.
+                        deploymentParameters.AdditionalPublishParameters = "-r win10-x64";
+                    }
+
+                    deploymentParameters.EnvironmentVariables.Add(
+                        new KeyValuePair<string, string>("ASPNETCORE_ENVIRONMENT", "SocialTesting"));
+
+                    using (var deployer = new RemoteWindowsDeployer(deploymentParameters, logger))
+                    {
+                        var deploymentResult = await deployer.DeployAsync();
+
+                        await SmokeTestHelper.RunTestsAsync(deploymentResult, logger);
+                    }
                 }
-
-                deploymentParameters.EnvironmentVariables.Add(
-                    new KeyValuePair<string, string>("ASPNETCORE_ENVIRONMENT", "SocialTesting"));
-
-                using (var deployer = new RemoteWindowsDeployer(deploymentParameters, _logger))
-                {
-                    var deploymentResult = deployer.Deploy();
-
-                    await SmokeTestHelper.RunTestsAsync(deploymentResult, _logger);
-                }
+            }
+            finally
+            {
+                Console.WriteLine($"Finished {testName}");
             }
         }
     }
