@@ -177,6 +177,84 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        protected internal RedirectToPageResult RedirectToPage(string pageName)
+            => RedirectToPage(pageName, routeValues: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="routeValues"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        protected internal RedirectToPageResult RedirectToPage(string pageName, object routeValues)
+            => RedirectToPage(pageName, routeValues, fragment: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        protected internal RedirectToPageResult RedirectToPage(string pageName, string fragment)
+            => RedirectToPage(pageName, routeValues: null, fragment: fragment);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="routeValues"/> and <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        protected internal RedirectToPageResult RedirectToPage(string pageName, object routeValues, string fragment)
+            => new RedirectToPageResult(pageName, routeValues, fragment);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
+        protected internal RedirectToPageResult RedirectToPagePermanent(string pageName)
+            => RedirectToPagePermanent(pageName, routeValues: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="routeValues"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
+        protected internal RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues)
+            => RedirectToPagePermanent(pageName, routeValues, fragment: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
+        protected internal RedirectToPageResult RedirectToPagePermanent(string pageName, string fragment)
+            => RedirectToPagePermanent(pageName, routeValues: null, fragment: fragment);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="routeValues"/> and <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
+        protected internal RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues, string fragment)
+            => new RedirectToPageResult(pageName, routeValues, permanent: true, fragment: fragment);
+
+        /// <summary>
         /// Creates a <see cref="PageViewResult"/> object that renders the page.
         /// </summary>
         /// <returns>The <see cref="PageViewResult"/>.</returns>
