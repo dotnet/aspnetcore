@@ -38,6 +38,79 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void AuthorizePage_AddsAllowAnonymousFilterToSpecificPage()
+        {
+            // Arrange
+            var options = new RazorPagesOptions();
+            var models = new[]
+            {
+                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+            };
+
+            // Act
+            options.AuthorizeFolder("/Users");
+            options.AllowAnonymousToPage("/Users/Contact.cshtml");
+            ApplyConventions(options, models);
+
+            // Assert
+            Assert.Collection(models,
+                model => Assert.Empty(model.Filters),
+                model =>
+                {
+                    Assert.Equal("/Users/Account.cshtml", model.ViewEnginePath);
+                    Assert.IsType<AuthorizeFilter>(Assert.Single(model.Filters));
+                },
+                model =>
+                {
+                    Assert.Equal("/Users/Contact.cshtml", model.ViewEnginePath);
+                    Assert.IsType<AuthorizeFilter>(model.Filters[0]);
+                    Assert.IsType<AllowAnonymousFilter>(model.Filters[1]);
+                });
+        }
+
+        [Theory]
+        [InlineData("/Users")]
+        [InlineData("/Users/")]
+        public void AuthorizePage_AddsAllowAnonymousFilterToPagesUnderFolder(string folderName)
+        {
+            // Arrange
+            var options = new RazorPagesOptions();
+            var models = new[]
+            {
+                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+            };
+
+            // Act
+            options.AuthorizeFolder("/");
+            options.AllowAnonymousToFolder("/Users");
+            ApplyConventions(options, models);
+
+            // Assert
+            Assert.Collection(models,
+                model =>
+                {
+                    Assert.Equal("/Index.cshtml", model.ViewEnginePath);
+                    Assert.IsType<AuthorizeFilter>(Assert.Single(model.Filters));
+                },
+                model =>
+                {
+                    Assert.Equal("/Users/Account.cshtml", model.ViewEnginePath);
+                    Assert.IsType<AuthorizeFilter>(model.Filters[0]);
+                    Assert.IsType<AllowAnonymousFilter>(model.Filters[1]);
+                },
+                model =>
+                {
+                    Assert.Equal("/Users/Contact.cshtml", model.ViewEnginePath);
+                    Assert.IsType<AuthorizeFilter>(model.Filters[0]);
+                    Assert.IsType<AllowAnonymousFilter>(model.Filters[1]);
+                });
+        }
+
+        [Fact]
         public void AuthorizePage_AddsAuthorizeFilterWithPolicyToSpecificPage()
         {
             // Arrange

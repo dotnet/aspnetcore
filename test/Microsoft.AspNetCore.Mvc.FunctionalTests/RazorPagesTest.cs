@@ -399,6 +399,22 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/Login?ReturnUrl=%2FHelloWorldWithAuth", response.Headers.Location.PathAndQuery);
         }
 
+        [Fact]
+        public async Task AuthorizePage_AllowAnonymousForSpecificPages()
+        {
+            // Arrange
+            var url = "/Pages/Admin/Login";
+            
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Login Page", content);
+        }
+
 
         [Fact]
         public async Task PageStart_IsDiscoveredWhenRootDirectoryIsNotSpecified()

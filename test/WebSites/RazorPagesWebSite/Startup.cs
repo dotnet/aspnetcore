@@ -16,6 +16,8 @@ namespace RazorPagesWebSite
                 .AddRazorPagesOptions(options =>
                 {
                     options.AuthorizePage("/HelloWorldWithAuth");
+                    options.AuthorizeFolder("/Pages/Admin");
+                    options.AllowAnonymousToPage("/Pages/Admin/Login");
                 });
         }
 
