@@ -41,7 +41,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 consumed = buffer.Move(consumed, lineIndex + 1);
                 span = span.Slice(0, lineIndex + 1);
             }
-            else if (buffer.IsSingleSpan || !TryGetNewLineSpan(ref buffer, ref span, out consumed))
+            else if (buffer.IsSingleSpan)
+            {
+                // No request line end
+                return false;
+            }
+            else if (TryGetNewLine(ref buffer, out var found))
+            {
+                span = buffer.Slice(consumed, found).ToSpan();
+                consumed = found;
+            }
+            else
             {
                 // No request line end
                 return false;
@@ -429,16 +439,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return true;
         }
 
-
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool TryGetNewLineSpan(ref ReadableBuffer buffer, ref Span<byte> span, out ReadCursor end)
+        private static bool TryGetNewLine(ref ReadableBuffer buffer, out ReadCursor found)
         {
             var start = buffer.Start;
-            if (ReadCursorOperations.Seek(start, buffer.End, out end, ByteLF) != -1)
+            if (ReadCursorOperations.Seek(start, buffer.End, out found, ByteLF) != -1)
             {
                 // Move 1 byte past the \n
-                end = buffer.Move(end, 1);
-                span = buffer.Slice(start, end).ToSpan();
+                found = buffer.Move(found, 1);
                 return true;
             }
             return false;

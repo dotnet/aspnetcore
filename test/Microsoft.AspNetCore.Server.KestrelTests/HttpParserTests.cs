@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.IO.Pipelines.Testing;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -363,6 +364,20 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             Assert.Equal("Invalid request header: ''", exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+        }
+
+        [Fact]
+        public void ParseRequestLineSplitBufferWithoutNewLineDoesNotUpdateConsumed()
+        {
+            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var buffer = BufferUtilities.CreateBuffer("GET ", "/");
+
+            var requestHandler = new RequestHandler();
+            var result = parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined);
+
+            Assert.False(result);
+            Assert.Equal(buffer.Start, consumed);
+            Assert.Equal(buffer.End, examined);
         }
 
         private void VerifyHeader(
