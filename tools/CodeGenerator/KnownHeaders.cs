@@ -291,8 +291,7 @@ namespace CodeGenerator
 
 using System;
 using System.Collections.Generic;
-using System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 

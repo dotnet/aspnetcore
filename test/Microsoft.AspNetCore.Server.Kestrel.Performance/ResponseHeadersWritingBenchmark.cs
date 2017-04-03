@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +10,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance

@@ -1,0 +1,14 @@
+<Project>
+  <Target Name="_GetCoreFXLabSources">
+    <PropertyGroup>
+      <CoreFXLabSourcesPath>$(MSBuildThisFileDirectory)..\corefxlab\</CoreFXLabSourcesPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <CoreFXLabCompile Include="$(CoreFXLabSourcesPath)src\System.IO.Pipelines\**\*.cs" />
+      <CoreFXLabCompile Include="$(CoreFXLabSourcesPath)src\System.Binary\**\*.cs" />
+      <CoreFXLabCompile Include="$(CoreFXLabSourcesPath)src\System.Buffers.Primitives\**\*.cs" />
+      <CoreFXLabCompile Include="$(CoreFXLabSourcesPath)src\System.Collections.Sequences\**\*.cs" />
+      <CoreFXLabCompile Include="$(CoreFXLabSourcesPath)src\System.Text.Encodings.Web.Utf8\UrlEncoder.cs" />
+    </ItemGroup>
+  </Target>
+</Project>

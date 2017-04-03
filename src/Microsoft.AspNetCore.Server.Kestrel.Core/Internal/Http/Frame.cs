@@ -5,17 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Encodings.Web.Utf8;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.Text.Encodings.Web.Utf8;
 using Microsoft.AspNetCore.Server.Kestrel.Transport;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -987,7 +987,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             }
 
-            Output.Write(_writeHeaders, this);
+            Output.Write<Frame>(_writeHeaders, this);
         }
 
         private static void WriteResponseHeaders(WritableBuffer writableBuffer, Frame frame)

@@ -4,11 +4,11 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Transport;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Exceptions;
 using Microsoft.Extensions.Logging;

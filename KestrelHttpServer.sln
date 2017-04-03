@@ -65,6 +65,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel", "src\Microsoft.AspNetCore.Server.Kestrel\Microsoft.AspNetCore.Server.Kestrel.csproj", "{56139957-5C29-4E7D-89BD-7D20598B4EAF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Internalizer", "tools\Internalizer\Internalizer.csproj", "{6B04EAAA-08DE-464B-92DB-1D32BB86892C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -195,6 +197,18 @@ Global
 		{56139957-5C29-4E7D-89BD-7D20598B4EAF}.Release|x64.Build.0 = Release|Any CPU
 		{56139957-5C29-4E7D-89BD-7D20598B4EAF}.Release|x86.ActiveCfg = Release|Any CPU
 		{56139957-5C29-4E7D-89BD-7D20598B4EAF}.Release|x86.Build.0 = Release|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Debug|x64.Build.0 = Debug|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Debug|x86.Build.0 = Debug|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Release|x64.ActiveCfg = Release|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Release|x64.Build.0 = Release|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Release|x86.ActiveCfg = Release|Any CPU
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -212,5 +226,6 @@ Global
 		{2822C132-BFFB-4D53-AC5B-E7E47DD81A6E} = {0EF2ACDF-012F-4472-A13A-4272419E2903}
 		{A76B8C8C-0DC5-4DD3-9B1F-02E51A0915F4} = {2D5D5227-4DBD-499A-96B1-76A36B03B750}
 		{56139957-5C29-4E7D-89BD-7D20598B4EAF} = {2D5D5227-4DBD-499A-96B1-76A36B03B750}
+		{6B04EAAA-08DE-464B-92DB-1D32BB86892C} = {327F7880-D9AF-46BD-B45C-3B7E34A01DFD}
 	EndGlobalSection
 EndGlobal
