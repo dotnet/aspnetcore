@@ -49,3 +49,4 @@ src/AspNetCore/version.h
 .build
 
 *.VC.*db
+global.json
