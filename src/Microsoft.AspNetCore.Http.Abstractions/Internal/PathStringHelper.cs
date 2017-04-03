@@ -28,5 +28,20 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             return c < ValidPathChars.Length && ValidPathChars[c];
         }
+
+        public static bool IsPercentEncodedChar(string str, int index)
+        {
+            return index < str.Length - 2
+                && str[index] == '%'
+                && IsHexadecimalChar(str[index + 1])
+                && IsHexadecimalChar(str[index + 2]);
+        }
+
+        public static bool IsHexadecimalChar(char c)
+        {
+            return ('0' <= c && c <= '9')
+                || ('A' <= c && c <= 'F')
+                || ('a' <= c && c <= 'f');
+        }
     }
 }

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Provides the path string escaped in a way which is correct for combining into the URI representation. 
+        /// Provides the path string escaped in a way which is correct for combining into the URI representation.
         /// </summary>
         /// <returns>The escaped path value</returns>
         public override string ToString()
@@ -77,9 +77,12 @@ namespace Microsoft.AspNetCore.Http
             var start = 0;
             var count = 0;
             var requiresEscaping = false;
-            for (int i = 0; i < _value.Length; ++i)
+            var i = 0;
+
+            while (i < _value.Length)
             {
-                if (PathStringHelper.IsValidPathChar(_value[i]))
+                var isPercentEncodedChar = PathStringHelper.IsPercentEncodedChar(_value, i);
+                if (PathStringHelper.IsValidPathChar(_value[i]) || isPercentEncodedChar)
                 {
                     if (requiresEscaping)
                     {
@@ -96,7 +99,16 @@ namespace Microsoft.AspNetCore.Http
                         count = 0;
                     }
 
-                    count++;
+                    if (isPercentEncodedChar)
+                    {
+                        count += 3;
+                        i += 3;
+                    }
+                    else
+                    {
+                        count++;
+                        i++;
+                    }
                 }
                 else
                 {
@@ -116,6 +128,7 @@ namespace Microsoft.AspNetCore.Http
                     }
 
                     count++;
+                    i++;
                 }
             }
 
@@ -145,6 +158,7 @@ namespace Microsoft.AspNetCore.Http
                 return buffer.ToString();
             }
         }
+
 
         /// <summary>
         /// Returns an PathString given the path as it is escaped in the URI format. The string MUST NOT contain any
@@ -279,7 +293,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Adds two PathString instances into a combined PathString value. 
+        /// Adds two PathString instances into a combined PathString value.
         /// </summary>
         /// <returns>The combined PathString value</returns>
         public PathString Add(PathString other)
@@ -297,7 +311,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Combines a PathString and QueryString into the joined URI formatted string value. 
+        /// Combines a PathString and QueryString into the joined URI formatted string value.
         /// </summary>
         /// <returns>The joined URI formatted string value</returns>
         public string Add(QueryString other)
