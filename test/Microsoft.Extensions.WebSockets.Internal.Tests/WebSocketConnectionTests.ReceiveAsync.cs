@@ -64,13 +64,13 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
             var result = await RunReceiveTest(
                 producer: async (channel, cancellationToken) =>
                 {
-                    await channel.WriteAsync(new byte[] { 0x02, 0x05 }.Slice()).OrTimeout();
+                    await channel.WriteAsync(new byte[] { 0x02, 0x05 }.AsSpan()).OrTimeout();
                     await Task.Yield();
-                    await channel.WriteAsync(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB, 0x80, 0x05 }.Slice()).OrTimeout();
+                    await channel.WriteAsync(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB, 0x80, 0x05 }.AsSpan()).OrTimeout();
                     await Task.Yield();
-                    await channel.WriteAsync(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF }.Slice()).OrTimeout();
+                    await channel.WriteAsync(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF }.AsSpan()).OrTimeout();
                     await Task.Yield();
-                    await channel.WriteAsync(new byte[] { 0xAB }.Slice()).OrTimeout();
+                    await channel.WriteAsync(new byte[] { 0xAB }.AsSpan()).OrTimeout();
                     await Task.Yield();
                 });
 
@@ -178,7 +178,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
             var result = await RunReceiveTest(
                 producer: async (channel, cancellationToken) =>
                 {
-                    await channel.WriteAsync(rawFrame.Slice()).OrTimeout();
+                    await channel.WriteAsync(rawFrame.AsSpan()).OrTimeout();
                 });
             var frames = result.Received;
             Assert.Equal(1, frames.Count);

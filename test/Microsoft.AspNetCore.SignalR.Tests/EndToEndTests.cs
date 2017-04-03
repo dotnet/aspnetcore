@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var buffer = new ArraySegment<byte>(new byte[1024]);
                 var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
 
-                Assert.Equal(bytes, buffer.Array.Slice(0, message.Length).ToArray());
+                Assert.Equal(bytes, buffer.Array.AsSpan().Slice(0, message.Length).ToArray());
 
                 await ws.CloseAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None);
             }
