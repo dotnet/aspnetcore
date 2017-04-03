@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.WebSockets.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -234,9 +236,20 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
 
+            var webSocketTask = Task.CompletedTask;
+
+            if (isWebSocketRequest)
+            {
+                var ws = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketConnectionFeature>();
+                webSocketTask = ws.Client.ExecuteAsync(frame => Task.CompletedTask);
+                await ws.Client.CloseAsync(new WebSocketCloseResult(WebSocketCloseStatus.NormalClosure), CancellationToken.None);
+            }
+
             manager.CloseConnections();
 
-            await request1;
+            await webSocketTask.OrTimeout();
+
+            await request1.OrTimeout();
         }
 
         [Fact]

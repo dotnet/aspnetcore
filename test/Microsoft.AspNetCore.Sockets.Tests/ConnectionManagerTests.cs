@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -98,6 +99,26 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             connectionManager.CloseConnections();
 
             await state.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task DisposingConnectionMultipleTimesWaitsOnConnectionClose()
+        {
+            var connectionManager = CreateConnectionManager();
+            var state = connectionManager.CreateConnection();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            state.ApplicationTask = tcs.Task;
+            state.TransportTask = tcs.Task;
+
+            var firstTask = state.DisposeAsync();
+            var secondTask = state.DisposeAsync();
+            Assert.False(firstTask.IsCompleted);
+            Assert.False(secondTask.IsCompleted);
+
+            tcs.TrySetResult(null);
+
+            await Task.WhenAll(firstTask, secondTask).OrTimeout();
         }
 
         [Fact]
