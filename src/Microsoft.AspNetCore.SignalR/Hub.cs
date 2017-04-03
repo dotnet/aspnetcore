@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class Hub : Hub<IClientProxy>
     {
-
     }
 
     public class Hub<TClient> : IDisposable

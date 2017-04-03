@@ -30,9 +30,7 @@ connection.onClosed = e => {
 };
 
 connection.on('SetUsersOnline', function (usersOnline) {
-    for (var user in usersOnline) {
-        addUserOnline(user, usersOnline[user]);
-    }
+    usersOnline.forEach(user => addUserOnline(user));
 });
 
 connection.on('OnConnected', function (id, userName) {
@@ -43,6 +41,16 @@ connection.on('OnConnected', function (id, userName) {
 connection.on('OnDisconnected', function (id, userName) {
     appendLine('User ' + userName + ' left the chat');
     document.getElementById(id).outerHTML = '';
+}
+
+connection.on('UserJoined', function (user) {
+    appendLine('User ' + userName + ' joined the chat');
+    addUserOnline(user);
+});
+
+connection.on('UserLeft', function (user) {
+    appendLine('User ' + userName + ' left the chat');
+    document.getElementById(user.ConnectionId).outerHTML = '';
 });
 
 connection.on('Send', function (userName, message) {

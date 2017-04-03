@@ -8,6 +8,7 @@ using ChatSample.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +57,8 @@ namespace ChatSample
             services.AddSignalR();
 
             services.AddAuthentication();
+
+            services.AddSingleton<IPresenceManager, DefaultPresenceManager<Chat>>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
