@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Benchmark(Baseline = true)]
         public unsafe int NoDotSegments()
         {
-            _noDotSegmentsAscii.CopyTo(_noDotSegmentsBytes, 0);
+            _noDotSegmentsAscii.CopyTo(_noDotSegmentsBytes);
 
             fixed (byte* start = _noDotSegmentsBytes)
             {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Benchmark]
         public unsafe int SingleDotSegments()
         {
-            _singleDotSegmentsAscii.CopyTo(_singleDotSegmentsBytes, 0);
+            _singleDotSegmentsAscii.CopyTo(_singleDotSegmentsBytes);
 
             fixed (byte* start = _singleDotSegmentsBytes)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Benchmark]
         public unsafe int DoubleDotSegments()
         {
-            _doubleDotSegmentsAscii.CopyTo(_doubleDotSegmentsBytes, 0);
+            _doubleDotSegmentsAscii.CopyTo(_doubleDotSegmentsBytes);
 
             fixed (byte* start = _doubleDotSegmentsBytes)
             {
