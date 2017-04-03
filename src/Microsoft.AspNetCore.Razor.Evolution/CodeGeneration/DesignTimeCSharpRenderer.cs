@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             {
                 using (Context.Writer.BuildLinePragma(node.Source.Value))
                 {
+                    Context.AddLineMappingFor(node);
                     Context.Writer.WriteUsing(node.Content);
                 }
             }

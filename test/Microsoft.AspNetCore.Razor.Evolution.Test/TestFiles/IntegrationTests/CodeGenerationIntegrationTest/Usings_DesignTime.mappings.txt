@@ -1,3 +1,28 @@
+Source Location: (1:0,1 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml)
+|using System.IO|
+Generated Location: (232:6,0 [15] )
+|using System.IO|
+
+Source Location: (19:1,1 [32] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml)
+|using Foo = System.Text.Encoding|
+Generated Location: (363:11,0 [32] )
+|using Foo = System.Text.Encoding|
+
+Source Location: (71:4,1 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml)
+|using static System|
+Generated Location: (511:16,0 [19] )
+|using static System|
+
+Source Location: (93:5,1 [27] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml)
+|using static System.Console|
+Generated Location: (646:21,0 [27] )
+|using static System.Console|
+
+Source Location: (123:6,1 [41] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml)
+|using static global::System.Text.Encoding|
+Generated Location: (789:26,0 [41] )
+|using static global::System.Text.Encoding|
+
 Source Location: (197:8,29 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml)
 |typeof(Path).FullName|
 Generated Location: (1381:41,29 [21] )

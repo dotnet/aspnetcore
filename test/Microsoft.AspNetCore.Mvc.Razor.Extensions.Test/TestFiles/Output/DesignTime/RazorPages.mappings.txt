@@ -1,3 +1,8 @@
+Source Location: (60:4,1 [41] /TestFiles/Input/RazorPages.cshtml)
+|using Microsoft.AspNetCore.Mvc.RazorPages|
+Generated Location: (565:32,0 [41] )
+|using Microsoft.AspNetCore.Mvc.RazorPages|
+
 Source Location: (16:2,7 [8] /TestFiles/Input/RazorPages.cshtml)
 |NewModel|
 Generated Location: (879:41,0 [8] )
