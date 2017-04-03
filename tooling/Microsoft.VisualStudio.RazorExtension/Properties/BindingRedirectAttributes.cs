@@ -25,7 +25,7 @@ using Microsoft.VisualStudio.Shell;
     PublicKeyToken = "adb9793829ddae60",
     OldVersionLowerBound = "0.0.0.0",
     OldVersionUpperBound = "1.0.0.0",
-    NewVersion = "1.0.0.0")]
+    NewVersion = "1.2.0.0")]
 
 [assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.CodeAnalysis.Razor.Workspaces",
@@ -33,7 +33,7 @@ using Microsoft.VisualStudio.Shell;
     PublicKeyToken = "adb9793829ddae60",
     OldVersionLowerBound = "0.0.0.0",
     OldVersionUpperBound = "1.0.0.0",
-    NewVersion = "1.0.0.0")]
+    NewVersion = "1.2.0.0")]
 
 [assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.CodeAnalysis.Remote.Razor",
@@ -41,7 +41,7 @@ using Microsoft.VisualStudio.Shell;
     PublicKeyToken = "adb9793829ddae60",
     OldVersionLowerBound = "0.0.0.0",
     OldVersionUpperBound = "1.0.0.0",
-    NewVersion = "1.0.0.0")]
+    NewVersion = "1.2.0.0")]
 
 [assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.VisualStudio.LanguageServices.Razor",
@@ -49,4 +49,4 @@ using Microsoft.VisualStudio.Shell;
     PublicKeyToken = "adb9793829ddae60",
     OldVersionLowerBound = "0.0.0.0",
     OldVersionUpperBound = "1.0.0.0",
-    NewVersion = "1.0.0.0")]
+    NewVersion = "1.2.0.0")]
