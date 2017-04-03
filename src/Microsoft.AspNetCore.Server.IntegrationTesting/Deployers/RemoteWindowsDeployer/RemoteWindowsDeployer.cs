@@ -252,19 +252,17 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 using (var runScriptsOnRemoteServerProcess = new Process() { StartInfo = startInfo })
                 {
-                    var processExited = new TaskCompletionSource<object>();
-
                     runScriptsOnRemoteServerProcess.EnableRaisingEvents = true;
                     runScriptsOnRemoteServerProcess.Exited += (sender, exitedArgs) =>
                     {
                         Logger.LogInformation($"[{_deploymentParameters.ServerName} {serverAction} stdout]: script complete");
-                        processExited.TrySetResult(null);
                     };
 
                     runScriptsOnRemoteServerProcess.StartAndCaptureOutAndErrToLogger(serverAction, Logger);
 
-                    await processExited.Task.OrTimeout(TimeSpan.FromMinutes(5));
-                    runScriptsOnRemoteServerProcess.WaitForExit((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+                    // Wait a second for the script to run or fail. The StartServer script will only terminate when the Deployer is disposed,
+                    // so we don't want to wait for it to terminate here because it would deadlock.
+                    await Task.Delay(TimeSpan.FromMinutes(1));
 
                     if (runScriptsOnRemoteServerProcess.HasExited && runScriptsOnRemoteServerProcess.ExitCode != 0)
                     {
