@@ -6,5 +6,5 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyImplicitExpression_Runtime -  - 
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] EmptyImplicitExpression.cshtml) - This is markup\n\n
-                CSharpExpression - (18:2,0 [0] EmptyImplicitExpression.cshtml)
+                CSharpExpression - 
                 HtmlContent - (19:2,1 [1] EmptyImplicitExpression.cshtml) - !

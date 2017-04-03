@@ -344,7 +344,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 _builder.Pop();
 
-                var emptyExpression = true;
                 if (expressionNode.Children.Count > 0)
                 {
                     var sourceRangeStart = expressionNode
@@ -362,18 +361,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
                             contentLength);
-                        emptyExpression = false;
                     }
-                }
-
-                if (emptyExpression)
-                {
-                    expressionNode.Source = new SourceSpan(
-                        block.Start.FilePath ?? FileName,
-                        block.Start.AbsoluteIndex,
-                        block.Start.LineIndex,
-                        block.Start.CharacterIndex,
-                        length: 0);
                 }
             }
 

@@ -21,6 +21,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 throw new ArgumentNullException(nameof(node));
             }
 
+            if (node.Children.Count == 0)
+            {
+                return;
+            }
+
             if (node.Source != null)
             {
                 using (context.Writer.BuildLinePragma(node.Source.Value))
@@ -29,28 +34,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                     context.Writer.WritePadding(offset, node.Source, context);
                     context.Writer.WriteStartAssignment(RazorDesignTimeIRPass.DesignTimeVariable);
 
-                    if (node.Children.Count > 0)
+                    for (var i = 0; i < node.Children.Count; i++)
                     {
-                        for (var i = 0; i < node.Children.Count; i++)
+                        if (node.Children[i] is RazorIRToken token && token.IsCSharp)
                         {
-                            if (node.Children[i] is RazorIRToken token && token.IsCSharp)
-                            {
-                                context.AddLineMappingFor(token);
-                                context.Writer.Write(token.Content);
-                            }
-                            else
-                            {
-                                // There may be something else inside the expression like a Template or another extension node.
-                                context.RenderNode(node.Children[i]);
-                            }
+                            context.AddLineMappingFor(token);
+                            context.Writer.Write(token.Content);
                         }
-                    }
-                    else
-                    {
-                        // When typing "@" / "@(" we still need to provide IntelliSense. This is taken care of by creating a 0 length 
-                        // line mapping. It's also important that this 0 length line mapping exists in a line pragma so when a user 
-                        // starts typing additional characters following their "@" they get appropriately located errors.
-                        context.AddLineMappingFor(node);
+                        else
+                        {
+                            // There may be something else inside the expression like a Template or another extension node.
+                            context.RenderNode(node.Children[i]);
+                        }
                     }
 
                     context.Writer.WriteLine(";");

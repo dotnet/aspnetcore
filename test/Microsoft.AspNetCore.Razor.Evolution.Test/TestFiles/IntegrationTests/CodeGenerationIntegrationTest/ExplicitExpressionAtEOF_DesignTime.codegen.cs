@@ -13,11 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpressionAtEOF.cshtml"
-__o = ;
-
-#line default
-#line hidden
         }
         #pragma warning restore 1998
     }
