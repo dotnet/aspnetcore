@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         {
               
     
+#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyImplicitExpressionInCode.cshtml"
+__o = ;
+
+#line default
+#line hidden
                  
 
         }

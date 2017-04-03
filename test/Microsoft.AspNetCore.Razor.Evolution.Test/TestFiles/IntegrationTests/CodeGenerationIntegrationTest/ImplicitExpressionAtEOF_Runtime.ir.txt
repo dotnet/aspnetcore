@@ -6,4 +6,5 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ImplicitExpressionAtEOF_Runtime -  - 
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] ImplicitExpressionAtEOF.cshtml) - This is markup\n\n
-                CSharpExpression - 
+                CSharpExpression - (19:2,1 [0] ImplicitExpressionAtEOF.cshtml)
+                    RazorIRToken - (19:2,1 [0] ImplicitExpressionAtEOF.cshtml) - CSharp - 

@@ -7,6 +7,7 @@ Document -
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [6] EmptyImplicitExpressionInCode.cshtml)
                     RazorIRToken - (2:0,2 [6] EmptyImplicitExpressionInCode.cshtml) - CSharp - \n    
-                CSharpExpression - 
+                CSharpExpression - (9:1,5 [0] EmptyImplicitExpressionInCode.cshtml)
+                    RazorIRToken - (9:1,5 [0] EmptyImplicitExpressionInCode.cshtml) - CSharp - 
                 CSharpStatement - (9:1,5 [2] EmptyImplicitExpressionInCode.cshtml)
                     RazorIRToken - (9:1,5 [2] EmptyImplicitExpressionInCode.cshtml) - CSharp - \n

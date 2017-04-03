@@ -367,17 +367,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
             {
-                if (span.Symbols.Count == 1)
-                {
-                    if (span.Symbols[0] is CSharpSymbol symbol &&
-                        symbol.Type == CSharpSymbolType.Unknown &&
-                        symbol.Content.Length == 0)
-                    {
-                        // We don't want to create IR nodes for marker symbols.
-                        return;
-                    }
-                }
-
                 _builder.Add(new RazorIRToken()
                 {
                     Content = span.Content,

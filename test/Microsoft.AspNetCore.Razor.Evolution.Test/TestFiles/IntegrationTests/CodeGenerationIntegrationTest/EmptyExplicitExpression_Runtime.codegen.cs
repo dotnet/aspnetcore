@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral("This is markup\r\n\r\n");
-            Write();
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyExplicitExpression.cshtml"
+Write();
+
+#line default
+#line hidden
         }
         #pragma warning restore 1998
     }

@@ -20,3 +20,4 @@ Document -
                 CSharpExpression - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml)
                     Template - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml)
                         HtmlContent - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml) - </div>
+                    RazorIRToken - (14:0,14 [0] ExplicitExpressionWithMarkup.cshtml) - CSharp - 
