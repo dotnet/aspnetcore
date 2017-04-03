@@ -12,6 +12,63 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     public class MessagePumpTests
     {
+        [ConditionalFact]
+        public void OverridingDirectConfigurationWithIServerAddressesFeatureSucceeds()
+        {
+            var serverAddress = "http://localhost:11001/";
+            var overrideAddress = "http://localhost:11002/";
+
+            using (var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory()))
+            {
+                var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
+                serverAddressesFeature.Addresses.Add(overrideAddress);
+                serverAddressesFeature.PreferHostingUrls = true;
+                server.Listener.Options.UrlPrefixes.Add(serverAddress);
+
+                server.Start(new DummyApplication());
+
+                Assert.Equal(overrideAddress, serverAddressesFeature.Addresses.Single());
+            }
+        }
+
+        [ConditionalTheory]
+        [InlineData("http://localhost:11001/")]
+        [InlineData("invalid address")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfPreferHostinUrlsFalse(string overrideAddress)
+        {
+            var serverAddress = "http://localhost:11002/";
+
+            using (var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory()))
+            {
+                var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
+                serverAddressesFeature.Addresses.Add(overrideAddress);
+                server.Listener.Options.UrlPrefixes.Add(serverAddress);
+
+                server.Start(new DummyApplication());
+
+                Assert.Equal(serverAddress, serverAddressesFeature.Addresses.Single());
+            }
+        }
+
+        [ConditionalFact]
+        public void DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfAddressesIsEmpty()
+        {
+            var serverAddress = "http://localhost:11002/";
+
+            using (var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory()))
+            {
+                var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
+                serverAddressesFeature.PreferHostingUrls = true;
+                server.Listener.Options.UrlPrefixes.Add(serverAddress);
+
+                server.Start(new DummyApplication());
+
+                Assert.Equal(serverAddress, serverAddressesFeature.Addresses.Single());
+            }
+        }
+
         [ConditionalTheory]
         [InlineData("http://localhost:11001/")]
         [InlineData("invalid address")]

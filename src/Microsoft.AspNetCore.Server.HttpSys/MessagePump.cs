@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -69,24 +67,39 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw new ArgumentNullException(nameof(application));
             }
 
-            var serverAdressesPresent = _serverAddresses.Addresses.Count > 0;
+            var hostingUrlsPresent = _serverAddresses.Addresses.Count > 0;
 
-            if (_options.UrlPrefixes.Count > 0)
+            if (_serverAddresses.PreferHostingUrls && hostingUrlsPresent)
             {
-                if (serverAdressesPresent)
+                if (_options.UrlPrefixes.Count > 0)
+                {
+                    LogHelper.LogWarning(_logger, $"Overriding endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true." +
+                        $" Binding to address(es) '{string.Join(", ", _serverAddresses.Addresses)}' instead. ");
+
+                    Listener.Options.UrlPrefixes.Clear();
+                }
+
+                foreach (var value in _serverAddresses.Addresses)
+                {
+                    Listener.Options.UrlPrefixes.Add(value);
+                }
+            }
+            else if (_options.UrlPrefixes.Count > 0)
+            {
+                if (hostingUrlsPresent)
                 {
                     LogHelper.LogWarning(_logger, $"Overriding address(es) '{string.Join(", ", _serverAddresses.Addresses)}'. " +
                         $"Binding to endpoints added to {nameof(HttpSysOptions.UrlPrefixes)} instead.");
 
                     _serverAddresses.Addresses.Clear();
+                }
 
-                    foreach (var prefix in _options.UrlPrefixes)
-                    {
-                        _serverAddresses.Addresses.Add(prefix.FullPrefix);
-                    }
+                foreach (var prefix in _options.UrlPrefixes)
+                {
+                    _serverAddresses.Addresses.Add(prefix.FullPrefix);
                 }
             }
-            else if (serverAdressesPresent)
+            else if (hostingUrlsPresent)
             {
                 foreach (var value in _serverAddresses.Addresses)
                 {
