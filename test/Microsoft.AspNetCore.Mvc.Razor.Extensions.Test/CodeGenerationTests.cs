@@ -68,6 +68,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             RunRuntimeTest("RazorPages", BuildDivDescriptors());
         }
+
+        [Fact]
+        public void RazorEngine_RazorPagesWithoutModel_Runtime()
+        {
+            RunRuntimeTest("RazorPagesWithoutModel", BuildDivDescriptors());
+        }
         #endregion
 
         #region DesignTime
@@ -123,6 +129,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorEngine_RazorPages_DesignTime()
         {
             RunDesignTimeTest("RazorPages", BuildDivDescriptors());
+        }
+
+        [Fact]
+        public void RazorEngine_RazorPagesWithoutModel_DesignTime()
+        {
+            RunDesignTimeTest("RazorPagesWithoutModel", BuildDivDescriptors());
         }
         #endregion
 

@@ -1,0 +1,41 @@
+Source Location: (23:2,14 [17] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
+|"*, TestAssembly"|
+Generated Location: (970:41,29 [17] )
+|"*, TestAssembly"|
+
+Source Location: (571:24,47 [4] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
+|Name|
+Generated Location: (1483:53,47 [4] )
+|Name|
+
+Source Location: (100:5,12 [283] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
+|
+    public IActionResult OnPost(Customer customer)
+    {
+        Name = customer.Name;
+        return Redirect("~/customers/inlinepagemodels/");
+    }
+
+    public string Name { get; set; }
+
+    public class Customer
+    {
+        public string Name { get; set; }
+    }
+|
+Generated Location: (1924:64,12 [283] )
+|
+    public IActionResult OnPost(Customer customer)
+    {
+        Name = customer.Name;
+        return Redirect("~/customers/inlinepagemodels/");
+    }
+
+    public string Name { get; set; }
+
+    public class Customer
+    {
+        public string Name { get; set; }
+    }
+|
+
