@@ -6,8 +6,22 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
-    public class DefaultTagHelperWriter : TagHelperWriter
+    public class DesignTimeTagHelperWriter : TagHelperWriter
     {
+        public override void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIRNode node)
+        {
+            foreach (var tagHelperTypeName in node.UsedTagHelperTypeNames)
+            {
+                var tagHelperVariableName = GetTagHelperVariableName(tagHelperTypeName);
+                context.Writer
+                    .Write("private global::")
+                    .WriteVariableDeclaration(
+                        tagHelperTypeName,
+                        tagHelperVariableName,
+                        value: null);
+            }
+        }
+
         public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIRNode node)
         {
             throw new NotImplementedException();
@@ -32,5 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         {
             throw new NotImplementedException();
         }
+
+        private static string GetTagHelperVariableName(string tagHelperTypeName) => "__" + tagHelperTypeName.Replace('.', '_');
     }
 }

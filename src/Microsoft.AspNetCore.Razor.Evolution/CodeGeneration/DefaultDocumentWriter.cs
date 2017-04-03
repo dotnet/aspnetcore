@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             _context.RenderNode = visitor.Visit;
 
             _context.BasicWriter = _context.Options.DesignTimeMode ? (BasicWriter)new DesignTimeBasicWriter() : new RuntimeBasicWriter();
-            _context.TagHelperWriter = new DefaultTagHelperWriter();
+            _context.TagHelperWriter = _context.Options.DesignTimeMode ? (TagHelperWriter)new DesignTimeTagHelperWriter() : new RuntimeTagHelperWriter();
 
             visitor.VisitDocument(node);
             _context.RenderChildren = null;
@@ -186,6 +186,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             public override void VisitCSharpStatement(CSharpStatementIRNode node)
             {
                 Context.BasicWriter.WriteCSharpStatement(Context, node);
+            }
+
+            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+            {
+                Context.TagHelperWriter.WriteDeclareTagHelperFields(Context, node);
             }
 
             public override void VisitDefault(RazorIRNode node)

@@ -316,20 +316,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             }
         }
 
-        public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
-        {
-            foreach (var tagHelperTypeName in node.UsedTagHelperTypeNames)
-            {
-                var tagHelperVariableName = GetTagHelperVariableName(tagHelperTypeName);
-                Context.Writer
-                    .Write("private global::")
-                    .WriteVariableDeclaration(
-                        tagHelperTypeName,
-                        tagHelperVariableName,
-                        value: null);
-            }
-        }
-
         private void RenderTagHelperAttributeInline(
             RazorIRNode node,
             SourceSpan documentLocation)

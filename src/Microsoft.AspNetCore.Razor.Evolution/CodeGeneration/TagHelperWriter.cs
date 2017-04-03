@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
     public abstract class TagHelperWriter
     {
+        public abstract void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIRNode node);
+
         public abstract void WriteInitializeTagHelperStructure(CSharpRenderingContext context, InitializeTagHelperStructureIRNode node);
 
         public abstract void WriteSetTagHelperProperty(CSharpRenderingContext context, SetTagHelperPropertyIRNode node);
