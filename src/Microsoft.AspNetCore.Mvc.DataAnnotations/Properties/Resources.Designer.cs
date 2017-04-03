@@ -15,48 +15,42 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         /// </summary>
         internal static string ValidatableObjectAdapter_IncompatibleType
         {
-            get { return GetString("ValidatableObjectAdapter_IncompatibleType"); }
+            get => GetString("ValidatableObjectAdapter_IncompatibleType");
         }
 
         /// <summary>
         /// The model object inside the metadata claimed to be compatible with '{0}', but was actually '{1}'.
         /// </summary>
         internal static string FormatValidatableObjectAdapter_IncompatibleType(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ValidatableObjectAdapter_IncompatibleType"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidatableObjectAdapter_IncompatibleType"), p0, p1);
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty
         {
-            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+            get => GetString("ArgumentCannotBeNullOrEmpty");
         }
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string FormatArgumentCannotBeNullOrEmpty()
-        {
-            return GetString("ArgumentCannotBeNullOrEmpty");
-        }
+            => GetString("ArgumentCannotBeNullOrEmpty");
 
         /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull
         {
-            get { return GetString("PropertyOfTypeCannotBeNull"); }
+            get => GetString("PropertyOfTypeCannotBeNull");
         }
 
         /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string FormatPropertyOfTypeCannotBeNull(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
 
         private static string GetString(string name, params string[] formatterNames)
         {

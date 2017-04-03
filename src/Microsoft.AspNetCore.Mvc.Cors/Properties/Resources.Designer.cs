@@ -15,16 +15,14 @@ namespace Microsoft.AspNetCore.Mvc.Cors
         /// </summary>
         internal static string CorsAuthorizationFilter_MissingCorsPolicy
         {
-            get { return GetString("CorsAuthorizationFilter_MissingCorsPolicy"); }
+            get => GetString("CorsAuthorizationFilter_MissingCorsPolicy");
         }
 
         /// <summary>
         /// A CORS policy named '{0}' could not be found.
         /// </summary>
         internal static string FormatCorsAuthorizationFilter_MissingCorsPolicy(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CorsAuthorizationFilter_MissingCorsPolicy"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("CorsAuthorizationFilter_MissingCorsPolicy"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {

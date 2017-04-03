@@ -15,320 +15,280 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty
         {
-            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+            get => GetString("ArgumentCannotBeNullOrEmpty");
         }
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string FormatArgumentCannotBeNullOrEmpty()
-        {
-            return GetString("ArgumentCannotBeNullOrEmpty");
-        }
+            => GetString("ArgumentCannotBeNullOrEmpty");
 
         /// <summary>
         /// One or more compilation failures occurred:
         /// </summary>
         internal static string CompilationFailed
         {
-            get { return GetString("CompilationFailed"); }
+            get => GetString("CompilationFailed");
         }
 
         /// <summary>
         /// One or more compilation failures occurred:
         /// </summary>
         internal static string FormatCompilationFailed()
-        {
-            return GetString("CompilationFailed");
-        }
+            => GetString("CompilationFailed");
 
         /// <summary>
         /// '{0}' cannot be invoked when a Layout page is set to be executed.
         /// </summary>
         internal static string FlushPointCannotBeInvoked
         {
-            get { return GetString("FlushPointCannotBeInvoked"); }
+            get => GetString("FlushPointCannotBeInvoked");
         }
 
         /// <summary>
         /// '{0}' cannot be invoked when a Layout page is set to be executed.
         /// </summary>
         internal static string FormatFlushPointCannotBeInvoked(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FlushPointCannotBeInvoked"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("FlushPointCannotBeInvoked"), p0);
 
         /// <summary>
         /// The layout view '{0}' could not be located. The following locations were searched:{1}
         /// </summary>
         internal static string LayoutCannotBeLocated
         {
-            get { return GetString("LayoutCannotBeLocated"); }
+            get => GetString("LayoutCannotBeLocated");
         }
 
         /// <summary>
         /// The layout view '{0}' could not be located. The following locations were searched:{1}
         /// </summary>
         internal static string FormatLayoutCannotBeLocated(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("LayoutCannotBeLocated"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("LayoutCannotBeLocated"), p0, p1);
 
         /// <summary>
         /// Layout page '{0}' cannot be rendered after '{1}' has been invoked.
         /// </summary>
         internal static string LayoutCannotBeRendered
         {
-            get { return GetString("LayoutCannotBeRendered"); }
+            get => GetString("LayoutCannotBeRendered");
         }
 
         /// <summary>
         /// Layout page '{0}' cannot be rendered after '{1}' has been invoked.
         /// </summary>
         internal static string FormatLayoutCannotBeRendered(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("LayoutCannotBeRendered"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("LayoutCannotBeRendered"), p0, p1);
 
         /// <summary>
         /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
         /// </summary>
         internal static string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword
         {
-            get { return GetString("MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword"); }
+            get => GetString("MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword");
         }
 
         /// <summary>
         /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
         /// </summary>
         internal static string FormatMvcRazorCodeParser_CannotHaveModelAndInheritsKeyword(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword"), p0);
 
         /// <summary>
         /// The '{0}' keyword must be followed by a type name on the same line.
         /// </summary>
         internal static string MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName
         {
-            get { return GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName"); }
+            get => GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName");
         }
 
         /// <summary>
         /// The '{0}' keyword must be followed by a type name on the same line.
         /// </summary>
         internal static string FormatMvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName"), p0);
 
         /// <summary>
         /// Only one '{0}' statement is allowed in a file.
         /// </summary>
         internal static string MvcRazorCodeParser_OnlyOneModelStatementIsAllowed
         {
-            get { return GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed"); }
+            get => GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed");
         }
 
         /// <summary>
         /// Only one '{0}' statement is allowed in a file.
         /// </summary>
         internal static string FormatMvcRazorCodeParser_OnlyOneModelStatementIsAllowed(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed"), p0);
 
         /// <summary>
         /// There is no active writing scope to end.
         /// </summary>
         internal static string RazorPage_ThereIsNoActiveWritingScopeToEnd
         {
-            get { return GetString("RazorPage_ThereIsNoActiveWritingScopeToEnd"); }
+            get => GetString("RazorPage_ThereIsNoActiveWritingScopeToEnd");
         }
 
         /// <summary>
         /// There is no active writing scope to end.
         /// </summary>
         internal static string FormatRazorPage_ThereIsNoActiveWritingScopeToEnd()
-        {
-            return GetString("RazorPage_ThereIsNoActiveWritingScopeToEnd");
-        }
+            => GetString("RazorPage_ThereIsNoActiveWritingScopeToEnd");
 
         /// <summary>
         /// The {0} operation cannot be performed while inside a writing scope in '{1}'.
         /// </summary>
         internal static string RazorPage_CannotFlushWhileInAWritingScope
         {
-            get { return GetString("RazorPage_CannotFlushWhileInAWritingScope"); }
+            get => GetString("RazorPage_CannotFlushWhileInAWritingScope");
         }
 
         /// <summary>
         /// The {0} operation cannot be performed while inside a writing scope in '{1}'.
         /// </summary>
         internal static string FormatRazorPage_CannotFlushWhileInAWritingScope(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_CannotFlushWhileInAWritingScope"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_CannotFlushWhileInAWritingScope"), p0, p1);
 
         /// <summary>
         /// {0} invocation in '{1}' is invalid. {0} can only be called from a layout page.
         /// </summary>
         internal static string RazorPage_MethodCannotBeCalled
         {
-            get { return GetString("RazorPage_MethodCannotBeCalled"); }
+            get => GetString("RazorPage_MethodCannotBeCalled");
         }
 
         /// <summary>
         /// {0} invocation in '{1}' is invalid. {0} can only be called from a layout page.
         /// </summary>
         internal static string FormatRazorPage_MethodCannotBeCalled(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_MethodCannotBeCalled"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_MethodCannotBeCalled"), p0, p1);
 
         /// <summary>
         /// {0} has not been called for the page at '{1}'. To ignore call {2}().
         /// </summary>
         internal static string RenderBodyNotCalled
         {
-            get { return GetString("RenderBodyNotCalled"); }
+            get => GetString("RenderBodyNotCalled");
         }
 
         /// <summary>
         /// {0} has not been called for the page at '{1}'. To ignore call {2}().
         /// </summary>
         internal static string FormatRenderBodyNotCalled(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RenderBodyNotCalled"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("RenderBodyNotCalled"), p0, p1, p2);
 
         /// <summary>
         /// Section '{0}' is already defined.
         /// </summary>
         internal static string SectionAlreadyDefined
         {
-            get { return GetString("SectionAlreadyDefined"); }
+            get => GetString("SectionAlreadyDefined");
         }
 
         /// <summary>
         /// Section '{0}' is already defined.
         /// </summary>
         internal static string FormatSectionAlreadyDefined(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SectionAlreadyDefined"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("SectionAlreadyDefined"), p0);
 
         /// <summary>
         /// {0} invocation in '{1}' is invalid. The section '{2}' has already been rendered.
         /// </summary>
         internal static string SectionAlreadyRendered
         {
-            get { return GetString("SectionAlreadyRendered"); }
+            get => GetString("SectionAlreadyRendered");
         }
 
         /// <summary>
         /// {0} invocation in '{1}' is invalid. The section '{2}' has already been rendered.
         /// </summary>
         internal static string FormatSectionAlreadyRendered(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SectionAlreadyRendered"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("SectionAlreadyRendered"), p0, p1, p2);
 
         /// <summary>
         /// The layout page '{0}' cannot find the section '{1}' in the content page '{2}'.
         /// </summary>
         internal static string SectionNotDefined
         {
-            get { return GetString("SectionNotDefined"); }
+            get => GetString("SectionNotDefined");
         }
 
         /// <summary>
         /// The layout page '{0}' cannot find the section '{1}' in the content page '{2}'.
         /// </summary>
         internal static string FormatSectionNotDefined(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SectionNotDefined"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("SectionNotDefined"), p0, p1, p2);
 
         /// <summary>
         /// The following sections have been defined but have not been rendered by the page at '{0}': '{1}'. To ignore an unrendered section call {2}("sectionName").
         /// </summary>
         internal static string SectionsNotRendered
         {
-            get { return GetString("SectionsNotRendered"); }
+            get => GetString("SectionsNotRendered");
         }
 
         /// <summary>
         /// The following sections have been defined but have not been rendered by the page at '{0}': '{1}'. To ignore an unrendered section call {2}("sectionName").
         /// </summary>
         internal static string FormatSectionsNotRendered(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SectionsNotRendered"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("SectionsNotRendered"), p0, p1, p2);
 
         /// <summary>
         /// View of type '{0}' cannot be activated by '{1}'.
         /// </summary>
         internal static string ViewCannotBeActivated
         {
-            get { return GetString("ViewCannotBeActivated"); }
+            get => GetString("ViewCannotBeActivated");
         }
 
         /// <summary>
         /// View of type '{0}' cannot be activated by '{1}'.
         /// </summary>
         internal static string FormatViewCannotBeActivated(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewCannotBeActivated"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewCannotBeActivated"), p0, p1);
 
         /// <summary>
         /// '{0} must be set to access '{1}'.
         /// </summary>
         internal static string ViewContextMustBeSet
         {
-            get { return GetString("ViewContextMustBeSet"); }
+            get => GetString("ViewContextMustBeSet");
         }
 
         /// <summary>
         /// '{0} must be set to access '{1}'.
         /// </summary>
         internal static string FormatViewContextMustBeSet(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewContextMustBeSet"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewContextMustBeSet"), p0, p1);
 
         /// <summary>
         /// Generated Code
         /// </summary>
         internal static string GeneratedCodeFileName
         {
-            get { return GetString("GeneratedCodeFileName"); }
+            get => GetString("GeneratedCodeFileName");
         }
 
         /// <summary>
         /// Generated Code
         /// </summary>
         internal static string FormatGeneratedCodeFileName()
-        {
-            return GetString("GeneratedCodeFileName");
-        }
+            => GetString("GeneratedCodeFileName");
 
         /// <summary>
         /// Unable to perform '{0}' assignment. Tag helper property '{1}.{2}' must not be null.
         /// </summary>
         internal static string RazorPage_InvalidTagHelperIndexerAssignment
         {
-            get { return GetString("RazorPage_InvalidTagHelperIndexerAssignment"); }
+            get => GetString("RazorPage_InvalidTagHelperIndexerAssignment");
         }
 
         /// <summary>
         /// Unable to perform '{0}' assignment. Tag helper property '{1}.{2}' must not be null.
         /// </summary>
         internal static string FormatRazorPage_InvalidTagHelperIndexerAssignment(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_InvalidTagHelperIndexerAssignment"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("RazorPage_InvalidTagHelperIndexerAssignment"), p0, p1, p2);
 
         /// <summary>
         /// Unexpected return value from '{1}.{2}' for URL '{0}'. If the '{1}' service has been overridden, change '{2}' to replace only the '~/' prefix. Otherwise, add the following directive to the Razor page to disable URL resolution relative to the application's 'webroot' setting:
@@ -337,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         internal static string CouldNotResolveApplicationRelativeUrl_TagHelper
         {
-            get { return GetString("CouldNotResolveApplicationRelativeUrl_TagHelper"); }
+            get => GetString("CouldNotResolveApplicationRelativeUrl_TagHelper");
         }
 
         /// <summary>
@@ -346,121 +306,105 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// @{3} "{4}, {5}"
         /// </summary>
         internal static string FormatCouldNotResolveApplicationRelativeUrl_TagHelper(object p0, object p1, object p2, object p3, object p4, object p5)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CouldNotResolveApplicationRelativeUrl_TagHelper"), p0, p1, p2, p3, p4, p5);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("CouldNotResolveApplicationRelativeUrl_TagHelper"), p0, p1, p2, p3, p4, p5);
 
         /// <summary>
         /// A circular layout reference was detected when rendering '{0}'. The layout page '{1}' has already been rendered.
         /// </summary>
         internal static string LayoutHasCircularReference
         {
-            get { return GetString("LayoutHasCircularReference"); }
+            get => GetString("LayoutHasCircularReference");
         }
 
         /// <summary>
         /// A circular layout reference was detected when rendering '{0}'. The layout page '{1}' has already been rendered.
         /// </summary>
         internal static string FormatLayoutHasCircularReference(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("LayoutHasCircularReference"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("LayoutHasCircularReference"), p0, p1);
 
         /// <summary>
         /// One or more compilation references are missing. Ensure that your project is referencing '{0}' and the '{1}' property is not set to false.
         /// </summary>
         internal static string Compilation_DependencyContextIsNotSpecified
         {
-            get { return GetString("Compilation_DependencyContextIsNotSpecified"); }
+            get => GetString("Compilation_DependencyContextIsNotSpecified");
         }
 
         /// <summary>
         /// One or more compilation references are missing. Ensure that your project is referencing '{0}' and the '{1}' property is not set to false.
         /// </summary>
         internal static string FormatCompilation_DependencyContextIsNotSpecified(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Compilation_DependencyContextIsNotSpecified"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Compilation_DependencyContextIsNotSpecified"), p0, p1);
 
         /// <summary>
         /// '{0}' cannot be empty. These locations are required to locate a view for rendering.
         /// </summary>
         internal static string ViewLocationFormatsIsRequired
         {
-            get { return GetString("ViewLocationFormatsIsRequired"); }
+            get => GetString("ViewLocationFormatsIsRequired");
         }
 
         /// <summary>
         /// '{0}' cannot be empty. These locations are required to locate a view for rendering.
         /// </summary>
         internal static string FormatViewLocationFormatsIsRequired(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewLocationFormatsIsRequired"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewLocationFormatsIsRequired"), p0);
 
         /// <summary>
         /// Nesting of TagHelper attribute writing scopes is not supported.
         /// </summary>
         internal static string RazorPage_NestingAttributeWritingScopesNotSupported
         {
-            get { return GetString("RazorPage_NestingAttributeWritingScopesNotSupported"); }
+            get => GetString("RazorPage_NestingAttributeWritingScopesNotSupported");
         }
 
         /// <summary>
         /// Nesting of TagHelper attribute writing scopes is not supported.
         /// </summary>
         internal static string FormatRazorPage_NestingAttributeWritingScopesNotSupported()
-        {
-            return GetString("RazorPage_NestingAttributeWritingScopesNotSupported");
-        }
+            => GetString("RazorPage_NestingAttributeWritingScopesNotSupported");
 
         /// <summary>
         /// '{0}.{1}' must not be empty. At least one '{2}' is required to locate a view for rendering.
         /// </summary>
         internal static string FileProvidersAreRequired
         {
-            get { return GetString("FileProvidersAreRequired"); }
+            get => GetString("FileProvidersAreRequired");
         }
 
         /// <summary>
         /// '{0}.{1}' must not be empty. At least one '{2}' is required to locate a view for rendering.
         /// </summary>
         internal static string FormatFileProvidersAreRequired(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FileProvidersAreRequired"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("FileProvidersAreRequired"), p0, p1, p2);
 
         /// <summary>
         /// Path must begin with a forward slash '/'.
         /// </summary>
         internal static string RazorProject_PathMustStartWithForwardSlash
         {
-            get { return GetString("RazorProject_PathMustStartWithForwardSlash"); }
+            get => GetString("RazorProject_PathMustStartWithForwardSlash");
         }
 
         /// <summary>
         /// Path must begin with a forward slash '/'.
         /// </summary>
         internal static string FormatRazorProject_PathMustStartWithForwardSlash()
-        {
-            return GetString("RazorProject_PathMustStartWithForwardSlash");
-        }
+            => GetString("RazorProject_PathMustStartWithForwardSlash");
 
         /// <summary>
         /// The property '{0}' of '{1}' must not be null.
         /// </summary>
         internal static string PropertyMustBeSet
         {
-            get { return GetString("PropertyMustBeSet"); }
+            get => GetString("PropertyMustBeSet");
         }
 
         /// <summary>
         /// The property '{0}' of '{1}' must not be null.
         /// </summary>
         internal static string FormatPropertyMustBeSet(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyMustBeSet"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("PropertyMustBeSet"), p0, p1);
 
         private static string GetString(string name, params string[] formatterNames)
         {

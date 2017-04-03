@@ -15,64 +15,56 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         /// </summary>
         internal static string CompareAttributeTestResource
         {
-            get { return GetString("CompareAttributeTestResource"); }
+            get => GetString("CompareAttributeTestResource");
         }
 
         /// <summary>
         /// Comparing {0} to {1}.
         /// </summary>
         internal static string FormatCompareAttributeTestResource(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CompareAttributeTestResource"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("CompareAttributeTestResource"), p0, p1);
 
         /// <summary>
         /// description from resources
         /// </summary>
         internal static string DisplayAttribute_Description
         {
-            get { return GetString("DisplayAttribute_Description"); }
+            get => GetString("DisplayAttribute_Description");
         }
 
         /// <summary>
         /// description from resources
         /// </summary>
         internal static string FormatDisplayAttribute_Description()
-        {
-            return GetString("DisplayAttribute_Description");
-        }
+            => GetString("DisplayAttribute_Description");
 
         /// <summary>
         /// name from resources
         /// </summary>
         internal static string DisplayAttribute_Name
         {
-            get { return GetString("DisplayAttribute_Name"); }
+            get => GetString("DisplayAttribute_Name");
         }
 
         /// <summary>
         /// name from resources
         /// </summary>
         internal static string FormatDisplayAttribute_Name()
-        {
-            return GetString("DisplayAttribute_Name");
-        }
+            => GetString("DisplayAttribute_Name");
 
         /// <summary>
         /// Error about '{0}' from resources.
         /// </summary>
         internal static string RemoteAttribute_Error
         {
-            get { return GetString("RemoteAttribute_Error"); }
+            get => GetString("RemoteAttribute_Error");
         }
 
         /// <summary>
         /// Error about '{0}' from resources.
         /// </summary>
         internal static string FormatRemoteAttribute_Error(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RemoteAttribute_Error"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("RemoteAttribute_Error"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {
