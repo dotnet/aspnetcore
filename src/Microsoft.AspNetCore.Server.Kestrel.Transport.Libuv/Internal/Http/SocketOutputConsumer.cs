@@ -61,6 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         // Send a FIN
                         await ShutdownAsync();
+                        // Ensure no data is written after uv_shutdown
+                        break;
                     }
 
                     if (buffer.IsEmpty && result.IsCompleted)
