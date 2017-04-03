@@ -19,10 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         public override void VisitCSharpExpression(CSharpExpressionIRNode node)
         {
             // We can't remove this yet, because it's still used recursively in a few places.
-            if (node.Children.Count == 0)
-            {
-                return;
-            }
 
             if (node.Source != null)
             {
@@ -35,19 +31,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                         .Write(padding)
                         .WriteStartAssignment(RazorDesignTimeIRPass.DesignTimeVariable);
 
-                    for (var i = 0; i < node.Children.Count; i++)
+                    if (node.Children.Count > 0)
                     {
+                        for (var i = 0; i < node.Children.Count; i++)
+                        {
                         var token = node.Children[i] as RazorIRToken;
                         if (token != null && token.IsCSharp)
-                        {
-                            Context.AddLineMappingFor(token);
-                            Context.Writer.Write(token.Content);
+                            {
+                                Context.AddLineMappingFor(token);
+                                Context.Writer.Write(token.Content);
+                            }
+                            else
+                            {
+                                // There may be something else inside the expression like a Template or another extension node.
+                                Visit(node.Children[i]);
+                            }
                         }
-                        else
-                        {
-                            // There may be something else inside the expression like a Template or another extension node.
-                            Visit(node.Children[i]);
-                        }
+                    }
+                    else
+                    {
+                        // When typing "@" / "@(" we still need to provide IntelliSense. This is taken care of by creating a 0 length 
+                        // line mapping. It's also important that this 0 length line mapping exists in a line pragma so when a user 
+                        // starts typing additional characters following their "@" they get appropriately located errors.
+                        Context.AddLineMappingFor(node);
                     }
 
                     Context.Writer.WriteLine(";");
