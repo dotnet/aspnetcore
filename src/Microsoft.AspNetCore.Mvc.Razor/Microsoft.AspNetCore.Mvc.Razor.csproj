@@ -16,7 +16,7 @@
 
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(RazorCodeAnalysisVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(AspNetCoreVersion)" />
