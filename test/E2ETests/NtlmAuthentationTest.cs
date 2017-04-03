@@ -27,9 +27,11 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone,
+            Skip = "https://github.com/aspnet/MusicStore/issues/761")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone,
+            Skip = "https://github.com/aspnet/MusicStore/issues/761")]
         public async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             try
@@ -44,7 +46,7 @@ namespace E2ETests
                     {
                         PublishApplicationBeforeDeployment = true,
                         PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                        TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.1",
+                        TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
                         Configuration = Helpers.GetCurrentBuildConfiguration(),
                         ApplicationType = applicationType,
                         EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'

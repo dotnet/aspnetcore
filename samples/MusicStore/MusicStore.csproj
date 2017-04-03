@@ -4,10 +4,9 @@
 
   <PropertyGroup>
     <Description>Music store application on ASP.NET Core</Description>
-    <TargetFrameworks>net46;netcoreapp1.1</TargetFrameworks>
+    <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <RuntimeIdentifiers>win7-x64;win7-x86;win81-x64;win81-x86;win10-x64;win10-x86;osx.10.10-x64;osx.10.11-x64;osx.10.12-x64;ubuntu.14.04-x64;ubuntu.15.04-x64;ubuntu.16.04-x64;centos.7-x64;rhel.7.2-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

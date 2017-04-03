@@ -32,9 +32,12 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [SkipIfEnvironmentVariableNotEnabled("RUN_TESTS_ON_NANO")]
-        [InlineData(ServerType.Kestrel, 5000, ApplicationType.Standalone)]
-        [InlineData(ServerType.WebListener, 5000, ApplicationType.Standalone)]
-        [InlineData(ServerType.IIS, 8080, ApplicationType.Standalone)]
+        [InlineData(ServerType.Kestrel, 5000, ApplicationType.Standalone,
+            Skip = "https://github.com/aspnet/MusicStore/issues/761")]
+        [InlineData(ServerType.WebListener, 5000, ApplicationType.Standalone,
+            Skip = "https://github.com/aspnet/MusicStore/issues/761")]
+        [InlineData(ServerType.IIS, 8080, ApplicationType.Standalone,
+            Skip = "https://github.com/aspnet/MusicStore/issues/761")]
         public async Task Test(ServerType serverType, int portToListen, ApplicationType applicationType)
         {
             var applicationBaseUrl = $"http://{_remoteDeploymentConfig.ServerName}:{portToListen}/";
@@ -267,7 +270,7 @@ namespace E2ETests
                         _remoteDeploymentConfig.AccountName,
                         _remoteDeploymentConfig.AccountPassword)
                     {
-                        TargetFramework = "netcoreapp1.1",
+                        TargetFramework = "netcoreapp2.0",
                         ApplicationBaseUriHint = applicationBaseUrl,
                         ApplicationType = applicationType
                     };

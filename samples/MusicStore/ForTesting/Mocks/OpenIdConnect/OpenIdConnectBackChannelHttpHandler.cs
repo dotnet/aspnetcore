@@ -12,13 +12,7 @@ namespace MusicStore.Mocks.OpenIdConnect
         {
             var response = new HttpResponseMessage();
 
-            var basePath = Path.GetFullPath(Path.Combine(
-#if NET451
-                AppDomain.CurrentDomain.BaseDirectory,
-#else
-                AppContext.BaseDirectory,
-#endif
-                "ForTesting", "Mocks", "OpenIdConnect"));
+            var basePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "ForTesting", "Mocks", "OpenIdConnect"));
 
             if (request.RequestUri.AbsoluteUri == "https://login.windows.net/[tenantName].onmicrosoft.com/.well-known/openid-configuration")
             {

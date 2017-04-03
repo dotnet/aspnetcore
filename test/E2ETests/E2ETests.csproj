@@ -3,11 +3,10 @@
   <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <UserSecretsId>MusicStore.E2ETests</UserSecretsId>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <RuntimeIdentifiers>win7-x86;win7-x64;osx.10.10-x64;osx.10.11-x64;ubuntu.14.04-x64;ubuntu.14.10-x64;ubuntu.15.04-x64;ubuntu.16.04-x64;centos.7-x64;debian.8-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

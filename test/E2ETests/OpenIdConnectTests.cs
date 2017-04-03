@@ -27,7 +27,8 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         //[InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone,
+            Skip = "https://github.com/aspnet/MusicStore/issues/761")]
         public async Task OpenIdConnect_OnWindowsOS(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
@@ -40,7 +41,8 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "E2Etests")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/MusicStore/issues/761")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone,
+            Skip = "https://github.com/aspnet/MusicStore/issues/761")]
         public async Task OpenIdConnect_OnNonWindows(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             await OpenIdConnectTestSuite(serverType, runtimeFlavor, architecture, applicationType);
@@ -70,7 +72,7 @@ namespace E2ETests
                     {
                         PublishApplicationBeforeDeployment = true,
                         PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                        TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.1",
+                        TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
                         Configuration = Helpers.GetCurrentBuildConfiguration(),
                         ApplicationType = applicationType,
                         EnvironmentName = "OpenIdConnectTesting",
