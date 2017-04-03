@@ -181,8 +181,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 RejectRequestLine(data, length);
             }
 
-            var line = new Span<byte>(data, length);
-
             handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
         }
 
