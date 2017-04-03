@@ -25,6 +25,8 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
+*.swp
+*~
 .build/
 .testPublish/
 launchSettings.json
