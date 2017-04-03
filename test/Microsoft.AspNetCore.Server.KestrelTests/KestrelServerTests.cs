@@ -4,17 +4,17 @@
 using System;
 using System.Linq;
 using System.Net;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         private class MockTransportFactory : ITransportFactory
         {
-            public ITransport Create(ListenOptions listenOptions, IConnectionHandler handler)
+            public ITransport Create(IEndPointInformation endPointInformation, IConnectionHandler handler)
             {
                 return Mock.Of<ITransport>();
             }

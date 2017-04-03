@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task ListenerCanCreateAndDispose(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext();
-            testContext.App = TestApp.EchoApp;
+            testContext.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(listenOptions, testContext, new DummyApplication(TestApp.EchoApp));
             var engine = new KestrelEngine(testContext.TransportContext, listenOptions);
 
             await engine.BindAsync();
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task ConnectionCanReadAndWrite(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext();
-            testContext.App = TestApp.EchoApp;
+            testContext.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(listenOptions, testContext, new DummyApplication(TestApp.EchoApp));
             var engine = new KestrelEngine(testContext.TransportContext, listenOptions);
 
             await engine.BindAsync();

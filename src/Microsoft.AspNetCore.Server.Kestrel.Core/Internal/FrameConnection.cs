@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 

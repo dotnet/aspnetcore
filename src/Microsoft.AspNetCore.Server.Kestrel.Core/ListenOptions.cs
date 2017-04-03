@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
     /// Describes either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor for an already open
     /// socket that Kestrel should bind to or open.
     /// </summary>
-    public class ListenOptions
+    public class ListenOptions : IEndPointInformation
     {
         internal ListenOptions(IPEndPoint endPoint)
         {

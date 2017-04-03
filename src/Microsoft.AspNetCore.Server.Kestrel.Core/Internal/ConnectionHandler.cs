@@ -5,17 +5,19 @@ using System.IO.Pipelines;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 {
     public class ConnectionHandler<TContext> : IConnectionHandler
     {
+        private readonly ListenOptions _listenOptions;
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
 
-        public ConnectionHandler(ServiceContext serviceContext, IHttpApplication<TContext> application)
+        public ConnectionHandler(ListenOptions listenOptions, ServiceContext serviceContext, IHttpApplication<TContext> application)
         {
+            _listenOptions = listenOptions;
             _serviceContext = serviceContext;
             _application = application;
         }
@@ -44,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 ConnectionId = connectionId,
                 ServiceContext = _serviceContext,
                 PipeFactory = connectionInfo.PipeFactory,
-                ConnectionAdapters = connectionInfo.ListenOptions.ConnectionAdapters,
+                ConnectionAdapters = _listenOptions.ConnectionAdapters,
                 Frame = frame,
                 Input = inputPipe,
                 Output = outputPipe,
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             });
 
             _serviceContext.Log.ConnectionStart(connectionId);
-            KestrelEventSource.Log.ConnectionStart(connection, connectionInfo);
+            KestrelEventSource.Log.ConnectionStart(_listenOptions, connection, connectionInfo);
 
             // Since data cannot be added to the inputPipe by the transport until OnConnection returns,
             // Frame.RequestProcessingAsync is guaranteed to unblock the transport thread before calling

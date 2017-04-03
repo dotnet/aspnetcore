@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public async Task StartAsync(
             string pipeName,
             byte[] pipeMessage,
-            ListenOptions listenOptions,
+            IEndPointInformation endPointInformation,
             KestrelThread thread)
         {
             _pipeName = pipeName;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 Marshal.StructureToPtr(fileCompletionInfo, _fileCompletionInfoPtr, false);
             }
 
-            await StartAsync(listenOptions, thread).ConfigureAwait(false);
+            await StartAsync(endPointInformation, thread).ConfigureAwait(false);
 
             await Thread.PostAsync(state => ((ListenerPrimary)state).PostCallback(),
                                    this).ConfigureAwait(false);

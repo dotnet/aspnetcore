@@ -3,7 +3,7 @@
 
 using System.IO.Pipelines;
 using System.Net;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public ListenerContext ListenerContext { get; set; }
 
-        public ListenOptions ListenOptions => ListenerContext.ListenOptions;
         public IPEndPoint RemoteEndPoint { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
 

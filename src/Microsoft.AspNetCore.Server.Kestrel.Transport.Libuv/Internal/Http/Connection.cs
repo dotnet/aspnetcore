@@ -9,8 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Exceptions;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http

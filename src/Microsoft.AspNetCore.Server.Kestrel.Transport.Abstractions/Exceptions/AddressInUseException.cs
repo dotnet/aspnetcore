@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Exceptions
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
     public class AddressInUseException : InvalidOperationException
     {

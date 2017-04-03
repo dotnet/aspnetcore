@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -36,14 +37,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public Task StartAsync(
             string pipeName,
             byte[] pipeMessage,
-            ListenOptions listenOptions,
+            IEndPointInformation endPointInformation,
             KestrelThread thread)
         {
             _pipeName = pipeName;
             _pipeMessage = pipeMessage;
             _buf = thread.Loop.Libuv.buf_init(_ptr, 4);
 
-            ListenOptions = listenOptions;
+            EndPointInformation = endPointInformation;
             Thread = thread;
             DispatchPipe = new UvPipeHandle(Log);
 

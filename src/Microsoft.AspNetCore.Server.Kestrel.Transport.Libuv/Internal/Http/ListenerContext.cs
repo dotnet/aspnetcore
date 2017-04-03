@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public LibuvTransportContext TransportContext { get; set; }
 
-        public ListenOptions ListenOptions { get; set; }
+        public IEndPointInformation EndPointInformation { get; set; }
 
         public KestrelThread Thread { get; set; }
 
@@ -25,13 +26,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         protected UvStreamHandle CreateAcceptSocket()
         {
-            switch (ListenOptions.Type)
+            switch (EndPointInformation.Type)
             {
                 case ListenType.IPEndPoint:
                 case ListenType.FileHandle:
                     var tcpHandle = new UvTcpHandle(TransportContext.Log);
                     tcpHandle.Init(Thread.Loop, Thread.QueueCloseHandle);
-                    tcpHandle.NoDelay(ListenOptions.NoDelay);
+                    tcpHandle.NoDelay(EndPointInformation.NoDelay);
                     return tcpHandle;
                 case ListenType.SocketPath:
                     var pipeHandle = new UvPipeHandle(TransportContext.Log);

@@ -5,7 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
     public interface IConnectionContext
     {

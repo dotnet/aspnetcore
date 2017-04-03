@@ -4,7 +4,7 @@
 using System;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers

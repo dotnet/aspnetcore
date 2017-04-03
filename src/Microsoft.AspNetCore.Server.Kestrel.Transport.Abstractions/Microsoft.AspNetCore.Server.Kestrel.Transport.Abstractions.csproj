@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Transport abstractions for the ASP.NET Core Kestrel cross-platform web server.</Description>
+    <TargetFrameworks>netstandard1.3</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;kestrel</PackageTags>
+    <NoWarn>CS1591;$(NoWarn)</NoWarn>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabsPipelinesVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+</Project>

@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {

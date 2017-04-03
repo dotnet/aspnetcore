@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
             };
         }
 
-        public ITransport Create(ListenOptions listenOptions, IConnectionHandler handler)
+        public ITransport Create(IEndPointInformation endPointInformation, IConnectionHandler handler)
         {
             var transportContext = new LibuvTransportContext
             {
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
                 ConnectionHandler = handler
             };
 
-            return new KestrelEngine(transportContext, listenOptions);
+            return new KestrelEngine(transportContext, endPointInformation);
         }
     }
 }

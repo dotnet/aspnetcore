@@ -4,7 +4,7 @@
 using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
@@ -26,14 +26,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         // - Avoid renaming methods or parameters marked with EventAttribute. EventSource uses these to form the event object.
 
         [NonEvent]
-        public void ConnectionStart(IConnectionContext context, IConnectionInformation information)
+        public void ConnectionStart(ListenOptions listenOptions, IConnectionContext context, IConnectionInformation information)
         {
             // avoid allocating strings unless this event source is enabled
             if (IsEnabled())
             {
                 ConnectionStart(
                     context.ConnectionId,
-                    information.ListenOptions.Scheme,
+                    listenOptions.Scheme,
                     information.LocalEndPoint.ToString(),
                     information.RemoteEndPoint.ToString());
             }

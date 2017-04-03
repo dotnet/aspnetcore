@@ -6,9 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
@@ -26,18 +24,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task ConnectionsGetRoundRobinedToSecondaryListeners()
         {
             var libuv = new LibuvFunctions();
-
-            var serviceContextPrimary = new TestServiceContext
-            {
-                App = c => c.Response.WriteAsync("Primary")
-            };
-
-            var serviceContextSecondary = new TestServiceContext
-            {
-                App = c => c.Response.WriteAsync("Secondary")
-            };
-
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+
+            var serviceContextPrimary = new TestServiceContext();
+            serviceContextPrimary.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(
+                listenOptions, serviceContextPrimary, new DummyApplication(c => c.Response.WriteAsync("Primary")));
+
+            var serviceContextSecondary = new TestServiceContext();
+            serviceContextSecondary.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(
+                listenOptions, serviceContextSecondary, new DummyApplication(c => c.Response.WriteAsync("Secondary")));
+
             var kestrelEngine = new KestrelEngine(libuv, serviceContextPrimary.TransportContext, listenOptions);
 
             var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
@@ -80,11 +76,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task NonListenerPipeConnectionsAreLoggedAndIgnored()
         {
             var libuv = new LibuvFunctions();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
 
-            var serviceContextPrimary = new TestServiceContext
-            {
-                App = c => c.Response.WriteAsync("Primary")
-            };
+            var serviceContextPrimary = new TestServiceContext();
+            serviceContextPrimary.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(
+                listenOptions, serviceContextPrimary, new DummyApplication(c => c.Response.WriteAsync("Primary")));
 
             var serviceContextSecondary = new TestServiceContext
             {
@@ -92,10 +88,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 ServerOptions = serviceContextPrimary.ServerOptions,
                 ThreadPool = serviceContextPrimary.ThreadPool,
                 HttpParserFactory = serviceContextPrimary.HttpParserFactory,
-                App = c => c.Response.WriteAsync("Secondary")
             };
+            serviceContextSecondary.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(
+                listenOptions, serviceContextSecondary, new DummyApplication(c => c.Response.WriteAsync("Secondary")));
 
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             var kestrelEngine = new KestrelEngine(libuv, serviceContextPrimary.TransportContext, listenOptions);
 
             var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
@@ -187,11 +183,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task PipeConnectionsWithWrongMessageAreLoggedAndIgnored()
         {
             var libuv = new LibuvFunctions();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
 
-            var serviceContextPrimary = new TestServiceContext
-            {
-                App = c => c.Response.WriteAsync("Primary")
-            };
+            var serviceContextPrimary = new TestServiceContext();
+            serviceContextPrimary.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(
+                listenOptions, serviceContextPrimary, new DummyApplication(c => c.Response.WriteAsync("Primary")));
 
             var serviceContextSecondary = new TestServiceContext
             {
@@ -199,10 +195,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 ServerOptions = serviceContextPrimary.ServerOptions,
                 ThreadPool = serviceContextPrimary.ThreadPool,
                 HttpParserFactory = serviceContextPrimary.HttpParserFactory,
-                App = c => c.Response.WriteAsync("Secondary")
             };
+            serviceContextSecondary.TransportContext.ConnectionHandler = new ConnectionHandler<HttpContext>(
+                listenOptions, serviceContextSecondary, new DummyApplication(c => c.Response.WriteAsync("Secondary")));
 
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             var kestrelEngine = new KestrelEngine(libuv, serviceContextPrimary.TransportContext, listenOptions);
 
             var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
@@ -270,30 +266,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
 
             Assert.True(false, $"'{address}' failed to respond with '{expected}' in {maxRetries} retries.");
-        }
-
-        private class TestApplication : IHttpApplication<DefaultHttpContext>
-        {
-            private readonly Func<DefaultHttpContext, Task> _app;
-
-            public TestApplication(Func<DefaultHttpContext, Task> app)
-            {
-                _app = app;
-            }
-
-            public DefaultHttpContext CreateContext(IFeatureCollection contextFeatures)
-            {
-                return new DefaultHttpContext(contextFeatures);
-            }
-
-            public Task ProcessRequestAsync(DefaultHttpContext context)
-            {
-                return _app(context);
-            }
-
-            public void DisposeContext(DefaultHttpContext context, Exception exception)
-            {
-            }
         }
     }
 }

@@ -9,8 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Exceptions;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.Extensions.Logging;
@@ -19,21 +18,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 {
     public class KestrelEngine : ITransport
     {
-        private readonly ListenOptions _listenOptions;
+        private readonly IEndPointInformation _endPointInformation;
 
         private readonly List<IAsyncDisposable> _listeners = new List<IAsyncDisposable>();
 
-        public KestrelEngine(LibuvTransportContext context, ListenOptions listenOptions)
-            : this(new LibuvFunctions(), context, listenOptions)
+        public KestrelEngine(LibuvTransportContext context, IEndPointInformation endPointInformation)
+            : this(new LibuvFunctions(), context, endPointInformation)
         { }
 
         // For testing
-        public KestrelEngine(LibuvFunctions uv, LibuvTransportContext context, ListenOptions listenOptions)
+        public KestrelEngine(LibuvFunctions uv, LibuvTransportContext context, IEndPointInformation endPointInformation)
         {
             Libuv = uv;
             TransportContext = context;
 
-            _listenOptions = listenOptions;
+            _endPointInformation = endPointInformation;
         }
 
         public LibuvFunctions Libuv { get; }
@@ -92,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 {
                     var listener = new Listener(TransportContext);
                     _listeners.Add(listener);
-                    await listener.StartAsync(_listenOptions, Threads[0]).ConfigureAwait(false);
+                    await listener.StartAsync(_endPointInformation, Threads[0]).ConfigureAwait(false);
                 }
                 else
                 {
@@ -101,13 +100,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
                     var listenerPrimary = new ListenerPrimary(TransportContext);
                     _listeners.Add(listenerPrimary);
-                    await listenerPrimary.StartAsync(pipeName, pipeMessage, _listenOptions, Threads[0]).ConfigureAwait(false);
+                    await listenerPrimary.StartAsync(pipeName, pipeMessage, _endPointInformation, Threads[0]).ConfigureAwait(false);
 
                     foreach (var thread in Threads.Skip(1))
                     {
                         var listenerSecondary = new ListenerSecondary(TransportContext);
                         _listeners.Add(listenerSecondary);
-                        await listenerSecondary.StartAsync(pipeName, pipeMessage, _listenOptions, thread).ConfigureAwait(false);
+                        await listenerSecondary.StartAsync(pipeName, pipeMessage, _endPointInformation, thread).ConfigureAwait(false);
                     }
                 }
             }

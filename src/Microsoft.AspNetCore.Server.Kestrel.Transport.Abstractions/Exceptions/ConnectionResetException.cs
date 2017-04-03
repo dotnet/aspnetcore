@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Exceptions
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
     public class ConnectionResetException : IOException
     {

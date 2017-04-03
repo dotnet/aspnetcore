@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             serviceContext.ServerOptions.Limits.MaxResponseBufferSize = maxResponseBufferSize;
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
-            var connectionHandler = new ConnectionHandler<object>(serviceContext, application: null);
+            var connectionHandler = new ConnectionHandler<object>(listenOptions: null, serviceContext: serviceContext, application: null);
             var mockScheduler = Mock.Of<IScheduler>();
             var outputPipeOptions = connectionHandler.GetOutputPipeOptions(mockScheduler);
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             serviceContext.ServerOptions.Limits.MaxRequestBufferSize = maxRequestBufferSize;
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
-            var connectionHandler = new ConnectionHandler<object>(serviceContext, application: null);
+            var connectionHandler = new ConnectionHandler<object>(listenOptions: null, serviceContext: serviceContext, application: null);
             var mockScheduler = Mock.Of<IScheduler>();
             var inputPipeOptions = connectionHandler.GetInputPipeOptions(mockScheduler);
 

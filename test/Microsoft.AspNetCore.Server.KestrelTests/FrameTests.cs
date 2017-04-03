@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -712,7 +712,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         private class MockConnectionInformation : IConnectionInformation
         {
-            public ListenOptions ListenOptions { get; }
             public IPEndPoint RemoteEndPoint { get; }
             public IPEndPoint LocalEndPoint { get; }
             public PipeFactory PipeFactory { get; }

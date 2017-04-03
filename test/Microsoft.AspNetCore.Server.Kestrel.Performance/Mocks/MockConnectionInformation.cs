@@ -3,14 +3,12 @@
 
 using System.IO.Pipelines;
 using System.Net;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class MockConnectionInformation : IConnectionInformation
     {
-        public ListenOptions ListenOptions { get; }
         public IPEndPoint RemoteEndPoint { get; }
         public IPEndPoint LocalEndPoint { get; }
 

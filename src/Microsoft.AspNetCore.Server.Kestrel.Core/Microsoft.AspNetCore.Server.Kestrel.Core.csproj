@@ -25,6 +25,10 @@
     <PackageReference Include="System.Text.Encodings.Web.Utf8" Version="$(CoreFxLabsVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.Diagnostics.Process" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Threading.Thread" Version="$(CoreFxVersion)" />
