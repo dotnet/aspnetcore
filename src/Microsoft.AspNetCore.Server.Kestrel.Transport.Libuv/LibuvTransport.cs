@@ -6,29 +6,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 {
-    public class KestrelEngine : ITransport
+    public class LibuvTransport : ITransport
     {
         private readonly IEndPointInformation _endPointInformation;
 
         private readonly List<IAsyncDisposable> _listeners = new List<IAsyncDisposable>();
 
-        public KestrelEngine(LibuvTransportContext context, IEndPointInformation endPointInformation)
+        public LibuvTransport(LibuvTransportContext context, IEndPointInformation endPointInformation)
             : this(new LibuvFunctions(), context, endPointInformation)
         { }
 
         // For testing
-        public KestrelEngine(LibuvFunctions uv, LibuvTransportContext context, IEndPointInformation endPointInformation)
+        public LibuvTransport(LibuvFunctions uv, LibuvTransportContext context, IEndPointInformation endPointInformation)
         {
             Libuv = uv;
             TransportContext = context;
@@ -38,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         public LibuvFunctions Libuv { get; }
         public LibuvTransportContext TransportContext { get; }
-        public List<KestrelThread> Threads { get; } = new List<KestrelThread>();
+        public List<LibuvThread> Threads { get; } = new List<LibuvThread>();
 
         public IApplicationLifetime AppLifetime => TransportContext.AppLifetime;
         public ILibuvTrace Log => TransportContext.Log;
@@ -78,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             // TODO: Split endpoint management from thread management
             for (var index = 0; index < TransportOptions.ThreadCount; index++)
             {
-                Threads.Add(new KestrelThread(this));
+                Threads.Add(new LibuvThread(this));
             }
 
             foreach (var thread in Threads)
@@ -111,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                     }
                 }
             }
-            catch (UvException ex) when (ex.StatusCode == Constants.EADDRINUSE)
+            catch (UvException ex) when (ex.StatusCode == LibuvConstants.EADDRINUSE)
             {
                 await UnbindAsync().ConfigureAwait(false);
                 throw new AddressInUseException(ex.Message, ex);

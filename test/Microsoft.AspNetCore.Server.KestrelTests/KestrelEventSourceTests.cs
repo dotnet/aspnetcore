@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 using System.Reflection;
-using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void ExistsWithCorrectId()
         {
             var esType = typeof(KestrelServer).GetTypeInfo().Assembly.GetType(
-                "Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.KestrelEventSource",
+                "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.KestrelEventSource",
                 throwOnError: true,
                 ignoreCase: false
             );

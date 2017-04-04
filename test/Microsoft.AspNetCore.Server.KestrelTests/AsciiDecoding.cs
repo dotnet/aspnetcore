@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

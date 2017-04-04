@@ -4,7 +4,7 @@
 using System;
 using System.IO.Pipelines;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {

@@ -5,8 +5,9 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Testing
     /// </summary>
     public class TestServer : IDisposable
     {
-        private KestrelEngine _engine;
+        private LibuvTransport _transport;
         private ListenOptions _listenOptions;
 
         public TestServer(RequestDelegate app)
@@ -47,13 +48,13 @@ namespace Microsoft.AspNetCore.Testing
 
             try
             {
-                _engine = new KestrelEngine(context.TransportContext, _listenOptions);
-                _engine.BindAsync().Wait();
+                _transport = new LibuvTransport(context.TransportContext, _listenOptions);
+                _transport.BindAsync().Wait();
             }
             catch
             {
-                _engine.UnbindAsync().Wait();
-                _engine.StopAsync().Wait();
+                _transport.UnbindAsync().Wait();
+                _transport.StopAsync().Wait();
                 throw;
             }
         }
@@ -71,8 +72,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public void Dispose()
         {
-            _engine.UnbindAsync().Wait();
-            _engine.StopAsync().Wait();
+            _transport.UnbindAsync().Wait();
+            _transport.StopAsync().Wait();
         }
     }
 }

@@ -5,15 +5,15 @@ using System.IO.Pipelines;
 using System.Net;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class ConnectionContext : IConnectionInformation
+    public class LibuvConnectionContext : IConnectionInformation
     {
-        public ConnectionContext()
+        public LibuvConnectionContext()
         {
         }
 
-        public ConnectionContext(ListenerContext context)
+        public LibuvConnectionContext(ListenerContext context)
         {
             ListenerContext = context;
         }

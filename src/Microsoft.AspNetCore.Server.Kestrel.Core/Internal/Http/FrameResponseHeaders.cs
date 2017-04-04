@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public partial class FrameResponseHeaders : FrameHeaders
     {

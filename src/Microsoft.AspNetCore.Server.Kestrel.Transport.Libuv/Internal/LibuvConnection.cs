@@ -7,15 +7,13 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class Connection : ConnectionContext, ITimeoutControl
+    public class LibuvConnection : LibuvConnectionContext, ITimeoutControl
     {
         private const int MinAllocBufferSize = 2048;
 
@@ -35,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private TimeoutAction _timeoutAction;
         private WritableBuffer? _currentWritableBuffer;
 
-        public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
+        public LibuvConnection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
             socket.Connection = this;
@@ -52,17 +50,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         // For testing
-        public Connection()
+        public LibuvConnection()
         {
         }
 
         public string ConnectionId { get; set; }
         public IPipeWriter Input { get; set; }
-        public SocketOutputConsumer Output { get; set; }
+        public LibuvOutputConsumer Output { get; set; }
 
         private ILibuvTrace Log => ListenerContext.TransportContext.Log;
         private IConnectionHandler ConnectionHandler => ListenerContext.TransportContext.ConnectionHandler;
-        private KestrelThread Thread => ListenerContext.Thread;
+        private LibuvThread Thread => ListenerContext.Thread;
 
         public void Start()
         {
@@ -72,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 ConnectionId = _connectionContext.ConnectionId;
 
                 Input = _connectionContext.Input;
-                Output = new SocketOutputConsumer(_connectionContext.Output, Thread, _socket, this, ConnectionId, Log);
+                Output = new LibuvOutputConsumer(_connectionContext.Output, Thread, _socket, this, ConnectionId, Log);
 
                 // Start socket prior to applying the ConnectionAdapter
                 _socket.ReadStart(_allocCallback, _readCallback, this);
@@ -132,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private static LibuvFunctions.uv_buf_t AllocCallback(UvStreamHandle handle, int suggestedSize, object state)
         {
-            return ((Connection)state).OnAlloc(handle, suggestedSize);
+            return ((LibuvConnection)state).OnAlloc(handle, suggestedSize);
         }
 
         private unsafe LibuvFunctions.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
@@ -151,13 +149,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private static void ReadCallback(UvStreamHandle handle, int status, object state)
         {
-            ((Connection)state).OnRead(handle, status);
+            ((LibuvConnection)state).OnRead(handle, status);
         }
 
         private async void OnRead(UvStreamHandle handle, int status)
         {
             var normalRead = status >= 0;
-            var normalDone = status == Constants.EOF;
+            var normalDone = status == LibuvConstants.EOF;
             var errorDone = !(normalDone || normalRead);
             var readCount = normalRead ? status : 0;
 
@@ -183,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 handle.Libuv.Check(status, out uvError);
 
                 // Log connection resets at a lower (Debug) level.
-                if (status == Constants.ECONNRESET)
+                if (status == LibuvConstants.ECONNRESET)
                 {
                     Log.ConnectionReset(ConnectionId);
                     error = new ConnectionResetException(uvError.Message, uvError);
@@ -273,8 +271,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             _timeoutAction = timeoutAction;
 
-            // Add KestrelThread.HeartbeatMilliseconds extra milliseconds since this can be called right before the next heartbeat.
-            Interlocked.Exchange(ref _timeoutTimestamp, _lastTimestamp + milliseconds + KestrelThread.HeartbeatMilliseconds);
+            // Add LibuvThread.HeartbeatMilliseconds extra milliseconds since this can be called right before the next heartbeat.
+            Interlocked.Exchange(ref _timeoutTimestamp, _lastTimestamp + milliseconds + LibuvThread.HeartbeatMilliseconds);
         }
     }
 }

@@ -4,7 +4,7 @@
 using System.Net;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct SockAddr

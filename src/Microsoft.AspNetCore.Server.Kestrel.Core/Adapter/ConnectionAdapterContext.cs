@@ -3,7 +3,7 @@
 
 using System.IO;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
     // Even though this only includes the non-adapted ConnectionStream currently, this is a context in case
     // we want to add more connection metadata later.

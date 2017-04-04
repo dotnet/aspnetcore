@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

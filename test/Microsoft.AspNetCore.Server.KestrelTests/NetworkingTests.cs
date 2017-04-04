@@ -7,10 +7,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests

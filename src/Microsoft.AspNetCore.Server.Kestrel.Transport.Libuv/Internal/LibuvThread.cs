@@ -9,18 +9,12 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    /// <summary>
-    /// Summary description for KestrelThread
-    /// </summary>
-    public class KestrelThread : IScheduler
+    public class LibuvThread : IScheduler
     {
         public const long HeartbeatMilliseconds = 1000;
 
@@ -28,8 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         {
             var streamHandle = UvMemory.FromIntPtr<UvHandle>(ptr) as UvStreamHandle;
             var thisHandle = GCHandle.FromIntPtr(arg);
-            var kestrelThread = (KestrelThread)thisHandle.Target;
-            streamHandle?.Connection?.Tick(kestrelThread.Now);
+            var libuvThread = (LibuvThread)thisHandle.Target;
+            streamHandle?.Connection?.Tick(libuvThread.Now);
         };
 
         // maximum times the work queues swapped and are processed in a single pass
@@ -37,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         // otherwise it needs to wait till the next pass of the libuv loop
         private readonly int _maxLoops = 8;
 
-        private readonly KestrelEngine _engine;
+        private readonly LibuvTransport _transport;
         private readonly IApplicationLifetime _appLifetime;
         private readonly Thread _thread;
         private readonly TaskCompletionSource<object> _threadTcs = new TaskCompletionSource<object>();
@@ -57,16 +51,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         private readonly TimeSpan _shutdownTimeout;
         private IntPtr _thisPtr;
 
-        public KestrelThread(KestrelEngine engine)
+        public LibuvThread(LibuvTransport transport)
         {
-            _engine = engine;
-            _appLifetime = engine.AppLifetime;
-            _log = engine.Log;
-            _shutdownTimeout = engine.TransportOptions.ShutdownTimeout;
+            _transport = transport;
+            _appLifetime = transport.AppLifetime;
+            _log = transport.Log;
+            _shutdownTimeout = transport.TransportOptions.ShutdownTimeout;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
             _thread = new Thread(ThreadStart);
-            _thread.Name = "KestrelThread - libuv";
+            _thread.Name = nameof(LibuvThread);
             _heartbeatTimer = new UvTimerHandle(_log);
 #if !DEBUG
             // Mark the thread as being as unimportant to keeping the process alive.
@@ -77,12 +71,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             QueueCloseAsyncHandle = EnqueueCloseHandle;
             PipelineFactory = new PipeFactory();
             WriteReqPool = new WriteReqPool(this, _log);
-            ConnectionManager = new ConnectionManager(this);
+            ConnectionManager = new LibuvConnectionManager(this);
         }
 
         // For testing
-        public KestrelThread(KestrelEngine engine, int maxLoops)
-            : this(engine)
+        public LibuvThread(LibuvTransport transport, int maxLoops)
+            : this(transport)
         {
             _maxLoops = maxLoops;
         }
@@ -91,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         public PipeFactory PipelineFactory { get; }
 
-        public ConnectionManager ConnectionManager { get; }
+        public LibuvConnectionManager ConnectionManager { get; }
 
         public WriteReqPool WriteReqPool { get; }
 
@@ -140,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                             Post(t => t.OnStopImmediate());
                             if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                             {
-                                _log.LogCritical("KestrelThread.StopAsync failed to terminate libuv thread.");
+                                _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
                             }
                         }
                     }
@@ -149,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                         // Until we rework this logic, ODEs are bound to happen sometimes.
                         if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                         {
-                            _log.LogCritical("KestrelThread.StopAsync failed to terminate libuv thread.");
+                            _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
                         }
                     }
                 }
@@ -236,7 +230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             _post.Send();
         }
 
-        private void Post(Action<KestrelThread> callback)
+        private void Post(Action<LibuvThread> callback)
         {
             Post(callback, this);
         }
@@ -265,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         private void Walk(LibuvFunctions.uv_walk_cb callback, IntPtr arg)
         {
-            _engine.Libuv.walk(
+            _transport.Libuv.walk(
                 _loop,
                 callback,
                 arg
@@ -293,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 var tcs = (TaskCompletionSource<int>)parameter;
                 try
                 {
-                    _loop.Init(_engine.Libuv);
+                    _loop.Init(_transport.Libuv);
                     _post.Init(_loop, OnPost, EnqueueCloseHandle);
                     _heartbeatTimer.Init(_loop, EnqueueCloseHandle);
                     _heartbeatTimer.Start(OnHeartbeat, timeout: HeartbeatMilliseconds, repeat: HeartbeatMilliseconds);
@@ -391,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                             }
                             catch (Exception e)
                             {
-                                _log.LogError(0, e, "KestrelThread.DoPostWork");
+                                _log.LogError(0, e, $"{nameof(LibuvThread)}.{nameof(DoPostWork)}");
                             }
                         }, work.Completion);
                     }
@@ -408,13 +402,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                             }
                             catch (Exception e)
                             {
-                                _log.LogError(0, e, "KestrelThread.DoPostWork");
+                                _log.LogError(0, e, $"{nameof(LibuvThread)}.{nameof(DoPostWork)}");
                             }
                         }, work.Completion);
                     }
                     else
                     {
-                        _log.LogError(0, ex, "KestrelThread.DoPostWork");
+                        _log.LogError(0, ex, $"{nameof(LibuvThread)}.{nameof(DoPostWork)}");
                         throw;
                     }
                 }
@@ -444,7 +438,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 }
                 catch (Exception ex)
                 {
-                    _log.LogError(0, ex, "KestrelThread.DoPostCloseHandle");
+                    _log.LogError(0, ex, $"{nameof(LibuvThread)}.{nameof(DoPostCloseHandle)}");
                     throw;
                 }
             }

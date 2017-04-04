@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Hosting
 {

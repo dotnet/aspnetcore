@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     public class LibuvTrace : ILibuvTrace
     {

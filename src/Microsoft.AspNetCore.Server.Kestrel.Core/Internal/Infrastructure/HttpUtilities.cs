@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     public static class HttpUtilities
     {

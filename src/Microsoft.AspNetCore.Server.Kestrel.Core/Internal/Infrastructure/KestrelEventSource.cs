@@ -3,10 +3,10 @@
 
 using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     [EventSource(Name = "Microsoft-AspNetCore-Server-Kestrel")]
     public sealed class KestrelEventSource : EventSource

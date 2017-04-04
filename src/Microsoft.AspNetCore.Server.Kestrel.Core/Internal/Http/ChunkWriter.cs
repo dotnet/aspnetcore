@@ -5,7 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public static class ChunkWriter
     {

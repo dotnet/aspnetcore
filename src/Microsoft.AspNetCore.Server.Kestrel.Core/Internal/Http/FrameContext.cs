@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public class FrameContext
     {

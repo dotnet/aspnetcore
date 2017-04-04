@@ -5,10 +5,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
     public class LoggingConnectionAdapter : IConnectionAdapter
     {

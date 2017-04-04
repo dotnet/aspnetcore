@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal class DisposableAction : IDisposable
     {

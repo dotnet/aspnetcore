@@ -3,9 +3,9 @@
 
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    internal static class Constants
+    internal static class LibuvConstants
     {
         public const int ListenBacklog = 128;
 

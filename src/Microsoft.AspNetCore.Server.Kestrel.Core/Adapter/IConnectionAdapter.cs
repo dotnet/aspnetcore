@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
     public interface IConnectionAdapter
     {

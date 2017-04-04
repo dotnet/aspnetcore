@@ -8,9 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _frame.Reset();
             _frame.StatusCode = 200;
-            _frame.HttpVersionEnum = Internal.Http.HttpVersion.Http11;
+            _frame.HttpVersionEnum = HttpVersion.Http11;
             _frame.KeepAlive = true;
 
             Task writeTask = Task.CompletedTask;
@@ -128,12 +129,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ConnectionInformation = new MockConnectionInformation()
             };
 
-            var socketOutputProducer = new SocketOutputProducer(output.Writer, null, null, null);
+            var outputProducer = new OutputProducer(output.Writer, null, null, null);
             var frame = new TestFrame<object>(application: null, context: frameContext)
             {
                 Input = input.Reader,
                 Output = socketOutput,
-                LifetimeControl = new ConnectionLifetimeControl(null, output.Reader, socketOutputProducer, serviceContext.Log)
+                LifetimeControl = new ConnectionLifetimeControl(null, output.Reader, outputProducer, serviceContext.Log)
             };
 
             frame.Reset();

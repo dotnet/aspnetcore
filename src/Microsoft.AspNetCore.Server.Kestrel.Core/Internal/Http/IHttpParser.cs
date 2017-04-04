@@ -3,7 +3,7 @@
 
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public interface IHttpParser
     {

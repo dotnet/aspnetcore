@@ -4,7 +4,7 @@
 using System.IO;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
     public interface IAdaptedConnection
     {

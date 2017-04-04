@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 
-namespace Microsoft.AspNetCore.Server.Kestrel
+namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     /// <summary>
     /// Provides programmatic configuration of Kestrel-specific features.

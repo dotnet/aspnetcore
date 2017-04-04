@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class ConnectionManager
+    public class LibuvConnectionManager
     {
-        private readonly KestrelThread _thread;
+        private readonly LibuvThread _thread;
 
-        public ConnectionManager(KestrelThread thread)
+        public LibuvConnectionManager(LibuvThread thread)
         {
             _thread = thread;
         }
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return await WalkConnectionsAsync((connectionManager, tcs) => connectionManager.WalkConnectionsAndAbortCore(tcs), timeout).ConfigureAwait(false);
         }
 
-        private async Task<bool> WalkConnectionsAsync(Action<ConnectionManager, TaskCompletionSource<object>> action, TimeSpan timeout)
+        private async Task<bool> WalkConnectionsAsync(Action<LibuvConnectionManager, TaskCompletionSource<object>> action, TimeSpan timeout)
         {
             var tcs = new TaskCompletionSource<object>();
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             WalkConnectionsCore(connection => connection.AbortAsync(), tcs);
         }
 
-        private void WalkConnectionsCore(Func<Connection, Task> action, TaskCompletionSource<object> tcs)
+        private void WalkConnectionsCore(Func<LibuvConnection, Task> action, TaskCompletionSource<object> tcs)
         {
             var tasks = new List<Task>();
 

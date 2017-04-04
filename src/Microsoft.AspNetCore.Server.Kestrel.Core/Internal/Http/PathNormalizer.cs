@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public static class PathNormalizer
     {

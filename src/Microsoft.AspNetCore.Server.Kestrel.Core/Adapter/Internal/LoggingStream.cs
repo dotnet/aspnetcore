@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     internal class LoggingStream : Stream
     {

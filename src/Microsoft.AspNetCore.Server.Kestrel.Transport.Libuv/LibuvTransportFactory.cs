@@ -3,11 +3,8 @@
 
 using System;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -47,12 +44,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
                     "ThreadCount must be positive.");
             }
 
-            if (!Constants.ECONNRESET.HasValue)
+            if (!LibuvConstants.ECONNRESET.HasValue)
             {
                 trace.LogWarning("Unable to determine ECONNRESET value on this platform.");
             }
 
-            if (!Constants.EADDRINUSE.HasValue)
+            if (!LibuvConstants.EADDRINUSE.HasValue)
             {
                 trace.LogWarning("Unable to determine EADDRINUSE value on this platform.");
             }
@@ -75,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
                 ConnectionHandler = handler
             };
 
-            return new KestrelEngine(transportContext, endPointInformation);
+            return new LibuvTransport(transportContext, endPointInformation);
         }
     }
 }

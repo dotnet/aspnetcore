@@ -6,20 +6,21 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class SocketOutputTests : IDisposable
+    public class LibuvOutputConsumerTests : IDisposable
     {
         private readonly PipeFactory _pipeFactory;
         private readonly MockLibuv _mockLibuv;
-        private readonly KestrelThread _kestrelThread;
+        private readonly LibuvThread _libuvThread;
 
         public static TheoryData<long?> MaxResponseBufferSizeData => new TheoryData<long?>
         {
@@ -31,19 +32,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             (int)new KestrelServerOptions().Limits.MaxResponseBufferSize, 1024, (1024 * 1024) + 1
         };
 
-        public SocketOutputTests()
+        public LibuvOutputConsumerTests()
         {
             _pipeFactory = new PipeFactory();
             _mockLibuv = new MockLibuv();
 
-            var kestrelEngine = new KestrelEngine(_mockLibuv, new TestServiceContext().TransportContext, new ListenOptions(0));
-            _kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
-            _kestrelThread.StartAsync().Wait();
+            var libuvTransport = new LibuvTransport(_mockLibuv, new TestServiceContext().TransportContext, new ListenOptions(0));
+            _libuvThread = new LibuvThread(libuvTransport, maxLoops: 1);
+            _libuvThread.StartAsync().Wait();
         }
 
         public void Dispose()
         {
-            _kestrelThread.StopAsync(TimeSpan.FromSeconds(1)).Wait();
+            _libuvThread.StopAsync(TimeSpan.FromSeconds(1)).Wait();
             _pipeFactory.Dispose();
         }
 
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             {
-                ReaderScheduler = _kestrelThread,
+                ReaderScheduler = _libuvThread,
                 MaximumSizeHigh = maxResponseBufferSize ?? 0,
                 MaximumSizeLow = maxResponseBufferSize ?? 0,
             };
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             {
-                ReaderScheduler = _kestrelThread,
+                ReaderScheduler = _libuvThread,
                 MaximumSizeHigh = 0,
                 MaximumSizeLow = 0,
             };
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 foreach (var triggerCompleted in completeQueue)
                 {
-                    await _kestrelThread.PostAsync(cb => cb(0), triggerCompleted);
+                    await _libuvThread.PostAsync(cb => cb(0), triggerCompleted);
                 }
             }
         }
@@ -140,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             {
-                ReaderScheduler = _kestrelThread,
+                ReaderScheduler = _libuvThread,
                 MaximumSizeHigh = 1,
                 MaximumSizeLow = 1,
             };
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // Finishing the write should allow the task to complete.
                 Assert.True(completeQueue.TryDequeue(out var triggerNextCompleted));
-                await _kestrelThread.PostAsync(cb => cb(0), triggerNextCompleted);
+                await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
 
                 // Assert
                 await writeTask.TimeoutAfter(TimeSpan.FromSeconds(5));
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 foreach (var triggerCompleted in completeQueue)
                 {
-                    await _kestrelThread.PostAsync(cb => cb(0), triggerCompleted);
+                    await _libuvThread.PostAsync(cb => cb(0), triggerCompleted);
                 }
             }
         }
@@ -194,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var pipeOptions = new PipeOptions
             {
-                ReaderScheduler = _kestrelThread,
+                ReaderScheduler = _libuvThread,
                 MaximumSizeHigh = maxResponseBufferSize,
                 MaximumSizeLow = maxResponseBufferSize,
             };
@@ -221,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // Act
                 Assert.True(completeQueue.TryDequeue(out var triggerNextCompleted));
-                await _kestrelThread.PostAsync(cb => cb(0), triggerNextCompleted);
+                await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
 
                 // Finishing the first write should allow the second write to pre-complete.
                 await writeTask2.TimeoutAfter(TimeSpan.FromSeconds(5));
@@ -234,7 +235,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 foreach (var triggerCompleted in completeQueue)
                 {
-                    await _kestrelThread.PostAsync(cb => cb(0), triggerCompleted);
+                    await _libuvThread.PostAsync(cb => cb(0), triggerCompleted);
                 }
             }
         }
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var pipeOptions = new PipeOptions
             {
-                ReaderScheduler = _kestrelThread,
+                ReaderScheduler = _libuvThread,
                 MaximumSizeHigh = maxResponseBufferSize,
                 MaximumSizeLow = maxResponseBufferSize,
             };
@@ -291,7 +292,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Drain the write queue
                 while (completeQueue.TryDequeue(out var triggerNextCompleted))
                 {
-                    await _kestrelThread.PostAsync(cb => cb(0), triggerNextCompleted);
+                    await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                 }
 
                 var timeout = TimeSpan.FromSeconds(5);
@@ -322,7 +323,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var pipeOptions = new PipeOptions
                 {
-                    ReaderScheduler = _kestrelThread,
+                    ReaderScheduler = _libuvThread,
                     MaximumSizeHigh = maxResponseBufferSize,
                     MaximumSizeLow = maxResponseBufferSize,
                 };
@@ -363,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     // Cause all writes to fail
                     while (completeQueue.TryDequeue(out var triggerNextCompleted))
                     {
-                        await _kestrelThread.PostAsync(cb => cb(-1), triggerNextCompleted);
+                        await _libuvThread.PostAsync(cb => cb(-1), triggerNextCompleted);
                     }
 
                     // Second task is now completed
@@ -394,7 +395,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var pipeOptions = new PipeOptions
             {
-                ReaderScheduler = _kestrelThread,
+                ReaderScheduler = _libuvThread,
                 MaximumSizeHigh = maxResponseBufferSize,
                 MaximumSizeLow = maxResponseBufferSize,
             };
@@ -420,7 +421,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Drain the write queue
                 while (completeQueue.TryDequeue(out var triggerNextCompleted))
                 {
-                    await _kestrelThread.PostAsync(cb => cb(0), triggerNextCompleted);
+                    await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                 }
 
                 var timeout = TimeSpan.FromSeconds(5);
@@ -452,7 +453,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             {
-                ReaderScheduler = _kestrelThread,
+                ReaderScheduler = _libuvThread,
                 MaximumSizeHigh = maxResponseBufferSize ?? 0,
                 MaximumSizeLow = maxResponseBufferSize ?? 0,
             };
@@ -491,7 +492,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var pipeOptions = new PipeOptions
             {
-                ReaderScheduler = _kestrelThread,
+                ReaderScheduler = _libuvThread,
             };
 
             using (var connection = new MockConnection())
@@ -516,16 +517,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        private SocketOutputProducer CreateSocketOutput(PipeOptions pipeOptions, MockConnection connection = null)
+        private OutputProducer CreateSocketOutput(PipeOptions pipeOptions, MockConnection connection = null)
         {
             var pipe = _pipeFactory.Create(pipeOptions);
             var serviceContext = new TestServiceContext();
 
             var frame = new Frame<object>(null, new FrameContext { ServiceContext = serviceContext });
 
-            var socket = new MockSocket(_mockLibuv, _kestrelThread.Loop.ThreadId, serviceContext.TransportContext.Log);
-            var socketOutput = new SocketOutputProducer(pipe.Writer, frame, "0", serviceContext.Log);
-            var consumer = new SocketOutputConsumer(pipe.Reader, _kestrelThread, socket, connection ?? new MockConnection(), "0", serviceContext.TransportContext.Log);
+            var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, serviceContext.TransportContext.Log);
+            var socketOutput = new OutputProducer(pipe.Writer, frame, "0", serviceContext.Log);
+            var consumer = new LibuvOutputConsumer(pipe.Reader, _libuvThread, socket, connection ?? new MockConnection(), "0", serviceContext.TransportContext.Log);
             var ignore = consumer.StartWrites();
 
             return socketOutput;

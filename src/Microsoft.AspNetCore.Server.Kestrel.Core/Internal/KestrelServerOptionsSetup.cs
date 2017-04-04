@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class KestrelServerOptionsSetup : IConfigureOptions<KestrelServerOptions>
     {

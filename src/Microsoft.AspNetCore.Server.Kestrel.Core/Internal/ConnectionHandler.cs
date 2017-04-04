@@ -3,11 +3,11 @@
 
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class ConnectionHandler<TContext> : IConnectionHandler
     {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
             // TODO: Untangle this mess
             var frame = new Frame<TContext>(_application, frameContext);
-            var outputProducer = new SocketOutputProducer(outputPipe.Writer, frame, connectionId, _serviceContext.Log);
+            var outputProducer = new OutputProducer(outputPipe.Writer, frame, connectionId, _serviceContext.Log);
             frame.LifetimeControl = new ConnectionLifetimeControl(connectionId, outputPipe.Reader, outputProducer, _serviceContext.Log);
 
             var connection = new FrameConnection(new FrameConnectionContext

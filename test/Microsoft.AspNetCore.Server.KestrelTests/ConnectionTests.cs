@@ -4,9 +4,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var serviceContext = new TestServiceContext();
                 serviceContext.TransportContext.ConnectionHandler = mockConnectionHandler;
 
-                var engine = new KestrelEngine(mockLibuv, serviceContext.TransportContext, null);
-                var thread = new KestrelThread(engine);
+                var transport = new LibuvTransport(mockLibuv, serviceContext.TransportContext, null);
+                var thread = new LibuvThread(transport);
 
                 try
                 {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                             Thread = thread
                         };
                         var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, serviceContext.TransportContext.Log);
-                        var connection = new Connection(listenerContext, socket);
+                        var connection = new LibuvConnection(listenerContext, socket);
                         connection.Start();
 
                         LibuvFunctions.uv_buf_t ignored;

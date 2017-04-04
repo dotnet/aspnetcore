@@ -6,13 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     /// <summary>
     /// A primary listener waits for incoming connections on a specified socket. Incoming
@@ -41,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             string pipeName,
             byte[] pipeMessage,
             IEndPointInformation endPointInformation,
-            KestrelThread thread)
+            LibuvThread thread)
         {
             _pipeName = pipeName;
             _pipeMessage = pipeMessage;
@@ -64,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             ListenPipe = new UvPipeHandle(Log);
             ListenPipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
             ListenPipe.Bind(_pipeName);
-            ListenPipe.Listen(Constants.ListenBacklog,
+            ListenPipe.Listen(LibuvConstants.ListenBacklog,
                 (pipe, status, error, state) => ((ListenerPrimary)state).OnListenPipe(pipe, status, error), this);
         }
 

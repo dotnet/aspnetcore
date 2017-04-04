@@ -3,12 +3,9 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     public abstract class UvStreamHandle : UvHandle
     {
@@ -30,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
         }
 
-        public Connection Connection { get; set; }
+        public LibuvConnection Connection { get; set; }
 
         protected override bool ReleaseHandle()
         {

@@ -4,13 +4,13 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class MockConnection : Connection, IDisposable
+    public class MockConnection : LibuvConnection, IDisposable
     {
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
 

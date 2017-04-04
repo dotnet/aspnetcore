@@ -1,20 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     public class WriteReqPool
     {
         private const int _maxPooledWriteReqs = 1024;
 
-        private readonly KestrelThread _thread;
+        private readonly LibuvThread _thread;
         private readonly Queue<UvWriteReq> _pool = new Queue<UvWriteReq>(_maxPooledWriteReqs);
         private readonly ILibuvTrace _log;
         private bool _disposed;
 
-        public WriteReqPool(KestrelThread thread, ILibuvTrace log)
+        public WriteReqPool(LibuvThread thread, ILibuvTrace log)
         {
             _thread = thread;
             _log = log;

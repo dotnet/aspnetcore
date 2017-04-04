@@ -5,14 +5,11 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     /// <summary>
     /// A secondary listener is delegated requests from a primary listener via a named pipe or
@@ -39,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             string pipeName,
             byte[] pipeMessage,
             IEndPointInformation endPointInformation,
-            KestrelThread thread)
+            LibuvThread thread)
         {
             _pipeName = pipeName;
             _pipeMessage = pipeMessage;
@@ -130,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (status < 0)
             {
-                if (status != Constants.EOF)
+                if (status != LibuvConstants.EOF)
                 {
                     Exception ex;
                     Thread.Loop.Libuv.Check(status, out ex);
@@ -161,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             try
             {
-                var connection = new Connection(this, acceptSocket);
+                var connection = new LibuvConnection(this, acceptSocket);
                 connection.Start();
             }
             catch (UvException ex)
@@ -184,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
-            // to complete, then KestrelEngine will never be disposed and
+            // to complete, then LibuvTransport will never be disposed and
             // the exception that stopped the event loop will never be surfaced.
             if (Thread.FatalError == null)
             {

@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 using System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Adapter;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class FrameConnectionContext
     {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         public PipeFactory PipeFactory { get; set; }
         public List<IConnectionAdapter> ConnectionAdapters { get; set; }
         public Frame Frame { get; set; }
-        public SocketOutputProducer OutputProducer { get; set; }
+        public OutputProducer OutputProducer { get; set; }
 
         public IPipe Input { get; set; }
         public IPipe Output { get; set; }

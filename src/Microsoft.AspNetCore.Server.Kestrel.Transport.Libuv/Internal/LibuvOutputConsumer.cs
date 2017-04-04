@@ -4,28 +4,26 @@
 using System;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class SocketOutputConsumer
+    public class LibuvOutputConsumer
     {
-        private readonly KestrelThread _thread;
+        private readonly LibuvThread _thread;
         private readonly UvStreamHandle _socket;
-        private readonly Connection _connection;
+        private readonly LibuvConnection _connection;
         private readonly string _connectionId;
         private readonly ILibuvTrace _log;
 
         private readonly WriteReqPool _writeReqPool;
         private readonly IPipeReader _pipe;
 
-        public SocketOutputConsumer(
+        public LibuvOutputConsumer(
             IPipeReader pipe,
-            KestrelThread thread,
+            LibuvThread thread,
             UvStreamHandle socket,
-            Connection connection,
+            LibuvConnection connection,
             string connectionId,
             ILibuvTrace log)
         {
@@ -104,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             else
             {
                 // Log connection resets at a lower (Debug) level.
-                if (status == Constants.ECONNRESET)
+                if (status == LibuvConstants.ECONNRESET)
                 {
                     _log.ConnectionReset(_connectionId);
                 }
