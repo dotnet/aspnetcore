@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(modelStateErrors);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/6058")]
+        [Fact]
         [ReplaceCulture]
         public void TryValidateModel_CollectionsModel_ReturnsErrorsForInvalidProperties()
         {
