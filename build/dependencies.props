@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreLabsVersion>0.3.0-*</AspNetCoreLabsVersion>
-    <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
+    <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <GoogleProtobufVersion>3.1.0</GoogleProtobufVersion>
