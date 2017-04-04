@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public string ExecutionContextVariableName { get; set; } = "__tagHelperExecutionContext";
 
+        public string ExecutionContextAddMethodName { get; set; } = "Add";
+
         public string RunnerTypeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner";
 
         public string RunnerVariableName { get; set; } = "__tagHelperRunner";
@@ -29,6 +31,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         public string EndTagHelperWritingScopeMethodName { get; set; } = "EndTagHelperWritingScope";
 
         public string TagModeTypeName { get; set; } = "global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode";
+
+        public string CreateTagHelperMethodName { get; set; } = "CreateTagHelper";
 
         public override void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIRNode node)
         {
@@ -116,7 +120,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIRNode node)
         {
-            throw new NotImplementedException();
+            var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
+
+            context.Writer
+                .WriteStartAssignment(tagHelperVariableName)
+                .WriteStartMethodInvocation(
+                     CreateTagHelperMethodName,
+                    "global::" + node.TagHelperTypeName)
+                .WriteEndMethodInvocation();
+
+            context.Writer.WriteInstanceMethodInvocation(
+                ExecutionContextVariableName,
+                ExecutionContextAddMethodName,
+                tagHelperVariableName);
         }
 
         public override void WriteExecuteTagHelpers(CSharpRenderingContext context, ExecuteTagHelpersIRNode node)

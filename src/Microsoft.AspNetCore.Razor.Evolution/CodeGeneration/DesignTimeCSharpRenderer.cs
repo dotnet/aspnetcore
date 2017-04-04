@@ -204,18 +204,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             Context.Writer.WriteLine("))();");
         }
 
-        public override void VisitCreateTagHelper(CreateTagHelperIRNode node)
-        {
-            var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
-
-            Context.Writer
-                .WriteStartAssignment(tagHelperVariableName)
-                .WriteStartMethodInvocation(
-                    "CreateTagHelper" /* ORIGINAL: CreateTagHelperMethodName */,
-                    "global::" + node.TagHelperTypeName)
-                .WriteEndMethodInvocation();
-        }
-
         public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);

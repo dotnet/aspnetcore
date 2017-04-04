@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
     public class DesignTimeTagHelperWriter : TagHelperWriter
     {
+        public string CreateTagHelperMethodName { get; set; } = "CreateTagHelper";
+
         public override void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIRNode node)
         {
             foreach (var tagHelperTypeName in node.UsedTagHelperTypeNames)
@@ -29,7 +31,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIRNode node)
         {
-            throw new NotImplementedException();
+            var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
+
+            context.Writer
+                .WriteStartAssignment(tagHelperVariableName)
+                .WriteStartMethodInvocation(
+                    CreateTagHelperMethodName,
+                    "global::" + node.TagHelperTypeName)
+                .WriteEndMethodInvocation();
         }
 
         public override void WriteExecuteTagHelpers(CSharpRenderingContext context, ExecuteTagHelpersIRNode node)

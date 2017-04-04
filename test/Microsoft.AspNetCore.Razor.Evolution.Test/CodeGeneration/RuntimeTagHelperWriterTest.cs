@@ -123,5 +123,32 @@ private global::MyTagHelper __MyTagHelper = null;
                 csharp,
                 ignoreLineEndingDifferences: true);
         }
+
+        [Fact]
+        public void WriteCreateTagHelper_RendersCorrectly_UsesSpecifiedTagHelperType()
+        {
+            // Arrange
+            var writer = new RuntimeTagHelperWriter();
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+            };
+            var node = new CreateTagHelperIRNode()
+            {
+                TagHelperTypeName = "TestNamespace.MyTagHelper"
+            };
+
+            // Act
+            writer.WriteCreateTagHelper(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"__TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
+__tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
     }
 }
