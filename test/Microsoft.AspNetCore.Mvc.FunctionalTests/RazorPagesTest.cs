@@ -444,28 +444,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task PageStart_IsDiscoveredWhenRootDirectoryIsNotSpecified()
+        public async Task ViewStart_IsDiscoveredWhenRootDirectoryIsNotSpecified()
         {
             // Test for https://github.com/aspnet/Mvc/issues/5915
             //Arrange
-            var expected = $"Hello from _PageStart{Environment.NewLine}Hello from /Pages/WithPageStart/Index.cshtml!";
+            var expected = $"Hello from _ViewStart{Environment.NewLine}Hello from /Pages/WithViewStart/Index.cshtml!";
 
             // Act
-            var response = await Client.GetStringAsync("/Pages/WithPageStart");
+            var response = await Client.GetStringAsync("/Pages/WithViewStart");
 
             // Assert
             Assert.Equal(expected, response.Trim());
         }
 
         [Fact]
-        public async Task PageImport_IsDiscoveredWhenRootDirectoryIsNotSpecified()
+        public async Task ViewImport_IsDiscoveredWhenRootDirectoryIsNotSpecified()
         {
             // Test for https://github.com/aspnet/Mvc/issues/5915
             // Arrange
             var expected = "Hello from CustomService!";
 
             // Act
-            var response = await Client.GetStringAsync("/Pages/WithPageImport");
+            var response = await Client.GetStringAsync("/Pages/WithViewImport");
 
             // Assert
             Assert.Equal(expected, response.Trim());

@@ -25,7 +25,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageActionInvokerProvider : IActionInvokerProvider
     {
-        private const string PageStartFileName = "_PageStart.cshtml";
+        private const string ViewStartFileName = "_ViewStart.cshtml";
+
         private readonly IPageLoader _loader;
         private readonly IPageFactoryProvider _pageFactoryProvider;
         private readonly IPageModelFactoryProvider _modelFactoryProvider;
@@ -192,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelReleaser = _modelFactoryProvider.CreateModelDisposer(compiledActionDescriptor);
             }
 
-            var pageStartFactories = GetPageStartFactories(compiledActionDescriptor);
+            var viewStartFactories = GetViewStartFactories(compiledActionDescriptor);
 
             return new PageActionInvokerCacheEntry(
                 compiledActionDescriptor,
@@ -201,31 +202,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelFactory,
                 modelReleaser,
                 propertyBinder,
-                pageStartFactories,
+                viewStartFactories,
                 cachedFilters);
         }
 
         // Internal for testing.
-        internal List<Func<IRazorPage>> GetPageStartFactories(CompiledPageActionDescriptor descriptor)
+        internal List<Func<IRazorPage>> GetViewStartFactories(CompiledPageActionDescriptor descriptor)
         {
-            var pageStartFactories = new List<Func<IRazorPage>>();
-            var pageStartItems = _razorProject.FindHierarchicalItems(
+            var viewStartFactories = new List<Func<IRazorPage>>();
+            var viewStartItems = _razorProject.FindHierarchicalItems(
                 _razorPagesOptions.RootDirectory,
                 descriptor.RelativePath,
-                PageStartFileName);
-            foreach (var item in pageStartItems)
+                ViewStartFileName);
+            foreach (var item in viewStartItems)
             {
                 if (item.Exists)
                 {
                     var factoryResult = _razorPageFactoryProvider.CreateFactory(item.Path);
                     if (factoryResult.Success)
                     {
-                        pageStartFactories.Insert(0, factoryResult.RazorPageFactory);
+                        viewStartFactories.Insert(0, factoryResult.RazorPageFactory);
                     }
                 }
             }
 
-            return pageStartFactories;
+            return viewStartFactories;
         }
 
         // Internal for testing.

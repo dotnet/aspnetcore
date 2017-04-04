@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 pageContext.ViewData.Model = result.Model;
             }
 
-            var view = new RazorView(_razorViewEngine, _razorPageActivator, pageContext.PageStarts, result.Page, _htmlEncoder);
+            var view = new RazorView(_razorViewEngine, _razorPageActivator, pageContext.ViewStarts, result.Page, _htmlEncoder);
             pageContext.View = view;
             return ExecuteAsync(pageContext, result.ContentType, result.StatusCode);
         }

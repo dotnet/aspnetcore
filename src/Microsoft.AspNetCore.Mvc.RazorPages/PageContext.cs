@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Gets or sets the applicable _PageStart instances.
+        /// Gets or sets the applicable _ViewStart instances.
         /// </summary>
-        public IReadOnlyList<IRazorPage> PageStarts { get; set; }
+        public IReadOnlyList<IRazorPage> ViewStarts { get; set; }
 
         /// <summary>
         /// Gets or sets the list of <see cref="IValueProviderFactory"/> instances for the current request.

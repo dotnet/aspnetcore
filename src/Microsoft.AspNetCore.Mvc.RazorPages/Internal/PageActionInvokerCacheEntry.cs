@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Func<PageContext, object> modelFactory,
             Action<PageContext, object> releaseModel,
             Func<Page, object, Task> propertyBinder,
-            IReadOnlyList<Func<IRazorPage>> pageStartFactories,
+            IReadOnlyList<Func<IRazorPage>> viewStartFactories,
             FilterItem[] cacheableFilters)
         {
             ActionDescriptor = actionDescriptor;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ModelFactory = modelFactory;
             ReleaseModel = releaseModel;
             PropertyBinder = propertyBinder;
-            PageStartFactories = pageStartFactories;
+            ViewStartFactories = viewStartFactories;
             CacheableFilters = cacheableFilters;
         }
 
@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public Func<Page, object, Task> PropertyBinder { get; }
 
         /// <summary>
-        /// Gets the applicable PageStarts.
+        /// Gets the applicable ViewStart pages.
         /// </summary>
-        public IReadOnlyList<Func<IRazorPage>> PageStartFactories { get; }
+        public IReadOnlyList<Func<IRazorPage>> ViewStartFactories { get; }
 
         public FilterItem[] CacheableFilters { get; }
     }

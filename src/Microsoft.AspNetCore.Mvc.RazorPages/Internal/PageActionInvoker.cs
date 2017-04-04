@@ -307,22 +307,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _pageContext.Page = _page;
             _pageContext.ValueProviderFactories = _valueProviderFactories;
 
-            IRazorPage[] pageStarts;
+            IRazorPage[] viewStarts;
 
-            if (CacheEntry.PageStartFactories == null || CacheEntry.PageStartFactories.Count == 0)
+            if (CacheEntry.ViewStartFactories == null || CacheEntry.ViewStartFactories.Count == 0)
             {
-                pageStarts = Array.Empty<IRazorPage>();
+                viewStarts = Array.Empty<IRazorPage>();
             }
             else
             {
-                pageStarts = new IRazorPage[CacheEntry.PageStartFactories.Count];
-                for (var i = 0; i < pageStarts.Length; i++)
+                viewStarts = new IRazorPage[CacheEntry.ViewStartFactories.Count];
+                for (var i = 0; i < viewStarts.Length; i++)
                 {
-                    var pageFactory = CacheEntry.PageStartFactories[i];
-                    pageStarts[i] = pageFactory();
+                    var pageFactory = CacheEntry.ViewStartFactories[i];
+                    viewStarts[i] = pageFactory();
                 }
             }
-            _pageContext.PageStarts = pageStarts;
+            _pageContext.ViewStarts = viewStarts;
 
             if (actionDescriptor.ModelTypeInfo == null)
             {
