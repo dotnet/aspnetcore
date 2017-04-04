@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             RazorProject project)
             : base(engine, project)
         {
+            Options.ImportsFileName = "_ViewImports.cshtml";
             Options.DefaultImports = GetDefaultImports();
         }
 
