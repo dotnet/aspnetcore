@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -308,6 +308,43 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
 
                 await transport.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task TransportClosesOnCloseTimeoutIfClientDoesNotSendCloseFrame()
+        {
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
+            using (var factory = new PipeFactory())
+            using (var pair = WebSocketPair.Create(factory))
+            {
+                var options = new WebSocketOptions()
+                {
+                    CloseTimeout = TimeSpan.FromSeconds(1)
+                };
+
+                var ws = new WebSocketsTransport(options, transportSide, new LoggerFactory());
+
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(pair.ServerSocket);
+
+                // End the app
+                applicationSide.Dispose();
+
+                await transport.OrTimeout();
+
+                // We're still in the closed sent state since the client never sent the close frame
+                Assert.Equal(WebSocketConnectionState.CloseSent, pair.ServerSocket.State);
+
+                pair.ServerSocket.Dispose();
+
+                // Now we're closed
+                Assert.Equal(WebSocketConnectionState.Closed, pair.ServerSocket.State);
             }
         }
     }

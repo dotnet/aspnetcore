@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 {
     public class WebSocketsTransport : IHttpTransport
     {
-        private static readonly TimeSpan _closeTimeout = TimeSpan.FromSeconds(5);
+        private readonly WebSocketOptions _options;
         private static readonly WebSocketAcceptContext _emptyContext = new WebSocketAcceptContext();
 
         private WebSocketOpcode _lastOpcode = WebSocketOpcode.Continuation;
@@ -25,17 +25,24 @@ namespace Microsoft.AspNetCore.Sockets.Transports
         private readonly ILogger _logger;
         private readonly IChannelConnection<Message> _application;
 
-        public WebSocketsTransport(IChannelConnection<Message> application, ILoggerFactory loggerFactory)
+        public WebSocketsTransport(WebSocketOptions options, IChannelConnection<Message> application, ILoggerFactory loggerFactory)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             if (application == null)
             {
                 throw new ArgumentNullException(nameof(application));
             }
+
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            _options = options;
             _application = application;
             _logger = loggerFactory.CreateLogger<WebSocketsTransport>();
         }
@@ -107,9 +114,17 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
                 _logger.LogDebug("Waiting for the client to close the socket");
 
-                // Wait for the client to close.
-                // TODO: Consider timing out here and cancelling the receive loop.
-                await receiving;
+                // Wait for the client to close or wait for the close timeout
+                var resultTask = await Task.WhenAny(receiving, Task.Delay(_options.CloseTimeout));
+
+                // We timed out waiting for the transport to close so abort the connection so we don't attempt to write anything else
+                if (resultTask != receiving)
+                {
+                    _logger.LogDebug("Timed out waiting for client to send the close frame, aborting the connection.");
+                    socket.Abort();
+                }
+
+                // We're done writing
                 _application.Output.TryComplete();
             }
         }

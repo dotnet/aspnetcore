@@ -80,7 +80,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal
                 Lock.Release();
             }
 
-            // REVIEW: Add a timeout so we don't wait forever
             await disposeTask;
         }
 
