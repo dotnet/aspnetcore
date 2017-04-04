@@ -139,6 +139,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the current page.
+        /// </summary>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        protected RedirectToPageResult RedirectToPage()
+            => RedirectToPage(pageName: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the current page with the specified <paramref name="routeValues"/>.
+        /// </summary>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        protected RedirectToPageResult RedirectToPage(object routeValues)
+            => RedirectToPage(pageName: null, routeValues: routeValues);
+
+        /// <summary>
         /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="pageName">The name of the page.</param>

@@ -130,12 +130,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (string.IsNullOrEmpty(PageName))
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatPropertyOfTypeCannotBeNull(nameof(PageName), nameof(RedirectToPageResult)));
-            }
-
             var executor = context.HttpContext.RequestServices.GetRequiredService<RedirectToPageResultExecutor>();
             executor.Execute(context, this);
         }

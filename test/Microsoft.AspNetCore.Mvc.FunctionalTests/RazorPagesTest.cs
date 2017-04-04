@@ -677,6 +677,29 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.Equal(expected, response.Headers.Location.ToString());
         }
 
+        
+        [Fact]
+        public async Task RedirectToSelfWorks()
+        {
+            // Arrange
+            var expected = "/Pages/Redirects/RedirectToSelf?user=37";
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Pages/Redirects/RedirectToSelf")
+            {
+                Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
+                {
+                    new KeyValuePair<string, string>("value", "37"),
+                }),
+            };
+
+            // Act
+            await AddAntiforgeryHeaders(request);
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);

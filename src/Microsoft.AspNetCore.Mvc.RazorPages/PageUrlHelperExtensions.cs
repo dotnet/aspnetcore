@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Razor page specific extensions for <see cref="IUrlHelper"/>.
     /// </summary>
-    public static class PageNameUrlHelperExtensions
+    public static class PageUrlHelperExtensions
     {
         /// <summary>
         /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.

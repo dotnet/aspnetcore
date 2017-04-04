@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
@@ -121,6 +122,56 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 });
             Assert.Equal("ftp", context.Protocol);
             Assert.Equal("test-fragment", context.Fragment);
+        }
+
+        [Fact]
+        public async Task RedirectToPage_WithNullPage_UsesAmbientValue()
+        {
+            // Arrange
+            var expected = "path/to/this-page";
+            var httpContext = new Mock<HttpContext>();
+            var httpResponse = new Mock<HttpResponse>();
+            httpContext.SetupGet(c => c.Response)
+                .Returns(httpResponse.Object);
+            httpContext.SetupGet(c => c.RequestServices)
+                .Returns(CreateServices());
+            var routeData = new RouteData
+            {
+                Values =
+                {
+                    ["page"] = expected,
+                }
+            };
+
+            var actionContext = new ActionContext(
+                httpContext.Object,
+                routeData,
+                new ActionDescriptor());
+
+            UrlRouteContext context = null;
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext c) => context = c)
+                .Returns("some-value");
+            urlHelper.SetupGet(h => h.ActionContext)
+                .Returns(actionContext);
+            var pageName = (string)null;
+            var result = new RedirectToPageResult(pageName)
+            {
+                UrlHelper = urlHelper.Object,
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.NotNull(context);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(context.Values),
+               value =>
+               {
+                   Assert.Equal("page", value.Key);
+                   Assert.Equal(expected, value.Value);
+               });
         }
 
         private static IServiceProvider CreateServices(IUrlHelperFactory factory = null)

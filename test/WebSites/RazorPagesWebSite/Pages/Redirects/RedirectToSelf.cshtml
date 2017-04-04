@@ -1,0 +1,9 @@
+@page
+@functions
+{
+    public IActionResult OnPost(int value) => RedirectToPage(new { user = value });
+}
+
+<form action="">
+    @Html.AntiForgeryToken()
+</form>
