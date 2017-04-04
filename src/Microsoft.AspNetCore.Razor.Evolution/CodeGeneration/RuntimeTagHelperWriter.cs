@@ -149,9 +149,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             // This can be removed once all the tag helper nodes are moved out of the renderers.
             var initialRenderingConventions = context.RenderingConventions;
             context.RenderingConventions = new CSharpRenderingConventions(context.Writer);
-            using (context.Writer.BuildAsyncLambda(endLine: false))
+
+            using (context.Push(new RuntimeBasicWriter()))
             {
-                context.RenderChildren(node);
+                using (context.Writer.BuildAsyncLambda(endLine: false))
+                {
+                    context.RenderChildren(node);
+                }
             }
             context.RenderingConventions = initialRenderingConventions;
 

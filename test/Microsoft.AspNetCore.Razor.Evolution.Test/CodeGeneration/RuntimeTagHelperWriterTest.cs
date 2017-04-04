@@ -100,6 +100,7 @@ private global::MyTagHelper __MyTagHelper = null;
             var context = new CSharpRenderingContext()
             {
                 Writer = new Legacy.CSharpCodeWriter(),
+                BasicWriter = new RuntimeBasicWriter(),
                 IdGenerator = () => "test",
                 RenderChildren = n => { }
             };

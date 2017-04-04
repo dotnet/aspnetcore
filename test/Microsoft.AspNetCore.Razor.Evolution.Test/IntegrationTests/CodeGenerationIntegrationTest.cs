@@ -773,6 +773,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             // Arrange, Act & Assert
             RunRuntimeTagHelpersTest(TestTagHelperDescriptors.TagHelpersInSectionDescriptors);
         }
+
+        [Fact]
+        public void TagHelpersWithTemplate_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
         #endregion
 
         #region DesignTime
@@ -1558,6 +1565,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             // Arrange, Act & Assert
             RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.EnumTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void TagHelpersWithTemplate_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
         #endregion
 
