@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private volatile int _connectionState = ConnectionState.Initial;
         private volatile IChannelConnection<Message, SendMessage> _transportChannel;
+        private HttpClient _httpClient;
         private volatile ITransport _transport;
         private volatile Task _receiveLoopTask;
         private TaskCompletionSource<object> _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -46,11 +47,22 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = _loggerFactory.CreateLogger<Connection>();
         }
 
-        public Task StartAsync() => StartAsync(transport: null, httpClient: null);
-        public Task StartAsync(HttpClient httpClient) => StartAsync(transport: null, httpClient: httpClient);
-        public Task StartAsync(ITransport transport) => StartAsync(transport: transport, httpClient: null);
+        public Task StartAsync() => StartAsync(transportFactory: null, httpClient: null);
+        public Task StartAsync(HttpClient httpClient) => StartAsync(transportFactory: null, httpClient: httpClient);
+        public Task StartAsync(ITransportFactory transportFactory) => StartAsync(transportFactory, httpClient: null);
+        public Task StartAsync(TransportType transportType) => StartAsync(transportType, httpClient: null);
+        public Task StartAsync(TransportType transportType, HttpClient httpClient)
+        {
+            if (httpClient == null)
+            {
+                // We are creating the client so store it to be able to dispose
+                _httpClient = httpClient = new HttpClient();
+            }
 
-        public Task StartAsync(ITransport transport, HttpClient httpClient)
+            return StartAsync(new DefaultTransportFactory(transportType, _loggerFactory, httpClient), httpClient);
+        }
+
+        public Task StartAsync(ITransportFactory transportFactory, HttpClient httpClient)
         {
             if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connecting, ConnectionState.Initial)
                 != ConnectionState.Initial)
@@ -59,7 +71,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     new InvalidOperationException("Cannot start a connection that is not in the Initial state."));
             }
 
-            StartAsyncInternal(transport, httpClient)
+            if (httpClient == null)
+            {
+                // We are creating the client so store it to be able to dispose
+                _httpClient = httpClient = new HttpClient();
+            }
+
+            StartAsyncInternal(transportFactory ?? new DefaultTransportFactory(TransportType.All, _loggerFactory, httpClient), httpClient)
                 .ContinueWith(t =>
                 {
                     if (t.IsFaulted)
@@ -79,7 +97,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return _startTcs.Task;
         }
 
-        private async Task StartAsyncInternal(ITransport transport, HttpClient httpClient)
+        private async Task StartAsyncInternal(ITransportFactory transportFactory, HttpClient httpClient)
         {
             _logger.LogDebug("Starting connection.");
 
@@ -94,9 +112,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     return;
                 }
 
-                _transport = transport ?? new WebSocketsTransport(_loggerFactory);
+                // TODO: Available server transports should be sent by the server in the negotiation response
+                _transport = transportFactory.CreateTransport(TransportType.All);
 
-                _logger.LogDebug("Starting transport '{0}' with Url: {1}", transport.GetType().Name, connectUrl);
+                _logger.LogDebug("Starting transport '{0}' with Url: {1}", _transport.GetType().Name, connectUrl);
                 await StartTransport(connectUrl);
             }
             catch
@@ -140,6 +159,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     _logger.LogDebug("Draining event queue");
                     await _eventQueue.Drain();
 
+                    _httpClient?.Dispose();
+
                     _logger.LogDebug("Raising Closed event");
 
                     // Do not "simplify" - event handlers can be removed from a different thread
@@ -160,20 +181,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private static async Task<Uri> GetConnectUrl(Uri url, HttpClient httpClient, ILogger logger)
         {
-            var disposeHttpClient = httpClient == null;
-            httpClient = httpClient ?? new HttpClient();
-            try
-            {
-                var connectionId = await GetConnectionId(url, httpClient, logger);
-                return Utils.AppendQueryString(url, "id=" + connectionId);
-            }
-            finally
-            {
-                if (disposeHttpClient)
-                {
-                    httpClient.Dispose();
-                }
-            }
+            var connectionId = await GetConnectionId(url, httpClient, logger);
+            return Utils.AppendQueryString(url, "id=" + connectionId);
         }
 
         private static async Task<string> GetConnectionId(Uri url, HttpClient httpClient, ILogger logger)
@@ -335,6 +344,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 await _receiveLoopTask;
             }
+
+            _httpClient?.Dispose();
         }
 
         private class ConnectionState

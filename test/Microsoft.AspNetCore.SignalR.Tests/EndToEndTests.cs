@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -63,58 +62,44 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public static IEnumerable<object[]> Transports
-        {
-            get
-            {
-                yield return new object[] { new Func<ILoggerFactory, ITransport>(loggerFactory => new WebSocketsTransport(loggerFactory)) };
-                yield return new object[] { new Func<ILoggerFactory, ITransport>(loggerFactory => new LongPollingTransport(new HttpClient(), loggerFactory)) };
-            }
-        }
-
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
-        [MemberData(nameof(Transports))]
-        public async Task ConnectionCanSendAndReceiveMessages(Func<ILoggerFactory, ITransport> transportFactory)
+        [MemberData(nameof(TransportTypes))]
+        public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType)
         {
             const string message = "Major Key";
             var baseUrl = _serverFixture.BaseUrl;
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddXunit(_output, LogLevel.Trace);
 
-            var transport = transportFactory(loggerFactory);
-
-            using (var httpClient = new HttpClient())
+            var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
+            try
             {
-                var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
-                try
-                {
-                    var receiveTcs = new TaskCompletionSource<string>();
-                    connection.Received += (data, format) => receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
-                    connection.Closed += e =>
+                var receiveTcs = new TaskCompletionSource<string>();
+                connection.Received += (data, format) => receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
+                connection.Closed += e =>
+                    {
+                        if (e != null)
                         {
-                            if (e != null)
-                            {
-                                receiveTcs.TrySetException(e);
-                            }
-                            else
-                            {
-                                receiveTcs.TrySetResult(null);
-                            }
-                        };
+                            receiveTcs.TrySetException(e);
+                        }
+                        else
+                        {
+                            receiveTcs.TrySetResult(null);
+                        }
+                    };
 
-                    await connection.StartAsync(transport, httpClient);
+                await connection.StartAsync(transportType);
 
-                    await connection.SendAsync(Encoding.UTF8.GetBytes(message), MessageType.Text);
+                await connection.SendAsync(Encoding.UTF8.GetBytes(message), MessageType.Text);
 
-                    var receiveData = new ReceiveData();
+                var receiveData = new ReceiveData();
 
-                    Assert.Equal(message, await receiveTcs.Task.OrTimeout());
-                }
-                finally
-                {
-                    await connection.DisposeAsync();
-                }
+                Assert.Equal(message, await receiveTcs.Task.OrTimeout());
+            }
+            finally
+            {
+                await connection.DisposeAsync();
             }
         }
 
@@ -139,11 +124,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
             try
             {
-                var transport = new WebSocketsTransport();
                 var receiveTcs = new TaskCompletionSource<byte[]>();
                 connection.Received += (data, messageType) => receiveTcs.SetResult(data);
 
-                await connection.StartAsync(transport);
+                await connection.StartAsync(TransportType.WebSockets);
 
                 await connection.SendAsync(Encoding.UTF8.GetBytes(message), MessageType.Text);
 
@@ -157,5 +141,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await connection.DisposeAsync();
             }
         }
+
+        public static IEnumerable<object[]> TransportTypes() =>
+            new[]
+            {
+                new object[] { TransportType.WebSockets },
+                new object[] { TransportType.LongPolling }
+            };
     }
 }

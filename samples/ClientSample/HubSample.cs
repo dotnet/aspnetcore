@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 
 namespace ClientSample
@@ -26,43 +24,39 @@ namespace ClientSample
             loggerFactory.AddConsole(LogLevel.Debug);
             var logger = loggerFactory.CreateLogger<Program>();
 
-            using (var httpClient = new HttpClient(new LoggingMessageHandler(loggerFactory, new HttpClientHandler())))
+            logger.LogInformation("Connecting to {0}", baseUrl);
+            var connection = new HubConnection(new Uri(baseUrl), new JsonNetInvocationAdapter(), loggerFactory);
+            try
             {
-                logger.LogInformation("Connecting to {0}", baseUrl);
-                var transport = new LongPollingTransport(httpClient, loggerFactory);
-                var connection = new HubConnection(new Uri(baseUrl), new JsonNetInvocationAdapter(), loggerFactory);
-                try
+                await connection.StartAsync();
+                logger.LogInformation("Connected to {0}", baseUrl);
+
+                var cts = new CancellationTokenSource();
+                Console.CancelKeyPress += (sender, a) =>
                 {
-                    await connection.StartAsync(transport, httpClient);
-                    logger.LogInformation("Connected to {0}", baseUrl);
+                    a.Cancel = true;
+                    logger.LogInformation("Stopping loops...");
+                    cts.Cancel();
+                };
 
-                    var cts = new CancellationTokenSource();
-                    Console.CancelKeyPress += (sender, a) =>
-                    {
-                        a.Cancel = true;
-                        logger.LogInformation("Stopping loops...");
-                        cts.Cancel();
-                    };
-
-                    // Set up handler
-                    connection.On("Send", new[] { typeof(string) }, a =>
-                    {
-                        var message = (string)a[0];
-                        Console.WriteLine("RECEIVED: " + message);
-                    });
-
-                    while (!cts.Token.IsCancellationRequested)
-                    {
-                        var line = Console.ReadLine();
-                        logger.LogInformation("Sending: {0}", line);
-
-                        await connection.Invoke<object>("Send", line);
-                    }
-                }
-                finally
+                // Set up handler
+                connection.On("Send", new[] { typeof(string) }, a =>
                 {
-                    await connection.DisposeAsync();
+                    var message = (string)a[0];
+                    Console.WriteLine("RECEIVED: " + message);
+                });
+
+                while (!cts.Token.IsCancellationRequested)
+                {
+                    var line = Console.ReadLine();
+                    logger.LogInformation("Sending: {0}", line);
+
+                    await connection.Invoke<object>("Send", line);
                 }
+            }
+            finally
+            {
+                await connection.DisposeAsync();
             }
         }
     }

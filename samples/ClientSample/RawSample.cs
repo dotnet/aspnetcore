@@ -18,7 +18,7 @@ namespace ClientSample
     {
         public static async Task MainAsync(string[] args)
         {
-            if(args.Contains("--debug"))
+            if (args.Contains("--debug"))
             {
                 Console.WriteLine($"Ready for debugger to attach. Process ID: {Process.GetCurrentProcess().Id}");
                 Console.Write("Press ENTER to Continue");
@@ -36,34 +36,30 @@ namespace ClientSample
             loggerFactory.AddConsole(LogLevel.Debug);
             var logger = loggerFactory.CreateLogger<Program>();
 
-            using (var httpClient = new HttpClient(new LoggingMessageHandler(loggerFactory, new HttpClientHandler())))
+            logger.LogInformation("Connecting to {0}", baseUrl);
+            var connection = new Connection(new Uri(baseUrl), loggerFactory);
+            try
             {
-                logger.LogInformation("Connecting to {0}", baseUrl);
-                var transport = new LongPollingTransport(httpClient, loggerFactory);
-                var connection = new Connection(new Uri(baseUrl), loggerFactory);
-                try
+                var cts = new CancellationTokenSource();
+                connection.Received += (data, format) => logger.LogInformation($"Received: {Encoding.UTF8.GetString(data)}");
+                connection.Closed += e => cts.Cancel();
+
+                await connection.StartAsync();
+
+                logger.LogInformation("Connected to {0}", baseUrl);
+
+                Console.CancelKeyPress += (sender, a) =>
                 {
-                    var cts = new CancellationTokenSource();
-                    connection.Received += (data, format) => logger.LogInformation($"Received: {Encoding.UTF8.GetString(data)}");
-                    connection.Closed += e => cts.Cancel();
+                    a.Cancel = true;
+                    logger.LogInformation("Stopping loops...");
+                    cts.Cancel();
+                };
 
-                    await connection.StartAsync(transport, httpClient);
-
-                    logger.LogInformation("Connected to {0}", baseUrl);
-
-                    Console.CancelKeyPress += (sender, a) =>
-                    {
-                        a.Cancel = true;
-                        logger.LogInformation("Stopping loops...");
-                        cts.Cancel();
-                    };
-
-                    await StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
-                }
-                finally
-                {
-                    await connection.DisposeAsync();
-                }
+                await StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
+            }
+            finally
+            {
+                await connection.DisposeAsync();
             }
         }
 

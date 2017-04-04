@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public interface IConnection
     {
-        Task StartAsync(ITransport transport, HttpClient httpClient);
+        Task StartAsync(ITransportFactory transportFactory, HttpClient httpClient);
         Task SendAsync(byte[] data, MessageType type, CancellationToken cancellationToken);
         Task DisposeAsync();
 

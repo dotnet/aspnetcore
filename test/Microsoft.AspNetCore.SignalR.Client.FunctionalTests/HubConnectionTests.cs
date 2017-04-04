@@ -1,17 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 using Xunit;
-using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
@@ -51,11 +50,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
             using (var httpClient = _testServer.CreateClient())
             {
-                var transport = new LongPollingTransport(httpClient, loggerFactory);
                 var connection = new HubConnection(new Uri("http://test/hubs"));
                 try
                 {
-                    await connection.StartAsync(transport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     var result = await connection.Invoke<string>("HelloWorld");
 
@@ -76,11 +74,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
             using (var httpClient = _testServer.CreateClient())
             {
-                var transport = new LongPollingTransport(httpClient, loggerFactory);
                 var connection = new HubConnection(new Uri("http://test/hubs"));
                 try
                 {
-                    await connection.StartAsync(transport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     var result = await connection.Invoke<string>("Echo", originalMessage);
 
@@ -101,11 +98,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
             using (var httpClient = _testServer.CreateClient())
             {
-                var transport = new LongPollingTransport(httpClient, loggerFactory);
                 var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory);
                 try
                 {
-                    await connection.StartAsync(transport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     var result = await connection.Invoke<string>("echo", originalMessage);
 
@@ -126,11 +122,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
             using (var httpClient = _testServer.CreateClient())
             {
-                var transport = new LongPollingTransport(httpClient, loggerFactory);
                 var connection = new HubConnection(new Uri("http://test/hubs"));
                 try
                 {
-                    await connection.StartAsync(transport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     var tcs = new TaskCompletionSource<string>();
                     connection.On("Echo", new[] { typeof(string) }, a =>
@@ -156,11 +151,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
             using (var httpClient = _testServer.CreateClient())
             {
-                var transport = new LongPollingTransport(httpClient, loggerFactory);
                 var connection = new HubConnection(new Uri("http://test/hubs"));
                 try
                 {
-                    await connection.StartAsync(transport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     var ex = await Assert.ThrowsAnyAsync<Exception>(
                         async () => await connection.Invoke<object>("!@#$%"));

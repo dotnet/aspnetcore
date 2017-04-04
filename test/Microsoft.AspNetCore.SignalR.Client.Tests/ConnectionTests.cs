@@ -36,6 +36,16 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             Assert.Equal(connectionUrl, new Connection(connectionUrl).Url);
         }
 
+        [Theory]
+        [InlineData(0)]
+        [InlineData(TransportType.All + 1)]
+        public async Task CannotStartConnectionWithInvalidTransportType(TransportType requestedTransportType)
+        {
+            var connection = new Connection(new Uri("http://fakeuri.org/"));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+                () => connection.StartAsync(requestedTransportType));
+        }
+
         [Fact]
         public async Task CannotStartRunningConnection()
         {
@@ -50,14 +60,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
                 try
                 {
-                    await connection.StartAsync(longPollingTransport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
                     var exception =
                         await Assert.ThrowsAsync<InvalidOperationException>(
-                            async () => await connection.StartAsync(longPollingTransport));
+                            async () => await connection.StartAsync());
                     Assert.Equal("Cannot start a connection that is not in the Initial state.", exception.Message);
                 }
                 finally
@@ -81,14 +90,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
 
-                await connection.StartAsync(longPollingTransport, httpClient);
+                await connection.StartAsync(TransportType.LongPolling, httpClient);
                 await connection.DisposeAsync();
                 var exception =
                     await Assert.ThrowsAsync<InvalidOperationException>(
-                        async () => await connection.StartAsync(longPollingTransport));
+                        async () => await connection.StartAsync());
 
                 Assert.Equal("Cannot start a connection that is not in the Initial state.", exception.Message);
             }
@@ -99,12 +107,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
         {
             using (var httpClient = new HttpClient())
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
                 await connection.DisposeAsync();
                 var exception =
                     await Assert.ThrowsAsync<InvalidOperationException>(
-                        async () => await connection.StartAsync(longPollingTransport));
+                        async () => await connection.StartAsync());
 
                 Assert.Equal("Cannot start a connection that is not in the Initial state.", exception.Message);
             }
@@ -138,7 +145,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 transport.Setup(t => t.StopAsync()).Returns(async () => { await releaseDisposeTcs.Task; });
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
 
-                var startTask = connection.StartAsync(transport.Object, httpClient);
+                var startTask = connection.StartAsync(new TestTransportFactory(transport.Object), httpClient);
                 await allowDisposeTcs.Task;
                 var disposeTask = connection.DisposeAsync();
                 // allow StartAsync to continue once DisposeAsync has started
@@ -176,10 +183,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
 
-                await connection.StartAsync(longPollingTransport, httpClient);
+                await connection.StartAsync(TransportType.LongPolling, httpClient);
                 await connection.DisposeAsync();
 
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -202,14 +208,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
                 try
                 {
                     var connectedEventRaisedTcs = new TaskCompletionSource<object>();
                     connection.Connected += () => connectedEventRaisedTcs.SetResult(null);
 
-                    await connection.StartAsync(longPollingTransport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     await connectedEventRaisedTcs.Task.OrTimeout();
                 }
@@ -246,7 +251,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     connection.Connected += () => connectedEventRaised = true;
 
                     await Assert.ThrowsAsync<InvalidOperationException>(
-                        async () => await connection.StartAsync(mockTransport.Object, httpClient));
+                        async () => await connection.StartAsync(new TestTransportFactory(mockTransport.Object), httpClient));
                 }
                 finally
                 {
@@ -271,13 +276,12 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
 
                 var closedEventTcs = new TaskCompletionSource<Exception>();
                 connection.Closed += e => closedEventTcs.SetResult(e);
 
-                await connection.StartAsync(longPollingTransport, httpClient);
+                await connection.StartAsync(TransportType.LongPolling, httpClient);
                 await connection.DisposeAsync();
 
                 // in case of clean disconnect error should be null
@@ -303,14 +307,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
                 var closedEventTcs = new TaskCompletionSource<Exception>();
                 connection.Closed += e => closedEventTcs.TrySetResult(e);
 
                 try
                 {
-                    await connection.StartAsync(longPollingTransport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
                     Assert.IsType<HttpRequestException>(await closedEventTcs.Task.OrTimeout());
                 }
                 finally
@@ -356,7 +359,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var receivedInvoked = false;
                 connection.Received += (m, t) => receivedInvoked = true;
 
-                await connection.StartAsync(mockTransport.Object, httpClient);
+                await connection.StartAsync(new TestTransportFactory(mockTransport.Object), httpClient);
                 await connection.DisposeAsync();
                 Assert.False(receivedInvoked);
             }
@@ -407,7 +410,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     };
                 connection.Closed += e => closedTcs.SetResult(null);
 
-                await connection.StartAsync(mockTransport.Object, httpClient);
+                await connection.StartAsync(new TestTransportFactory(mockTransport.Object), httpClient);
                 channel.Output.TryWrite(new Message());
                 channel.Output.TryWrite(new Message());
                 await allowDisposeTcs.Task.OrTimeout();
@@ -449,7 +452,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
                 try
                 {
-                    await connection.StartAsync(longPollingTransport, httpClient);
+                    await connection.StartAsync(new TestTransportFactory(longPollingTransport), httpClient);
 
                     Assert.False(longPollingTransport.Running.IsCompleted);
                 }
@@ -485,11 +488,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
                 try
                 {
-                    await connection.StartAsync(longPollingTransport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     await connection.SendAsync(data, MessageType.Binary);
 
@@ -532,10 +534,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
 
-                await connection.StartAsync(longPollingTransport, httpClient);
+                await connection.StartAsync(TransportType.LongPolling, httpClient);
                 await connection.DisposeAsync();
 
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -563,10 +564,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
 
-                await connection.StartAsync(longPollingTransport, httpClient);
+                await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                 var exception = await Assert.ThrowsAsync<HttpRequestException>(
                     async () => await connection.SendAsync(new byte[0], MessageType.Binary));
@@ -595,8 +595,6 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
                 try
                 {
@@ -614,7 +612,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                             }
                         };
 
-                    await connection.StartAsync(longPollingTransport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     Assert.Equal("42", await receiveTcs.Task.OrTimeout());
                 }
@@ -643,14 +641,13 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 var connection = new Connection(new Uri("http://fakeuri.org/"));
                 try
                 {
                     var closeTcs = new TaskCompletionSource<Exception>();
                     connection.Closed += e => closeTcs.TrySetResult(e);
 
-                    await connection.StartAsync(longPollingTransport, httpClient);
+                    await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     // Exception in send should shutdown the connection
                     await closeTcs.Task.OrTimeout();
