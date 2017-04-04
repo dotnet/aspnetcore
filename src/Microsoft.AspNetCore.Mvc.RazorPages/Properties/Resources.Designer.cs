@@ -15,128 +15,112 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         internal static string PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable
         {
-            get { return GetString("PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable"); }
+            get => GetString("PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable");
         }
 
         /// <summary>
         /// The route for the page at '{0}' cannot start with / or ~/. Pages do not support overriding the file path of the page.
         /// </summary>
         internal static string FormatPageActionDescriptorProvider_RouteTemplateCannotBeOverrideable(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable"), p0);
 
         /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull
         {
-            get { return GetString("PropertyOfTypeCannotBeNull"); }
+            get => GetString("PropertyOfTypeCannotBeNull");
         }
 
         /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string FormatPropertyOfTypeCannotBeNull(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
 
         /// <summary>
         /// Page created by '{0}' must be an instance of '{1}'.
         /// </summary>
         internal static string ActivatedInstance_MustBeAnInstanceOf
         {
-            get { return GetString("ActivatedInstance_MustBeAnInstanceOf"); }
+            get => GetString("ActivatedInstance_MustBeAnInstanceOf");
         }
 
         /// <summary>
         /// Page created by '{0}' must be an instance of '{1}'.
         /// </summary>
         internal static string FormatActivatedInstance_MustBeAnInstanceOf(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ActivatedInstance_MustBeAnInstanceOf"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ActivatedInstance_MustBeAnInstanceOf"), p0, p1);
 
         /// <summary>
         /// Argument '{0}' is not the same instance used to create '{1}'.
         /// </summary>
         internal static string PageViewResult_ContextIsInvalid
         {
-            get { return GetString("PageViewResult_ContextIsInvalid"); }
+            get => GetString("PageViewResult_ContextIsInvalid");
         }
 
         /// <summary>
         /// Argument '{0}' is not the same instance used to create '{1}'.
         /// </summary>
         internal static string FormatPageViewResult_ContextIsInvalid(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PageViewResult_ContextIsInvalid"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("PageViewResult_ContextIsInvalid"), p0, p1);
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty
         {
-            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+            get => GetString("ArgumentCannotBeNullOrEmpty");
         }
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string FormatArgumentCannotBeNullOrEmpty()
-        {
-            return GetString("ArgumentCannotBeNullOrEmpty");
-        }
+            => GetString("ArgumentCannotBeNullOrEmpty");
 
         /// <summary>
         /// Unsupported handler method return type '{0}'.
         /// </summary>
         internal static string UnsupportedHandlerMethodType
         {
-            get { return GetString("UnsupportedHandlerMethodType"); }
+            get => GetString("UnsupportedHandlerMethodType");
         }
 
         /// <summary>
         /// Unsupported handler method return type '{0}'.
         /// </summary>
         internal static string FormatUnsupportedHandlerMethodType(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedHandlerMethodType"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedHandlerMethodType"), p0);
 
         /// <summary>
         /// Multiple handlers matched. The following handlers matched route data and had all constraints satisfied:{0}{0}{1}
         /// </summary>
         internal static string AmbiguousHandler
         {
-            get { return GetString("AmbiguousHandler"); }
+            get => GetString("AmbiguousHandler");
         }
 
         /// <summary>
         /// Multiple handlers matched. The following handlers matched route data and had all constraints satisfied:{0}{0}{1}
         /// </summary>
         internal static string FormatAmbiguousHandler(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousHandler"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousHandler"), p0, p1);
 
         /// <summary>
         /// Path must be an application relative path that starts with a forward slash '/'.
         /// </summary>
         internal static string PathMustBeAnAppRelativePath
         {
-            get { return GetString("PathMustBeAnAppRelativePath"); }
+            get => GetString("PathMustBeAnAppRelativePath");
         }
 
         /// <summary>
         /// Path must be an application relative path that starts with a forward slash '/'.
         /// </summary>
         internal static string FormatPathMustBeAnAppRelativePath()
-        {
-            return GetString("PathMustBeAnAppRelativePath");
-        }
+            => GetString("PathMustBeAnAppRelativePath");
 
         private static string GetString(string name, params string[] formatterNames)
         {

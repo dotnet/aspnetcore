@@ -15,304 +15,266 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty
         {
-            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+            get => GetString("ArgumentCannotBeNullOrEmpty");
         }
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string FormatArgumentCannotBeNullOrEmpty()
-        {
-            return GetString("ArgumentCannotBeNullOrEmpty");
-        }
+            => GetString("ArgumentCannotBeNullOrEmpty");
 
         /// <summary>
         /// The ModelMetadata property must be set before accessing this property.
         /// </summary>
         internal static string ModelBindingContext_ModelMetadataMustBeSet
         {
-            get { return GetString("ModelBindingContext_ModelMetadataMustBeSet"); }
+            get => GetString("ModelBindingContext_ModelMetadataMustBeSet");
         }
 
         /// <summary>
         /// The ModelMetadata property must be set before accessing this property.
         /// </summary>
         internal static string FormatModelBindingContext_ModelMetadataMustBeSet()
-        {
-            return GetString("ModelBindingContext_ModelMetadataMustBeSet");
-        }
+            => GetString("ModelBindingContext_ModelMetadataMustBeSet");
 
         /// <summary>
         /// A field previously marked invalid should not be marked valid.
         /// </summary>
         internal static string Validation_InvalidFieldCannotBeReset
         {
-            get { return GetString("Validation_InvalidFieldCannotBeReset"); }
+            get => GetString("Validation_InvalidFieldCannotBeReset");
         }
 
         /// <summary>
         /// A field previously marked invalid should not be marked valid.
         /// </summary>
         internal static string FormatValidation_InvalidFieldCannotBeReset()
-        {
-            return GetString("Validation_InvalidFieldCannotBeReset");
-        }
+            => GetString("Validation_InvalidFieldCannotBeReset");
 
         /// <summary>
         /// A field previously marked invalid should not be marked skipped.
         /// </summary>
         internal static string Validation_InvalidFieldCannotBeReset_ToSkipped
         {
-            get { return GetString("Validation_InvalidFieldCannotBeReset_ToSkipped"); }
+            get => GetString("Validation_InvalidFieldCannotBeReset_ToSkipped");
         }
 
         /// <summary>
         /// A field previously marked invalid should not be marked skipped.
         /// </summary>
         internal static string FormatValidation_InvalidFieldCannotBeReset_ToSkipped()
-        {
-            return GetString("Validation_InvalidFieldCannotBeReset_ToSkipped");
-        }
+            => GetString("Validation_InvalidFieldCannotBeReset_ToSkipped");
 
         /// <summary>
         /// The maximum number of allowed model errors has been reached.
         /// </summary>
         internal static string ModelStateDictionary_MaxModelStateErrors
         {
-            get { return GetString("ModelStateDictionary_MaxModelStateErrors"); }
+            get => GetString("ModelStateDictionary_MaxModelStateErrors");
         }
 
         /// <summary>
         /// The maximum number of allowed model errors has been reached.
         /// </summary>
         internal static string FormatModelStateDictionary_MaxModelStateErrors()
-        {
-            return GetString("ModelStateDictionary_MaxModelStateErrors");
-        }
+            => GetString("ModelStateDictionary_MaxModelStateErrors");
 
         /// <summary>
         /// Body
         /// </summary>
         internal static string BindingSource_Body
         {
-            get { return GetString("BindingSource_Body"); }
+            get => GetString("BindingSource_Body");
         }
 
         /// <summary>
         /// Body
         /// </summary>
         internal static string FormatBindingSource_Body()
-        {
-            return GetString("BindingSource_Body");
-        }
+            => GetString("BindingSource_Body");
 
         /// <summary>
         /// Custom
         /// </summary>
         internal static string BindingSource_Custom
         {
-            get { return GetString("BindingSource_Custom"); }
+            get => GetString("BindingSource_Custom");
         }
 
         /// <summary>
         /// Custom
         /// </summary>
         internal static string FormatBindingSource_Custom()
-        {
-            return GetString("BindingSource_Custom");
-        }
+            => GetString("BindingSource_Custom");
 
         /// <summary>
         /// Form
         /// </summary>
         internal static string BindingSource_Form
         {
-            get { return GetString("BindingSource_Form"); }
+            get => GetString("BindingSource_Form");
         }
 
         /// <summary>
         /// Form
         /// </summary>
         internal static string FormatBindingSource_Form()
-        {
-            return GetString("BindingSource_Form");
-        }
+            => GetString("BindingSource_Form");
 
         /// <summary>
         /// Header
         /// </summary>
         internal static string BindingSource_Header
         {
-            get { return GetString("BindingSource_Header"); }
+            get => GetString("BindingSource_Header");
         }
 
         /// <summary>
         /// Header
         /// </summary>
         internal static string FormatBindingSource_Header()
-        {
-            return GetString("BindingSource_Header");
-        }
+            => GetString("BindingSource_Header");
 
         /// <summary>
         /// Services
         /// </summary>
         internal static string BindingSource_Services
         {
-            get { return GetString("BindingSource_Services"); }
+            get => GetString("BindingSource_Services");
         }
 
         /// <summary>
         /// Services
         /// </summary>
         internal static string FormatBindingSource_Services()
-        {
-            return GetString("BindingSource_Services");
-        }
+            => GetString("BindingSource_Services");
 
         /// <summary>
         /// ModelBinding
         /// </summary>
         internal static string BindingSource_ModelBinding
         {
-            get { return GetString("BindingSource_ModelBinding"); }
+            get => GetString("BindingSource_ModelBinding");
         }
 
         /// <summary>
         /// ModelBinding
         /// </summary>
         internal static string FormatBindingSource_ModelBinding()
-        {
-            return GetString("BindingSource_ModelBinding");
-        }
+            => GetString("BindingSource_ModelBinding");
 
         /// <summary>
         /// Path
         /// </summary>
         internal static string BindingSource_Path
         {
-            get { return GetString("BindingSource_Path"); }
+            get => GetString("BindingSource_Path");
         }
 
         /// <summary>
         /// Path
         /// </summary>
         internal static string FormatBindingSource_Path()
-        {
-            return GetString("BindingSource_Path");
-        }
+            => GetString("BindingSource_Path");
 
         /// <summary>
         /// Query
         /// </summary>
         internal static string BindingSource_Query
         {
-            get { return GetString("BindingSource_Query"); }
+            get => GetString("BindingSource_Query");
         }
 
         /// <summary>
         /// Query
         /// </summary>
         internal static string FormatBindingSource_Query()
-        {
-            return GetString("BindingSource_Query");
-        }
+            => GetString("BindingSource_Query");
 
         /// <summary>
         /// The provided binding source '{0}' is a composite. '{1}' requires that the source must represent a single type of input.
         /// </summary>
         internal static string BindingSource_CannotBeComposite
         {
-            get { return GetString("BindingSource_CannotBeComposite"); }
+            get => GetString("BindingSource_CannotBeComposite");
         }
 
         /// <summary>
         /// The provided binding source '{0}' is a composite. '{1}' requires that the source must represent a single type of input.
         /// </summary>
         internal static string FormatBindingSource_CannotBeComposite(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeComposite"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeComposite"), p0, p1);
 
         /// <summary>
         /// The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.
         /// </summary>
         internal static string BindingSource_MustBeFromRequest
         {
-            get { return GetString("BindingSource_MustBeFromRequest"); }
+            get => GetString("BindingSource_MustBeFromRequest");
         }
 
         /// <summary>
         /// The provided binding source '{0}' is not a request-based binding source. '{1}' requires that the source must represent data from an HTTP request.
         /// </summary>
         internal static string FormatBindingSource_MustBeFromRequest(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeFromRequest"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeFromRequest"), p0, p1);
 
         /// <summary>
         /// The provided binding source '{0}' is a greedy data source. '{1}' does not support greedy data sources.
         /// </summary>
         internal static string BindingSource_CannotBeGreedy
         {
-            get { return GetString("BindingSource_CannotBeGreedy"); }
+            get => GetString("BindingSource_CannotBeGreedy");
         }
 
         /// <summary>
         /// The provided binding source '{0}' is a greedy data source. '{1}' does not support greedy data sources.
         /// </summary>
         internal static string FormatBindingSource_CannotBeGreedy(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeGreedy"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_CannotBeGreedy"), p0, p1);
 
         /// <summary>
         /// The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.
         /// </summary>
         internal static string BindingSource_MustBeGreedy
         {
-            get { return GetString("BindingSource_MustBeGreedy"); }
+            get => GetString("BindingSource_MustBeGreedy");
         }
 
         /// <summary>
         /// The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.
         /// </summary>
         internal static string FormatBindingSource_MustBeGreedy(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeGreedy"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeGreedy"), p0, p1);
 
         /// <summary>
         /// Special
         /// </summary>
         internal static string BindingSource_Special
         {
-            get { return GetString("BindingSource_Special"); }
+            get => GetString("BindingSource_Special");
         }
 
         /// <summary>
         /// Special
         /// </summary>
         internal static string FormatBindingSource_Special()
-        {
-            return GetString("BindingSource_Special");
-        }
+            => GetString("BindingSource_Special");
 
         /// <summary>
         /// FormFile
         /// </summary>
         internal static string BindingSource_FormFile
         {
-            get { return GetString("BindingSource_FormFile"); }
+            get => GetString("BindingSource_FormFile");
         }
 
         /// <summary>
         /// FormFile
         /// </summary>
         internal static string FormatBindingSource_FormFile()
-        {
-            return GetString("BindingSource_FormFile");
-        }
+            => GetString("BindingSource_FormFile");
 
         private static string GetString(string name, params string[] formatterNames)
         {
