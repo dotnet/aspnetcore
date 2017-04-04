@@ -80,10 +80,10 @@ namespace E2ETests
                         }
                     };
 
-                    if (applicationType == ApplicationType.Standalone)
-                    {
-                        deploymentParameters.AdditionalPublishParameters = " -r " + RuntimeEnvironment.GetRuntimeIdentifier();
-                    }
+
+                    deploymentParameters.AdditionalPublishParameters =
+                        (applicationType == ApplicationType.Standalone ? $" -r {RuntimeEnvironment.GetRuntimeIdentifier()}" : "")
+                        + " /p:PublishForTesting=true";
 
                     // Override the connection strings using environment based configuration
                     deploymentParameters.EnvironmentVariables
