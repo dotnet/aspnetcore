@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         public TestDirectoryContent AddDirectoryContent(string path, IEnumerable<IFileInfo> files)
         {
-            var directoryContent = new TestDirectoryContent(files);
+            var directoryContent = new TestDirectoryContent(Path.GetFileName(path), files);
             _directoryContentsLookup[path] = directoryContent;
             return directoryContent;
         }

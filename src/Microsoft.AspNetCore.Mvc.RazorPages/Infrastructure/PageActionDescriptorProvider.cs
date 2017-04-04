@@ -3,29 +3,27 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class PageActionDescriptorProvider : IActionDescriptorProvider
     {
-        private static readonly string IndexFileName = "Index.cshtml";
-        private readonly RazorProject _project;
+        private readonly List<IPageApplicationModelProvider> _applicationModelProviders;
         private readonly MvcOptions _mvcOptions;
         private readonly RazorPagesOptions _pagesOptions;
 
         public PageActionDescriptorProvider(
-            RazorProject project,
+            IEnumerable<IPageApplicationModelProvider> pageMetadataProviders,
             IOptions<MvcOptions> mvcOptionsAccessor,
             IOptions<RazorPagesOptions> pagesOptionsAccessor)
         {
-            _project = project;
+            _applicationModelProviders = pageMetadataProviders.OrderBy(p => p.Order).ToList();
             _mvcOptions = mvcOptionsAccessor.Value;
             _pagesOptions = pagesOptionsAccessor.Value;
         }
@@ -34,57 +32,37 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         public void OnProvidersExecuting(ActionDescriptorProviderContext context)
         {
-            foreach (var item in _project.EnumerateItems(_pagesOptions.RootDirectory))
+            var pageApplicationModels = BuildModel();
+
+            for (var i = 0; i < pageApplicationModels.Count; i++)
             {
-                if (item.FileName.StartsWith("_"))
-                {
-                    // Files like _ViewImports.cshtml should not be routable.
-                    continue;
-                }
-
-                string template;
-                if (!PageDirectiveFeature.TryGetPageDirective(item, out template))
-                {
-                    // .cshtml pages without @page are not RazorPages.
-                    continue;
-                }
-
-                if (AttributeRouteModel.IsOverridePattern(template))
-                {
-                    throw new InvalidOperationException(string.Format(
-                        Resources.PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable,
-                        item.Path));
-                }
-
-                AddActionDescriptors(context.Results, item, template);
+                AddActionDescriptors(context.Results, pageApplicationModels[i]);
             }
+        }
+
+        protected IList<PageApplicationModel> BuildModel()
+        {
+            var context = new PageApplicationModelProviderContext();
+
+            for (var i = 0; i < _applicationModelProviders.Count; i++)
+            {
+                _applicationModelProviders[i].OnProvidersExecuting(context);
+            }
+
+            for (var i = _applicationModelProviders.Count - 1; i >= 0; i--)
+            {
+                _applicationModelProviders[i].OnProvidersExecuted(context);
+            }
+
+            return context.Results;
         }
 
         public void OnProvidersExecuted(ActionDescriptorProviderContext context)
         {
         }
 
-        private void AddActionDescriptors(IList<ActionDescriptor> actions, RazorProjectItem item, string template)
+        private void AddActionDescriptors(IList<ActionDescriptor> actions, PageApplicationModel model)
         {
-            var model = new PageApplicationModel(item.CombinedPath, item.PathWithoutExtension);
-            var routePrefix = item.PathWithoutExtension;
-            model.Selectors.Add(CreateSelectorModel(routePrefix, template));
-
-            if (string.Equals(IndexFileName, item.FileName, StringComparison.OrdinalIgnoreCase))
-            {
-                var parentDirectoryPath = item.Path;
-                var index = parentDirectoryPath.LastIndexOf('/');
-                if (index == -1)
-                {
-                    parentDirectoryPath = string.Empty;
-                }
-                else
-                {
-                    parentDirectoryPath = parentDirectoryPath.Substring(0, index);
-                }
-                model.Selectors.Add(CreateSelectorModel(parentDirectoryPath, template));
-            }
-
             for (var i = 0; i < _pagesOptions.Conventions.Count; i++)
             {
                 _pagesOptions.Conventions[i].Apply(model);
@@ -111,28 +89,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         Order = selector.AttributeRouteModel.Order ?? 0,
                         Template = selector.AttributeRouteModel.Template,
                     },
-                    DisplayName = $"Page: {item.Path}",
+                    DisplayName = $"Page: {model.ViewEnginePath}",
                     FilterDescriptors = filters,
                     Properties = new Dictionary<object, object>(model.Properties),
-                    RelativePath = item.CombinedPath,
+                    RelativePath = model.RelativePath,
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
-                        { "page", item.PathWithoutExtension },
+                        { "page", model.ViewEnginePath},
                     },
-                    ViewEnginePath = item.Path,
+                    ViewEnginePath = model.ViewEnginePath,
                 });
             }
-        }
-
-        private static SelectorModel CreateSelectorModel(string prefix, string template)
-        {
-            return new SelectorModel
-            {
-                AttributeRouteModel = new AttributeRouteModel
-                {
-                    Template = AttributeRouteModel.CombineTemplates(prefix, template),
-                }
-            };
         }
     }
 }

@@ -121,8 +121,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                 _containerLookup = containerLookup;
             }
 
-            protected override Type GetViewInfoContainerType(AssemblyPart assemblyPart) =>
-                _containerLookup[assemblyPart];
+            protected override ViewInfoContainer GetManifest(AssemblyPart assemblyPart)
+            {
+                var type = _containerLookup[assemblyPart];
+                return (ViewInfoContainer)Activator.CreateInstance(type);
+            }
         }
 
         private class ViewInfoContainer1 : ViewInfoContainer

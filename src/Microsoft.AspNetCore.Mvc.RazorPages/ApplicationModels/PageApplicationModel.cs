@@ -59,17 +59,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         /// <summary>
-        /// Gets or sets the application root relative path for the page.
+        /// Gets the application root relative path for the page.
         /// </summary>
         public string RelativePath { get; }
 
         /// <summary>
-        /// Gets or sets the path relative to the base path for page discovery.
+        /// Gets the path relative to the base path for page discovery.
         /// </summary>
         public string ViewEnginePath { get; }
 
         /// <summary>
-        /// Gets or sets the applicable <see cref="IFilterMetadata"/> instances.
+        /// Gets the applicable <see cref="IFilterMetadata"/> instances.
         /// </summary>
         public IList<IFilterMetadata> Filters { get; }
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IDictionary<object, object> Properties { get; }
 
         /// <summary>
-        /// Gets or sets the <see cref="SelectorModel"/> instances.
+        /// Gets the <see cref="SelectorModel"/> instances.
         /// </summary>
         public IList<SelectorModel> Selectors { get; }
     }

@@ -135,10 +135,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // DependencyContextRazorViewEngineOptionsSetup needs to run after RazorViewEngineOptionsSetup.
             // The ordering of the following two lines is important to ensure this behavior.
-#pragma warning disable 0618
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
-#pragma warning restore 0618
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<
                     IConfigureOptions<RazorViewEngineOptions>,

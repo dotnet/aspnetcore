@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
@@ -15,9 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
     /// </summary>
     public class ViewsFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
     {
-        /// <summary>
-        /// Gets the suffix for the view assembly.
-        /// </summary>
         public static readonly string PrecompiledViewsAssemblySuffix = ".PrecompiledViews";
 
         /// <summary>
@@ -30,18 +25,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// </summary>
         public static readonly string ViewInfoContainerTypeName = "__PrecompiledViewCollection";
 
+        private static readonly string FullyQualifiedManifestTypeName = ViewInfoContainerNamespace + "." + ViewInfoContainerTypeName;
+
         /// <inheritdoc />
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewsFeature feature)
         {
             foreach (var assemblyPart in parts.OfType<AssemblyPart>())
             {
-                var viewInfoContainerTypeName = GetViewInfoContainerType(assemblyPart);
-                if (viewInfoContainerTypeName == null)
+                var viewContainer = GetManifest(assemblyPart);
+                if (viewContainer == null)
                 {
                     continue;
                 }
-
-                var viewContainer = (ViewInfoContainer)Activator.CreateInstance(viewInfoContainerTypeName);
 
                 foreach (var item in viewContainer.ViewInfos)
                 {
@@ -55,40 +50,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// </summary>
         /// <param name="assemblyPart">The <see cref="AssemblyPart"/>.</param>
         /// <returns>The <see cref="ViewInfoContainer"/> <see cref="Type"/>.</returns>
-        protected virtual Type GetViewInfoContainerType(AssemblyPart assemblyPart)
+        protected virtual ViewInfoContainer GetManifest(AssemblyPart assemblyPart)
         {
-#if NETSTANDARD1_6
-            if (!assemblyPart.Assembly.IsDynamic && !string.IsNullOrEmpty(assemblyPart.Assembly.Location))
+            var type = CompiledViewManfiest.GetManifestType(assemblyPart, FullyQualifiedManifestTypeName);
+            if (type != null)
             {
-                var precompiledAssemblyFileName = assemblyPart.Assembly.GetName().Name
-                    + PrecompiledViewsAssemblySuffix
-                    + ".dll";
-                var precompiledAssemblyFilePath = Path.Combine(
-                    Path.GetDirectoryName(assemblyPart.Assembly.Location),
-                    precompiledAssemblyFileName);
-
-                if (File.Exists(precompiledAssemblyFilePath))
-                {
-                    try
-                    {
-                        System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(precompiledAssemblyFilePath);
-                    }
-                    catch (FileLoadException)
-                    {
-                        // Don't throw if assembly cannot be loaded. This can happen if the file is not a managed assembly.
-                    }
-                }
+                return (ViewInfoContainer)Activator.CreateInstance(type);
             }
-#elif NET46
-#else
-#error target frameworks needs to be updated.
-#endif
 
-            var precompiledAssemblyName = new AssemblyName(assemblyPart.Assembly.FullName);
-            precompiledAssemblyName.Name = precompiledAssemblyName.Name + PrecompiledViewsAssemblySuffix;
-
-            var typeName = $"{ViewInfoContainerNamespace}.{ViewInfoContainerTypeName},{precompiledAssemblyName}";
-            return Type.GetType(typeName);
+            return null;
         }
     }
 }
