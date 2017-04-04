@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Internal;
@@ -119,6 +120,51 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             tcs.TrySetResult(null);
 
             await Task.WhenAll(firstTask, secondTask).OrTimeout();
+        }
+
+        [Fact]
+        public async Task DisposingConnectionMultipleGetsExceptionFromTransportOrApp()
+        {
+            var connectionManager = CreateConnectionManager();
+            var state = connectionManager.CreateConnection();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            state.ApplicationTask = tcs.Task;
+            state.TransportTask = tcs.Task;
+
+            var firstTask = state.DisposeAsync();
+            var secondTask = state.DisposeAsync();
+            Assert.False(firstTask.IsCompleted);
+            Assert.False(secondTask.IsCompleted);
+
+            tcs.TrySetException(new InvalidOperationException("Error"));
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await firstTask.OrTimeout());
+            Assert.Equal("Error", exception.Message);
+
+            exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await secondTask.OrTimeout());
+            Assert.Equal("Error", exception.Message);
+        }
+
+        [Fact]
+        public async Task DisposingConnectionMultipleGetsCancellation()
+        {
+            var connectionManager = CreateConnectionManager();
+            var state = connectionManager.CreateConnection();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            state.ApplicationTask = tcs.Task;
+            state.TransportTask = tcs.Task;
+
+            var firstTask = state.DisposeAsync();
+            var secondTask = state.DisposeAsync();
+            Assert.False(firstTask.IsCompleted);
+            Assert.False(secondTask.IsCompleted);
+
+            tcs.TrySetCanceled();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await firstTask.OrTimeout());
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await secondTask.OrTimeout());
         }
 
         [Fact]

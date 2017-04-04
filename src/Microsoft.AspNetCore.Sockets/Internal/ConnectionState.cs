@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
                     var applicationTask = ApplicationTask ?? TaskCache.CompletedTask;
                     var transportTask = TransportTask ?? TaskCache.CompletedTask;
 
-                    disposeTask = Task.WhenAll(applicationTask, transportTask);
+                    disposeTask = WaitOnTasks(applicationTask, transportTask);
                 }
             }
             finally
@@ -82,9 +82,29 @@ namespace Microsoft.AspNetCore.Sockets.Internal
 
             // REVIEW: Add a timeout so we don't wait forever
             await disposeTask;
+        }
 
-            // Notify all waiters that we're done disposing
-            _disposeTcs.TrySetResult(null);
+        private async Task WaitOnTasks(Task applicationTask, Task transportTask)
+        {
+            try
+            {
+                await Task.WhenAll(applicationTask, transportTask);
+
+                // Notify all waiters that we're done disposing
+                _disposeTcs.TrySetResult(null);
+            }
+            catch (OperationCanceledException)
+            {
+                _disposeTcs.TrySetCanceled();
+
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _disposeTcs.TrySetException(ex);
+
+                throw;
+            }
         }
 
         public enum ConnectionStatus
