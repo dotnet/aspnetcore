@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         private List<GCHandle> _pins = new List<GCHandle>(BUFFER_COUNT + 1);
         private List<BufferHandle> _handles = new List<BufferHandle>(BUFFER_COUNT + 1);
 
-        public UvWriteReq(IKestrelTrace logger) : base(logger)
+        public UvWriteReq(ILibuvTrace logger) : base(logger)
         {
         }
 

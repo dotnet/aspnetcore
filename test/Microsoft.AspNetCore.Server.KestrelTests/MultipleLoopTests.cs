@@ -7,9 +7,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -18,13 +17,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class MultipleLoopTests
     {
-        private readonly LibuvFunctions _uv;
-        private readonly IKestrelTrace _logger;
-        public MultipleLoopTests()
-        {
-            _uv = new LibuvFunctions();
-            _logger = new TestKestrelTrace();
-        }
+        private readonly LibuvFunctions _uv = new LibuvFunctions();
+        private readonly ILibuvTrace _logger = new LibuvTrace(new TestApplicationErrorLogger());
 
         [Fact]
         public void InitAndCloseServerPipe()
@@ -41,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             pipe.Dispose();
             loop.Dispose();
-
         }
 
         [Fact]
@@ -70,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     return;
                 }
 
-                var writeRequest = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
+                var writeRequest = new UvWriteReq(_logger);
                 writeRequest.Init(loop);
 
                 await writeRequest.WriteAsync(
@@ -87,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 var loop2 = new UvLoopHandle(_logger);
                 var clientConnectionPipe = new UvPipeHandle(_logger);
-                var connect = new UvConnectRequest(new KestrelTrace(new TestKestrelTrace()));
+                var connect = new UvConnectRequest(_logger);
 
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, (a, b) => { }, true);
@@ -163,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 serverConnectionPipeAcceptedEvent.WaitOne();
 
-                var writeRequest = new UvWriteReq(new KestrelTrace(new TestKestrelTrace()));
+                var writeRequest = new UvWriteReq(_logger);
                 writeRequest.Init(loop);
                 writeRequest.Write2(
                     serverConnectionPipe,
@@ -185,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 var loop2 = new UvLoopHandle(_logger);
                 var clientConnectionPipe = new UvPipeHandle(_logger);
-                var connect = new UvConnectRequest(new KestrelTrace(new TestKestrelTrace()));
+                var connect = new UvConnectRequest(_logger);
 
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, (a, b) => { }, true);

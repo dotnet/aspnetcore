@@ -6,6 +6,7 @@ using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private readonly UvStreamHandle _socket;
         private readonly Connection _connection;
         private readonly string _connectionId;
-        private readonly IKestrelTrace _log;
+        private readonly ILibuvTrace _log;
 
         private readonly WriteReqPool _writeReqPool;
         private readonly IPipeReader _pipe;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             UvStreamHandle socket,
             Connection connection,
             string connectionId,
-            IKestrelTrace log)
+            ILibuvTrace log)
         {
             _pipe = pipe;
             // We need to have empty pipe at this moment so callback

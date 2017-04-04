@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected UvStreamHandle ListenSocket { get; private set; }
 
-        public IKestrelTrace Log => TransportContext.Log;
+        public ILibuvTrace Log => TransportContext.Log;
 
         public Task StartAsync(
             IEndPointInformation endPointInformation,

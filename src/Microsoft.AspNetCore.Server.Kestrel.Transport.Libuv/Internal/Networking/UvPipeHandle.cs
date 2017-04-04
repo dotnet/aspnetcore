@@ -3,12 +3,13 @@
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 {
     public class UvPipeHandle : UvStreamHandle
     {
-        public UvPipeHandle(IKestrelTrace logger) : base(logger)
+        public UvPipeHandle(ILibuvTrace logger) : base(logger)
         {
         }
 

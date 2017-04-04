@@ -520,13 +520,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var pipe = _pipeFactory.Create(pipeOptions);
             var serviceContext = new TestServiceContext();
-            var trace = serviceContext.Log;
 
             var frame = new Frame<object>(null, new FrameContext { ServiceContext = serviceContext });
 
-            var socket = new MockSocket(_mockLibuv, _kestrelThread.Loop.ThreadId, new TestKestrelTrace());
-            var socketOutput = new SocketOutputProducer(pipe.Writer, frame, "0", trace);
-            var consumer = new SocketOutputConsumer(pipe.Reader, _kestrelThread, socket, connection ?? new MockConnection(), "0", trace);
+            var socket = new MockSocket(_mockLibuv, _kestrelThread.Loop.ThreadId, serviceContext.TransportContext.Log);
+            var socketOutput = new SocketOutputProducer(pipe.Writer, frame, "0", serviceContext.Log);
+            var consumer = new SocketOutputConsumer(pipe.Reader, _kestrelThread, socket, connection ?? new MockConnection(), "0", serviceContext.TransportContext.Log);
             var ignore = consumer.StartWrites();
 
             return socketOutput;

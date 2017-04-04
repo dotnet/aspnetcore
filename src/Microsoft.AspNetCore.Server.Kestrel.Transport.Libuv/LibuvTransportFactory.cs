@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -34,10 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            // REVIEW: Should we change the logger namespace for transport logs?
-            var logger  = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
-            // TODO: Add LibuvTrace
-            var trace = new KestrelTrace(logger);
+            var logger  = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv");
+            var trace = new LibuvTrace(logger);
 
             var threadCount = options.Value.ThreadCount;
 

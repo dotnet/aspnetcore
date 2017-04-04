@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         private Action<UvShutdownReq, int, object> _callback;
         private object _state;
 
-        public UvShutdownReq(IKestrelTrace logger) : base (logger)
+        public UvShutdownReq(ILibuvTrace logger) : base (logger)
         {
         }
 

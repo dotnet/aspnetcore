@@ -5,6 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         private object _readState;
         private GCHandle _readVitality;
 
-        protected UvStreamHandle(IKestrelTrace logger) : base(logger)
+        protected UvStreamHandle(ILibuvTrace logger) : base(logger)
         {
         }
 

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             Options = options.Value ?? new KestrelServerOptions();
             InternalOptions = new InternalKestrelServerOptions();
             _transportFactory = transportFactory;
-            _logger = loggerFactory.CreateLogger(typeof(KestrelServer).GetTypeInfo().Namespace);
+            _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set(_serverAddresses);

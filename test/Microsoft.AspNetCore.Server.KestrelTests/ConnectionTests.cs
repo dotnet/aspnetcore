@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         {
                             Thread = thread
                         };
-                        var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, serviceContext.Log);
+                        var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, serviceContext.TransportContext.Log);
                         var connection = new Connection(listenerContext, socket);
                         connection.Start();
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
@@ -10,10 +11,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         private readonly KestrelThread _thread;
         private readonly Queue<UvWriteReq> _pool = new Queue<UvWriteReq>(_maxPooledWriteReqs);
-        private readonly IKestrelTrace _log;
+        private readonly ILibuvTrace _log;
         private bool _disposed;
 
-        public WriteReqPool(KestrelThread thread, IKestrelTrace log)
+        public WriteReqPool(KestrelThread thread, ILibuvTrace log)
         {
             _thread = thread;
             _log = log;

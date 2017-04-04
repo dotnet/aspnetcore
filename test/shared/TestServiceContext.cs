@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -16,7 +17,9 @@ namespace Microsoft.AspNetCore.Testing
     {
         public TestServiceContext()
         {
-            Log = new TestKestrelTrace();
+            var logger = new TestApplicationErrorLogger();
+
+            Log = new TestKestrelTrace(logger);
             ThreadPool = new LoggingThreadPool(Log);
             DateHeaderValueManager = new DateHeaderValueManager(systemClock: new MockSystemClock());
             DateHeaderValue = DateHeaderValueManager.GetDateHeaderValues().String;
@@ -29,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing
             TransportContext = new LibuvTransportContext
             {
                 AppLifetime = new LifetimeNotImplemented(),
-                Log = Log,
+                Log = new LibuvTrace(logger),
                 Options = new LibuvTransportOptions
                 {
                     ThreadCount = 1,

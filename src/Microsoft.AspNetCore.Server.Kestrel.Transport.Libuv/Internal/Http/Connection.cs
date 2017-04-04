@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public IPipeWriter Input { get; set; }
         public SocketOutputConsumer Output { get; set; }
 
-        private IKestrelTrace Log => ListenerContext.TransportContext.Log;
+        private ILibuvTrace Log => ListenerContext.TransportContext.Log;
         private IConnectionHandler ConnectionHandler => ListenerContext.TransportContext.ConnectionHandler;
         private KestrelThread Thread => ListenerContext.Thread;
 

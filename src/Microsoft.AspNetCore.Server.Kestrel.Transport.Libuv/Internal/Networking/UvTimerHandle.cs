@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
         private Action<UvTimerHandle> _callback;
 
-        public UvTimerHandle(IKestrelTrace logger) : base(logger)
+        public UvTimerHandle(ILibuvTrace logger) : base(logger)
         {
         }
 

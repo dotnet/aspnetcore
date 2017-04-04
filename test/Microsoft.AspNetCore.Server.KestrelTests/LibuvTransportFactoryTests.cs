@@ -27,11 +27,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void LoggerCategoryNameIsKestrelServerNamespace()
+        public void LoggerCategoryNameIsLibuvTransportNamespace()
         {
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             new LibuvTransportFactory(Options.Create<LibuvTransportOptions>(new LibuvTransportOptions()), new LifetimeNotImplemented(), mockLoggerFactory.Object);
-            mockLoggerFactory.Verify(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
+            mockLoggerFactory.Verify(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv"));
         }
     }
 }

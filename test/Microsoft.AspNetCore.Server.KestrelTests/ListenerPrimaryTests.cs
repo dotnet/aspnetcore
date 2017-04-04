@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             // Create a pipe connection and keep it open without sending any data
             var connectTcs = new TaskCompletionSource<object>();
-            var connectionTrace = new TestKestrelTrace();
+            var connectionTrace = new LibuvTrace(new TestApplicationErrorLogger());
             var pipe = new UvPipeHandle(connectionTrace);
 
             kestrelThreadPrimary.Post(_ =>

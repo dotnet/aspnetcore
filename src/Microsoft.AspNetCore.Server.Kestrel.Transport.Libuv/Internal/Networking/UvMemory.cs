@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 {
@@ -16,9 +17,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
     {
         protected LibuvFunctions _uv;
         protected int _threadId;
-        protected readonly IKestrelTrace _log;
+        protected readonly ILibuvTrace _log;
 
-        protected UvMemory(IKestrelTrace logger) : base(IntPtr.Zero, true)
+        protected UvMemory(ILibuvTrace logger) : base(IntPtr.Zero, true)
         {
             _log = logger;
         }

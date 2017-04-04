@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         public List<KestrelThread> Threads { get; } = new List<KestrelThread>();
 
         public IApplicationLifetime AppLifetime => TransportContext.AppLifetime;
-        public IKestrelTrace Log => TransportContext.Log;
+        public ILibuvTrace Log => TransportContext.Log;
         public LibuvTransportOptions TransportOptions => TransportContext.Options;
 
         public async Task StopAsync()

@@ -1,12 +1,15 @@
-﻿using System;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 {
     class MockSocket : UvStreamHandle
     {
-        public MockSocket(LibuvFunctions uv, int threadId, IKestrelTrace logger) : base(logger)
+        public MockSocket(LibuvFunctions uv, int threadId, ILibuvTrace logger) : base(logger)
         {
             CreateMemory(uv, threadId, IntPtr.Size);
         }

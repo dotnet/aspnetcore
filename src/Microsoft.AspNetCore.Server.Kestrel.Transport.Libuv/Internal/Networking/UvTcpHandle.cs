@@ -5,12 +5,13 @@ using System;
 using System.Net;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 {
     public class UvTcpHandle : UvStreamHandle
     {
-        public UvTcpHandle(IKestrelTrace logger) : base(logger)
+        public UvTcpHandle(ILibuvTrace logger) : base(logger)
         {
         }
 
