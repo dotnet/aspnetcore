@@ -1,5 +1,5 @@
 Source Location: (7:0,7 [30] /TestFiles/Input/Model.cshtml)
 |System.Collections.IEnumerable|
-Generated Location: (846:40,0 [30] )
+Generated Location: (612:16,0 [30] )
 |System.Collections.IEnumerable|
 

@@ -2,37 +2,13 @@
 namespace AspNetCore
 {
     #line hidden
-#line 1 ""
-using System;
-
-#line default
-#line hidden
+    using System;
     using System.Threading.Tasks;
-#line 2 ""
-using System.Linq;
-
-#line default
-#line hidden
-#line 3 ""
-using System.Collections.Generic;
-
-#line default
-#line hidden
-#line 4 ""
-using Microsoft.AspNetCore.Mvc;
-
-#line default
-#line hidden
-#line 5 ""
-using Microsoft.AspNetCore.Mvc.Rendering;
-
-#line default
-#line hidden
-#line 6 ""
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-
-#line default
-#line hidden
+    using System.Linq;
+    using System.Collections.Generic;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Rendering;
+    using Microsoft.AspNetCore.Mvc.ViewFeatures;
 #line 5 "/TestFiles/Input/RazorPages.cshtml"
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

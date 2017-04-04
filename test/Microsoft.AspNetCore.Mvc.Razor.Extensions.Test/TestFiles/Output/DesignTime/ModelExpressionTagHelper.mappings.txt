@@ -1,20 +1,20 @@
 Source Location: (7:0,7 [8] /TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |DateTime|
-Generated Location: (821:40,0 [8] )
+Generated Location: (587:16,0 [8] )
 |DateTime|
 
 Source Location: (33:2,14 [108] /TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Extensions.Test|
-Generated Location: (942:44,30 [108] )
+Generated Location: (708:20,30 [108] )
 |Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Extensions.Test|
 
 Source Location: (162:4,17 [3] /TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Now|
-Generated Location: (1837:56,144 [3] )
+Generated Location: (1603:32,144 [3] )
 |Now|
 
 Source Location: (189:5,18 [5] /TestFiles/Input/ModelExpressionTagHelper.cshtml)
 |Model|
-Generated Location: (2238:62,136 [5] )
+Generated Location: (2004:38,136 [5] )
 |Model|
 

@@ -509,6 +509,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public IDisposable BuildLinePragma(SourceSpan documentLocation)
         {
+            if (string.IsNullOrEmpty(documentLocation.FilePath))
+            {
+                // Can't build a valid line pragma without a file path.
+                return NullDisposable.Default;
+            }
+
             return new LinePragmaWriter(this, documentLocation);
         }
 
@@ -630,6 +636,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     .WriteLineDefaultDirective()
                     .WriteLineHiddenDirective()
                     .SetIndent(_startIndent);
+            }
+        }
+
+        private class NullDisposable : IDisposable
+        {
+            public static readonly NullDisposable Default = new NullDisposable();
+
+            private NullDisposable()
+            {
+            }
+
+            public void Dispose()
+            {
             }
         }
     }

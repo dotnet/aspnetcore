@@ -1,25 +1,25 @@
 Source Location: (7:0,7 [7] /TestFiles/Input/InjectWithModel.cshtml)
 |MyModel|
-Generated Location: (810:40,0 [7] )
+Generated Location: (576:16,0 [7] )
 |MyModel|
 
 Source Location: (24:1,8 [5] /TestFiles/Input/InjectWithModel.cshtml)
 |MyApp|
-Generated Location: (900:44,0 [5] )
+Generated Location: (666:20,0 [5] )
 |MyApp|
 
 Source Location: (30:1,14 [14] /TestFiles/Input/InjectWithModel.cshtml)
 |MyPropertyName|
-Generated Location: (1002:48,14 [14] )
+Generated Location: (768:24,14 [14] )
 |MyPropertyName|
 
 Source Location: (54:2,8 [17] /TestFiles/Input/InjectWithModel.cshtml)
 |MyService<TModel>|
-Generated Location: (1086:52,0 [17] )
+Generated Location: (852:28,0 [17] )
 |MyService<TModel>|
 
 Source Location: (72:2,26 [4] /TestFiles/Input/InjectWithModel.cshtml)
 |Html|
-Generated Location: (1200:56,14 [4] )
+Generated Location: (966:32,14 [4] )
 |Html|
 

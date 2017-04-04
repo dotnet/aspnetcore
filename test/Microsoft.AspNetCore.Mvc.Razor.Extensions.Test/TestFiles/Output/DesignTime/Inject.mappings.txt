@@ -1,15 +1,15 @@
 Source Location: (1:0,1 [17] /TestFiles/Input/Inject.cshtml)
 |using MyNamespace|
-Generated Location: (613:36,0 [17] )
+Generated Location: (379:12,0 [17] )
 |using MyNamespace|
 
 Source Location: (28:1,8 [5] /TestFiles/Input/Inject.cshtml)
 |MyApp|
-Generated Location: (908:45,0 [5] )
+Generated Location: (674:21,0 [5] )
 |MyApp|
 
 Source Location: (34:1,14 [14] /TestFiles/Input/Inject.cshtml)
 |MyPropertyName|
-Generated Location: (1010:49,14 [14] )
+Generated Location: (776:25,14 [14] )
 |MyPropertyName|
 
