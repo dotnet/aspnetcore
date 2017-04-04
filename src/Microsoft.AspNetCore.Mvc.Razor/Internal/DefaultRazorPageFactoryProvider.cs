@@ -4,9 +4,6 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using Microsoft.AspNetCore.Razor.Evolution;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
@@ -16,26 +13,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class DefaultRazorPageFactoryProvider : IRazorPageFactoryProvider
     {
-        private const string ViewImportsFileName = "_ViewImports.cshtml";
-        private readonly RazorCompiler _razorCompiler;
+        private readonly RazorCompiler _compiler;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultRazorPageFactoryProvider"/>.
         /// </summary>
-        /// <param name="razorEngine">The <see cref="RazorEngine"/>.</param>
-        /// <param name="razorProject">The <see cref="RazorProject" />.</param>
-        /// <param name="compilationService">The <see cref="ICompilationService"/>.</param>
-        /// <param name="compilerCacheProvider">The <see cref="ICompilerCacheProvider"/>.</param>
-        public DefaultRazorPageFactoryProvider(
-            RazorEngine razorEngine,
-            RazorProject razorProject,
-            ICompilationService compilationService,
-            ICompilerCacheProvider compilerCacheProvider)
+        /// <param name="compiler">The <see cref="RazorCompiler"/>.</param>
+        public DefaultRazorPageFactoryProvider(RazorCompiler compiler)
         {
-            var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
-            templateEngine.Options.ImportsFileName = ViewImportsFileName;
-
-            _razorCompiler = new RazorCompiler(compilationService, compilerCacheProvider, templateEngine);
+            _compiler = compiler;
         }
 
         /// <inheritdoc />
@@ -52,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 relativePath = relativePath.Substring(1);
             }
 
-            var result = _razorCompiler.Compile(relativePath);
+            var result = _compiler.Compile(relativePath);
             if (result.Success)
             {
                 var compiledType = result.CompiledType;

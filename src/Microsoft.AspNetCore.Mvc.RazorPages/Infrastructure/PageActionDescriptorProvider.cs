@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 if (item.FileName.StartsWith("_"))
                 {
-                    // Pages like _PageImports should not be routable.
+                    // Files like _ViewImports.cshtml should not be routable.
                     continue;
                 }
 

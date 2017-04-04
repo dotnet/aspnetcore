@@ -157,24 +157,19 @@ namespace Microsoft.Extensions.DependencyInjection
             // creating the singleton RazorViewEngine instance.
             services.TryAddTransient<IRazorPageFactoryProvider, DefaultRazorPageFactoryProvider>();
 
+
+            //
+            // Razor compilation infrastructure
+            //
             services.TryAddSingleton<RazorProject, DefaultRazorProject>();
+            services.TryAddSingleton<RazorTemplateEngine, MvcRazorTemplateEngine>();
+            services.TryAddSingleton<RazorCompiler>();
 
             services.TryAddSingleton<RazorEngine>(s =>
             {
                 return RazorEngine.Create(b =>
                 {
-                    InjectDirective.Register(b);
-                    ModelDirective.Register(b);
-                    PageDirective.Register(b);
-
-                    b.AddTargetExtension(new InjectDirectiveTargetExtension());
-                    
-                    b.Features.Add(new ModelExpressionPass());
-                    b.Features.Add(new PagesPropertyInjectionPass());
-                    b.Features.Add(new ViewComponentTagHelperPass());
-                    b.Features.Add(new RazorPageDocumentClassifierPass());
-                    b.Features.Add(new MvcViewDocumentClassifierPass());
-                    b.Features.Add(new DefaultInstrumentationPass());
+                    RazorExtensions.Register(b);
 
                     b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperFeature());
 
