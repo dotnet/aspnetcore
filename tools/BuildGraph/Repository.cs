@@ -61,37 +61,41 @@ namespace BuildGraph
             var srcDirectory = Path.Combine(repositoryPath, "src");
 
             var solutionFiles = Directory.EnumerateFiles(repositoryPath, "*.sln");
-            var knownProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var file in solutionFiles)
             {
                 var spec = provider.GetDependencyGraphSpec(name, file);
-                foreach (var specProject in spec.Projects)
+                var projects = spec.Projects.OrderBy(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ? 0 : 1);
+                foreach (var specProject in projects)
                 {
-                    if (!knownProjects.Add(specProject.FilePath) ||
-                        specProject.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
-                    {
-                        continue;
-                    }
-
                     var projectPath = Path.GetFullPath(specProject.FilePath);
-
-                    var project = new Project(specProject.Name)
-                    {
-                        PackageReferences = GetPackageReferences(specProject),
-                        Repository = repository,
-                    };
 
                     var projectGroup = projectPath.StartsWith(srcDirectory, StringComparison.OrdinalIgnoreCase) ?
                         repository.Projects :
                         repository.SupportProjects;
-                    projectGroup.Add(project);
+
+                    var project = projectGroup.FirstOrDefault(f => f.Path == specProject.FilePath);
+                    if (project == null)
+                    {
+                        project = new Project(specProject.Name)
+                        {
+                            Repository = repository,
+                            Path = specProject.FilePath,
+                        };
+
+                        projectGroup.Add(project);
+                    }
+
+                    foreach (var package in GetPackageReferences(specProject))
+                    {
+                        project.PackageReferences.Add(package);
+                    }
                 }
             }
 
             return repository;
         }
 
-        private static List<string> GetPackageReferences(NuGet.ProjectModel.PackageSpec specProject)
+        private static List<string> GetPackageReferences(PackageSpec specProject)
         {
             var allDependencies = Enumerable.Concat(
                 specProject.Dependencies,

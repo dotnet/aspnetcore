@@ -14,8 +14,10 @@ namespace BuildGraph
 
         public string Name { get; }
 
+        public string Path { get; set; }
+
         public Repository Repository { get; set; }
 
-        public IList<string> PackageReferences { get; set; } = Array.Empty<string>();
+        public ISet<string> PackageReferences { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 }
