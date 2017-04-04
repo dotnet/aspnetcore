@@ -53,7 +53,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             {
                 if (__backed__tagHelperScopeManager == null)
                 {
-                    __backed__tagHelperScopeManager = new Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager(StartTagHelperWritingScope, EndTagHelperWritingScope);
+                    __backed__tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager(StartTagHelperWritingScope, EndTagHelperWritingScope);
                 }
                 return __backed__tagHelperScopeManager;
             }

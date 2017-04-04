@@ -1,3 +1,8 @@
+Source Location: (43:3,1 [41] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
+|using Microsoft.AspNetCore.Mvc.RazorPages|
+Generated Location: (615:32,0 [41] )
+|using Microsoft.AspNetCore.Mvc.RazorPages|
+
 Source Location: (23:2,14 [17] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
 |"*, TestAssembly"|
 Generated Location: (970:41,29 [17] )
