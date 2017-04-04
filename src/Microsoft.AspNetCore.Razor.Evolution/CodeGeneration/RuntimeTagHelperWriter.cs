@@ -10,21 +10,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
     {
         public string StringValueBufferVariableName { get; set; } = "__tagHelperStringValueBuffer";
 
-        public string ExecutionContextTypeName { get; set; } = "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext";
+        public string ExecutionContextTypeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext";
 
         public string ExecutionContextVariableName { get; set; } = "__tagHelperExecutionContext";
 
-        public string RunnerTypeName { get; set; } = "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner";
+        public string RunnerTypeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner";
 
         public string RunnerVariableName { get; set; } = "__tagHelperRunner";
 
-        public string ScopeManagerTypeName { get; set; } = "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager";
+        public string ScopeManagerTypeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager";
 
         public string ScopeManagerVariableName { get; set; } = "__tagHelperScopeManager";
+
+        public string ScopeManagerBeginMethodName { get; set; } = "Begin";
 
         public string StartTagHelperWritingScopeMethodName { get; set; } = "StartTagHelperWritingScope";
 
         public string EndTagHelperWritingScopeMethodName { get; set; } = "EndTagHelperWritingScope";
+
+        public string TagModeTypeName { get; set; } = "global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode";
 
         public override void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIRNode node)
         {
@@ -39,31 +43,31 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 .WritePragma("warning restore 0414");
 
             context.Writer
-            .Write("private global::")
+            .Write("private ")
             .WriteVariableDeclaration(
                 ExecutionContextTypeName,
                 ExecutionContextVariableName,
                 value: null);
 
             context.Writer
-            .Write("private global::")
+            .Write("private ")
             .Write(RunnerTypeName)
             .Write(" ")
             .Write(RunnerVariableName)
-            .Write(" = new global::")
+            .Write(" = new ")
             .Write(RunnerTypeName)
             .WriteLine("();");
 
             var backedScopeManageVariableName = "__backed" + ScopeManagerVariableName;
             context.Writer
-                .Write("private global::")
+                .Write("private ")
                 .WriteVariableDeclaration(
                     ScopeManagerTypeName,
                     backedScopeManageVariableName,
                     value: null);
 
             context.Writer
-            .Write("private global::")
+            .Write("private ")
             .Write(ScopeManagerTypeName)
             .Write(" ")
             .WriteLine(ScopeManagerVariableName);
@@ -122,7 +126,36 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void WriteInitializeTagHelperStructure(CSharpRenderingContext context, InitializeTagHelperStructureIRNode node)
         {
-            throw new NotImplementedException();
+            // Call into the tag helper scope manager to start a new tag helper scope.
+            // Also capture the value as the current execution context.
+            context.Writer
+                .WriteStartAssignment(ExecutionContextVariableName)
+                .WriteStartInstanceMethodInvocation(
+                    ScopeManagerVariableName,
+                    ScopeManagerBeginMethodName);
+
+            // Assign a unique ID for this instance of the source HTML tag. This must be unique
+            // per call site, e.g. if the tag is on the view twice, there should be two IDs.
+            context.Writer.WriteStringLiteral(node.TagName)
+                .WriteParameterSeparator()
+                .Write(TagModeTypeName)
+                .Write(".")
+                .Write(node.TagMode.ToString())
+                .WriteParameterSeparator()
+                .WriteStringLiteral(context.IdGenerator())
+                .WriteParameterSeparator();
+
+            // We remove and redirect writers so TagHelper authors can retrieve content.
+            // This can be removed once all the tag helper nodes are moved out of the renderers.
+            var initialRenderingConventions = context.RenderingConventions;
+            context.RenderingConventions = new CSharpRenderingConventions(context.Writer);
+            using (context.Writer.BuildAsyncLambda(endLine: false))
+            {
+                context.RenderChildren(node);
+            }
+            context.RenderingConventions = initialRenderingConventions;
+
+            context.Writer.WriteEndMethodInvocation();
         }
 
         public override void WriteSetTagHelperProperty(CSharpRenderingContext context, SetTagHelperPropertyIRNode node)

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
@@ -254,48 +253,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             }
 
             linePragmaScope?.Dispose();
-        }
-
-        public override void VisitTagHelper(TagHelperIRNode node)
-        {
-            var initialTagHelperRenderingContext = Context.TagHelperRenderingContext;
-            Context.TagHelperRenderingContext = new TagHelperRenderingContext();
-            VisitDefault(node);
-            Context.TagHelperRenderingContext = initialTagHelperRenderingContext;
-        }
-
-        public override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
-        {
-            // Call into the tag helper scope manager to start a new tag helper scope.
-            // Also capture the value as the current execution context.
-            Context.Writer
-                .WriteStartAssignment("__tagHelperExecutionContext" /* ORIGINAL: ExecutionContextVariableName */)
-                .WriteStartInstanceMethodInvocation(
-                    "__tagHelperScopeManager" /* ORIGINAL: ScopeManagerVariableName */,
-                    "Begin" /* ORIGINAL: ScopeManagerBeginMethodName */);
-
-            // Assign a unique ID for this instance of the source HTML tag. This must be unique
-            // per call site, e.g. if the tag is on the view twice, there should be two IDs.
-            Context.Writer.WriteStringLiteral(node.TagName)
-                .WriteParameterSeparator()
-                .Write("global::")
-                .Write("Microsoft.AspNetCore.Razor.TagHelpers.TagMode")
-                .Write(".")
-                .Write(node.TagMode.ToString())
-                .WriteParameterSeparator()
-                .WriteStringLiteral(Context.IdGenerator())
-                .WriteParameterSeparator();
-
-            // We remove and redirect writers so TagHelper authors can retrieve content.
-            var initialRenderingConventions = Context.RenderingConventions;
-            Context.RenderingConventions = new CSharpRenderingConventions(Context.Writer);
-            using (Context.Writer.BuildAsyncLambda(endLine: false))
-            {
-                VisitDefault(node);
-            }
-            Context.RenderingConventions = initialRenderingConventions;
-
-            Context.Writer.WriteEndMethodInvocation();
         }
 
         public override void VisitCreateTagHelper(CreateTagHelperIRNode node)

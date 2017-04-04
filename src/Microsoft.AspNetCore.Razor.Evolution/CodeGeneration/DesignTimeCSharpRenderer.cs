@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
@@ -203,19 +202,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 Context.Writer.SetIndent(originalIndent);
             }
             Context.Writer.WriteLine("))();");
-        }
-
-        public override void VisitTagHelper(TagHelperIRNode node)
-        {
-            var initialTagHelperRenderingContext = Context.TagHelperRenderingContext;
-            Context.TagHelperRenderingContext = new TagHelperRenderingContext();
-            VisitDefault(node);
-            Context.TagHelperRenderingContext = initialTagHelperRenderingContext;
-        }
-
-        public override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
-        {
-            VisitDefault(node);
         }
 
         public override void VisitCreateTagHelper(CreateTagHelperIRNode node)

@@ -193,6 +193,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 Context.TagHelperWriter.WriteDeclareTagHelperFields(Context, node);
             }
 
+            public override void VisitTagHelper(TagHelperIRNode node)
+            {
+                var initialRenderingContext = Context.TagHelperRenderingContext;
+                Context.TagHelperRenderingContext = new TagHelperRenderingContext();
+                Context.RenderChildren(node);
+                Context.TagHelperRenderingContext = initialRenderingContext;
+            }
+
+            public override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+            {
+                Context.TagHelperWriter.WriteInitializeTagHelperStructure(Context, node);
+            }
+
             public override void VisitDefault(RazorIRNode node)
             {
                 // This is a temporary bridge to the renderer, which allows us to move functionality piecemeal

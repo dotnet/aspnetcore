@@ -38,7 +38,7 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
     {
         if (__backed__tagHelperScopeManager == null)
         {
-            __backed__tagHelperScopeManager = new Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager(StartTagHelperWritingScope, EndTagHelperWritingScope);
+            __backed__tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager(StartTagHelperWritingScope, EndTagHelperWritingScope);
         }
         return __backed__tagHelperScopeManager;
     }
@@ -80,13 +80,44 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
     {
         if (__backed__tagHelperScopeManager == null)
         {
-            __backed__tagHelperScopeManager = new Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager(StartTagHelperWritingScope, EndTagHelperWritingScope);
+            __backed__tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager(StartTagHelperWritingScope, EndTagHelperWritingScope);
         }
         return __backed__tagHelperScopeManager;
     }
 }
 private global::PTagHelper __PTagHelper = null;
 private global::MyTagHelper __MyTagHelper = null;
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteInitializeTagHelperStructure_RendersCorrectly_UsesTagNameAndModeFromIRNode()
+        {
+            // Arrange
+            var writer = new RuntimeTagHelperWriter();
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                IdGenerator = () => "test",
+                RenderChildren = n => { }
+            };
+            var node = new InitializeTagHelperStructureIRNode()
+            {
+                TagName = "p",
+                TagMode = TagMode.SelfClosing
+            };
+
+            // Act
+            writer.WriteInitializeTagHelperStructure(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"__tagHelperExecutionContext = __tagHelperScopeManager.Begin(""p"", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, ""test"", async() => {
+}
+);
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
