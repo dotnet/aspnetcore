@@ -5,10 +5,7 @@ using System.IO;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    /// <summary>
-    /// An implementation of <see cref="RazorProjectItem"/> using <see cref="FileInfo"/>.
-    /// </summary>
-    public class FileSystemRazorProjectItem : RazorProjectItem
+    internal class FileSystemRazorProjectItem : RazorProjectItem
     {
         /// <summary>
         /// Initializes a new instance of <see cref="FileSystemRazorProjectItem"/>.
@@ -23,27 +20,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             File = file;
         }
 
-        /// <summary>
-        /// Gets the <see cref="FileInfo"/>.
-        /// </summary>
         public FileInfo File { get; }
 
-        /// <inheritdoc />
         public override string BasePath { get; }
 
-        /// <inheritdoc />
         public override string Path { get; }
 
-        /// <inheritdoc />
         public override bool Exists => File.Exists;
 
-        /// <inheritdoc />
         public override string FileName => File.Name;
 
-        /// <inheritdoc />
         public override string PhysicalPath => File.FullName;
 
-        /// <inheritdoc />
         public override Stream Read() => File.OpenRead();
     }
 }

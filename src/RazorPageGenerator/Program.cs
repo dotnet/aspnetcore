@@ -55,7 +55,7 @@ namespace RazorPageGenerator
             });
 
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
-            var razorProject = new FileSystemRazorProject(targetProjectDirectory);
+            var razorProject = RazorProject.Create(targetProjectDirectory);
             var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
 
             var fileCount = 0;
@@ -66,7 +66,7 @@ namespace RazorPageGenerator
                 Console.WriteLine();
                 Console.WriteLine("  Generating code files for views in {0}", viewDir);
                 var viewDirPath = viewDir.Substring(targetProjectDirectory.Length).Replace('\\', '/');
-                var cshtmlFiles = razorProject.EnumerateItems(viewDirPath).Cast<FileSystemRazorProjectItem>();
+                var cshtmlFiles = razorProject.EnumerateItems(viewDirPath);
 
                 if (!cshtmlFiles.Any())
                 {
@@ -86,7 +86,7 @@ namespace RazorPageGenerator
             return results;
         }
 
-        private static RazorPageGeneratorResult GenerateCodeFile(RazorTemplateEngine templateEngine, FileSystemRazorProjectItem projectItem)
+        private static RazorPageGeneratorResult GenerateCodeFile(RazorTemplateEngine templateEngine, RazorProjectItem projectItem)
         {
             var projectItemWrapper = new FileSystemRazorProjectItemWrapper(projectItem);
             var cSharpDocument = templateEngine.GenerateCode(projectItemWrapper);
@@ -106,9 +106,9 @@ namespace RazorPageGenerator
 
         private class FileSystemRazorProjectItemWrapper : RazorProjectItem
         {
-            private readonly FileSystemRazorProjectItem _source;
+            private readonly RazorProjectItem _source;
 
-            public FileSystemRazorProjectItemWrapper(FileSystemRazorProjectItem item)
+            public FileSystemRazorProjectItemWrapper(RazorProjectItem item)
             {
                 _source = item;
             }
@@ -130,7 +130,7 @@ namespace RazorPageGenerator
 
             private string ProcessFileIncludes()
             {
-                var basePath = _source.File.DirectoryName;
+                var basePath = System.IO.Path.GetDirectoryName(_source.PhysicalPath);
                 var cshtmlContent = File.ReadAllText(_source.PhysicalPath);
 
                 var startMatch = "<%$ include: ";

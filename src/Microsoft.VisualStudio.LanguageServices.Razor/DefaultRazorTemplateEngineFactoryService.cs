@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 RazorExtensions.Register(b);
             });
 
-            var templateEngine = new MvcRazorTemplateEngine(engine, new FileSystemRazorProject(projectPath));
+            var templateEngine = new MvcRazorTemplateEngine(engine, RazorProject.Create(projectPath));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             return templateEngine;
         }

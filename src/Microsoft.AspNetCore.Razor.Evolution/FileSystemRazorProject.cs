@@ -8,15 +8,8 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    /// <summary>
-    /// A <see cref="RazorProject"/> implementation over the physical file system.
-    /// </summary>
-    public class FileSystemRazorProject : RazorProject
+    internal class FileSystemRazorProject : RazorProject
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="FileSystemRazorProject"/>.
-        /// </summary>
-        /// <param name="root">The directory to root the file system at.</param>
         public FileSystemRazorProject(string root)
         {
             if (string.IsNullOrEmpty(root))
@@ -27,12 +20,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             Root = root.Replace('\\', '/').TrimEnd('/');
         }
 
-        /// <summary>
-        /// The root of the file system.
-        /// </summary>
         public string Root { get; }
 
-        /// <inheritdoc />
         public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
         {
             var absoluteBasePath = NormalizeAndEnsureValidPath(basePath);
@@ -52,7 +41,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 });
         }
 
-        /// <inheritdoc />
         public override RazorProjectItem GetItem(string path)
         {
             var absolutePath = NormalizeAndEnsureValidPath(path);
