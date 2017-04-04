@@ -61,6 +61,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 return this;
             }
 
+            public IDirectiveDescriptorBuilder AddNamespace()
+            {
+                var descriptor = new DirectiveTokenDescriptor()
+                {
+                    Kind = DirectiveTokenKind.Namespace,
+                    Optional = _optional,
+                };
+                _tokenDescriptors.Add(descriptor);
+
+                return this;
+            }
+
             public IDirectiveDescriptorBuilder AddString()
             {
                 var descriptor = new DirectiveTokenDescriptor()

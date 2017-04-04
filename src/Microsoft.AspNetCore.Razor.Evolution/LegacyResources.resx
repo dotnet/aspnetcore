@@ -182,6 +182,9 @@
   <data name="DirectiveExpectsIdentifier" xml:space="preserve">
     <value>The '{0}' directive expects an identifier.</value>
   </data>
+  <data name="DirectiveExpectsNamespace" xml:space="preserve">
+    <value>The '{0}' directive expects a namespace name.</value>
+  </data>
   <data name="DirectiveExpectsQuotedStringLiteral" xml:space="preserve">
     <value>The '{0}' directive expects a string surrounded by double quotes.</value>
   </data>

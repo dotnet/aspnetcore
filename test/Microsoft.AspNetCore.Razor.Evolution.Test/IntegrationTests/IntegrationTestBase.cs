@@ -10,6 +10,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
+using System.Threading.Tasks;
 #endif
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Xunit;
@@ -185,6 +186,43 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             var actual = serializedMappings.Replace("\r", "").Replace("\n", "\r\n");
 
             Assert.Equal(baseline, actual);
+        }
+
+        protected class ApiSetsIRTestAdapter : RazorIRPassBase, IRazorIROptimizationPass
+        {
+            public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            {
+                var walker = new ApiSetsIRWalker();
+                walker.Visit(irDocument);
+            }
+
+            private class ApiSetsIRWalker : RazorIRNodeWalker
+            {
+                public override void VisitClass(ClassDeclarationIRNode node)
+                {
+                    node.Name = Filename.Replace('/', '_');
+                    node.AccessModifier = "public";
+
+                    VisitDefault(node);
+                }
+
+                public override void VisitNamespace(NamespaceDeclarationIRNode node)
+                {
+                    node.Content = typeof(CodeGenerationIntegrationTest).Namespace + ".TestFiles";
+
+                    VisitDefault(node);
+                }
+
+                public override void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
+                {
+                    node.AccessModifier = "public";
+                    node.Modifiers = new[] { "async" };
+                    node.ReturnType = typeof(Task).FullName;
+                    node.Name = "ExecuteAsync";
+
+                    VisitDefault(node);
+                }
+            }
         }
     }
 }

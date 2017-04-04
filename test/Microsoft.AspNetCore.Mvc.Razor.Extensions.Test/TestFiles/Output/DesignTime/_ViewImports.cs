@@ -18,7 +18,7 @@ IHtmlHelper<TModel> __typeHelper = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object Model = null;
+global::System.Object Model = null;
         }
         ))();
         }

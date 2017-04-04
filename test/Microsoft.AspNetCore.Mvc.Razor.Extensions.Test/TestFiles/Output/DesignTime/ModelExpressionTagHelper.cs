@@ -18,7 +18,7 @@ DateTime __typeHelper = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Extensions.Test";
+global::System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Extensions.Test";
         }
         ))();
         }

@@ -159,6 +159,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 {
                     case DirectiveTokenKind.Type:
 
+                        // {node.Content} __typeHelper = null;
+
                         Context.AddLineMappingFor(node);
                         Context.Writer
                             .Write(node.Content)
@@ -166,8 +168,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                             .WriteStartAssignment(TypeHelper)
                             .WriteLine("null;");
                         break;
+
                     case DirectiveTokenKind.Member:
+
+                        // global::System.Object {node.content} = null;
+
                         Context.Writer
+                            .Write("global::")
                             .Write(typeof(object).FullName)
                             .Write(" ");
 
@@ -176,8 +183,31 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                             .Write(node.Content)
                             .WriteLine(" = null;");
                         break;
-                    case DirectiveTokenKind.String:
+
+                    case DirectiveTokenKind.Namespace:
+
+                        // global::System.Object __typeHelper = nameof({node.Content});
+
                         Context.Writer
+                            .Write("global::")
+                            .Write(typeof(object).FullName)
+                            .Write(" ")
+                            .WriteStartAssignment(TypeHelper);
+
+                        Context.Writer.Write("nameof(");
+
+                        Context.AddLineMappingFor(node);
+                        Context.Writer
+                            .Write(node.Content)
+                            .WriteLine(");");
+                        break;
+
+                    case DirectiveTokenKind.String:
+
+                        // global::System.Object __typeHelper = "{node.Content}";
+
+                        Context.Writer
+                            .Write("global::")
                             .Write(typeof(object).FullName)
                             .Write(" ")
                             .WriteStartAssignment(TypeHelper);

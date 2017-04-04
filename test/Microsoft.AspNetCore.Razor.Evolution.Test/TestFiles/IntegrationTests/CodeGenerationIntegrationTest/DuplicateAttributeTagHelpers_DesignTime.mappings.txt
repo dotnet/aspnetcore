@@ -1,20 +1,20 @@
 Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateAttributeTagHelpers.cshtml)
 |"*, TestAssembly"|
-Generated Location: (429:10,29 [17] )
+Generated Location: (437:10,37 [17] )
 |"*, TestAssembly"|
 
 Source Location: (146:4,34 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateAttributeTagHelpers.cshtml)
 |true|
-Generated Location: (1822:31,42 [4] )
+Generated Location: (1830:31,42 [4] )
 |true|
 
 Source Location: (222:5,34 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateAttributeTagHelpers.cshtml)
 |true|
-Generated Location: (2364:40,42 [4] )
+Generated Location: (2372:40,42 [4] )
 |true|
 
 Source Location: (43:2,8 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateAttributeTagHelpers.cshtml)
 |3|
-Generated Location: (2634:46,33 [1] )
+Generated Location: (2642:46,33 [1] )
 |3|
 

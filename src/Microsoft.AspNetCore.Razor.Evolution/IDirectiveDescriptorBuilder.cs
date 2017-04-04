@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         IDirectiveDescriptorBuilder AddMember();
 
+        IDirectiveDescriptorBuilder AddNamespace();
+
         IDirectiveDescriptorBuilder AddString();
 
         IDirectiveDescriptorBuilder BeginOptionals();

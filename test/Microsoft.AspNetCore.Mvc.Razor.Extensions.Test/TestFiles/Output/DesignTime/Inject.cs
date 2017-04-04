@@ -23,7 +23,7 @@ MyApp __typeHelper = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object MyPropertyName = null;
+global::System.Object MyPropertyName = null;
         }
         ))();
         }

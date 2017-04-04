@@ -23,7 +23,7 @@ NewModel __typeHelper = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object __typeHelper = "*, TestAssembly";
+global::System.Object __typeHelper = "*, TestAssembly";
         }
         ))();
         }

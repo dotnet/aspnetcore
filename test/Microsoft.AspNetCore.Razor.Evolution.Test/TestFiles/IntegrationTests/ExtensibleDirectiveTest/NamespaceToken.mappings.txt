@@ -1,0 +1,5 @@
+Source Location: (8:0,8 [19] TestFiles/IntegrationTests/ExtensibleDirectiveTest/NamespaceToken.cshtml)
+|Sytem.Globalization|
+Generated Location: (413:10,44 [19] )
+|Sytem.Globalization|
+

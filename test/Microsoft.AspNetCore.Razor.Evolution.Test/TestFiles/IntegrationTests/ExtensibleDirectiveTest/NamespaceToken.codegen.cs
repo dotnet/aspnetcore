@@ -3,12 +3,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     #line hidden
     using System;
     using System.Threading.Tasks;
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_AddTagHelperDirective_DesignTime
+    public class TestFiles_IntegrationTests_ExtensibleDirectiveTest_NamespaceToken
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-global::System.Object __typeHelper = "*, TestAssembly";
+global::System.Object __typeHelper = nameof(Sytem.Globalization);
         }
         ))();
         }

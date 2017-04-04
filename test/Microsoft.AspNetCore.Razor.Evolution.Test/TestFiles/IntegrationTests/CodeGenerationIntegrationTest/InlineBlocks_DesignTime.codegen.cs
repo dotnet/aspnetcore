@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-System.Object Link = null;
+global::System.Object Link = null;
         }
         ))();
         }

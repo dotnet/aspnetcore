@@ -892,6 +892,30 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
+        // Used for parsing a qualified name like that which follows the `namespace` keyword.
+        //
+        // qualified-identifier:
+        //      identifier
+        //      qualified-identifier . identifier
+        protected bool QualifiedIdentifier()
+        {
+            if (At(CSharpSymbolType.Identifier))
+            {
+                AcceptAndMoveNext();
+
+                if (Optional(CSharpSymbolType.Dot))
+                {
+                    return QualifiedIdentifier();
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         protected bool NamespaceOrTypeName()
         {
             if (Optional(CSharpSymbolType.Identifier) || Optional(CSharpSymbolType.Keyword))
@@ -1496,7 +1520,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 var tokenDescriptor = descriptor.Tokens[i];
                 AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
-                if (tokenDescriptor.Kind == DirectiveTokenKind.Member || tokenDescriptor.Kind == DirectiveTokenKind.Type)
+                if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
+                    tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
+                    tokenDescriptor.Kind == DirectiveTokenKind.Type)
                 {
                     Span.ChunkGenerator = SpanChunkGenerator.Null;
                     Output(SpanKind.Code, AcceptedCharacters.WhiteSpace);
@@ -1536,6 +1562,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
                         outputKind = SpanKind.Code;
                         break;
+
+                    case DirectiveTokenKind.Namespace:
+                        if (!QualifiedIdentifier())
+                        {
+                            Context.ErrorSink.OnError(
+                                CurrentStart,
+                                LegacyResources.FormatDirectiveExpectsNamespace(descriptor.Name),
+                                CurrentSymbol.Content.Length);
+
+                            return;
+                        }
+
+                        outputKind = SpanKind.Code;
+                        break;
+
                     case DirectiveTokenKind.Member:
                         if (At(CSharpSymbolType.Identifier))
                         {
@@ -1552,6 +1593,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
                         outputKind = SpanKind.Code;
                         break;
+
                     case DirectiveTokenKind.String:
                         if (At(CSharpSymbolType.StringLiteral))
                         {
@@ -1590,7 +1632,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     {
                         Context.ErrorSink.OnError(
                             CurrentStart,
-                            LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Name, Environment.NewLine),
+                            LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Name, LegacyResources.ErrorComponent_Newline),
                             CurrentSymbol.Content.Length);
                     }
 

@@ -305,6 +305,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveExpectsIdentifier"), p0);
 
         /// <summary>
+        /// The '{0}' directive expects a namespace name.
+        /// </summary>
+        internal static string DirectiveExpectsNamespace
+        {
+            get => GetString("DirectiveExpectsNamespace");
+        }
+
+        /// <summary>
+        /// The '{0}' directive expects a namespace name.
+        /// </summary>
+        internal static string FormatDirectiveExpectsNamespace(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveExpectsNamespace"), p0);
+
+        /// <summary>
         /// The '{0}' directive expects a string surrounded by double quotes.
         /// </summary>
         internal static string DirectiveExpectsQuotedStringLiteral

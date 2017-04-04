@@ -51,6 +51,46 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
 
         [Fact]
+        public void Parser_ParsesNamespaceDirectiveToken_WithSingleSegment()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddNamespace().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom BaseNamespace",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "BaseNamespace", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+        }
+
+        [Fact]
+        public void Parser_ParsesNamespaceDirectiveToken_WithMultipleSegments()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddNamespace().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom BaseNamespace.Foo.Bar",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "BaseNamespace.Foo.Bar", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+        }
+
+        [Fact]
         public void DirectiveDescriptor_UnderstandsStringTokens()
         {
             // Arrange
@@ -347,7 +387,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
             var expectedErorr = new RazorError(
-                LegacyResources.FormatUnexpectedDirectiveLiteral("custom", Environment.NewLine),
+                LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "line break"),
                 new SourceLocation(16, 0, 16),
                 length: 7);
 

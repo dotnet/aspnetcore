@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-System.Object WriteLiteralsToInHere = null;
+global::System.Object WriteLiteralsToInHere = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object WriteLiteralsToInHereAlso = null;
+global::System.Object WriteLiteralsToInHereAlso = null;
         }
         ))();
         }

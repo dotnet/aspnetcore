@@ -1,15 +1,15 @@
 Source Location: (14:0,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeTargetingTagHelpers.cshtml)
 |*, TestAssembly|
-Generated Location: (430:10,30 [15] )
+Generated Location: (438:10,38 [15] )
 |*, TestAssembly|
 
 Source Location: (187:5,36 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeTargetingTagHelpers.cshtml)
 |true|
-Generated Location: (1674:29,42 [4] )
+Generated Location: (1682:29,42 [4] )
 |true|
 
 Source Location: (233:6,36 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeTargetingTagHelpers.cshtml)
 |true|
-Generated Location: (2327:39,42 [4] )
+Generated Location: (2335:39,42 [4] )
 |true|
 

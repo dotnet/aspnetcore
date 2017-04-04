@@ -22,7 +22,7 @@ MyApp __typeHelper = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object MyPropertyName = null;
+global::System.Object MyPropertyName = null;
         }
         ))();
         ((System.Action)(() => {
@@ -30,7 +30,7 @@ MyService<TModel> __typeHelper = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object Html = null;
+global::System.Object Html = null;
         }
         ))();
         }

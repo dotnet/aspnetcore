@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     public enum DirectiveTokenKind
     {
         Type,
+        Namespace,
         Member,
         String,
     }

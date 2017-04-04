@@ -10,6 +10,6 @@ Generated Location: (674:21,0 [5] )
 
 Source Location: (34:1,14 [14] /TestFiles/Input/Inject.cshtml)
 |MyPropertyName|
-Generated Location: (776:25,14 [14] )
+Generated Location: (784:25,22 [14] )
 |MyPropertyName|
 

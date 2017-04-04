@@ -8,15 +8,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-System.Object Section2 = null;
+global::System.Object Section2 = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object Section1 = null;
+global::System.Object Section1 = null;
         }
         ))();
         ((System.Action)(() => {
-System.Object NestedDelegates = null;
+global::System.Object NestedDelegates = null;
         }
         ))();
         }
