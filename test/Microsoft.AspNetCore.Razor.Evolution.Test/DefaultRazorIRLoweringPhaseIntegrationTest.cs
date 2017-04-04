@@ -155,6 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.Create(@"@using System");
+            var expectedSourceLocation = new SourceSpan(codeDocument.Source.FileName, 1, 0, 1, 12);
 
             // Act
             var irDocument = Lower(codeDocument);
@@ -162,7 +163,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Assert
             Children(irDocument,
                 n => Checksum(n),
-                n => Using("System", n),
+                n =>
+                {
+                    Using("System", n);
+                    Assert.Equal(expectedSourceLocation, n.Source);
+                },
                 n => Using(typeof(Task).Namespace, n));
         }
 

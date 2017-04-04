@@ -22,20 +22,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             document.Options = syntaxTree.Options;
 
-            var namespaces = new HashSet<string>();
-
-            var i = 0;
-            foreach (var namespaceImport in syntaxTree.Options.NamespaceImports)
+            var namespaces = new Dictionary<string, SourceSpan?>(StringComparer.Ordinal);
+            foreach (var defaultNamespace in syntaxTree.Options.NamespaceImports)
             {
-                if (namespaces.Add(namespaceImport))
-                {
-                    var @using = new UsingStatementIRNode()
-                    {
-                        Content = namespaceImport,
-                    };
-
-                    builder.Insert(i++, @using);
-                }
+                namespaces[defaultNamespace] = null;
             }
 
             var checksum = ChecksumIRNode.Create(codeDocument.Source);
@@ -64,6 +54,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             visitor.VisitBlock(syntaxTree.Root);
 
+            // In each lowering piece above, namespaces were tracked. We render them here to ensure every
+            // lowering action has a chance to add a source location to a namespace. Ultimately, closest wins.
+
+            var i = builder.Current.Children.IndexOf(checksum) + 1;
+            foreach (var @namespace in namespaces)
+            {
+                var @using = new UsingStatementIRNode()
+                {
+                    Content = @namespace.Key,
+                    Source = @namespace.Value,
+                };
+
+                builder.Insert(i++, @using);
+            }
+
             codeDocument.SetIRDocument(document);
         }
 
@@ -71,9 +76,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             protected readonly RazorIRBuilder _builder;
             protected readonly DocumentIRNode _document;
-            protected readonly HashSet<string> _namespaces;
+            protected readonly Dictionary<string, SourceSpan?> _namespaces;
 
-            public LoweringVisitor(DocumentIRNode document, RazorIRBuilder builder, HashSet<string> namespaces)
+            public LoweringVisitor(DocumentIRNode document, RazorIRBuilder builder, Dictionary<string, SourceSpan?> namespaces)
             {
                 _document = document;
                 _builder = builder;
@@ -85,16 +90,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             public override void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
             {
                 var namespaceImport = chunkGenerator.Namespace.Trim();
-
-                // Track seen namespaces so we don't add duplicates from options.
-                if (_namespaces.Add(namespaceImport))
-                {
-                    _builder.Add(new UsingStatementIRNode()
-                    {
-                        Content = namespaceImport,
-                        Source = BuildSourceSpanFromNode(span),
-                    });
-                }
+                var namespaceSpan = BuildSourceSpanFromNode(span);
+                _namespaces[namespaceImport] = namespaceSpan;
             }
 
             public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
@@ -179,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // this simple.
             private bool _insideLineDirective;
 
-            public ImportsVisitor(DocumentIRNode document, RazorIRBuilder builder, HashSet<string> namespaces)
+            public ImportsVisitor(DocumentIRNode document, RazorIRBuilder builder, Dictionary<string, SourceSpan?> namespaces)
                 : base(document, builder, namespaces)
             {
             }
@@ -223,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             private DeclareTagHelperFieldsIRNode _tagHelperFields;
             private readonly string _tagHelperPrefix;
 
-            public MainSourceVisitor(DocumentIRNode document, RazorIRBuilder builder, HashSet<string> namespaces, string tagHelperPrefix)
+            public MainSourceVisitor(DocumentIRNode document, RazorIRBuilder builder, Dictionary<string, SourceSpan?> namespaces, string tagHelperPrefix)
                 : base(document, builder, namespaces)
             {
                 _tagHelperPrefix = tagHelperPrefix;

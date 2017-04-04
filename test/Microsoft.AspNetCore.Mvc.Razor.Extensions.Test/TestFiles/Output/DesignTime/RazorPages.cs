@@ -2,7 +2,11 @@ namespace AspNetCore
 {
     #line hidden
     using TModel = NewModel;
-    using System;
+#line 1 ""
+using System;
+
+#line default
+#line hidden
     using System.Threading.Tasks;
 #line 2 ""
 using System.Linq;

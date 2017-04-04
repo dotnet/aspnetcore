@@ -1,16 +1,16 @@
 Source Location: (43:3,1 [41] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
 |using Microsoft.AspNetCore.Mvc.RazorPages|
-Generated Location: (615:32,0 [41] )
+Generated Location: (654:36,0 [41] )
 |using Microsoft.AspNetCore.Mvc.RazorPages|
 
 Source Location: (23:2,14 [17] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
 |"*, TestAssembly"|
-Generated Location: (970:41,29 [17] )
+Generated Location: (1009:45,29 [17] )
 |"*, TestAssembly"|
 
 Source Location: (571:24,47 [4] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
 |Name|
-Generated Location: (1483:53,47 [4] )
+Generated Location: (1522:57,47 [4] )
 |Name|
 
 Source Location: (100:5,12 [283] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
@@ -28,7 +28,7 @@ Source Location: (100:5,12 [283] /TestFiles/Input/RazorPagesWithoutModel.cshtml)
         public string Name { get; set; }
     }
 |
-Generated Location: (1924:64,12 [283] )
+Generated Location: (1963:68,12 [283] )
 |
     public IActionResult OnPost(Customer customer)
     {

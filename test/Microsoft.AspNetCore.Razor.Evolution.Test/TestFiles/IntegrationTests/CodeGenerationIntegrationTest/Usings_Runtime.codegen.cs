@@ -2,7 +2,11 @@
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 {
     #line hidden
-    using System;
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+using System;
+
+#line default
+#line hidden
     using System.Threading.Tasks;
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using System.IO;
