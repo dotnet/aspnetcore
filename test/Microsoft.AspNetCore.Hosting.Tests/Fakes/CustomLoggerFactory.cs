@@ -18,16 +18,6 @@ namespace Microsoft.AspNetCore.Hosting.Fakes
         public void Dispose() { }
     }
 
-    public static class CustomLoggerFactoryExtensions
-    {
-        public static IWebHostBuilder ConfigureCustomLogger(this IWebHostBuilder builder, Action<CustomLoggerFactory> configureLogger)
-        {
-            builder.UseLoggerFactory(_ => new CustomLoggerFactory());
-            builder.ConfigureLogging(configureLogger);
-            return builder;
-        }
-    }
-
     public class SubLoggerFactory : CustomLoggerFactory { }
 
     public class NonSubLoggerFactory : ILoggerFactory

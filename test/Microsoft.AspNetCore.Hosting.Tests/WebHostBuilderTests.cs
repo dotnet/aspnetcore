@@ -294,7 +294,8 @@ namespace Microsoft.AspNetCore.Hosting
         public void CanUseCustomLoggerFactory()
         {
             var hostBuilder = new WebHostBuilder()
-                .ConfigureCustomLogger(factory =>
+                .UseLoggerFactory(_ => new CustomLoggerFactory())
+                .ConfigureLogging<CustomLoggerFactory>(factory =>
                 {
                     factory.CustomConfigureMethod();
                 })
