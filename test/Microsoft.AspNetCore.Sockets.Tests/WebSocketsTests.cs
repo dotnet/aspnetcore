@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 // End the app
                 applicationSide.Dispose();
 
-                await transport.OrTimeout();
+                await transport.OrTimeout(TimeSpan.FromSeconds(10));
 
                 // We're still in the closed sent state since the client never sent the close frame
                 Assert.Equal(WebSocketConnectionState.CloseSent, pair.ServerSocket.State);
