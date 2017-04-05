@@ -19,15 +19,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         {
             ApplicationName = applicationName;
             DeploymentResult = CreateDeployment();
-            HttpClient = new HttpClient();
-            HttpClient.BaseAddress = new Uri(DeploymentResult.ApplicationBaseUri);
+            HttpClient = new HttpClient
+            {
+                BaseAddress = new Uri(DeploymentResult.ApplicationBaseUri),
+            };
         }
 
         public string ApplicationName { get; }
 
         public string ApplicationPath => ApplicationPaths.GetTestAppDirectory(ApplicationName);
 
-        public HttpClient HttpClient { get; }
+        public HttpClient HttpClient { get; private set; }
 
         public ILogger Logger { get; private set; }
 

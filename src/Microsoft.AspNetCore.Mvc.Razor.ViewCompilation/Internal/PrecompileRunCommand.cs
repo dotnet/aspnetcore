@@ -9,7 +9,10 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -75,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 return 1;
             }
 
-            var precompileAssemblyName = $"{Options.ApplicationName}{ViewsFeatureProvider.PrecompiledViewsAssemblySuffix}";
+            var precompileAssemblyName = $"{Options.ApplicationName}{CompiledViewManfiest.PrecompiledViewsAssemblySuffix}";
             var compilation = CompileViews(results, precompileAssemblyName);
             var resources = GetResources(results);
 
@@ -189,8 +192,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             MvcServiceProvider.ViewEngineOptions.CompilationCallback(compilationContext);
             compilation = compilationContext.Compilation;
 
-            var codeGenerator = new ViewInfoContainerCodeGenerator(compiler, compilation);
-            codeGenerator.AddViewFactory(results);
+            var codeGenerator = new ManifestGenerator(compiler, compilation);
+            codeGenerator.GenerateManifest(results);
 
             var assemblyName = new AssemblyName(Options.ApplicationName);
             assemblyName = Assembly.Load(assemblyName).GetName();
@@ -236,11 +239,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             Parallel.For(0, results.Length, ParalellOptions, i =>
             {
                 var fileInfo = files[i];
+                var templateEngine = MvcServiceProvider.TemplateEngine;
+                ViewCompilationInfo compilationInfo;
                 using (var fileStream = fileInfo.CreateReadStream())
                 {
-                    var csharpDocument = MvcServiceProvider.TemplateEngine.GenerateCode(fileInfo.ViewEnginePath);
-                    results[i] = new ViewCompilationInfo(fileInfo, csharpDocument);
+                    var csharpDocument = templateEngine.GenerateCode(fileInfo.ViewEnginePath);
+                    compilationInfo = new ViewCompilationInfo(fileInfo, csharpDocument);
                 }
+
+                if (PageDirectiveFeature.TryGetPageDirective(fileInfo.CreateReadStream, out var template))
+                {
+                    compilationInfo.RouteTemplate = template;
+                }
+
+                results[i] = compilationInfo;
             });
 
             return results;
@@ -250,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
         {
             var contentRoot = Options.ContentRootOption.Value();
             var viewFiles = Options.ViewsToCompile;
-            var relativeFiles = new List<ViewFileInfo>(viewFiles.Count);
+            var viewFileInfo = new List<ViewFileInfo>(viewFiles.Count);
             var trimLength = contentRoot.EndsWith("/") ? contentRoot.Length - 1 : contentRoot.Length;
 
             for (var i = 0; i < viewFiles.Count; i++)
@@ -259,11 +271,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 if (fullPath.StartsWith(contentRoot, StringComparison.OrdinalIgnoreCase))
                 {
                     var viewEnginePath = fullPath.Substring(trimLength).Replace('\\', '/');
-                    relativeFiles.Add(new ViewFileInfo(fullPath, viewEnginePath));
+                    viewFileInfo.Add(new ViewFileInfo(fullPath, viewEnginePath));
                 }
             }
 
-            return relativeFiles;
+            return viewFileInfo;
         }
 
         private string ReadTypeInfo(CSharpCompilation compilation, SyntaxTree syntaxTree)
