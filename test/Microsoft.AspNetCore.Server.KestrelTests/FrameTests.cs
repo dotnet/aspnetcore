@@ -716,7 +716,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             public IPEndPoint LocalEndPoint { get; }
             public PipeFactory PipeFactory { get; }
             public IScheduler InputWriterScheduler { get; }
-            public IScheduler OutputWriterScheduler { get; }
+            public IScheduler OutputReaderScheduler { get; }
             public ITimeoutControl TimeoutControl { get; set; } = Mock.Of<ITimeoutControl>();
         }
     }

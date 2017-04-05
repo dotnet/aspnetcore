@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public PipeFactory PipeFactory { get; }
         public IScheduler InputWriterScheduler { get; }
-        public IScheduler OutputWriterScheduler { get; }
+        public IScheduler OutputReaderScheduler { get; }
 
         public ITimeoutControl TimeoutControl { get; } = new MockTimeoutControl();
 
