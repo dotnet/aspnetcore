@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance

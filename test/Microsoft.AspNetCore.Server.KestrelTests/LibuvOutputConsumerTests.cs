@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;

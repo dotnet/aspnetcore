@@ -4,8 +4,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 

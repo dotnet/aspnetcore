@@ -19,10 +19,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabsPipelinesVersion)" />
-    <PackageReference Include="System.Text.Encodings.Web.Utf8" Version="$(CoreFxLabsVersion)" />
+
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0-*" />
   </ItemGroup>
 
   <ItemGroup>

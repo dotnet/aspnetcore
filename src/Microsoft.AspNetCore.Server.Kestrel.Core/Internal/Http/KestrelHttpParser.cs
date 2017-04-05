@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO.Pipelines;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private unsafe void ParseRequestLine<T>(T handler, byte* data, int length) where T : IHttpRequestLineHandler
         {
             int offset;
-            Span<byte> customMethod;
+            Span<byte> customMethod = default(Span<byte>);
             // Get Method and set the offset
             var method = HttpUtilities.GetKnownMethod(data, length, out offset);
             if (method == HttpMethod.Custom)

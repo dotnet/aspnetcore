@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;

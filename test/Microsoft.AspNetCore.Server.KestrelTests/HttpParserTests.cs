@@ -1,16 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.IO.Pipelines;
-using System.IO.Pipelines.Testing;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines.Testing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
