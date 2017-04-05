@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.ApplicationInsightsLightup\Microsoft.AspNetCore.ApplicationInsightsLightup.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.ApplicationInsights.HostingStartup\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.csproj" />
   </ItemGroup>
 
 </Project>

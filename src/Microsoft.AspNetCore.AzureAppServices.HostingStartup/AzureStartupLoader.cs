@@ -3,14 +3,14 @@
 
 using Microsoft.AspNetCore.Hosting;
 
-[assembly: HostingStartup(typeof(Microsoft.AspNetCore.AzureLightup.AzureStartupLoader))]
+[assembly: HostingStartup(typeof(Microsoft.AspNetCore.AzureAppServices.HostingStartup.AzureAppServicesHostingStartup))]
 
-namespace Microsoft.AspNetCore.AzureLightup
+namespace Microsoft.AspNetCore.AzureAppServices.HostingStartup
 {
     /// <summary>
     /// A dynamic azure lightup experiance
     /// </summary>
-    public class AzureStartupLoader : IHostingStartup
+    public class AzureAppServicesHostingStartup : IHostingStartup
     {
         /// <summary>
         /// Calls UseAzureAppServices

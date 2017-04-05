@@ -13,10 +13,10 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.AzureLightup;Microsoft.AspNetCore.Server.IISIntegration"
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.AzureAppServices.HostingStartup;Microsoft.AspNetCore.Server.IISIntegration"
       }
     },
-    "AzureAppServicesSample": {
+    "AzureAppServicesHostingStartupSample": {
       "commandName": "IISExpress",
       "launchBrowser": true
     }

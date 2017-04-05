@@ -3,14 +3,14 @@
 
 using Microsoft.AspNetCore.Hosting;
 
-[assembly: HostingStartup(typeof(Microsoft.AspNetCore.ApplicationInsightsLightup.ApplicationInsightsStartupLoader))]
+[assembly: HostingStartup(typeof(Microsoft.AspNetCore.ApplicationInsights.HostingStartup.ApplicationInsightsHostingStartup))]
 
-namespace Microsoft.AspNetCore.ApplicationInsightsLightup
+namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
 {
     /// <summary>
     /// A dynamic Application Insights lightup experiance
     /// </summary>
-    public class ApplicationInsightsStartupLoader : IHostingStartup
+    public class ApplicationInsightsHostingStartup : IHostingStartup
     {
         /// <summary>
         /// Calls UseApplicationInsights

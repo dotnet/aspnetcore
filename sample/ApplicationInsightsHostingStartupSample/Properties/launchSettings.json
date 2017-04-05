@@ -13,15 +13,15 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.ApplicationInsightsLightup;Microsoft.AspNetCore.Server.IISIntegration"
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.ApplicationInsights.HostingStartup;Microsoft.AspNetCore.Server.IISIntegration"
       }
     },
-    "AzureAppServicesSample": {
+    "AzureAppServicesHostingStartupSample": {
       "commandName": "project",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.ApplicationInsightsLightup"
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.ApplicationInsights.HostingStartup"
       }
     }
   }
