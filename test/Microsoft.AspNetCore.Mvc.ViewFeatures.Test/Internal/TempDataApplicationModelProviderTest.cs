@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             // Assert
             var controller = Assert.Single(context.Result.Controllers);
-            Assert.Single(controller.Filters, f => f is SaveTempDataPropertyFilterFactory);
+            Assert.Single(controller.Filters, f => f is ControllerSaveTempDataPropertyFilterFactory);
         }
 
         [Fact]
@@ -46,14 +46,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Act
             provider.OnProvidersExecuting(context);
             var controller = context.Result.Controllers.SingleOrDefault();
-            var filter = controller.Filters.OfType<SaveTempDataPropertyFilterFactory>();
+            var filter = controller.Filters.OfType<ControllerSaveTempDataPropertyFilterFactory>();
             var saveTempDataPropertyFilterFactory = filter.SingleOrDefault();
             var expected = typeof(TestController_OneTempDataProperty).GetProperty(nameof(TestController_OneTempDataProperty.Test2));
 
             // Assert
             Assert.NotNull(saveTempDataPropertyFilterFactory);
             var tempDataPropertyHelper = Assert.Single(saveTempDataPropertyFilterFactory.TempDataProperties);
-            Assert.Same(expected, tempDataPropertyHelper.Property);
+            Assert.Same(expected, tempDataPropertyHelper.PropertyInfo);
         }
 
         [Fact]

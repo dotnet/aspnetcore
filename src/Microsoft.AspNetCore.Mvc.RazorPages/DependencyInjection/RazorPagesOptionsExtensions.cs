@@ -15,6 +15,28 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class RazorPagesOptionsExtensions
     {
         /// <summary>
+        /// Configures the specified <paramref name="factory"/> to apply filters to all Razor Pages.
+        /// </summary>
+        /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
+        /// <param name="factory">The factory to create filters.</param>
+        /// <returns></returns>
+        public static RazorPagesOptions ConfigureFilter(this RazorPagesOptions options, Func<PageApplicationModel, IFilterMetadata> factory)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            options.Conventions.Add(new FolderConvention("/", model => model.Filters.Add(factory(model))));
+            return options;
+        }
+
+        /// <summary>
         /// Configures the specified <paramref name="filter"/> to apply to all Razor Pages.
         /// </summary>
         /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>

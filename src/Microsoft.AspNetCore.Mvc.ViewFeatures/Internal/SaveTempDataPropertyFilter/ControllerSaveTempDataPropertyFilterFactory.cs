@@ -5,14 +5,12 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
-    public class SaveTempDataPropertyFilterFactory : IFilterFactory
+    public class ControllerSaveTempDataPropertyFilterFactory : IFilterFactory
     {
-        // Cannot be public as <c>PropertyHelper</c> is an internal shared source type
-        internal IList<PropertyHelper> TempDataProperties { get; set; }
+        public IList<TempDataProperty> TempDataProperties { get; set; }
 
         public bool IsReusable => false;
 
@@ -23,8 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            var service = serviceProvider.GetRequiredService<SaveTempDataPropertyFilter>();
-            service.PropertyHelpers = TempDataProperties;
+            var service = serviceProvider.GetRequiredService<ControllerSaveTempDataPropertyFilter>();
+            service.TempDataProperties = TempDataProperties;
             return service;
         }
     }

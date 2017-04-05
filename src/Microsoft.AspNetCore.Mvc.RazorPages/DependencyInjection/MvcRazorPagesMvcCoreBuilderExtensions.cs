@@ -81,6 +81,8 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action executors
             services.TryAddSingleton<PageResultExecutor>();
             services.TryAddSingleton<RedirectToPageResultExecutor>();
+
+            services.TryAddTransient<PageSaveTempDataPropertyFilter>();
         }
     }
 }

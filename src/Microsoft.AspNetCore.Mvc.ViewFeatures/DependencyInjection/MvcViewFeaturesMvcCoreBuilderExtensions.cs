@@ -201,7 +201,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, TempDataApplicationModelProvider>());
             services.TryAddSingleton<SaveTempDataFilter>();
-            services.TryAddTransient<SaveTempDataPropertyFilter>();
+
+
+            services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 
             // This does caching so it should stay singleton
             services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();

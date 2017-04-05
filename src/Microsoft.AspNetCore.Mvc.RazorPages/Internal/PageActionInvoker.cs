@@ -346,10 +346,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             // This is a workaround for not yet having proper filter for Pages.
-            SaveTempDataPropertyFilter propertyFilter = null;
+            PageSaveTempDataPropertyFilter propertyFilter = null;
             for (var i = 0; i < _filters.Length; i++)
             {
-                propertyFilter = _filters[i] as SaveTempDataPropertyFilter;
+                propertyFilter = _filters[i] as PageSaveTempDataPropertyFilter;
                 if (propertyFilter != null)
                 {
                     break;
@@ -358,7 +358,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             if (propertyFilter != null)
             {
-                propertyFilter.Subject = _page;
+                object subject = _page;
+
+                if (_model != null)
+                {
+                    subject = _model;
+                }
+
+                propertyFilter.Subject = subject;
                 propertyFilter.ApplyTempDataChanges(_pageContext.HttpContext);
             }
 

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Assert
             Assert.Collection(applicationModel.Filters,
-                filter => Assert.IsType<SaveTempDataPropertyFilterFactory>(filter),
+                filter => Assert.IsType<PageSaveTempDataPropertyFilterFactory>(filter),
                 filter => Assert.IsType<AutoValidateAntiforgeryTokenAttribute>(filter));
         }
     }

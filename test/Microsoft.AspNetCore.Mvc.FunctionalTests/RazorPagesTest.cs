@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var routeRequest = new HttpRequestMessage(HttpMethod.Get, "http://localhost/RouteData/pizza");
-           
+
             // Act
             var routeResponse = await Client.SendAsync(routeRequest);
 
@@ -414,6 +414,69 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task TempData_TempDataPropertyOnPageModel_IsPopulatedFromTempData()
+        {
+            // Arrange 1
+            var url = "http://localhost/TempData/SetMessageAndRedirect";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            // Act 1
+            var response = await Client.SendAsync(request);
+
+            // Assert 1
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+
+            // Act 2
+            request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
+            request.Headers.Add("Cookie", GetCookie(response));
+            response = await Client.SendAsync(request);
+
+            // Assert 2
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith("Message: Secret Message", content.Trim());
+            Assert.EndsWith("TempData: Secret Message", content.Trim());
+        }
+
+        [Fact]
+        public async Task TempData_TempDataPropertyOnPageModel_PopulatesTempData()
+        {
+            // Arrange 1
+            var getRequest = new HttpRequestMessage(HttpMethod.Get, "http://localhost/TempData/TempDataPageModelProperty");
+            var getResponse = await Client.SendAsync(getRequest);
+            var getResponseBody = await getResponse.Content.ReadAsStringAsync();
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(getResponseBody, "/TempData/TempDataPageModelProperty");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
+
+            var url = "http://localhost/TempData/TempDataPageModelProperty";
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("Cookie", cookie.Key + "=" + cookie.Value);
+            request.Headers.Add("RequestVerificationToken", formToken);
+
+            // Act 1
+            var response = await Client.SendAsync(request);
+
+            // Assert 1
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith("Message: Secret post", content.Trim());
+            Assert.EndsWith("TempData:", content.Trim());
+
+            // Arrange 2
+            request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/TempData/TempDataPageModelProperty");
+            request.Headers.Add("Cookie", GetCookie(response));
+
+            // Act 2
+            response = await Client.SendAsync(request);
+
+            // Assert 2
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith("Message: Secret post", content.Trim());
+            Assert.EndsWith("TempData: Secret post", content.Trim());
+        }
+
+        [Fact]
         public async Task AuthorizePage_AddsAuthorizationForSpecificPages()
         {
             // Arrange
@@ -432,7 +495,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var url = "/Pages/Admin/Login";
-            
+
             // Act
             var response = await Client.GetAsync(url);
 
@@ -677,7 +740,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.Equal(expected, response.Headers.Location.ToString());
         }
 
-        
+
         [Fact]
         public async Task RedirectToSelfWorks()
         {

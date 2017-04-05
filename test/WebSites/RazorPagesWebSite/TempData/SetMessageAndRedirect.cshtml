@@ -1,0 +1,10 @@
+﻿@page
+
+@functions
+{
+    public IActionResult OnGet()
+    {
+        TempData["TempDataProperty-Message"] = "Secret Message";
+        return Redirect("~/TempData/TempDataPageModelProperty");
+    }
+}
