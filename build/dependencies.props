@@ -9,6 +9,6 @@
     <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
     <XunitVersion>2.2.0</XunitVersion>
-    <WindowsAzureStorageVersion>7.2.1</WindowsAzureStorageVersion>
+    <WindowsAzureStorageVersion>8.1.1</WindowsAzureStorageVersion>
   </PropertyGroup>
 </Project>
