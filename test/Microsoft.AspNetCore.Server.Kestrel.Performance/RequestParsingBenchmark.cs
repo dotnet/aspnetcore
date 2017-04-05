@@ -67,6 +67,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
         }
 
+        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
+        public void PipelinedPlaintextTechEmpowerDrainBuffer()
+        {
+            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+            {
+                InsertData(RequestParsingData.PlaintextTechEmpowerPipelinedRequests);
+                ParseDataDrainBuffer();
+            }
+        }
+
         [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
         public void LiveAspNet()
         {
@@ -113,6 +123,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             buffer.WriteFast(bytes);
             // There should not be any backpressure and task completes immediately
             buffer.FlushAsync().GetAwaiter().GetResult();
+        }
+
+        private void ParseDataDrainBuffer()
+        {
+            var awaitable = Pipe.Reader.ReadAsync();
+            if (!awaitable.IsCompleted)
+            {
+                // No more data
+                return;
+            }
+
+            var readableBuffer = awaitable.GetResult().Buffer;
+            do
+            {
+                Frame.Reset();
+
+                if (!Frame.TakeStartLine(readableBuffer, out var consumed, out var examined))
+                {
+                    ErrorUtilities.ThrowInvalidRequestLine();
+                }
+
+                readableBuffer = readableBuffer.Slice(consumed);
+
+                Frame.InitializeHeaders();
+
+                if (!Frame.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                {
+                    ErrorUtilities.ThrowInvalidRequestHeaders();
+                }
+
+                readableBuffer = readableBuffer.Slice(consumed);
+            }
+            while (readableBuffer.Length > 0);
+
+            Pipe.Reader.Advance(readableBuffer.End);
         }
 
         private void ParseData()
