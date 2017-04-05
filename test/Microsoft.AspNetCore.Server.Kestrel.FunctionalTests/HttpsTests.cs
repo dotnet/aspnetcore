@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -52,7 +53,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             Assert.Equal(1, loggerFactory.FilterLogger.LastEventId.Id);
             Assert.Equal(LogLevel.Information, loggerFactory.FilterLogger.LastLogLevel);
-            Assert.Equal(0, loggerFactory.ErrorLogger.TotalErrorsLogged);
+            Assert.True(loggerFactory.ErrorLogger.TotalErrorsLogged == 0,
+                userMessage: string.Join(Environment.NewLine, loggerFactory.ErrorLogger.ErrorMessages));
         }
 
         [Fact]
@@ -87,7 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             Assert.Equal(1, loggerFactory.FilterLogger.LastEventId.Id);
             Assert.Equal(LogLevel.Information, loggerFactory.FilterLogger.LastLogLevel);
-            Assert.Equal(0, loggerFactory.ErrorLogger.TotalErrorsLogged);
+            Assert.True(loggerFactory.ErrorLogger.TotalErrorsLogged == 0,
+                userMessage: string.Join(Environment.NewLine, loggerFactory.ErrorLogger.ErrorMessages));
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1103#issuecomment-246971172
@@ -277,7 +280,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private class ApplicationErrorLogger : ILogger
         {
-            public int TotalErrorsLogged { get; set; }
+            private List<string> _errorMessages = new List<string>();
+
+            public IEnumerable<string> ErrorMessages => _errorMessages;
+
+            public int TotalErrorsLogged => _errorMessages.Count;
 
             public bool ObjectDisposedExceptionLogged { get; set; }
 
@@ -285,7 +292,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 if (logLevel == LogLevel.Error)
                 {
-                    TotalErrorsLogged++;
+                    _errorMessages.Add(formatter(state, exception));
                 }
 
                 if (exception is ObjectDisposedException)
