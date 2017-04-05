@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient EncodedClient { get; }
 
         [Theory]
-        //[InlineData("Index")] Skipping temporarily to unblock build
+        [InlineData("Index")]
         [InlineData("About")]
         [InlineData("Help")]
         [InlineData("UnboundDynamicAttributes")]
