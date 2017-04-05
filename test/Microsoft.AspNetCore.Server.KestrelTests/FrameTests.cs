@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -20,6 +22,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -640,6 +643,103 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Theory]
+        [InlineData(1, 1)]
+        [InlineData(5, 5)]
+        [InlineData(100, 100)]
+        [InlineData(600, 100)]
+        [InlineData(700, 1)]
+        [InlineData(1, 700)]
+        public async Task AcceptsHeadersAcrossSends(int header0Count, int header1Count)
+        {
+            _serviceContext.ServerOptions.Limits.MaxRequestHeaderCount = header0Count + header1Count;
+
+            var headers0 = MakeHeaders(header0Count);
+            var headers1 = MakeHeaders(header1Count, header0Count);
+
+            var requestProcessingTask = _frame.RequestProcessingAsync();
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
+            await WaitForCondition(TimeSpan.FromSeconds(1), () => _frame.RequestHeaders != null);
+            Assert.Equal(0, _frame.RequestHeaders.Count);
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(headers0));
+            await WaitForCondition(TimeSpan.FromSeconds(1), () => _frame.RequestHeaders.Count >= header0Count);
+            Assert.Equal(header0Count, _frame.RequestHeaders.Count);
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(headers1));
+            await WaitForCondition(TimeSpan.FromSeconds(1), () => _frame.RequestHeaders.Count >= header0Count + header1Count);
+            Assert.Equal(header0Count + header1Count, _frame.RequestHeaders.Count);
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
+            Assert.Equal(header0Count + header1Count, _frame.RequestHeaders.Count);
+
+            await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+        }
+
+        [Theory]
+        [InlineData(1, 1)]
+        [InlineData(5, 5)]
+        [InlineData(100, 100)]
+        [InlineData(600, 100)]
+        [InlineData(700, 1)]
+        [InlineData(1, 700)]
+        public async Task KeepsSameHeaderCollectionAcrossSends(int header0Count, int header1Count)
+        {
+            _serviceContext.ServerOptions.Limits.MaxRequestHeaderCount = header0Count + header1Count;
+
+            var headers0 = MakeHeaders(header0Count);
+            var headers1 = MakeHeaders(header1Count, header0Count);
+
+            var requestProcessingTask = _frame.RequestProcessingAsync();
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
+            await WaitForCondition(TimeSpan.FromSeconds(1), () => _frame.RequestHeaders != null);
+            Assert.Equal(0, _frame.RequestHeaders.Count);
+
+            var newRequestHeaders = new RequestHeadersWrapper(_frame.RequestHeaders);
+            _frame.RequestHeaders = newRequestHeaders;
+            Assert.Same(newRequestHeaders, _frame.RequestHeaders);
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(headers0));
+            await WaitForCondition(TimeSpan.FromSeconds(1), () => _frame.RequestHeaders.Count >= header0Count);
+            Assert.Same(newRequestHeaders, _frame.RequestHeaders);
+            Assert.Equal(header0Count, _frame.RequestHeaders.Count);
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(headers1));
+            await WaitForCondition(TimeSpan.FromSeconds(1), () => _frame.RequestHeaders.Count >= header0Count + header1Count);
+            Assert.Same(newRequestHeaders, _frame.RequestHeaders);
+            Assert.Equal(header0Count + header1Count, _frame.RequestHeaders.Count);
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
+            Assert.Same(newRequestHeaders, _frame.RequestHeaders);
+            Assert.Equal(header0Count + header1Count, _frame.RequestHeaders.Count);
+
+            await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+        }
+
+        private static async Task WaitForCondition(TimeSpan timeout, Func<bool> condition)
+        {
+            const int MaxWaitLoop = 150;
+
+            var delay = (int)Math.Ceiling(timeout.TotalMilliseconds / MaxWaitLoop);
+
+            var waitLoop = 0;
+            while (waitLoop < MaxWaitLoop && !condition())
+            {
+                // Wait for parsing condition to trigger
+                await Task.Delay(delay);
+                waitLoop++;
+            }
+        }
+
+        private static string MakeHeaders(int count, int startAt = 0)
+        {
+            return string.Join("", Enumerable
+                .Range(0, count)
+                .Select(i => $"Header-{startAt + i}: value{startAt + i}\r\n"));
+        }
+
         public static IEnumerable<object> RequestLineValidData => HttpParsingData.RequestLineValidData;
 
         public static IEnumerable<object> RequestLineDotSegmentData => HttpParsingData.RequestLineDotSegmentData;
@@ -718,6 +818,34 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             public IScheduler InputWriterScheduler { get; }
             public IScheduler OutputReaderScheduler { get; }
             public ITimeoutControl TimeoutControl { get; set; } = Mock.Of<ITimeoutControl>();
+        }
+
+        private class RequestHeadersWrapper : IHeaderDictionary
+        {
+            IHeaderDictionary _innerHeaders;
+
+            public RequestHeadersWrapper(IHeaderDictionary headers)
+            {
+                _innerHeaders = headers;
+            }
+
+            public StringValues this[string key] { get => _innerHeaders[key]; set => _innerHeaders[key] = value; }
+            public long? ContentLength { get => _innerHeaders.ContentLength; set => _innerHeaders.ContentLength = value; }
+            public ICollection<string> Keys => _innerHeaders.Keys;
+            public ICollection<StringValues> Values => _innerHeaders.Values;
+            public int Count => _innerHeaders.Count;
+            public bool IsReadOnly => _innerHeaders.IsReadOnly;
+            public void Add(string key, StringValues value) => _innerHeaders.Add(key, value);
+            public void Add(KeyValuePair<string, StringValues> item) => _innerHeaders.Add(item);
+            public void Clear() => _innerHeaders.Clear();
+            public bool Contains(KeyValuePair<string, StringValues> item) => _innerHeaders.Contains(item);
+            public bool ContainsKey(string key) => _innerHeaders.ContainsKey(key);
+            public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex) => _innerHeaders.CopyTo(array, arrayIndex);
+            public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator() => _innerHeaders.GetEnumerator();
+            public bool Remove(string key) => _innerHeaders.Remove(key);
+            public bool Remove(KeyValuePair<string, StringValues> item) => _innerHeaders.Remove(item);
+            public bool TryGetValue(string key, out StringValues value) => _innerHeaders.TryGetValue(key, out value);
+            IEnumerator IEnumerable.GetEnumerator() => _innerHeaders.GetEnumerator();
         }
     }
 }
