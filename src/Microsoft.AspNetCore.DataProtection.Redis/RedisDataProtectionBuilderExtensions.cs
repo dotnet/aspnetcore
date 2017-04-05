@@ -3,8 +3,8 @@
 
 using System;
 using StackExchange.Redis;
-using Microsoft.AspNetCore.DataProtection.Repositories;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
@@ -66,10 +66,13 @@ namespace Microsoft.AspNetCore.DataProtection
             return PersistKeysToRedisInternal(builder, () => connectionMultiplexer.GetDatabase(), key);
         }
 
-        private static IDataProtectionBuilder PersistKeysToRedisInternal(IDataProtectionBuilder config, Func<IDatabase> databaseFactory, RedisKey key)
+        private static IDataProtectionBuilder PersistKeysToRedisInternal(IDataProtectionBuilder builder, Func<IDatabase> databaseFactory, RedisKey key)
         {
-            config.Services.TryAddSingleton<IXmlRepository>(services => new RedisXmlRepository(databaseFactory, key));
-            return config;
+            builder.Services.Configure<KeyManagementOptions>(options =>
+            {
+                options.XmlRepository = new RedisXmlRepository(databaseFactory, key);
+            });
+            return builder;
         }
     }
 }

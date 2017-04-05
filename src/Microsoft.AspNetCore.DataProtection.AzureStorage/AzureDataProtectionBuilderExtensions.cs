@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.DataProtection.AzureStorage;
-using Microsoft.AspNetCore.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
@@ -163,10 +163,13 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         // important: the Func passed into this method must return a new instance with each call
-        private static IDataProtectionBuilder PersistKeystoAzureBlobStorageInternal(IDataProtectionBuilder config, Func<CloudBlockBlob> blobRefFactory)
+        private static IDataProtectionBuilder PersistKeystoAzureBlobStorageInternal(IDataProtectionBuilder builder, Func<CloudBlockBlob> blobRefFactory)
         {
-            config.Services.AddSingleton<IXmlRepository>(services => new AzureBlobXmlRepository(blobRefFactory));
-            return config;
+            builder.Services.Configure<KeyManagementOptions>(options =>
+            {
+                options.XmlRepository = new AzureBlobXmlRepository(blobRefFactory);
+            });
+            return builder;
         }
     }
 }
