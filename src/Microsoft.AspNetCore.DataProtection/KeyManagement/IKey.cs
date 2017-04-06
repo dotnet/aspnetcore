@@ -49,5 +49,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// Gets the <see cref="IAuthenticatedEncryptorDescriptor"/> instance associated with this key.
         /// </summary>
         IAuthenticatedEncryptorDescriptor Descriptor { get; }
+
+        /// <summary>
+        /// Creates an <see cref="IAuthenticatedEncryptor"/> instance that can be used to encrypt data
+        /// to and decrypt data from this key.
+        /// </summary>
+        /// <returns>An <see cref="IAuthenticatedEncryptor"/>.</returns>
+        IAuthenticatedEncryptor CreateEncryptor();
     }
 }

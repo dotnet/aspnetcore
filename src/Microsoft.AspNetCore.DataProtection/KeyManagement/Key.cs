@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -13,8 +14,19 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
     /// </summary>
     internal sealed class Key : KeyBase
     {
-        public Key(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, IAuthenticatedEncryptorDescriptor descriptor)
-            : base(keyId, creationDate, activationDate, expirationDate, new Lazy<IAuthenticatedEncryptorDescriptor>(() => descriptor))
+        public Key(
+            Guid keyId,
+            DateTimeOffset creationDate,
+            DateTimeOffset activationDate,
+            DateTimeOffset expirationDate,
+            IAuthenticatedEncryptorDescriptor descriptor,
+            IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
+            : base(keyId,
+                  creationDate,
+                  activationDate,
+                  expirationDate,
+                  new Lazy<IAuthenticatedEncryptorDescriptor>(() => descriptor),
+                  encryptorFactories)
         {
         }
     }

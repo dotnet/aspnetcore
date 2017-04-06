@@ -644,6 +644,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             mockKey.Setup(o => o.ExpirationDate).Returns(DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);
             mockKey.Setup(o => o.Descriptor).Returns(new Mock<IAuthenticatedEncryptorDescriptor>().Object);
+            mockKey.Setup(o => o.CreateEncryptor()).Returns(new Mock<IAuthenticatedEncryptor>().Object);
             return mockKey.Object;
         }
     }

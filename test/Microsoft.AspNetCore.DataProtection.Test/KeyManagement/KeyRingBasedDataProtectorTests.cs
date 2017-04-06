@@ -208,8 +208,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
 
             // the keyring has only one key
-            Key key = new Key(Guid.Empty, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object);
-            var keyRing = new KeyRing(key, new[] { key }, new[] { mockEncryptorFactory.Object });
+            Key key = new Key(Guid.Empty, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing = new KeyRing(key, new[] { key });
             var mockKeyRingProvider = new Mock<IKeyRingProvider>();
             mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
 
@@ -238,9 +238,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
 
             // the keyring has only one key
-            Key key = new Key(keyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object);
+            Key key = new Key(keyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
             key.SetRevoked();
-            var keyRing = new KeyRing(key, new[] { key }, new[] { mockEncryptorFactory.Object });
+            var keyRing = new KeyRing(key, new[] { key });
             var mockKeyRingProvider = new Mock<IKeyRingProvider>();
             mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
 
@@ -278,9 +278,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
             mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(mockEncryptor.Object);
 
-            Key defaultKey = new Key(defaultKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object);
+            Key defaultKey = new Key(defaultKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
             defaultKey.SetRevoked();
-            var keyRing = new KeyRing(defaultKey, new[] { defaultKey }, new[] { mockEncryptorFactory.Object });
+            var keyRing = new KeyRing(defaultKey, new[] { defaultKey });
             var mockKeyRingProvider = new Mock<IKeyRingProvider>();
             mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
 
@@ -326,8 +326,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
             mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(mockEncryptor.Object);
 
-            Key defaultKey = new Key(defaultKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object);
-            var keyRing = new KeyRing(defaultKey, new[] { defaultKey }, new[] { mockEncryptorFactory.Object });
+            Key defaultKey = new Key(defaultKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing = new KeyRing(defaultKey, new[] { defaultKey });
             var mockKeyRingProvider = new Mock<IKeyRingProvider>();
             mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
 
@@ -376,9 +376,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
             mockEncryptorFactory.Setup(o => o.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(mockEncryptor.Object);
 
-            Key defaultKey = new Key(defaultKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new Mock<IAuthenticatedEncryptorDescriptor>().Object);
-            Key embeddedKey = new Key(embeddedKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object);
-            var keyRing = new KeyRing(defaultKey, new[] { defaultKey, embeddedKey }, new[] { mockEncryptorFactory.Object });
+            Key defaultKey = new Key(defaultKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new Mock<IAuthenticatedEncryptorDescriptor>().Object, new[] { mockEncryptorFactory.Object });
+            Key embeddedKey = new Key(embeddedKeyId, DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, mockDescriptor.Object, new[] { mockEncryptorFactory.Object });
+            var keyRing = new KeyRing(defaultKey, new[] { defaultKey, embeddedKey });
             var mockKeyRingProvider = new Mock<IKeyRingProvider>();
             mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
 
@@ -408,9 +408,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             // Arrange
             byte[] plaintext = new byte[] { 0x10, 0x20, 0x30, 0x40, 0x50 };
-            Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration().CreateNewDescriptor());
             var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
-            var keyRing = new KeyRing(key, new[] { key }, new[] { encryptorFactory });
+            Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration().CreateNewDescriptor(), new[] { encryptorFactory });
+            var keyRing = new KeyRing(key, new[] { key });
             var mockKeyRingProvider = new Mock<IKeyRingProvider>();
             mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
 

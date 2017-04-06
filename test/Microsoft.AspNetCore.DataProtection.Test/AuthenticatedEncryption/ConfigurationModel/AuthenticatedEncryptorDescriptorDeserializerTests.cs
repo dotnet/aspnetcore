@@ -43,16 +43,17 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         private static IAuthenticatedEncryptor CreateEncryptorInstanceFromDescriptor(AuthenticatedEncryptorDescriptor descriptor)
         {
+            var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
             var key = new Key(
                 Guid.NewGuid(),
                 DateTimeOffset.Now,
                 DateTimeOffset.Now + TimeSpan.FromHours(1),
                 DateTimeOffset.Now + TimeSpan.FromDays(30),
-                descriptor);
+                descriptor,
+                new[] { encryptorFactory });
 
-            var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
 
-            return encryptorFactory.CreateEncryptorInstance(key);
+            return key.CreateEncryptor();
         }
     }
 }

@@ -86,16 +86,16 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         private static IAuthenticatedEncryptor CreateEncryptorInstanceFromDescriptor(ManagedAuthenticatedEncryptorDescriptor descriptor)
         {
+            var encryptorFactory = new ManagedAuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
             var key = new Key(
                 Guid.NewGuid(),
                 DateTimeOffset.Now,
                 DateTimeOffset.Now + TimeSpan.FromHours(1),
                 DateTimeOffset.Now + TimeSpan.FromDays(30),
-                descriptor);
+                descriptor,
+                new[] { encryptorFactory });
 
-            var encryptorFactory = new ManagedAuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
-
-            return encryptorFactory.CreateEncryptorInstance(key);
+            return key.CreateEncryptor();
         }
     }
 }

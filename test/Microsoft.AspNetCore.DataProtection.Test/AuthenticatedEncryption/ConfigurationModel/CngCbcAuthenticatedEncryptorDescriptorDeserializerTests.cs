@@ -50,16 +50,17 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         private static IAuthenticatedEncryptor CreateEncryptorInstanceFromDescriptor(CngCbcAuthenticatedEncryptorDescriptor descriptor)
         {
+            var encryptorFactory = new CngCbcAuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
             var key = new Key(
                 Guid.NewGuid(),
                 DateTimeOffset.Now,
                 DateTimeOffset.Now + TimeSpan.FromHours(1),
                 DateTimeOffset.Now + TimeSpan.FromDays(30),
-                descriptor);
+                descriptor,
+                new[] { encryptorFactory });
 
-            var encryptorFactory = new CngCbcAuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
 
-            return encryptorFactory.CreateEncryptorInstance(key);
+            return key.CreateEncryptor();
         }
     }
 }

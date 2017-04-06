@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
     {
         private readonly CancellationToken _expirationToken;
 
-        internal CacheableKeyRing(CancellationToken expirationToken, DateTimeOffset expirationTime, IKey defaultKey, IEnumerable<IKey> allKeys, IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
-            : this(expirationToken, expirationTime, keyRing: new KeyRing(defaultKey, allKeys, encryptorFactories))
+        internal CacheableKeyRing(CancellationToken expirationToken, DateTimeOffset expirationTime, IKey defaultKey, IEnumerable<IKey> allKeys)
+            : this(expirationToken, expirationTime, keyRing: new KeyRing(defaultKey, allKeys))
         {
         }
 

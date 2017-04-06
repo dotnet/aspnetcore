@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -13,14 +14,24 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
     internal abstract class KeyBase : IKey
     {
         private readonly Lazy<IAuthenticatedEncryptorDescriptor> _lazyDescriptor;
+        private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
 
-        public KeyBase(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, Lazy<IAuthenticatedEncryptorDescriptor> lazyDescriptor)
+        private IAuthenticatedEncryptor _encryptor;
+
+        public KeyBase(
+            Guid keyId,
+            DateTimeOffset creationDate,
+            DateTimeOffset activationDate,
+            DateTimeOffset expirationDate,
+            Lazy<IAuthenticatedEncryptorDescriptor> lazyDescriptor,
+            IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
         {
             KeyId = keyId;
             CreationDate = creationDate;
             ActivationDate = activationDate;
             ExpirationDate = expirationDate;
             _lazyDescriptor = lazyDescriptor;
+            _encryptorFactories = encryptorFactories;
         }
 
         public DateTimeOffset ActivationDate { get; }
@@ -39,6 +50,24 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             {
                 return _lazyDescriptor.Value;
             }
+        }
+
+        public IAuthenticatedEncryptor CreateEncryptor()
+        {
+            if (_encryptor == null)
+            {
+                foreach (var factory in _encryptorFactories)
+                {
+                    var encryptor = factory.CreateEncryptorInstance(this);
+                    if (encryptor != null)
+                    {
+                        _encryptor = encryptor;
+                        break;
+                    }
+                }
+            }
+
+            return _encryptor;
         }
 
         internal void SetRevoked()

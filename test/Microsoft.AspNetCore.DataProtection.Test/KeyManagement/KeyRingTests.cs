@@ -16,20 +16,19 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             // Arrange
             var expectedEncryptorInstance = new Mock<IAuthenticatedEncryptor>().Object;
-            var encryptorFactory = new MyEncryptorFactory(expectedEncryptorInstance);
 
-            var key1 = new MyKey();
+            var key1 = new MyKey(expectedEncryptorInstance: expectedEncryptorInstance);
             var key2 = new MyKey();
 
             // Act
-            var keyRing = new KeyRing(key1, new[] { key1, key2 }, new[] { encryptorFactory });
+            var keyRing = new KeyRing(key1, new[] { key1, key2 });
 
             // Assert
-            Assert.Equal(0, encryptorFactory.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(0, key1.NumTimesCreateEncryptorInstanceCalled);
             Assert.Same(expectedEncryptorInstance, keyRing.DefaultAuthenticatedEncryptor);
-            Assert.Equal(1, encryptorFactory.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(1, key1.NumTimesCreateEncryptorInstanceCalled);
             Assert.Same(expectedEncryptorInstance, keyRing.DefaultAuthenticatedEncryptor);
-            Assert.Equal(1, encryptorFactory.NumTimesCreateEncryptorInstanceCalled); // should've been cached
+            Assert.Equal(1, key1.NumTimesCreateEncryptorInstanceCalled); // should've been cached
         }
 
         [Fact]
@@ -38,10 +37,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // Arrange
             var key1 = new MyKey();
             var key2 = new MyKey();
-            var encryptorFactory = new MyEncryptorFactory();
 
             // Act
-            var keyRing = new KeyRing(key2, new[] { key1, key2 }, new[] { encryptorFactory });
+            var keyRing = new KeyRing(key2, new[] { key1, key2 });
 
             // Assert
             Assert.Equal(key2.KeyId, keyRing.DefaultKeyId);
@@ -53,16 +51,15 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // Arrange
             var key1 = new MyKey();
             var key2 = new MyKey();
-            var key3 = new MyKey();
-            var encryptorFactory = new MyEncryptorFactory(expectedEncryptorInstance: new Mock<IAuthenticatedEncryptor>().Object);
+            var key3 = new MyKey(expectedEncryptorInstance: new Mock<IAuthenticatedEncryptor>().Object);
 
             // Act
-            var keyRing = new KeyRing(key3, new[] { key1, key2 }, new[] { encryptorFactory });
+            var keyRing = new KeyRing(key3, new[] { key1, key2 });
 
             // Assert
             bool unused;
             Assert.Equal(key3.KeyId, keyRing.DefaultKeyId);
-            Assert.Equal(encryptorFactory.CreateEncryptorInstance(key3), keyRing.GetAuthenticatedEncryptorByKeyId(key3.KeyId, out unused));
+            Assert.Equal(key3.CreateEncryptor(), keyRing.GetAuthenticatedEncryptorByKeyId(key3.KeyId, out unused));
         }
 
         [Fact]
@@ -72,44 +69,46 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var expectedEncryptorInstance1 = new Mock<IAuthenticatedEncryptor>().Object;
             var expectedEncryptorInstance2 = new Mock<IAuthenticatedEncryptor>().Object;
 
-            var key1 = new MyKey(isRevoked: true);
-            var key2 = new MyKey();
+            var key1 = new MyKey(expectedEncryptorInstance: expectedEncryptorInstance1, isRevoked: true);
+            var key2 = new MyKey(expectedEncryptorInstance: expectedEncryptorInstance2);
 
-            var encryptorFactory1 = new MyEncryptorFactory(expectedEncryptorInstance: expectedEncryptorInstance1, associatedKey: key1);
-            var encryptorFactory2 = new MyEncryptorFactory(expectedEncryptorInstance: expectedEncryptorInstance2, associatedKey: key2);
 
             // Act
-            var keyRing = new KeyRing(key2, new[] { key1, key2 }, new[] { encryptorFactory1, encryptorFactory2 });
+            var keyRing = new KeyRing(key2, new[] { key1, key2 });
 
             // Assert
             bool isRevoked;
-            Assert.Equal(0, encryptorFactory1.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(0, key1.NumTimesCreateEncryptorInstanceCalled);
             Assert.Same(expectedEncryptorInstance1, keyRing.GetAuthenticatedEncryptorByKeyId(key1.KeyId, out isRevoked));
             Assert.True(isRevoked);
-            Assert.Equal(1, encryptorFactory1.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(1, key1.NumTimesCreateEncryptorInstanceCalled);
             Assert.Same(expectedEncryptorInstance1, keyRing.GetAuthenticatedEncryptorByKeyId(key1.KeyId, out isRevoked));
             Assert.True(isRevoked);
-            Assert.Equal(1, encryptorFactory1.NumTimesCreateEncryptorInstanceCalled);
-            Assert.Equal(0, encryptorFactory2.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(1, key1.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(0, key2.NumTimesCreateEncryptorInstanceCalled);
             Assert.Same(expectedEncryptorInstance2, keyRing.GetAuthenticatedEncryptorByKeyId(key2.KeyId, out isRevoked));
             Assert.False(isRevoked);
-            Assert.Equal(1, encryptorFactory2.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(1, key2.NumTimesCreateEncryptorInstanceCalled);
             Assert.Same(expectedEncryptorInstance2, keyRing.GetAuthenticatedEncryptorByKeyId(key2.KeyId, out isRevoked));
             Assert.False(isRevoked);
-            Assert.Equal(1, encryptorFactory2.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(1, key2.NumTimesCreateEncryptorInstanceCalled);
             Assert.Same(expectedEncryptorInstance2, keyRing.DefaultAuthenticatedEncryptor);
-            Assert.Equal(1, encryptorFactory2.NumTimesCreateEncryptorInstanceCalled);
+            Assert.Equal(1, key2.NumTimesCreateEncryptorInstanceCalled);
         }
 
         private sealed class MyKey : IKey
         {
-            public MyKey(bool isRevoked = false)
+            public int NumTimesCreateEncryptorInstanceCalled;
+            private readonly Func<IAuthenticatedEncryptor> _encryptorFactory;
+
+            public MyKey(bool isRevoked = false, IAuthenticatedEncryptor expectedEncryptorInstance = null)
             {
                 CreationDate = DateTimeOffset.Now;
                 ActivationDate = CreationDate + TimeSpan.FromHours(1);
                 ExpirationDate = CreationDate + TimeSpan.FromDays(30);
                 IsRevoked = isRevoked;
                 KeyId = Guid.NewGuid();
+                _encryptorFactory = () => expectedEncryptorInstance ?? new Mock<IAuthenticatedEncryptor>().Object;
             }
 
             public DateTimeOffset ActivationDate { get; }
@@ -118,30 +117,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             public bool IsRevoked { get; }
             public Guid KeyId { get; }
             public IAuthenticatedEncryptorDescriptor Descriptor => throw new NotImplementedException();
-        }
 
-        private sealed class MyEncryptorFactory : IAuthenticatedEncryptorFactory
-        {
-            public int NumTimesCreateEncryptorInstanceCalled;
-            private IAuthenticatedEncryptor _expectedEncryptorInstance;
-            private IKey _associatedKey;
-
-            public MyEncryptorFactory(IAuthenticatedEncryptor expectedEncryptorInstance = null, IKey associatedKey = null)
+            public IAuthenticatedEncryptor CreateEncryptor()
             {
-                _expectedEncryptorInstance = expectedEncryptorInstance;
-                _associatedKey = associatedKey;
-            }
-
-            public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
-            {
-                if (_associatedKey != null && key != _associatedKey)
-                {
-                    return null;
-                }
-
                 NumTimesCreateEncryptorInstanceCalled++;
-
-                return _expectedEncryptorInstance ?? new Mock<IAuthenticatedEncryptor>().Object;
+                return _encryptorFactory();
             }
         }
     }

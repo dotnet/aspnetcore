@@ -29,8 +29,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
         private readonly ILogger _logger;
 
-        private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
-
         /// <summary>
         /// The maximum skew that is allowed between servers.
         /// This is used to allow newly-created keys to be used across servers even though
@@ -46,7 +44,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             _keyPropagationWindow = keyManagementOptions.Value.KeyPropagationWindow;
             _maxServerToServerClockSkew = keyManagementOptions.Value.MaxServerClockSkew;
-            _encryptorFactories = keyManagementOptions.Value.AuthenticatedEncryptorFactories;
             _logger = loggerFactory.CreateLogger<DefaultKeyResolver>();
         }
 
@@ -54,16 +51,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             try
             {
-                IAuthenticatedEncryptor encryptorInstance = null;
-                foreach (var factory in _encryptorFactories)
-                {
-                    encryptorInstance = factory.CreateEncryptorInstance(key);
-                    if (encryptorInstance != null)
-                    {
-                        break;
-                    }
-                }
-
+                var encryptorInstance = key.CreateEncryptor();
                 if (encryptorInstance == null)
                 {
                     CryptoUtil.Fail<IAuthenticatedEncryptor>("CreateEncryptorInstance returned null.");
@@ -73,7 +61,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             }
             catch (Exception ex)
             {
-                _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IAuthenticatedEncryptorFactory.CreateEncryptorInstance), ex);
+                _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptor), ex);
                 return false;
             }
         }

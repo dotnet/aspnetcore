@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
@@ -21,8 +23,14 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             DateTimeOffset activationDate,
             DateTimeOffset expirationDate,
             IInternalXmlKeyManager keyManager,
-            XElement keyElement)
-            : base(keyId, creationDate, activationDate, expirationDate, new Lazy<IAuthenticatedEncryptorDescriptor>(GetLazyDescriptorDelegate(keyManager, keyElement)))
+            XElement keyElement,
+            IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
+            : base(keyId,
+                  creationDate,
+                  activationDate,
+                  expirationDate,
+                  new Lazy<IAuthenticatedEncryptorDescriptor>(GetLazyDescriptorDelegate(keyManager, keyElement)),
+                  encryptorFactories)
         {
         }
 

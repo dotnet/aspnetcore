@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private readonly KeyHolder _defaultKeyHolder;
         private readonly Dictionary<Guid, KeyHolder> _keyIdToKeyHolderMap;
 
-        public KeyRing(IKey defaultKey, IEnumerable<IKey> allKeys, IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
+        public KeyRing(IKey defaultKey, IEnumerable<IKey> allKeys)
         {
             _keyIdToKeyHolderMap = new Dictionary<Guid, KeyHolder>();
             foreach (IKey key in allKeys)
             {
-                _keyIdToKeyHolderMap.Add(key.KeyId, new KeyHolder(key, encryptorFactories));
+                _keyIdToKeyHolderMap.Add(key.KeyId, new KeyHolder(key));
             }
 
             // It's possible under some circumstances that the default key won't be part of 'allKeys',
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // wasn't in the underlying repository. In this case, we just add it now.
             if (!_keyIdToKeyHolderMap.ContainsKey(defaultKey.KeyId))
             {
-                _keyIdToKeyHolderMap.Add(defaultKey.KeyId, new KeyHolder(defaultKey, encryptorFactories));
+                _keyIdToKeyHolderMap.Add(defaultKey.KeyId, new KeyHolder(defaultKey));
             }
 
             DefaultKeyId = defaultKey.KeyId;
@@ -61,12 +61,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             private readonly IKey _key;
             private IAuthenticatedEncryptor _encryptor;
-            private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
 
-            internal KeyHolder(IKey key, IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
+            internal KeyHolder(IKey key)
             {
                 _key = key;
-                _encryptorFactories = encryptorFactories;
             }
 
             internal IAuthenticatedEncryptor GetEncryptorInstance(out bool isRevoked)
@@ -81,14 +79,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                         encryptor = Volatile.Read(ref _encryptor);
                         if (encryptor == null)
                         {
-                            foreach (var factory in _encryptorFactories)
-                            {
-                                encryptor = factory.CreateEncryptorInstance(_key);
-                                if (encryptor != null)
-                                {
-                                    break;
-                                }
-                            }
+                            encryptor = _key.CreateEncryptor();
                             Volatile.Write(ref _encryptor, encryptor);
                         }
                     }

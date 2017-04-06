@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Moq;
 using Xunit;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
@@ -19,9 +20,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var activationDate = creationDate.AddDays(2);
             var expirationDate = creationDate.AddDays(90);
             var descriptor = Mock.Of<IAuthenticatedEncryptorDescriptor>();
+            var encryptorFactory = Mock.Of<IAuthenticatedEncryptorFactory>();
 
             // Act
-            var key = new Key(keyId, creationDate, activationDate, expirationDate, descriptor);
+            var key = new Key(keyId, creationDate, activationDate, expirationDate, descriptor, new[] { encryptorFactory });
 
             // Assert
             Assert.Equal(keyId, key.KeyId);
@@ -36,7 +38,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             // Arrange
             var now = DateTimeOffset.UtcNow;
-            var key = new Key(Guid.Empty, now, now, now, new Mock<IAuthenticatedEncryptorDescriptor>().Object);
+            var encryptorFactory = Mock.Of<IAuthenticatedEncryptorFactory>();
+            var key = new Key(Guid.Empty, now, now, now, new Mock<IAuthenticatedEncryptorDescriptor>().Object, new[] { encryptorFactory });
 
             // Act & assert
             Assert.False(key.IsRevoked);

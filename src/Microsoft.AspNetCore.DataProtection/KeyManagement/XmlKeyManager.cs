@@ -12,6 +12,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.AspNetCore.DataProtection.Internal;
@@ -50,6 +51,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private readonly IInternalXmlKeyManager _internalKeyManager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
+        private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
 
         private CancellationTokenSource _cacheExpirationTokenSource;
 
@@ -88,6 +90,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             _activator = activator;
             TriggerAndResetCacheExpirationToken(suppressLogging: true);
             _internalKeyManager = _internalKeyManager ?? this;
+            _encryptorFactories = keyManagementOptions.Value.AuthenticatedEncryptorFactories;
         }
 
         // Internal for testing.
@@ -240,7 +243,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     activationDate: activationDate,
                     expirationDate: expirationDate,
                     keyManager: this,
-                    keyElement: keyElement);
+                    keyElement: keyElement,
+                    encryptorFactories: _encryptorFactories);
             }
             catch (Exception ex)
             {
@@ -400,7 +404,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 creationDate: creationDate,
                 activationDate: activationDate,
                 expirationDate: expirationDate,
-                descriptor: newDescriptor);
+                descriptor: newDescriptor,
+                encryptorFactories: _encryptorFactories);
         }
 
         IAuthenticatedEncryptorDescriptor IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(XElement keyElement)

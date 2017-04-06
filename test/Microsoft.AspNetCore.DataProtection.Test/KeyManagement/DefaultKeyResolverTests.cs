@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_EmptyKeyRing_ReturnsNullDefaultKey()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
 
             // Act
             var resolution = resolver.ResolveDefaultKeyPolicy(DateTimeOffset.Now, new IKey[0]);
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_ValidExistingKey_ReturnsExistingKey()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
             var key2 = CreateKey("2016-03-01 00:00:00Z", "2017-03-01 00:00:00Z");
 
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_ValidExistingKey_AllowsForClockSkew_KeysStraddleSkewLine_ReturnsExistingKey()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
             var key2 = CreateKey("2016-03-01 00:00:00Z", "2017-03-01 00:00:00Z");
 
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_ValidExistingKey_AllowsForClockSkew_AllKeysInFuture_ReturnsExistingKey()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2016-03-01 00:00:00Z", "2017-03-01 00:00:00Z");
 
             // Act
@@ -81,7 +80,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_ValidExistingKey_NoSuccessor_ReturnsExistingKey_SignalsGenerateNewKey()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
 
             // Act
@@ -96,7 +95,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_ValidExistingKey_NoLegitimateSuccessor_ReturnsExistingKey_SignalsGenerateNewKey()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
             var key2 = CreateKey("2016-03-01 00:00:00Z", "2017-03-01 00:00:00Z", isRevoked: true);
             var key3 = CreateKey("2016-03-01 00:00:00Z", "2016-03-02 00:00:00Z"); // key expires too soon
@@ -113,7 +112,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_MostRecentKeyIsInvalid_BecauseOfRevocation_ReturnsNull()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
             var key2 = CreateKey("2015-03-02 00:00:00Z", "2016-03-01 00:00:00Z", isRevoked: true);
 
@@ -130,8 +129,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             // Arrange
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
-            var key2 = CreateKey("2015-03-02 00:00:00Z", "2016-03-01 00:00:00Z");
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory(throwForKeys: key2));
+            var key2 = CreateKey("2015-03-02 00:00:00Z", "2016-03-01 00:00:00Z", createEncryptorThrows: true);
+            var resolver = CreateDefaultKeyResolver();
 
             // Act
             var resolution = resolver.ResolveDefaultKeyPolicy("2015-04-01 00:00:00Z", key1, key2);
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_FutureKeyIsValidAndWithinClockSkew_ReturnsFutureKey()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
 
             // Act
@@ -160,7 +159,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_FutureKeyIsValidButNotWithinClockSkew_ReturnsNull()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z");
 
             // Act
@@ -175,7 +174,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_IgnoresExpiredOrRevokedFutureKeys()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2015-03-01 00:00:00Z", "2014-03-01 00:00:00Z"); // expiration before activation should never occur
             var key2 = CreateKey("2015-03-01 00:01:00Z", "2015-04-01 00:00:00Z", isRevoked: true);
             var key3 = CreateKey("2015-03-01 00:02:00Z", "2015-04-01 00:00:00Z");
@@ -192,7 +191,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_FallbackKey_SelectsLatestBeforePriorPropagationWindow_IgnoresRevokedKeys()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-01 00:00:00Z");
             var key2 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-02 00:00:00Z");
             var key3 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-03 00:00:00Z", isRevoked: true);
@@ -212,9 +211,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             // Arrange
             var key1 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-01 00:00:00Z");
             var key2 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-02 00:00:00Z");
-            var key3 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-03 00:00:00Z");
+            var key3 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-03 00:00:00Z", createEncryptorThrows: true);
             var key4 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-04 00:00:00Z");
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory(throwForKeys: key3));
+            var resolver = CreateDefaultKeyResolver();
 
             // Act
             var resolution = resolver.ResolveDefaultKeyPolicy("2000-01-05 00:00:00Z", key1, key2, key3, key4);
@@ -228,7 +227,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public void ResolveDefaultKeyPolicy_FallbackKey_NoNonRevokedKeysBeforePriorPropagationWindow_SelectsEarliestNonRevokedKey()
         {
             // Arrange
-            var resolver = CreateDefaultKeyResolver(new MyEncryptorFactory());
+            var resolver = CreateDefaultKeyResolver();
             var key1 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-03 00:00:00Z", isRevoked: true);
             var key2 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-04 00:00:00Z");
             var key3 = CreateKey("2010-01-01 00:00:00Z", "2010-01-01 00:00:00Z", creationDate: "2000-01-05 00:00:00Z");
@@ -241,14 +240,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.True(resolution.ShouldGenerateNewKey);
         }
 
-        private static IDefaultKeyResolver CreateDefaultKeyResolver(IAuthenticatedEncryptorFactory encryptorFactory)
+        private static IDefaultKeyResolver CreateDefaultKeyResolver()
         {
             var options = Options.Create(new KeyManagementOptions());
-            options.Value.AuthenticatedEncryptorFactories.Add(encryptorFactory);
             return new DefaultKeyResolver(options, NullLoggerFactory.Instance);
         }
 
-        private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false)
+        private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)
         {
             var mockKey = new Mock<IKey>();
             mockKey.Setup(o => o.KeyId).Returns(Guid.NewGuid());
@@ -256,30 +254,16 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             mockKey.Setup(o => o.ActivationDate).Returns(DateTimeOffset.ParseExact(activationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.ExpirationDate).Returns(DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture));
             mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);
+            if (createEncryptorThrows)
+            {
+                mockKey.Setup(o => o.CreateEncryptor()).Throws(new Exception("This method fails."));
+            }
+            else
+            {
+                mockKey.Setup(o => o.CreateEncryptor()).Returns(Mock.Of<IAuthenticatedEncryptor>());
+            }
             
             return mockKey.Object;
-        }
-
-        private class MyEncryptorFactory : IAuthenticatedEncryptorFactory
-        {
-            private IReadOnlyList<IKey> _throwForKeys;
-
-            public MyEncryptorFactory(params IKey[] throwForKeys)
-            {
-                _throwForKeys = throwForKeys;
-            }
-
-            public IAuthenticatedEncryptor CreateEncryptorInstance(IKey key)
-            {
-                if (_throwForKeys.Contains(key))
-                {
-                    throw new Exception("This method fails.");
-                }
-                else
-                {
-                    return new Mock<IAuthenticatedEncryptor>().Object;
-                }
-            }
         }
     }
 

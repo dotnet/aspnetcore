@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
@@ -30,10 +31,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     XmlAssert.Equal(@"<node />", element);
                     return mockDescriptor;
                 });
-            var options = Options.Create(new KeyManagementOptions());
+            var encryptorFactory = Mock.Of<IAuthenticatedEncryptorFactory>();
 
             // Act
-            var key = new DeferredKey(keyId, creationDate, activationDate, expirationDate, mockInternalKeyManager.Object, XElement.Parse(@"<node />"));
+            var key = new DeferredKey(keyId, creationDate, activationDate, expirationDate, mockInternalKeyManager.Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
 
             // Assert
             Assert.Equal(keyId, key.KeyId);
@@ -48,8 +49,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         {
             // Arrange
             var now = DateTimeOffset.UtcNow;
-            var options = Options.Create(new KeyManagementOptions());
-            var key = new DeferredKey(Guid.Empty, now, now, now, new Mock<IInternalXmlKeyManager>().Object, XElement.Parse(@"<node />"));
+            var encryptorFactory = Mock.Of<IAuthenticatedEncryptorFactory>();
+            var key = new DeferredKey(Guid.Empty, now, now, now, new Mock<IInternalXmlKeyManager>().Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
 
             // Act & assert
             Assert.False(key.IsRevoked);
@@ -71,7 +72,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 });
 
             var now = DateTimeOffset.UtcNow;
-            var key = new DeferredKey(Guid.Empty, now, now, now, mockKeyManager.Object, XElement.Parse(@"<node />"));
+            var encryptorFactory = Mock.Of<IAuthenticatedEncryptorFactory>();
+            var key = new DeferredKey(Guid.Empty, now, now, now, mockKeyManager.Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
 
             // Act & assert
             ExceptionAssert.Throws<Exception>(() => key.Descriptor, "How exceptional.");
