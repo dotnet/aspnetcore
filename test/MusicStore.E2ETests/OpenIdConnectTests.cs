@@ -74,13 +74,9 @@ namespace E2ETests
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
-                    }
+                    },
+                    AdditionalPublishParameters = " /p:PublishForTesting=true"
                 };
-
-
-                deploymentParameters.AdditionalPublishParameters =
-                    (applicationType == ApplicationType.Standalone ? $" -r {RuntimeEnvironment.GetRuntimeIdentifier()}" : "")
-                    + " /p:PublishForTesting=true";
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables
