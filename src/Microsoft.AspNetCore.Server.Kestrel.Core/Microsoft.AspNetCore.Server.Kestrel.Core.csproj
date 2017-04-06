@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
 
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0-*" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup>
