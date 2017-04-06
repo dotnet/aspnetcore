@@ -138,11 +138,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 throw new ArgumentNullException(nameof(documentContext));
             }
 
-            if (parentTag == null)
-            {
-                throw new ArgumentNullException(nameof(parentTag));
-            }
-
             var matchingDescriptors = new List<TagHelperDescriptor>();
             var descriptors = documentContext?.TagHelpers;
             if (descriptors?.Count == 0)
