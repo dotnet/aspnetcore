@@ -9,22 +9,36 @@
   </PropertyGroup>
 
   <Target Name="BuildPackageCache">
+    <GetOSPlatform>
+      <!-- Returns {Linux, macOS, Windows} -->
+      <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
+    </GetOSPlatform>
 
     <PropertyGroup>
       <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.All\</MetaPackagePath>
       <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.All.csproj</MetaPackageFile>
       <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
       <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
-      <OutputZip>$(RepositoryRoot)artifacts\AspNetCorePackageCache.$(AspNetCoreVersion).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.win.zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.linux.zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'macOS'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.osx.zip</OutputZip>
     </PropertyGroup>
 
+    <ItemGroup>
+      <RIDs Include="win7-x64" Condition="'$(OSPlatform)' == 'Windows'" />
+      <RIDs Include="win7-x86" Condition="'$(OSPlatform)' == 'Windows'" />
+      <RIDs Include="linux-x64" Condition="'$(OSPlatform)' == 'Linux'" />
+      <RIDs Include="osx-x64" Condition="'$(OSPlatform)' == 'macOS'" />
+    </ItemGroup>
+
     <RemoveDir Directories="$(OutputPath)" />
-    <RemoveDir Directories="$(WorkingDirectory)" />
-    <Exec Command="dotnet cache --entries $(MetaPackageFile) --framework netcoreapp2.0 --runtime win7-x64 --output $(OutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)" />
+    <RemoveDir Directories="$(WorkingDirectory)-%(RIDs.Identity)" />
+    <Exec Command="dotnet cache --entries $(MetaPackageFile) --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)-%(RIDs.Identity)" />
 
     <ItemGroup>
       <PackageCacheFiles Include="$(OutputPath)**\*" />
     </ItemGroup>
+
     <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>

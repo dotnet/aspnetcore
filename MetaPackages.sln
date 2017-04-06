@@ -1,12 +1,24 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26323.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore", "src\Microsoft.AspNetCore\Microsoft.AspNetCore.csproj", "{6F3D43F7-9546-4B41-AF04-CF4708B62051}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.All", "src\Microsoft.AspNetCore.All\Microsoft.AspNetCore.All.csproj", "{CC8F551E-213A-45E8-AECA-507C4DB4F164}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{97D53BEB-A511-4FBE-B784-AB407D9A219F}"
+	ProjectSection(SolutionItems) = preProject
+		version.props = version.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F92CB7A1-C38E-408C-A7EC-A5C040D041E1}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
+		build\repo.targets = build\repo.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,5 +41,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{6F3D43F7-9546-4B41-AF04-CF4708B62051} = {ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}
 		{CC8F551E-213A-45E8-AECA-507C4DB4F164} = {ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}
+		{F92CB7A1-C38E-408C-A7EC-A5C040D041E1} = {97D53BEB-A511-4FBE-B784-AB407D9A219F}
 	EndGlobalSection
 EndGlobal
