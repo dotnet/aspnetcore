@@ -7,9 +7,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using PlatformAbstractions = Microsoft.DotNet.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
@@ -56,8 +56,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var parameters = $"publish "
                     + $" --output \"{DeploymentParameters.PublishedApplicationRootPath}\""
                     + $" --framework {DeploymentParameters.TargetFramework}"
-                    + $" --configuration {DeploymentParameters.Configuration}"
-                    + $" {DeploymentParameters.AdditionalPublishParameters}";
+                    + $" --configuration {DeploymentParameters.Configuration}";
+
+                if (DeploymentParameters.ApplicationType == ApplicationType.Standalone)
+                {
+                    parameters += $" --runtime {GetRuntimeIdentifier()}";
+                }
+
+                parameters += $" {DeploymentParameters.AdditionalPublishParameters}";
 
                 var startInfo = new ProcessStartInfo
                 {
@@ -205,5 +211,22 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         }
 
         public abstract void Dispose();
+
+        private string GetRuntimeIdentifier()
+        {
+            var architecture = PlatformAbstractions.RuntimeEnvironment.RuntimeArchitecture;
+            switch (PlatformAbstractions.RuntimeEnvironment.OperatingSystemPlatform)
+            {
+                case PlatformAbstractions.Platform.Windows:
+                    return "win7-" + architecture;
+                case PlatformAbstractions.Platform.Linux:
+                    return "linux-" + architecture;
+                case PlatformAbstractions.Platform.Darwin:
+                    return "osx.10.12-" + architecture;
+                default:
+                    throw new InvalidOperationException(
+                        "Unrecognized operation system platform: " + PlatformAbstractions.RuntimeEnvironment.OperatingSystemPlatform);
+            }
+        }
     }
 }
