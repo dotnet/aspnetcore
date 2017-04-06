@@ -28,7 +28,7 @@
       <RIDs Include="win7-x64" Condition="'$(OSPlatform)' == 'Windows'" />
       <RIDs Include="win7-x86" Condition="'$(OSPlatform)' == 'Windows'" />
       <RIDs Include="linux-x64" Condition="'$(OSPlatform)' == 'Linux'" />
-      <RIDs Include="osx-x64" Condition="'$(OSPlatform)' == 'macOS'" />
+      <RIDs Include="osx.10.12-x64" Condition="'$(OSPlatform)' == 'macOS'" />
     </ItemGroup>
 
     <RemoveDir Directories="$(OutputPath)" />
