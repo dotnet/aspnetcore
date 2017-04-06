@@ -17,7 +17,7 @@
     <PropertyGroup>
       <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.All\</MetaPackagePath>
       <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.All.csproj</MetaPackageFile>
-      <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
+      <WorkingDirectory>$(MetaPackagePath)bin\work</WorkingDirectory>
       <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
       <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.win.zip</OutputZip>
       <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.linux.zip</OutputZip>
@@ -32,8 +32,8 @@
     </ItemGroup>
 
     <RemoveDir Directories="$(OutputPath)" />
-    <RemoveDir Directories="$(WorkingDirectory)-%(RIDs.Identity)" />
-    <Exec Command="dotnet cache --entries $(MetaPackageFile) --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)-%(RIDs.Identity)" />
+    <RemoveDir Directories="$(WorkingDirectory)-%(RIDs.Identity)\" />
+    <Exec Command="dotnet cache --entries $(MetaPackageFile) --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)-%(RIDs.Identity)\" />
 
     <ItemGroup>
       <PackageCacheFiles Include="$(OutputPath)**\*" />
