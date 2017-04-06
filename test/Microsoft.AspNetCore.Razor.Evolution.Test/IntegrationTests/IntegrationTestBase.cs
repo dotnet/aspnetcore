@@ -60,7 +60,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 throw new InvalidOperationException(message);
             }
 
-            var sourceFilename = Path.ChangeExtension(Filename, ".cshtml");
+            var suffixIndex = Filename.LastIndexOf("_");
+            var normalizedFileName = suffixIndex == -1 ? Filename : Filename.Substring(0, suffixIndex);
+            var sourceFilename = Path.ChangeExtension(normalizedFileName, ".cshtml");
             var testFile = TestFile.Create(sourceFilename);
             if (!testFile.Exists())
             {
@@ -70,12 +72,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             var imports = new List<RazorSourceDocument>();
             while (true)
             {
-                var importsFilename = Path.ChangeExtension(Filename + "_Imports" + imports.Count.ToString(), ".cshtml");
+                var importsFilename = Path.ChangeExtension(normalizedFileName + "_Imports" + imports.Count.ToString(), ".cshtml");
                 if (!TestFile.Create(importsFilename).Exists())
                 {
                     break;
                 }
-                
+
                 imports.Add(
                     TestRazorSourceDocument.CreateResource(importsFilename, encoding: null, normalizeNewLines: true));
             }
@@ -85,6 +87,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // This will ensure that we're not putting any randomly generated data in a baseline.
             codeDocument.Items[DefaultRazorCSharpLoweringPhase.SuppressUniqueIds] = "test";
+
+            // This is to make tests work cross platform.
+            codeDocument.Items[DefaultRazorCSharpLoweringPhase.NewLineString] = "\r\n";
+
             return codeDocument;
         }
 

@@ -9,7 +9,7 @@ Document -
                     RazorIRToken -  - CSharp - #pragma warning disable 219
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
-                DirectiveToken - (8:0,8 [19] NamespaceToken.cshtml) - Sytem.Globalization
+                DirectiveToken - (8:0,8 [20] NamespaceToken.cshtml) - System.Globalization
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - }
                 CSharpStatement - 

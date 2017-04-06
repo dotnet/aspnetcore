@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-global::System.Object __typeHelper = nameof(Sytem.Globalization);
+global::System.Object __typeHelper = nameof(System.Globalization);
         }
         ))();
         }

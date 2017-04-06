@@ -1573,47 +1573,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         }
         #endregion
 
-        protected override RazorCodeDocument CreateCodeDocument()
-        {
-            if (Filename == null)
-            {
-                var message = $"{nameof(CreateCodeDocument)} should only be called from an integration test ({nameof(Filename)} is null).";
-                throw new InvalidOperationException(message);
-            }
-
-            var normalizedFileName = Filename.Substring(0, Filename.LastIndexOf("_"));
-            var sourceFilename = Path.ChangeExtension(normalizedFileName, ".cshtml");
-            var testFile = TestFile.Create(sourceFilename);
-            if (!testFile.Exists())
-            {
-                throw new XunitException($"The resource {sourceFilename} was not found.");
-            }
-
-            var imports = new List<RazorSourceDocument>();
-            while (true)
-            {
-                var importsFilename = Path.ChangeExtension(normalizedFileName + "_Imports" + imports.Count.ToString(), ".cshtml");
-                if (!TestFile.Create(importsFilename).Exists())
-                {
-                    break;
-                }
-
-                imports.Add(
-                    TestRazorSourceDocument.CreateResource(importsFilename, encoding: null, normalizeNewLines: true));
-            }
-
-            var codeDocument = RazorCodeDocument.Create(
-                TestRazorSourceDocument.CreateResource(sourceFilename, encoding: null, normalizeNewLines: true), imports);
-
-            // This will ensure that we're not putting any randomly generated data in a baseline.
-            codeDocument.Items[DefaultRazorCSharpLoweringPhase.SuppressUniqueIds] = "test";
-
-            // This is to make tests work cross platform.
-            codeDocument.Items[DefaultRazorCSharpLoweringPhase.NewLineString] = "\r\n";
-
-            return codeDocument;
-        }
-
         private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors, string tagHelperPrefix = null)
         {
             // Arrange
