@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
@@ -17,13 +18,10 @@ using Xunit.Sdk;
 
 namespace ServerComparison.FunctionalTests
 {
-    public class NtlmAuthenticationTests
+    public class NtlmAuthenticationTests : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public NtlmAuthenticationTests(ITestOutputHelper output)
+        public NtlmAuthenticationTests(ITestOutputHelper output) : base(output)
         {
-            _output = output;
         }
 
         [ConditionalTheory, Trait("ServerComparison.FunctionalTests", "ServerComparison.FunctionalTests")]
@@ -38,13 +36,10 @@ namespace ServerComparison.FunctionalTests
         public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
-            var loggerFactory = TestLoggingUtilities.SetUpLogging<HelloWorldTests>(_output, testName);
-            var logger = loggerFactory.CreateLogger("TestHarness");
-            Console.WriteLine($"Starting test: {testName}");
-            logger.LogInformation("Starting test: {testName}", testName);
-
-            using (logger.BeginScope("NtlmAuthenticationTest"))
+            using (StartLog(out var loggerFactory, testName))
             {
+                var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
+
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
@@ -62,8 +57,7 @@ namespace ServerComparison.FunctionalTests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
-                    var httpClientHandler = new HttpClientHandler();
-                    var httpClient = new HttpClient(new LoggingHandler(loggerFactory, httpClientHandler)) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                    var httpClient = deploymentResult.HttpClient;
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
@@ -109,8 +103,9 @@ namespace ServerComparison.FunctionalTests
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 
                         logger.LogInformation("Enabling Default Credentials");
-                        httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
-                        httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+
+                        // Change the http client to one that uses default credentials
+                        httpClient = deploymentResult.CreateHttpClient(new HttpClientHandler() { UseDefaultCredentials = true });
 
                         logger.LogInformation("Testing /AutoForbid");
                         response = await httpClient.GetAsync("/AutoForbid");
@@ -155,9 +150,6 @@ namespace ServerComparison.FunctionalTests
                     }
                 }
             }
-
-            Console.WriteLine($"Finished test: {testName}");
-            logger.LogInformation("Finished test: {testName}", testName);
         }
     }
 }

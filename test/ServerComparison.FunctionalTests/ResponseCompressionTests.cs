@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
@@ -21,15 +22,13 @@ using Xunit.Sdk;
 
 namespace ServerComparison.FunctionalTests
 {
-    public class ResponseCompressionTests
+    public class ResponseCompressionTests : LoggedTest
     {
         // NGinx's default min size is 20 bytes
         private static readonly string HelloWorldBody = "Hello World;" + new string('a', 20);
-        private readonly ITestOutputHelper _output;
 
-        public ResponseCompressionTests(ITestOutputHelper output)
+        public ResponseCompressionTests(ITestOutputHelper output) : base(output)
         {
-            _output = output;
         }
 
         [ConditionalTheory]
@@ -127,13 +126,10 @@ namespace ServerComparison.FunctionalTests
         public async Task ResponseCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, bool hostCompression, [CallerMemberName] string testName = null)
         {
             testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
-            var loggerFactory = TestLoggingUtilities.SetUpLogging<ResponseCompressionTests>(_output, testName);
-            var logger = loggerFactory.CreateLogger("TestHarness");
-            Console.WriteLine($"Starting test: {testName}");
-            logger.LogInformation("Starting test: {testName}", testName);
-
-            using (logger.BeginScope("ResponseCompression"))
+            using (StartLog(out var loggerFactory, testName))
             {
+                var logger = loggerFactory.CreateLogger("ResponseCompression");
+
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "ResponseCompression",
@@ -155,7 +151,7 @@ namespace ServerComparison.FunctionalTests
                     var deploymentResult = await deployer.DeployAsync();
                     var httpClientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.None };
                     Assert.True(httpClientHandler.SupportsAutomaticDecompression);
-                    var httpClient = new HttpClient(new LoggingHandler(loggerFactory, httpClientHandler)) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                    var httpClient = deploymentResult.CreateHttpClient(httpClientHandler);
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
@@ -178,9 +174,6 @@ namespace ServerComparison.FunctionalTests
                     await scenario(httpClient, logger);
                 }
             }
-
-            Console.WriteLine($"Finished test: {testName}");
-            logger.LogInformation("Finished test: {testName}", testName);
         }
 
         private static async Task CheckNoCompressionAsync(HttpClient client, ILogger logger)
