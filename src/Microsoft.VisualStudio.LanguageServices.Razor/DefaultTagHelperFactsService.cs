@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
@@ -48,8 +47,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         public override IEnumerable<BoundAttributeDescriptor> GetBoundTagHelperAttributes(
-            TagHelperDocumentContext documentContext, 
-            string attributeName, 
+            TagHelperDocumentContext documentContext,
+            string attributeName,
             TagHelperBinding binding)
         {
             if (documentContext == null)

@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     {
         public const string ElementCatchAllName = "*";
 
+        public const char ElementOptOutCharacter = '!';
+
         public static bool SatisfiesRule(
             string tagNameWithoutPrefix,
             string parentTagName,
@@ -64,6 +66,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             if (rule == null)
             {
                 throw new ArgumentNullException(nameof(rule));
+            }
+
+            if (string.IsNullOrEmpty(tagNameWithoutPrefix))
+            {
+                return false;
+            }
+
+            if (tagNameWithoutPrefix[0] == ElementOptOutCharacter)
+            {
+                // TagHelpers can never satisfy tag names that are prefixed with the opt-out character.
+                return false;
             }
 
             if (rule.TagName != ElementCatchAllName &&

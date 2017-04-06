@@ -14,6 +14,26 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         // into TagHelperDescriptorProvider.GetTagHelperBinding.
 
         [Fact]
+        public void GetTagHelperBinding_DoesNotAllowOptOutCharacterPrefix()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .Build()
+            };
+            var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
+            var service = new DefaultTagHelperFactsService();
+
+            // Act
+            var binding = service.GetTagHelperBinding(documentContext, "!a", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null);
+
+            // Assert
+            Assert.Null(binding);
+        }
+
+        [Fact]
         public void GetTagHelperBinding_WorksAsExpected()
         {
             // Arrange
@@ -131,6 +151,26 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             // Assert
             Assert.Equal(expectedAttributeDescriptors, descriptors, BoundAttributeDescriptorComparer.CaseSensitive);
+        }
+
+        [Fact]
+        public void GetTagHelpersGivenTag_DoesNotAllowOptOutCharacterPrefix()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .Build()
+            };
+            var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
+            var service = new DefaultTagHelperFactsService();
+
+            // Act
+            var descriptors = service.GetTagHelpersGivenTag(documentContext, "!strong", parentTag: null);
+
+            // Assert
+            Assert.Empty(descriptors);
         }
 
         [Fact]
