@@ -1017,6 +1017,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.First()))));
         }
 
+        [Fact]
+        public void Directives_CanUseReservedWord_Class()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("class").Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@class",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("class").Accepts(AcceptedCharacters.None)));
+        }
+
+        [Fact]
+        public void Directives_CanUseReservedWord_Namespace()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("namespace").Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@namespace",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("namespace").Accepts(AcceptedCharacters.None)));
+        }
+
+
         internal virtual void ParseCodeBlockTest(
             string document,
             IEnumerable<DirectiveDescriptor> descriptors,

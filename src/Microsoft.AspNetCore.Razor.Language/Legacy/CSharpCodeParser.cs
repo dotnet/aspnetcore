@@ -110,6 +110,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 _directiveParsers.Add(directive, handler);
                 Keywords.Add(directive);
+
+                // These C# keywords are reserved for use in directives. It's an error to use them outside of
+                // a directive. This code removes the error generation if the directive *is* registered.
+                if (string.Equals(directive, "class", StringComparison.OrdinalIgnoreCase))
+                {
+                    _keywordParsers.Remove(CSharpKeyword.Class);
+                }
+                else if (string.Equals(directive, "namespace", StringComparison.OrdinalIgnoreCase))
+                {
+                    _keywordParsers.Remove(CSharpKeyword.Namespace);
+                }
             }
         }
 
@@ -266,8 +277,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
                         else if (CurrentSymbol.Type == CSharpSymbolType.Identifier)
                         {
-                            Action handler;
-                            if (TryGetDirectiveHandler(CurrentSymbol.Content, out handler))
+                            if (TryGetDirectiveHandler(CurrentSymbol.Content, out var handler))
                             {
                                 Span.ChunkGenerator = SpanChunkGenerator.Null;
                                 handler();
@@ -295,8 +305,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
                         else if (CurrentSymbol.Type == CSharpSymbolType.Keyword)
                         {
-                            KeywordBlock(topLevel: true);
-                            return;
+                            if (TryGetDirectiveHandler(CurrentSymbol.Content, out var handler))
+                            {
+                                Span.ChunkGenerator = SpanChunkGenerator.Null;
+                                handler();
+                                return;
+                            }
+                            else
+                            {
+                                KeywordBlock(topLevel: true);
+                                return;
+                            }
                         }
                         else if (CurrentSymbol.Type == CSharpSymbolType.LeftBrace)
                         {
@@ -737,7 +756,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             MapKeywords(TryStatement, CSharpKeyword.Try);
             MapKeywords(UsingKeyword, CSharpKeyword.Using);
             MapKeywords(DoStatement, CSharpKeyword.Do);
-            MapKeywords(ReservedDirective, CSharpKeyword.Namespace, CSharpKeyword.Class);
+            MapKeywords(ReservedDirective, CSharpKeyword.Class, CSharpKeyword.Namespace);
         }
 
         protected virtual void ReservedDirective(bool topLevel)
@@ -1748,7 +1767,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Conditional("DEBUG")]
         protected void AssertDirective(string directive)
         {
-            Assert(CSharpSymbolType.Identifier);
+            Debug.Assert(CurrentSymbol.Type == CSharpSymbolType.Identifier || CurrentSymbol.Type == CSharpSymbolType.Keyword);
             Debug.Assert(string.Equals(CurrentSymbol.Content, directive, StringComparison.Ordinal));
         }
 

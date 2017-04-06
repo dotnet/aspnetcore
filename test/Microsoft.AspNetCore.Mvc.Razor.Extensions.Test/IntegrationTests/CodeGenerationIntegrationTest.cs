@@ -159,6 +159,36 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
+
+        [Fact]
+        public void PageWithNamespace_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void ViewWithNamespace_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
         #endregion
 
         #region DesignTime
@@ -302,6 +332,36 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         {
             // Arrange
             var engine = CreateDesignTimeEngine(BuildDivDescriptors());
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void PageWithNamespace_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void ViewWithNamespace_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
             var document = CreateCodeDocument();
 
             // Act

@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             InjectDirective.Register(builder);
             ModelDirective.Register(builder);
+            NamespaceDirective.Register(builder);
             PageDirective.Register(builder);
 
             builder.AddTargetExtension(new InjectDirectiveTargetExtension());

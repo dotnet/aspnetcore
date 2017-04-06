@@ -1,0 +1,30 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Test.Namespace
+        UsingStatement - (1:0,1 [14] ) - System
+        UsingStatement -  - System.Threading.Tasks
+        UsingStatement - (16:1,1 [19] ) - System.Linq
+        UsingStatement - (36:2,1 [34] ) - System.Collections.Generic
+        UsingStatement - (71:3,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingStatement - (104:4,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingStatement - (147:5,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        ClassDeclaration -  - public - PageWithNamespace_Page - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - BeginContext(34, 20, true);
+                HtmlContent - (34:2,0 [20] PageWithNamespace.cshtml)
+                    RazorIRToken - (34:2,0 [4] PageWithNamespace.cshtml) - Html - <h1>
+                    RazorIRToken - (38:2,4 [9] PageWithNamespace.cshtml) - Html - Hi There!
+                    RazorIRToken - (47:2,13 [5] PageWithNamespace.cshtml) - Html - </h1>
+                    RazorIRToken - (52:2,18 [2] PageWithNamespace.cshtml) - Html - \n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - EndContext();
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<PageWithNamespace_Page> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<PageWithNamespace_Page>)PageContext?.ViewData;
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - public PageWithNamespace_Page Model => ViewData.Model;
