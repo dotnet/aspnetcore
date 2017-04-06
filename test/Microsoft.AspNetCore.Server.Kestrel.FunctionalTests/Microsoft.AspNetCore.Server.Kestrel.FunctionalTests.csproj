@@ -8,6 +8,12 @@
     <PlatformTarget Condition="'$(TargetFramework)' == 'net46'">x64</PlatformTarget>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+
+    <!--
+      Workaround for "Explicit RID still required for .NET Framework test projects" (https://github.com/dotnet/sdk/issues/909).
+      Remove when fixed.
+    -->
+    <OutputType>exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
