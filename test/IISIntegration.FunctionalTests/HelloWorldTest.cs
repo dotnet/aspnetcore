@@ -1,26 +1,23 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    public class HelloWorldTests
+    public class HelloWorldTests : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public HelloWorldTests(ITestOutputHelper output)
+        public HelloWorldTests(ITestOutputHelper output) : base(output)
         {
-            _output = output;
         }
 
         [ConditionalTheory]
@@ -58,13 +55,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            var loggerFactory = new LoggerFactory()
-                .AddXunit(_output)
-                .AddDebug();
-            var logger = loggerFactory.CreateLogger($"HelloWorld:{serverType}:{runtimeFlavor}:{architecture}");
-
-            using (logger.BeginScope("HelloWorldTest"))
+            var testName = $"HelloWorld_{serverType}_{runtimeFlavor}_{architecture}";
+            using (StartLog(out var loggerFactory, testName))
             {
+                var logger = loggerFactory.CreateLogger("HelloWorldTest");
+
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
@@ -77,17 +72,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
-                    var httpClientHandler = new HttpClientHandler();
-                    var httpClient = new HttpClient(httpClientHandler)
-                    {
-                        BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),
-                        Timeout = TimeSpan.FromSeconds(5),
-                    };
+                    deploymentResult.HttpClient.Timeout = TimeSpan.FromSeconds(5);
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
                     {
-                        return httpClient.GetAsync(string.Empty);
+                        return deploymentResult.HttpClient.GetAsync(string.Empty);
                     }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
 
                     var responseText = await response.Content.ReadAsStringAsync();
@@ -95,11 +85,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     {
                         Assert.Equal("Hello World", responseText);
 
-                        response = await httpClient.GetAsync("/Path%3F%3F?query");
+                        response = await deploymentResult.HttpClient.GetAsync("/Path%3F%3F?query");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal("/Path??", responseText);
 
-                        response = await httpClient.GetAsync("/Query%3FPath?query?");
+                        response = await deploymentResult.HttpClient.GetAsync("/Query%3FPath?query?");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal("?query?", responseText);
                     }

@@ -12,19 +12,17 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     // IIS Express preregisteres 44300-44399 ports with SSL bindings.
     // So these tests always have to use ports in this range, and we can't rely on OS-allocated ports without a whole lot of ceremony around
     // creating self-signed certificates and registering SSL bindings with HTTP.sys
-    public class HttpsTest
+    public class HttpsTest : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public HttpsTest(ITestOutputHelper output)
+        public HttpsTest(ITestOutputHelper output) : base(output)
         {
-            _output = output;
         }
 
         [ConditionalTheory]
@@ -49,13 +47,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public async Task HttpsHelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            var loggerFactory = new LoggerFactory()
-                .AddConsole()
-                .AddDebug();
-            var logger = loggerFactory.CreateLogger($"HttpsHelloWorld:{serverType}:{runtimeFlavor}:{architecture}");
-
-            using (logger.BeginScope("HttpsHelloWorldTest"))
+            var testName = $"HttpsHelloWorld_{serverType}_{runtimeFlavor}_{architecture}";
+            using (StartLog(out var loggerFactory, testName))
             {
+                var logger = loggerFactory.CreateLogger("HttpsHelloWorldTest");
+
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
@@ -71,11 +67,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     var deploymentResult = await deployer.DeployAsync();
                     var handler = new HttpClientHandler();
                     handler.ServerCertificateCustomValidationCallback = (a, b, c, d) => true;
-                    var httpClient = new HttpClient(handler)
-                    {
-                        BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),
-                        Timeout = TimeSpan.FromSeconds(5),
-                    };
+                    var httpClient = deploymentResult.CreateHttpClient(handler);
+                    httpClient.Timeout = TimeSpan.FromSeconds(5);
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
@@ -138,13 +131,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public async Task HttpsHelloWorldCerts(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType, bool sendClientCert)
         {
-            var loggerFactory = new LoggerFactory()
-                .AddXunit(_output)
-                .AddDebug();
-            var logger = loggerFactory.CreateLogger($"HttpsHelloWorldCerts:{serverType}:{runtimeFlavor}:{architecture}");
-
-            using (logger.BeginScope("HttpsHelloWorldTest"))
+            var testName = $"HttpsHelloWorldCerts_{serverType}_{runtimeFlavor}_{architecture}";
+            using (StartLog(out var loggerFactory, testName))
             {
+                var logger = loggerFactory.CreateLogger("HttpsHelloWorldTest");
+
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
@@ -167,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         Assert.NotNull(clientCert);
                         handler.ClientCertificates.Add(clientCert);
                     }
-                    var httpClient = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                    var httpClient = deploymentResult.CreateHttpClient(handler);
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>

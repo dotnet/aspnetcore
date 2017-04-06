@@ -13,16 +13,14 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    public class NtlmAuthenticationTests
+    public class NtlmAuthenticationTests : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public NtlmAuthenticationTests(ITestOutputHelper output)
+        public NtlmAuthenticationTests(ITestOutputHelper output) : base(output)
         {
-            _output = output;
         }
 
         [ConditionalTheory]
@@ -47,13 +45,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            var loggerFactory = new LoggerFactory()
-                .AddXunit(_output)
-                .AddDebug();
-            var logger = loggerFactory.CreateLogger($"NtlmAuthentication:{serverType}:{runtimeFlavor}:{architecture}");
-
-            using (logger.BeginScope("NtlmAuthenticationTest"))
+            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}";
+            using (StartLog(out var loggerFactory, testName))
             {
+                var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
+
                 var windowsRid = architecture == RuntimeArchitecture.x64
                     ? "win7-x64"
                     : "win7-x86";
@@ -73,12 +69,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
-                    var httpClientHandler = new HttpClientHandler();
-                    var httpClient = new HttpClient(httpClientHandler)
-                    {
-                        BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),
-                        Timeout = TimeSpan.FromSeconds(5),
-                    };
+                    var httpClient = deploymentResult.HttpClient;
+                    httpClient.Timeout = TimeSpan.FromSeconds(5);
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
@@ -114,8 +106,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 
-                        httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
-                        httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                        var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
+                        httpClient = deploymentResult.CreateHttpClient(httpClientHandler);
 
                         response = await httpClient.GetAsync("/Anonymous");
                         responseText = await response.Content.ReadAsStringAsync();
