@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
@@ -213,6 +214,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     process.Exited += (sender, e) =>
                     {
                         Logger.LogInformation("iisexpress Process {pid} shut down", process.Id);
+
+                        // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                        started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {process.ExitCode}"));
+
                         TriggerHostShutdown(hostExitTokenSource);
                     };
                     process.StartAndCaptureOutAndErrToLogger("iisexpress", Logger);
@@ -225,7 +230,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     }
 
                     // Wait for the app to start
-                    if (!await started.Task)
+                    // The timeout here is large, because we don't know how long the test could need
+                    // We cover a lot of error cases above, but I want to make sure we eventually give up and don't hang the build
+                    // just in case we missed one -anurse
+                    if (!await started.Task.TimeoutAfter(TimeSpan.FromMinutes(10)))
                     {
                         Logger.LogInformation("iisexpress Process {pid} failed to bind to port {port}, trying again", _hostProcess.Id, port);
 
@@ -294,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             // If by this point, the host process is still running (somehow), throw an error.
             // A test failure is better than a silent hang and unknown failure later on
-            if(!_hostProcess.HasExited)
+            if (!_hostProcess.HasExited)
             {
                 throw new Exception($"iisexpress Process {_hostProcess.Id} failed to shutdown");
             }

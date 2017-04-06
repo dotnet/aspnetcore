@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
@@ -140,6 +141,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 HostProcess.Exited += (sender, e) =>
                 {
                     Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
+
+                    // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
+
                     TriggerHostShutdown(hostExitTokenSource);
                 };
 
@@ -160,7 +165,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 Logger.LogInformation("Started {fileName}. Process Id : {processId}", startInfo.FileName, HostProcess.Id);
 
-                await started.Task;
+                // The timeout here is large, because we don't know how long the test could need
+                // We cover a lot of error cases above, but I want to make sure we eventually give up and don't hang the build
+                // just in case we missed one -anurse
+                await started.Task.TimeoutAfter(TimeSpan.FromMinutes(10));
 
                 return (url: actualUrl ?? hintUrl, hostExitToken: hostExitTokenSource.Token);
             }
