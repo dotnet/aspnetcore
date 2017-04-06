@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Hosting
             hostingContext.Configuration = configuration;
 
             // The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
-            var loggerFactory = _createLoggerFactoryDelegate?.Invoke(hostingContext) ?? new LoggerFactory();
+            var loggerFactory = _createLoggerFactoryDelegate?.Invoke(hostingContext) ?? new LoggerFactory(configuration.GetSection("Logging"));
             services.AddSingleton(loggerFactory);
             hostingContext.LoggerFactory = loggerFactory;
 
