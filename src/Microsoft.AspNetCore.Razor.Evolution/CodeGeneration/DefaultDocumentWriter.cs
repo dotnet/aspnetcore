@@ -211,6 +211,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 Context.TagHelperWriter.WriteCreateTagHelper(Context, node);
             }
 
+            public override void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
+            {
+                Context.TagHelperWriter.WriteExecuteTagHelpers(Context, node);
+            }
+
             public override void VisitDefault(RazorIRNode node)
             {
                 // This is a temporary bridge to the renderer, which allows us to move functionality piecemeal

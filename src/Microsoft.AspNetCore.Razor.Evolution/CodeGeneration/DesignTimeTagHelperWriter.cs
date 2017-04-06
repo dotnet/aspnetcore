@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void WriteExecuteTagHelpers(CSharpRenderingContext context, ExecuteTagHelpersIRNode node)
         {
-            throw new NotImplementedException();
+            // Do nothing
         }
 
         public override void WriteInitializeTagHelperStructure(CSharpRenderingContext context, InitializeTagHelperStructureIRNode node)

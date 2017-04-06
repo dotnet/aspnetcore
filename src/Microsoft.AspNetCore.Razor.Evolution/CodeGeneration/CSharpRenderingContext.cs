@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            var scope = new TagHelperWriterScope(this, BasicWriter);
+            var scope = new TagHelperWriterScope(this, TagHelperWriter);
             TagHelperWriter = writer;
             return scope;
         }
@@ -131,9 +131,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         public struct TagHelperWriterScope : IDisposable
         {
             private readonly CSharpRenderingContext _context;
-            private readonly BasicWriter _writer;
+            private readonly TagHelperWriter _writer;
 
-            public TagHelperWriterScope(CSharpRenderingContext context, BasicWriter writer)
+            public TagHelperWriterScope(CSharpRenderingContext context, TagHelperWriter writer)
             {
                 if (context == null)
                 {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
             public void Dispose()
             {
-                _context.BasicWriter = _writer;
+                _context.TagHelperWriter = _writer;
             }
         }
     }

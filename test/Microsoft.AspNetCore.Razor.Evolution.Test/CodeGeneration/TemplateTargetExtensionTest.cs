@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             var context = new CSharpRenderingContext()
             { 
                 BasicWriter = new RuntimeBasicWriter(),
+                TagHelperWriter = new RuntimeTagHelperWriter(),
                 Writer = new CSharpCodeWriter(),
             };
 

@@ -101,6 +101,7 @@ private global::MyTagHelper __MyTagHelper = null;
             {
                 Writer = new Legacy.CSharpCodeWriter(),
                 BasicWriter = new RuntimeBasicWriter(),
+                TagHelperWriter = new RuntimeTagHelperWriter(),
                 IdGenerator = () => "test",
                 RenderChildren = n => { }
             };
@@ -146,6 +147,35 @@ private global::MyTagHelper __MyTagHelper = null;
             Assert.Equal(
 @"__TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
 __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteExecuteTagHelpers_RendersCorrectly()
+        {
+            // Arrange
+            var writer = new RuntimeTagHelperWriter();
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+            };
+            var node = new ExecuteTagHelpersIRNode();
+
+            // Act
+            writer.WriteExecuteTagHelpers(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+if (!__tagHelperExecutionContext.Output.IsContentModified)
+{
+    await __tagHelperExecutionContext.SetOutputContentAsync();
+}
+Write(__tagHelperExecutionContext.Output);
+__tagHelperExecutionContext = __tagHelperScopeManager.End();
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);

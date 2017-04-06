@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             context.RenderingConventions = new CSharpRedirectRenderingConventions(TemplateWriterName, context.Writer);
 
             using (context.Push(new RedirectedBasicWriter(context.BasicWriter, TemplateWriterName)))
+            using (context.Push(new RedirectedTagHelperWriter(context.TagHelperWriter, TemplateWriterName)))
             {
                 using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
                 {

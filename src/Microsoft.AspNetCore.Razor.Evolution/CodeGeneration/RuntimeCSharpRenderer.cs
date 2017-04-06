@@ -456,46 +456,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 .WriteEndMethodInvocation();
         }
 
-        public override void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
-        {
-            Context.Writer
-                .Write("await ")
-                .WriteStartInstanceMethodInvocation(
-                    "__tagHelperRunner" /* ORIGINAL: RunnerVariableName */,
-                    "RunAsync" /* ORIGINAL: RunnerRunAsyncMethodName */)
-                .Write("__tagHelperExecutionContext" /* ORIGINAL: ExecutionContextVariableName */)
-                .WriteEndMethodInvocation();
-
-            var executionContextVariableName = "__tagHelperExecutionContext" /* ORIGINAL: ExecutionContextVariableName */;
-            var executionContextOutputPropertyName = "Output" /* ORIGINAL: ExecutionContextOutputPropertyName */;
-            var tagHelperOutputAccessor = $"{executionContextVariableName}.{executionContextOutputPropertyName}";
-
-            Context.Writer
-                .Write("if (!")
-                .Write(tagHelperOutputAccessor)
-                .Write(".")
-                .Write("IsContentModified" /* ORIGINAL: TagHelperOutputIsContentModifiedPropertyName */)
-                .WriteLine(")");
-
-            using (Context.Writer.BuildScope())
-            {
-                Context.Writer
-                    .Write("await ")
-                    .WriteInstanceMethodInvocation(
-                        executionContextVariableName,
-                        "SetOutputContentAsync" /* ORIGINAL: ExecutionContextSetOutputContentAsyncMethodName */);
-            }
-
-            Context.Writer
-                .Write(Context.RenderingConventions.StartWriteMethod)
-                .Write(tagHelperOutputAccessor)
-                .WriteEndMethodInvocation()
-                .WriteStartAssignment(executionContextVariableName)
-                .WriteInstanceMethodInvocation(
-                    "__tagHelperScopeManager" /* ORIGINAL: ScopeManagerVariableName */,
-                    "End" /* ORIGINAL: ScopeManagerEndMethodName */);
-        }
-
         public override void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
         {
             Context.Writer
