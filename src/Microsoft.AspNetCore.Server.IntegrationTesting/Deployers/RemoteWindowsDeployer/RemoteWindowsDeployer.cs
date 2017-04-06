@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private bool _isDisposed;
         private static readonly Lazy<Scripts> _scripts = new Lazy<Scripts>(() => CopyEmbeddedScriptFilesToDisk());
 
-        public RemoteWindowsDeployer(RemoteWindowsDeploymentParameters deploymentParameters, ILogger logger)
-            : base(deploymentParameters, logger)
+        public RemoteWindowsDeployer(RemoteWindowsDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+            : base(deploymentParameters, loggerFactory)
         {
             _deploymentParameters = deploymentParameters;
 
@@ -103,11 +103,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 await RunScriptAsync("StartServer");
 
-                return new DeploymentResult
-                {
-                    ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint,
-                    DeploymentParameters = DeploymentParameters
-                };
+                return new DeploymentResult(
+                    LoggerFactory,
+                    DeploymentParameters,
+                    DeploymentParameters.ApplicationBaseUriHint);
             }
         }
 

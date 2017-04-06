@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private string _configFile;
         private readonly int _waitTime = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
 
-        public NginxDeployer(DeploymentParameters deploymentParameters, ILogger logger)
-            : base(deploymentParameters, logger)
+        public NginxDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+            : base(deploymentParameters, loggerFactory)
         {
         }
 
@@ -61,13 +61,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     }
                 }
 
-                return new DeploymentResult
-                {
-                    ContentRoot = DeploymentParameters.ApplicationPath,
-                    DeploymentParameters = DeploymentParameters,
-                    ApplicationBaseUri = uri.ToString(),
-                    HostShutdownToken = exitToken
-                };
+                return new DeploymentResult(
+                    LoggerFactory,
+                    DeploymentParameters,
+                    applicationBaseUri: uri.ToString(),
+                    contentRoot: DeploymentParameters.ApplicationPath,
+                    hostShutdownToken: exitToken);
             }
         }
 

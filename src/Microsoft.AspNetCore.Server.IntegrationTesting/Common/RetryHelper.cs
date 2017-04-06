@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         if (exception is HttpRequestException
 #if NET46
                         || exception is System.Net.WebException
-#elif NETSTANDARD1_3
+#elif NETSTANDARD1_5
 #else
 #error Target frameworks need to be updated.
 #endif

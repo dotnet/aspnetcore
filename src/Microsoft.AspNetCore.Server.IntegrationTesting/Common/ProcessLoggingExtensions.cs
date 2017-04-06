@@ -14,7 +14,7 @@ namespace System.Diagnostics
             {
                 if (!string.IsNullOrEmpty(dataArgs.Data))
                 {
-                    logger.LogWarning($"{prefix} stdout: {{line}}", dataArgs.Data);
+                    logger.LogInformation($"{prefix} stdout: {{line}}", dataArgs.Data);
                 }
             };
 

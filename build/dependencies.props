@@ -11,5 +11,7 @@
     <WebAdministrationVersion>7.0.0</WebAdministrationVersion>
     <WindowsApiSetsVersion>1.0.1</WindowsApiSetsVersion>
     <XunitVersion>2.2.0</XunitVersion>
+    <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
+    <SerilogFileSinkVersion>3.2.0</SerilogFileSinkVersion>
   </PropertyGroup>
 </Project>

@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public Process HostProcess { get; private set; }
 
-        public SelfHostDeployer(DeploymentParameters deploymentParameters, ILogger logger)
-            : base(deploymentParameters, logger)
+        public SelfHostDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+            : base(deploymentParameters, loggerFactory)
         {
         }
 
@@ -48,13 +48,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
 
-                return new DeploymentResult
-                {
-                    ContentRoot = DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
-                    DeploymentParameters = DeploymentParameters,
-                    ApplicationBaseUri = actualUrl.ToString(),
-                    HostShutdownToken = hostExitToken
-                };
+                return new DeploymentResult(
+                    LoggerFactory,
+                    DeploymentParameters,
+                    applicationBaseUri: actualUrl.ToString(),
+                    contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
+                    hostShutdownToken: hostExitToken);
             }
         }
 

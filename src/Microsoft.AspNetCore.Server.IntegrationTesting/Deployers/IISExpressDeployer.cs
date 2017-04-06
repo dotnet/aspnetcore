@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private Process _hostProcess;
 
-        public IISExpressDeployer(DeploymentParameters deploymentParameters, ILogger logger)
-            : base(deploymentParameters, logger)
+        public IISExpressDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+            : base(deploymentParameters, loggerFactory)
         {
         }
 
@@ -75,14 +75,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUri);
 
-                return new DeploymentResult
-                {
-                    ContentRoot = contentRoot,
-                    DeploymentParameters = DeploymentParameters,
-                    // Right now this works only for urls like http://localhost:5001/. Does not work for http://localhost:5001/subpath.
-                    ApplicationBaseUri = actualUri.ToString(),
-                    HostShutdownToken = hostExitToken
-                };
+                // Right now this works only for urls like http://localhost:5001/. Does not work for http://localhost:5001/subpath.
+                return new DeploymentResult(
+                    LoggerFactory,
+                    DeploymentParameters,
+                    applicationBaseUri: actualUri.ToString(),
+                    contentRoot: contentRoot,
+                    hostShutdownToken: hostExitToken);
             }
         }
 

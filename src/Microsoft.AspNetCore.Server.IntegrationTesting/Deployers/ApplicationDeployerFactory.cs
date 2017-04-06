@@ -32,14 +32,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             switch (deploymentParameters.ServerType)
             {
                 case ServerType.IISExpress:
-                    return new IISExpressDeployer(deploymentParameters, loggerFactory.CreateLogger<IISExpressDeployer>());
+                    return new IISExpressDeployer(deploymentParameters, loggerFactory);
                 case ServerType.IIS:
                     throw new NotSupportedException("The IIS deployer is no longer supported");
                 case ServerType.WebListener:
                 case ServerType.Kestrel:
-                    return new SelfHostDeployer(deploymentParameters, loggerFactory.CreateLogger<SelfHostDeployer>());
+                    return new SelfHostDeployer(deploymentParameters, loggerFactory);
                 case ServerType.Nginx:
-                    return new NginxDeployer(deploymentParameters, loggerFactory.CreateLogger<NginxDeployer>());
+                    return new NginxDeployer(deploymentParameters, loggerFactory);
                 default:
                     throw new NotSupportedException(
                         string.Format("Found no deployers suitable for server type '{0}' with the current runtime.",

@@ -26,14 +26,16 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private readonly Stopwatch _stopwatch = new Stopwatch();
 
-        public ApplicationDeployer(DeploymentParameters deploymentParameters, ILogger logger)
+        public ApplicationDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
         {
             DeploymentParameters = deploymentParameters;
-            Logger = logger;
+            LoggerFactory = loggerFactory;
+            Logger = LoggerFactory.CreateLogger(GetType().FullName);
         }
 
         protected DeploymentParameters DeploymentParameters { get; }
 
+        protected ILoggerFactory LoggerFactory { get; }
         protected ILogger Logger { get; }
 
         public abstract Task<DeploymentResult> DeployAsync();

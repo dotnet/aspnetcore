@@ -7,59 +7,63 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 {
-    public class ShutdownTests
+    public class ShutdownTests : LoggedTest
     {
+        public ShutdownTests(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTest()
         {
-            var logger = new LoggerFactory()
-                .AddConsole()
-                .CreateLogger(nameof(ShutdownTest));
-            logger.LogInformation("Started test: {testName}", nameof(ShutdownTest));
-
-            var applicationPath = Path.Combine(TestProjectHelpers.GetSolutionRoot(), "test",
-                "Microsoft.AspNetCore.Hosting.TestSites");
-
-            var deploymentParameters = new DeploymentParameters(
-                applicationPath,
-                ServerType.Kestrel,
-                RuntimeFlavor.CoreClr,
-                RuntimeArchitecture.x64)
+            using (StartLog(out var loggerFactory))
             {
-                EnvironmentName = "Shutdown",
-                TargetFramework = "netcoreapp2.0",
-                ApplicationType = ApplicationType.Portable,
-                PublishApplicationBeforeDeployment = true
-            };
+                var logger = loggerFactory.CreateLogger(nameof(ShutdownTest));
 
-            using (var deployer = new SelfHostDeployer(deploymentParameters, logger))
-            {
-                await deployer.DeployAsync();
+                var applicationPath = Path.Combine(TestProjectHelpers.GetSolutionRoot(), "test",
+                    "Microsoft.AspNetCore.Hosting.TestSites");
 
-                // Wait for application to start
-                await Task.Delay(1000);
+                var deploymentParameters = new DeploymentParameters(
+                    applicationPath,
+                    ServerType.Kestrel,
+                    RuntimeFlavor.CoreClr,
+                    RuntimeArchitecture.x64)
+                {
+                    EnvironmentName = "Shutdown",
+                    TargetFramework = "netcoreapp2.0",
+                    ApplicationType = ApplicationType.Portable,
+                    PublishApplicationBeforeDeployment = true
+                };
 
-                string output = string.Empty;
-                deployer.HostProcess.OutputDataReceived += (sender, args) => output += args.Data + '\n';
+                using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
+                {
+                    await deployer.DeployAsync();
 
-                SendSIGINT(deployer.HostProcess.Id);
+                    // Wait for application to start
+                    await Task.Delay(1000);
 
-                WaitForExitOrKill(deployer.HostProcess);
+                    string output = string.Empty;
+                    deployer.HostProcess.OutputDataReceived += (sender, args) => output += args.Data + '\n';
 
-                output = output.Trim('\n');
+                    SendSIGINT(deployer.HostProcess.Id);
 
-                Assert.Equal(output, "Application is shutting down...\n" +
-                                     "Stopping firing\n" +
-                                     "Stopping end\n" +
-                                     "Stopped firing\n" +
-                                     "Stopped end");
+                    WaitForExitOrKill(deployer.HostProcess);
+
+                    output = output.Trim('\n');
+
+                    Assert.Equal(output, "Application is shutting down...\n" +
+                                         "Stopping firing\n" +
+                                         "Stopping end\n" +
+                                         "Stopped firing\n" +
+                                         "Stopped end");
+                }
             }
         }
 
