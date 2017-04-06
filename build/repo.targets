@@ -2,11 +2,24 @@
   <Import Project="common.props" />
 
   <PropertyGroup>
+    <DependencyBuildDirectory>$(RepositoryRoot).deps\build\</DependencyBuildDirectory>
+    <PrepareDependsOn>
+      $(PrepareDependsOn);
+      UpdateNuGetConfig
+    </PrepareDependsOn>
     <CompileDependsOn Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">
       $(CompileDependsOn);
       BuildPackageCache
     </CompileDependsOn>
   </PropertyGroup>
+
+  <Target Name="UpdateNuGetConfig">
+    <UpdatePackageSource
+      NuGetConfigPath="$(RepositoryRoot)NuGet.config"
+      SourceName="Dependencies"
+      SourceUri="$(DependencyBuildDirectory)"
+      Condition="Exists('$(DependencyBuildDirectory)')" />
+  </Target>
 
   <Target Name="BuildPackageCache">
     <GetOSPlatform>
