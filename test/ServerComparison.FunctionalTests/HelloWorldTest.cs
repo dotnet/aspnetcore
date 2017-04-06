@@ -71,11 +71,6 @@ namespace ServerComparison.FunctionalTests
                     ApplicationType = applicationType
                 };
 
-                if (applicationType == ApplicationType.Standalone)
-                {
-                    deploymentParameters.AdditionalPublishParameters = " -r " + RuntimeEnvironment.GetRuntimeIdentifier();
-                }
-
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
