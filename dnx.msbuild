@@ -73,14 +73,7 @@
                          $(UnsignedPackagesPath)**\*.ps1;"
             />
 
-            <_UnsignedVSIXBinaries
-                Include="$(UnsignedVSIXPath)**\Microsoft.VisualStudio.RazorExtension.dll;
-                         $(UnsignedVSIXPath)**\Microsoft.VisualStudio.LanguageServices.Razor.dll;"
-            />
-
-            <_VSIXBinariesToReplace
-                Include="$(UnsignedVSIXPath)**\*.dll"
-                Exclude="@(_UnsignedVSIXBinaries)" />
+            <_UnsignedVSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
             <UnsignedBinaries Include="@(_UnsignedBinaries)">
                 <!-- Flattened file for signing -->
@@ -144,20 +137,6 @@
             <_SignedSymbolsBinaries Include="@(UnsignedBinaries)" Condition="Exists('%(SymbolsBinaryFullName)')" />
         </ItemGroup>
         <Copy SourceFiles="@(_SignedSymbolsBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(_SignedSymbolsBinaries->'%(SymbolsBinaryFullName)')" />
-
-        <ItemGroup>
-            <VSIXBinariesToReplace Include="$(UnsignedPackagesPath)**\net46\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)"
-                Condition="Exists('$(UnsignedPackagesPath)**\net46\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)')">
-                <DestinationPath>%(_VSIXBinariesToReplace.FullPath)</DestinationPath>
-            </VSIXBinariesToReplace>
-
-            <VSIXBinariesToReplace Include="$(UnsignedPackagesPath)**\netstandard1.3\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)"
-                Condition="!Exists('$(UnsignedPackagesPath)**\net46\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)')">
-                <DestinationPath>%(_VSIXBinariesToReplace.FullPath)</DestinationPath>
-            </VSIXBinariesToReplace>
-        </ItemGroup>
-
-        <Copy SourceFiles="%(VSIXBinariesToReplace.FullPath)" DestinationFiles="%(VSIXBinariesToReplace.DestinationPath)" />
     </Target>
 
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
