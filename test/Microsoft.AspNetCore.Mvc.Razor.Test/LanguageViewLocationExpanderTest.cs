@@ -137,6 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 "testView", 
                 "test-controller",
                 "",
+                null,
                 false);
             var languageViewLocationExpander = new LanguageViewLocationExpander(format);
             viewLocationExpanderContext.Values = new Dictionary<string, string>();
@@ -161,6 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 "testView", 
                 "test-controller",
                 "test-area",
+                null,
                 false);
             var languageViewLocationExpander = new LanguageViewLocationExpander();
             viewLocationExpanderContext.Values = new Dictionary<string, string>();
@@ -188,6 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 "testView", 
                 "test-controller",
                 "test-area",
+                null,
                 false);
             var languageViewLocationExpander = new LanguageViewLocationExpander();
             viewLocationExpanderContext.Values = new Dictionary<string, string>();

@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
@@ -358,10 +359,16 @@ namespace Microsoft.AspNetCore.Mvc
                         typeof(IConfigureOptions<RazorViewEngineOptions>),
                         new[]
                         {
-#pragma warning disable 0618
                             typeof(RazorViewEngineOptionsSetup),
-#pragma warning restore 0618
-                            typeof(DependencyContextRazorViewEngineOptionsSetup)
+                            typeof(DependencyContextRazorViewEngineOptionsSetup),
+                            typeof(RazorPagesRazorViewEngineOptionsSetup),
+                        }
+                    },
+                    {
+                        typeof(IConfigureOptions<RazorPagesOptions>),
+                        new[]
+                        {
+                            typeof(RazorPagesOptionsSetup),
                         }
                     },
                     {

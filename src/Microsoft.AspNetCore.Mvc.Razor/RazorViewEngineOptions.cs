@@ -92,6 +92,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </remarks>
         public IList<string> AreaViewLocationFormats { get; } = new List<string>();
 
+        public IList<string> PageViewLocationFormats { get; } = new List<string>();
+
         /// <summary>
         /// Gets the <see cref="MetadataReference" /> instances that should be included in Razor compilation, along with
         /// those discovered by <see cref="MetadataReferenceFeatureProvider" />s.

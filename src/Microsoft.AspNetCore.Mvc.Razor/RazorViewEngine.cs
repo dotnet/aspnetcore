@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Razor.Language;
@@ -33,8 +32,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public static readonly string ViewExtension = ".cshtml";
         private const string ViewStartFileName = "_ViewStart.cshtml";
 
-        private const string ControllerKey = "controller";
         private const string AreaKey = "area";
+        private const string ControllerKey = "controller";
+        private const string PageKey = "page";
+
         private const string ParentDirectoryToken = "..";
         private static readonly TimeSpan _cacheExpirationDuration = TimeSpan.FromMinutes(20);
         private static readonly char[] _pathSeparators = new[] { '/', '\\' };
@@ -272,11 +273,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             var controllerName = GetNormalizedRouteValue(actionContext, ControllerKey);
             var areaName = GetNormalizedRouteValue(actionContext, AreaKey);
+            var razorPageName = GetNormalizedRouteValue(actionContext, PageKey);
             var expanderContext = new ViewLocationExpanderContext(
                 actionContext,
                 pageName,
                 controllerName,
                 areaName,
+                razorPageName,
                 isMainPage);
             Dictionary<string, string> expanderValues = null;
 
@@ -296,6 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 expanderContext.ViewName,
                 expanderContext.ControllerName,
                 expanderContext.AreaName,
+                expanderContext.PageName,
                 expanderContext.IsMainPage,
                 expanderValues);
 
@@ -396,14 +400,35 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return builder.ToString();
         }
 
+        // internal for tests
+        internal IEnumerable<string> GetViewLocationFormats(ViewLocationExpanderContext context)
+        {
+            if (!string.IsNullOrEmpty(context.AreaName) &&
+                !string.IsNullOrEmpty(context.ControllerName))
+            {
+                return _options.AreaViewLocationFormats;
+            }
+            else if (!string.IsNullOrEmpty(context.ControllerName))
+            {
+                return _options.ViewLocationFormats;
+            }
+            else if (!string.IsNullOrEmpty(context.PageName))
+            {
+                return _options.PageViewLocationFormats;
+            }
+            else
+            {
+                // If we don't match one of these conditions, we'll just treat it like regular controller/action
+                // and use those search paths. This is what we did in 1.0.0 without giving much thought to it.
+                return _options.ViewLocationFormats;
+            }
+        }
+
         private ViewLocationCacheResult OnCacheMiss(
             ViewLocationExpanderContext expanderContext,
             ViewLocationCacheKey cacheKey)
         {
-            // Only use the area view location formats if we have an area token.
-            IEnumerable<string> viewLocations = !string.IsNullOrEmpty(expanderContext.AreaName) ?
-                _options.AreaViewLocationFormats :
-                _options.ViewLocationFormats;
+            var viewLocations = GetViewLocationFormats(expanderContext);
 
             for (var i = 0; i < _options.ViewLocationExpanders.Count; i++)
             {

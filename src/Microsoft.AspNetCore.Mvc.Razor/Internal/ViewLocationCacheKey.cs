@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                   viewName,
                   controllerName: null,
                   areaName: null,
+                  pageName: null,
                   isMainPage: isMainPage,
                   values: null)
         {
@@ -35,18 +36,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <param name="viewName">The view name.</param>
         /// <param name="controllerName">The controller name.</param>
         /// <param name="areaName">The area name.</param>
+        /// <param name="pageName">The page name.</param>
         /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         /// <param name="values">Values from <see cref="IViewLocationExpander"/> instances.</param>
         public ViewLocationCacheKey(
             string viewName,
             string controllerName,
             string areaName,
+            string pageName,
             bool isMainPage,
             IReadOnlyDictionary<string, string> values)
         {
             ViewName = viewName;
             ControllerName = controllerName;
             AreaName = areaName;
+            PageName = pageName;
             IsMainPage = isMainPage;
             ViewLocationExpanderValues = values;
         }
@@ -67,6 +71,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public string AreaName { get; }
 
         /// <summary>
+        /// Gets the page name.
+        /// </summary>
+        public string PageName { get; }
+
+        /// <summary>
         /// Determines if the page being found is the main page for an action.
         /// </summary>
         public bool IsMainPage { get; }
@@ -82,7 +91,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             if (IsMainPage != y.IsMainPage ||
                 !string.Equals(ViewName, y.ViewName, StringComparison.Ordinal) ||
                 !string.Equals(ControllerName, y.ControllerName, StringComparison.Ordinal) ||
-                !string.Equals(AreaName, y.AreaName, StringComparison.Ordinal))
+                !string.Equals(AreaName, y.AreaName, StringComparison.Ordinal) ||
+                !string.Equals(PageName, y.PageName, StringComparison.Ordinal))
             {
                 return false;
             }
@@ -131,6 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             hashCodeCombiner.Add(ViewName, StringComparer.Ordinal);
             hashCodeCombiner.Add(ControllerName, StringComparer.Ordinal);
             hashCodeCombiner.Add(AreaName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(PageName, StringComparer.Ordinal);
 
             if (ViewLocationExpanderValues != null)
             {
