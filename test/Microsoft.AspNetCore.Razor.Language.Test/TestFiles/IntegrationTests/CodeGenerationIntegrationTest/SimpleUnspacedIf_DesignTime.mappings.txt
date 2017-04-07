@@ -1,0 +1,16 @@
+Source Location: (1:0,1 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SimpleUnspacedIf.cshtml)
+|if (true)
+{
+	|
+Generated Location: (658:16,1 [15] )
+|if (true)
+{
+	|
+
+Source Location: (27:2,12 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SimpleUnspacedIf.cshtml)
+|
+}|
+Generated Location: (813:23,15 [3] )
+|
+}|
+

@@ -1,0 +1,59 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ConditionalAttributes_Runtime -  - 
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [44] ConditionalAttributes.cshtml)
+                    RazorIRToken - (2:0,2 [44] ConditionalAttributes.cshtml) - CSharp - \n    var ch = true;\n    var cls = "bar";\n
+                HtmlContent - (46:3,0 [28] ConditionalAttributes.cshtml) -     <a href="Foo" />\n    <p
+                HtmlAttribute - (74:4,6 [13] ConditionalAttributes.cshtml) -  class=" - "
+                    CSharpAttributeValue - (82:4,14 [4] ConditionalAttributes.cshtml) - 
+                        CSharpExpression - (83:4,15 [3] ConditionalAttributes.cshtml)
+                            RazorIRToken - (83:4,15 [3] ConditionalAttributes.cshtml) - CSharp - cls
+                HtmlContent - (87:4,19 [11] ConditionalAttributes.cshtml) -  />\n    <p
+                HtmlAttribute - (98:5,6 [17] ConditionalAttributes.cshtml) -  class=" - "
+                    HtmlAttributeValue - (106:5,14 [3] ConditionalAttributes.cshtml) -  - foo
+                    CSharpAttributeValue - (109:5,17 [5] ConditionalAttributes.cshtml) -  
+                        CSharpExpression - (111:5,19 [3] ConditionalAttributes.cshtml)
+                            RazorIRToken - (111:5,19 [3] ConditionalAttributes.cshtml) - CSharp - cls
+                HtmlContent - (115:5,23 [11] ConditionalAttributes.cshtml) -  />\n    <p
+                HtmlAttribute - (126:6,6 [17] ConditionalAttributes.cshtml) -  class=" - "
+                    CSharpAttributeValue - (134:6,14 [4] ConditionalAttributes.cshtml) - 
+                        CSharpExpression - (135:6,15 [3] ConditionalAttributes.cshtml)
+                            RazorIRToken - (135:6,15 [3] ConditionalAttributes.cshtml) - CSharp - cls
+                    HtmlAttributeValue - (138:6,18 [4] ConditionalAttributes.cshtml) -   - foo
+                HtmlContent - (143:6,23 [31] ConditionalAttributes.cshtml) -  />\n    <input type="checkbox"
+                HtmlAttribute - (174:7,26 [14] ConditionalAttributes.cshtml) -  checked=" - "
+                    CSharpAttributeValue - (184:7,36 [3] ConditionalAttributes.cshtml) - 
+                        CSharpExpression - (185:7,37 [2] ConditionalAttributes.cshtml)
+                            RazorIRToken - (185:7,37 [2] ConditionalAttributes.cshtml) - CSharp - ch
+                HtmlContent - (188:7,40 [31] ConditionalAttributes.cshtml) -  />\n    <input type="checkbox"
+                HtmlAttribute - (219:8,26 [18] ConditionalAttributes.cshtml) -  checked=" - "
+                    HtmlAttributeValue - (229:8,36 [3] ConditionalAttributes.cshtml) -  - foo
+                    CSharpAttributeValue - (232:8,39 [4] ConditionalAttributes.cshtml) -  
+                        CSharpExpression - (234:8,41 [2] ConditionalAttributes.cshtml)
+                            RazorIRToken - (234:8,41 [2] ConditionalAttributes.cshtml) - CSharp - ch
+                HtmlContent - (237:8,44 [11] ConditionalAttributes.cshtml) -  />\n    <p
+                HtmlAttribute - (248:9,6 [34] ConditionalAttributes.cshtml) -  class=" - "
+                    CSharpAttributeValue - (256:9,14 [25] ConditionalAttributes.cshtml) - 
+                        CSharpStatement - (257:9,15 [18] ConditionalAttributes.cshtml)
+                            RazorIRToken - (257:9,15 [18] ConditionalAttributes.cshtml) - CSharp - if(cls != null) { 
+                        CSharpExpression - (276:9,34 [3] ConditionalAttributes.cshtml)
+                            RazorIRToken - (276:9,34 [3] ConditionalAttributes.cshtml) - CSharp - cls
+                        CSharpStatement - (279:9,37 [2] ConditionalAttributes.cshtml)
+                            RazorIRToken - (279:9,37 [2] ConditionalAttributes.cshtml) - CSharp -  }
+                HtmlContent - (282:9,40 [40] ConditionalAttributes.cshtml) -  />\n    <a href="~/Foo" />\n    <script
+                HtmlAttribute - (322:11,11 [52] ConditionalAttributes.cshtml) -  src=" - "
+                    CSharpAttributeValue - (328:11,17 [45] ConditionalAttributes.cshtml) - 
+                        CSharpExpression - (329:11,18 [44] ConditionalAttributes.cshtml)
+                            RazorIRToken - (329:11,18 [44] ConditionalAttributes.cshtml) - CSharp - Url.Content("~/Scripts/jquery-1.6.2.min.js")
+                HtmlContent - (374:11,63 [46] ConditionalAttributes.cshtml) -  type="text/javascript"></script>\n    <script
+                HtmlAttribute - (420:12,11 [68] ConditionalAttributes.cshtml) -  src=" - "
+                    CSharpAttributeValue - (426:12,17 [61] ConditionalAttributes.cshtml) - 
+                        CSharpExpression - (427:12,18 [60] ConditionalAttributes.cshtml)
+                            RazorIRToken - (427:12,18 [60] ConditionalAttributes.cshtml) - CSharp - Url.Content("~/Scripts/modernizr-2.0.6-development-only.js")
+                HtmlContent - (488:12,79 [152] ConditionalAttributes.cshtml) -  type="text/javascript"></script>\n    <script src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.16/jquery-ui.min.js" type="text/javascript"></script>\n
+                CSharpStatement - (640:14,0 [0] ConditionalAttributes.cshtml)
+                    RazorIRToken - (640:14,0 [0] ConditionalAttributes.cshtml) - CSharp - 

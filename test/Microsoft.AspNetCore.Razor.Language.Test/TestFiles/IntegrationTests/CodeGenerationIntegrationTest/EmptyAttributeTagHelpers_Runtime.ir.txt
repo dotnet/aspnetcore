@@ -1,0 +1,41 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyAttributeTagHelpers_Runtime -  - 
+            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type -  - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class -  - HtmlAttributeValueStyle.DoubleQuotes
+            DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2 - TestNamespace.PTagHelper
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (31:1,0 [13] EmptyAttributeTagHelpers.cshtml) - \n<div>\n    
+                TagHelper - (44:3,4 [34] EmptyAttributeTagHelpers.cshtml)
+                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                    CreateTagHelper -  - TestNamespace.InputTagHelper
+                    CreateTagHelper -  - TestNamespace.InputTagHelper2
+                    SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                    SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                    SetTagHelperProperty - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - 
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                    ExecuteTagHelpers - 
+                HtmlContent - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml) - \n    
+                TagHelper - (84:4,4 [64] EmptyAttributeTagHelpers.cshtml)
+                    InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                        HtmlContent - (94:4,14 [10] EmptyAttributeTagHelpers.cshtml) - \n        
+                        TagHelper - (104:5,8 [34] EmptyAttributeTagHelpers.cshtml)
+                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                            CreateTagHelper -  - TestNamespace.InputTagHelper
+                            CreateTagHelper -  - TestNamespace.InputTagHelper2
+                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                            SetTagHelperProperty - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                                HtmlContent - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - 
+                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            ExecuteTagHelpers - 
+                        HtmlContent - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml) - \n    
+                    CreateTagHelper -  - TestNamespace.PTagHelper
+                    SetTagHelperProperty - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.SingleQuotes
+                        HtmlContent - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - 
+                    ExecuteTagHelpers - 
+                HtmlContent - (148:6,8 [8] EmptyAttributeTagHelpers.cshtml) - \n</div>

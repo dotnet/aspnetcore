@@ -4,7 +4,7 @@
 using System.IO;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Razor.Evolution
+namespace Microsoft.AspNetCore.Razor.Language
 {
     public class TestRazorProjectItem : RazorProjectItem
     {

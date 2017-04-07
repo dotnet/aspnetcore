@@ -1,0 +1,57 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyAttributeTagHelpers_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                DirectiveToken - (14:0,14 [15] EmptyAttributeTagHelpers.cshtml) - *, TestAssembly
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2 - TestNamespace.PTagHelper
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (29:0,29 [15] EmptyAttributeTagHelpers.cshtml) - \n\n<div>\n    
+                TagHelper - (44:3,4 [34] EmptyAttributeTagHelpers.cshtml)
+                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                    CreateTagHelper -  - TestNamespace.InputTagHelper
+                    CreateTagHelper -  - TestNamespace.InputTagHelper2
+                    SetTagHelperProperty - (56:3,16 [0] EmptyAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (56:3,16 [0] EmptyAttributeTagHelpers.cshtml) - 
+                    SetTagHelperProperty - (56:3,16 [0] EmptyAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (56:3,16 [0] EmptyAttributeTagHelpers.cshtml) - 
+                    SetTagHelperProperty - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - 
+                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (74:3,34 [0] EmptyAttributeTagHelpers.cshtml) - 
+                    ExecuteTagHelpers - 
+                HtmlContent - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml) - \n    
+                TagHelper - (84:4,4 [64] EmptyAttributeTagHelpers.cshtml)
+                    InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                        HtmlContent - (94:4,14 [10] EmptyAttributeTagHelpers.cshtml) - \n        
+                        TagHelper - (104:5,8 [34] EmptyAttributeTagHelpers.cshtml)
+                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                            CreateTagHelper -  - TestNamespace.InputTagHelper
+                            CreateTagHelper -  - TestNamespace.InputTagHelper2
+                            SetTagHelperProperty - (117:5,21 [0] EmptyAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                                HtmlContent - (117:5,21 [0] EmptyAttributeTagHelpers.cshtml) - 
+                            SetTagHelperProperty - (117:5,21 [0] EmptyAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                                HtmlContent - (117:5,21 [0] EmptyAttributeTagHelpers.cshtml) - 
+                            SetTagHelperProperty - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                                HtmlContent - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - 
+                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                                HtmlContent - (134:5,38 [0] EmptyAttributeTagHelpers.cshtml) - 
+                            ExecuteTagHelpers - 
+                        HtmlContent - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml) - \n    
+                    CreateTagHelper -  - TestNamespace.PTagHelper
+                    SetTagHelperProperty - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.SingleQuotes
+                        HtmlContent - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - 
+                    ExecuteTagHelpers - 
+                HtmlContent - (148:6,8 [8] EmptyAttributeTagHelpers.cshtml) - \n</div>

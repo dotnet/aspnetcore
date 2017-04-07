@@ -1,0 +1,10 @@
+Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelperWithNewlineBeforeAttributes.cshtml)
+|"*, TestAssembly"|
+Generated Location: (450:10,37 [17] )
+|"*, TestAssembly"|
+
+Source Location: (67:3,28 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelperWithNewlineBeforeAttributes.cshtml)
+|1337|
+Generated Location: (1039:22,33 [4] )
+|1337|
+

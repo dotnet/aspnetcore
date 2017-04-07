@@ -1,0 +1,5 @@
+Source Location: (17:0,17 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RemoveTagHelperDirective.cshtml)
+|*, TestAssembly|
+Generated Location: (433:10,38 [15] )
+|*, TestAssembly|
+

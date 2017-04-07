@@ -1,0 +1,20 @@
+Source Location: (14:0,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyAttributeTagHelpers.cshtml)
+|*, TestAssembly|
+Generated Location: (433:10,38 [15] )
+|*, TestAssembly|
+
+Source Location: (66:3,26 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyAttributeTagHelpers.cshtml)
+||
+Generated Location: (1457:27,42 [0] )
+||
+
+Source Location: (126:5,30 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyAttributeTagHelpers.cshtml)
+||
+Generated Location: (1985:36,42 [0] )
+||
+
+Source Location: (92:4,12 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyAttributeTagHelpers.cshtml)
+||
+Generated Location: (2247:42,33 [0] )
+||
+

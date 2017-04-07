@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Microsoft.AspNetCore.Razor.Evolution/Microsoft.AspNetCore.Razor.Evolution.csproj" />
+    <ProjectReference Include="../Microsoft.AspNetCore.Razor.Language/Microsoft.AspNetCore.Razor.Language.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,29 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DuplicateTargetTagHelper_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement -  - #pragma warning disable 219
+                CSharpStatement -  - private void __RazorDirectiveTokenHelpers__() {
+                DirectiveToken - (14:0,14 [17] DuplicateTargetTagHelper.cshtml) - "*, TestAssembly"
+                CSharpStatement -  - }
+                CSharpStatement -  - #pragma warning restore 219
+            CSharpStatement -  - private static System.Object __o = null;
+            DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.CatchAllTagHelper
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (31:0,31 [4] DuplicateTargetTagHelper.cshtml) - \n\n
+                TagHelper - (35:2,0 [40] DuplicateTargetTagHelper.cshtml)
+                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                    CreateTagHelper -  - TestNamespace.InputTagHelper
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    SetTagHelperProperty - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - checkbox
+                    SetTagHelperProperty - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - checkbox
+                    SetTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - true
+                    SetTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - true
+                    ExecuteTagHelpers - 

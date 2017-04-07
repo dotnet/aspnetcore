@@ -1,0 +1,10 @@
+Source Location: (2022:85,9 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/StringLiterals.cshtml)
+|WriteLiteralsToInHere|
+Generated Location: (407:10,22 [21] )
+|WriteLiteralsToInHere|
+
+Source Location: (5701:205,9 [25] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/StringLiterals.cshtml)
+|WriteLiteralsToInHereAlso|
+Generated Location: (520:14,22 [25] )
+|WriteLiteralsToInHereAlso|
+

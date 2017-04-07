@@ -1,0 +1,13 @@
+Source Location: (2:0,2 [31] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ParserError.cshtml)
+|
+/*
+int i =10;
+int j =20;
+}|
+Generated Location: (649:16,2 [31] )
+|
+/*
+int i =10;
+int j =20;
+}|
+

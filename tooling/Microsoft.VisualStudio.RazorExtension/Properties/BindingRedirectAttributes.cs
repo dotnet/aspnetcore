@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Shell;
     NewVersion = "2.0.0.0")]
 
 [assembly: ProvideBindingRedirection(
-    AssemblyName = "Microsoft.AspNetCore.Razor.Evolution",
+    AssemblyName = "Microsoft.AspNetCore.Razor.Language",
     GenerateCodeBase = true,
     PublicKeyToken = "adb9793829ddae60",
     OldVersionLowerBound = "0.0.0.0",

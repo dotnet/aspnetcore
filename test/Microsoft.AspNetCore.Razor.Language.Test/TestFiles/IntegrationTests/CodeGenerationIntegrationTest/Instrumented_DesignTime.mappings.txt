@@ -1,0 +1,153 @@
+Source Location: (2:0,2 [32] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+    int i = 1;
+    var foo = |
+Generated Location: (651:16,2 [32] )
+|
+    int i = 1;
+    var foo = |
+
+Source Location: (45:2,25 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|;
+    |
+Generated Location: (964:26,25 [7] )
+|;
+    |
+
+Source Location: (68:4,0 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|    |
+Generated Location: (1004:31,0 [4] )
+|    |
+
+Source Location: (91:4,23 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+|
+Generated Location: (1057:32,35 [2] )
+|
+|
+
+Source Location: (99:7,1 [22] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|while(i <= 10) {
+    |
+Generated Location: (1150:35,1 [22] )
+|while(i <= 10) {
+    |
+
+Source Location: (142:8,25 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|i|
+Generated Location: (1318:41,25 [1] )
+|i|
+
+Source Location: (148:8,31 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+    i += 1;
+}|
+Generated Location: (1472:46,31 [16] )
+|
+    i += 1;
+}|
+
+Source Location: (169:12,1 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|if(i == 11) {
+    |
+Generated Location: (1611:53,1 [19] )
+|if(i == 11) {
+    |
+
+Source Location: (213:13,29 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+}|
+Generated Location: (1781:59,29 [3] )
+|
+}|
+
+Source Location: (221:16,1 [35] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|switch(i) {
+    case 11:
+        |
+Generated Location: (1907:65,1 [35] )
+|switch(i) {
+    case 11:
+        |
+
+Source Location: (292:18,44 [40] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+        break;
+    default:
+        |
+Generated Location: (2108:72,44 [40] )
+|
+        break;
+    default:
+        |
+
+Source Location: (361:21,37 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+        break;
+}|
+Generated Location: (2307:80,37 [19] )
+|
+        break;
+}|
+
+Source Location: (385:25,1 [39] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|for(int j = 1; j <= 10; j += 2) {
+    |
+Generated Location: (2449:87,1 [39] )
+|for(int j = 1; j <= 10; j += 2) {
+    |
+
+Source Location: (451:26,31 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|j|
+Generated Location: (2641:93,31 [1] )
+|j|
+
+Source Location: (457:26,37 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+}|
+Generated Location: (2802:98,37 [3] )
+|
+}|
+
+Source Location: (465:29,1 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|try {
+    |
+Generated Location: (2928:104,1 [11] )
+|try {
+    |
+
+Source Location: (511:30,39 [31] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+} catch(Exception ex) {
+    |
+Generated Location: (3100:110,39 [31] )
+|
+} catch(Exception ex) {
+    |
+
+Source Location: (573:32,35 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|ex.Message|
+Generated Location: (3288:117,35 [10] )
+|ex.Message|
+
+Source Location: (588:32,50 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+}|
+Generated Location: (3471:122,50 [3] )
+|
+}|
+
+Source Location: (596:35,1 [26] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|lock(new object()) {
+    |
+Generated Location: (3597:128,1 [26] )
+|lock(new object()) {
+    |
+
+Source Location: (669:36,51 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml)
+|
+}|
+Generated Location: (3796:134,51 [3] )
+|
+}|
+

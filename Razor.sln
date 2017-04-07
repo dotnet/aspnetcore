@@ -19,9 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorPageGenerator", "src\RazorPageGenerator\RazorPageGenerator.csproj", "{7BE58880-36AD-4CD5-9E16-2A5AFEA790EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Evolution", "src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj", "{932F3C9C-A6C0-40D3-BA50-9309886242FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language", "src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj", "{932F3C9C-A6C0-40D3-BA50-9309886242FC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Evolution.Test", "test\Microsoft.AspNetCore.Razor.Evolution.Test\Microsoft.AspNetCore.Razor.Evolution.Test.csproj", "{969357A4-CCF1-46D9-B002-9AA072AFC75C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language.Test", "test\Microsoft.AspNetCore.Razor.Language.Test\Microsoft.AspNetCore.Razor.Language.Test.csproj", "{969357A4-CCF1-46D9-B002-9AA072AFC75C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime.Test", "test\Microsoft.AspNetCore.Razor.Runtime.Test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj", "{277AB67E-9C8D-4799-A18C-C628E70A8664}"
 EndProject

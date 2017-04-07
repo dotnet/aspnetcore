@@ -1,0 +1,5 @@
+Source Location: (20:2,2 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpressionAtEOF.cshtml)
+||
+Generated Location: (677:16,6 [0] )
+||
+

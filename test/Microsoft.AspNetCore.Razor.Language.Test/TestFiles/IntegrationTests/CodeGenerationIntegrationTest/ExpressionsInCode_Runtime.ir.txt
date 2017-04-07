@@ -1,0 +1,27 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ExpressionsInCode_Runtime -  - 
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [51] ExpressionsInCode.cshtml)
+                    RazorIRToken - (2:0,2 [51] ExpressionsInCode.cshtml) - CSharp - \n    object foo = null;\n    string bar = "Foo";\n
+                HtmlContent - (56:4,0 [2] ExpressionsInCode.cshtml) - \n
+                CSharpStatement - (59:5,1 [23] ExpressionsInCode.cshtml)
+                    RazorIRToken - (59:5,1 [23] ExpressionsInCode.cshtml) - CSharp - if(foo != null) {\n    
+                CSharpExpression - (83:6,5 [3] ExpressionsInCode.cshtml)
+                    RazorIRToken - (83:6,5 [3] ExpressionsInCode.cshtml) - CSharp - foo
+                CSharpStatement - (86:6,8 [12] ExpressionsInCode.cshtml)
+                    RazorIRToken - (86:6,8 [12] ExpressionsInCode.cshtml) - CSharp - \n} else {\n
+                HtmlContent - (98:8,0 [25] ExpressionsInCode.cshtml) -     <p>Foo is Null!</p>\n
+                CSharpStatement - (123:9,0 [3] ExpressionsInCode.cshtml)
+                    RazorIRToken - (123:9,0 [3] ExpressionsInCode.cshtml) - CSharp - }\n
+                HtmlContent - (126:10,0 [7] ExpressionsInCode.cshtml) - \n<p>\n
+                CSharpStatement - (134:12,1 [38] ExpressionsInCode.cshtml)
+                    RazorIRToken - (134:12,1 [38] ExpressionsInCode.cshtml) - CSharp - if(!String.IsNullOrEmpty(bar)) {\n    
+                CSharpExpression - (174:13,6 [21] ExpressionsInCode.cshtml)
+                    RazorIRToken - (174:13,6 [21] ExpressionsInCode.cshtml) - CSharp - bar.Replace("F", "B")
+                CSharpStatement - (196:13,28 [5] ExpressionsInCode.cshtml)
+                    RazorIRToken - (196:13,28 [5] ExpressionsInCode.cshtml) - CSharp - \n}\n
+                HtmlContent - (201:15,0 [4] ExpressionsInCode.cshtml) - </p>

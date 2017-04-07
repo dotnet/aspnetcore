@@ -1,0 +1,47 @@
+Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
+|"*, TestAssembly"|
+Generated Location: (430:10,37 [17] )
+|"*, TestAssembly"|
+
+Source Location: (333:12,6 [66] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
+|
+        RenderTemplate(
+            "Template: ",
+            |
+Generated Location: (919:22,6 [66] )
+|
+        RenderTemplate(
+            "Template: ",
+            |
+
+Source Location: (427:15,40 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
+|item|
+Generated Location: (1262:31,40 [4] )
+|item|
+
+Source Location: (482:15,95 [8] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
+|);
+    |
+Generated Location: (1678:40,95 [8] )
+|);
+    |
+
+Source Location: (47:2,12 [268] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
+|
+    public void RenderTemplate(string title, Func<string, HelperResult> template)
+    {
+        Output.WriteLine("<br /><p><em>Rendering Template:</em></p>");
+        var helperResult = template(title);
+        helperResult.WriteTo(Output, HtmlEncoder);
+    }
+|
+Generated Location: (1949:49,12 [268] )
+|
+    public void RenderTemplate(string title, Func<string, HelperResult> template)
+    {
+        Output.WriteLine("<br /><p><em>Rendering Template:</em></p>");
+        var helperResult = template(title);
+        helperResult.WriteTo(Output, HtmlEncoder);
+    }
+|
+

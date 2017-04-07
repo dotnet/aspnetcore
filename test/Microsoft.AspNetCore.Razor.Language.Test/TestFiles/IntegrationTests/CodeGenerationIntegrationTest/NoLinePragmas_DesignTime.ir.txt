@@ -1,0 +1,76 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NoLinePragmas_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [18] NoLinePragmas.cshtml)
+                    RazorIRToken - (2:0,2 [18] NoLinePragmas.cshtml) - CSharp - \n    int i = 1;\n
+                HtmlContent - (23:3,0 [2] NoLinePragmas.cshtml) - \n
+                CSharpStatement - (26:4,1 [22] NoLinePragmas.cshtml)
+                    RazorIRToken - (26:4,1 [22] NoLinePragmas.cshtml) - CSharp - while(i <= 10) {\n    
+                HtmlContent - (48:5,4 [19] NoLinePragmas.cshtml) - <p>Hello from C#, #
+                CSharpExpression - (69:5,25 [1] NoLinePragmas.cshtml)
+                    RazorIRToken - (69:5,25 [1] NoLinePragmas.cshtml) - CSharp - i
+                HtmlContent - (71:5,27 [4] NoLinePragmas.cshtml) - </p>
+                CSharpStatement - (75:5,31 [16] NoLinePragmas.cshtml)
+                    RazorIRToken - (75:5,31 [16] NoLinePragmas.cshtml) - CSharp - \n    i += 1;\n}
+                HtmlContent - (91:7,1 [4] NoLinePragmas.cshtml) - \n\n
+                CSharpStatement - (96:9,1 [19] NoLinePragmas.cshtml)
+                    RazorIRToken - (96:9,1 [19] NoLinePragmas.cshtml) - CSharp - if(i == 11) {\n    
+                HtmlContent - (115:10,4 [25] NoLinePragmas.cshtml) - <p>We wrote 10 lines!</p>
+                CSharpStatement - (140:10,29 [3] NoLinePragmas.cshtml)
+                    RazorIRToken - (140:10,29 [3] NoLinePragmas.cshtml) - CSharp - \n}
+                HtmlContent - (143:11,1 [4] NoLinePragmas.cshtml) - \n\n
+                CSharpStatement - (148:13,1 [35] NoLinePragmas.cshtml)
+                    RazorIRToken - (148:13,1 [35] NoLinePragmas.cshtml) - CSharp - switch(i) {\n    case 11:\n        
+                HtmlContent - (183:15,8 [36] NoLinePragmas.cshtml) - <p>No really, we wrote 10 lines!</p>
+                CSharpStatement - (219:15,44 [40] NoLinePragmas.cshtml)
+                    RazorIRToken - (219:15,44 [40] NoLinePragmas.cshtml) - CSharp - \n        break;\n    default:\n        
+                HtmlContent - (259:18,8 [29] NoLinePragmas.cshtml) - <p>Actually, we didn't...</p>
+                CSharpStatement - (288:18,37 [19] NoLinePragmas.cshtml)
+                    RazorIRToken - (288:18,37 [19] NoLinePragmas.cshtml) - CSharp - \n        break;\n}
+                HtmlContent - (307:20,1 [4] NoLinePragmas.cshtml) - \n\n
+                CSharpStatement - (312:22,1 [39] NoLinePragmas.cshtml)
+                    RazorIRToken - (312:22,1 [39] NoLinePragmas.cshtml) - CSharp - for(int j = 1; j <= 10; j += 2) {\n    
+                HtmlContent - (351:23,4 [25] NoLinePragmas.cshtml) - <p>Hello again from C#, #
+                CSharpExpression - (378:23,31 [1] NoLinePragmas.cshtml)
+                    RazorIRToken - (378:23,31 [1] NoLinePragmas.cshtml) - CSharp - j
+                HtmlContent - (380:23,33 [4] NoLinePragmas.cshtml) - </p>
+                CSharpStatement - (384:23,37 [3] NoLinePragmas.cshtml)
+                    RazorIRToken - (384:23,37 [3] NoLinePragmas.cshtml) - CSharp - \n}
+                HtmlContent - (387:24,1 [4] NoLinePragmas.cshtml) - \n\n
+                CSharpStatement - (392:26,1 [11] NoLinePragmas.cshtml)
+                    RazorIRToken - (392:26,1 [11] NoLinePragmas.cshtml) - CSharp - try {\n    
+                HtmlContent - (403:27,4 [35] NoLinePragmas.cshtml) - <p>That time, we wrote 5 lines!</p>
+                CSharpStatement - (438:27,39 [31] NoLinePragmas.cshtml)
+                    RazorIRToken - (438:27,39 [31] NoLinePragmas.cshtml) - CSharp - \n} catch(Exception ex) {\n    
+                HtmlContent - (469:29,4 [29] NoLinePragmas.cshtml) - <p>Oh no! An error occurred: 
+                CSharpExpression - (500:29,35 [10] NoLinePragmas.cshtml)
+                    RazorIRToken - (500:29,35 [10] NoLinePragmas.cshtml) - CSharp - ex.Message
+                HtmlContent - (511:29,46 [4] NoLinePragmas.cshtml) - </p>
+                CSharpStatement - (515:29,50 [7] NoLinePragmas.cshtml)
+                    RazorIRToken - (515:29,50 [7] NoLinePragmas.cshtml) - CSharp - \n}\n\n
+                CSharpStatement - (556:32,34 [0] NoLinePragmas.cshtml)
+                    RazorIRToken - (556:32,34 [0] NoLinePragmas.cshtml) - CSharp - 
+                HtmlContent - (556:32,34 [14] NoLinePragmas.cshtml) - \n<p>i is now 
+                CSharpExpression - (571:33,13 [1] NoLinePragmas.cshtml)
+                    RazorIRToken - (571:33,13 [1] NoLinePragmas.cshtml) - CSharp - i
+                HtmlContent - (572:33,14 [8] NoLinePragmas.cshtml) - </p>\n\n
+                CSharpStatement - (581:35,1 [26] NoLinePragmas.cshtml)
+                    RazorIRToken - (581:35,1 [26] NoLinePragmas.cshtml) - CSharp - lock(new object()) {\n    
+                HtmlContent - (607:36,4 [47] NoLinePragmas.cshtml) - <p>This block is locked, for your security!</p>
+                CSharpStatement - (654:36,51 [3] NoLinePragmas.cshtml)
+                    RazorIRToken - (654:36,51 [3] NoLinePragmas.cshtml) - CSharp - \n}

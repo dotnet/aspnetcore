@@ -1,0 +1,63 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Blocks_Runtime -  - 
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [18] Blocks.cshtml)
+                    RazorIRToken - (2:0,2 [18] Blocks.cshtml) - CSharp - \n    int i = 1;\n
+                HtmlContent - (23:3,0 [2] Blocks.cshtml) - \n
+                CSharpStatement - (26:4,1 [18] Blocks.cshtml)
+                    RazorIRToken - (26:4,1 [18] Blocks.cshtml) - CSharp - while(i <= 10) {\n
+                HtmlContent - (44:5,0 [23] Blocks.cshtml) -     <p>Hello from C#, #
+                CSharpExpression - (69:5,25 [1] Blocks.cshtml)
+                    RazorIRToken - (69:5,25 [1] Blocks.cshtml) - CSharp - i
+                HtmlContent - (71:5,27 [6] Blocks.cshtml) - </p>\n
+                CSharpStatement - (77:6,0 [16] Blocks.cshtml)
+                    RazorIRToken - (77:6,0 [16] Blocks.cshtml) - CSharp -     i += 1;\n}\n
+                HtmlContent - (93:8,0 [2] Blocks.cshtml) - \n
+                CSharpStatement - (96:9,1 [15] Blocks.cshtml)
+                    RazorIRToken - (96:9,1 [15] Blocks.cshtml) - CSharp - if(i == 11) {\n
+                HtmlContent - (111:10,0 [31] Blocks.cshtml) -     <p>We wrote 10 lines!</p>\n
+                CSharpStatement - (142:11,0 [3] Blocks.cshtml)
+                    RazorIRToken - (142:11,0 [3] Blocks.cshtml) - CSharp - }\n
+                HtmlContent - (145:12,0 [2] Blocks.cshtml) - \n
+                CSharpStatement - (148:13,1 [27] Blocks.cshtml)
+                    RazorIRToken - (148:13,1 [27] Blocks.cshtml) - CSharp - switch(i) {\n    case 11:\n
+                HtmlContent - (175:15,0 [46] Blocks.cshtml) -         <p>No really, we wrote 10 lines!</p>\n
+                CSharpStatement - (221:16,0 [30] Blocks.cshtml)
+                    RazorIRToken - (221:16,0 [30] Blocks.cshtml) - CSharp -         break;\n    default:\n
+                HtmlContent - (251:18,0 [39] Blocks.cshtml) -         <p>Actually, we didn't...</p>\n
+                CSharpStatement - (290:19,0 [19] Blocks.cshtml)
+                    RazorIRToken - (290:19,0 [19] Blocks.cshtml) - CSharp -         break;\n}\n
+                HtmlContent - (309:21,0 [2] Blocks.cshtml) - \n
+                CSharpStatement - (312:22,1 [35] Blocks.cshtml)
+                    RazorIRToken - (312:22,1 [35] Blocks.cshtml) - CSharp - for(int j = 1; j <= 10; j += 2) {\n
+                HtmlContent - (347:23,0 [29] Blocks.cshtml) -     <p>Hello again from C#, #
+                CSharpExpression - (378:23,31 [1] Blocks.cshtml)
+                    RazorIRToken - (378:23,31 [1] Blocks.cshtml) - CSharp - j
+                HtmlContent - (380:23,33 [6] Blocks.cshtml) - </p>\n
+                CSharpStatement - (386:24,0 [3] Blocks.cshtml)
+                    RazorIRToken - (386:24,0 [3] Blocks.cshtml) - CSharp - }\n
+                HtmlContent - (389:25,0 [2] Blocks.cshtml) - \n
+                CSharpStatement - (392:26,1 [7] Blocks.cshtml)
+                    RazorIRToken - (392:26,1 [7] Blocks.cshtml) - CSharp - try {\n
+                HtmlContent - (399:27,0 [41] Blocks.cshtml) -     <p>That time, we wrote 5 lines!</p>\n
+                CSharpStatement - (440:28,0 [25] Blocks.cshtml)
+                    RazorIRToken - (440:28,0 [25] Blocks.cshtml) - CSharp - } catch(Exception ex) {\n
+                HtmlContent - (465:29,0 [33] Blocks.cshtml) -     <p>Oh no! An error occurred: 
+                CSharpExpression - (500:29,35 [10] Blocks.cshtml)
+                    RazorIRToken - (500:29,35 [10] Blocks.cshtml) - CSharp - ex.Message
+                HtmlContent - (511:29,46 [6] Blocks.cshtml) - </p>\n
+                CSharpStatement - (517:30,0 [3] Blocks.cshtml)
+                    RazorIRToken - (517:30,0 [3] Blocks.cshtml) - CSharp - }\n
+                HtmlContent - (520:31,0 [14] Blocks.cshtml) - \n<p>i is now 
+                CSharpExpression - (535:32,13 [1] Blocks.cshtml)
+                    RazorIRToken - (535:32,13 [1] Blocks.cshtml) - CSharp - i
+                HtmlContent - (536:32,14 [8] Blocks.cshtml) - </p>\n\n
+                CSharpStatement - (545:34,1 [22] Blocks.cshtml)
+                    RazorIRToken - (545:34,1 [22] Blocks.cshtml) - CSharp - lock(new object()) {\n
+                HtmlContent - (567:35,0 [53] Blocks.cshtml) -     <p>This block is locked, for your security!</p>\n
+                CSharpStatement - (620:36,0 [1] Blocks.cshtml)
+                    RazorIRToken - (620:36,0 [1] Blocks.cshtml) - CSharp - }

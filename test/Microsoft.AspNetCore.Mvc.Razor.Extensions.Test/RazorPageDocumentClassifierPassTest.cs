@@ -3,8 +3,8 @@
 
 using System.IO;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions.Internal;
-using Microsoft.AspNetCore.Razor.Evolution;
-using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions

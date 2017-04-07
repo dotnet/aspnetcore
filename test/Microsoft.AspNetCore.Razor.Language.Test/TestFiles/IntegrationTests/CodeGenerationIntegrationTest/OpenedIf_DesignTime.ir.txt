@@ -1,0 +1,27 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_OpenedIf_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [16] OpenedIf.cshtml) - <html>\n<body>\n
+                CSharpStatement - (17:2,1 [14] OpenedIf.cshtml)
+                    RazorIRToken - (17:2,1 [14] OpenedIf.cshtml) - CSharp - if (true) { \n
+                HtmlContent - (31:3,0 [7] OpenedIf.cshtml) - </body>
+                CSharpStatement - (38:3,7 [2] OpenedIf.cshtml)
+                    RazorIRToken - (38:3,7 [2] OpenedIf.cshtml) - CSharp - \n
+                HtmlContent - (40:4,0 [7] OpenedIf.cshtml) - </html>
+                CSharpStatement - (47:4,7 [0] OpenedIf.cshtml)
+                    RazorIRToken - (47:4,7 [0] OpenedIf.cshtml) - CSharp - 

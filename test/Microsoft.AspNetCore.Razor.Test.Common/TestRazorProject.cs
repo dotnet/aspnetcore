@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Evolution
+namespace Microsoft.AspNetCore.Razor.Language
 {
     public class TestRazorProject : RazorProject
     {

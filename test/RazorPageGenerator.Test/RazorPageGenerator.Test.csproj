@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.AspNetCore.Razor.Evolution.Test\TestProject.cs" />
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Language.Test\TestProject.cs" />
   </ItemGroup>
 
   <ItemGroup>

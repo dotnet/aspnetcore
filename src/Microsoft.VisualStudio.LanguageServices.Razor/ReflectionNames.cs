@@ -6,7 +6,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     internal static class ReflectionNames
     {
-        public static readonly string RazorAssemblyName = "Microsoft.AspNetCore.Razor.Evolution";
+        public static readonly string RazorAssemblyName = "Microsoft.AspNetCore.Razor.Language";
 
         public static readonly string CustomizationAttribute = RazorAssemblyName + ".RazorEngineCustomizationAttribute";
 

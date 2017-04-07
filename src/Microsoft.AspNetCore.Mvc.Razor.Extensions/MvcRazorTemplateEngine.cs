@@ -4,7 +4,7 @@
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions.Internal;
-using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {

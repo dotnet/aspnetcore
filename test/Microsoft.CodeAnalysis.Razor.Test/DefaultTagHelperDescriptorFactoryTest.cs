@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Evolution;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Test;
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         {
                             RequiredAttributeDescriptorBuilder.Create()
                                 .Name(string.Empty)
-                                .AddDiagnostic(AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace())
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace())
                                 .Build(),
                         }
                     },
@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         {
                             RequiredAttributeDescriptorBuilder.Create()
                                 .Name("n@me")
-                                .AddDiagnostic(AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("n@me", '@'))
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("n@me", '@'))
                                 .Build(),
                         }
                     },
@@ -127,7 +127,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         {
                             RequiredAttributeDescriptorBuilder.Create()
                                 .Name(string.Empty)
-                                .AddDiagnostic(AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace())
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace())
                                 .Build(),
                         }
                     },
@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         {
                             RequiredAttributeDescriptorBuilder.Create()
                                 .Name("n@me")
-                                .AddDiagnostic(AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("n@me", '@'))
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("n@me", '@'))
                                 .Build(),
                         }
                     },
@@ -147,7 +147,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         {
                             RequiredAttributeDescriptorBuilder.Create()
                                 .Name("name@")
-                                .AddDiagnostic(AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("name@", '@'))
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("name@", '@'))
                                 .Build(),
                         }
                     },
@@ -1364,7 +1364,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .PropertyName(nameof(InvalidBoundAttribute.DataSomething))
                                 .TypeName(typeof(string).FullName)
                                 .AddDiagnostic(
-                                    AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
+                                    AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
                                         typeof(InvalidBoundAttribute).FullName, 
                                         nameof(InvalidBoundAttribute.DataSomething), 
                                         "data-something"))
@@ -1380,7 +1380,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .PropertyName(nameof(InvalidBoundAttributeWithValid.DataSomething))
                                 .TypeName(typeof(string).FullName)
                                 .AddDiagnostic(
-                                    AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
+                                    AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
                                         typeof(InvalidBoundAttributeWithValid).FullName,
                                         nameof(InvalidBoundAttributeWithValid.DataSomething),
                                         "data-something"))
@@ -1412,7 +1412,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .PropertyName(nameof(OverriddenValidBoundAttributeWithInvalid.ValidSomething))
                                 .TypeName(typeof(string).FullName)
                                 .AddDiagnostic(
-                                    AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
+                                    AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
                                         typeof(OverriddenValidBoundAttributeWithInvalid).FullName,
                                         nameof(OverriddenValidBoundAttributeWithInvalid.ValidSomething),
                                         "data-something"))
@@ -1428,7 +1428,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .PropertyName(nameof(OverriddenValidBoundAttributeWithInvalidUpperCase.ValidSomething))
                                 .TypeName(typeof(string).FullName)
                                 .AddDiagnostic(
-                                    AspNetCore.Razor.Evolution.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
+                                    AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
                                         typeof(OverriddenValidBoundAttributeWithInvalidUpperCase).FullName,
                                         nameof(OverriddenValidBoundAttributeWithInvalidUpperCase.ValidSomething),
                                         "DATA-SOMETHING"))
@@ -1630,11 +1630,11 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             get
             {
                 var nullOrWhiteSpaceError =
-                    AspNetCore.Razor.Evolution.Resources.FormatInvalidRestrictedChildNullOrWhitespace("DynamicTestTagHelper");
+                    AspNetCore.Razor.Language.Resources.FormatInvalidRestrictedChildNullOrWhitespace("DynamicTestTagHelper");
 
                 return GetInvalidNameOrPrefixData(
                     onNameError: (invalidInput, invalidCharacter) =>
-                        AspNetCore.Razor.Evolution.Resources.FormatInvalidRestrictedChild(
+                        AspNetCore.Razor.Language.Resources.FormatInvalidRestrictedChild(
                             invalidInput,
                             "DynamicTestTagHelper",
                             invalidCharacter),
@@ -1672,11 +1672,11 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             get
             {
                 var nullOrWhiteSpaceError =
-                    AspNetCore.Razor.Evolution.Resources.InvalidTargetedParentTagNameNullOrWhitespace;
+                    AspNetCore.Razor.Language.Resources.InvalidTargetedParentTagNameNullOrWhitespace;
 
                 return GetInvalidNameOrPrefixData(
                     onNameError: (invalidInput, invalidCharacter) =>
-                        AspNetCore.Razor.Evolution.Resources.FormatInvalidTargetedParentTagName(
+                        AspNetCore.Razor.Language.Resources.FormatInvalidTargetedParentTagName(
                             invalidInput,
                             invalidCharacter),
                     whitespaceErrorString: nullOrWhiteSpaceError,

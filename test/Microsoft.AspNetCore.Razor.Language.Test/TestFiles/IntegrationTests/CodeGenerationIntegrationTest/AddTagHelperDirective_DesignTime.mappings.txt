@@ -1,0 +1,5 @@
+Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AddTagHelperDirective.cshtml)
+|"*, TestAssembly"|
+Generated Location: (429:10,37 [17] )
+|"*, TestAssembly"|
+

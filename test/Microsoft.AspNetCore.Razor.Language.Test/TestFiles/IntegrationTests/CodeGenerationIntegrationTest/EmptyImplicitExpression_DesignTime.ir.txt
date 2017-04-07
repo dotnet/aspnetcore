@@ -1,0 +1,22 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyImplicitExpression_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [18] EmptyImplicitExpression.cshtml) - This is markup\n\n
+                CSharpExpression - (19:2,1 [0] EmptyImplicitExpression.cshtml)
+                    RazorIRToken - (19:2,1 [0] EmptyImplicitExpression.cshtml) - CSharp - 
+                HtmlContent - (19:2,1 [1] EmptyImplicitExpression.cshtml) - !

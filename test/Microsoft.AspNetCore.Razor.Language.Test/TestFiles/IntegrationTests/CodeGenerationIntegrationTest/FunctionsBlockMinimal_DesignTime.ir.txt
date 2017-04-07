@@ -1,0 +1,21 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_FunctionsBlockMinimal_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [5] FunctionsBlockMinimal.cshtml) - \n\n	
+            CSharpStatement - (16:2,12 [55] FunctionsBlockMinimal.cshtml)
+                RazorIRToken - (16:2,12 [55] FunctionsBlockMinimal.cshtml) - CSharp - \nstring foo(string input) {\n	return input + "!";\n}\n

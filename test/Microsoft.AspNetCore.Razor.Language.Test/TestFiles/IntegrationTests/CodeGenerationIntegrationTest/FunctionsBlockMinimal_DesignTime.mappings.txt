@@ -1,0 +1,13 @@
+Source Location: (16:2,12 [55] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlockMinimal.cshtml)
+|
+string foo(string input) {
+	return input + "!";
+}
+|
+Generated Location: (731:18,15 [55] )
+|
+string foo(string input) {
+	return input + "!";
+}
+|
+

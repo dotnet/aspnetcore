@@ -1,0 +1,29 @@
+Source Location: (167:11,25 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml)
+|RandomInt()|
+Generated Location: (679:16,25 [11] )
+|RandomInt()|
+
+Source Location: (12:0,12 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml)
+|
+
+|
+Generated Location: (793:22,20 [4] )
+|
+
+|
+
+Source Location: (33:4,12 [104] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml)
+|
+    Random _rand = new Random();
+    private int RandomInt() {
+        return _rand.Next();
+    }
+|
+Generated Location: (901:26,12 [104] )
+|
+    Random _rand = new Random();
+    private int RandomInt() {
+        return _rand.Next();
+    }
+|
+

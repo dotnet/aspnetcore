@@ -1,0 +1,13 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedCodeBlocks_Runtime -  - 
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (1:0,1 [15] NestedCodeBlocks.cshtml)
+                    RazorIRToken - (1:0,1 [15] NestedCodeBlocks.cshtml) - CSharp - if(foo) {\n    
+                CSharpStatement - (17:1,5 [16] NestedCodeBlocks.cshtml)
+                    RazorIRToken - (17:1,5 [16] NestedCodeBlocks.cshtml) - CSharp - if(bar) {\n    }
+                CSharpStatement - (33:2,5 [3] NestedCodeBlocks.cshtml)
+                    RazorIRToken - (33:2,5 [3] NestedCodeBlocks.cshtml) - CSharp - \n}

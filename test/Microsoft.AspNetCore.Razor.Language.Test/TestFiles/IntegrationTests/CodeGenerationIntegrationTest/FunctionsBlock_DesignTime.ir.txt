@@ -1,0 +1,26 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_FunctionsBlock_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (17:2,1 [4] FunctionsBlock.cshtml) - \n\n
+                HtmlContent - (138:9,1 [28] FunctionsBlock.cshtml) - \n\nHere's a random number: 
+                CSharpExpression - (167:11,25 [11] FunctionsBlock.cshtml)
+                    RazorIRToken - (167:11,25 [11] FunctionsBlock.cshtml) - CSharp - RandomInt()
+            CSharpStatement - (12:0,12 [4] FunctionsBlock.cshtml)
+                RazorIRToken - (12:0,12 [4] FunctionsBlock.cshtml) - CSharp - \n\n
+            CSharpStatement - (33:4,12 [104] FunctionsBlock.cshtml)
+                RazorIRToken - (33:4,12 [104] FunctionsBlock.cshtml) - CSharp - \n    Random _rand = new Random();\n    private int RandomInt() {\n        return _rand.Next();\n    }\n

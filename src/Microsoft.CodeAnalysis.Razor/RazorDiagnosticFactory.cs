@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -10,8 +10,8 @@ namespace Microsoft.CodeAnalysis.Razor
         private const string DiagnosticPrefix = "RZ";
 
         /*
-         * Razor.Evolution starts at 0, 1000, 2000, 3000. Therefore, we should offset by 500 to ensure we can easily
-         * maintain this list of diagnostic descriptors in conjunction with the one in Razor.Evolution.
+         * Razor.Language starts at 0, 1000, 2000, 3000. Therefore, we should offset by 500 to ensure we can easily
+         * maintain this list of diagnostic descriptors in conjunction with the one in Razor.Language.
          */
 
         #region General Errors

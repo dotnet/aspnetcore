@@ -1,0 +1,30 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedCSharp_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [6] NestedCSharp.cshtml)
+                    RazorIRToken - (2:0,2 [6] NestedCSharp.cshtml) - CSharp - \n    
+                CSharpStatement - (9:1,5 [53] NestedCSharp.cshtml)
+                    RazorIRToken - (9:1,5 [53] NestedCSharp.cshtml) - CSharp - foreach (var result in (dynamic)Url)\n    {\n        
+                HtmlContent - (62:3,8 [19] NestedCSharp.cshtml) - <div>\n            
+                CSharpExpression - (82:4,13 [16] NestedCSharp.cshtml)
+                    RazorIRToken - (82:4,13 [16] NestedCSharp.cshtml) - CSharp - result.SomeValue
+                HtmlContent - (98:4,29 [17] NestedCSharp.cshtml) - .\n        </div>
+                CSharpStatement - (115:5,14 [7] NestedCSharp.cshtml)
+                    RazorIRToken - (115:5,14 [7] NestedCSharp.cshtml) - CSharp - \n    }
+                CSharpStatement - (122:6,5 [2] NestedCSharp.cshtml)
+                    RazorIRToken - (122:6,5 [2] NestedCSharp.cshtml) - CSharp - \n

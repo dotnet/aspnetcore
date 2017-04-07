@@ -3,7 +3,7 @@
 
 #if RAZOR_EXTENSION_DEVELOPER_MODE
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {

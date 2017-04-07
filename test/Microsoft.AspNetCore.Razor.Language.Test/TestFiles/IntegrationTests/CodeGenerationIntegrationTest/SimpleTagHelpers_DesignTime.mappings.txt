@@ -1,0 +1,5 @@
+Source Location: (14:0,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SimpleTagHelpers.cshtml)
+|*, TestAssembly|
+Generated Location: (425:10,38 [15] )
+|*, TestAssembly|
+

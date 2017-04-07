@@ -1,0 +1,26 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorComments_Runtime -  - 
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (36:0,36 [17] RazorComments.cshtml) - \n<p>This should 
+                HtmlContent - (62:1,24 [17] RazorComments.cshtml) -  be shown</p>\n\n
+                CSharpStatement - (81:3,2 [6] RazorComments.cshtml)
+                    RazorIRToken - (81:3,2 [6] RazorComments.cshtml) - CSharp - \n    
+                CSharpStatement - (122:4,39 [22] RazorComments.cshtml)
+                    RazorIRToken - (122:4,39 [22] RazorComments.cshtml) - CSharp - \n    Exception foo = 
+                CSharpStatement - (173:5,49 [58] RazorComments.cshtml)
+                    RazorIRToken - (173:5,49 [58] RazorComments.cshtml) - CSharp -  null;\n    if(foo != null) {\n        throw foo;\n    }\n
+                HtmlContent - (234:10,0 [2] RazorComments.cshtml) - \n
+                CSharpStatement - (238:11,2 [24] RazorComments.cshtml)
+                    RazorIRToken - (238:11,2 [24] RazorComments.cshtml) - CSharp -  var bar = "@* bar *@"; 
+                HtmlContent - (265:12,0 [44] RazorComments.cshtml) - <p>But this should show the comment syntax: 
+                CSharpExpression - (310:12,45 [3] RazorComments.cshtml)
+                    RazorIRToken - (310:12,45 [3] RazorComments.cshtml) - CSharp - bar
+                HtmlContent - (313:12,48 [8] RazorComments.cshtml) - </p>\n\n
+                CSharpExpression - (323:14,2 [2] RazorComments.cshtml)
+                    RazorIRToken - (323:14,2 [1] RazorComments.cshtml) - CSharp - a
+                    RazorIRToken - (328:14,7 [1] RazorComments.cshtml) - CSharp - b
+                HtmlContent - (330:14,9 [2] RazorComments.cshtml) - \n

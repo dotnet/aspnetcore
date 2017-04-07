@@ -1,0 +1,56 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Sections_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                DirectiveToken - (89:6,9 [8] Sections.cshtml) - Section2
+                DirectiveToken - (172:10,9 [8] Sections.cshtml) - Section1
+                DirectiveToken - (235:14,9 [15] Sections.cshtml) - NestedDelegates
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [44] Sections.cshtml)
+                    RazorIRToken - (2:0,2 [44] Sections.cshtml) - CSharp - \n    Layout = "_SectionTestLayout.cshtml"\n
+                HtmlContent - (49:3,0 [31] Sections.cshtml) - \n<div>This is in the Body>\n\n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - DefineSection("Section2", async (__razor_section_writer) => {
+                HtmlContent - (99:6,19 [10] Sections.cshtml) - \n    <div
+                HtmlAttribute - (109:7,8 [20] Sections.cshtml) -  class=" - "
+                    HtmlAttributeValue - (117:7,16 [4] Sections.cshtml) -  - some
+                    CSharpAttributeValue - (121:7,20 [7] Sections.cshtml) -  
+                        CSharpExpression - (123:7,22 [5] Sections.cshtml)
+                            RazorIRToken - (123:7,22 [5] Sections.cshtml) - CSharp - thing
+                HtmlContent - (129:7,28 [29] Sections.cshtml) - >This is in Section 2</div>\n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - });
+                HtmlContent - (159:8,1 [4] Sections.cshtml) - \n\n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - DefineSection("Section1", async (__razor_section_writer) => {
+                HtmlContent - (182:10,19 [39] Sections.cshtml) - \n    <div>This is in Section 1</div>\n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - });
+                HtmlContent - (222:12,1 [4] Sections.cshtml) - \n\n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - DefineSection("NestedDelegates", async (__razor_section_writer) => {
+                HtmlContent - (252:14,26 [6] Sections.cshtml) - \n    
+                CSharpStatement - (260:15,6 [27] Sections.cshtml)
+                    RazorIRToken - (260:15,6 [27] Sections.cshtml) - CSharp -  Func<dynamic, object> f = 
+                Template - (288:15,34 [17] Sections.cshtml)
+                    HtmlContent - (288:15,34 [6] Sections.cshtml) - <span>
+                    CSharpExpression - (295:15,41 [4] Sections.cshtml)
+                        RazorIRToken - (295:15,41 [4] Sections.cshtml) - CSharp - item
+                    HtmlContent - (299:15,45 [7] Sections.cshtml) - </span>
+                CSharpStatement - (306:15,52 [2] Sections.cshtml)
+                    RazorIRToken - (306:15,52 [2] Sections.cshtml) - CSharp - ; 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - });

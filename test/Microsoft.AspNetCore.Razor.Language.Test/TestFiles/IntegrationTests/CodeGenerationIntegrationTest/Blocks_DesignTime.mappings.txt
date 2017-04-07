@@ -1,0 +1,139 @@
+Source Location: (2:0,2 [18] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+    int i = 1;
+|
+Generated Location: (639:16,2 [18] )
+|
+    int i = 1;
+|
+
+Source Location: (26:4,1 [22] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|while(i <= 10) {
+    |
+Generated Location: (771:22,1 [22] )
+|while(i <= 10) {
+    |
+
+Source Location: (69:5,25 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|i|
+Generated Location: (933:28,25 [1] )
+|i|
+
+Source Location: (75:5,31 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+    i += 1;
+}|
+Generated Location: (1081:33,31 [16] )
+|
+    i += 1;
+}|
+
+Source Location: (96:9,1 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|if(i == 11) {
+    |
+Generated Location: (1214:40,1 [19] )
+|if(i == 11) {
+    |
+
+Source Location: (140:10,29 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+}|
+Generated Location: (1378:46,29 [3] )
+|
+}|
+
+Source Location: (148:13,1 [35] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|switch(i) {
+    case 11:
+        |
+Generated Location: (1498:52,1 [35] )
+|switch(i) {
+    case 11:
+        |
+
+Source Location: (219:15,44 [40] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+        break;
+    default:
+        |
+Generated Location: (1693:59,44 [40] )
+|
+        break;
+    default:
+        |
+
+Source Location: (288:18,37 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+        break;
+}|
+Generated Location: (1886:67,37 [19] )
+|
+        break;
+}|
+
+Source Location: (312:22,1 [39] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|for(int j = 1; j <= 10; j += 2) {
+    |
+Generated Location: (2022:74,1 [39] )
+|for(int j = 1; j <= 10; j += 2) {
+    |
+
+Source Location: (378:23,31 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|j|
+Generated Location: (2208:80,31 [1] )
+|j|
+
+Source Location: (384:23,37 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+}|
+Generated Location: (2363:85,37 [3] )
+|
+}|
+
+Source Location: (392:26,1 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|try {
+    |
+Generated Location: (2483:91,1 [11] )
+|try {
+    |
+
+Source Location: (438:27,39 [31] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+} catch(Exception ex) {
+    |
+Generated Location: (2649:97,39 [31] )
+|
+} catch(Exception ex) {
+    |
+
+Source Location: (500:29,35 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|ex.Message|
+Generated Location: (2831:104,35 [10] )
+|ex.Message|
+
+Source Location: (515:29,50 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+}|
+Generated Location: (3008:109,50 [3] )
+|
+}|
+
+Source Location: (535:32,13 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|i|
+Generated Location: (3140:115,13 [1] )
+|i|
+
+Source Location: (545:34,1 [26] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|lock(new object()) {
+    |
+Generated Location: (3259:120,1 [26] )
+|lock(new object()) {
+    |
+
+Source Location: (618:35,51 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
+|
+}|
+Generated Location: (3452:126,51 [3] )
+|
+}|
+

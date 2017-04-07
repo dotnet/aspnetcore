@@ -1,0 +1,78 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SymbolBoundAttributes_Runtime -  - 
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - [item] - items - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - [(item)] - items - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - (click) - doSomething() - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - (^click) - doSomething() - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_4 - *something - value - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - *something - value - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_6 - #local - value - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7 - #local - value - HtmlAttributeValueStyle.DoubleQuotes
+            DeclareTagHelperFields -  - TestNamespace.CatchAllTagHelper
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (31:1,0 [253] SymbolBoundAttributes.cshtml) - \n<ul [item]="items"></ul>\n<ul [(item)]="items"></ul>\n<button (click)="doSomething()">Click Me</button>\n<button (^click)="doSomething()">Click Me</button>\n<template *something="value">\n</template>\n<div #local></div>\n<div #local="value"></div>\n\n
+                TagHelper - (284:11,0 [45] SymbolBoundAttributes.cshtml)
+                    InitializeTagHelperStructure -  - ul - TagMode.StartTagAndEndTag
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    SetTagHelperProperty - (302:11,18 [5] SymbolBoundAttributes.cshtml) - [item] - ListItems - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (302:11,18 [5] SymbolBoundAttributes.cshtml) - items
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    ExecuteTagHelpers - 
+                HtmlContent - (329:11,45 [2] SymbolBoundAttributes.cshtml) - \n
+                TagHelper - (331:12,0 [49] SymbolBoundAttributes.cshtml)
+                    InitializeTagHelperStructure -  - ul - TagMode.StartTagAndEndTag
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    SetTagHelperProperty - (351:12,20 [5] SymbolBoundAttributes.cshtml) - [(item)] - ArrayItems - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (351:12,20 [5] SymbolBoundAttributes.cshtml) - items
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                    ExecuteTagHelpers - 
+                HtmlContent - (380:12,49 [2] SymbolBoundAttributes.cshtml) - \n
+                TagHelper - (382:13,0 [79] SymbolBoundAttributes.cshtml)
+                    InitializeTagHelperStructure -  - button - TagMode.StartTagAndEndTag
+                        HtmlContent - (444:13,62 [8] SymbolBoundAttributes.cshtml) - Click Me
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    SetTagHelperProperty - (405:13,23 [13] SymbolBoundAttributes.cshtml) - (click) - Event1 - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (405:13,23 [13] SymbolBoundAttributes.cshtml) - doSomething()
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    ExecuteTagHelpers - 
+                HtmlContent - (461:13,79 [2] SymbolBoundAttributes.cshtml) - \n
+                TagHelper - (463:14,0 [81] SymbolBoundAttributes.cshtml)
+                    InitializeTagHelperStructure -  - button - TagMode.StartTagAndEndTag
+                        HtmlContent - (527:14,64 [8] SymbolBoundAttributes.cshtml) - Click Me
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    SetTagHelperProperty - (487:14,24 [13] SymbolBoundAttributes.cshtml) - (^click) - Event2 - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (487:14,24 [13] SymbolBoundAttributes.cshtml) - doSomething()
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
+                    ExecuteTagHelpers - 
+                HtmlContent - (544:14,81 [2] SymbolBoundAttributes.cshtml) - \n
+                TagHelper - (546:15,0 [67] SymbolBoundAttributes.cshtml)
+                    InitializeTagHelperStructure -  - template - TagMode.StartTagAndEndTag
+                        HtmlContent - (600:15,54 [2] SymbolBoundAttributes.cshtml) - \n
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_4 - *something - StringProperty1
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5
+                    ExecuteTagHelpers - 
+                HtmlContent - (613:16,11 [2] SymbolBoundAttributes.cshtml) - \n
+                TagHelper - (615:17,0 [33] SymbolBoundAttributes.cshtml)
+                    InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    AddTagHelperHtmlAttribute -  - #localminimized - HtmlAttributeValueStyle.Minimized
+                    ExecuteTagHelpers - 
+                HtmlContent - (648:17,33 [2] SymbolBoundAttributes.cshtml) - \n
+                TagHelper - (650:18,0 [47] SymbolBoundAttributes.cshtml)
+                    InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_6 - #local - StringProperty2
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7
+                    ExecuteTagHelpers - 

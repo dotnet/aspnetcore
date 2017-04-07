@@ -1,0 +1,42 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicTagHelpers_RemoveTagHelper_Runtime -  - 
+            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_1 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes
+            DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (72:2,0 [49] BasicTagHelpers_RemoveTagHelper.cshtml) - \n<div class="randomNonTagHelperAttribute">\n    
+                TagHelper - (121:4,4 [130] BasicTagHelpers_RemoveTagHelper.cshtml)
+                    InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                        HtmlContent - (144:4,27 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - \n        
+                        TagHelper - (154:5,8 [7] BasicTagHelpers_RemoveTagHelper.cshtml)
+                            InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                            CreateTagHelper -  - TestNamespace.PTagHelper
+                            ExecuteTagHelpers - 
+                        HtmlContent - (161:5,15 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - \n        
+                        TagHelper - (171:6,8 [21] BasicTagHelpers_RemoveTagHelper.cshtml)
+                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                            CreateTagHelper -  - TestNamespace.InputTagHelper
+                            CreateTagHelper -  - TestNamespace.InputTagHelper2
+                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                            ExecuteTagHelpers - 
+                        HtmlContent - (192:6,29 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - \n        
+                        TagHelper - (202:7,8 [39] BasicTagHelpers_RemoveTagHelper.cshtml)
+                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                            CreateTagHelper -  - TestNamespace.InputTagHelper
+                            CreateTagHelper -  - TestNamespace.InputTagHelper2
+                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - type - Type
+                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - type - Type
+                            SetTagHelperProperty - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                                HtmlContent - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - true
+                            ExecuteTagHelpers - 
+                        HtmlContent - (241:7,47 [6] BasicTagHelpers_RemoveTagHelper.cshtml) - \n    
+                    CreateTagHelper -  - TestNamespace.PTagHelper
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    ExecuteTagHelpers - 
+                HtmlContent - (251:8,8 [8] BasicTagHelpers_RemoveTagHelper.cshtml) - \n</div>

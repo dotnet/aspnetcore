@@ -1,0 +1,49 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DesignTime_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning disable 219
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+                DirectiveToken - (173:11,9 [6] DesignTime.cshtml) - Footer
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - }
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [19] DesignTime.cshtml) - <div>\n            
+                CSharpStatement - (20:1,13 [36] DesignTime.cshtml)
+                    RazorIRToken - (20:1,13 [36] DesignTime.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
+                HtmlContent - (56:2,4 [17] DesignTime.cshtml) - <p>This is item #
+                CSharpExpression - (74:2,22 [1] DesignTime.cshtml)
+                    RazorIRToken - (74:2,22 [1] DesignTime.cshtml) - CSharp - i
+                HtmlContent - (75:2,23 [4] DesignTime.cshtml) - </p>
+                CSharpStatement - (79:2,27 [15] DesignTime.cshtml)
+                    RazorIRToken - (79:2,27 [15] DesignTime.cshtml) - CSharp - \n            }
+                HtmlContent - (94:3,13 [17] DesignTime.cshtml) - \n</div>\n\n<p>\n
+                CSharpExpression - (113:7,2 [12] DesignTime.cshtml)
+                    RazorIRToken - (113:7,2 [12] DesignTime.cshtml) - CSharp - Foo(Bar.Baz)
+                HtmlContent - (126:7,15 [2] DesignTime.cshtml) - \n
+                CSharpExpression - (129:8,1 [23] DesignTime.cshtml)
+                    RazorIRToken - (129:8,1 [4] DesignTime.cshtml) - CSharp - Foo(
+                    Template - (134:8,6 [18] DesignTime.cshtml)
+                        HtmlContent - (134:8,6 [7] DesignTime.cshtml) - <p>Bar 
+                        CSharpExpression - (142:8,14 [3] DesignTime.cshtml)
+                            RazorIRToken - (142:8,14 [3] DesignTime.cshtml) - CSharp - baz
+                        HtmlContent - (145:8,17 [8] DesignTime.cshtml) -  Biz</p>
+                    RazorIRToken - (153:8,25 [1] DesignTime.cshtml) - CSharp - )
+                HtmlContent - (154:8,26 [10] DesignTime.cshtml) - \n</p>\n\n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - DefineSection("Footer", async (__razor_section_writer) => {
+                HtmlContent - (181:11,17 [22] DesignTime.cshtml) - \n    <p>Foo</p>\n    
+                CSharpExpression - (204:13,5 [3] DesignTime.cshtml)
+                    RazorIRToken - (204:13,5 [3] DesignTime.cshtml) - CSharp - bar
+                HtmlContent - (207:13,8 [2] DesignTime.cshtml) - \n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - });

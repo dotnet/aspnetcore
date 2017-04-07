@@ -1,8 +1,0 @@
-Document - 
-    Checksum - 
-    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
-        UsingStatement -  - System
-        UsingStatement -  - System.Threading.Tasks
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_HtmlCommentWithQuote_Single_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (0:0,0 [45] HtmlCommentWithQuote_Single.cshtml) - <!-- ' -->\n<img src="~/images/submit.png" />

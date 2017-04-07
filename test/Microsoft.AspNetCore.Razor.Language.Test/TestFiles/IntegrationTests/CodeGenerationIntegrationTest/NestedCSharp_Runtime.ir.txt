@@ -1,0 +1,19 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedCSharp_Runtime -  - 
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - (2:0,2 [6] NestedCSharp.cshtml)
+                    RazorIRToken - (2:0,2 [6] NestedCSharp.cshtml) - CSharp - \n    
+                CSharpStatement - (9:1,5 [45] NestedCSharp.cshtml)
+                    RazorIRToken - (9:1,5 [45] NestedCSharp.cshtml) - CSharp - foreach (var result in (dynamic)Url)\n    {\n
+                HtmlContent - (54:3,0 [27] NestedCSharp.cshtml) -         <div>\n            
+                CSharpExpression - (82:4,13 [16] NestedCSharp.cshtml)
+                    RazorIRToken - (82:4,13 [16] NestedCSharp.cshtml) - CSharp - result.SomeValue
+                HtmlContent - (98:4,29 [19] NestedCSharp.cshtml) - .\n        </div>\n
+                CSharpStatement - (117:6,0 [5] NestedCSharp.cshtml)
+                    RazorIRToken - (117:6,0 [5] NestedCSharp.cshtml) - CSharp -     }
+                CSharpStatement - (122:6,5 [2] NestedCSharp.cshtml)
+                    RazorIRToken - (122:6,5 [2] NestedCSharp.cshtml) - CSharp - \n

@@ -1,9 +1,0 @@
-Document - 
-    Checksum - 
-    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
-        UsingStatement -  - System
-        UsingStatement -  - System.Threading.Tasks
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CodeBlock_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (2:0,2 [115] CodeBlock.cshtml)
-                    RazorIRToken - (2:0,2 [115] CodeBlock.cshtml) - CSharp - \n    for(int i = 1; i <= 10; i++) {\n        Output.Write("<p>Hello from C#, #" + i.ToString() + "</p>");\n    }\n

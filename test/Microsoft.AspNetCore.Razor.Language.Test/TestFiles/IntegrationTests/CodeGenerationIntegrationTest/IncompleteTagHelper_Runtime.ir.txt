@@ -1,0 +1,15 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteTagHelper_Runtime -  - 
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class -  - HtmlAttributeValueStyle.DoubleQuotes
+            DeclareTagHelperFields -  - TestNamespace.PTagHelper
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (33:1,0 [2] IncompleteTagHelper.cshtml) - \n
+                TagHelper - (35:2,0 [10] IncompleteTagHelper.cshtml)
+                    InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                    CreateTagHelper -  - TestNamespace.PTagHelper
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    ExecuteTagHelpers - 

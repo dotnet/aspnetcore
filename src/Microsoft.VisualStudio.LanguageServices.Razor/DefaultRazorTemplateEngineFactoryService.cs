@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {

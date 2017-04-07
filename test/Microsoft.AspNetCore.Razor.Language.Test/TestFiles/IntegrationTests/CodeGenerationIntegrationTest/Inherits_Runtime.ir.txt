@@ -1,0 +1,11 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inherits_Runtime - foo.bar<baz<biz>>.boz - 
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpExpression - (1:0,1 [5] Inherits.cshtml)
+                    RazorIRToken - (1:0,1 [5] Inherits.cshtml) - CSharp - foo()
+                HtmlContent - (6:0,6 [4] Inherits.cshtml) - \n\n
+                HtmlContent - (42:2,32 [5] Inherits.cshtml) - bar\n

@@ -1,0 +1,21 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DuplicateTargetTagHelper_Runtime -  - 
+            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
+            DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.CatchAllTagHelper
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (33:1,0 [2] DuplicateTargetTagHelper.cshtml) - \n
+                TagHelper - (35:2,0 [40] DuplicateTargetTagHelper.cshtml)
+                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                    CreateTagHelper -  - TestNamespace.InputTagHelper
+                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
+                    SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                    SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                    SetTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - true
+                    SetTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - true
+                    ExecuteTagHelpers - 
