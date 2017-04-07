@@ -10,9 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public class KestrelHttpParser : IHttpParser
+    public class HttpParser : IHttpParser
     {
-        public KestrelHttpParser(IKestrelTrace log)
+        public HttpParser(IKestrelTrace log)
         {
             Log = log;
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteQuestionMark = (byte)'?';
         private const byte BytePercentage = (byte)'%';
 
-        public unsafe bool ParseRequestLine<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined) where T : IHttpRequestLineHandler
+        public unsafe bool ParseRequestLine(IHttpRequestLineHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
-        private unsafe void ParseRequestLine<T>(T handler, byte* data, int length) where T : IHttpRequestLineHandler
+        private unsafe void ParseRequestLine(IHttpRequestLineHandler handler, byte* data, int length)
         {
             int offset;
             Span<byte> customMethod = default(Span<byte>);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
         }
 
-        public unsafe bool ParseHeaders<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes) where T : IHttpHeadersHandler
+        public unsafe bool ParseHeaders(IHttpHeadersHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void TakeSingleHeader<T>(byte* headerLine, int length, T handler) where T : IHttpHeadersHandler
+        private unsafe void TakeSingleHeader(byte* headerLine, int length, IHttpHeadersHandler handler)
         {
             // Skip CR, LF from end position
             var valueEnd = length - 3;

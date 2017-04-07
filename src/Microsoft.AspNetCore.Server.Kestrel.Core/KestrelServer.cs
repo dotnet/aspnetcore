@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 var serviceContext = new ServiceContext
                 {
                     Log = trace,
-                    HttpParserFactory = frame => new KestrelHttpParser(frame.ServiceContext.Log),
+                    HttpParserFactory = frame => new HttpParser(frame.ServiceContext.Log),
                     ThreadPool = threadPool,
                     DateHeaderValueManager = _dateHeaderValueManager,
                     ServerOptions = Options

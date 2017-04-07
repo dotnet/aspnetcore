@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(buffer.End, examined);
         }
 
-        private IHttpParser CreateParser(IKestrelTrace log) => new KestrelHttpParser(log);
+        private IHttpParser CreateParser(IKestrelTrace log) => new HttpParser(log);
 
         public static IEnumerable<string[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 

@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerOptions = new KestrelServerOptions(),
                 Log = new MockTrace(),
-                HttpParserFactory = f => new KestrelHttpParser(log: null)
+                HttpParserFactory = f => new HttpParser(log: null)
             };
             var frameContext = new FrameContext
             {

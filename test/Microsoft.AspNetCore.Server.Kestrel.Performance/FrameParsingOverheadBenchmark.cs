@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             public static readonly NullParser Instance = new NullParser();
 
-            public bool ParseHeaders<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes) where T : IHttpHeadersHandler
+            public bool ParseHeaders(IHttpHeadersHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes)
             {
                 handler.OnHeader(new Span<byte>(_hostHeaderName), new Span<byte>(_hostHeaderValue));
                 handler.OnHeader(new Span<byte>(_acceptHeaderName), new Span<byte>(_acceptHeaderValue));
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 return true;
             }
 
-            public bool ParseRequestLine<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined) where T : IHttpRequestLineHandler
+            public bool ParseRequestLine(IHttpRequestLineHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
             {
                 handler.OnStartLine(HttpMethod.Get,
                     HttpVersion.Http11,
