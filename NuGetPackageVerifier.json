@@ -1,7 +1,13 @@
 {
-    "Default": {
-        "rules": [
-            "DefaultCompositeRule"
+  "adx-nonshipping": {
+    "rules": [],
+    "packages": {
+      "Microsoft.AspNetCore.RangeHelper.Sources": {}
+    }
+  },
+  "Default": {
+    "rules": [
+        "DefaultCompositeRule"
         ]
     }
 }

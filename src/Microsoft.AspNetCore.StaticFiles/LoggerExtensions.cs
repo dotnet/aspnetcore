@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.StaticFiles
         private static Action<ILogger, StringValues, string, Exception> _logSendingFileRange;
         private static Action<ILogger, StringValues, string, Exception> _logCopyingFileRange;
         private static Action<ILogger, long, string, string, Exception> _logCopyingBytesToResponse;
-        private static Action<ILogger, string, Exception> _logMultipleFileRanges;
         private static Action<ILogger, Exception> _logWriteCancelled;
 
         static LoggerExtensions()
@@ -77,10 +76,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                 logLevel: LogLevel.Debug,
                 eventId: 12,
                 formatString: "Copying bytes {Start}-{End} of file {Path} to response body");
-            _logMultipleFileRanges = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Warning,
-                eventId: 13,
-                formatString: "Multiple ranges are not allowed: '{Ranges}'");
             _logWriteCancelled = LoggerMessage.Define(
                 logLevel: LogLevel.Debug,
                 eventId: 14,
@@ -154,11 +149,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                 end != null ? end.ToString() : "*",
                 path,
                 null);
-        }
-
-        public static void LogMultipleFileRanges(this ILogger logger, string range)
-        {
-            _logMultipleFileRanges(logger, range, null);
         }
 
         public static void LogWriteCancelled(this ILogger logger, Exception ex)
