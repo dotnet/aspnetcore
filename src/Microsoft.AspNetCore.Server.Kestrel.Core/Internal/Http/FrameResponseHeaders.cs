@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return GetEnumerator();
         }
 
-        public void CopyTo(ref WritableBuffer output)
+        public void CopyTo(ref WritableBufferWriter output)
         {
             CopyToFast(ref output);
             if (MaybeUnknown != null)
@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (value != null)
                         {
-                            output.WriteFast(_CrLf);
-                            output.WriteAsciiNoValidation(kv.Key);
-                            output.WriteFast(_colonSpace);
-                            output.WriteAsciiNoValidation(value);
+                            output.Write(_CrLf);
+                            PipelineExtensions.WriteAsciiNoValidation(ref output, kv.Key);
+                            output.Write(_colonSpace);
+                            PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                         }
                     }
                 }

@@ -95,97 +95,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
 
-        // Temporary until the fast write implementation propagates from corefx
-        public unsafe static void WriteFast(this WritableBuffer buffer, byte[] source)
-        {
-            buffer.WriteFast(source, 0, source.Length);
-        }
-
-        public unsafe static void WriteFast(this WritableBuffer buffer, ArraySegment<byte> source)
-        {
-            buffer.WriteFast(source.Array, source.Offset, source.Count);
-        }
-
-        public unsafe static void WriteFast(this WritableBuffer buffer, byte[] source, int offset, int length)
-        {
-            var dest = buffer.Buffer.Span;
-            var destLength = dest.Length;
-
-            if (destLength == 0)
-            {
-                buffer.Ensure();
-
-                // Get the new span and length
-                dest = buffer.Buffer.Span;
-                destLength = dest.Length;
-            }
-
-            var sourceLength = length;
-            if (sourceLength <= destLength)
-            {
-                ref byte pSource = ref source[offset];
-                ref byte pDest = ref dest.DangerousGetPinnableReference();
-                Unsafe.CopyBlockUnaligned(ref pDest, ref pSource, (uint)sourceLength);
-                buffer.Advance(sourceLength);
-                return;
-            }
-
-            buffer.WriteMultiBuffer(source, offset, length);
-        }
-
-        private static unsafe void WriteMultiBuffer(this WritableBuffer buffer, byte[] source, int offset, int length)
-        {
-            var remaining = length;
-
-            while (remaining > 0)
-            {
-                var writable = Math.Min(remaining, buffer.Buffer.Length);
-
-                buffer.Ensure(writable);
-
-                if (writable == 0)
-                {
-                    continue;
-                }
-
-                ref byte pSource = ref source[offset];
-                ref byte pDest = ref buffer.Buffer.Span.DangerousGetPinnableReference();
-
-                Unsafe.CopyBlockUnaligned(ref pDest, ref pSource, (uint)writable);
-
-                remaining -= writable;
-                offset += writable;
-
-                buffer.Advance(writable);
-            }
-        }
-
-        /// <summary>
-        /// Write string characters as ASCII without validating that characters fall in the ASCII range
-        /// </summary>
-        /// <remarks>
-        /// ASCII character validation is done by <see cref="FrameHeaders.ValidateHeaderCharacters(string)"/>
-        /// </remarks>
-        /// <param name="buffer">the buffer</param>
-        /// <param name="data">The string to write</param>
-        public unsafe static void WriteAsciiNoValidation(this WritableBuffer buffer, string data)
+        public unsafe static void WriteAsciiNoValidation(ref WritableBufferWriter buffer, string data)
         {
             if (string.IsNullOrEmpty(data))
             {
                 return;
             }
 
-            var dest = buffer.Buffer.Span;
+            var dest = buffer.Span;
             var destLength = dest.Length;
             var sourceLength = data.Length;
-
-            if (destLength == 0)
-            {
-                buffer.Ensure();
-
-                dest = buffer.Buffer.Span;
-                destLength = dest.Length;
-            }
 
             // Fast path, try copying to the available memory directly
             if (sourceLength <= destLength)
@@ -200,25 +119,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else
             {
-                buffer.WriteAsciiMultiWrite(data);
+                WriteAsciiMultiWrite(ref buffer, data);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void WriteNumeric(this WritableBuffer buffer, ulong number)
+        public unsafe static void WriteNumeric(ref WritableBufferWriter buffer, ulong number)
         {
             const byte AsciiDigitStart = (byte)'0';
 
-            var span = buffer.Buffer.Span;
+            var span = buffer.Span;
             var bytesLeftInBlock = span.Length;
-
-            if (bytesLeftInBlock == 0)
-            {
-                buffer.Ensure();
-
-                span = buffer.Buffer.Span;
-                bytesLeftInBlock = span.Length;
-            }
 
             // Fast path, try copying to the available memory directly
             var simpleWrite = true;
@@ -258,12 +169,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!simpleWrite)
             {
-                buffer.WriteNumericMultiWrite(number);
+                WriteNumericMultiWrite(ref buffer, number);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static unsafe void WriteNumericMultiWrite(this WritableBuffer buffer, ulong number)
+        private static void WriteNumericMultiWrite(ref WritableBufferWriter buffer, ulong number)
         {
             const byte AsciiDigitStart = (byte)'0';
 
@@ -280,11 +191,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             while (value != 0);
 
             var length = _maxULongByteLength - position;
-            buffer.WriteFast(new ArraySegment<byte>(byteBuffer, position, length));
+            buffer.Write(byteBuffer, position, length);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe static void WriteAsciiMultiWrite(this WritableBuffer buffer, string data)
+        private unsafe static void WriteAsciiMultiWrite(ref WritableBufferWriter buffer, string data)
         {
             var remaining = data.Length;
 
@@ -294,16 +205,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 while (remaining > 0)
                 {
-                    var writable = Math.Min(remaining, buffer.Buffer.Length);
-
-                    buffer.Ensure(writable);
+                    var writable = Math.Min(remaining, buffer.Span.Length);
 
                     if (writable == 0)
                     {
+                        buffer.Ensure();
                         continue;
                     }
 
-                    fixed (byte* output = &buffer.Buffer.Span.DangerousGetPinnableReference())
+                    fixed (byte* output = &buffer.Span.DangerousGetPinnableReference())
                     {
                         EncodeAsciiCharsToBytes(inputSlice, output, writable);
                     }

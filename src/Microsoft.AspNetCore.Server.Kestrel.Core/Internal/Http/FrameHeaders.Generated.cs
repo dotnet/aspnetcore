@@ -7753,7 +7753,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
         
-        protected void CopyToFast(ref WritableBuffer output)
+        protected void CopyToFast(ref WritableBufferWriter output)
         {
             var tempBits = _bits | (_contentLength.HasValue ? -9223372036854775808L : 0);
             
@@ -7761,7 +7761,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 { 
                     if (_headers._rawConnection != null)
                     {
-                        output.WriteFast(_headers._rawConnection);
+                        output.Write(_headers._rawConnection);
                     }
                     else 
                     {
@@ -7771,8 +7771,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Connection[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 17, 14);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 17, 14);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7787,7 +7787,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 { 
                     if (_headers._rawDate != null)
                     {
-                        output.WriteFast(_headers._rawDate);
+                        output.Write(_headers._rawDate);
                     }
                     else 
                     {
@@ -7797,8 +7797,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Date[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 31, 8);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 31, 8);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7818,8 +7818,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._ContentType[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 133, 16);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 133, 16);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7834,7 +7834,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 { 
                     if (_headers._rawServer != null)
                     {
-                        output.WriteFast(_headers._rawServer);
+                        output.Write(_headers._rawServer);
                     }
                     else 
                     {
@@ -7844,8 +7844,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Server[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 350, 10);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 350, 10);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7858,8 +7858,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 if ((tempBits & -9223372036854775808L) != 0)
                 {
-                    output.WriteFast(_headerBytes, 592, 18);
-                    output.WriteNumeric((ulong)ContentLength.Value);
+                    output.Write(_headerBytes, 592, 18);
+                    PipelineExtensions.WriteNumeric(ref output, (ulong)ContentLength.Value);
 
                     if((tempBits & ~-9223372036854775808L) == 0)
                     {
@@ -7876,8 +7876,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._CacheControl[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 0, 17);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 0, 17);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7897,8 +7897,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._KeepAlive[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 39, 14);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 39, 14);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7918,8 +7918,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Pragma[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 53, 10);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 53, 10);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7939,8 +7939,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Trailer[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 63, 11);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 63, 11);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7955,7 +7955,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 { 
                     if (_headers._rawTransferEncoding != null)
                     {
-                        output.WriteFast(_headers._rawTransferEncoding);
+                        output.Write(_headers._rawTransferEncoding);
                     }
                     else 
                     {
@@ -7965,8 +7965,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._TransferEncoding[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 74, 21);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 74, 21);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -7986,8 +7986,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Upgrade[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 95, 11);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 95, 11);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8007,8 +8007,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Via[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 106, 7);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 106, 7);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8028,8 +8028,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Warning[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 113, 11);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 113, 11);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8049,8 +8049,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Allow[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 124, 9);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 124, 9);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8070,8 +8070,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._ContentEncoding[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 149, 20);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 149, 20);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8091,8 +8091,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._ContentLanguage[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 169, 20);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 169, 20);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8112,8 +8112,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._ContentLocation[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 189, 20);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 189, 20);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8133,8 +8133,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._ContentMD5[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 209, 15);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 209, 15);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8154,8 +8154,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._ContentRange[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 224, 17);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 224, 17);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8175,8 +8175,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Expires[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 241, 11);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 241, 11);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8196,8 +8196,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._LastModified[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 252, 17);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 252, 17);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8217,8 +8217,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._AcceptRanges[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 269, 17);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 269, 17);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8238,8 +8238,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Age[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 286, 7);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 286, 7);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8259,8 +8259,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._ETag[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 293, 8);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 293, 8);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8280,8 +8280,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Location[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 301, 12);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 301, 12);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8301,8 +8301,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._ProxyAuthenticate[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 313, 22);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 313, 22);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8322,8 +8322,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._RetryAfter[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 335, 15);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 335, 15);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8343,8 +8343,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._SetCookie[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 360, 14);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 360, 14);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8364,8 +8364,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._Vary[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 374, 8);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 374, 8);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8385,8 +8385,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._WWWAuthenticate[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 382, 20);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 382, 20);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8406,8 +8406,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._AccessControlAllowCredentials[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 402, 36);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 402, 36);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8427,8 +8427,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._AccessControlAllowHeaders[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 438, 32);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 438, 32);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8448,8 +8448,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._AccessControlAllowMethods[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 470, 32);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 470, 32);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8469,8 +8469,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._AccessControlAllowOrigin[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 502, 31);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 502, 31);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8490,8 +8490,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._AccessControlExposeHeaders[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 533, 33);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 533, 33);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }
@@ -8511,8 +8511,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             var value = _headers._AccessControlMaxAge[i];
                             if (value != null)
                             {
-                                output.WriteFast(_headerBytes, 566, 26);
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headerBytes, 566, 26);
+                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
                             }
                         }
                     }

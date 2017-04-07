@@ -41,19 +41,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     return;
                 }
 
-                var writableBuffer = _pipe.Writer.Alloc();
-
+                var writableBuffer = _pipe.Writer.Alloc(1);
+                var writer = new WritableBufferWriter(writableBuffer);
                 if (buffer.Count > 0)
                 {
                     if (chunk)
                     {
-                        ChunkWriter.WriteBeginChunkBytes(ref writableBuffer, buffer.Count);
-                        writableBuffer.WriteFast(buffer);
-                        ChunkWriter.WriteEndChunkBytes(ref writableBuffer);
+                        ChunkWriter.WriteBeginChunkBytes(ref writer, buffer.Count);
+                        writer.Write(buffer.Array, buffer.Offset, buffer.Count);
+                        ChunkWriter.WriteEndChunkBytes(ref writer);
                     }
                     else
                     {
-                        writableBuffer.WriteFast(buffer);
+                        writer.Write(buffer.Array, buffer.Offset, buffer.Count);
                     }
                 }
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     return;
                 }
 
-                var buffer = _pipe.Writer.Alloc();
+                var buffer = _pipe.Writer.Alloc(1);
                 callback(buffer, state);
                 buffer.Commit();
             }
