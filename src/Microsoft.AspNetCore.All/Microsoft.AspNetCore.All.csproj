@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
@@ -139,6 +140,9 @@
     <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
 
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(AspNetCoreVersion)" PrivateAssets="None" Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="$(AspNetCoreVersion)" PrivateAssets="None" Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'" />
+    <PackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="$(AspNetCoreVersion)" PrivateAssets="None" Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'" />
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(AspNetCoreVersion)" PrivateAssets="None" Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'" />
   </ItemGroup>
 
