@@ -14,7 +14,7 @@ module.exports = merge({
     module: {
         loaders: [
             { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'ts-loader?silent=true' },
-            { test: /\.css/, loader: extractCSS.extract(['css-loader']) }
+            { test: /\.css/, loader: extractCSS.extract([ isDevelopment ? 'css-loader' : 'css-loader?minimize' ]) }
         ]
     },
     entry: {
