@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.AspNetCore.Builder
@@ -35,11 +32,6 @@ namespace Microsoft.AspNetCore.Builder
         public void MapHub<THub>(string path) where THub : Hub<IClientProxy>
         {
             _routes.MapEndpoint<HubEndPoint<THub>>(path);
-        }
-
-        public void MapHub<THub, TClient>(string path) where THub : Hub<TClient>
-        {
-            _routes.MapEndpoint<HubEndPoint<THub, TClient>>(path);
         }
     }
 }

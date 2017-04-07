@@ -22,7 +22,7 @@ namespace ChatSample.Hubs
                 Context.Connection.Dispose();
             }
 
-            await Clients.Client(Context.ConnectionId).InvokeAsync("SetUsersOnline", UsersOnline);
+            await Clients.Client(Context.ConnectionId).InvokeAsync("SetUsersOnline", await UsersOnline);
             await base.OnConnectedAsync();
         }
 

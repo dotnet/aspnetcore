@@ -19,7 +19,7 @@
 let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 let connection = new signalR.HubConnection(`http://${document.location.host}/chat`, 'formatType=json&format=text');
 
-connection.on('Send', message => appendLine(message));
+// connection.on('Send', message => appendLine(message));
 connection.onClosed = e => {
     if (e) {
         appendLine('Connection closed with error: ' + e, 'red');
@@ -33,27 +33,17 @@ connection.on('SetUsersOnline', function (usersOnline) {
     usersOnline.forEach(user => addUserOnline(user));
 });
 
-connection.on('OnConnected', function (id, userName) {
-    addUserOnline(id, userName);
-    appendLine('User ' + userName + ' joined the chat');
-});
-
-connection.on('OnDisconnected', function (id, userName) {
-    appendLine('User ' + userName + ' left the chat');
-    document.getElementById(id).outerHTML = '';
-}
-
-connection.on('UserJoined', function (user) {
-    appendLine('User ' + userName + ' joined the chat');
+connection.on('UserJoined', user => {
+    appendLine('User ' + user.Name + ' joined the chat');
     addUserOnline(user);
 });
 
-connection.on('UserLeft', function (user) {
-    appendLine('User ' + userName + ' left the chat');
+connection.on('UserLeft', user => {
+    appendLine('User ' + user.Name + ' left the chat');
     document.getElementById(user.ConnectionId).outerHTML = '';
 });
 
-connection.on('Send', function (userName, message) {
+connection.on('Send', (userName, message) => {
     var nameElement = document.createElement('b');
     nameElement.innerText = userName + ':';
 
@@ -81,13 +71,13 @@ function appendLine(line, color) {
     }
     child.innerText = line;
     document.getElementById('messages').appendChild(child);
-}
+};
 
-function addUserOnline(id, userName) {
-    var user = document.createElement('li');
-    user.innerText = userName;
-    user.id = id;
-    document.getElementById('users').appendChild(user);
+function addUserOnline (user) {
+    var userLi = document.createElement('li');
+    userLi.innerText = user.Name;
+    userLi.id = user.ConnectionId;
+    document.getElementById('users').appendChild(userLi);
 }
 
 function getParameterByName(name, url) {
@@ -100,6 +90,6 @@ function getParameterByName(name, url) {
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
-});
+};
 
 </script>
