@@ -408,7 +408,8 @@
                 <term>pot</term>
                 <Justification>file extension - powerpoint</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Core\Internal\AttributeRoute.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\netstandard1.3\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.xml;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Core\Internal\AttributeRoute.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Server.Kestrel\Internal\Infrastructure\MemoryPoolIterator.cs">
                 <term>race</term>
