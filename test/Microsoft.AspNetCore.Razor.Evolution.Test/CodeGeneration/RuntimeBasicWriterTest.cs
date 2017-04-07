@@ -316,6 +316,61 @@ if (true) { }
                 ignoreLineEndingDifferences: true);
         }
 
+        [Fact]
+        public void WriteHtmlContent_RendersContentCorrectly()
+        {
+            var writer = new RuntimeBasicWriter();
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var node = new HtmlContentIRNode()
+            {
+                Content = "SomeContent"
+            };
+
+            // Act
+            writer.WriteHtmlContent(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"WriteLiteral(""SomeContent"");
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteHtmlContent_LargeStringLiteral_UsesMultipleWrites()
+        {
+            var writer = new RuntimeBasicWriter();
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var node = new HtmlContentIRNode()
+            {
+                Content = new string('*', 2000)
+            };
+
+            // Act
+            writer.WriteHtmlContent(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(string.Format(
+@"WriteLiteral(@""{0}"");
+WriteLiteral(@""{1}"");
+", new string('*', 1024), new string('*', 976)),
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
         private class MyExtensionIRNode : ExtensionIRNode
         {
             public override IList<RazorIRNode> Children => throw new NotImplementedException();

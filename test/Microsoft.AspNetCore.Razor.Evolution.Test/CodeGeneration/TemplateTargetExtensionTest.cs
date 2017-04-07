@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 BasicWriter = new RuntimeBasicWriter(),
                 TagHelperWriter = new RuntimeTagHelperWriter(),
                 Writer = new CSharpCodeWriter(),
+                Options = RazorParserOptions.CreateDefaultOptions()
             };
 
             context.RenderChildren = (n) =>

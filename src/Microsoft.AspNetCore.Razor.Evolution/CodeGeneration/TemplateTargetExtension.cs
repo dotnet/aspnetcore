@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
@@ -23,14 +24,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             var initialRenderingConventions = context.RenderingConventions;
             context.RenderingConventions = new CSharpRedirectRenderingConventions(TemplateWriterName, context.Writer);
 
-            using (context.Push(new RedirectedBasicWriter(context.BasicWriter, TemplateWriterName)))
-            using (context.Push(new RedirectedTagHelperWriter(context.TagHelperWriter, TemplateWriterName)))
+            IDisposable basicWriterScope = null;
+            IDisposable tagHelperWriterScope = null;
+            if (!context.Options.DesignTimeMode)
             {
-                using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
-                {
-                    context.RenderChildren(node);
-                }
+                basicWriterScope = context.Push(new RedirectedRuntimeBasicWriter(TemplateWriterName));
+                tagHelperWriterScope = context.Push(new RedirectedRuntimeTagHelperWriter(TemplateWriterName));
             }
+
+            using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
+            {
+                context.RenderChildren(node);
+            }
+
+            basicWriterScope?.Dispose();
+            tagHelperWriterScope?.Dispose();
 
             context.RenderingConventions = initialRenderingConventions;
 

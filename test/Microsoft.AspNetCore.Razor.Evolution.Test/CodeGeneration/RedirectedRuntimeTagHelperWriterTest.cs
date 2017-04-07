@@ -10,39 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
     public class RedirectedTagHelperWriterTest
     {
-        // In design time this will not include the 'text writer' parameter.
-        [Fact]
-        public void WriteExecuteTagHelpers_DesignTime_DoesNormalWrite()
-        {
-            // Arrange
-            var writer = new RedirectedTagHelperWriter(new DesignTimeTagHelperWriter(), "test_writer")
-            {
-                WriteTagHelperOutputMethod = "Test",
-            };
-
-            var context = new CSharpRenderingContext()
-            {
-                Options = RazorParserOptions.CreateDefaultOptions(),
-                Writer = new Legacy.CSharpCodeWriter(),
-            };
-
-            context.Options.DesignTimeMode = true;
-
-            var node = new ExecuteTagHelpersIRNode();
-
-            // Act
-            writer.WriteExecuteTagHelpers(context, node);
-
-            // Assert
-            var csharp = context.Writer.Builder.ToString();
-            Assert.Empty(csharp);
-        }
-
         [Fact]
         public void WriteExecuteTagHelpers_Runtime_RendersWithRedirectWriter()
         {
             // Arrange
-            var writer = new RedirectedTagHelperWriter(new RuntimeTagHelperWriter(), "test_writer")
+            var writer = new RedirectedRuntimeTagHelperWriter("test_writer")
             {
                 WriteTagHelperOutputMethod = "Test",
             };

@@ -6,27 +6,21 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
-    internal class RedirectedBasicWriter : BasicWriter
+    internal class RedirectedRuntimeBasicWriter : RuntimeBasicWriter
     {
-        private readonly BasicWriter _previous;
         private readonly string _textWriter;
 
-        public RedirectedBasicWriter(BasicWriter previous, string textWriter)
+        public RedirectedRuntimeBasicWriter(string textWriter)
         {
-            _previous = previous;
             _textWriter = textWriter;
         }
 
-        public string WriteCSharpExpressionMethod { get; set; } = "WriteTo";
+        public new string WriteCSharpExpressionMethod { get; set; } = "WriteTo";
+
+        public new string WriteHtmlContentMethod { get; set; } = "WriteLiteralTo";
 
         public override void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIRNode node)
         {
-            if (context.Options.DesignTimeMode)
-            {
-                _previous.WriteCSharpExpression(context, node);
-                return;
-            }
-
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
@@ -58,19 +52,35 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             linePragmaScope?.Dispose();
         }
 
-        public override void WriteCSharpStatement(CSharpRenderingContext context, CSharpStatementIRNode node)
-        {
-            _previous.WriteCSharpStatement(context, node);
-        }
-
-        public override void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIRNode node)
-        {
-            _previous.WriteHtmlAttribute(context, node);
-        }
-
         public override void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIRNode node)
         {
-            _previous.WriteHtmlContent(context, node);
+            const int MaxStringLiteralLength = 1024;
+
+            var charactersConsumed = 0;
+
+            // Render the string in pieces to avoid Roslyn OOM exceptions at compile time: https://github.com/aspnet/External/issues/54
+            while (charactersConsumed < node.Content.Length)
+            {
+                string textToRender;
+                if (node.Content.Length <= MaxStringLiteralLength)
+                {
+                    textToRender = node.Content;
+                }
+                else
+                {
+                    var charactersToSubstring = Math.Min(MaxStringLiteralLength, node.Content.Length - charactersConsumed);
+                    textToRender = node.Content.Substring(charactersConsumed, charactersToSubstring);
+                }
+
+                context.Writer
+                    .WriteStartMethodInvocation(WriteHtmlContentMethod)
+                    .Write(_textWriter)
+                    .WriteParameterSeparator()
+                    .WriteStringLiteral(textToRender)
+                    .WriteEndMethodInvocation();
+
+                charactersConsumed += textToRender.Length;
+            }
         }
     }
 }

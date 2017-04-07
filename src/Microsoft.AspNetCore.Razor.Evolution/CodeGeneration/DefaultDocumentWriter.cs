@@ -188,6 +188,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 Context.BasicWriter.WriteCSharpStatement(Context, node);
             }
 
+            public override void VisitHtml(HtmlContentIRNode node)
+            {
+                Context.BasicWriter.WriteHtmlContent(Context, node);
+            }
+
             public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
             {
                 Context.TagHelperWriter.WriteDeclareTagHelperFields(Context, node);

@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void VisitHtml(HtmlContentIRNode node)
         {
+            // We can't remove this yet, because it's still used recursively in a few places.
             const int MaxStringLiteralLength = 1024;
 
             var charactersConsumed = 0;

@@ -10,49 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
     public class RedirectedBasicWriterTest
     {
-        // In design time this will not include the 'text writer' parameter.
-        [Fact]
-        public void WriteCSharpExpression_DesignTime_DoesNormalWrite()
-        {
-            // Arrange
-            var writer = new RedirectedBasicWriter(new DesignTimeBasicWriter(), "test_writer")
-            {
-                WriteCSharpExpressionMethod = "Test",
-            };
-
-            var context = new CSharpRenderingContext()
-            {
-                Options = RazorParserOptions.CreateDefaultOptions(),
-                Writer = new Legacy.CSharpCodeWriter(),
-            };
-
-            context.Options.DesignTimeMode = true;
-
-            var node = new CSharpExpressionIRNode();
-            var builder = RazorIRBuilder.Create(node);
-            builder.Add(new RazorIRToken()
-            {
-                Content = "i++",
-                Kind = RazorIRToken.TokenKind.CSharp,
-            });
-
-            // Act
-            writer.WriteCSharpExpression(context, node);
-
-            // Assert
-            var csharp = context.Writer.Builder.ToString();
-            Assert.Equal(
-@"__o = i++;
-",
-                csharp,
-                ignoreLineEndingDifferences: true);
-        }
-
         [Fact]
         public void WriteCSharpExpression_Runtime_SkipsLinePragma_WithoutSource()
         {
             // Arrange
-            var writer = new RedirectedBasicWriter(new DesignTimeBasicWriter(), "test_writer")
+            var writer = new RedirectedRuntimeBasicWriter("test_writer")
             {
                 WriteCSharpExpressionMethod = "Test",
             };
@@ -87,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         public void WriteCSharpExpression_Runtime_WritesLinePragma_WithSource()
         {
             // Arrange
-            var writer = new RedirectedBasicWriter(new DesignTimeBasicWriter(), "test_writer")
+            var writer = new RedirectedRuntimeBasicWriter("test_writer")
             {
                 WriteCSharpExpressionMethod = "Test",
             };
@@ -129,7 +91,7 @@ Test(test_writer, i++);
         public void WriteCSharpExpression_Runtime_WithExtensionNode_WritesPadding()
         {
             // Arrange
-            var writer = new RedirectedBasicWriter(new DesignTimeBasicWriter(), "test_writer")
+            var writer = new RedirectedRuntimeBasicWriter("test_writer")
             {
                 WriteCSharpExpressionMethod = "Test",
             };
@@ -172,7 +134,7 @@ Test(test_writer, i++);
         public void WriteCSharpExpression_Runtime_WithSource_WritesPadding()
         {
             // Arrange
-            var writer = new RedirectedBasicWriter(new DesignTimeBasicWriter(), "test_writer")
+            var writer = new RedirectedRuntimeBasicWriter("test_writer")
             {
                 WriteCSharpExpressionMethod = "Test",
             };
@@ -216,6 +178,61 @@ Test(test_writer, i++);
 #line default
 #line hidden
 ",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteHtmlContent_RendersContentCorrectly()
+        {
+            var writer = new RedirectedRuntimeBasicWriter("test_writer");
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var node = new HtmlContentIRNode()
+            {
+                Content = "SomeContent"
+            };
+
+            // Act
+            writer.WriteHtmlContent(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"WriteLiteralTo(test_writer, ""SomeContent"");
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteHtmlContent_LargeStringLiteral_UsesMultipleWrites()
+        {
+            var writer = new RedirectedRuntimeBasicWriter("test_writer");
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var node = new HtmlContentIRNode()
+            {
+                Content = new string('*', 2000)
+            };
+
+            // Act
+            writer.WriteHtmlContent(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(string.Format(
+@"WriteLiteralTo(test_writer, @""{0}"");
+WriteLiteralTo(test_writer, @""{1}"");
+", new string('*', 1024), new string('*', 976)),
                 csharp,
                 ignoreLineEndingDifferences: true);
         }

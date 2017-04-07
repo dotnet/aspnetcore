@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIRNode node)
         {
-            throw new NotImplementedException();
+            // Do nothing
         }
     }
 }

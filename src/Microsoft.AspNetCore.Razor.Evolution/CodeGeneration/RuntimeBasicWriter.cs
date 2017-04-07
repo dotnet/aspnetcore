@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
     {
         public string WriteCSharpExpressionMethod { get; set; } = "Write";
 
+        public string WriteHtmlContentMethod { get; set; } = "WriteLiteral";
+
         public override void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIRNode node)
         {
             if (context == null)
@@ -102,7 +104,31 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIRNode node)
         {
-            throw new NotImplementedException();
+            const int MaxStringLiteralLength = 1024;
+
+            var charactersConsumed = 0;
+
+            // Render the string in pieces to avoid Roslyn OOM exceptions at compile time: https://github.com/aspnet/External/issues/54
+            while (charactersConsumed < node.Content.Length)
+            {
+                string textToRender;
+                if (node.Content.Length <= MaxStringLiteralLength)
+                {
+                    textToRender = node.Content;
+                }
+                else
+                {
+                    var charactersToSubstring = Math.Min(MaxStringLiteralLength, node.Content.Length - charactersConsumed);
+                    textToRender = node.Content.Substring(charactersConsumed, charactersToSubstring);
+                }
+
+                context.Writer
+                    .WriteStartMethodInvocation(WriteHtmlContentMethod)
+                    .WriteStringLiteral(textToRender)
+                    .WriteEndMethodInvocation();
+
+                charactersConsumed += textToRender.Length;
+            }
         }
     }
 }
