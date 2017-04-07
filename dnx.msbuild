@@ -146,7 +146,13 @@
         <Copy SourceFiles="@(_SignedSymbolsBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(_SignedSymbolsBinaries->'%(SymbolsBinaryFullName)')" />
 
         <ItemGroup>
-            <VSIXBinariesToReplace Include="$(UnsignedPackagesPath)**\net451\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)">
+            <VSIXBinariesToReplace Include="$(UnsignedPackagesPath)**\net46\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)"
+                Condition="Exists('$(UnsignedPackagesPath)**\net46\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)')">
+                <DestinationPath>%(_VSIXBinariesToReplace.FullPath)</DestinationPath>
+            </VSIXBinariesToReplace>
+
+            <VSIXBinariesToReplace Include="$(UnsignedPackagesPath)**\netstandard1.3\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)"
+                Condition="!Exists('$(UnsignedPackagesPath)**\net46\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)')">
                 <DestinationPath>%(_VSIXBinariesToReplace.FullPath)</DestinationPath>
             </VSIXBinariesToReplace>
         </ItemGroup>
