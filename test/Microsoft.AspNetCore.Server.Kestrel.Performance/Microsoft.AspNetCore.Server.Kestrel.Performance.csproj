@@ -20,7 +20,6 @@
     <Compile Include="..\shared\TestApplicationErrorLogger.cs" />
     <Compile Include="..\shared\TestFrame.cs" />
     <Compile Include="..\shared\TestKestrelTrace.cs" />
-    <Compile Include="..\shared\MockConnection.cs" />
     <Compile Include="..\shared\MockSocketOutput.cs" />
   </ItemGroup>
 

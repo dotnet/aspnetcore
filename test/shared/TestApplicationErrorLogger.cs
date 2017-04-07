@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 

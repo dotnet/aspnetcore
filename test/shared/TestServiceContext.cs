@@ -1,13 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -26,21 +23,8 @@ namespace Microsoft.AspNetCore.Testing
             {
                 AddServerHeader = false
             };
-
-            TransportContext = new LibuvTransportContext
-            {
-                AppLifetime = new LifetimeNotImplemented(),
-                Log = new LibuvTrace(logger),
-                Options = new LibuvTransportOptions
-                {
-                    ThreadCount = 1,
-                    ShutdownTimeout = TimeSpan.FromSeconds(5)
-                }
-            };
         }
 
         public string DateHeaderValue { get; }
-
-        public LibuvTransportContext TransportContext { get; }
     }
 }

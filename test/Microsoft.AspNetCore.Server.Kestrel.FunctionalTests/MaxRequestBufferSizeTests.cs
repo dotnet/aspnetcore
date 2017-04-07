@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             // Timeouts large enough to prevent false positives, but small enough to fail quickly.
             socket.SendTimeout = 10 * 1000;
-            socket.ReceiveTimeout = 10 * 1000;
+            socket.ReceiveTimeout = 30 * 1000;
 
             socket.Connect(IPAddress.Loopback, port);
 
