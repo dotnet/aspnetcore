@@ -32,3 +32,4 @@ project.lock.json
 .vs/
 launchSettings.json
 global.json
+.vscode/*
