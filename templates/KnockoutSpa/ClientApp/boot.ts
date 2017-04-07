@@ -1,4 +1,5 @@
 import './css/site.css';
+import 'bootstrap';
 import * as ko from 'knockout';
 import './webpack-component-loader';
 import AppRootComponent from './components/app-root/app-root';
