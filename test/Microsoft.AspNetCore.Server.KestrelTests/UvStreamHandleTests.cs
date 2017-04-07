@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -17,15 +16,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var libuvTrace = new LibuvTrace(new TestApplicationErrorLogger());
 
-            var mockUvLoopHandle = new Mock<UvLoopHandle>(libuvTrace).Object;
-            mockUvLoopHandle.Init(new MockLibuv());
+            using (var uvLoopHandle = new UvLoopHandle(libuvTrace))
+            using (var uvTcpHandle = new UvTcpHandle(libuvTrace))
+            {
+                uvLoopHandle.Init(new MockLibuv());
+                uvTcpHandle.Init(uvLoopHandle, null);
 
-            // Need to mock UvTcpHandle instead of UvStreamHandle, since the latter lacks an Init() method
-            var mockUvStreamHandle = new Mock<UvTcpHandle>(libuvTrace).Object;
-            mockUvStreamHandle.Init(mockUvLoopHandle, null);
-
-            mockUvStreamHandle.ReadStop();
-            mockUvStreamHandle.ReadStop();
+                UvStreamHandle uvStreamHandle = uvTcpHandle;
+                uvStreamHandle.ReadStop();
+                uvStreamHandle.ReadStop();
+            }
         }
     }
 }
