@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Language;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {

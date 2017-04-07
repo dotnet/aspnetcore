@@ -17,13 +17,13 @@
         "OldTypeId": "public interface Microsoft.AspNetCore.Mvc.Razor.Compilation.ICompilationService",
         "OldMemberId": "Microsoft.AspNetCore.Mvc.Razor.Compilation.CompilationResult Compile(Microsoft.AspNetCore.Mvc.Razor.Compilation.RelativeFileInfo fileInfo, System.String compilationContent)",
         "NewTypeId": "public interface Microsoft.AspNetCore.Mvc.Razor.Compilation.ICompilationService",
-        "NewMemberId": "Microsoft.AspNetCore.Mvc.Razor.Compilation.CompilationResult Compile(Microsoft.AspNetCore.Razor.Evolution.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Evolution.RazorCSharpDocument cSharpDocument)",
+        "NewMemberId": "Microsoft.AspNetCore.Mvc.Razor.Compilation.CompilationResult Compile(Microsoft.AspNetCore.Razor.Language.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Language.RazorCSharpDocument cSharpDocument)",
         "Kind": "Modification"
   },
     {
         "OldTypeId": "public interface Microsoft.AspNetCore.Mvc.Razor.Compilation.ICompilationService",
         "NewTypeId": "public interface Microsoft.AspNetCore.Mvc.Razor.Compilation.ICompilationService",
-        "NewMemberId": "Microsoft.AspNetCore.Mvc.Razor.Compilation.CompilationResult Compile(Microsoft.AspNetCore.Razor.Evolution.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Evolution.RazorCSharpDocument cSharpDocument)",
+        "NewMemberId": "Microsoft.AspNetCore.Mvc.Razor.Compilation.CompilationResult Compile(Microsoft.AspNetCore.Razor.Language.RazorCodeDocument codeDocument, Microsoft.AspNetCore.Razor.Language.RazorCSharpDocument cSharpDocument)",
         "Kind": "Addition"
   }
 ]

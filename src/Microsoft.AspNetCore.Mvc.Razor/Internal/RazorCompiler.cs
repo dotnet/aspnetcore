@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal

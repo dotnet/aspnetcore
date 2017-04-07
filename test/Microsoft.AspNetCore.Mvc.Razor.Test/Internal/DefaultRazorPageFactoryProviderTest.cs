@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
