@@ -217,8 +217,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (!normalRead)
             {
-                Input.Complete(error);
                 var ignore = AbortAsync(error);
+
+                // Complete after aborting the connection
+                Input.Complete(error);
             }
         }
 
