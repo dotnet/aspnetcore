@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,14 +36,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Frame FrameContext { get; set; }
 
-        public void Add(string text, bool fin = false)
+        public void Add(string text)
         {
             var data = Encoding.ASCII.GetBytes(text);
             Pipe.Writer.WriteAsync(data).Wait();
-            if (fin)
-            {
-                Pipe.Writer.Complete();
-            }
         }
 
         public void ProduceContinue()

@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Internal;
 using Moq;
@@ -18,146 +17,179 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    /// <summary>
-    /// Summary description for MessageBodyTests
-    /// </summary>
     public class MessageBodyTests
     {
-        [Fact]
-        public void Http10ConnectionClose()
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public void CanReadFromContentLength(HttpVersion httpVersion)
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderContentLength = "5" }, input.FrameContext);
+                var body = MessageBody.For(httpVersion, new FrameRequestHeaders { HeaderContentLength = "5" }, input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
-                input.Add("Hello", true);
+                input.Add("Hello");
 
-                var buffer1 = new byte[1024];
-                var count1 = stream.Read(buffer1, 0, 1024);
-                AssertASCII("Hello", new ArraySegment<byte>(buffer1, 0, 5));
+                var buffer = new byte[1024];
 
-                var buffer2 = new byte[1024];
-                var count2 = stream.Read(buffer2, 0, 1024);
-                Assert.Equal(0, count2);
+                var count = stream.Read(buffer, 0, buffer.Length);
+                Assert.Equal(5, count);
+                AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, count));
+
+                count = stream.Read(buffer, 0, buffer.Length);
+                Assert.Equal(0, count);
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task CanReadAsyncFromContentLength(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For(httpVersion, new FrameRequestHeaders { HeaderContentLength = "5" }, input.FrameContext);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                var buffer = new byte[1024];
+
+                var count = await stream.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(5, count);
+                AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, count));
+
+                count = await stream.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, count);
             }
         }
 
         [Fact]
-        public async Task Http10ConnectionCloseAsync()
+        public void CanReadFromChunkedEncoding()
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderContentLength = "5" }, input.FrameContext);
+                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
-                input.Add("Hello", true);
+                input.Add("5\r\nHello\r\n");
 
-                var buffer1 = new byte[1024];
-                var count1 = await stream.ReadAsync(buffer1, 0, 1024);
-                AssertASCII("Hello", new ArraySegment<byte>(buffer1, 0, 5));
+                var buffer = new byte[1024];
 
-                var buffer2 = new byte[1024];
-                var count2 = await stream.ReadAsync(buffer2, 0, 1024);
-                Assert.Equal(0, count2);
+                var count = stream.Read(buffer, 0, buffer.Length);
+                Assert.Equal(5, count);
+                AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, count));
+
+                input.Add("0\r\n\r\n");
+
+                count = stream.Read(buffer, 0, buffer.Length);
+                Assert.Equal(0, count);
             }
         }
 
         [Fact]
-        public void Http10NoContentLength()
+        public async Task CanReadAsyncFromChunkedEncoding()
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
-                input.Add("Hello", true);
+                input.Add("5\r\nHello\r\n");
 
-                var buffer1 = new byte[1024];
-                Assert.Equal(0, stream.Read(buffer1, 0, 1024));
+                var buffer = new byte[1024];
+
+                var count = await stream.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(5, count);
+                AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, count));
+
+                input.Add("0\r\n\r\n");
+
+                count = await stream.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(0, count);
             }
         }
 
-        [Fact]
-        public async Task Http10NoContentLengthAsync()
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public void CanReadFromRemainingData(HttpVersion httpVersion)
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(httpVersion, new FrameRequestHeaders { HeaderConnection = "upgrade" }, input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
-                input.Add("Hello", true);
+                input.Add("Hello");
 
-                var buffer1 = new byte[1024];
-                Assert.Equal(0, await stream.ReadAsync(buffer1, 0, 1024));
+                var buffer = new byte[1024];
+
+                var count = stream.Read(buffer, 0, buffer.Length);
+                Assert.Equal(5, count);
+                AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, count));
             }
         }
 
-        [Fact]
-        public void Http11NoContentLength()
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task CanReadAsyncFromRemainingData(HttpVersion httpVersion)
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(httpVersion, new FrameRequestHeaders { HeaderConnection = "upgrade" }, input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
-                input.Add("Hello", true);
+                input.Add("Hello");
 
-                var buffer1 = new byte[1024];
-                Assert.Equal(0, stream.Read(buffer1, 0, 1024));
+                var buffer = new byte[1024];
+
+                var count = await stream.ReadAsync(buffer, 0, buffer.Length);
+                Assert.Equal(5, count);
+                AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, count));
             }
         }
 
-        [Fact]
-        public async Task Http11NoContentLengthAsync()
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public void ReadFromNoContentLengthReturnsZero(HttpVersion httpVersion)
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(httpVersion, new FrameRequestHeaders(), input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
-                input.Add("Hello", true);
+                input.Add("Hello");
 
-                var buffer1 = new byte[1024];
-                Assert.Equal(0, await stream.ReadAsync(buffer1, 0, 1024));
+                var buffer = new byte[1024];
+                Assert.Equal(0, stream.Read(buffer, 0, buffer.Length));
             }
         }
 
-        [Fact]
-        public void Http11NoContentLengthConnectionClose()
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task ReadAsyncFromNoContentLengthReturnsZero(HttpVersion httpVersion)
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderConnection = "close" }, input.FrameContext);
+                var body = MessageBody.For(httpVersion, new FrameRequestHeaders(), input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
-                input.Add("Hello", true);
+                input.Add("Hello");
 
-                var buffer1 = new byte[1024];
-                Assert.Equal(0, stream.Read(buffer1, 0, 1024));
-            }
-        }
-
-        [Fact]
-        public async Task Http11NoContentLengthConnectionCloseAsync()
-        {
-            using (var input = new TestInput())
-            {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderConnection = "close" }, input.FrameContext);
-                var stream = new FrameRequestStream();
-                stream.StartAcceptingReads(body);
-
-                input.Add("Hello", true);
-
-                var buffer1 = new byte[1024];
-                Assert.Equal(0, await stream.ReadAsync(buffer1, 0, 1024));
+                var buffer = new byte[1024];
+                Assert.Equal(0, await stream.ReadAsync(buffer, 0, buffer.Length));
             }
         }
 
@@ -176,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add(largeInput);
                 // Add a smaller block to the end so that SocketInput attempts to return the large
                 // block to the memory pool.
-                input.Add("Hello", fin: true);
+                input.Add("Hello");
 
                 var ms = new MemoryStream();
 
@@ -324,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await Assert.ThrowsAsync<XunitException>(() => body.CopyToAsync(writeStream));
 
-                input.Add(data[1], fin: headers.HeaderConnection == "close");
+                input.Add(data[1]);
 
                 // "Hello " should have been consumed
                 var readBuffer = new byte[6];
@@ -350,10 +382,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
-                input.Add("Hello", true);
+                input.Add("Hello");
 
                 var buffer = new byte[1024];
-                Assert.Equal(5, stream.Read(buffer, 0, 1024));
+                Assert.Equal(5, stream.Read(buffer, 0, buffer.Length));
                 AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, 5));
             }
         }
