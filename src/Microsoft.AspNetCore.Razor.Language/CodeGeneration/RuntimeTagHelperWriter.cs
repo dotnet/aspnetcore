@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
@@ -19,6 +21,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public string ExecutionContextOutputPropertyName { get; set; } = "Output";
 
         public string ExecutionContextSetOutputContentAsyncMethodName { get; set; } = "SetOutputContentAsync";
+
+        public string ExecutionContextAddHtmlAttributeMethodName { get; set; } = "AddHtmlAttribute";
 
         public string RunnerTypeName { get; set; } = "global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner";
 
@@ -43,6 +47,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public string CreateTagHelperMethodName { get; set; } = "CreateTagHelper";
 
         public string TagHelperOutputIsContentModifiedPropertyName { get; set; } = "IsContentModified";
+
+        public string BeginAddHtmlAttributeValuesMethodName { get; set; } = "BeginAddHtmlAttributeValues";
+
+        public string EndAddHtmlAttributeValuesMethodName { get; set; } = "EndAddHtmlAttributeValues";
+
+        public string BeginWriteTagHelperAttributeMethodName { get; set; } = "BeginWriteTagHelperAttribute";
+
+        public string EndWriteTagHelperAttributeMethodName { get; set; } = "EndWriteTagHelperAttribute";
+
+        public string MarkAsHtmlEncodedMethodName { get; set; } = "Html.Raw";
 
         public string WriteTagHelperOutputMethod { get; set; } = "Write";
 
@@ -127,7 +141,82 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIRNode node)
         {
-            throw new NotImplementedException();
+            var attributeValueStyleParameter = $"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.ValueStyle}";
+            var isConditionalAttributeValue = node.Children.Any(child => child is CSharpAttributeValueIRNode);
+
+            // All simple text and minimized attributes will be pre-allocated.
+            if (isConditionalAttributeValue)
+            {
+                // Dynamic attribute value should be run through the conditional attribute removal system. It's
+                // unbound and contains C#.
+
+                // TagHelper attribute rendering is buffered by default. We do not want to write to the current
+                // writer.
+                var valuePieceCount = node.Children.Count(
+                    child => child is HtmlAttributeValueIRNode || child is CSharpAttributeValueIRNode);
+
+                context.Writer
+                    .WriteStartMethodInvocation(BeginAddHtmlAttributeValuesMethodName)
+                    .Write(ExecutionContextVariableName)
+                    .WriteParameterSeparator()
+                    .WriteStringLiteral(node.Name)
+                    .WriteParameterSeparator()
+                    .Write(valuePieceCount.ToString(CultureInfo.InvariantCulture))
+                    .WriteParameterSeparator()
+                    .Write(attributeValueStyleParameter)
+                    .WriteEndMethodInvocation();
+
+                // This can be removed once all the tag helper nodes are moved out of the renderers.
+                var initialRenderingConventions = context.RenderingConventions;
+                context.RenderingConventions = new TagHelperHtmlAttributeRenderingConventions(context.Writer);
+                using (context.Push(new TagHelperHtmlAttributeRuntimeBasicWriter()))
+                {
+                    context.RenderChildren(node);
+                }
+                context.RenderingConventions = initialRenderingConventions;
+
+                context.Writer
+                    .WriteMethodInvocation(
+                        EndAddHtmlAttributeValuesMethodName,
+                        ExecutionContextVariableName);
+            }
+            else
+            {
+                // This is a data-* attribute which includes C#. Do not perform the conditional attribute removal or
+                // other special cases used when IsDynamicAttributeValue(). But the attribute must still be buffered to
+                // determine its final value.
+
+                // Attribute value is not plain text, must be buffered to determine its final value.
+                context.Writer.WriteMethodInvocation(BeginWriteTagHelperAttributeMethodName);
+
+                // We're building a writing scope around the provided chunks which captures everything written from the
+                // page. Therefore, we do not want to write to any other buffer since we're using the pages buffer to
+                // ensure we capture all content that's written, directly or indirectly.
+                // This can be removed once all the tag helper nodes are moved out of the renderers.
+                var initialRenderingConventions = context.RenderingConventions;
+                context.RenderingConventions = new CSharpRenderingConventions(context.Writer);
+                using (context.Push(new RuntimeBasicWriter()))
+                using (context.Push(new RuntimeTagHelperWriter()))
+                {
+                    context.RenderChildren(node);
+                }
+                context.RenderingConventions = initialRenderingConventions;
+
+                context.Writer
+                    .WriteStartAssignment(StringValueBufferVariableName)
+                    .WriteMethodInvocation(EndWriteTagHelperAttributeMethodName)
+                    .WriteStartInstanceMethodInvocation(
+                        ExecutionContextVariableName,
+                        ExecutionContextAddHtmlAttributeMethodName)
+                    .WriteStringLiteral(node.Name)
+                    .WriteParameterSeparator()
+                    .WriteStartMethodInvocation(MarkAsHtmlEncodedMethodName)
+                    .Write(StringValueBufferVariableName)
+                    .WriteEndMethodInvocation(endLine: false)
+                    .WriteParameterSeparator()
+                    .Write(attributeValueStyleParameter)
+                    .WriteEndMethodInvocation();
+            }
         }
 
         public override void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIRNode node)

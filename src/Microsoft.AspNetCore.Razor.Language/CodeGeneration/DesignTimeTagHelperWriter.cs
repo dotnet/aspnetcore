@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIRNode node)
         {
-            throw new NotImplementedException();
+            context.RenderChildren(node);
         }
 
         public override void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIRNode node)

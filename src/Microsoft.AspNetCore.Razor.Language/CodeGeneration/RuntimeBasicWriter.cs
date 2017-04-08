@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public string WriteHtmlContentMethod { get; set; } = "WriteLiteral";
 
+        public string WriteAttributeValueMethod { get; set; } = "WriteAttributeValue";
+
         public override void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIRNode node)
         {
             if (context == null)

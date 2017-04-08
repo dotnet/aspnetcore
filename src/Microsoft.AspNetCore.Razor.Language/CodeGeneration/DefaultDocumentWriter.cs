@@ -216,6 +216,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.TagHelperWriter.WriteCreateTagHelper(Context, node);
             }
 
+            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+            {
+                Context.TagHelperWriter.WriteAddTagHelperHtmlAttribute(Context, node);
+            }
+
             public override void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
             {
                 Context.TagHelperWriter.WriteExecuteTagHelpers(Context, node);
