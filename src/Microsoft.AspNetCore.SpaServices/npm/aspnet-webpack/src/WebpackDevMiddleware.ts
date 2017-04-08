@@ -108,7 +108,8 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
     const compiler = webpack(webpackConfig);
     app.use(require('webpack-dev-middleware')(compiler, {
         noInfo: true,
-        publicPath: webpackConfig.output.publicPath
+        publicPath: webpackConfig.output.publicPath,
+        watchOptions: webpackConfig.watchOptions
     }));
 
     // After each compilation completes, copy the in-memory filesystem to disk.
@@ -207,7 +208,7 @@ function pathJoinSafe(rootPath: string, filePath: string) {
 
 function beginWebpackWatcher(webpackConfig: webpack.Configuration) {
     const compiler = webpack(webpackConfig);
-    compiler.watch({ /* watchOptions */ }, (err, stats) => {
+    compiler.watch(webpackConfig.watchOptions || {}, (err, stats) => {
         // The default error reporter is fine for now, but could be customized here in the future if desired
     });
 }
