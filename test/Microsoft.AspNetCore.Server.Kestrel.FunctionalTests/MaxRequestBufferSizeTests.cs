@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         clientFinishedSendingRequestBody.Set();
                     };
 
-                    var gnore = sendFunc();
+                    var ignore = sendFunc();
 
                     // The minimum is (maxRequestBufferSize - maxSendSize + 1), since if bytesWritten is
                     // (maxRequestBufferSize - maxSendSize) or smaller, the client should be able to
