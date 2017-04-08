@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 #endif
             QueueCloseHandle = PostCloseHandle;
             QueueCloseAsyncHandle = EnqueueCloseHandle;
-            PipelineFactory = new PipeFactory();
+            PipeFactory = new PipeFactory();
             WriteReqPool = new WriteReqPool(this, _log);
             ConnectionManager = new LibuvConnectionManager(this);
         }
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public UvLoopHandle Loop { get { return _loop; } }
 
-        public PipeFactory PipelineFactory { get; }
+        public PipeFactory PipeFactory { get; }
 
         public LibuvConnectionManager ConnectionManager { get; }
 
@@ -140,7 +140,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                     catch (ObjectDisposedException)
                     {
-                        // Until we rework this logic, ODEs are bound to happen sometimes.
                         if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                         {
                             _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
@@ -157,34 +156,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private async Task DisposeConnectionsAsync()
         {
-            try
+            // Close and wait for all connections
+            if (!await ConnectionManager.WalkConnectionsAndCloseAsync(_shutdownTimeout).ConfigureAwait(false))
             {
-                // Close and wait for all connections
-                if (!await ConnectionManager.WalkConnectionsAndCloseAsync(_shutdownTimeout).ConfigureAwait(false))
-                {
-                    _log.NotAllConnectionsClosedGracefully();
+                _log.NotAllConnectionsClosedGracefully();
 
-                    if (!await ConnectionManager.WalkConnectionsAndAbortAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false))
-                    {
-                        _log.NotAllConnectionsAborted();
-                    }
+                if (!await ConnectionManager.WalkConnectionsAndAbortAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false))
+                {
+                    _log.NotAllConnectionsAborted();
                 }
-
-                var result = await WaitAsync(PostAsync(state =>
-                {
-                    var listener = state;
-                    listener.WriteReqPool.Dispose();
-                },
-                this), _shutdownTimeout).ConfigureAwait(false);
-
-                if (!result)
-                {
-                    _log.LogError(0, null, "Disposing write requests failed");
-                }
-            }
-            finally
-            {
-                PipelineFactory.Dispose();
             }
         }
 
@@ -334,8 +314,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             finally
             {
-                _threadTcs.SetResult(null);
+                PipeFactory.Dispose();
+                WriteReqPool.Dispose();
                 thisHandle.Free();
+                _threadTcs.SetResult(null);
             }
         }
 

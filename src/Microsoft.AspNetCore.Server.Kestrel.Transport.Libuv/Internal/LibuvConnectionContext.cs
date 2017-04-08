@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public IPEndPoint RemoteEndPoint { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
 
-        public PipeFactory PipeFactory => ListenerContext.Thread.PipelineFactory;
+        public PipeFactory PipeFactory => ListenerContext.Thread.PipeFactory;
         public IScheduler InputWriterScheduler => ListenerContext.Thread;
         public IScheduler OutputReaderScheduler => ListenerContext.Thread;
 

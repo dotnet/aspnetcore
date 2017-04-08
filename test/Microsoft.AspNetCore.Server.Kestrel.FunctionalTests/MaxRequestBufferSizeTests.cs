@@ -172,6 +172,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task ServerShutsDownGracefullyWhenMaxRequestBufferSizeExceeded()
+        {
+            // Parameters
+            var data = new byte[_dataLength];
+            var bytesWrittenTimeout = TimeSpan.FromMilliseconds(100);
+            var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
+            var maxSendSize = 4096;
+
+            var startReadingRequestBody = new ManualResetEvent(false);
+            var clientFinishedSendingRequestBody = new ManualResetEvent(false);
+            var lastBytesWritten = DateTime.MaxValue;
+
+            using (var host = StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody))
+            {
+                var port = host.GetPort();
+                using (var socket = CreateSocket(port))
+                using (var stream = new NetworkStream(socket))
+                {
+                    await WritePostRequestHeaders(stream, data.Length);
+
+                    var bytesWritten = 0;
+
+                    Func<Task> sendFunc = async () =>
+                    {
+                        while (bytesWritten < data.Length)
+                        {
+                            var size = Math.Min(data.Length - bytesWritten, maxSendSize);
+                            await stream.WriteAsync(data, bytesWritten, size);
+                            bytesWritten += size;
+                            lastBytesWritten = DateTime.Now;
+                        }
+
+                        clientFinishedSendingRequestBody.Set();
+                    };
+
+                    var gnore = sendFunc();
+
+                    // The minimum is (maxRequestBufferSize - maxSendSize + 1), since if bytesWritten is
+                    // (maxRequestBufferSize - maxSendSize) or smaller, the client should be able to
+                    // complete another send.
+                    var minimumExpectedBytesWritten = (16 * 1024) - maxSendSize + 1;
+
+                    // The maximum is harder to determine, since there can be OS-level buffers in both the client
+                    // and server, which allow the client to send more than maxRequestBufferSize before getting
+                    // paused.  We assume the combined buffers are smaller than the difference between
+                    // data.Length and maxRequestBufferSize.
+                    var maximumExpectedBytesWritten = data.Length - 1;
+
+                    // Block until the send task has gone a while without writing bytes AND
+                    // the bytes written exceeds the minimum expected.  This indicates the server buffer
+                    // is full.
+                    //
+                    // If the send task is paused before the expected number of bytes have been
+                    // written, keep waiting since the pause may have been caused by something else
+                    // like a slow machine.
+                    while ((DateTime.Now - lastBytesWritten) < bytesWrittenTimeout ||
+                           bytesWritten < minimumExpectedBytesWritten)
+                    {
+                        await Task.Delay(bytesWrittenPollingInterval);
+                    }
+
+                    // Verify the number of bytes written before the client was paused.
+                    Assert.InRange(bytesWritten, minimumExpectedBytesWritten, maximumExpectedBytesWritten);
+
+                    // Dispose host prior to closing connection to verify the server doesn't throw during shutdown
+                    // if a connection no longer has alloc and read callbacks configured.
+                    host.Dispose();
+                }
+            }
+        }
+
         private static IWebHost StartWebHost(long? maxRequestBufferSize, byte[] expectedBody, bool useConnectionAdapter, ManualResetEvent startReadingRequestBody,
             ManualResetEvent clientFinishedSendingRequestBody)
         {
