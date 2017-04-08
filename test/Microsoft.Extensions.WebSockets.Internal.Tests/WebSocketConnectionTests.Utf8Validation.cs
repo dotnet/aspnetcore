@@ -175,8 +175,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 
         // Overlong Encoding
 
-        // 'H' (1 byte char) encoded with 2, 3 and 4 bytes
-        [InlineData(new byte[] { 0xC1 }, new byte[] { 0x88 })]
+        // 'H' (1 byte char) encoded with 3 and 4 bytes
         [InlineData(new byte[] { 0xE0 }, new byte[] { 0x81, 0x88 })]
         [InlineData(new byte[] { 0xF0 }, new byte[] { 0x80, 0x81, 0x88 })]
 

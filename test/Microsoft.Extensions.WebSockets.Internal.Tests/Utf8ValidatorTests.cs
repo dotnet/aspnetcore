@@ -90,11 +90,26 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 
         // '\u0800' (3 byte char) encoded with 4 bytes
         [InlineData(new byte[] { 0xF0, 0x80, 0xA0, 0x80 })]
+
+        // Code point larger than what is allowed
+        [InlineData(new byte[] { 0xF5, 0x80, 0x80, 0x80 })]
         public void InvalidSingleFramePayloads(byte[] payload)
         {
             var validator = new Utf8Validator();
             Assert.False(validator.ValidateUtf8Frame(ReadableBuffer.Create(payload), fin: true));
         }
+
+        [Theory]
+
+        [InlineData(new byte[] { 0xC0 })] // overlong encoding of ASCII
+        [InlineData(new byte[] { 0xC1 })] // overlong encoding of ASCII
+        [InlineData(new byte[] { 0xF5 })] // larger than the unicode limit
+        public void InvalidMultiByteSequencesByFirstByte(byte[] payload)
+        {
+            var validator = new Utf8Validator();
+            Assert.False(validator.ValidateUtf8Frame(ReadableBuffer.Create(payload), fin: false));
+        }
+
 
         [Theory]
 
@@ -113,8 +128,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 
         // Overlong Encoding
 
-        // 'H' (1 byte char) encoded with 2, 3 and 4 bytes
-        [InlineData(new byte[] { 0xC1 }, new byte[] { 0x88 })]
+        // 'H' (1 byte char) encoded with 3 and 4 bytes
         [InlineData(new byte[] { 0xE0 }, new byte[] { 0x81, 0x88 })]
         [InlineData(new byte[] { 0xF0 }, new byte[] { 0x80, 0x81, 0x88 })]
 

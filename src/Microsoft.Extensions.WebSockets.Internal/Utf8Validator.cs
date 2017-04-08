@@ -12,6 +12,9 @@ namespace Microsoft.Extensions.WebSockets.Internal
     public class Utf8Validator
     {
         // Table of UTF-8 code point widths. '0' indicates an invalid first byte.
+        // 0x80 - 0xBF are the continuation bytes and invalid as first byte.
+        // 0xC0 - 0xC1 are overlong encodings of ASCII characters
+        // 0xF5 - 0xFF encode numbers that are larger than the Unicode limit (0x10FFFF)
         private static readonly byte[] _utf8Width = new byte[256]
         {
             /* 0x00 */ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, /* 0x0F */
@@ -26,10 +29,10 @@ namespace Microsoft.Extensions.WebSockets.Internal
             /* 0x90 */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 0x9F */
             /* 0xA0 */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 0xAF */
             /* 0xB0 */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 0xBF */
-            /* 0xC0 */ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, /* 0xCF */
+            /* 0xC0 */ 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, /* 0xCF */
             /* 0xD0 */ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, /* 0xDF */
             /* 0xE0 */ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, /* 0xEF */
-            /* 0xF0 */ 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, /* 0xFF */
+            /* 0xF0 */ 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 0xFF */
         };
 
         // Table of masks used to extract the code point bits from the first byte. Indexed by (width - 1)
