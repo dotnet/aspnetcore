@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpSendFileFeature = null;
         }
 
-        private object FastFeatureGet(Type key)
+        internal object FastFeatureGet(Type key)
         {
             if (key == IHttpRequestFeatureType)
             {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return ExtraFeatureGet(key);
         }
 
-        private void FastFeatureSet(Type key, object feature)
+        internal void FastFeatureSet(Type key, object feature)
         {
             _featureRevision++;
             

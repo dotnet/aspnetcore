@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _current{feature.Name} = null;")}
         }}
 
-        private object FastFeatureGet(Type key)
+        internal object FastFeatureGet(Type key)
         {{{Each(allFeatures, feature => $@"
             if (key == {feature.Name}Type)
             {{
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return ExtraFeatureGet(key);
         }}
 
-        private void FastFeatureSet(Type key, object feature)
+        internal void FastFeatureSet(Type key, object feature)
         {{
             _featureRevision++;
             {Each(allFeatures, feature => $@"
