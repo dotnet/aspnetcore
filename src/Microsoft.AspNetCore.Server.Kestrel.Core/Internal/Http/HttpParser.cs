@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System;
@@ -379,13 +378,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // Check for CR in value
-            var i = valueStart + 1;
-            if (Contains(headerLine + i, valueEnd - i, ByteCR))
+            var valueBuffer = new Span<byte>(headerLine + valueStart, valueEnd - valueStart + 1);
+            if (valueBuffer.IndexOf(ByteCR) >= 0)
             {
                 RejectRequestHeader(headerLine, length);
             }
 
             // Ignore end whitespace
+            var lengthChanged = false;
             for (; valueEnd >= valueStart; valueEnd--)
             {
                 var ch = headerLine[valueEnd];
@@ -393,48 +393,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     break;
                 }
+
+                lengthChanged = true;
+            }
+
+            if (lengthChanged)
+            {
+                // Length changed
+                valueBuffer = new Span<byte>(headerLine + valueStart, valueEnd - valueStart + 1);
             }
 
             var nameBuffer = new Span<byte>(headerLine, nameEnd);
-            var valueBuffer = new Span<byte>(headerLine + valueStart, valueEnd - valueStart + 1);
 
             handler.OnHeader(nameBuffer, valueBuffer);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe bool Contains(byte* searchSpace, int length, byte value)
-        {
-            var i = 0;
-            if (Vector.IsHardwareAccelerated)
-            {
-                // Check Vector lengths
-                if (length - Vector<byte>.Count >= i)
-                {
-                    var vValue = GetVector(value);
-                    do
-                    {
-                        if (!Vector<byte>.Zero.Equals(Vector.Equals(vValue, Unsafe.Read<Vector<byte>>(searchSpace + i))))
-                        {
-                            goto found;
-                        }
-
-                        i += Vector<byte>.Count;
-                    } while (length - Vector<byte>.Count >= i);
-                }
-            }
-
-            // Check remaining for CR
-            for (; i <= length; i++)
-            {
-                var ch = searchSpace[i];
-                if (ch == value)
-                {
-                    goto found;
-                }
-            }
-            return false;
-            found:
-            return true;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -523,15 +494,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Reset()
         {
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector<byte> GetVector(byte vectorByte)
-        {
-            // Vector<byte> .ctor doesn't become an intrinsic due to detection issue
-            // However this does cause it to become an intrinsic (with additional multiply and reg->reg copy)
-            // https://github.com/dotnet/coreclr/issues/7459#issuecomment-253965670
-            return Vector.AsVectorByte(new Vector<uint>(vectorByte * 0x01010101u));
         }
     }
 }
