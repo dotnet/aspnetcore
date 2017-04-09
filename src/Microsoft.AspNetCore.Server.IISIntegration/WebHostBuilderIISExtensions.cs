@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     // Delay register the url so users don't accidently overwrite it.
                     hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
+                    hostBuilder.PreferHostingUrls(true);
                     services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken, new PathString(path)));
                     services.Configure<ForwardedHeadersOptions>(options =>
                     {
