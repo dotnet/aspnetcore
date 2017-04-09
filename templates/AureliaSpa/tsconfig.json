@@ -6,7 +6,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "skipDefaultLibCheck": true,
-    "lib": [ "es6", "dom" ],
+    "lib": [ "es2015", "dom" ],
     "types": [ "node" ]
   },
   "exclude": [ "bin", "node_modules" ],

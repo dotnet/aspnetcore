@@ -43,7 +43,7 @@ namespace WebApplicationBasic
                 app.UseDeveloperExceptionPage();
 
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
-                    HotModuleReplacement = false // Aurelia Webpack Plugin HMR currently has issues. Leave this set to false.
+                    HotModuleReplacement = true
                 });
             }
             else
