@@ -18,6 +18,7 @@
         <OutputPath Condition="'$(Sign)' != 'Sign'">$(DNXBinPath)$(Configuration)\</OutputPath>
         <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
         <PackagesOutputPath>$(ArtifactsPath)Signed\Packages\</PackagesOutputPath>
+        <PackageCacheOutputPath>$(ArtifactsPath)Signed\PackageCache\</PackageCacheOutputPath>
         <TimestampFreePackagesOutputPath>$(ArtifactsPath)Signed\Packages-NoTimeStamp\</TimestampFreePackagesOutputPath>
         <SymbolsOutputPath>$(ArtifactsPath)Signed\Symbols\</SymbolsOutputPath>
         <SignedVSIXPath>$(ArtifactsPath)Signed\VSIX\</SignedVSIXPath>
@@ -27,6 +28,7 @@
         <UnsignedPackagesPath>$(IntermediateOutputPath)UnsignedPackages\</UnsignedPackagesPath>
         <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
         <UnsignedVSIXPath>$(IntermediateOutputPath)UnsignedVSIX\</UnsignedVSIXPath>
+        <UnsignedPackageCachePath>$(IntermediateOutputPath)UPC\</UnsignedPackageCachePath>
         <UnsignedVSIXWithSignedBinariesPath>$(IntermediateOutputPath)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
         <UnsignedBinariesPath>$(DNXBinPath)FilesToSign\</UnsignedBinariesPath>
         <BinScopePackagesPath>$(IntermediateOutputPath)\BinScopePackages\</BinScopePackagesPath>
@@ -39,6 +41,7 @@
     <PropertyGroup>
         <BinaryCodeSignCertificates>400</BinaryCodeSignCertificates>
         <VSIXCodeSignCertificates>100040160</VSIXCodeSignCertificates>
+        <ThirdParthCodeSignCertificates>135020001</ThirdParthCodeSignCertificates>
         <CodeSignDisplayName>Microsoft ASP.NET Core</CodeSignDisplayName>
         <CodeSignUrl>http://www.asp.net/</CodeSignUrl>
         <VerifySignatures Condition="'$(VerifySignatures)' == ''">true</VerifySignatures>
@@ -46,6 +49,20 @@
     </PropertyGroup>
 
     <ItemDefinitionGroup>
+        <PackageCacheThirdPartyBinariesToSign>
+            <Description>Signing third party binaries</Description>
+            <DisplayName>$(CodeSignDisplayName)</DisplayName>
+            <Url>$(CodeSignUrl)</Url>
+            <Certificates>$(ThirdParthCodeSignCertificates)</Certificates>
+        </PackageCacheThirdPartyBinariesToSign>
+        
+        <PackageCacheBinariesToSign>
+            <Description>Signing AspNetCore binaries</Description>
+            <DisplayName>$(CodeSignDisplayName)</DisplayName>
+            <Url>$(CodeSignUrl)</Url>
+            <Certificates>$(BinaryCodeSignCertificates)</Certificates>
+        </PackageCacheBinariesToSign>
+
         <BinariesToSign>
             <Description>Signing AspNetCore binaries</Description>
             <DisplayName>$(CodeSignDisplayName)</DisplayName>
