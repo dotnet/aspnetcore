@@ -9,10 +9,17 @@ Document -
                     RazorIRToken - (2:0,2 [6] NestedCSharp.cshtml) - CSharp - \n    
                 CSharpStatement - (9:1,5 [45] NestedCSharp.cshtml)
                     RazorIRToken - (9:1,5 [45] NestedCSharp.cshtml) - CSharp - foreach (var result in (dynamic)Url)\n    {\n
-                HtmlContent - (54:3,0 [27] NestedCSharp.cshtml) -         <div>\n            
+                HtmlContent - (54:3,0 [27] NestedCSharp.cshtml)
+                    RazorIRToken - (54:3,0 [8] NestedCSharp.cshtml) - Html -         
+                    RazorIRToken - (62:3,8 [5] NestedCSharp.cshtml) - Html - <div>
+                    RazorIRToken - (67:3,13 [2] NestedCSharp.cshtml) - Html - \n
+                    RazorIRToken - (69:4,0 [12] NestedCSharp.cshtml) - Html -             
                 CSharpExpression - (82:4,13 [16] NestedCSharp.cshtml)
                     RazorIRToken - (82:4,13 [16] NestedCSharp.cshtml) - CSharp - result.SomeValue
-                HtmlContent - (98:4,29 [19] NestedCSharp.cshtml) - .\n        </div>\n
+                HtmlContent - (98:4,29 [19] NestedCSharp.cshtml)
+                    RazorIRToken - (98:4,29 [11] NestedCSharp.cshtml) - Html - .\n        
+                    RazorIRToken - (109:5,8 [6] NestedCSharp.cshtml) - Html - </div>
+                    RazorIRToken - (115:5,14 [2] NestedCSharp.cshtml) - Html - \n
                 CSharpStatement - (117:6,0 [5] NestedCSharp.cshtml)
                     RazorIRToken - (117:6,0 [5] NestedCSharp.cshtml) - CSharp -     }
                 CSharpStatement - (122:6,5 [2] NestedCSharp.cshtml)

@@ -66,7 +66,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             try
             {
                 var html = Assert.IsType<HtmlContentIRNode>(node);
-                Assert.Equal(expected, html.Content);
+                var content = new StringBuilder();
+                for (var i = 0; i < html.Children.Count; i++)
+                {
+                    var token = Assert.IsType<RazorIRToken>(html.Children[i]);
+                    Assert.Equal(RazorIRToken.TokenKind.Html, token.Kind);
+                    content.Append(token.Content);
+                }
+
+                Assert.Equal(expected, content.ToString());
             }
             catch (XunitException e)
             {

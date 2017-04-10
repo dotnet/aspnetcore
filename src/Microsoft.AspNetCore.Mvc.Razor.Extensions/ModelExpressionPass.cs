@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -37,13 +38,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         Content = "ModelExpressionProvider.CreateModelExpression(ViewData, __model => ",
                     });
 
-                    if (node.Children.Count == 1 && node.Children[0] is HtmlContentIRNode)
+                    if (node.Children.Count == 1 && node.Children[0] is HtmlContentIRNode original)
                     {
                         // A 'simple' expression will look like __model => __model.Foo
                         //
                         // Note that the fact we're looking for HTML here is based on a bug.
                         // https://github.com/aspnet/Razor/issues/963
-                        var original = ((HtmlContentIRNode)node.Children[0]);
 
                         builder.Add(new RazorIRToken()
                         {
@@ -51,10 +51,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                             Content = "__model."
                         });
 
+                        var content = GetContent(original);
                         builder.Add(new RazorIRToken()
                         {
                             Kind = RazorIRToken.TokenKind.CSharp,
-                            Content = original.Content,
+                            Content = content,
                             Source = original.Source,
                         });
                     }
@@ -62,13 +63,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     {
                         for (var i = 0; i < node.Children.Count; i++)
                         {
-                            var nestedExpression = node.Children[i] as CSharpExpressionIRNode;
-                            if (nestedExpression != null)
+                            if (node.Children[i] is CSharpExpressionIRNode nestedExpression)
                             {
                                 for (var j = 0; j < nestedExpression.Children.Count; j++)
                                 {
-                                    var cSharpToken = nestedExpression.Children[j] as RazorIRToken;
-                                    if (cSharpToken != null && cSharpToken.Kind == RazorIRToken.TokenKind.CSharp)
+                                    if (nestedExpression.Children[j] is RazorIRToken cSharpToken &&
+                                        cSharpToken.IsCSharp)
                                     {
                                         builder.Add(cSharpToken);
                                     }
@@ -79,13 +79,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                             // Note that the fact we're looking for HTML here is based on a bug.
                             // https://github.com/aspnet/Razor/issues/963
-                            var html = node.Children[i] as HtmlContentIRNode;
-                            if (html != null)
+                            if (node.Children[i] is HtmlContentIRNode html)
                             {
+                                var content = GetContent(html);
                                 builder.Add(new RazorIRToken()
                                 {
                                     Kind = RazorIRToken.TokenKind.CSharp,
-                                    Content = html.Content,
+                                    Content = content,
                                     Source = html.Source,
                                 });
                             }
@@ -103,6 +103,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     node.Children.Add(expression);
                     expression.Parent = node;
                 }
+            }
+
+            private string GetContent(HtmlContentIRNode node)
+            {
+                var builder = new StringBuilder();
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    if (node.Children[i] is RazorIRToken token && token.IsHtml)
+                    {
+                        builder.Append(token.Content);
+                    }
+                }
+
+                return builder.ToString();
             }
         }
     }

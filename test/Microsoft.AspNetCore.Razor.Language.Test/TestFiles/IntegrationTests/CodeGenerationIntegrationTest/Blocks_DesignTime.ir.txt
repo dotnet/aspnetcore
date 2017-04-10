@@ -18,57 +18,91 @@ Document -
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [18] Blocks.cshtml)
                     RazorIRToken - (2:0,2 [18] Blocks.cshtml) - CSharp - \n    int i = 1;\n
-                HtmlContent - (23:3,0 [2] Blocks.cshtml) - \n
+                HtmlContent - (23:3,0 [2] Blocks.cshtml)
+                    RazorIRToken - (23:3,0 [2] Blocks.cshtml) - Html - \n
                 CSharpStatement - (26:4,1 [22] Blocks.cshtml)
                     RazorIRToken - (26:4,1 [22] Blocks.cshtml) - CSharp - while(i <= 10) {\n    
-                HtmlContent - (48:5,4 [19] Blocks.cshtml) - <p>Hello from C#, #
+                HtmlContent - (48:5,4 [19] Blocks.cshtml)
+                    RazorIRToken - (48:5,4 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (51:5,7 [16] Blocks.cshtml) - Html - Hello from C#, #
                 CSharpExpression - (69:5,25 [1] Blocks.cshtml)
                     RazorIRToken - (69:5,25 [1] Blocks.cshtml) - CSharp - i
-                HtmlContent - (71:5,27 [4] Blocks.cshtml) - </p>
+                HtmlContent - (71:5,27 [4] Blocks.cshtml)
+                    RazorIRToken - (71:5,27 [4] Blocks.cshtml) - Html - </p>
                 CSharpStatement - (75:5,31 [16] Blocks.cshtml)
                     RazorIRToken - (75:5,31 [16] Blocks.cshtml) - CSharp - \n    i += 1;\n}
-                HtmlContent - (91:7,1 [4] Blocks.cshtml) - \n\n
+                HtmlContent - (91:7,1 [4] Blocks.cshtml)
+                    RazorIRToken - (91:7,1 [4] Blocks.cshtml) - Html - \n\n
                 CSharpStatement - (96:9,1 [19] Blocks.cshtml)
                     RazorIRToken - (96:9,1 [19] Blocks.cshtml) - CSharp - if(i == 11) {\n    
-                HtmlContent - (115:10,4 [25] Blocks.cshtml) - <p>We wrote 10 lines!</p>
+                HtmlContent - (115:10,4 [25] Blocks.cshtml)
+                    RazorIRToken - (115:10,4 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (118:10,7 [18] Blocks.cshtml) - Html - We wrote 10 lines!
+                    RazorIRToken - (136:10,25 [4] Blocks.cshtml) - Html - </p>
                 CSharpStatement - (140:10,29 [3] Blocks.cshtml)
                     RazorIRToken - (140:10,29 [3] Blocks.cshtml) - CSharp - \n}
-                HtmlContent - (143:11,1 [4] Blocks.cshtml) - \n\n
+                HtmlContent - (143:11,1 [4] Blocks.cshtml)
+                    RazorIRToken - (143:11,1 [4] Blocks.cshtml) - Html - \n\n
                 CSharpStatement - (148:13,1 [35] Blocks.cshtml)
                     RazorIRToken - (148:13,1 [35] Blocks.cshtml) - CSharp - switch(i) {\n    case 11:\n        
-                HtmlContent - (183:15,8 [36] Blocks.cshtml) - <p>No really, we wrote 10 lines!</p>
+                HtmlContent - (183:15,8 [36] Blocks.cshtml)
+                    RazorIRToken - (183:15,8 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (186:15,11 [29] Blocks.cshtml) - Html - No really, we wrote 10 lines!
+                    RazorIRToken - (215:15,40 [4] Blocks.cshtml) - Html - </p>
                 CSharpStatement - (219:15,44 [40] Blocks.cshtml)
                     RazorIRToken - (219:15,44 [40] Blocks.cshtml) - CSharp - \n        break;\n    default:\n        
-                HtmlContent - (259:18,8 [29] Blocks.cshtml) - <p>Actually, we didn't...</p>
+                HtmlContent - (259:18,8 [29] Blocks.cshtml)
+                    RazorIRToken - (259:18,8 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (262:18,11 [22] Blocks.cshtml) - Html - Actually, we didn't...
+                    RazorIRToken - (284:18,33 [4] Blocks.cshtml) - Html - </p>
                 CSharpStatement - (288:18,37 [19] Blocks.cshtml)
                     RazorIRToken - (288:18,37 [19] Blocks.cshtml) - CSharp - \n        break;\n}
-                HtmlContent - (307:20,1 [4] Blocks.cshtml) - \n\n
+                HtmlContent - (307:20,1 [4] Blocks.cshtml)
+                    RazorIRToken - (307:20,1 [4] Blocks.cshtml) - Html - \n\n
                 CSharpStatement - (312:22,1 [39] Blocks.cshtml)
                     RazorIRToken - (312:22,1 [39] Blocks.cshtml) - CSharp - for(int j = 1; j <= 10; j += 2) {\n    
-                HtmlContent - (351:23,4 [25] Blocks.cshtml) - <p>Hello again from C#, #
+                HtmlContent - (351:23,4 [25] Blocks.cshtml)
+                    RazorIRToken - (351:23,4 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (354:23,7 [22] Blocks.cshtml) - Html - Hello again from C#, #
                 CSharpExpression - (378:23,31 [1] Blocks.cshtml)
                     RazorIRToken - (378:23,31 [1] Blocks.cshtml) - CSharp - j
-                HtmlContent - (380:23,33 [4] Blocks.cshtml) - </p>
+                HtmlContent - (380:23,33 [4] Blocks.cshtml)
+                    RazorIRToken - (380:23,33 [4] Blocks.cshtml) - Html - </p>
                 CSharpStatement - (384:23,37 [3] Blocks.cshtml)
                     RazorIRToken - (384:23,37 [3] Blocks.cshtml) - CSharp - \n}
-                HtmlContent - (387:24,1 [4] Blocks.cshtml) - \n\n
+                HtmlContent - (387:24,1 [4] Blocks.cshtml)
+                    RazorIRToken - (387:24,1 [4] Blocks.cshtml) - Html - \n\n
                 CSharpStatement - (392:26,1 [11] Blocks.cshtml)
                     RazorIRToken - (392:26,1 [11] Blocks.cshtml) - CSharp - try {\n    
-                HtmlContent - (403:27,4 [35] Blocks.cshtml) - <p>That time, we wrote 5 lines!</p>
+                HtmlContent - (403:27,4 [35] Blocks.cshtml)
+                    RazorIRToken - (403:27,4 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (406:27,7 [28] Blocks.cshtml) - Html - That time, we wrote 5 lines!
+                    RazorIRToken - (434:27,35 [4] Blocks.cshtml) - Html - </p>
                 CSharpStatement - (438:27,39 [31] Blocks.cshtml)
                     RazorIRToken - (438:27,39 [31] Blocks.cshtml) - CSharp - \n} catch(Exception ex) {\n    
-                HtmlContent - (469:29,4 [29] Blocks.cshtml) - <p>Oh no! An error occurred: 
+                HtmlContent - (469:29,4 [29] Blocks.cshtml)
+                    RazorIRToken - (469:29,4 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (472:29,7 [26] Blocks.cshtml) - Html - Oh no! An error occurred: 
                 CSharpExpression - (500:29,35 [10] Blocks.cshtml)
                     RazorIRToken - (500:29,35 [10] Blocks.cshtml) - CSharp - ex.Message
-                HtmlContent - (511:29,46 [4] Blocks.cshtml) - </p>
+                HtmlContent - (511:29,46 [4] Blocks.cshtml)
+                    RazorIRToken - (511:29,46 [4] Blocks.cshtml) - Html - </p>
                 CSharpStatement - (515:29,50 [3] Blocks.cshtml)
                     RazorIRToken - (515:29,50 [3] Blocks.cshtml) - CSharp - \n}
-                HtmlContent - (518:30,1 [16] Blocks.cshtml) - \n\n<p>i is now 
+                HtmlContent - (518:30,1 [16] Blocks.cshtml)
+                    RazorIRToken - (518:30,1 [4] Blocks.cshtml) - Html - \n\n
+                    RazorIRToken - (522:32,0 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (525:32,3 [9] Blocks.cshtml) - Html - i is now 
                 CSharpExpression - (535:32,13 [1] Blocks.cshtml)
                     RazorIRToken - (535:32,13 [1] Blocks.cshtml) - CSharp - i
-                HtmlContent - (536:32,14 [8] Blocks.cshtml) - </p>\n\n
+                HtmlContent - (536:32,14 [8] Blocks.cshtml)
+                    RazorIRToken - (536:32,14 [4] Blocks.cshtml) - Html - </p>
+                    RazorIRToken - (540:32,18 [4] Blocks.cshtml) - Html - \n\n
                 CSharpStatement - (545:34,1 [26] Blocks.cshtml)
                     RazorIRToken - (545:34,1 [26] Blocks.cshtml) - CSharp - lock(new object()) {\n    
-                HtmlContent - (571:35,4 [47] Blocks.cshtml) - <p>This block is locked, for your security!</p>
+                HtmlContent - (571:35,4 [47] Blocks.cshtml)
+                    RazorIRToken - (571:35,4 [3] Blocks.cshtml) - Html - <p>
+                    RazorIRToken - (574:35,7 [40] Blocks.cshtml) - Html - This block is locked, for your security!
+                    RazorIRToken - (614:35,47 [4] Blocks.cshtml) - Html - </p>
                 CSharpStatement - (618:35,51 [3] Blocks.cshtml)
                     RazorIRToken - (618:35,51 [3] Blocks.cshtml) - CSharp - \n}

@@ -23,15 +23,19 @@ Document -
                     RazorIRToken - (91:4,5 [41] NullConditionalExpressions.cshtml) - CSharp - ViewBag?.Method(Value?[23]?.More)?["key"]
                 CSharpStatement - (132:4,46 [2] NullConditionalExpressions.cshtml)
                     RazorIRToken - (132:4,46 [2] NullConditionalExpressions.cshtml) - CSharp - \n
-                HtmlContent - (137:6,0 [2] NullConditionalExpressions.cshtml) - \n
+                HtmlContent - (137:6,0 [2] NullConditionalExpressions.cshtml)
+                    RazorIRToken - (137:6,0 [2] NullConditionalExpressions.cshtml) - Html - \n
                 CSharpExpression - (140:7,1 [13] NullConditionalExpressions.cshtml)
                     RazorIRToken - (140:7,1 [13] NullConditionalExpressions.cshtml) - CSharp - ViewBag?.Data
-                HtmlContent - (153:7,14 [2] NullConditionalExpressions.cshtml) - \n
+                HtmlContent - (153:7,14 [2] NullConditionalExpressions.cshtml)
+                    RazorIRToken - (153:7,14 [2] NullConditionalExpressions.cshtml) - Html - \n
                 CSharpExpression - (156:8,1 [22] NullConditionalExpressions.cshtml)
                     RazorIRToken - (156:8,1 [22] NullConditionalExpressions.cshtml) - CSharp - ViewBag.IntIndexer?[0]
-                HtmlContent - (178:8,23 [2] NullConditionalExpressions.cshtml) - \n
+                HtmlContent - (178:8,23 [2] NullConditionalExpressions.cshtml)
+                    RazorIRToken - (178:8,23 [2] NullConditionalExpressions.cshtml) - Html - \n
                 CSharpExpression - (181:9,1 [26] NullConditionalExpressions.cshtml)
                     RazorIRToken - (181:9,1 [26] NullConditionalExpressions.cshtml) - CSharp - ViewBag.StrIndexer?["key"]
-                HtmlContent - (207:9,27 [2] NullConditionalExpressions.cshtml) - \n
+                HtmlContent - (207:9,27 [2] NullConditionalExpressions.cshtml)
+                    RazorIRToken - (207:9,27 [2] NullConditionalExpressions.cshtml) - Html - \n
                 CSharpExpression - (210:10,1 [41] NullConditionalExpressions.cshtml)
                     RazorIRToken - (210:10,1 [41] NullConditionalExpressions.cshtml) - CSharp - ViewBag?.Method(Value?[23]?.More)?["key"]

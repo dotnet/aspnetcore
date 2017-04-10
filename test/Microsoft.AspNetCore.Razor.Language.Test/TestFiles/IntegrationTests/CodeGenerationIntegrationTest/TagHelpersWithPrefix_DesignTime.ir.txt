@@ -19,8 +19,12 @@ Document -
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - InputTagHelper
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (29:0,29 [2] TagHelpersWithPrefix.cshtml) - \n
-                HtmlContent - (53:1,22 [14] TagHelpersWithPrefix.cshtml) - \n<form>\n    
+                HtmlContent - (29:0,29 [2] TagHelpersWithPrefix.cshtml)
+                    RazorIRToken - (29:0,29 [2] TagHelpersWithPrefix.cshtml) - Html - \n
+                HtmlContent - (53:1,22 [14] TagHelpersWithPrefix.cshtml)
+                    RazorIRToken - (53:1,22 [2] TagHelpersWithPrefix.cshtml) - Html - \n
+                    RazorIRToken - (55:2,0 [6] TagHelpersWithPrefix.cshtml) - Html - <form>
+                    RazorIRToken - (61:2,6 [6] TagHelpersWithPrefix.cshtml) - Html - \n    
                 TagHelper - (67:3,4 [39] TagHelpersWithPrefix.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - InputTagHelper
@@ -28,6 +32,9 @@ Document -
                         CSharpExpression - (86:3,23 [5] TagHelpersWithPrefix.cshtml)
                             RazorIRToken - (86:3,23 [5] TagHelpersWithPrefix.cshtml) - CSharp - Hello
                     AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
-                        HtmlContent - (98:3,35 [4] TagHelpersWithPrefix.cshtml) - text
+                        HtmlContent - (98:3,35 [4] TagHelpersWithPrefix.cshtml)
+                            RazorIRToken - (98:3,35 [4] TagHelpersWithPrefix.cshtml) - Html - text
                     ExecuteTagHelpers - 
-                HtmlContent - (106:3,43 [9] TagHelpersWithPrefix.cshtml) - \n</form>
+                HtmlContent - (106:3,43 [9] TagHelpersWithPrefix.cshtml)
+                    RazorIRToken - (106:3,43 [2] TagHelpersWithPrefix.cshtml) - Html - \n
+                    RazorIRToken - (108:4,0 [7] TagHelpersWithPrefix.cshtml) - Html - </form>

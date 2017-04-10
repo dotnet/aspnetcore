@@ -20,4 +20,8 @@ Document -
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (0:0,0 [18] BasicImports.cshtml) - <p>Hi there!</p>\n
+                HtmlContent - (0:0,0 [18] BasicImports.cshtml)
+                    RazorIRToken - (0:0,0 [3] BasicImports.cshtml) - Html - <p>
+                    RazorIRToken - (3:0,3 [9] BasicImports.cshtml) - Html - Hi there!
+                    RazorIRToken - (12:0,12 [4] BasicImports.cshtml) - Html - </p>
+                    RazorIRToken - (16:0,16 [2] BasicImports.cshtml) - Html - \n

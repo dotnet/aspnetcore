@@ -326,10 +326,13 @@ if (true) { }
                 Options = RazorParserOptions.CreateDefaultOptions(),
             };
 
-            var node = new HtmlContentIRNode()
+            var node = new HtmlContentIRNode();
+            node.Children.Add(new RazorIRToken()
             {
-                Content = "SomeContent"
-            };
+                Content = "SomeContent",
+                Kind = RazorIRToken.TokenKind.Html,
+                Parent = node
+            });
 
             // Act
             writer.WriteHtmlContent(context, node);
@@ -353,10 +356,14 @@ if (true) { }
                 Options = RazorParserOptions.CreateDefaultOptions(),
             };
 
-            var node = new HtmlContentIRNode()
+
+            var node = new HtmlContentIRNode();
+            node.Children.Add(new RazorIRToken()
             {
-                Content = new string('*', 2000)
-            };
+                Content = new string('*', 2000),
+                Kind = RazorIRToken.TokenKind.Html,
+                Parent = node
+            });
 
             // Act
             writer.WriteHtmlContent(context, node);

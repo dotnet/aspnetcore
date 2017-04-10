@@ -5,4 +5,5 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - Template -  - 
             RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (0:0,0 [13] HelloWorld.cshtml) - Hello, World!
+                HtmlContent - (0:0,0 [13] HelloWorld.cshtml)
+                    RazorIRToken - (0:0,0 [13] HelloWorld.cshtml) - Html - Hello, World!

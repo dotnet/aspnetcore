@@ -5,7 +5,20 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - Template -  - 
             RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (0:0,0 [36] HtmlWithDataDashAttribute.cshtml) - <html>\n<body>\n    <span data-val="
+                HtmlContent - (0:0,0 [36] HtmlWithDataDashAttribute.cshtml)
+                    RazorIRToken - (0:0,0 [6] HtmlWithDataDashAttribute.cshtml) - Html - <html>
+                    RazorIRToken - (6:0,6 [2] HtmlWithDataDashAttribute.cshtml) - Html - \n
+                    RazorIRToken - (8:1,0 [6] HtmlWithDataDashAttribute.cshtml) - Html - <body>
+                    RazorIRToken - (14:1,6 [6] HtmlWithDataDashAttribute.cshtml) - Html - \n    
+                    RazorIRToken - (20:2,4 [5] HtmlWithDataDashAttribute.cshtml) - Html - <span
+                    RazorIRToken - (25:2,9 [11] HtmlWithDataDashAttribute.cshtml) - Html -  data-val="
                 CSharpExpression - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml)
                     RazorIRToken - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml) - CSharp - Hello
-                HtmlContent - (42:2,26 [23] HtmlWithDataDashAttribute.cshtml) - " />\n</body>\n</html>"
+                HtmlContent - (42:2,26 [23] HtmlWithDataDashAttribute.cshtml)
+                    RazorIRToken - (42:2,26 [1] HtmlWithDataDashAttribute.cshtml) - Html - "
+                    RazorIRToken - (43:2,27 [3] HtmlWithDataDashAttribute.cshtml) - Html -  />
+                    RazorIRToken - (46:2,30 [2] HtmlWithDataDashAttribute.cshtml) - Html - \n
+                    RazorIRToken - (48:3,0 [7] HtmlWithDataDashAttribute.cshtml) - Html - </body>
+                    RazorIRToken - (55:3,7 [2] HtmlWithDataDashAttribute.cshtml) - Html - \n
+                    RazorIRToken - (57:4,0 [7] HtmlWithDataDashAttribute.cshtml) - Html - </html>
+                    RazorIRToken - (64:4,7 [1] HtmlWithDataDashAttribute.cshtml) - Html - "

@@ -51,11 +51,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.Content);
         }
 
-        public override void VisitHtml(HtmlContentIRNode node)
-        {
-            WriteContentNode(node, node.Content);
-        }
-
         public override void VisitHtmlAttribute(HtmlAttributeIRNode node)
         {
             WriteContentNode(node, node.Prefix, node.Suffix);

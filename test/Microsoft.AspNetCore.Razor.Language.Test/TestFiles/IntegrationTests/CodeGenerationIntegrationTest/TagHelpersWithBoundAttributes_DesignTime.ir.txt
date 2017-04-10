@@ -18,7 +18,10 @@ Document -
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - InputTagHelper
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (29:0,29 [14] TagHelpersWithBoundAttributes.cshtml) - \n<form>\n    
+                HtmlContent - (29:0,29 [14] TagHelpersWithBoundAttributes.cshtml)
+                    RazorIRToken - (29:0,29 [2] TagHelpersWithBoundAttributes.cshtml) - Html - \n
+                    RazorIRToken - (31:1,0 [6] TagHelpersWithBoundAttributes.cshtml) - Html - <form>
+                    RazorIRToken - (37:1,6 [6] TagHelpersWithBoundAttributes.cshtml) - Html - \n    
                 TagHelper - (43:2,4 [34] TagHelpersWithBoundAttributes.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - InputTagHelper
@@ -26,6 +29,9 @@ Document -
                         CSharpExpression - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml)
                             RazorIRToken - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml) - CSharp - Hello
                     AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
-                        HtmlContent - (69:2,30 [4] TagHelpersWithBoundAttributes.cshtml) - text
+                        HtmlContent - (69:2,30 [4] TagHelpersWithBoundAttributes.cshtml)
+                            RazorIRToken - (69:2,30 [4] TagHelpersWithBoundAttributes.cshtml) - Html - text
                     ExecuteTagHelpers - 
-                HtmlContent - (77:2,38 [9] TagHelpersWithBoundAttributes.cshtml) - \n</form>
+                HtmlContent - (77:2,38 [9] TagHelpersWithBoundAttributes.cshtml)
+                    RazorIRToken - (77:2,38 [2] TagHelpersWithBoundAttributes.cshtml) - Html - \n
+                    RazorIRToken - (79:3,0 [7] TagHelpersWithBoundAttributes.cshtml) - Html - </form>

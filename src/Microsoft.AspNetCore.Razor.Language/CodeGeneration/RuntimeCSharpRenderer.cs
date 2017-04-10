@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Diagnostics;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
@@ -37,20 +38,31 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // We can't remove this yet, because it's still used recursively in a few places.
             const int MaxStringLiteralLength = 1024;
 
+            var builder = new StringBuilder();
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is RazorIRToken token && token.IsHtml)
+                {
+                    builder.Append(token.Content);
+                }
+            }
+
+            var content = builder.ToString();
+
             var charactersConsumed = 0;
 
             // Render the string in pieces to avoid Roslyn OOM exceptions at compile time: https://github.com/aspnet/External/issues/54
-            while (charactersConsumed < node.Content.Length)
+            while (charactersConsumed < content.Length)
             {
                 string textToRender;
-                if (node.Content.Length <= MaxStringLiteralLength)
+                if (content.Length <= MaxStringLiteralLength)
                 {
-                    textToRender = node.Content;
+                    textToRender = content;
                 }
                 else
                 {
-                    var charactersToSubstring = Math.Min(MaxStringLiteralLength, node.Content.Length - charactersConsumed);
-                    textToRender = node.Content.Substring(charactersConsumed, charactersToSubstring);
+                    var charactersToSubstring = Math.Min(MaxStringLiteralLength, content.Length - charactersConsumed);
+                    textToRender = content.Substring(charactersConsumed, charactersToSubstring);
                 }
 
                 Context.Writer
@@ -506,18 +518,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             RazorIRNode node,
             SourceSpan documentLocation)
         {
-            if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode)
+            if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode || node is HtmlContentIRNode)
             {
                 for (var i = 0; i < node.Children.Count; i++)
                 {
                     RenderTagHelperAttributeInline(node.Children[i], documentLocation);
                 }
             }
-            else if (node is HtmlContentIRNode)
-            {
-                Context.Writer.Write(((HtmlContentIRNode)node).Content);
-            }
-            else if (node is RazorIRToken token && token.IsCSharp)
+            else if (node is RazorIRToken token)
             {
                 Context.Writer.Write(token.Content);
             }

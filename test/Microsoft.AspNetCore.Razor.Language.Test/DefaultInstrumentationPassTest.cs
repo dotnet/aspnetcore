@@ -14,11 +14,17 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var builder = RazorIRBuilder.Document();
-            builder.Add(new HtmlContentIRNode()
+            builder.Push(new HtmlContentIRNode()
             {
-                Content = "Hi",
                 Source = CreateSource(1),
             });
+            builder.Add(new RazorIRToken()
+            {
+                Content = "Hi",
+                Kind = RazorIRToken.TokenKind.Html,
+                Source = CreateSource(1)
+            });
+            builder.Pop();
 
             var irDocument = (DocumentIRNode)builder.Build();
 
@@ -40,10 +46,13 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var builder = RazorIRBuilder.Document();
-            builder.Add(new HtmlContentIRNode()
+            builder.Push(new HtmlContentIRNode());
+            builder.Add(new RazorIRToken()
             {
                 Content = "Hi",
+                Kind = RazorIRToken.TokenKind.Html,
             });
+            builder.Pop();
 
             var irDocument = (DocumentIRNode)builder.Build();
 

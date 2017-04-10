@@ -18,48 +18,72 @@ Document -
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (31:0,31 [73] BasicTagHelpers.cshtml) - \n\n<div data-animation="fade" class="randomNonTagHelperAttribute">\n    
+                HtmlContent - (31:0,31 [73] BasicTagHelpers.cshtml)
+                    RazorIRToken - (31:0,31 [4] BasicTagHelpers.cshtml) - Html - \n\n
+                    RazorIRToken - (35:2,0 [4] BasicTagHelpers.cshtml) - Html - <div
+                    RazorIRToken - (39:2,4 [17] BasicTagHelpers.cshtml) - Html -  data-animation="
+                    RazorIRToken - (56:2,21 [4] BasicTagHelpers.cshtml) - Html - fade
+                    RazorIRToken - (60:2,25 [1] BasicTagHelpers.cshtml) - Html - "
+                    RazorIRToken - (61:2,26 [36] BasicTagHelpers.cshtml) - Html -  class="randomNonTagHelperAttribute"
+                    RazorIRToken - (97:2,62 [1] BasicTagHelpers.cshtml) - Html - >
+                    RazorIRToken - (98:2,63 [6] BasicTagHelpers.cshtml) - Html - \n    
                 TagHelper - (104:3,4 [216] BasicTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
-                        HtmlContent - (145:3,45 [10] BasicTagHelpers.cshtml) - \n        
+                        HtmlContent - (145:3,45 [10] BasicTagHelpers.cshtml)
+                            RazorIRToken - (145:3,45 [10] BasicTagHelpers.cshtml) - Html - \n        
                         TagHelper - (155:4,8 [25] BasicTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
                             CreateTagHelper -  - TestNamespace.PTagHelper
                             AddTagHelperHtmlAttribute -  - data - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (164:4,17 [10] BasicTagHelpers.cshtml) - -delay1000
+                                HtmlContent - (164:4,17 [10] BasicTagHelpers.cshtml)
+                                    RazorIRToken - (164:4,17 [10] BasicTagHelpers.cshtml) - Html - -delay1000
                             ExecuteTagHelpers - 
-                        HtmlContent - (180:4,33 [10] BasicTagHelpers.cshtml) - \n        
+                        HtmlContent - (180:4,33 [10] BasicTagHelpers.cshtml)
+                            RazorIRToken - (180:4,33 [10] BasicTagHelpers.cshtml) - Html - \n        
                         TagHelper - (190:5,8 [71] BasicTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.StartTagOnly
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             AddTagHelperHtmlAttribute -  - data-interval - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (212:5,30 [7] BasicTagHelpers.cshtml) - 2000 + 
+                                HtmlContent - (212:5,30 [7] BasicTagHelpers.cshtml)
+                                    RazorIRToken - (212:5,30 [7] BasicTagHelpers.cshtml) - Html - 2000 + 
                                 CSharpExpression - (220:5,38 [23] BasicTagHelpers.cshtml)
                                     RazorIRToken - (220:5,38 [23] BasicTagHelpers.cshtml) - CSharp - ViewBag.DefaultInterval
-                                HtmlContent - (243:5,61 [4] BasicTagHelpers.cshtml) -  + 1
+                                HtmlContent - (243:5,61 [4] BasicTagHelpers.cshtml)
+                                    RazorIRToken - (243:5,61 [4] BasicTagHelpers.cshtml) - Html -  + 1
                             SetTagHelperProperty - (255:5,73 [4] BasicTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (255:5,73 [4] BasicTagHelpers.cshtml) - text
+                                HtmlContent - (255:5,73 [4] BasicTagHelpers.cshtml)
+                                    RazorIRToken - (255:5,73 [4] BasicTagHelpers.cshtml) - Html - text
                             SetTagHelperProperty - (255:5,73 [4] BasicTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (255:5,73 [4] BasicTagHelpers.cshtml) - text
+                                HtmlContent - (255:5,73 [4] BasicTagHelpers.cshtml)
+                                    RazorIRToken - (255:5,73 [4] BasicTagHelpers.cshtml) - Html - text
                             ExecuteTagHelpers - 
-                        HtmlContent - (261:5,79 [10] BasicTagHelpers.cshtml) - \n        
+                        HtmlContent - (261:5,79 [10] BasicTagHelpers.cshtml)
+                            RazorIRToken - (261:5,79 [10] BasicTagHelpers.cshtml) - Html - \n        
                         TagHelper - (271:6,8 [39] BasicTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             SetTagHelperProperty - (284:6,21 [8] BasicTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (284:6,21 [8] BasicTagHelpers.cshtml) - checkbox
+                                HtmlContent - (284:6,21 [8] BasicTagHelpers.cshtml)
+                                    RazorIRToken - (284:6,21 [8] BasicTagHelpers.cshtml) - Html - checkbox
                             SetTagHelperProperty - (284:6,21 [8] BasicTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (284:6,21 [8] BasicTagHelpers.cshtml) - checkbox
+                                HtmlContent - (284:6,21 [8] BasicTagHelpers.cshtml)
+                                    RazorIRToken - (284:6,21 [8] BasicTagHelpers.cshtml) - Html - checkbox
                             SetTagHelperProperty - (303:6,40 [4] BasicTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (303:6,40 [4] BasicTagHelpers.cshtml) - true
+                                HtmlContent - (303:6,40 [4] BasicTagHelpers.cshtml)
+                                    RazorIRToken - (303:6,40 [4] BasicTagHelpers.cshtml) - Html - true
                             ExecuteTagHelpers - 
-                        HtmlContent - (310:6,47 [6] BasicTagHelpers.cshtml) - \n    
+                        HtmlContent - (310:6,47 [6] BasicTagHelpers.cshtml)
+                            RazorIRToken - (310:6,47 [6] BasicTagHelpers.cshtml) - Html - \n    
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (114:3,14 [11] BasicTagHelpers.cshtml) - Hello World
+                        HtmlContent - (114:3,14 [11] BasicTagHelpers.cshtml)
+                            RazorIRToken - (114:3,14 [11] BasicTagHelpers.cshtml) - Html - Hello World
                     AddTagHelperHtmlAttribute -  - data-delay - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (139:3,39 [4] BasicTagHelpers.cshtml) - 1000
+                        HtmlContent - (139:3,39 [4] BasicTagHelpers.cshtml)
+                            RazorIRToken - (139:3,39 [4] BasicTagHelpers.cshtml) - Html - 1000
                     ExecuteTagHelpers - 
-                HtmlContent - (320:7,8 [8] BasicTagHelpers.cshtml) - \n</div>
+                HtmlContent - (320:7,8 [8] BasicTagHelpers.cshtml)
+                    RazorIRToken - (320:7,8 [2] BasicTagHelpers.cshtml) - Html - \n
+                    RazorIRToken - (322:8,0 [6] BasicTagHelpers.cshtml) - Html - </div>

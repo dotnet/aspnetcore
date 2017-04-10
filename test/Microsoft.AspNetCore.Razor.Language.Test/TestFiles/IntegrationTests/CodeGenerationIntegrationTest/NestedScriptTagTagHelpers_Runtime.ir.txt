@@ -9,35 +9,71 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - data-delay - 1000 - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (33:1,0 [106] NestedScriptTagTagHelpers.cshtml) - \n<script type="text/html">\n    <div data-animation="fade" class="randomNonTagHelperAttribute">\n        
+                HtmlContent - (33:1,0 [106] NestedScriptTagTagHelpers.cshtml)
+                    RazorIRToken - (33:1,0 [2] NestedScriptTagTagHelpers.cshtml) - Html - \n
+                    RazorIRToken - (35:2,0 [7] NestedScriptTagTagHelpers.cshtml) - Html - <script
+                    RazorIRToken - (42:2,7 [17] NestedScriptTagTagHelpers.cshtml) - Html -  type="text/html"
+                    RazorIRToken - (59:2,24 [1] NestedScriptTagTagHelpers.cshtml) - Html - >
+                    RazorIRToken - (60:2,25 [6] NestedScriptTagTagHelpers.cshtml) - Html - \n    
+                    RazorIRToken - (66:3,4 [4] NestedScriptTagTagHelpers.cshtml) - Html - <div
+                    RazorIRToken - (70:3,8 [17] NestedScriptTagTagHelpers.cshtml) - Html -  data-animation="
+                    RazorIRToken - (87:3,25 [4] NestedScriptTagTagHelpers.cshtml) - Html - fade
+                    RazorIRToken - (91:3,29 [1] NestedScriptTagTagHelpers.cshtml) - Html - "
+                    RazorIRToken - (92:3,30 [36] NestedScriptTagTagHelpers.cshtml) - Html -  class="randomNonTagHelperAttribute"
+                    RazorIRToken - (128:3,66 [1] NestedScriptTagTagHelpers.cshtml) - Html - >
+                    RazorIRToken - (129:3,67 [10] NestedScriptTagTagHelpers.cshtml) - Html - \n        
                 TagHelper - (139:4,8 [433] NestedScriptTagTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
-                        HtmlContent - (180:4,49 [2] NestedScriptTagTagHelpers.cshtml) - \n
+                        HtmlContent - (180:4,49 [2] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (180:4,49 [2] NestedScriptTagTagHelpers.cshtml) - Html - \n
                         CSharpStatement - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml) - CSharp -             
                         CSharpStatement - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml) - CSharp - for(var i = 0; i < 5; i++) {\n
-                        HtmlContent - (225:6,0 [84] NestedScriptTagTagHelpers.cshtml) -                 <script id="nestedScriptTag" type="text/html">\n                    
+                        HtmlContent - (225:6,0 [84] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (225:6,0 [16] NestedScriptTagTagHelpers.cshtml) - Html -                 
+                            RazorIRToken - (241:6,16 [7] NestedScriptTagTagHelpers.cshtml) - Html - <script
+                            RazorIRToken - (248:6,23 [21] NestedScriptTagTagHelpers.cshtml) - Html -  id="nestedScriptTag"
+                            RazorIRToken - (269:6,44 [17] NestedScriptTagTagHelpers.cshtml) - Html -  type="text/html"
+                            RazorIRToken - (286:6,61 [1] NestedScriptTagTagHelpers.cshtml) - Html - >
+                            RazorIRToken - (287:6,62 [22] NestedScriptTagTagHelpers.cshtml) - Html - \n                    
                         TagHelper - (309:7,20 [86] NestedScriptTagTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.StartTagOnly
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             AddTagHelperHtmlAttribute -  - data-interval - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml) - 2000 + 
+                                HtmlContent - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml)
+                                    RazorIRToken - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml) - Html - 2000 + 
                                 CSharpExpression - (339:7,50 [23] NestedScriptTagTagHelpers.cshtml)
                                     RazorIRToken - (339:7,50 [23] NestedScriptTagTagHelpers.cshtml) - CSharp - ViewBag.DefaultInterval
-                                HtmlContent - (362:7,73 [4] NestedScriptTagTagHelpers.cshtml) -  + 1
+                                HtmlContent - (362:7,73 [4] NestedScriptTagTagHelpers.cshtml)
+                                    RazorIRToken - (362:7,73 [4] NestedScriptTagTagHelpers.cshtml) - Html -  + 1
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetTagHelperProperty - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - true
+                                HtmlContent - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml)
+                                    RazorIRToken - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - Html - true
                             ExecuteTagHelpers - 
-                        HtmlContent - (395:7,106 [29] NestedScriptTagTagHelpers.cshtml) - \n                </script>\n
+                        HtmlContent - (395:7,106 [29] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (395:7,106 [18] NestedScriptTagTagHelpers.cshtml) - Html - \n                
+                            RazorIRToken - (413:8,16 [9] NestedScriptTagTagHelpers.cshtml) - Html - </script>
+                            RazorIRToken - (422:8,25 [2] NestedScriptTagTagHelpers.cshtml) - Html - \n
                         CSharpStatement - (424:9,0 [15] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (424:9,0 [15] NestedScriptTagTagHelpers.cshtml) - CSharp -             }\n
-                        HtmlContent - (439:10,0 [129] NestedScriptTagTagHelpers.cshtml) -             <script type="text/javascript">\n                var tag = '<input checked="true">';\n            </script>\n        
+                        HtmlContent - (439:10,0 [129] NestedScriptTagTagHelpers.cshtml)
+                            RazorIRToken - (439:10,0 [12] NestedScriptTagTagHelpers.cshtml) - Html -             
+                            RazorIRToken - (451:10,12 [7] NestedScriptTagTagHelpers.cshtml) - Html - <script
+                            RazorIRToken - (458:10,19 [23] NestedScriptTagTagHelpers.cshtml) - Html -  type="text/javascript"
+                            RazorIRToken - (481:10,42 [1] NestedScriptTagTagHelpers.cshtml) - Html - >
+                            RazorIRToken - (482:10,43 [67] NestedScriptTagTagHelpers.cshtml) - Html - \n                var tag = '<input checked="true">';\n            
+                            RazorIRToken - (549:12,12 [9] NestedScriptTagTagHelpers.cshtml) - Html - </script>
+                            RazorIRToken - (558:12,21 [10] NestedScriptTagTagHelpers.cshtml) - Html - \n        
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                     ExecuteTagHelpers - 
-                HtmlContent - (572:13,12 [23] NestedScriptTagTagHelpers.cshtml) - \n    </div>\n</script>
+                HtmlContent - (572:13,12 [23] NestedScriptTagTagHelpers.cshtml)
+                    RazorIRToken - (572:13,12 [6] NestedScriptTagTagHelpers.cshtml) - Html - \n    
+                    RazorIRToken - (578:14,4 [6] NestedScriptTagTagHelpers.cshtml) - Html - </div>
+                    RazorIRToken - (584:14,10 [2] NestedScriptTagTagHelpers.cshtml) - Html - \n
+                    RazorIRToken - (586:15,0 [9] NestedScriptTagTagHelpers.cshtml) - Html - </script>

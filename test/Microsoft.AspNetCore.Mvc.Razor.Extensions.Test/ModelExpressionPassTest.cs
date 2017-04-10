@@ -49,8 +49,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var tagHelper = FindTagHelperNode(irDocument);
             var setProperty = tagHelper.Children.OfType<SetTagHelperPropertyIRNode>().Single();
 
-            var child = Assert.IsType<HtmlContentIRNode>(Assert.Single(setProperty.Children));
-            Assert.Equal("17", child.Content);
+            var html = Assert.IsType<HtmlContentIRNode>(Assert.Single(setProperty.Children));
+            var token = Assert.IsType<RazorIRToken>(Assert.Single(html.Children));
+            Assert.Equal("17", token.Content);
         }
 
         [Fact]

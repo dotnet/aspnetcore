@@ -404,12 +404,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                     }
                 }
 
+                var source = BuildSourceSpanFromNode(span);
                 var currentChildren = _builder.Current.Children;
                 if (currentChildren.Count > 0 && currentChildren[currentChildren.Count - 1] is HtmlContentIRNode)
                 {
                     var existingHtmlContent = (HtmlContentIRNode)currentChildren[currentChildren.Count - 1];
 
-                    var source = BuildSourceSpanFromNode(span);
                     if (existingHtmlContent.Source == null && source == null)
                     {
                         Combine(existingHtmlContent, span);
@@ -426,11 +426,20 @@ namespace Microsoft.AspNetCore.Razor.Language
                     }
                 }
 
-                _builder.Add(new HtmlContentIRNode()
+                var contentNode = new HtmlContentIRNode()
+                {
+                    Source = source
+                };
+                _builder.Push(contentNode);
+
+                _builder.Add(new RazorIRToken()
                 {
                     Content = span.Content,
-                    Source = BuildSourceSpanFromNode(span),
+                    Kind = RazorIRToken.TokenKind.Html,
+                    Source = source,
                 });
+
+                _builder.Pop();
             }
 
             public override void VisitTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
@@ -473,7 +482,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             private void Combine(HtmlContentIRNode node, Span span)
             {
-                node.Content = node.Content + span.Content;
+                node.Children.Add(new RazorIRToken()
+                {
+                    Content = span.Content,
+                    Kind = RazorIRToken.TokenKind.Html,
+                    Source = BuildSourceSpanFromNode(span),
+                    Parent = node
+                });
+
                 if (node.Source != null)
                 {
                     Debug.Assert(node.Source.Value.FilePath != null);
@@ -483,7 +499,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         node.Source.Value.AbsoluteIndex,
                         node.Source.Value.LineIndex,
                         node.Source.Value.CharacterIndex,
-                        node.Content.Length);
+                        node.Source.Value.Length + span.Content.Length);
                 }
             }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
@@ -240,8 +241,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var tagHelperRenderingContext = Context.TagHelperRenderingContext;
             var propertyValueAccessor = GetTagHelperPropertyAccessor(node.IsIndexerNameMatch, tagHelperVariableName, node.AttributeName, node.Descriptor);
 
-            string previousValueAccessor;
-            if (tagHelperRenderingContext.RenderedBoundAttributes.TryGetValue(node.AttributeName, out previousValueAccessor))
+            if (tagHelperRenderingContext.RenderedBoundAttributes.TryGetValue(node.AttributeName, out string previousValueAccessor))
             {
                 Context.Writer
                     .WriteStartAssignment(propertyValueAccessor)
@@ -260,13 +260,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 VisitDefault(node);
 
                 Context.Writer.WriteStartAssignment(propertyValueAccessor);
-                if (node.Children.Count == 1 && node.Children.First() is HtmlContentIRNode)
+                if (node.Children.Count == 1 && node.Children.First() is HtmlContentIRNode htmlNode)
                 {
-                    var htmlNode = node.Children.First() as HtmlContentIRNode;
-                    if (htmlNode != null)
-                    {
-                        Context.Writer.WriteStringLiteral(htmlNode.Content);
-                    }
+                    var content = GetContent(htmlNode);
+                    Context.Writer.WriteStringLiteral(content);
                 }
                 else
                 {
@@ -324,23 +321,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             RazorIRNode node,
             SourceSpan documentLocation)
         {
-            if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode)
+            if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode || node is HtmlContentIRNode)
             {
                 for (var i = 0; i < node.Children.Count; i++)
                 {
                     RenderTagHelperAttributeInline(node.Children[i], documentLocation);
                 }
             }
-            else if (node is HtmlContentIRNode)
-            {
-                if (node.Source != null)
-                {
-                    Context.AddLineMappingFor(node);
-                }
-
-                Context.Writer.Write(((HtmlContentIRNode)node).Content);
-            }
-            else if (node is RazorIRToken token && token.IsCSharp)
+            else if (node is RazorIRToken token)
             {
                 if (node.Source != null)
                 {
@@ -366,6 +354,20 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     documentLocation.Length);
                 Context.Diagnostics.Add(RazorDiagnostic.Create(error));
             }
+        }
+
+        private string GetContent(HtmlContentIRNode node)
+        {
+            var builder = new StringBuilder();
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is RazorIRToken token && token.IsHtml)
+                {
+                    builder.Append(token.Content);
+                }
+            }
+
+            return builder.ToString();
         }
     }
 }

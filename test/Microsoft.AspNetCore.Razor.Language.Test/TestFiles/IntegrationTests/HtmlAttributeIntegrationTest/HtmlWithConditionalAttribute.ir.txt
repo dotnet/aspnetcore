@@ -5,9 +5,20 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - Template -  - 
             RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (0:0,0 [25] HtmlWithConditionalAttribute.cshtml) - <html>\n<body>\n    <span
+                HtmlContent - (0:0,0 [25] HtmlWithConditionalAttribute.cshtml)
+                    RazorIRToken - (0:0,0 [6] HtmlWithConditionalAttribute.cshtml) - Html - <html>
+                    RazorIRToken - (6:0,6 [2] HtmlWithConditionalAttribute.cshtml) - Html - \n
+                    RazorIRToken - (8:1,0 [6] HtmlWithConditionalAttribute.cshtml) - Html - <body>
+                    RazorIRToken - (14:1,6 [6] HtmlWithConditionalAttribute.cshtml) - Html - \n    
+                    RazorIRToken - (20:2,4 [5] HtmlWithConditionalAttribute.cshtml) - Html - <span
                 HtmlAttribute - (25:2,9 [13] HtmlWithConditionalAttribute.cshtml) -  val=" - "
                     CSharpAttributeValue - (31:2,15 [6] HtmlWithConditionalAttribute.cshtml) - 
                         CSharpExpression - (32:2,16 [5] HtmlWithConditionalAttribute.cshtml)
                             RazorIRToken - (32:2,16 [5] HtmlWithConditionalAttribute.cshtml) - CSharp - Hello
-                HtmlContent - (38:2,22 [22] HtmlWithConditionalAttribute.cshtml) -  />\n</body>\n</html>"
+                HtmlContent - (38:2,22 [22] HtmlWithConditionalAttribute.cshtml)
+                    RazorIRToken - (38:2,22 [3] HtmlWithConditionalAttribute.cshtml) - Html -  />
+                    RazorIRToken - (41:2,25 [2] HtmlWithConditionalAttribute.cshtml) - Html - \n
+                    RazorIRToken - (43:3,0 [7] HtmlWithConditionalAttribute.cshtml) - Html - </body>
+                    RazorIRToken - (50:3,7 [2] HtmlWithConditionalAttribute.cshtml) - Html - \n
+                    RazorIRToken - (52:4,0 [7] HtmlWithConditionalAttribute.cshtml) - Html - </html>
+                    RazorIRToken - (59:4,7 [1] HtmlWithConditionalAttribute.cshtml) - Html - "

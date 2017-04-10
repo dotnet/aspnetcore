@@ -18,6 +18,8 @@ Document -
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (1:0,1 [15] SimpleUnspacedIf.cshtml)
                     RazorIRToken - (1:0,1 [15] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n	
-                HtmlContent - (16:2,1 [11] SimpleUnspacedIf.cshtml) - <div></div>
+                HtmlContent - (16:2,1 [11] SimpleUnspacedIf.cshtml)
+                    RazorIRToken - (16:2,1 [5] SimpleUnspacedIf.cshtml) - Html - <div>
+                    RazorIRToken - (21:2,6 [6] SimpleUnspacedIf.cshtml) - Html - </div>
                 CSharpStatement - (27:2,12 [3] SimpleUnspacedIf.cshtml)
                     RazorIRToken - (27:2,12 [3] SimpleUnspacedIf.cshtml) - CSharp - \n}

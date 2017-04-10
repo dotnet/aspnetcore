@@ -16,8 +16,10 @@ Document -
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (0:0,0 [5] ExplicitExpressionWithMarkup.cshtml) - <div>
+                HtmlContent - (0:0,0 [5] ExplicitExpressionWithMarkup.cshtml)
+                    RazorIRToken - (0:0,0 [5] ExplicitExpressionWithMarkup.cshtml) - Html - <div>
                 CSharpExpression - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml)
                     Template - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml)
-                        HtmlContent - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml) - </div>
+                        HtmlContent - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml)
+                            RazorIRToken - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml) - Html - </div>
                     RazorIRToken - (14:0,14 [0] ExplicitExpressionWithMarkup.cshtml) - CSharp - 

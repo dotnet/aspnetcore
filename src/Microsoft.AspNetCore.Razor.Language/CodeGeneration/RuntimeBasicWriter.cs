@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
@@ -106,20 +107,31 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             const int MaxStringLiteralLength = 1024;
 
+            var builder = new StringBuilder();
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is RazorIRToken token && token.IsHtml)
+                {
+                    builder.Append(token.Content);
+                }
+            }
+
+            var content = builder.ToString();
+
             var charactersConsumed = 0;
 
             // Render the string in pieces to avoid Roslyn OOM exceptions at compile time: https://github.com/aspnet/External/issues/54
-            while (charactersConsumed < node.Content.Length)
+            while (charactersConsumed < content.Length)
             {
                 string textToRender;
-                if (node.Content.Length <= MaxStringLiteralLength)
+                if (content.Length <= MaxStringLiteralLength)
                 {
-                    textToRender = node.Content;
+                    textToRender = content;
                 }
                 else
                 {
-                    var charactersToSubstring = Math.Min(MaxStringLiteralLength, node.Content.Length - charactersConsumed);
-                    textToRender = node.Content.Substring(charactersConsumed, charactersToSubstring);
+                    var charactersToSubstring = Math.Min(MaxStringLiteralLength, content.Length - charactersConsumed);
+                    textToRender = content.Substring(charactersConsumed, charactersToSubstring);
                 }
 
                 context.Writer

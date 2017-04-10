@@ -15,33 +15,41 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_8 - value - 2 TagHelper - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.ATagHelper - TestNamespace.CatchAllTagHelper - TestNamespace.ATagHelperMultipleSelectors - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2 - TestNamespace.CatchAllTagHelper2
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (33:1,0 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (33:1,0 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (33:1,0 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (35:2,0 [30] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - a - TagMode.StartTagAndEndTag
-                        HtmlContent - (48:2,13 [13] CssSelectorTagHelperAttributes.cshtml) - 2 TagHelpers.
+                        HtmlContent - (48:2,13 [13] CssSelectorTagHelperAttributes.cshtml)
+                            RazorIRToken - (48:2,13 [13] CssSelectorTagHelperAttributes.cshtml) - Html - 2 TagHelpers.
                     CreateTagHelper -  - TestNamespace.ATagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
                     ExecuteTagHelpers - 
-                HtmlContent - (65:2,30 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (65:2,30 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (65:2,30 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (67:3,0 [32] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - a - TagMode.StartTagAndEndTag
-                        HtmlContent - (83:3,16 [12] CssSelectorTagHelperAttributes.cshtml) - 1 TagHelper.
+                        HtmlContent - (83:3,16 [12] CssSelectorTagHelperAttributes.cshtml)
+                            RazorIRToken - (83:3,16 [12] CssSelectorTagHelperAttributes.cshtml) - Html - 1 TagHelper.
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                     ExecuteTagHelpers - 
-                HtmlContent - (99:3,32 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (99:3,32 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (99:3,32 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (101:4,0 [41] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - a - TagMode.StartTagAndEndTag
-                        HtmlContent - (126:4,25 [12] CssSelectorTagHelperAttributes.cshtml) - 2 TagHelpers
+                        HtmlContent - (126:4,25 [12] CssSelectorTagHelperAttributes.cshtml)
+                            RazorIRToken - (126:4,25 [12] CssSelectorTagHelperAttributes.cshtml) - Html - 2 TagHelpers
                     CreateTagHelper -  - TestNamespace.ATagHelperMultipleSelectors
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                     ExecuteTagHelpers - 
-                HtmlContent - (142:4,41 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (142:4,41 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (142:4,41 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (144:5,0 [47] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - a - TagMode.StartTagAndEndTag
-                        HtmlContent - (175:5,31 [12] CssSelectorTagHelperAttributes.cshtml) - 2 TagHelpers
+                        HtmlContent - (175:5,31 [12] CssSelectorTagHelperAttributes.cshtml)
+                            RazorIRToken - (175:5,31 [12] CssSelectorTagHelperAttributes.cshtml) - Html - 2 TagHelpers
                     CreateTagHelper -  - TestNamespace.ATagHelperMultipleSelectors
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - href - HtmlAttributeValueStyle.DoubleQuotes
@@ -51,10 +59,18 @@ Document -
                                 RazorIRToken - (156:5,12 [5] CssSelectorTagHelperAttributes.cshtml) - CSharp - false
                         HtmlAttributeValue - (161:5,17 [12] CssSelectorTagHelperAttributes.cshtml) -  - ?hello=world
                     ExecuteTagHelpers - 
-                HtmlContent - (191:5,47 [35] CssSelectorTagHelperAttributes.cshtml) - \n<a href=' ~/'>0 TagHelpers.</a>\n
+                HtmlContent - (191:5,47 [35] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (191:5,47 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
+                    RazorIRToken - (193:6,0 [2] CssSelectorTagHelperAttributes.cshtml) - Html - <a
+                    RazorIRToken - (195:6,2 [11] CssSelectorTagHelperAttributes.cshtml) - Html -  href=' ~/'
+                    RazorIRToken - (206:6,13 [1] CssSelectorTagHelperAttributes.cshtml) - Html - >
+                    RazorIRToken - (207:6,14 [13] CssSelectorTagHelperAttributes.cshtml) - Html - 0 TagHelpers.
+                    RazorIRToken - (220:6,27 [4] CssSelectorTagHelperAttributes.cshtml) - Html - </a>
+                    RazorIRToken - (224:6,31 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (226:7,0 [32] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - a - TagMode.StartTagAndEndTag
-                        HtmlContent - (243:7,17 [11] CssSelectorTagHelperAttributes.cshtml) - 1 TagHelper
+                        HtmlContent - (243:7,17 [11] CssSelectorTagHelperAttributes.cshtml)
+                            RazorIRToken - (243:7,17 [11] CssSelectorTagHelperAttributes.cshtml) - Html - 1 TagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - href - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlAttributeValue - (234:7,8 [2] CssSelectorTagHelperAttributes.cshtml) -  - ~/
@@ -62,17 +78,21 @@ Document -
                             CSharpExpression - (237:7,11 [5] CssSelectorTagHelperAttributes.cshtml)
                                 RazorIRToken - (237:7,11 [5] CssSelectorTagHelperAttributes.cshtml) - CSharp - false
                     ExecuteTagHelpers - 
-                HtmlContent - (258:7,32 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (258:7,32 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (258:7,32 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (260:8,0 [46] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - a - TagMode.StartTagAndEndTag
-                        HtmlContent - (291:8,31 [11] CssSelectorTagHelperAttributes.cshtml) - 1 TagHelper
+                        HtmlContent - (291:8,31 [11] CssSelectorTagHelperAttributes.cshtml)
+                            RazorIRToken - (291:8,31 [11] CssSelectorTagHelperAttributes.cshtml) - Html - 1 TagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
                     ExecuteTagHelpers - 
-                HtmlContent - (306:8,46 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (306:8,46 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (306:8,46 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (308:9,0 [47] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - a - TagMode.StartTagAndEndTag
-                        HtmlContent - (340:9,32 [11] CssSelectorTagHelperAttributes.cshtml) - 1 TagHelper
+                        HtmlContent - (340:9,32 [11] CssSelectorTagHelperAttributes.cshtml)
+                            RazorIRToken - (340:9,32 [11] CssSelectorTagHelperAttributes.cshtml) - Html - 1 TagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - href - HtmlAttributeValueStyle.SingleQuotes
                         HtmlAttributeValue - (317:9,9 [14] CssSelectorTagHelperAttributes.cshtml) -  - ~/?hello=world
@@ -80,7 +100,8 @@ Document -
                             CSharpExpression - (333:9,25 [5] CssSelectorTagHelperAttributes.cshtml)
                                 RazorIRToken - (333:9,25 [5] CssSelectorTagHelperAttributes.cshtml) - CSharp - false
                     ExecuteTagHelpers - 
-                HtmlContent - (355:9,47 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (355:9,47 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (355:9,47 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (357:10,0 [42] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -90,7 +111,8 @@ Document -
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_4 - type - Type
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5
                     ExecuteTagHelpers - 
-                HtmlContent - (399:10,42 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (399:10,42 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (399:10,42 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (401:11,0 [43] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
@@ -98,7 +120,8 @@ Document -
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_6 - type - Type
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5
                     ExecuteTagHelpers - 
-                HtmlContent - (444:11,43 [2] CssSelectorTagHelperAttributes.cshtml) - \n
+                HtmlContent - (444:11,43 [2] CssSelectorTagHelperAttributes.cshtml)
+                    RazorIRToken - (444:11,43 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (446:12,0 [45] CssSelectorTagHelperAttributes.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - TestNamespace.InputTagHelper2

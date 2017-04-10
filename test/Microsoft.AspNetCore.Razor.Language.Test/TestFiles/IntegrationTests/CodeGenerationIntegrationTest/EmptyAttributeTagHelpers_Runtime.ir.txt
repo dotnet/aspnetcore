@@ -8,7 +8,10 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class -  - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2 - TestNamespace.PTagHelper
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (31:1,0 [13] EmptyAttributeTagHelpers.cshtml) - \n<div>\n    
+                HtmlContent - (31:1,0 [13] EmptyAttributeTagHelpers.cshtml)
+                    RazorIRToken - (31:1,0 [2] EmptyAttributeTagHelpers.cshtml) - Html - \n
+                    RazorIRToken - (33:2,0 [5] EmptyAttributeTagHelpers.cshtml) - Html - <div>
+                    RazorIRToken - (38:2,5 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
                 TagHelper - (44:3,4 [34] EmptyAttributeTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -16,13 +19,16 @@ Document -
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                     SetTagHelperProperty - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - 
+                        HtmlContent - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml)
+                            RazorIRToken - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - Html - 
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                     ExecuteTagHelpers - 
-                HtmlContent - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml) - \n    
+                HtmlContent - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml)
+                    RazorIRToken - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
                 TagHelper - (84:4,4 [64] EmptyAttributeTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
-                        HtmlContent - (94:4,14 [10] EmptyAttributeTagHelpers.cshtml) - \n        
+                        HtmlContent - (94:4,14 [10] EmptyAttributeTagHelpers.cshtml)
+                            RazorIRToken - (94:4,14 [10] EmptyAttributeTagHelpers.cshtml) - Html - \n        
                         TagHelper - (104:5,8 [34] EmptyAttributeTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                             CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -30,12 +36,17 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetTagHelperProperty - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - 
+                                HtmlContent - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml)
+                                    RazorIRToken - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - Html - 
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                             ExecuteTagHelpers - 
-                        HtmlContent - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml) - \n    
+                        HtmlContent - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml)
+                            RazorIRToken - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.SingleQuotes
-                        HtmlContent - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - 
+                        HtmlContent - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml)
+                            RazorIRToken - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - Html - 
                     ExecuteTagHelpers - 
-                HtmlContent - (148:6,8 [8] EmptyAttributeTagHelpers.cshtml) - \n</div>
+                HtmlContent - (148:6,8 [8] EmptyAttributeTagHelpers.cshtml)
+                    RazorIRToken - (148:6,8 [2] EmptyAttributeTagHelpers.cshtml) - Html - \n
+                    RazorIRToken - (150:7,0 [6] EmptyAttributeTagHelpers.cshtml) - Html - </div>

@@ -8,9 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class HtmlContentIRNode : RazorIRNode
     {
-        public string Content { get; set; }
-
-        public override IList<RazorIRNode> Children { get; } = EmptyArray;
+        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }
 

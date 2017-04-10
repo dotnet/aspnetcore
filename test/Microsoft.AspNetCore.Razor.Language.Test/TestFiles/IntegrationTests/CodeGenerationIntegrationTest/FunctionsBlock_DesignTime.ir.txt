@@ -16,8 +16,10 @@ Document -
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (17:2,1 [4] FunctionsBlock.cshtml) - \n\n
-                HtmlContent - (138:9,1 [28] FunctionsBlock.cshtml) - \n\nHere's a random number: 
+                HtmlContent - (17:2,1 [4] FunctionsBlock.cshtml)
+                    RazorIRToken - (17:2,1 [4] FunctionsBlock.cshtml) - Html - \n\n
+                HtmlContent - (138:9,1 [28] FunctionsBlock.cshtml)
+                    RazorIRToken - (138:9,1 [28] FunctionsBlock.cshtml) - Html - \n\nHere's a random number: 
                 CSharpExpression - (167:11,25 [11] FunctionsBlock.cshtml)
                     RazorIRToken - (167:11,25 [11] FunctionsBlock.cshtml) - CSharp - RandomInt()
             CSharpStatement - (12:0,12 [4] FunctionsBlock.cshtml)

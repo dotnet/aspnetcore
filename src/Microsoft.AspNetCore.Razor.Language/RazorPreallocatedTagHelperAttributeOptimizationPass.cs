@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -40,17 +41,17 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return;
                 }
 
-                var plainTextValue = (node.Children.First() as HtmlContentIRNode).Content;
+                var htmlContentNode = node.Children.First() as HtmlContentIRNode;
+                var plainTextValue = GetContent(htmlContentNode);
+
                 DeclarePreallocatedTagHelperHtmlAttributeIRNode declaration = null;
 
                 for (var i = 0; i < _classDeclaration.Children.Count; i++)
                 {
                     var current = _classDeclaration.Children[i];
 
-                    if (current is DeclarePreallocatedTagHelperHtmlAttributeIRNode)
+                    if (current is DeclarePreallocatedTagHelperHtmlAttributeIRNode existingDeclaration)
                     {
-                        var existingDeclaration = (DeclarePreallocatedTagHelperHtmlAttributeIRNode)current;
-
                         if (string.Equals(existingDeclaration.Name, node.Name, StringComparison.Ordinal) &&
                             string.Equals(existingDeclaration.Value, plainTextValue, StringComparison.Ordinal) &&
                             existingDeclaration.ValueStyle == node.ValueStyle)
@@ -95,7 +96,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return;
                 }
 
-                var plainTextValue = (node.Children.First() as HtmlContentIRNode).Content;
+                var htmlContentNode = node.Children.First() as HtmlContentIRNode;
+                var plainTextValue = GetContent(htmlContentNode);
 
                 DeclarePreallocatedTagHelperAttributeIRNode declaration = null;
 
@@ -103,10 +105,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     var current = _classDeclaration.Children[i];
 
-                    if (current is DeclarePreallocatedTagHelperAttributeIRNode)
+                    if (current is DeclarePreallocatedTagHelperAttributeIRNode existingDeclaration)
                     {
-                        var existingDeclaration = (DeclarePreallocatedTagHelperAttributeIRNode)current;
-
                         if (string.Equals(existingDeclaration.Name, node.AttributeName, StringComparison.Ordinal) &&
                             string.Equals(existingDeclaration.Value, plainTextValue, StringComparison.Ordinal) &&
                             existingDeclaration.ValueStyle == node.ValueStyle)
@@ -146,6 +146,20 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 var nodeIndex = node.Parent.Children.IndexOf(node);
                 node.Parent.Children[nodeIndex] = setPreallocatedProperty;
+            }
+
+            private string GetContent(HtmlContentIRNode node)
+            {
+                var builder = new StringBuilder();
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    if (node.Children[i] is RazorIRToken token && token.IsHtml)
+                    {
+                        builder.Append(token.Content);
+                    }
+                }
+
+               return builder.ToString();
             }
         }
     }

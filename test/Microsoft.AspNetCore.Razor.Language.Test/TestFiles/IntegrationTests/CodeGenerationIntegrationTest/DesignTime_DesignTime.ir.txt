@@ -17,33 +17,57 @@ Document -
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (0:0,0 [19] DesignTime.cshtml) - <div>\n            
+                HtmlContent - (0:0,0 [19] DesignTime.cshtml)
+                    RazorIRToken - (0:0,0 [5] DesignTime.cshtml) - Html - <div>
+                    RazorIRToken - (5:0,5 [14] DesignTime.cshtml) - Html - \n            
                 CSharpStatement - (20:1,13 [36] DesignTime.cshtml)
                     RazorIRToken - (20:1,13 [36] DesignTime.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
-                HtmlContent - (56:2,4 [17] DesignTime.cshtml) - <p>This is item #
+                HtmlContent - (56:2,4 [17] DesignTime.cshtml)
+                    RazorIRToken - (56:2,4 [3] DesignTime.cshtml) - Html - <p>
+                    RazorIRToken - (59:2,7 [14] DesignTime.cshtml) - Html - This is item #
                 CSharpExpression - (74:2,22 [1] DesignTime.cshtml)
                     RazorIRToken - (74:2,22 [1] DesignTime.cshtml) - CSharp - i
-                HtmlContent - (75:2,23 [4] DesignTime.cshtml) - </p>
+                HtmlContent - (75:2,23 [4] DesignTime.cshtml)
+                    RazorIRToken - (75:2,23 [4] DesignTime.cshtml) - Html - </p>
                 CSharpStatement - (79:2,27 [15] DesignTime.cshtml)
                     RazorIRToken - (79:2,27 [15] DesignTime.cshtml) - CSharp - \n            }
-                HtmlContent - (94:3,13 [17] DesignTime.cshtml) - \n</div>\n\n<p>\n
+                HtmlContent - (94:3,13 [17] DesignTime.cshtml)
+                    RazorIRToken - (94:3,13 [2] DesignTime.cshtml) - Html - \n
+                    RazorIRToken - (96:4,0 [6] DesignTime.cshtml) - Html - </div>
+                    RazorIRToken - (102:4,6 [4] DesignTime.cshtml) - Html - \n\n
+                    RazorIRToken - (106:6,0 [3] DesignTime.cshtml) - Html - <p>
+                    RazorIRToken - (109:6,3 [2] DesignTime.cshtml) - Html - \n
                 CSharpExpression - (113:7,2 [12] DesignTime.cshtml)
                     RazorIRToken - (113:7,2 [12] DesignTime.cshtml) - CSharp - Foo(Bar.Baz)
-                HtmlContent - (126:7,15 [2] DesignTime.cshtml) - \n
+                HtmlContent - (126:7,15 [2] DesignTime.cshtml)
+                    RazorIRToken - (126:7,15 [2] DesignTime.cshtml) - Html - \n
                 CSharpExpression - (129:8,1 [23] DesignTime.cshtml)
                     RazorIRToken - (129:8,1 [4] DesignTime.cshtml) - CSharp - Foo(
                     Template - (134:8,6 [18] DesignTime.cshtml)
-                        HtmlContent - (134:8,6 [7] DesignTime.cshtml) - <p>Bar 
+                        HtmlContent - (134:8,6 [7] DesignTime.cshtml)
+                            RazorIRToken - (134:8,6 [3] DesignTime.cshtml) - Html - <p>
+                            RazorIRToken - (137:8,9 [4] DesignTime.cshtml) - Html - Bar 
                         CSharpExpression - (142:8,14 [3] DesignTime.cshtml)
                             RazorIRToken - (142:8,14 [3] DesignTime.cshtml) - CSharp - baz
-                        HtmlContent - (145:8,17 [8] DesignTime.cshtml) -  Biz</p>
+                        HtmlContent - (145:8,17 [8] DesignTime.cshtml)
+                            RazorIRToken - (145:8,17 [4] DesignTime.cshtml) - Html -  Biz
+                            RazorIRToken - (149:8,21 [4] DesignTime.cshtml) - Html - </p>
                     RazorIRToken - (153:8,25 [1] DesignTime.cshtml) - CSharp - )
-                HtmlContent - (154:8,26 [10] DesignTime.cshtml) - \n</p>\n\n
+                HtmlContent - (154:8,26 [10] DesignTime.cshtml)
+                    RazorIRToken - (154:8,26 [2] DesignTime.cshtml) - Html - \n
+                    RazorIRToken - (156:9,0 [4] DesignTime.cshtml) - Html - </p>
+                    RazorIRToken - (160:9,4 [4] DesignTime.cshtml) - Html - \n\n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - DefineSection("Footer", async (__razor_section_writer) => {
-                HtmlContent - (181:11,17 [22] DesignTime.cshtml) - \n    <p>Foo</p>\n    
+                HtmlContent - (181:11,17 [22] DesignTime.cshtml)
+                    RazorIRToken - (181:11,17 [6] DesignTime.cshtml) - Html - \n    
+                    RazorIRToken - (187:12,4 [3] DesignTime.cshtml) - Html - <p>
+                    RazorIRToken - (190:12,7 [3] DesignTime.cshtml) - Html - Foo
+                    RazorIRToken - (193:12,10 [4] DesignTime.cshtml) - Html - </p>
+                    RazorIRToken - (197:12,14 [6] DesignTime.cshtml) - Html - \n    
                 CSharpExpression - (204:13,5 [3] DesignTime.cshtml)
                     RazorIRToken - (204:13,5 [3] DesignTime.cshtml) - CSharp - bar
-                HtmlContent - (207:13,8 [2] DesignTime.cshtml) - \n
+                HtmlContent - (207:13,8 [2] DesignTime.cshtml)
+                    RazorIRToken - (207:13,8 [2] DesignTime.cshtml) - Html - \n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - });

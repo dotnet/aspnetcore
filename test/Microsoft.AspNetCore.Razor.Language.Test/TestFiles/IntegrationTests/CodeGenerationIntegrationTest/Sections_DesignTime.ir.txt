@@ -21,35 +21,54 @@ Document -
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [44] Sections.cshtml)
                     RazorIRToken - (2:0,2 [44] Sections.cshtml) - CSharp - \n    Layout = "_SectionTestLayout.cshtml"\n
-                HtmlContent - (49:3,0 [31] Sections.cshtml) - \n<div>This is in the Body>\n\n
+                HtmlContent - (49:3,0 [31] Sections.cshtml)
+                    RazorIRToken - (49:3,0 [2] Sections.cshtml) - Html - \n
+                    RazorIRToken - (51:4,0 [5] Sections.cshtml) - Html - <div>
+                    RazorIRToken - (56:4,5 [24] Sections.cshtml) - Html - This is in the Body>\n\n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - DefineSection("Section2", async (__razor_section_writer) => {
-                HtmlContent - (99:6,19 [10] Sections.cshtml) - \n    <div
+                HtmlContent - (99:6,19 [10] Sections.cshtml)
+                    RazorIRToken - (99:6,19 [6] Sections.cshtml) - Html - \n    
+                    RazorIRToken - (105:7,4 [4] Sections.cshtml) - Html - <div
                 HtmlAttribute - (109:7,8 [20] Sections.cshtml) -  class=" - "
                     HtmlAttributeValue - (117:7,16 [4] Sections.cshtml) -  - some
                     CSharpAttributeValue - (121:7,20 [7] Sections.cshtml) -  
                         CSharpExpression - (123:7,22 [5] Sections.cshtml)
                             RazorIRToken - (123:7,22 [5] Sections.cshtml) - CSharp - thing
-                HtmlContent - (129:7,28 [29] Sections.cshtml) - >This is in Section 2</div>\n
+                HtmlContent - (129:7,28 [29] Sections.cshtml)
+                    RazorIRToken - (129:7,28 [1] Sections.cshtml) - Html - >
+                    RazorIRToken - (130:7,29 [20] Sections.cshtml) - Html - This is in Section 2
+                    RazorIRToken - (150:7,49 [6] Sections.cshtml) - Html - </div>
+                    RazorIRToken - (156:7,55 [2] Sections.cshtml) - Html - \n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - });
-                HtmlContent - (159:8,1 [4] Sections.cshtml) - \n\n
+                HtmlContent - (159:8,1 [4] Sections.cshtml)
+                    RazorIRToken - (159:8,1 [4] Sections.cshtml) - Html - \n\n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - DefineSection("Section1", async (__razor_section_writer) => {
-                HtmlContent - (182:10,19 [39] Sections.cshtml) - \n    <div>This is in Section 1</div>\n
+                HtmlContent - (182:10,19 [39] Sections.cshtml)
+                    RazorIRToken - (182:10,19 [6] Sections.cshtml) - Html - \n    
+                    RazorIRToken - (188:11,4 [5] Sections.cshtml) - Html - <div>
+                    RazorIRToken - (193:11,9 [20] Sections.cshtml) - Html - This is in Section 1
+                    RazorIRToken - (213:11,29 [6] Sections.cshtml) - Html - </div>
+                    RazorIRToken - (219:11,35 [2] Sections.cshtml) - Html - \n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - });
-                HtmlContent - (222:12,1 [4] Sections.cshtml) - \n\n
+                HtmlContent - (222:12,1 [4] Sections.cshtml)
+                    RazorIRToken - (222:12,1 [4] Sections.cshtml) - Html - \n\n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - DefineSection("NestedDelegates", async (__razor_section_writer) => {
-                HtmlContent - (252:14,26 [6] Sections.cshtml) - \n    
+                HtmlContent - (252:14,26 [6] Sections.cshtml)
+                    RazorIRToken - (252:14,26 [6] Sections.cshtml) - Html - \n    
                 CSharpStatement - (260:15,6 [27] Sections.cshtml)
                     RazorIRToken - (260:15,6 [27] Sections.cshtml) - CSharp -  Func<dynamic, object> f = 
                 Template - (288:15,34 [17] Sections.cshtml)
-                    HtmlContent - (288:15,34 [6] Sections.cshtml) - <span>
+                    HtmlContent - (288:15,34 [6] Sections.cshtml)
+                        RazorIRToken - (288:15,34 [6] Sections.cshtml) - Html - <span>
                     CSharpExpression - (295:15,41 [4] Sections.cshtml)
                         RazorIRToken - (295:15,41 [4] Sections.cshtml) - CSharp - item
-                    HtmlContent - (299:15,45 [7] Sections.cshtml) - </span>
+                    HtmlContent - (299:15,45 [7] Sections.cshtml)
+                        RazorIRToken - (299:15,45 [7] Sections.cshtml) - Html - </span>
                 CSharpStatement - (306:15,52 [2] Sections.cshtml)
                     RazorIRToken - (306:15,52 [2] Sections.cshtml) - CSharp - ; 
                 CSharpStatement - 

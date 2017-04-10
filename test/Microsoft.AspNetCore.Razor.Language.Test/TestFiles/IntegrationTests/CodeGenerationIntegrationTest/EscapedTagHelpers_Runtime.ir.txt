@@ -6,15 +6,38 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EscapedTagHelpers_Runtime -  - 
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (31:1,0 [3] EscapedTagHelpers.cshtml) - \n<
-                HtmlContent - (35:2,2 [47] EscapedTagHelpers.cshtml) - div class="randomNonTagHelperAttribute">\n    <
-                HtmlContent - (83:3,6 [22] EscapedTagHelpers.cshtml) - p class="Hello World" 
+                HtmlContent - (31:1,0 [3] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (31:1,0 [2] EscapedTagHelpers.cshtml) - Html - \n
+                    RazorIRToken - (33:2,0 [1] EscapedTagHelpers.cshtml) - Html - <
+                HtmlContent - (35:2,2 [47] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (35:2,2 [3] EscapedTagHelpers.cshtml) - Html - div
+                    RazorIRToken - (38:2,5 [36] EscapedTagHelpers.cshtml) - Html -  class="randomNonTagHelperAttribute"
+                    RazorIRToken - (74:2,41 [1] EscapedTagHelpers.cshtml) - Html - >
+                    RazorIRToken - (75:2,42 [6] EscapedTagHelpers.cshtml) - Html - \n    
+                    RazorIRToken - (81:3,4 [1] EscapedTagHelpers.cshtml) - Html - <
+                HtmlContent - (83:3,6 [22] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (83:3,6 [1] EscapedTagHelpers.cshtml) - Html - p
+                    RazorIRToken - (84:3,7 [20] EscapedTagHelpers.cshtml) - Html -  class="Hello World"
+                    RazorIRToken - (104:3,27 [1] EscapedTagHelpers.cshtml) - Html -  
                 CSharpExpression - (106:3,29 [12] EscapedTagHelpers.cshtml)
                     RazorIRToken - (106:3,29 [12] EscapedTagHelpers.cshtml) - CSharp - DateTime.Now
-                HtmlContent - (118:3,41 [12] EscapedTagHelpers.cshtml) - >\n        <
-                HtmlContent - (131:4,10 [31] EscapedTagHelpers.cshtml) - input type="text" />\n        <
-                HtmlContent - (163:5,10 [22] EscapedTagHelpers.cshtml) - em>Not a TagHelper: </
-                HtmlContent - (186:5,33 [4] EscapedTagHelpers.cshtml) - em> 
+                HtmlContent - (118:3,41 [12] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (118:3,41 [1] EscapedTagHelpers.cshtml) - Html - >
+                    RazorIRToken - (119:3,42 [10] EscapedTagHelpers.cshtml) - Html - \n        
+                    RazorIRToken - (129:4,8 [1] EscapedTagHelpers.cshtml) - Html - <
+                HtmlContent - (131:4,10 [31] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (131:4,10 [5] EscapedTagHelpers.cshtml) - Html - input
+                    RazorIRToken - (136:4,15 [12] EscapedTagHelpers.cshtml) - Html -  type="text"
+                    RazorIRToken - (148:4,27 [3] EscapedTagHelpers.cshtml) - Html -  />
+                    RazorIRToken - (151:4,30 [10] EscapedTagHelpers.cshtml) - Html - \n        
+                    RazorIRToken - (161:5,8 [1] EscapedTagHelpers.cshtml) - Html - <
+                HtmlContent - (163:5,10 [22] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (163:5,10 [3] EscapedTagHelpers.cshtml) - Html - em>
+                    RazorIRToken - (166:5,13 [17] EscapedTagHelpers.cshtml) - Html - Not a TagHelper: 
+                    RazorIRToken - (183:5,30 [2] EscapedTagHelpers.cshtml) - Html - </
+                HtmlContent - (186:5,33 [4] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (186:5,33 [3] EscapedTagHelpers.cshtml) - Html - em>
+                    RazorIRToken - (189:5,36 [1] EscapedTagHelpers.cshtml) - Html -  
                 TagHelper - (190:5,37 [45] EscapedTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -26,8 +49,15 @@ Document -
                         CSharpExpression - (204:5,51 [12] EscapedTagHelpers.cshtml)
                             RazorIRToken - (204:5,51 [12] EscapedTagHelpers.cshtml) - CSharp - DateTime.Now
                     SetTagHelperProperty - (227:5,74 [4] EscapedTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (227:5,74 [4] EscapedTagHelpers.cshtml) - true
+                        HtmlContent - (227:5,74 [4] EscapedTagHelpers.cshtml)
+                            RazorIRToken - (227:5,74 [4] EscapedTagHelpers.cshtml) - Html - true
                     ExecuteTagHelpers - 
-                HtmlContent - (235:5,82 [8] EscapedTagHelpers.cshtml) - \n    </
-                HtmlContent - (244:6,7 [6] EscapedTagHelpers.cshtml) - p>\n</
-                HtmlContent - (251:7,3 [4] EscapedTagHelpers.cshtml) - div>
+                HtmlContent - (235:5,82 [8] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (235:5,82 [6] EscapedTagHelpers.cshtml) - Html - \n    
+                    RazorIRToken - (241:6,4 [2] EscapedTagHelpers.cshtml) - Html - </
+                HtmlContent - (244:6,7 [6] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (244:6,7 [2] EscapedTagHelpers.cshtml) - Html - p>
+                    RazorIRToken - (246:6,9 [2] EscapedTagHelpers.cshtml) - Html - \n
+                    RazorIRToken - (248:7,0 [2] EscapedTagHelpers.cshtml) - Html - </
+                HtmlContent - (251:7,3 [4] EscapedTagHelpers.cshtml)
+                    RazorIRToken - (251:7,3 [4] EscapedTagHelpers.cshtml) - Html - div>

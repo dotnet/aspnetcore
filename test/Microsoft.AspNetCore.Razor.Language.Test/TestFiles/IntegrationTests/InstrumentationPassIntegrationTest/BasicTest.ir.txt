@@ -11,7 +11,13 @@ Document -
             RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - BeginContext(31, 28, true);
-                HtmlContent - (31:1,0 [28] BasicTest.cshtml) - <span someattr>Hola</span>\n
+                HtmlContent - (31:1,0 [28] BasicTest.cshtml)
+                    RazorIRToken - (31:1,0 [5] BasicTest.cshtml) - Html - <span
+                    RazorIRToken - (36:1,5 [9] BasicTest.cshtml) - Html -  someattr
+                    RazorIRToken - (45:1,14 [1] BasicTest.cshtml) - Html - >
+                    RazorIRToken - (46:1,15 [4] BasicTest.cshtml) - Html - Hola
+                    RazorIRToken - (50:1,19 [7] BasicTest.cshtml) - Html - </span>
+                    RazorIRToken - (57:1,26 [2] BasicTest.cshtml) - Html - \n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - EndContext();
                 CSharpStatement - 
@@ -22,14 +28,16 @@ Document -
                     RazorIRToken -  - CSharp - EndContext();
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - BeginContext(69, 2, true);
-                HtmlContent - (69:2,10 [2] BasicTest.cshtml) - \n
+                HtmlContent - (69:2,10 [2] BasicTest.cshtml)
+                    RazorIRToken - (69:2,10 [2] BasicTest.cshtml) - Html - \n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - EndContext();
                 TagHelper - (71:3,0 [87] BasicTest.cshtml)
                     InitializeTagHelperStructure -  - form - TagMode.StartTagAndEndTag
                         CSharpStatement - 
                             RazorIRToken -  - CSharp - BeginContext(91, 6, true);
-                        HtmlContent - (91:3,20 [6] BasicTest.cshtml) - \n    
+                        HtmlContent - (91:3,20 [6] BasicTest.cshtml)
+                            RazorIRToken - (91:3,20 [6] BasicTest.cshtml) - Html - \n    
                         CSharpStatement - 
                             RazorIRToken -  - CSharp - EndContext();
                         TagHelper - (97:4,4 [52] BasicTest.cshtml)
@@ -47,7 +55,8 @@ Document -
                                 RazorIRToken -  - CSharp - EndContext();
                         CSharpStatement - 
                             RazorIRToken -  - CSharp - BeginContext(149, 2, true);
-                        HtmlContent - (149:4,56 [2] BasicTest.cshtml) - \n
+                        HtmlContent - (149:4,56 [2] BasicTest.cshtml)
+                            RazorIRToken - (149:4,56 [2] BasicTest.cshtml) - Html - \n
                         CSharpStatement - 
                             RazorIRToken -  - CSharp - EndContext();
                     CreateTagHelper -  - FormTagHelper

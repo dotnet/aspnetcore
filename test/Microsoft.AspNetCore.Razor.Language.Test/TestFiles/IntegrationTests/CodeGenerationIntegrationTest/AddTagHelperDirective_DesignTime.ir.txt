@@ -17,4 +17,5 @@ Document -
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (31:0,31 [2] AddTagHelperDirective.cshtml) - \n
+                HtmlContent - (31:0,31 [2] AddTagHelperDirective.cshtml)
+                    RazorIRToken - (31:0,31 [2] AddTagHelperDirective.cshtml) - Html - \n
