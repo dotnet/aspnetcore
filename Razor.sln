@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26327.1
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 EndProject
@@ -48,6 +48,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Test", "test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Test.csproj", "{7CFD5646-A757-4498-9E01-9C8528ED60AE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.Common", "test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj", "{078AEF36-F319-4CE2-BAA2-5B58A6536B46}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Performance", "test\Microsoft.AspNetCore.Razor.Performance\Microsoft.AspNetCore.Razor.Performance.csproj", "{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -191,6 +193,14 @@ Global
 		{078AEF36-F319-4CE2-BAA2-5B58A6536B46}.Release|Any CPU.Build.0 = Release|Any CPU
 		{078AEF36-F319-4CE2-BAA2-5B58A6536B46}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{078AEF36-F319-4CE2-BAA2-5B58A6536B46}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -213,5 +223,6 @@ Global
 		{995F2FEB-65FA-4399-B1C0-16E0B3FBDB15} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{7CFD5646-A757-4498-9E01-9C8528ED60AE} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{078AEF36-F319-4CE2-BAA2-5B58A6536B46} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 EndGlobal

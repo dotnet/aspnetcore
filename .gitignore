@@ -33,3 +33,4 @@ project.lock.json
 launchSettings.json
 global.json
 .vscode/*
+BenchmarkDotNet.Artifacts/
