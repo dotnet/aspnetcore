@@ -1844,6 +1844,44 @@ namespace Microsoft.AspNetCore.Routing.Tree
             Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
         }
 
+        [Fact]
+        public async Task TreeRouter_SnapshotsRouteData_ResetsBeforeMatchingEachRouteEntry()
+        {
+            // This test replicates a scenario raised as issue https://github.com/aspnet/Routing/issues/394
+            // The RouteValueDictionary entries populated while matching route entries should not be left
+            // in place if the route entry turns out not to match, because that would leak unwanted state
+            // to subsequent route entries and might cause "An element with the key ... already exists"
+            // exceptions.
+
+            // Arrange
+            RouteValueDictionary nestedValues = null;
+            var next = new Mock<IRouter>();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c =>
+                {
+                    nestedValues = new RouteValueDictionary(c.RouteData.Values);
+                    c.Handler = NullHandler;
+                })
+                .Returns(Task.CompletedTask);
+
+            var builder = CreateBuilder();
+            MapInboundEntry(builder, "cat_{category1}/prod1_{product}"); // Matches on first segment but not on second
+            MapInboundEntry(builder, "cat_{category2}/prod2_{product}", handler: next.Object);
+            var route = builder.Build();
+
+            var context = CreateRouteContext("/cat_examplecategory/prod2_exampleproduct");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(nestedValues);
+            Assert.Equal("examplecategory", nestedValues["category2"]);
+            Assert.Equal("exampleproduct", nestedValues["product"]);
+            Assert.DoesNotContain(nestedValues, kvp => kvp.Key == "category1");
+        }
+
         private static RouteContext CreateRouteContext(string requestPath)
         {
             var request = new Mock<HttpRequest>(MockBehavior.Strict);

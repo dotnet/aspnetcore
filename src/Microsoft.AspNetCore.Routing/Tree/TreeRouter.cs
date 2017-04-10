@@ -192,13 +192,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     {
                         var entry = item.Entry;
                         var matcher = item.TemplateMatcher;
-                        if (!matcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
-                        {
-                            continue;
-                        }
 
                         try
                         {
+                            if (!matcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
+                            {
+                                continue;
+                            }
+
                             if (!RouteConstraintMatcher.Match(
                                 entry.Constraints,
                                 context.RouteData.Values,
