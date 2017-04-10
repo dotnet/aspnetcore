@@ -641,13 +641,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Need to compare WaitHandle ref since CancellationToken is struct
             var original = _frame.RequestAborted.WaitHandle;
 
-            foreach (var ch in "hello, worl")
+            // Only first write can be WriteAsyncAwaited
+            var startingTask = _frame.InitializeResponseAwaited(Task.CompletedTask, 1);
+            await _frame.WriteAsyncAwaited(startingTask, new ArraySegment<byte>(new[] { (byte)'h' }), default(CancellationToken));
+            Assert.Same(original, _frame.RequestAborted.WaitHandle);
+
+            foreach (var ch in "ello, worl")
             {
-                await _frame.WriteAsyncAwaited(new ArraySegment<byte>(new[] { (byte)ch }), default(CancellationToken));
+                await _frame.WriteAsync(new ArraySegment<byte>(new[] { (byte)ch }), default(CancellationToken));
                 Assert.Same(original, _frame.RequestAborted.WaitHandle);
             }
 
-            await _frame.WriteAsyncAwaited(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
+            await _frame.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
             Assert.NotSame(original, _frame.RequestAborted.WaitHandle);
         }
 

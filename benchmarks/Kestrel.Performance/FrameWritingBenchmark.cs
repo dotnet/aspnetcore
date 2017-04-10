@@ -52,13 +52,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Benchmark]
         public async Task WriteAsyncAwaited()
         {
-            await _frame.WriteAsyncAwaited(new ArraySegment<byte>(_writeData), default(CancellationToken));
+            await _frame.WriteAsyncAwaited(Task.CompletedTask, new ArraySegment<byte>(_writeData), default(CancellationToken));
         }
 
         [Benchmark]
         public async Task WriteAsyncAwaitedChunked()
         {
-            await _frameChunked.WriteAsyncAwaited(new ArraySegment<byte>(_writeData), default(CancellationToken));
+            await _frameChunked.WriteAsyncAwaited(Task.CompletedTask, new ArraySegment<byte>(_writeData), default(CancellationToken));
         }
 
         [Benchmark]

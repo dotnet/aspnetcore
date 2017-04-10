@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -143,8 +145,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return FlushAsync(writableBuffer, cancellationToken);
         }
 
-        private Task FlushAsync(WritableBuffer writableBuffer,
-            CancellationToken cancellationToken)
+        // Single caller, at end of method - so inline
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Task FlushAsync(WritableBuffer writableBuffer, CancellationToken cancellationToken)
         {
             var awaitable = writableBuffer.FlushAsync(cancellationToken);
             if (awaitable.IsCompleted)
