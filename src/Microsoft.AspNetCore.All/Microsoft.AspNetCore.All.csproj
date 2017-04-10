@@ -66,7 +66,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.Razor" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Evolution" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCaching" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
