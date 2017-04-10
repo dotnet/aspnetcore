@@ -64,7 +64,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{2E9CB89D-EC8F-4DD9-A72B-08D5BABF752D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests", "test\Microsoft.AspNetCore.Server.Transport.Libuv.Tests\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.csproj", "{D95A7EC3-48AC-4D03-B2E2-0DA3E13BD3A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests", "test\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.csproj", "{D95A7EC3-48AC-4D03-B2E2-0DA3E13BD3A4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Tests", "test\Microsoft.AspNetCore.Server.Kestrel.Tests\Microsoft.AspNetCore.Server.Kestrel.Tests.csproj", "{4F1C30F8-CCAA-48D7-9DF6-2A84021F5BCC}"
 EndProject
