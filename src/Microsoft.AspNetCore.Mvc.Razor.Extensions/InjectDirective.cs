@@ -53,7 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     {
                         TypeName = typeName,
                         MemberName = memberName,
-                        Source = directive.Source,
                         Parent = visitor.Class,
                     };
 

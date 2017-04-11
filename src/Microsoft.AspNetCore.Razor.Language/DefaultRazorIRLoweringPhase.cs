@@ -204,6 +204,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         Name = chunkGenerator.Descriptor.Name,
                         Descriptor = chunkGenerator.Descriptor,
+                        Source = BuildSourceSpanFromNode(block),
                     });
 
                     base.VisitDirectiveBlock(chunkGenerator, block);
@@ -242,6 +243,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     Name = chunkGenerator.Descriptor.Name,
                     Descriptor = chunkGenerator.Descriptor,
+                    Source = BuildSourceSpanFromNode(block),
                 });
 
                 VisitDefault(block);
