@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             var serviceContext = new ServiceContext
             {
-                HttpParserFactory = f => new HttpParser(f.ServiceContext.Log),
+                HttpParserFactory = f => new HttpParser<FrameAdapter>(f.Frame.ServiceContext.Log),
                 ServerOptions = new KestrelServerOptions()
             };
             var frameContext = new FrameContext

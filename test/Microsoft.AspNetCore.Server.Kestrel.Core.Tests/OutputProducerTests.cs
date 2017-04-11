@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 var called = false;
 
-                ((ISocketOutput)socketOutput).Write<object>((buffer, state) =>
+                ((ISocketOutput)socketOutput).Write((buffer, state) =>
                 {
                     called = true;
                 },
-                null);
+                0);
 
                 Assert.False(called);
             }

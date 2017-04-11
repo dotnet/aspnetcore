@@ -26,7 +26,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract partial class Frame : IFrameControl, IHttpRequestLineHandler, IHttpHeadersHandler
+    public abstract partial class Frame : IFrameControl
     {
         private const byte ByteAsterisk = (byte)'*';
         private const byte ByteForwardSlash = (byte)'/';
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
         private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
-        private static readonly Action<WritableBuffer, Frame> _writeHeaders = WriteResponseHeaders;
+        private static readonly Action<WritableBuffer, FrameAdapter> _writeHeaders = WriteResponseHeaders;
 
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected long _responseBytesWritten;
 
         private readonly FrameContext _frameContext;
-        private readonly IHttpParser _parser;
+        private readonly IHttpParser<FrameAdapter> _parser;
 
         public Frame(FrameContext frameContext)
         {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             ServerOptions = ServiceContext.ServerOptions;
 
-            _parser = ServiceContext.HttpParserFactory(this);
+            _parser = ServiceContext.HttpParserFactory(new FrameAdapter(this));
 
             FrameControl = this;
             _keepAliveMilliseconds = (long)ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
@@ -988,11 +988,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             }
 
-            Output.Write(_writeHeaders, this);
+            Output.Write(_writeHeaders, new FrameAdapter(this));
         }
 
-        private static void WriteResponseHeaders(WritableBuffer writableBuffer, Frame frame)
+        private static void WriteResponseHeaders(WritableBuffer writableBuffer, FrameAdapter frameAdapter)
         {
+            var frame = frameAdapter.Frame;
             var writer = new WritableBufferWriter(writableBuffer);
 
             var responseHeaders = frame.FrameResponseHeaders;
@@ -1050,7 +1051,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 overLength = true;
             }
 
-            var result = _parser.ParseRequestLine(this, buffer, out consumed, out examined);
+            var result = _parser.ParseRequestLine(new FrameAdapter(this), buffer, out consumed, out examined);
             if (!result && overLength)
             {
                 RejectRequest(RequestRejectionReason.RequestLineTooLong);
@@ -1072,7 +1073,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 overLength = true;
             }
 
-            var result = _parser.ParseHeaders(this, buffer, out consumed, out examined, out var consumedBytes);
+            var result = _parser.ParseHeaders(new FrameAdapter(this), buffer, out consumed, out examined, out var consumedBytes);
             _remainingRequestHeadersBytesAllowed -= consumedBytes;
 
             if (!result && overLength)

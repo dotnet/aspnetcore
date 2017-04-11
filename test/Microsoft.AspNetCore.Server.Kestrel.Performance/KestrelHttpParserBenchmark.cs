@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
     public class KestrelHttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {
-        private readonly HttpParser _parser = new HttpParser(log: null);
+        private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>(log: null);
 
         private ReadableBuffer _buffer;
 
@@ -53,14 +53,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void ParseData()
         {
-            if (!_parser.ParseRequestLine(this, _buffer, out var consumed, out var examined))
+            if (!_parser.ParseRequestLine(new Adapter(this), _buffer, out var consumed, out var examined))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
 
             _buffer = _buffer.Slice(consumed, _buffer.End);
 
-            if (!_parser.ParseHeaders(this, _buffer, out consumed, out examined, out var consumedBytes))
+            if (!_parser.ParseHeaders(new Adapter(this), _buffer, out consumed, out examined, out var consumedBytes))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
@@ -72,6 +72,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public void OnHeader(Span<byte> name, Span<byte> value)
         {
+        }
+
+        private struct Adapter : IHttpRequestLineHandler, IHttpHeadersHandler
+        {
+            public KestrelHttpParserBenchmark RequestHandler;
+
+            public Adapter(KestrelHttpParserBenchmark requestHandler)
+            {
+                RequestHandler = requestHandler;
+            }
+
+            public void OnHeader(Span<byte> name, Span<byte> value)
+                => RequestHandler.OnHeader(name, value);
+
+            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+                => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
         }
     }
 }

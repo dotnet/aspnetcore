@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Testing
             return TaskCache.CompletedTask;
         }
 
-        public void Write<T>(Action<WritableBuffer, T> write, T state)
+        public void Write<T>(Action<WritableBuffer, T> write, T state) where T : struct
         {
 
         }

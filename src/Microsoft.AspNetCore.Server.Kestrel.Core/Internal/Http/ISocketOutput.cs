@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Task WriteAsync(ArraySegment<byte> buffer, bool chunk = false, CancellationToken cancellationToken = default(CancellationToken));
         void Flush();
         Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken));
-        void Write<T>(Action<WritableBuffer, T> write, T state);
+        void Write<T>(Action<WritableBuffer, T> write, T state) where T : struct;
     }
 }

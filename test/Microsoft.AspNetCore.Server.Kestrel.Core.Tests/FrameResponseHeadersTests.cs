@@ -256,28 +256,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             "42,000",
             "42.000",
         };
-
-        private class NoopHttpParser : IHttpParser
-        {
-            public bool ParseHeaders(IHttpHeadersHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes)
-            {
-                consumed = buffer.Start;
-                examined = buffer.End;
-                consumedBytes = 0;
-                return false;
-            }
-
-            public bool ParseRequestLine(IHttpRequestLineHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
-            {
-                consumed = buffer.Start;
-                examined = buffer.End;
-                return false;
-            }
-
-            public void Reset()
-            {
-
-            }
-        }
     }
 }

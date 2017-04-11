@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class NullParser : IHttpParser
+    public class NullParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : struct, IHttpHeadersHandler, IHttpRequestLineHandler
     {
         private readonly byte[] _startLine = Encoding.ASCII.GetBytes("GET /plaintext HTTP/1.1\r\n");
         private readonly byte[] _target = Encoding.ASCII.GetBytes("/plaintext");
@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private readonly byte[] _connectionHeaderName = Encoding.ASCII.GetBytes("Connection");
         private readonly byte[] _connectionHeaderValue = Encoding.ASCII.GetBytes("keep-alive");
 
-        public static readonly NullParser Instance = new NullParser();
+        public static readonly NullParser<FrameAdapter> Instance = new NullParser<FrameAdapter>();
 
-        public bool ParseHeaders(IHttpHeadersHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes)
+        public bool ParseHeaders(TRequestHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes)
         {
             handler.OnHeader(new Span<byte>(_hostHeaderName), new Span<byte>(_hostHeaderValue));
             handler.OnHeader(new Span<byte>(_acceptHeaderName), new Span<byte>(_acceptHeaderValue));
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return true;
         }
 
-        public bool ParseRequestLine(IHttpRequestLineHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
+        public bool ParseRequestLine(TRequestHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
         {
             handler.OnStartLine(HttpMethod.Get,
                 HttpVersion.Http11,

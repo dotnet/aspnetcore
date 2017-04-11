@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return WriteAsync(default(ArraySegment<byte>), chunk: false, cancellationToken: cancellationToken);
         }
 
-        public void Write<T>(Action<WritableBuffer, T> callback, T state)
+        public void Write<T>(Action<WritableBuffer, T> callback, T state) where T : struct
         {
             lock (_sync)
             {
