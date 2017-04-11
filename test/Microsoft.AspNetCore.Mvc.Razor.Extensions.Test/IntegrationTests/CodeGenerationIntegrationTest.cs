@@ -359,9 +359,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             var buffer = new char[DefaultImports.Length];
             DefaultImports.CopyTo(0, buffer, 0, DefaultImports.Length);
 
-            var builder = new StringBuilder();
-            builder.Append(buffer);
-
             var text = new string(buffer);
             text = Regex.Replace(text, "(?<!\r)\n", "\r\n");
 
