@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Internal;
@@ -450,6 +452,273 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal(MessageType.Error, messages[2].Type);
             Assert.Equal("Closed", Encoding.UTF8.GetString(messages[3].Payload));
             Assert.Equal(MessageType.Close, messages[3].Type);
+        }
+
+        [Fact]
+        public async Task UnauthorizedConnectionFailsToStartEndPoint()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddEndPoint<BlockingEndPoint>(options =>
+            {
+                options.AuthorizationPolicyNames.Add("test");
+            });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
+            });
+            services.AddLogging();
+
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/poll";
+            var values = new Dictionary<string, StringValues>();
+            values["id"] = state.Connection.ConnectionId;
+            var qs = new QueryCollection(values);
+            context.Request.Query = qs;
+            var authFeature = new HttpAuthenticationFeature();
+            authFeature.Handler = new TestAuthenticationHandler(context);
+            context.Features.Set<IHttpAuthenticationFeature>(authFeature);
+
+            // would hang if EndPoint was running
+            await dispatcher.ExecuteAsync<BlockingEndPoint>("", context).OrTimeout();
+
+            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AuthorizedConnectionCanConnectToEndPoint()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddEndPoint<BlockingEndPoint>(options =>
+            {
+                options.AuthorizationPolicyNames.Add("test");
+            });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("test", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.NameIdentifier);
+                });
+            });
+            services.AddLogging();
+
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/poll";
+            var values = new Dictionary<string, StringValues>();
+            values["id"] = state.Connection.ConnectionId;
+            var qs = new QueryCollection(values);
+            context.Request.Query = qs;
+            context.Response.Body = new MemoryStream();
+            var authFeature = new HttpAuthenticationFeature();
+            authFeature.Handler = new TestAuthenticationHandler(context);
+            context.Features.Set<IHttpAuthenticationFeature>(authFeature);
+
+            // "authorize" user
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+
+            var endPointTask = dispatcher.ExecuteAsync<BlockingEndPoint>("", context);
+            await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
+
+            await endPointTask.OrTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal("T12:T:Hello, World;", GetContentAsString(context.Response.Body));
+        }
+
+        [Fact]
+        public async Task AllPoliciesRequiredForAuthorizedEndPoint()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddEndPoint<BlockingEndPoint>(options =>
+            {
+                options.AuthorizationPolicyNames.Add("test");
+                options.AuthorizationPolicyNames.Add("secondPolicy");
+            });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
+                options.AddPolicy("secondPolicy", policy => policy.RequireClaim(ClaimTypes.StreetAddress));
+            });
+            services.AddLogging();
+
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/poll";
+            var values = new Dictionary<string, StringValues>();
+            values["id"] = state.Connection.ConnectionId;
+            var qs = new QueryCollection(values);
+            context.Request.Query = qs;
+            context.Response.Body = new MemoryStream();
+            var authFeature = new HttpAuthenticationFeature();
+            authFeature.Handler = new TestAuthenticationHandler(context);
+            context.Features.Set<IHttpAuthenticationFeature>(authFeature);
+
+            // partialy "authorize" user
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+
+            // would hang if EndPoint was running
+            await dispatcher.ExecuteAsync<BlockingEndPoint>("", context).OrTimeout();
+
+            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+
+            // fully "authorize" user
+            context.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.StreetAddress, "12345 123rd St. NW") }));
+
+            var endPointTask = dispatcher.ExecuteAsync<BlockingEndPoint>("", context);
+            await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
+
+            await endPointTask.OrTimeout();
+
+            Assert.Equal("T12:T:Hello, World;", GetContentAsString(context.Response.Body));
+        }
+
+        [Fact]
+        public async Task AuthorizedConnectionWithAcceptedSchemesCanConnectToEndPoint()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddEndPoint<BlockingEndPoint>(options =>
+            {
+                options.AuthorizationPolicyNames.Add("test");
+            });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("test", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.NameIdentifier);
+                    policy.AddAuthenticationSchemes("Default");
+                });
+            });
+            services.AddLogging();
+
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/poll";
+            var values = new Dictionary<string, StringValues>();
+            values["id"] = state.Connection.ConnectionId;
+            var qs = new QueryCollection(values);
+            context.Request.Query = qs;
+            context.Response.Body = new MemoryStream();
+            var authFeature = new HttpAuthenticationFeature();
+            authFeature.Handler = new TestAuthenticationHandler(context);
+            context.Features.Set<IHttpAuthenticationFeature>(authFeature);
+
+            // "authorize" user
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+
+            var endPointTask = dispatcher.ExecuteAsync<BlockingEndPoint>("", context);
+            await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
+
+            await endPointTask.OrTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal("T12:T:Hello, World;", GetContentAsString(context.Response.Body));
+        }
+
+        [Fact]
+        public async Task AuthorizedConnectionWithRejectedSchemesFailsToConnectToEndPoint()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddEndPoint<BlockingEndPoint>(options =>
+            {
+                options.AuthorizationPolicyNames.Add("test");
+            });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("test", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.NameIdentifier);
+                    policy.AddAuthenticationSchemes("Default");
+                });
+            });
+            services.AddLogging();
+
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/poll";
+            var values = new Dictionary<string, StringValues>();
+            values["id"] = state.Connection.ConnectionId;
+            var qs = new QueryCollection(values);
+            context.Request.Query = qs;
+            context.Response.Body = new MemoryStream();
+            var authFeature = new HttpAuthenticationFeature();
+            authFeature.Handler = new TestAuthenticationHandler(context, acceptScheme: false);
+            context.Features.Set<IHttpAuthenticationFeature>(authFeature);
+
+            // "authorize" user
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+
+            // would block if EndPoint was executed
+            await dispatcher.ExecuteAsync<BlockingEndPoint>("", context).OrTimeout();
+
+            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+        }
+
+        private class TestAuthenticationHandler : IAuthenticationHandler
+        {
+            private readonly HttpContext HttpContext;
+            private readonly bool _acceptScheme;
+
+            public TestAuthenticationHandler(HttpContext context, bool acceptScheme = true)
+            {
+                HttpContext = context;
+                _acceptScheme = acceptScheme;
+            }
+
+            public Task AuthenticateAsync(AuthenticateContext context)
+            {
+                if (_acceptScheme)
+                {
+                    context.Authenticated(HttpContext.User, context.Properties, context.Description);
+                }
+                else
+                {
+                    context.NotAuthenticated();
+                }
+                return Task.CompletedTask;
+            }
+
+            public Task ChallengeAsync(ChallengeContext context)
+            {
+                HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Accept();
+                return Task.CompletedTask;
+            }
+
+            public void GetDescriptions(DescribeSchemesContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SignInAsync(SignInContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SignOutAsync(SignOutContext context)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private static async Task CheckTransportSupported(TransportType supportedTransports, TransportType transportType, int status)

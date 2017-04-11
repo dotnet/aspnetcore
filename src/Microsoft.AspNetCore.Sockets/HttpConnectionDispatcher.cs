@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Sockets
         {
             var options = context.RequestServices.GetRequiredService<IOptions<EndPointOptions<TEndPoint>>>().Value;
             // TODO: Authorize attribute on EndPoint
-            if (!await AuthorizeHelper.AuthorizeAsync(context, options.Policy))
+            if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationPolicyNames))
             {
                 return;
             }
