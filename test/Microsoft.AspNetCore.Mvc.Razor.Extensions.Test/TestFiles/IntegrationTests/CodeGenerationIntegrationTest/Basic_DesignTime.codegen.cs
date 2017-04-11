@@ -9,7 +9,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class _TestFiles_Input_Basic_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Basic_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -19,12 +19,12 @@ namespace AspNetCore
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 1 "/TestFiles/Input/Basic.cshtml"
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
        __o = logo;
 
 #line default
 #line hidden
-#line 3 "/TestFiles/Input/Basic.cshtml"
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
 __o = Html.Input("SomeKey");
 
 #line default

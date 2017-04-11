@@ -9,7 +9,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class _TestFiles_Input_InjectWithSemicolon_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InjectWithSemicolon_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {

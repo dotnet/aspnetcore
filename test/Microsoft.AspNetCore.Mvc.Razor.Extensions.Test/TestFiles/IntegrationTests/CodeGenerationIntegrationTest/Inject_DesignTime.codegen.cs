@@ -9,12 +9,12 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-#line 1 "/TestFiles/Input/Inject.cshtml"
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml"
 using MyNamespace;
 
 #line default
 #line hidden
-    public class _TestFiles_Input_Inject_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inject_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {

@@ -1,4 +1,4 @@
-#pragma checksum "/TestFiles/Input/RazorPagesWithoutModel.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "c933419e57888c980327bbedf321c46e65488378"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "c933419e57888c980327bbedf321c46e65488378"
 namespace AspNetCore
 {
     #line hidden
@@ -9,12 +9,12 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-#line 4 "/TestFiles/Input/RazorPagesWithoutModel.cshtml"
+#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 #line default
 #line hidden
-    public class _TestFiles_Input_RazorPagesWithoutModel_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString("text-danger"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString("col-md-10"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
@@ -74,7 +74,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
                 WriteLiteral("\r\n        <label class=\"col-md-2 control-label\">");
                 EndContext();
                 BeginContext(571, 4, false);
-#line 25 "/TestFiles/Input/RazorPagesWithoutModel.cshtml"
+#line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
                                          Write(Name);
 
 #line default
@@ -165,7 +165,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             EndContext();
         }
         #pragma warning restore 1998
-#line 6 "/TestFiles/Input/RazorPagesWithoutModel.cshtml"
+#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
             
     public IActionResult OnPost(Customer customer)
     {
@@ -191,8 +191,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<_TestFiles_Input_RazorPagesWithoutModel_cshtml> Html { get; private set; }
-        public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<_TestFiles_Input_RazorPagesWithoutModel_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<_TestFiles_Input_RazorPagesWithoutModel_cshtml>)PageContext?.ViewData;
-        public _TestFiles_Input_RazorPagesWithoutModel_cshtml Model => ViewData.Model;
+        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml> Html { get; private set; }
+        public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml>)PageContext?.ViewData;
+        public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml Model => ViewData.Model;
     }
 }

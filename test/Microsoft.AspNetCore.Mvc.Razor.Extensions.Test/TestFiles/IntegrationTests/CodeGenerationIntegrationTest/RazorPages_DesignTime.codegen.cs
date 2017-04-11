@@ -9,12 +9,12 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-#line 5 "/TestFiles/Input/RazorPages.cshtml"
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 #line default
 #line hidden
-    public class _TestFiles_Input_RazorPages_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -34,7 +34,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
-#line 29 "/TestFiles/Input/RazorPages.cshtml"
+#line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
                                          __o = Name;
 
 #line default
@@ -45,7 +45,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
         }
         #pragma warning restore 1998
-#line 7 "/TestFiles/Input/RazorPages.cshtml"
+#line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
             
     public class NewModel : PageModel
     {

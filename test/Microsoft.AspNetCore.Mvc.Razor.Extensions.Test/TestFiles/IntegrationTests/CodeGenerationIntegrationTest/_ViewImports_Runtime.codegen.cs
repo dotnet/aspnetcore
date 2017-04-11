@@ -1,4 +1,4 @@
-#pragma checksum "/TestFiles/Input/_ViewImports.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "778b41f9406fcda776cc3f1bf093f3b21956e582"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/_ViewImports.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "778b41f9406fcda776cc3f1bf093f3b21956e582"
 namespace AspNetCore
 {
     #line hidden
@@ -9,7 +9,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class _TestFiles_Input__ViewImports_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest__ViewImports_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()

@@ -1,7 +1,7 @@
 namespace AspNetCore
 {
     #line hidden
-    using TModel = _TestFiles_Input_RazorPagesWithoutModel_cshtml;
+    using TModel = TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml;
     using System;
     using System.Threading.Tasks;
     using System.Linq;
@@ -9,12 +9,12 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-#line 4 "/TestFiles/Input/RazorPagesWithoutModel.cshtml"
+#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 #line default
 #line hidden
-    public class _TestFiles_Input_RazorPagesWithoutModel_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -30,7 +30,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
-#line 25 "/TestFiles/Input/RazorPagesWithoutModel.cshtml"
+#line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
                                          __o = Name;
 
 #line default
@@ -41,7 +41,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
         }
         #pragma warning restore 1998
-#line 6 "/TestFiles/Input/RazorPagesWithoutModel.cshtml"
+#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
             
     public IActionResult OnPost(Customer customer)
     {
@@ -67,8 +67,8 @@ global::System.Object __typeHelper = "*, TestAssembly";
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<_TestFiles_Input_RazorPagesWithoutModel_cshtml> Html { get; private set; }
-        public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<_TestFiles_Input_RazorPagesWithoutModel_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<_TestFiles_Input_RazorPagesWithoutModel_cshtml>)PageContext?.ViewData;
-        public _TestFiles_Input_RazorPagesWithoutModel_cshtml Model => ViewData.Model;
+        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml> Html { get; private set; }
+        public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml>)PageContext?.ViewData;
+        public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml Model => ViewData.Model;
     }
 }

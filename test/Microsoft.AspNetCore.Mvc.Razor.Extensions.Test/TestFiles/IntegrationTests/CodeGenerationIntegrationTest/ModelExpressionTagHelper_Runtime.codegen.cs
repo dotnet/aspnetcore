@@ -1,4 +1,4 @@
-#pragma checksum "/TestFiles/Input/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "55aa7d9113d1666f0c8e05c6ad9b86fc8464b277"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "55aa7d9113d1666f0c8e05c6ad9b86fc8464b277"
 namespace AspNetCore
 {
     #line hidden
@@ -9,7 +9,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class _TestFiles_Input_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
         #line hidden
         #pragma warning disable 0414
@@ -44,7 +44,7 @@ namespace AspNetCore
             );
             __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper);
-#line 5 "/TestFiles/Input/ModelExpressionTagHelper.cshtml"
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Now);
 
 #line default
@@ -67,7 +67,7 @@ __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper.For = ModelExpres
             );
             __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper);
-#line 6 "/TestFiles/Input/ModelExpressionTagHelper.cshtml"
+#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => Model);
 
 #line default

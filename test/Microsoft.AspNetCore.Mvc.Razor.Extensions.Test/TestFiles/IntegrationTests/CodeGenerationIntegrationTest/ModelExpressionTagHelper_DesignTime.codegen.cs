@@ -9,7 +9,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class _TestFiles_Input_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -29,13 +29,13 @@ global::System.Object __typeHelper = "Microsoft.AspNetCore.Mvc.Razor.Extensions.
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper>();
-#line 5 "/TestFiles/Input/ModelExpressionTagHelper.cshtml"
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Now);
 
 #line default
 #line hidden
             __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper>();
-#line 6 "/TestFiles/Input/ModelExpressionTagHelper.cshtml"
+#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 __Microsoft_AspNetCore_Mvc_Razor_Extensions_InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => Model);
 
 #line default

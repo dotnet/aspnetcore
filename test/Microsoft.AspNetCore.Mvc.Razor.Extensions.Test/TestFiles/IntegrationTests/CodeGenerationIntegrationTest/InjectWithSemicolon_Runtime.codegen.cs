@@ -1,4 +1,4 @@
-#pragma checksum "/TestFiles/Input/InjectWithSemicolon.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "fc807ec0dc76610bdca62f482fefd7f584348df9"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "fc807ec0dc76610bdca62f482fefd7f584348df9"
 namespace AspNetCore
 {
     #line hidden
@@ -9,7 +9,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class _TestFiles_Input_InjectWithSemicolon_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InjectWithSemicolon_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()

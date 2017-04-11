@@ -1,4 +1,4 @@
-#pragma checksum "/TestFiles/Input/RazorPages.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "1b3a99159b0df739708e9384e871a4983f59c1e4"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "1b3a99159b0df739708e9384e871a4983f59c1e4"
 namespace AspNetCore
 {
     #line hidden
@@ -9,12 +9,12 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-#line 5 "/TestFiles/Input/RazorPages.cshtml"
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 #line default
 #line hidden
-    public class _TestFiles_Input_RazorPages_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString("text-danger"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString("col-md-10"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
@@ -74,7 +74,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
                 WriteLiteral("\r\n        <label class=\"col-md-2 control-label\">");
                 EndContext();
                 BeginContext(666, 4, false);
-#line 29 "/TestFiles/Input/RazorPages.cshtml"
+#line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
                                          Write(Name);
 
 #line default
@@ -165,7 +165,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             EndContext();
         }
         #pragma warning restore 1998
-#line 7 "/TestFiles/Input/RazorPages.cshtml"
+#line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
             
     public class NewModel : PageModel
     {
