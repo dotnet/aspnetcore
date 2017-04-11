@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 GenerateVCTHClass(visitor.Class, tagHelper.Value);
 
-                var tagHelperTypeName = tagHelper.Value.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                var tagHelperTypeName = tagHelper.Value.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
                 if (visitor.Fields.UsedTagHelperTypeNames.Remove(tagHelperTypeName))
                 {
                     visitor.Fields.UsedTagHelperTypeNames.Add(GetVCTHFullName(visitor.Namespace, visitor.Class, tagHelper.Value));

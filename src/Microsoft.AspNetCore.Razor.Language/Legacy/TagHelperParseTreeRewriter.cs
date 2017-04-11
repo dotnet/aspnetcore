@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                         if (invalidRule != null)
                         {
-                            var typeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                            var typeName = descriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
 
                             // End tag TagHelper that states it shouldn't have an end tag.
                             errorSink.OnError(
@@ -564,8 +564,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         // Can't have a set of TagHelpers that expect different structures.
                         if (baseStructure.HasValue && baseStructure != rule.TagStructure)
                         {
-                            var baseDescriptorTypeName = baseDescriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
-                            var descriptorTypeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                            var baseDescriptorTypeName = baseDescriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
+                            var descriptorTypeName = descriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
                             errorSink.OnError(
                                 tagBlock.Start,
                                 LegacyResources.FormatTagHelperParseTreeRewriter_InconsistentTagStructure(

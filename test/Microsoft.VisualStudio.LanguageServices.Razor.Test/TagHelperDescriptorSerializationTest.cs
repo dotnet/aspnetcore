@@ -151,9 +151,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             string assemblyName,
             IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null,
             IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null,
-            Action<ITagHelperDescriptorBuilder> configureAction = null)
+            Action<TagHelperDescriptorBuilder> configureAction = null)
         {
-            var builder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 
             if (attributes != null)
             {

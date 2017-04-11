@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private static TagHelperDescriptor CreateTagHelperDescriptor()
         {
-            var descriptor = ITagHelperDescriptorBuilder.Create("TypeName", "AssemblyName")
+            var descriptor = TagHelperDescriptorBuilder.Create("TypeName", "AssemblyName")
                 .TagMatchingRule(rule =>
                     rule.RequireTagName("tag-name"))
                 .Build();
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private static TagHelperDescriptor CreateViewComponentTagHelperDescriptor()
         {
-            var descriptor = ITagHelperDescriptorBuilder.Create("TypeName", "AssemblyName")
+            var descriptor = TagHelperDescriptorBuilder.Create("TypeName", "AssemblyName")
                 .TagMatchingRule(rule =>
                     rule.RequireTagName("tag-name"))
                 .AddMetadata(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "ViewComponentName")

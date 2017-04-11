@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var documentDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("*"))
                     .Build()
             };
@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var documentDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule =>
                         rule
                             .RequireTagName("a")
@@ -56,7 +56,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                             .PropertyName("AspRoute")
                             .AsDictionary("asp-route-", typeof(string).FullName))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("input"))
                     .BindAttribute(attribute =>
                         attribute
@@ -88,7 +88,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var documentDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("a"))
                     .BindAttribute(attribute =>
                         attribute
@@ -124,7 +124,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var documentDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("input"))
                     .BindAttribute(attribute =>
                         attribute
@@ -159,7 +159,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var documentDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("*"))
                     .Build()
             };
@@ -179,7 +179,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var documentDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("strong"))
                     .Build()
             };
@@ -199,7 +199,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var expectedDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(
                         rule => rule
                             .RequireTagName("a")
@@ -209,7 +209,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 expectedDescriptors[0],
-                ITagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
                     .TagMatchingRule(
                         rule => rule
                             .RequireTagName("strong")
@@ -232,14 +232,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var expectedDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("strong"))
                     .Build()
             };
             var documentDescriptors = new[]
             {
                 expectedDescriptors[0],
-                ITagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("thstrong"))
                     .Build()
             };
@@ -259,7 +259,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var expectedDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(
                         rule => rule
                             .RequireTagName("strong")
@@ -269,7 +269,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 expectedDescriptors[0],
-                ITagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
                     .TagMatchingRule(
                         rule => rule
                             .RequireTagName("strong")
@@ -292,7 +292,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var documentDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("div"))
                     .Build()
             };
@@ -312,7 +312,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var documentDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("div"))
                     .Build()
             };
@@ -332,7 +332,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // Arrange
             var expectedDescriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
                     .TagMatchingRule(
                         rule => rule
                             .RequireTagName("p")
@@ -342,7 +342,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 expectedDescriptors[0],
-                ITagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
                     .TagMatchingRule(
                         rule => rule
                             .RequireTagName("strong")

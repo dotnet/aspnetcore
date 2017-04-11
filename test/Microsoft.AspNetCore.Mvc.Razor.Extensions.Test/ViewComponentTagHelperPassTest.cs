@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var tagHelpers = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var tagHelpers = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")
@@ -135,7 +135,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
             var tagHelpers = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")
@@ -208,7 +208,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
             var tagHelpers = new[]
             {
-                ITagHelperDescriptorBuilder.Create("PTestTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("PTestTagHelper", "TestAssembly")
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")
@@ -216,7 +216,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
                     .TagMatchingRule(rule =>
                         rule.RequireTagName("p"))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")

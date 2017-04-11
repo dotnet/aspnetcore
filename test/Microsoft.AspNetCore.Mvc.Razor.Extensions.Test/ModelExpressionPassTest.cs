@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var tagHelpers = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var tagHelpers = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var tagHelpers = new[]
             {
-                ITagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")

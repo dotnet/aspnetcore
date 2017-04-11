@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "TestAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .Build()
             };
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "Test")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "Test")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .BindAttribute(attribute => attribute
                         .Name("obj-attr")

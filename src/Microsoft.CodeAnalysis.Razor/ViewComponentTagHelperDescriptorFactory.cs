@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var shortName = GetShortName(type);
             var tagName = $"vc:{DefaultTagHelperDescriptorFactory.ToHtmlCase(shortName)}";
             var typeName = $"__Generated__{shortName}ViewComponentTagHelper";
-            var descriptorBuilder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
             var methodParameters = GetInvokeMethodParameters(type);
             descriptorBuilder.TagMatchingRule(ruleBuilder =>
             {
@@ -68,7 +68,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void AddBoundAttributes(ImmutableArray<IParameterSymbol> methodParameters, ITagHelperDescriptorBuilder builder)
+        private void AddBoundAttributes(ImmutableArray<IParameterSymbol> methodParameters, TagHelperDescriptorBuilder builder)
         {
             foreach (var parameter in methodParameters)
             {

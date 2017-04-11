@@ -270,13 +270,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            if (descriptor.Kind != ITagHelperDescriptorBuilder.DescriptorKind)
+            if (descriptor.Kind != TagHelperDescriptorBuilder.DescriptorKind)
             {
                 // We only understand TagHelperDescriptors generated from ITagHelpers.
                 return false;
             }
 
-            var descriptorTypeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+            var descriptorTypeName = descriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
 
             if (lookupInfo.TypePattern.EndsWith("*", StringComparison.Ordinal))
             {

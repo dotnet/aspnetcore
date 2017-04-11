@@ -321,7 +321,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 {
                     {
                         typeof(EnumTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(EnumTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(EnumTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("enum"))
                             .BindAttribute(builder =>
                                 builder
@@ -338,7 +338,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     },
                     {
                         typeof(MultiEnumTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(MultiEnumTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(MultiEnumTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("p"))
                             .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("input"))
                             .BindAttribute(builder =>
@@ -384,20 +384,20 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 {
                     {
                         typeof(RequiredParentTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(RequiredParentTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(RequiredParentTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("div"))
                             .Build()
                     },
                     {
                         typeof(MultiSpecifiedRequiredParentTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(MultiSpecifiedRequiredParentTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(MultiSpecifiedRequiredParentTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("p").RequireParentTag("div"))
                             .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("section"))
                             .Build()
                     },
                     {
                         typeof(MultiWithUnspecifiedRequiredParentTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(MultiWithUnspecifiedRequiredParentTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(MultiWithUnspecifiedRequiredParentTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("p"))
                             .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("div"))
                             .Build()
@@ -432,14 +432,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 {
                     {
                         typeof(RestrictChildrenTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(RestrictChildrenTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(RestrictChildrenTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("restrict-children"))
                             .AllowChildTag("p")
                             .Build()
                     },
                     {
                         typeof(DoubleRestrictChildrenTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(DoubleRestrictChildrenTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(DoubleRestrictChildrenTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("double-restrict-children"))
                             .AllowChildTag("p")
                             .AllowChildTag("strong")
@@ -447,7 +447,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     },
                     {
                         typeof(MultiTargetRestrictChildrenTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(MultiTargetRestrictChildrenTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(MultiTargetRestrictChildrenTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("p"))
                             .TagMatchingRule(builder => builder.RequireTagName("div"))
                             .AllowChildTag("p")
@@ -485,7 +485,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 {
                     {
                         typeof(TagStructureTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(TagStructureTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(TagStructureTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder
                                 .RequireTagName("input")
                                 .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -493,7 +493,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     },
                     {
                         typeof(MultiSpecifiedTagStructureTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(MultiSpecifiedTagStructureTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(MultiSpecifiedTagStructureTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder
                                 .RequireTagName("p")
                                 .RequireTagStructure(TagStructure.NormalOrSelfClosing))
@@ -504,7 +504,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     },
                     {
                         typeof(MultiWithUnspecifiedTagStructureTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(MultiWithUnspecifiedTagStructureTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(MultiWithUnspecifiedTagStructureTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder
                                 .RequireTagName("p"))
                             .TagMatchingRule(builder => builder
@@ -1985,7 +1985,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 {
                     {
                         typeof(MultipleDescriptorTagHelperWithOutputElementHint),
-                        ITagHelperDescriptorBuilder.Create(typeof(MultipleDescriptorTagHelperWithOutputElementHint).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(MultipleDescriptorTagHelperWithOutputElementHint).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("a"))
                             .TagMatchingRule(builder => builder.RequireTagName("p"))
                             .TagOutputHint("div")
@@ -1993,20 +1993,20 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     },
                     {
                         typeof(InheritedOutputElementHintTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(InheritedOutputElementHintTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(InheritedOutputElementHintTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("inherited-output-element-hint"))
                             .Build()
                     },
                     {
                         typeof(OutputElementHintTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(OutputElementHintTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(OutputElementHintTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("output-element-hint"))
                             .TagOutputHint("hinted-value")
                             .Build()
                     },
                     {
                         typeof(OverriddenOutputElementHintTagHelper),
-                        ITagHelperDescriptorBuilder.Create(typeof(OverriddenOutputElementHintTagHelper).FullName, AssemblyName)
+                        TagHelperDescriptorBuilder.Create(typeof(OverriddenOutputElementHintTagHelper).FullName, AssemblyName)
                             .TagMatchingRule(builder => builder.RequireTagName("overridden-output-element-hint"))
                             .TagOutputHint("overridden")
                             .Build()
@@ -2271,7 +2271,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null,
             IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null)
         {
-            var builder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 
             if (attributes != null)
             {

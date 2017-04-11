@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
         public string TargetElement => string.Join(", ", _descriptor.TagMatchingRules.Select(rule => rule.TagName));
 
-        public string TypeName => _descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+        public string TypeName => _descriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
     }
 }
 #endif

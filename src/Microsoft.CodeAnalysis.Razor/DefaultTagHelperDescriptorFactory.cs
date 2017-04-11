@@ -73,7 +73,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var typeName = GetFullName(type);
             var assemblyName = type.ContainingAssembly.Identity.Name;
-            var descriptorBuilder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 
             AddBoundAttributes(type, descriptorBuilder);
             AddTagMatchingRules(type, descriptorBuilder);
@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.Razor
             return descriptor;
         }
 
-        private void AddTagMatchingRules(INamedTypeSymbol type, ITagHelperDescriptorBuilder descriptorBuilder)
+        private void AddTagMatchingRules(INamedTypeSymbol type, TagHelperDescriptorBuilder descriptorBuilder)
         {
             var targetElementAttributes = type
                 .GetAttributes()
@@ -130,7 +130,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void AddBoundAttributes(INamedTypeSymbol type, ITagHelperDescriptorBuilder builder)
+        private void AddBoundAttributes(INamedTypeSymbol type, TagHelperDescriptorBuilder builder)
         {
             var accessibleProperties = GetAccessibleProperties(type);
             foreach (var property in accessibleProperties)
@@ -147,7 +147,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void AddAllowedChildren(INamedTypeSymbol type, ITagHelperDescriptorBuilder builder)
+        private void AddAllowedChildren(INamedTypeSymbol type, TagHelperDescriptorBuilder builder)
         {
             var restrictChildrenAttribute = type.GetAttributes().Where(a => a.AttributeClass == _restrictChildrenAttributeSymbol).FirstOrDefault();
             if (restrictChildrenAttribute == null)
@@ -166,7 +166,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void AddDocumentation(INamedTypeSymbol type, ITagHelperDescriptorBuilder builder)
+        private void AddDocumentation(INamedTypeSymbol type, TagHelperDescriptorBuilder builder)
         {
             if (!DesignTime)
             {
@@ -181,7 +181,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void AddTagOutputHint(INamedTypeSymbol type, ITagHelperDescriptorBuilder builder)
+        private void AddTagOutputHint(INamedTypeSymbol type, TagHelperDescriptorBuilder builder)
         {
             if (!DesignTime)
             {

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public sealed class ITagHelperDescriptorBuilder
+    public sealed class TagHelperDescriptorBuilder
     {
         public static readonly string DescriptorKind = "ITagHelper";
         public static readonly string TypeNameKey = "ITagHelper.TypeName";
@@ -26,19 +26,19 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly Dictionary<string, string> _metadata;
         private HashSet<RazorDiagnostic> _diagnostics;
 
-        private ITagHelperDescriptorBuilder(string typeName, string assemblyName)
+        private TagHelperDescriptorBuilder(string typeName, string assemblyName)
         {
             _typeName = typeName;
             _assemblyName = assemblyName;
             _metadata = new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
-        public static ITagHelperDescriptorBuilder Create(string typeName, string assemblyName)
+        public static TagHelperDescriptorBuilder Create(string typeName, string assemblyName)
         {
-            return new ITagHelperDescriptorBuilder(typeName, assemblyName);
+            return new TagHelperDescriptorBuilder(typeName, assemblyName);
         }
 
-        public ITagHelperDescriptorBuilder BindAttribute(BoundAttributeDescriptor descriptor)
+        public TagHelperDescriptorBuilder BindAttribute(BoundAttributeDescriptor descriptor)
         {
             if (descriptor == null)
             {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
-        public ITagHelperDescriptorBuilder BindAttribute(Action<ITagHelperBoundAttributeDescriptorBuilder> configure)
+        public TagHelperDescriptorBuilder BindAttribute(Action<ITagHelperBoundAttributeDescriptorBuilder> configure)
         {
             if (configure == null)
             {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return BindAttribute(attributeDescriptor);
         }
 
-        public ITagHelperDescriptorBuilder TagMatchingRule(TagMatchingRule rule)
+        public TagHelperDescriptorBuilder TagMatchingRule(TagMatchingRule rule)
         {
             if (rule == null)
             {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
-        public ITagHelperDescriptorBuilder TagMatchingRule(Action<TagMatchingRuleBuilder> configure)
+        public TagHelperDescriptorBuilder TagMatchingRule(Action<TagMatchingRuleBuilder> configure)
         {
             if (configure == null)
             {
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return TagMatchingRule(rule);
         }
 
-        public ITagHelperDescriptorBuilder AllowChildTag(string allowedChild)
+        public TagHelperDescriptorBuilder AllowChildTag(string allowedChild)
         {
             EnsureAllowedChildTags();
             _allowedChildTags.Add(allowedChild);
@@ -104,28 +104,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
-        public ITagHelperDescriptorBuilder TagOutputHint(string hint)
+        public TagHelperDescriptorBuilder TagOutputHint(string hint)
         {
             _tagOutputHint = hint;
 
             return this;
         }
 
-        public ITagHelperDescriptorBuilder Documentation(string documentation)
+        public TagHelperDescriptorBuilder Documentation(string documentation)
         {
             _documentation = documentation;
 
             return this;
         }
 
-        public ITagHelperDescriptorBuilder AddMetadata(string key, string value)
+        public TagHelperDescriptorBuilder AddMetadata(string key, string value)
         {
             _metadata[key] = value;
 
             return this;
         }
 
-        public ITagHelperDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
+        public TagHelperDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
         {
             EnsureDiagnostics();
             _diagnostics.Add(diagnostic);

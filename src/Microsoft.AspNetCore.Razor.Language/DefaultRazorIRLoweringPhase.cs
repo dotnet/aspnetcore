@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 foreach (var descriptor in block.Binding.Descriptors)
                 {
-                    var typeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                    var typeName = descriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
                     _tagHelperFields.UsedTagHelperTypeNames.Add(typeName);
                 }
             }
@@ -525,7 +525,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 var descriptors = tagHelperBinding.Descriptors;
                 foreach (var descriptor in descriptors)
                 {
-                    var typeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                    var typeName = descriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
                     var createTagHelper = new CreateTagHelperIRNode()
                     {
                         TagHelperTypeName = typeName,
@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         {
                             var associatedAttributeDescriptor = associatedDescriptor.BoundAttributes.First(
                                 attributeDescriptor => TagHelperMatchingConventions.CanSatisfyBoundAttribute(attribute.Name, attributeDescriptor));
-                            var tagHelperTypeName = associatedDescriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                            var tagHelperTypeName = associatedDescriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
                             var attributePropertyName = associatedAttributeDescriptor.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey];
 
                             var setTagHelperProperty = new SetTagHelperPropertyIRNode()

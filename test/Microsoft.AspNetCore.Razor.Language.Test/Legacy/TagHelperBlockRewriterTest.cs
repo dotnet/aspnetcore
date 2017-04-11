@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new[]
             {
-                ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("*")
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("input")
@@ -315,13 +315,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var blockFactory = new BlockFactory(factory);
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(structure1))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("input")
@@ -1193,7 +1193,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("PersonTagHelper", "personAssembly")
+                TagHelperDescriptorBuilder.Create("PersonTagHelper", "personAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("person"))
                     .BindAttribute(attribute =>
                         attribute
@@ -2231,7 +2231,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("myth"))
                     .BindAttribute(attribute => 
                         attribute
@@ -3880,7 +3880,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("input")
@@ -3895,7 +3895,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .PropertyName("BoundRequiredString")
                         .TypeName(typeof(string).FullName))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("input")
@@ -3906,7 +3906,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .PropertyName("BoundRequiredInt")
                         .TypeName(typeof(int).FullName))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("InputTagHelper3", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper3", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("input"))
                     .BindAttribute(attribute =>
                         attribute
@@ -3921,7 +3921,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .TypeName(typeof(IDictionary<string, string>).Namespace + ".IDictionary<System.String, System.String>")
                         .AsDictionary("string-prefix-", typeof(string).FullName))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .BindAttribute(attribute =>
                         attribute

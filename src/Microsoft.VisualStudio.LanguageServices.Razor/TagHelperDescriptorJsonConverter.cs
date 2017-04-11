@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var diagnostics = descriptor[nameof(TagHelperDescriptor.Diagnostics)].Value<JArray>();
             var metadata = descriptor[nameof(TagHelperDescriptor.Metadata)].Value<JObject>();
 
-            var builder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 
             builder
                 .Documentation(documentation)

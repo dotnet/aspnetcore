@@ -160,14 +160,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("strong"))
                     .TagMatchingRule(rule => rule.RequireTagName("div"))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("CatchALlTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("CatchALlTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("*"))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .Build(),
             };
@@ -258,13 +258,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("strong")
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagName("strong")
                         .RequireParentTag("input"))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .Build(),
             };
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("strong")
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagName("strong")
                         .RequireParentTag("div"))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .Build(),
             };
@@ -370,11 +370,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupTagHelperBlock("th:strong")));
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .AllowChildTag("strong")
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("strong"))
                     .Build(),
             };
@@ -682,7 +682,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     factory.Markup(Environment.NewLine)));
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .AllowChildTag("br")
                     .Build()
@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     blockFactory.MarkupTagBlock("</strong>")));
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("strong")
@@ -746,18 +746,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupTagHelperBlock("br", TagMode.StartTagOnly)));
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("PTagHelper1", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper1", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .AllowChildTag("strong")
                     .AllowChildTag("br")
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("PTagHelper2", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper2", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("strong"))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("br")
@@ -783,18 +783,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupTagHelperBlock("br", TagMode.StartTagOnly)));
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("PTagHelper1", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper1", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .AllowChildTag("strong")
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("PTagHelper2", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper2", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .AllowChildTag("br")
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("strong"))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("br")
@@ -1021,9 +1021,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedErrors)
         {
             // Arrange
-            var pTagHelperBuilder = ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+            var pTagHelperBuilder = TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                 .TagMatchingRule(rule => rule.RequireTagName("p"));
-            var strongTagHelperBuilder = ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+            var strongTagHelperBuilder = TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
                 .TagMatchingRule(rule => rule.RequireTagName("strong"));
 
             foreach (var childTag in allowedChildren)
@@ -1035,7 +1035,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 pTagHelperBuilder.Build(),
                 strongTagHelperBuilder.Build(),
-                ITagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("br")
@@ -1055,11 +1055,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var documentContent = "<p></</p>";
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .AllowChildTag("custom")
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("*"))
                     .Build(),
             };
@@ -1088,11 +1088,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var documentContent = "<th:p></</th:p>";
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .AllowChildTag("custom")
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("*"))
                     .Build(),
             };
@@ -1122,7 +1122,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("input")
@@ -1154,7 +1154,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expectedOutput = new MarkupBlock(blockFactory.MarkupTagBlock("</input>"));
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("input")
@@ -1187,13 +1187,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("input")
@@ -1610,20 +1610,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule => 
                         rule
                         .RequireTagName("p")
                         .RequireAttribute(attribute => attribute.Name("class")))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("divTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("divTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("div")
                         .RequireAttribute(attribute => attribute.Name("class"))
                         .RequireAttribute(attribute => attribute.Name("style")))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("catchAllTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("catchAllTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("*")
@@ -1871,13 +1871,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("p")
                         .RequireAttribute(attribute => attribute.Name("class")))
                     .Build(),
-                ITagHelperDescriptorBuilder.Create("catchAllTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("catchAllTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("*")
@@ -2093,7 +2093,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                ITagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
+                TagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("p")
@@ -2114,10 +2114,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var blockFactory = new BlockFactory(factory);
                 var availableDescriptorsColon = new TagHelperDescriptor[]
                 {
-                    ITagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
+                    TagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
                         .TagMatchingRule(rule => rule.RequireTagName("myth"))
                         .Build(),
-                    ITagHelperDescriptorBuilder.Create("mythTagHelper2", "SomeAssembly")
+                    TagHelperDescriptorBuilder.Create("mythTagHelper2", "SomeAssembly")
                         .TagMatchingRule(rule => rule.RequireTagName("myth2"))
                         .BindAttribute(attribute =>
                             attribute
@@ -2128,7 +2128,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 };
                 var availableDescriptorsCatchAll = new TagHelperDescriptor[]
                 {
-                    ITagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
+                    TagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
                         .TagMatchingRule(rule => rule.RequireTagName("*"))
                         .Build(),
                 };

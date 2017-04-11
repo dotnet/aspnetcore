@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             string typeName,
             string assemblyName)
         {
-            return ITagHelperDescriptorBuilder.Create(typeName, assemblyName)
+            return TagHelperDescriptorBuilder.Create(typeName, assemblyName)
                 .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName))
                 .Build();
         }

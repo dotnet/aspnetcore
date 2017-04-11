@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var testCompilation = TestCompilation.Create();
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(StringParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
-            var expectedDescriptor = ITagHelperDescriptorBuilder.Create(
+            var expectedDescriptor = TagHelperDescriptorBuilder.Create(
                 "__Generated__StringParameterViewComponentTagHelper",
                 typeof(StringParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
                 .TagMatchingRule(rule =>
@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var testCompilation = TestCompilation.Create();
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(VariousParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
-            var expectedDescriptor = ITagHelperDescriptorBuilder.Create(
+            var expectedDescriptor = TagHelperDescriptorBuilder.Create(
                 "__Generated__VariousParameterViewComponentTagHelper",
                 typeof(VariousParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
                 .TagMatchingRule(rule =>
@@ -95,7 +95,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var testCompilation = TestCompilation.Create();
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(GenericParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
-            var expectedDescriptor = ITagHelperDescriptorBuilder.Create(
+            var expectedDescriptor = TagHelperDescriptorBuilder.Create(
                 "__Generated__GenericParameterViewComponentTagHelper",
                 typeof(GenericParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
                 .TagMatchingRule(rule =>

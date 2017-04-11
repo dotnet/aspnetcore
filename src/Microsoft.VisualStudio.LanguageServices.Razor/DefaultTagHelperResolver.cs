@@ -112,7 +112,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     continue;
                 }
 
-                var typeName = tagHelper.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                var typeName = tagHelper.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
                 var symbol = compilation.GetTypeByMetadataName(typeName);
                 if (symbol != null)
                 {
@@ -186,9 +186,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             return builder;
         }
 
-        private ITagHelperDescriptorBuilder ShallowCopy(string tagHelperTypeName, TagHelperDescriptor tagHelper)
+        private TagHelperDescriptorBuilder ShallowCopy(string tagHelperTypeName, TagHelperDescriptor tagHelper)
         {
-            var builder = ITagHelperDescriptorBuilder.Create(tagHelperTypeName, tagHelper.AssemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(tagHelperTypeName, tagHelper.AssemblyName);
 
             foreach (var rule in tagHelper.TagMatchingRules)
             {
