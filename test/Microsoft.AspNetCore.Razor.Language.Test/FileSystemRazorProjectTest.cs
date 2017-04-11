@@ -10,8 +10,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public class FileSystemRazorProjectTest
     {
-        private static string TestFolder { get; } =
-            Path.Combine(TestProject.GetProjectDirectory(), "TestFiles", "FileSystemRazorProject");
+        private static string TestFolder { get; } = Path.Combine(
+            TestProject.GetProjectDirectory(typeof(FileSystemRazorProjectTest)),
+            "TestFiles", 
+            "FileSystemRazorProject");
 
         [Theory]
         [InlineData(null)]

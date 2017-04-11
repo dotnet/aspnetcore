@@ -192,8 +192,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 _writer.Write(sourceRange.Length);
                 _writer.Write("] ");
 
-                var fileName = sourceRange.FilePath.Substring(sourceRange.FilePath.LastIndexOf('/') + 1);
-                _writer.Write(fileName);
+                if (sourceRange.FilePath != null)
+                {
+                    var fileName = sourceRange.FilePath.Substring(sourceRange.FilePath.LastIndexOf('/') + 1);
+                    _writer.Write(fileName);
+                }
+
                 _writer.Write(")");
             }
         }

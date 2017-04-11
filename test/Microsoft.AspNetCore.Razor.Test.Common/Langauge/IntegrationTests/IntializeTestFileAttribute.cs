@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     {
         public override void Before(MethodInfo methodUnderTest)
         {
-            if (typeof(IntegrationTestBase).IsAssignableFrom(methodUnderTest.DeclaringType))
+            if (typeof(IntegrationTestBase).GetTypeInfo().IsAssignableFrom(methodUnderTest.DeclaringType.GetTypeInfo()))
             {
                 var typeName = methodUnderTest.DeclaringType.Name;
                 IntegrationTestBase.Filename = $"TestFiles/IntegrationTests/{typeName}/{methodUnderTest.Name}";
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void After(MethodInfo methodUnderTest)
         {
-            if (typeof(IntegrationTestBase).IsAssignableFrom(methodUnderTest.DeclaringType))
+            if (typeof(IntegrationTestBase).GetTypeInfo().IsAssignableFrom(methodUnderTest.DeclaringType.GetTypeInfo()))
             {
                 IntegrationTestBase.Filename = null;
             }

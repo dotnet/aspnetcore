@@ -8,8 +8,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public class FileSystemRazorProjectItemTest
     {
-        private static string TestFolder { get; } =
-           Path.Combine(TestProject.GetProjectDirectory(), "TestFiles", "FileSystemRazorProject");
+        private static string TestFolder { get; } = Path.Combine(
+            TestProject.GetProjectDirectory(typeof(FileSystemRazorProjectItemTest)), 
+            "TestFiles", 
+            "FileSystemRazorProject");
 
         [Fact]
         public void FileSystemRazorProjectItem_SetsProperties()

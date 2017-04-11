@@ -20,9 +20,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string ResourceName { get; }
 
-        public static TestFile Create(string resourceName)
+        public static TestFile Create(string resourceName, Type type)
         {
-            return new TestFile(resourceName, typeof(TestFile).GetTypeInfo().Assembly);
+            return new TestFile(resourceName, type.GetTypeInfo().Assembly);
+        }
+
+        public static TestFile Create(string resourceName, Assembly assembly)
+        {
+            return new TestFile(resourceName, assembly);
         }
 
         public Stream OpenRead()

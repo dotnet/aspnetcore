@@ -21,17 +21,22 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     [IntializeTestFile]
     public abstract class IntegrationTestBase
     {
-#if GENERATE_BASELINES
-        private static readonly bool GenerateBaselines = true;
-#else
-        private static readonly bool GenerateBaselines = false;
-#endif
-
 #if !NET452
         private static readonly AsyncLocal<string> _filename = new AsyncLocal<string>();
 #endif
 
-        protected static string TestProjectRoot { get; } = TestProject.GetProjectDirectory();
+        protected IntegrationTestBase()
+        {
+            TestProjectRoot = TestProject.GetProjectDirectory(GetType());
+        }
+
+#if GENERATE_BASELINES
+        protected bool GenerateBaselines { get; set; } = true;
+#else
+        protected bool GenerateBaselines { get; set; } = false;
+#endif
+
+        protected string TestProjectRoot { get; }
 
         // Used by the test framework to set the 'base' name for test files.
         public static string Filename
@@ -63,27 +68,29 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var suffixIndex = Filename.LastIndexOf("_");
             var normalizedFileName = suffixIndex == -1 ? Filename : Filename.Substring(0, suffixIndex);
             var sourceFilename = Path.ChangeExtension(normalizedFileName, ".cshtml");
-            var testFile = TestFile.Create(sourceFilename);
+            var testFile = TestFile.Create(sourceFilename, GetType().GetTypeInfo().Assembly);
             if (!testFile.Exists())
             {
                 throw new XunitException($"The resource {sourceFilename} was not found.");
             }
 
+            var source = TestRazorSourceDocument.CreateResource(sourceFilename, GetType(), normalizeNewLines: true);
+
             var imports = new List<RazorSourceDocument>();
             while (true)
             {
                 var importsFilename = Path.ChangeExtension(normalizedFileName + "_Imports" + imports.Count.ToString(), ".cshtml");
-                if (!TestFile.Create(importsFilename).Exists())
+                if (!TestFile.Create(importsFilename, GetType().GetTypeInfo().Assembly).Exists())
                 {
                     break;
                 }
 
-                imports.Add(
-                    TestRazorSourceDocument.CreateResource(importsFilename, encoding: null, normalizeNewLines: true));
+                imports.Add(TestRazorSourceDocument.CreateResource(importsFilename, GetType(), normalizeNewLines: true));
             }
 
-            var codeDocument = RazorCodeDocument.Create(
-                TestRazorSourceDocument.CreateResource(sourceFilename, encoding: null, normalizeNewLines: true), imports);
+            OnCreatingCodeDocument(ref source, imports);
+
+            var codeDocument = RazorCodeDocument.Create(source, imports);
 
             // This will ensure that we're not putting any randomly generated data in a baseline.
             codeDocument.Items[DefaultRazorCSharpLoweringPhase.SuppressUniqueIds] = "test";
@@ -91,7 +98,17 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // This is to make tests work cross platform.
             codeDocument.Items[DefaultRazorCSharpLoweringPhase.NewLineString] = "\r\n";
 
+            OnCreatedCodeDocument(ref codeDocument);
+
             return codeDocument;
+        }
+
+        protected virtual void OnCreatingCodeDocument(ref RazorSourceDocument source, IList<RazorSourceDocument> imports)
+        {
+        }
+
+        protected virtual void OnCreatedCodeDocument(ref RazorCodeDocument codeDocument)
+        {
         }
 
         protected void AssertIRMatchesBaseline(DocumentIRNode document)
@@ -111,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 return;
             }
 
-            var testFile = TestFile.Create(baselineFilename);
+            var testFile = TestFile.Create(baselineFilename, GetType().GetTypeInfo().Assembly);
             if (!testFile.Exists())
             {
                 throw new XunitException($"The resource {baselineFilename} was not found.");
@@ -138,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 return;
             }
 
-            var testFile = TestFile.Create(baselineFilename);
+            var testFile = TestFile.Create(baselineFilename, GetType().GetTypeInfo().Assembly);
             if (!testFile.Exists())
             {
                 throw new XunitException($"The resource {baselineFilename} was not found.");
@@ -180,7 +197,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 return;
             }
 
-            var testFile = TestFile.Create(baselineFilename);
+            var testFile = TestFile.Create(baselineFilename, GetType().GetTypeInfo().Assembly);
             if (!testFile.Exists())
             {
                 throw new XunitException($"The resource {baselineFilename} was not found.");
@@ -214,7 +231,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 public override void VisitNamespace(NamespaceDeclarationIRNode node)
                 {
-                    node.Content = typeof(CodeGenerationIntegrationTest).Namespace + ".TestFiles";
+                    node.Content = "Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles";
 
                     VisitDefault(node);
                 }

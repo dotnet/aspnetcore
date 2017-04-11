@@ -9,9 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public static class TestProject
     {
-        private static readonly string ThisProjectName = typeof(TestProject).GetTypeInfo().Assembly.GetName().Name;
-
-        public static string GetProjectDirectory()
+        public static string GetProjectDirectory(Type type)
         {
 
 #if NET452
@@ -19,9 +17,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 #else
             var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
 #endif
+            var name = type.GetTypeInfo().Assembly.GetName().Name;
 
             while (currentDirectory != null &&
-                !string.Equals(currentDirectory.Name, ThisProjectName, StringComparison.Ordinal))
+                !string.Equals(currentDirectory.Name, name, StringComparison.Ordinal))
             {
                 currentDirectory = currentDirectory.Parent;
             }

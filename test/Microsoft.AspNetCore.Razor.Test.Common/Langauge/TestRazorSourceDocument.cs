@@ -1,24 +1,24 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System;
+using System.IO;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class TestRazorSourceDocument : DefaultRazorSourceDocument
+    public static class TestRazorSourceDocument
     {
-        private TestRazorSourceDocument(string content, Encoding encoding, string filename)
-            : base(content, encoding, filename)
+        public static RazorSourceDocument CreateResource(string path, Type type, Encoding encoding = null, bool normalizeNewLines = false)
         {
+            return CreateResource(path, type.GetTypeInfo().Assembly, encoding, normalizeNewLines);
         }
 
-        public static RazorSourceDocument CreateResource(string path, Encoding encoding = null, bool normalizeNewLines = false)
+        public static RazorSourceDocument CreateResource(string path, Assembly assembly, Encoding encoding = null, bool normalizeNewLines = false)
         {
-            var file = TestFile.Create(path);
+            var file = TestFile.Create(path, assembly);
 
             using (var input = file.OpenRead())
             using (var reader = new StreamReader(input))
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     content = NormalizeNewLines(content);
                 }
 
-                return new TestRazorSourceDocument(content, encoding ?? Encoding.UTF8, path);
+                return new DefaultRazorSourceDocument(content, encoding ?? Encoding.UTF8, path);
             }
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 content = NormalizeNewLines(content);
             }
 
-            return new TestRazorSourceDocument(content, encoding ?? Encoding.UTF8, fileName);
+            return new DefaultRazorSourceDocument(content, encoding ?? Encoding.UTF8, fileName);
         }
 
         private static string NormalizeNewLines(string content)

@@ -36,7 +36,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return codeDocument;
         }
 
-        private static RazorSourceDocument GetDefaultImports()
+        // Internal for testing.
+        internal static RazorSourceDocument GetDefaultImports()
         {
             using (var stream = new MemoryStream())
             using (var writer = new StreamWriter(stream, Encoding.UTF8))

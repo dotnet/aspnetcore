@@ -1,0 +1,419 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Razor;
+using Microsoft.Extensions.DependencyModel;
+using Xunit;
+
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
+{
+    public class CodeGenerationIntegrationTest : IntegrationTestBase
+    {
+        private static readonly RazorSourceDocument DefaultImports = MvcRazorTemplateEngine.GetDefaultImports();
+
+        #region Runtime
+        
+        [Fact]
+        public void Basic_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void _ViewImports_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void Inject_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void InjectWithModel_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void InjectWithSemicolon_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void Model_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void ModelExpressionTagHelper_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void RazorPages_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine(BuildDivDescriptors());
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void RazorPagesWithoutModel_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine(BuildDivDescriptors());
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+        #endregion
+
+        #region DesignTime
+        [Fact]
+        public void Basic_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void _ViewImports_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void Inject_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void InjectWithModel_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void InjectWithSemicolon_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void Model_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void MultipleModels_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void ModelExpressionTagHelper_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void RazorPages_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine(BuildDivDescriptors());
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void RazorPagesWithoutModel_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine(BuildDivDescriptors());
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+        #endregion
+
+        protected RazorEngine CreateDesignTimeEngine(IEnumerable<TagHelperDescriptor> descriptors = null)
+        {
+            return RazorEngine.CreateDesignTime(b =>
+            {
+                RazorExtensions.Register(b);
+
+                b.Features.Add(GetMetadataReferenceFeature());
+
+                if (descriptors != null)
+                {
+                    b.AddTagHelpers(descriptors);
+                }
+                else
+                {
+                    b.Features.Add(new DefaultTagHelperFeature());
+                }
+            });
+        }
+
+        protected RazorEngine CreateRuntimeEngine(IEnumerable<TagHelperDescriptor> descriptors = null)
+        {
+            return RazorEngine.Create(b =>
+            {
+                RazorExtensions.Register(b);
+
+                b.Features.Add(GetMetadataReferenceFeature());
+
+                if (descriptors != null)
+                {
+                    b.AddTagHelpers(descriptors);
+                }
+                else
+                {
+                    b.Features.Add(new DefaultTagHelperFeature());
+                }
+            });
+        }
+
+        protected override void OnCreatingCodeDocument(ref RazorSourceDocument source, IList<RazorSourceDocument> imports)
+        {
+            imports.Add(DefaultImports);
+        }
+
+        private static IEnumerable<TagHelperDescriptor> BuildDivDescriptors()
+        {
+            return new List<TagHelperDescriptor>
+            {
+                BuildDescriptor("div", "DivTagHelper", "TestAssembly"),
+                BuildDescriptor("a", "UrlResolutionTagHelper", "Microsoft.AspNetCore.Mvc.Razor")
+            };
+        }
+
+        private static TagHelperDescriptor BuildDescriptor(
+            string tagName,
+            string typeName,
+            string assemblyName)
+        {
+            return ITagHelperDescriptorBuilder.Create(typeName, assemblyName)
+                .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName))
+                .Build();
+        }
+
+        private static IRazorEngineFeature GetMetadataReferenceFeature()
+        {
+            var currentAssembly = typeof(CodeGenerationIntegrationTest).GetTypeInfo().Assembly;
+            var dependencyContext = DependencyContext.Load(currentAssembly);
+
+            var references = dependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths())
+                .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
+                .ToList<MetadataReference>();
+
+            var syntaxTree = CreateTagHelperSyntaxTree();
+            var compilation = CSharpCompilation.Create(
+                "Microsoft.AspNetCore.Mvc.Razor",
+                syntaxTree,
+                references,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            var stream = new MemoryStream();
+            var compilationResult = compilation.Emit(stream, options: new EmitOptions());
+            stream.Position = 0;
+
+            Assert.True(compilationResult.Success);
+
+            references.Add(MetadataReference.CreateFromStream(stream));
+
+            var feature = new DefaultMetadataReferenceFeature()
+            {
+                References = references,
+            };
+
+            return feature;
+        }
+
+        private static IEnumerable<SyntaxTree> CreateTagHelperSyntaxTree()
+        {
+            var text = $@"
+            public class UrlResolutionTagHelper : {typeof(TagHelper).FullName}
+            {{
+
+            }}";
+
+            return new SyntaxTree[] { CSharpSyntaxTree.ParseText(text) };
+        }
+    }
+}

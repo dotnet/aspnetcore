@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class TestTagHelperDescriptors
     {
-        internal static IEnumerable<TagHelperDescriptor> SimpleTagHelperDescriptors
+        public static IEnumerable<TagHelperDescriptor> SimpleTagHelperDescriptors
         {
             get
             {
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> CssSelectorTagHelperDescriptors
+        public static IEnumerable<TagHelperDescriptor> CssSelectorTagHelperDescriptors
         {
             get
             {
@@ -143,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> EnumTagHelperDescriptors
+        public static IEnumerable<TagHelperDescriptor> EnumTagHelperDescriptors
         {
             get
             {
@@ -177,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> SymbolBoundTagHelperDescriptors
+        public static IEnumerable<TagHelperDescriptor> SymbolBoundTagHelperDescriptors
         {
             get
             {
@@ -222,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> MinimizedTagHelpers_Descriptors
+        public static IEnumerable<TagHelperDescriptor> MinimizedTagHelpers_Descriptors
         {
             get
             {
@@ -268,7 +267,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> DynamicAttributeTagHelpers_Descriptors
+        public static IEnumerable<TagHelperDescriptor> DynamicAttributeTagHelpers_Descriptors
         {
             get
             {
@@ -289,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> AttributeTargetingTagHelperDescriptors
+        public static IEnumerable<TagHelperDescriptor> AttributeTargetingTagHelperDescriptors
         {
             get
             {
@@ -344,7 +343,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> PrefixedAttributeTagHelperDescriptors
+        public static IEnumerable<TagHelperDescriptor> PrefixedAttributeTagHelperDescriptors
         {
             get
             {
@@ -396,7 +395,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> TagHelpersInSectionDescriptors
+        public static IEnumerable<TagHelperDescriptor> TagHelpersInSectionDescriptors
         {
             get
             {
@@ -419,7 +418,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
-        internal static IEnumerable<TagHelperDescriptor> DefaultPAndInputTagHelperDescriptors
+        public static IEnumerable<TagHelperDescriptor> DefaultPAndInputTagHelperDescriptors
         {
             get
             {
