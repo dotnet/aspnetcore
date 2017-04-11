@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly HttpClient _httpClient;
         private readonly TransportType _requestedTransportType;
         private readonly ILoggerFactory _loggerFactory;
+        private static volatile bool _websocketsSupported = true;
 
         public DefaultTransportFactory(TransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient)
         {
@@ -32,9 +33,16 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public ITransport CreateTransport(TransportType availableServerTransports)
         {
-            if ((availableServerTransports & TransportType.WebSockets & _requestedTransportType) == TransportType.WebSockets)
+            if (_websocketsSupported && (availableServerTransports & TransportType.WebSockets & _requestedTransportType) == TransportType.WebSockets)
             {
-                return new WebSocketsTransport(_loggerFactory);
+                try
+                {
+                    return new WebSocketsTransport(_loggerFactory);
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    _websocketsSupported = false;
+                }
             }
 
             if ((availableServerTransports & TransportType.ServerSentEvents & _requestedTransportType) == TransportType.ServerSentEvents)

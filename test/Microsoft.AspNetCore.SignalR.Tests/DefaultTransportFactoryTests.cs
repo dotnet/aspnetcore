@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Theory]
         [InlineData(TransportType.WebSockets, typeof(WebSocketsTransport))]
         [InlineData(TransportType.LongPolling, typeof(LongPollingTransport))]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable(TransportType requestedTransport, Type expectedTransportType)
         {
             var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
@@ -56,11 +58,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public void DefaultTransportFactoryCreatesWebSocketsTransportIfAvailable()
         {
             Assert.IsType<WebSocketsTransport>(
                 new DefaultTransportFactory(TransportType.All, loggerFactory: null, httpClient: new HttpClient())
                     .CreateTransport(TransportType.All));
+        }
+
+        [Theory]
+        [InlineData(TransportType.WebSockets, typeof(LongPollingTransport))]
+        [InlineData(TransportType.LongPolling, typeof(LongPollingTransport))]
+        public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable_Win7(TransportType requestedTransport, Type expectedTransportType)
+        {
+            if (!WebsocketsSupported())
+            {
+                var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
+                Assert.IsType(expectedTransportType,
+                    transportFactory.CreateTransport(TransportType.All));
+            }
+        }
+
+        private bool WebsocketsSupported()
+        {
+            try
+            {
+                new System.Net.WebSockets.ClientWebSocket();
+            }
+            catch (PlatformNotSupportedException)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
