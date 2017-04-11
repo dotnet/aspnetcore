@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
 
@@ -29,6 +30,11 @@ namespace Microsoft.AspNetCore.Sockets.Transports
         {
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers["Cache-Control"] = "no-cache";
+
+            // Make sure we disable all response buffering for SSE
+            var bufferingFeature = context.Features.Get<IHttpBufferingFeature>();
+            bufferingFeature?.DisableResponseBuffering();
+
             context.Response.Headers["Content-Encoding"] = "identity";
 
             await context.Response.Body.FlushAsync();
