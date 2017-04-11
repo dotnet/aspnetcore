@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Routing.Performance\Microsoft.AspNetCore.Routing.Performance.csproj" />
+  </ItemGroup>
+</Project>
