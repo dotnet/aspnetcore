@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Test;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
@@ -52,6 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectResult>(result);
+            Assert.False(result.PreserveMethod);
             Assert.False(result.Permanent);
             Assert.Same(url, result.Url);
         }
@@ -68,6 +68,41 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectResult>(result);
+            Assert.False(result.PreserveMethod);
+            Assert.True(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPreserveMethodAndSameUrl()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var url = "/test/url";
+
+            // Act
+            var result = controller.RedirectPreserveMethod(url);
+
+            // Assert
+            Assert.IsType<RedirectResult>(result);
+            Assert.True(result.PreserveMethod);
+            Assert.False(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void RedirectPermanent_WithParameterUrl_SetsRedirectResultPermanentPreserveMethodAndSameUrl()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var url = "/test/url";
+
+            // Act
+            var result = controller.RedirectPermanentPreserveMethod(url);
+
+            // Assert
+            Assert.IsType<RedirectResult>(result);
+            Assert.True(result.PreserveMethod);
             Assert.True(result.Permanent);
             Assert.Same(url, result.Url);
         }
@@ -85,6 +120,19 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 () => controller.Redirect(url: url), "url");
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void RedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => controller.RedirectPreserveMethod(url: url), "url");
+        }
+
         [Fact]
         public void LocalRedirect_WithParameterUrl_SetsLocalRedirectResultWithSameUrl()
         {
@@ -97,6 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<LocalRedirectResult>(result);
+            Assert.False(result.PreserveMethod);
             Assert.False(result.Permanent);
             Assert.Same(url, result.Url);
         }
@@ -113,6 +162,41 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<LocalRedirectResult>(result);
+            Assert.False(result.PreserveMethod);
+            Assert.True(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPreserveMethodWithSameUrl()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var url = "/test/url";
+
+            // Act
+            var result = controller.LocalRedirectPreserveMethod(url);
+
+            // Assert
+            Assert.IsType<LocalRedirectResult>(result);
+            Assert.True(result.PreserveMethod);
+            Assert.False(result.Permanent);
+            Assert.Same(url, result.Url);
+        }
+
+        [Fact]
+        public void LocalRedirectPermanent_WithParameterUrl_SetsLocalRedirectResultPermanentPreservesMethodWithSameUrl()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var url = "/test/url";
+
+            // Act
+            var result = controller.LocalRedirectPermanentPreserveMethod(url);
+
+            // Assert
+            Assert.IsType<LocalRedirectResult>(result);
+            Assert.True(result.PreserveMethod);
             Assert.True(result.Permanent);
             Assert.Same(url, result.Url);
         }
@@ -133,6 +217,32 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         [Theory]
         [InlineData(null)]
         [InlineData("")]
+        public void LocalRedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => controller.LocalRedirectPreserveMethod(localUrl: url), "localUrl");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void LocalRedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => controller.LocalRedirectPermanentPreserveMethod(localUrl: url), "localUrl");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
         public void RedirectPermanent_WithParameter_NullOrEmptyUrl_Throws(string url)
         {
             // Arrange
@@ -141,6 +251,19 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Act & Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(
                 () => controller.RedirectPermanent(url: url), "url");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void RedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => controller.RedirectPermanentPreserveMethod(url: url), "url");
         }
 
         [Fact]
@@ -154,6 +277,23 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultTemporary);
+            Assert.False(resultTemporary.PreserveMethod);
+            Assert.False(resultTemporary.Permanent);
+            Assert.Equal("SampleAction", resultTemporary.ActionName);
+        }
+
+        [Fact]
+        public void RedirectToActionPreserveMethod_WithParameterActionName_SetsResultActionName()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultTemporary = controller.RedirectToActionPreserveMethod(actionName: "SampleAction");
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(resultTemporary);
+            Assert.True(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Equal("SampleAction", resultTemporary.ActionName);
         }
@@ -169,6 +309,23 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultPermanent);
+            Assert.False(resultPermanent.PreserveMethod);
+            Assert.True(resultPermanent.Permanent);
+            Assert.Equal("SampleAction", resultPermanent.ActionName);
+        }
+
+        [Fact]
+        public void RedirectToActionPermanentPreserveMethod_WithParameterActionName_SetsResultActionNameAndPermanent()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultPermanent = controller.RedirectToActionPermanentPreserveMethod(actionName: "SampleAction");
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Equal("SampleAction", resultPermanent.ActionName);
         }
@@ -187,6 +344,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultTemporary);
+            Assert.False(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Equal("SampleAction", resultTemporary.ActionName);
             Assert.Equal(controllerName, resultTemporary.ControllerName);
@@ -196,8 +354,27 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         [InlineData("")]
         [InlineData(null)]
         [InlineData("SampleController")]
-        public void RedirectToActionPermanent_WithParameterActionAndControllerName_SetsEqualNames(
-            string controllerName)
+        public void RedirectToActionPreserveMethod_WithParameterActionAndControllerName_SetsEqualNames(string controllerName)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultTemporary = controller.RedirectToActionPreserveMethod(actionName: "SampleAction", controllerName: controllerName);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(resultTemporary);
+            Assert.True(resultTemporary.PreserveMethod);
+            Assert.False(resultTemporary.Permanent);
+            Assert.Equal("SampleAction", resultTemporary.ActionName);
+            Assert.Equal(controllerName, resultTemporary.ControllerName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("SampleController")]
+        public void RedirectToActionPermanent_WithParameterActionAndControllerName_SetsEqualNames(string controllerName)
         {
             // Arrange
             var controller = new TestableController();
@@ -207,6 +384,27 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultPermanent);
+            Assert.False(resultPermanent.PreserveMethod);
+            Assert.True(resultPermanent.Permanent);
+            Assert.Equal("SampleAction", resultPermanent.ActionName);
+            Assert.Equal(controllerName, resultPermanent.ControllerName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("SampleController")]
+        public void RedirectToActionPermanentPreserveMethod_WithParameterActionAndControllerName_SetsEqualNames(string controllerName)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultPermanent = controller.RedirectToActionPermanentPreserveMethod(actionName: "SampleAction", controllerName: controllerName);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Equal("SampleAction", resultPermanent.ActionName);
             Assert.Equal(controllerName, resultPermanent.ControllerName);
@@ -226,6 +424,31 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultTemporary);
+            Assert.False(resultTemporary.PreserveMethod);
+            Assert.False(resultTemporary.Permanent);
+            Assert.Equal("SampleAction", resultTemporary.ActionName);
+            Assert.Equal("SampleController", resultTemporary.ControllerName);
+            Assert.Equal(expected, resultTemporary.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToActionPreserveMethod_WithParameterActionControllerRouteValues_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultTemporary = controller.RedirectToActionPreserveMethod(
+                actionName: "SampleAction",
+                controllerName: "SampleController",
+                routeValues: routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(resultTemporary);
+            Assert.True(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Equal("SampleAction", resultTemporary.ActionName);
             Assert.Equal("SampleController", resultTemporary.ControllerName);
@@ -249,6 +472,31 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultPermanent);
+            Assert.False(resultPermanent.PreserveMethod);
+            Assert.True(resultPermanent.Permanent);
+            Assert.Equal("SampleAction", resultPermanent.ActionName);
+            Assert.Equal("SampleController", resultPermanent.ControllerName);
+            Assert.Equal(expected, resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToActionPermanentPreserveMethod_WithParameterActionControllerRouteValues_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultPermanent = controller.RedirectToActionPermanentPreserveMethod(
+                actionName: "SampleAction",
+                controllerName: "SampleController",
+                routeValues: routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Equal("SampleAction", resultPermanent.ActionName);
             Assert.Equal("SampleController", resultPermanent.ControllerName);
@@ -269,6 +517,27 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultTemporary);
+            Assert.False(resultTemporary.PreserveMethod);
+            Assert.False(resultTemporary.Permanent);
+            Assert.Null(resultTemporary.ActionName);
+            Assert.Equal(expected, resultTemporary.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToActionPreserveMethod_WithParameterActionAndRouteValues_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultTemporary = controller.RedirectToActionPreserveMethod(actionName: null, routeValues: routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(resultTemporary);
+            Assert.True(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Null(resultTemporary.ActionName);
             Assert.Equal(expected, resultTemporary.RouteValues);
@@ -291,6 +560,32 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(result);
+            Assert.False(result.PreserveMethod);
+            Assert.False(result.Permanent);
+            Assert.Equal(expectedAction, result.ActionName);
+            Assert.Equal(expectedRouteValues, result.RouteValues);
+            Assert.Equal(expectedController, result.ControllerName);
+            Assert.Equal(expectedFragment, result.Fragment);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToActionPreserveMethod_WithParameterActionAndControllerAndRouteValuesAndFragment_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expectedRouteValues)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expectedAction = "Action";
+            var expectedController = "Home";
+            var expectedFragment = "test";
+
+            // Act
+            var result = controller.RedirectToActionPreserveMethod("Action", "Home", routeValues, "test");
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.True(result.PreserveMethod);
             Assert.False(result.Permanent);
             Assert.Equal(expectedAction, result.ActionName);
             Assert.Equal(expectedRouteValues, result.RouteValues);
@@ -312,6 +607,27 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultPermanent);
+            Assert.False(resultPermanent.PreserveMethod);
+            Assert.True(resultPermanent.Permanent);
+            Assert.Null(resultPermanent.ActionName);
+            Assert.Equal(expected, resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToActionPermanentPreserveMethod_WithParameterActionAndRouteValues_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultPermanent = controller.RedirectToActionPermanentPreserveMethod(actionName: null, routeValues: routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Null(resultPermanent.ActionName);
             Assert.Equal(expected, resultPermanent.RouteValues);
@@ -330,10 +646,40 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var expectedFragment = "test";
 
             // Act
-            var result = controller.RedirectToActionPermanent("Action", "Home", routeValues, "test");
+            var result = controller.RedirectToActionPermanent("Action", "Home", routeValues, fragment: "test");
 
             // Assert
             Assert.IsType<RedirectToActionResult>(result);
+            Assert.False(result.PreserveMethod);
+            Assert.True(result.Permanent);
+            Assert.Equal(expectedAction, result.ActionName);
+            Assert.Equal(expectedRouteValues, result.RouteValues);
+            Assert.Equal(expectedController, result.ControllerName);
+            Assert.Equal(expectedFragment, result.Fragment);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToActionPermanentPreserveMethod_WithParameterActionAndControllerAndRouteValuesAndFragment_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expectedRouteValues)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expectedAction = "Action";
+            var expectedController = "Home";
+            var expectedFragment = "test";
+
+            // Act
+            var result = controller.RedirectToActionPermanentPreserveMethod(
+                actionName: "Action",
+                controllerName: "Home",
+                routeValues: routeValues,
+                fragment: "test");
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.True(result.PreserveMethod);
             Assert.True(result.Permanent);
             Assert.Equal(expectedAction, result.ActionName);
             Assert.Equal(expectedRouteValues, result.RouteValues);
@@ -355,6 +701,26 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToRouteResult>(resultTemporary);
+            Assert.False(resultTemporary.PreserveMethod);
+            Assert.False(resultTemporary.Permanent);
+            Assert.Equal(expected, resultTemporary.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToRoutePreserveMethod_WithParameterRouteValues_SetsResultEqualRouteValues(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultTemporary = controller.RedirectToRoutePreserveMethod(routeValues: routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(resultTemporary);
+            Assert.True(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Equal(expected, resultTemporary.RouteValues);
         }
@@ -375,6 +741,30 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToRouteResult>(result);
+            Assert.False(result.PreserveMethod);
+            Assert.False(result.Permanent);
+            Assert.Equal(expectedRoute, result.RouteName);
+            Assert.Equal(expectedRouteValues, result.RouteValues);
+            Assert.Equal(expectedFragment, result.Fragment);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToRoutePreserveMethod_WithParameterRouteNameAndRouteValuesAndFragment_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expectedRouteValues)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expectedRoute = "TestRoute";
+            var expectedFragment = "test";
+
+            // Act
+            var result = controller.RedirectToRoutePreserveMethod(routeName: "TestRoute", routeValues: routeValues, fragment: "test");
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(result);
+            Assert.True(result.PreserveMethod);
             Assert.False(result.Permanent);
             Assert.Equal(expectedRoute, result.RouteName);
             Assert.Equal(expectedRouteValues, result.RouteValues);
@@ -395,6 +785,26 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToRouteResult>(resultPermanent);
+            Assert.False(resultPermanent.PreserveMethod);
+            Assert.True(resultPermanent.Permanent);
+            Assert.Equal(expected, resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToRoutePermanentPreserveMethod_WithParameterRouteValues_SetsResultEqualRouteValuesAndPermanent(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var resultPermanent = controller.RedirectToRoutePermanentPreserveMethod(routeValues: routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Equal(expected, resultPermanent.RouteValues);
         }
@@ -415,6 +825,30 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToRouteResult>(result);
+            Assert.False(result.PreserveMethod);
+            Assert.True(result.Permanent);
+            Assert.Equal(expectedRoute, result.RouteName);
+            Assert.Equal(expectedRouteValues, result.RouteValues);
+            Assert.Equal(expectedFragment, result.Fragment);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToRoutePermanentPreserveMethod_WithParameterRouteNameAndRouteValuesAndFragment_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expectedRouteValues)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expectedRoute = "TestRoute";
+            var expectedFragment = "test";
+
+            // Act
+            var result = controller.RedirectToRoutePermanentPreserveMethod(routeName: "TestRoute", routeValues: routeValues, fragment: "test");
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(result);
+            Assert.True(result.PreserveMethod);
             Assert.True(result.Permanent);
             Assert.Equal(expectedRoute, result.RouteName);
             Assert.Equal(expectedRouteValues, result.RouteValues);
@@ -433,6 +867,24 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToRouteResult>(resultTemporary);
+            Assert.False(resultTemporary.PreserveMethod);
+            Assert.False(resultTemporary.Permanent);
+            Assert.Same(routeName, resultTemporary.RouteName);
+        }
+
+        [Fact]
+        public void RedirectToRoutePreserveMethod_WithParameterRouteName_SetsResultSameRouteName()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var routeName = "CustomRouteName";
+
+            // Act;
+            var resultTemporary = controller.RedirectToRoutePreserveMethod(routeName: routeName);
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(resultTemporary);
+            Assert.True(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Same(routeName, resultTemporary.RouteName);
         }
@@ -449,6 +901,24 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToRouteResult>(resultPermanent);
+            Assert.False(resultPermanent.PreserveMethod);
+            Assert.True(resultPermanent.Permanent);
+            Assert.Same(routeName, resultPermanent.RouteName);
+        }
+
+        [Fact]
+        public void RedirectToRoutePermanentPreserveMethod_WithParameterRouteName_SetsResultSameRouteNameAndPermanent()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var routeName = "CustomRouteName";
+
+            // Act
+            var resultPermanent = controller.RedirectToRoutePermanentPreserveMethod(routeName: routeName);
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Same(routeName, resultPermanent.RouteName);
         }
@@ -468,6 +938,28 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToRouteResult>(resultTemporary);
+            Assert.False(resultTemporary.PreserveMethod);
+            Assert.False(resultTemporary.Permanent);
+            Assert.Same(routeName, resultTemporary.RouteName);
+            Assert.Equal(expected, resultTemporary.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToRoutePreserveMethod_WithParameterRouteNameAndRouteValues_SetsResultSameRouteNameAndRouteValues(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var routeName = "CustomRouteName";
+
+            // Act
+            var resultTemporary = controller.RedirectToRoutePreserveMethod(routeName: routeName, routeValues: routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(resultTemporary);
+            Assert.True(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Same(routeName, resultTemporary.RouteName);
             Assert.Equal(expected, resultTemporary.RouteValues);
@@ -488,6 +980,28 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.IsType<RedirectToRouteResult>(resultPermanent);
+            Assert.False(resultPermanent.PreserveMethod);
+            Assert.True(resultPermanent.Permanent);
+            Assert.Same(routeName, resultPermanent.RouteName);
+            Assert.Equal(expected, resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToRoutePermanentPreserveMethod_WithParameterRouteNameAndRouteValues_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var routeName = "CustomRouteName";
+
+            // Act
+            var resultPermanent = controller.RedirectToRoutePermanentPreserveMethod(routeName: routeName, routeValues: routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Same(routeName, resultPermanent.RouteName);
             Assert.Equal(expected, resultPermanent.RouteValues);

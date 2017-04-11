@@ -141,6 +141,31 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
         }
 
+        [Fact]
+        public async Task ExecuteResultAsync_WithFragment_PassesCorrectValuesToRedirect_WithPreserveMethod()
+        {
+            // Arrange
+            var expectedUrl = "/SampleAction#test";
+            var expectedStatusCode = StatusCodes.Status308PermanentRedirect;
+
+            var httpContext = GetHttpContext();
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var urlHelper = GetMockUrlHelper(expectedUrl);
+            var result = new RedirectToRouteResult("Sample", null, true, true, "test")
+            {
+                UrlHelper = urlHelper,
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
+            Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
+        }
+
         private static HttpContext GetHttpContext(IUrlHelperFactory factory = null)
         {
             var services = CreateServices(factory);

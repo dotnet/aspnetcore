@@ -9,10 +9,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
 {
+    /// <summary>
+    /// An <see cref="ActionResult"/> that returns a Found (302), Moved Permanently (301), Temporary Redirect (307),
+    /// or Permanent Redirect (308) response with a Location header to the supplied URL.
+    /// </summary>
     public class RedirectResult : ActionResult, IKeepTempDataResult
     {
         private string _url;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
+        /// provided.
+        /// </summary>
+        /// <param name="url">The local URL to redirect to.</param>
         public RedirectResult(string url)
             : this(url, permanent: false)
         {
@@ -22,7 +31,25 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
+        /// provided.
+        /// </summary>
+        /// <param name="url">The URL to redirect to.</param>
+        /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
         public RedirectResult(string url, bool permanent)
+            : this(url, permanent, preserveMethod: false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
+        /// provided.
+        /// </summary>
+        /// <param name="url">The URL to redirect to.</param>
+        /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
+        /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the intial request method.</param>
+        public RedirectResult(string url, bool permanent, bool preserveMethod)
         {
             if (url == null)
             {
@@ -35,11 +62,23 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             Permanent = permanent;
+            PreserveMethod = preserveMethod;
             Url = url;
         }
 
+        /// <summary>
+        /// Gets or sets the value that specifies that the redirect should be permanent if true or temporary if false.
+        /// </summary>
         public bool Permanent { get; set; }
 
+        /// <summary>
+        /// Gets or sets an indication that the redirect preserves the initial request method.
+        /// </summary>
+        public bool PreserveMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL to redirect to.
+        /// </summary>
         public string Url
         {
             get
@@ -57,8 +96,12 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IUrlHelper"/> for this result.
+        /// </summary>
         public IUrlHelper UrlHelper { get; set; }
 
+        /// <inheritdoc />
         public override void ExecuteResult(ActionContext context)
         {
             if (context == null)
