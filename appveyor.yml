@@ -4,6 +4,7 @@ branches:
   only:
     - master
     - release
+    - /^rel\/.*/
     - dev
     - /^(.*\/)?ci-.*$/
 build_script:
