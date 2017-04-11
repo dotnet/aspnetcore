@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -351,7 +353,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 
         protected override void OnCreatingCodeDocument(ref RazorSourceDocument source, IList<RazorSourceDocument> imports)
         {
-            imports.Add(DefaultImports);
+            // It's important that we normalize the newlines in the default imports. The default imports will
+            // be created with Environment.NewLine, but we need to normalize to `\r\n` so that the indices
+            // are the same on xplat.
+            var buffer = new char[DefaultImports.Length];
+            DefaultImports.CopyTo(0, buffer, 0, DefaultImports.Length);
+
+            var builder = new StringBuilder();
+            builder.Append(buffer);
+
+            var text = new string(buffer);
+            text = Regex.Replace(text, "(?<!\r)\n", "\r\n");
+
+            imports.Add(RazorSourceDocument.Create(text, DefaultImports.FileName, DefaultImports.Encoding));
         }
 
         private static IEnumerable<TagHelperDescriptor> BuildDivDescriptors()
