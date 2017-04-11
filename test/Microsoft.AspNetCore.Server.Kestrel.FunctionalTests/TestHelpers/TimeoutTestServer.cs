@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.TestHelpers
 
             try
             {
-                _server.Start(new DummyApplication(app));
+                _server.StartAsync(new DummyApplication(app), CancellationToken.None).GetAwaiter().GetResult();
             }
             catch
             {

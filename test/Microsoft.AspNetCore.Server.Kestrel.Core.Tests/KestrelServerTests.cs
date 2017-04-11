@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static void StartDummyApplication(IServer server)
         {
-            server.Start(new DummyApplication(context => TaskCache.CompletedTask));
+            server.StartAsync(new DummyApplication(context => TaskCache.CompletedTask), CancellationToken.None).GetAwaiter().GetResult();
         }
 
         private class MockTransportFactory : ITransportFactory
