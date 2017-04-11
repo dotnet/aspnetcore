@@ -15,8 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
-            string routePrefix;
-            return PageDirective.TryGetRouteTemplate(irDocument, out routePrefix);
+            return PageDirective.TryGetPageDirective(irDocument, out var directive);
         }
 
         protected override void OnDocumentStructureCreated(
