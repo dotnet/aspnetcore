@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await libuvThreadPrimary.StartAsync();
             var listenerPrimary = new ListenerPrimary(transportContextPrimary);
             await listenerPrimary.StartAsync(pipeName, pipeMessage, listenOptions, libuvThreadPrimary);
-            var address = listenOptions.ToString();
+            var address = GetUri(listenOptions);
 
             // Until a secondary listener is added, TCP connections get dispatched directly
             Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
@@ -108,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await libuvThreadPrimary.StartAsync();
             var listenerPrimary = new ListenerPrimary(transportContextPrimary);
             await listenerPrimary.StartAsync(pipeName, pipeMessage, listenOptions, libuvThreadPrimary);
-            var address = listenOptions.ToString();
+            var address = GetUri(listenOptions);
 
             // Add secondary listener
             var libuvThreadSecondary = new LibuvThread(libuvTransport);
@@ -217,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await libuvThreadPrimary.StartAsync();
             var listenerPrimary = new ListenerPrimary(transportContextPrimary);
             await listenerPrimary.StartAsync(pipeName, pipeMessage, listenOptions, libuvThreadPrimary);
-            var address = listenOptions.ToString();
+            var address = GetUri(listenOptions);
 
             // Add secondary listener with wrong pipe message
             var libuvThreadSecondary = new LibuvThread(libuvTransport);
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         }
 
         private static async Task AssertResponseEventually(
-            string address,
+            Uri address,
             string expected,
             string[] allowed = null,
             int maxRetries = 100,
@@ -272,6 +273,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
 
             Assert.True(false, $"'{address}' failed to respond with '{expected}' in {maxRetries} retries.");
+        }
+
+        private static Uri GetUri(ListenOptions options)
+        {
+            if (options.Type != ListenType.IPEndPoint)
+            {
+                throw new InvalidOperationException($"Could not determine a proper URI for options with Type {options.Type}");
+            }
+
+            var scheme = options.ConnectionAdapters.Any(f => f.IsHttps)
+                ? "https"
+                : "http";
+
+            return new Uri($"{scheme}://{options.IPEndPoint}");
         }
     }
 }

@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;

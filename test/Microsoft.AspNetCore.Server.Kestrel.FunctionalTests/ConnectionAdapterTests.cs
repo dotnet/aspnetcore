@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -112,6 +112,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             private RewritingStream _rewritingStream;
 
+            public bool IsHttps => false;
+
             public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
             {
                 _rewritingStream = new RewritingStream(context.ConnectionStream);
@@ -123,6 +125,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private class AsyncConnectionAdapter : IConnectionAdapter
         {
+            public bool IsHttps => false;
+
             public async Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
             {
                 await Task.Delay(100);
@@ -132,6 +136,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private class ThrowingConnectionAdapter : IConnectionAdapter
         {
+            public bool IsHttps => false;
+
             public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
             {
                 throw new Exception();

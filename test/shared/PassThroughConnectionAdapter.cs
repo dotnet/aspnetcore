@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class PassThroughConnectionAdapter : IConnectionAdapter
     {
+        public bool IsHttps => false;
+
         public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
         {
             var adapted = new AdaptedConnection(new LoggingStream(context.ConnectionStream, new TestApplicationErrorLogger()));

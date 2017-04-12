@@ -260,6 +260,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Theory]
+        [InlineData("https://localhost")]
+        [InlineData("ftp://localhost")]
+        public void ThrowsForUnsupportedAddressFromHosting(string addr)
+        {
+            var hostBuilder = new WebHostBuilder()
+                    .UseKestrel()
+                    .UseUrls(addr)
+                    .Configure(ConfigureEchoAddress);
+
+            using (var host = hostBuilder.Build())
+            {
+                Assert.Throws<InvalidOperationException>(() => host.Start());
+            }
+        }
+
         private void ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily addressFamily, IPAddress address)
         {
             using (var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp))

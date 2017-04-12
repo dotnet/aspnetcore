@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
             _logger = logger;
         }
 
+        public bool IsHttps => false;
+
         public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
         {
             return Task.FromResult<IAdaptedConnection>(

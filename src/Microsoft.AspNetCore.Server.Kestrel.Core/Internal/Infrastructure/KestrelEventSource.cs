@@ -26,14 +26,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         // - Avoid renaming methods or parameters marked with EventAttribute. EventSource uses these to form the event object.
 
         [NonEvent]
-        public void ConnectionStart(ListenOptions listenOptions, IConnectionContext context, IConnectionInformation information)
+        public void ConnectionStart(IConnectionContext context, IConnectionInformation information)
         {
             // avoid allocating strings unless this event source is enabled
             if (IsEnabled())
             {
                 ConnectionStart(
                     context.ConnectionId,
-                    listenOptions.Scheme,
                     information.LocalEndPoint.ToString(),
                     information.RemoteEndPoint.ToString());
             }
@@ -42,14 +41,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(1, Level = EventLevel.Verbose)]
         private void ConnectionStart(string connectionId,
-            string scheme,
             string localEndPoint,
             string remoteEndPoint)
         {
             WriteEvent(
                 1,
                 connectionId,
-                scheme,
                 localEndPoint,
                 remoteEndPoint
             );

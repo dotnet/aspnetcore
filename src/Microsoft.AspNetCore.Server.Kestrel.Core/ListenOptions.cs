@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
@@ -82,26 +83,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public List<IConnectionAdapter> ConnectionAdapters { get; } = new List<IConnectionAdapter>();
 
-        // Scheme is hopefully only a temporary measure for back compat with IServerAddressesFeature.
-        // TODO: Allow connection adapters to configure the scheme
-        public string Scheme { get; set; } = "http";
-
-        public override string ToString()
+        /// <summary>
+        /// Gets the name of this endpoint to display on command-line when the web server starts.
+        /// </summary>
+        internal string GetDisplayName()
         {
-            // Use http scheme for all addresses. If https should be used for this endPoint,
-            // it can still be configured for this endPoint specifically.
+            var scheme = ConnectionAdapters.Any(f => f.IsHttps)
+                ? "https"
+                : "http";
+
             switch (Type)
             {
                 case ListenType.IPEndPoint:
-                    return $"{Scheme}://{IPEndPoint}";
+                    return $"{scheme}://{IPEndPoint}";
                 case ListenType.SocketPath:
-                    return $"{Scheme}://unix:{SocketPath}";
+                    return $"{scheme}://unix:{SocketPath}";
                 case ListenType.FileHandle:
-                    // This was never supported via --server.urls, so no need to include Scheme.
-                    return "http://<file handle>";
+                    return $"{scheme}://<file handle>";
                 default:
                     throw new InvalidOperationException();
             }
         }
+
+        public override string ToString() => GetDisplayName();
     }
 }

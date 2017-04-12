@@ -153,6 +153,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         {
                             throw new InvalidOperationException($"HTTPS endpoints can only be configured using {nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.Listen)}().");
                         }
+                        else if (!parsedAddress.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new InvalidOperationException($"Unrecognized scheme in server address '{address}'. Only 'http://' is supported.");
+                        }
 
                         if (!string.IsNullOrEmpty(parsedAddress.PathBase))
                         {
@@ -166,10 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                         if (parsedAddress.IsUnixPipe)
                         {
-                            listenOptions.Add(new ListenOptions(parsedAddress.UnixPipePath)
-                            {
-                                Scheme = parsedAddress.Scheme,
-                            });
+                            listenOptions.Add(new ListenOptions(parsedAddress.UnixPipePath));
                         }
                         else
                         {
@@ -185,10 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             else
                             {
                                 // These endPoints will be added later to _serverAddresses.Addresses
-                                listenOptions.Add(new ListenOptions(CreateIPEndPoint(parsedAddress))
-                                {
-                                    Scheme = parsedAddress.Scheme,
-                                });
+                                listenOptions.Add(new ListenOptions(CreateIPEndPoint(parsedAddress)));
                             }
                         }
                     }
@@ -209,8 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         throw new IOException($"Failed to bind to address {endPoint}: address already in use.", ex);
                     }
 
-                    // If requested port was "0", replace with assigned dynamic port.
-                    _serverAddresses.Addresses.Add(endPoint.ToString());
+                    _serverAddresses.Addresses.Add(endPoint.GetDisplayName());
                 }
             }
             catch (Exception ex)
@@ -285,10 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             try
             {
-                var ipv4ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, parsedAddress.Port))
-                {
-                    Scheme = parsedAddress.Scheme,
-                };
+                var ipv4ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, parsedAddress.Port));
 
                 var connectionHandler = new ConnectionHandler<TContext>(ipv4ListenOptions, serviceContext, application);
                 var transport = _transportFactory.Create(ipv4ListenOptions, connectionHandler);
@@ -307,10 +301,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             try
             {
-                var ipv6ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.IPv6Loopback, parsedAddress.Port))
-                {
-                    Scheme = parsedAddress.Scheme,
-                };
+                var ipv6ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.IPv6Loopback, parsedAddress.Port));
 
                 var connectionHandler = new ConnectionHandler<TContext>(ipv6ListenOptions, serviceContext, application);
                 var transport = _transportFactory.Create(ipv6ListenOptions, connectionHandler);

@@ -55,8 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             {
                 var start = Assert.Single(events, e => e.EventName == "ConnectionStart");
-                Assert.All(new[] { "connectionId", "scheme", "remoteEndPoint", "localEndPoint" }, p => Assert.Contains(p, start.PayloadNames));
-                Assert.Equal("http", GetProperty(start, "scheme"));
+                Assert.All(new[] { "connectionId", "remoteEndPoint", "localEndPoint" }, p => Assert.Contains(p, start.PayloadNames));
                 Assert.Equal($"127.0.0.1:{port}", GetProperty(start, "localEndPoint"));
             }
             {
