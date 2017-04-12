@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             { CSharpSymbolType.Transition, "@" },
         };
 
-        private CSharpLanguageCharacteristics()
+        protected CSharpLanguageCharacteristics()
         {
         }
 

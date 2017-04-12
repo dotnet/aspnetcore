@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var reader = new SeekableTextReader(chars, source.FileName);
 
-            var context = new ParserContext(reader, Options.DesignTimeMode);
+            var context = new ParserContext(reader, Options);
 
             var codeParser = new CSharpCodeParser(Options.Directives, context);
             var markupParser = new HtmlMarkupParser(context);

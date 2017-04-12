@@ -56,5 +56,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
                 }
             }
         }
+
+        [Fact]
+        public void Parse_UseDirectiveTokenizer_ParsesUntilFirstDirective()
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create("\r\n  \r\n    @*SomeComment*@ \r\n  @tagHelperPrefix \"SomePrefix\"\r\n<html>\r\n@if (true) {\r\n @if(false) { <div>@something.</div> } \r\n}");
+            var options = RazorParserOptions.CreateDefaultOptions();
+            options.StopParsingAfterFirstDirective = true;
+
+            // Act
+            var syntaxTree = RazorSyntaxTree.Parse(source, options);
+
+            // Assert
+            Assert.NotNull(syntaxTree);
+            Assert.Equal(6, syntaxTree.Root.Children.Count);
+            var block = Assert.IsType<Block>(syntaxTree.Root.Children[4]);
+            Assert.Equal(BlockKind.Directive, block.Type);
+            Assert.Empty(syntaxTree.Diagnostics);
+        }
     }
 }

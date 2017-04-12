@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public bool IsIndentingWithTabs { get; set; }
 
+        public bool StopParsingAfterFirstDirective { get; set; }
+
         public ICollection<DirectiveDescriptor> Directives { get; }
 
         public HashSet<string> NamespaceImports { get; }

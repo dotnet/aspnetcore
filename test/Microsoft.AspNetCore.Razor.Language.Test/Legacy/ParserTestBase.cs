@@ -37,7 +37,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var source = TestRazorSourceDocument.Create(document);
             var reader = new SeekableTextReader(document, filePath: null);
 
-            var context = new ParserContext(reader, designTime);
+            var options = RazorParserOptions.CreateDefaultOptions();
+            options.DesignTimeMode = designTime;
+            var context = new ParserContext(reader, options);
 
             var codeParser = new CSharpCodeParser(context);
             var markupParser = new HtmlMarkupParser(context);
@@ -49,8 +51,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var root = context.Builder.Build();
             var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
-            var options = RazorParserOptions.CreateDefaultOptions();
-            options.DesignTimeMode = designTime;
 
             var tree = RazorSyntaxTree.Create(root, source, diagnostics, options);
             var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
@@ -65,7 +65,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             using (var reader = new SeekableTextReader(document, filePath: null))
             {
-                var context = new ParserContext(reader, designTime);
+                var options = RazorParserOptions.CreateDefaultOptions();
+                options.DesignTimeMode = designTime;
+                var context = new ParserContext(reader, options);
 
                 var parser = new HtmlMarkupParser(context);
                 parser.CodeParser = new CSharpCodeParser(context)
@@ -77,8 +79,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 var root = context.Builder.Build();
                 var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
-                var options = RazorParserOptions.CreateDefaultOptions();
-                options.DesignTimeMode = designTime;
 
                 return RazorSyntaxTree.Create(root, source, diagnostics, options);
             }
@@ -98,7 +98,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             using (var reader = new SeekableTextReader(document, filePath: null))
             {
-                var context = new ParserContext(reader, designTime);
+                var options = RazorParserOptions.CreateDefaultOptions();
+                options.DesignTimeMode = designTime;
+                var context = new ParserContext(reader, options);
 
                 var parser = new CSharpCodeParser(descriptors, context);
                 parser.HtmlParser = new HtmlMarkupParser(context)
@@ -110,9 +112,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 var root = context.Builder.Build();
                 var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
-
-                var options = RazorParserOptions.CreateDefaultOptions();
-                options.DesignTimeMode = designTime;
 
                 options.Directives.Clear();
                 foreach (var directive in descriptors)

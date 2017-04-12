@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal partial class ParserContext
     {
-        public ParserContext(ITextDocument source, bool designTime)
+        public ParserContext(ITextDocument source, RazorParserOptions options)
         {
             if (source == null)
             {
@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             Source = source;
-            DesignTimeMode = designTime;
+            DesignTimeMode = options.DesignTimeMode;
+            StopParsingAfterFirstDirective = options.StopParsingAfterFirstDirective;
             Builder = new SyntaxTreeBuilder();
             ErrorSink = new ErrorSink();
         }
@@ -29,6 +30,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public ITextDocument Source { get; }
 
         public bool DesignTimeMode { get; }
+
+        public bool StopParsingAfterFirstDirective { get; }
 
         public bool WhiteSpaceIsSignificantToAncestorBlock { get; set; }
 

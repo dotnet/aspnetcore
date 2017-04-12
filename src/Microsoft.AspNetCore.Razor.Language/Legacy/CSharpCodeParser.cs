@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CSharpCodeParser : TokenizerBackedParser<CSharpTokenizer, CSharpSymbol, CSharpSymbolType>
     {
-        internal static readonly int UsingKeywordLength = 5; // using
         private static readonly Func<CSharpSymbol, bool> IsValidStatementSpacingSymbol =
             IsSpacingToken(includeNewLines: true, includeComments: true);
 
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         public CSharpCodeParser(IEnumerable<DirectiveDescriptor> directiveDescriptors, ParserContext context)
-            : base(CSharpLanguageCharacteristics.Instance, context)
+            : base(context.StopParsingAfterFirstDirective ? FirstDirectiveCSharpLanguageCharacteristics.Instance : CSharpLanguageCharacteristics.Instance, context)
         {
             Keywords = new HashSet<string>();
             SetUpKeywords();
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected void MapDirectives(Action handler, params string[] directives)
         {
-            foreach (string directive in directives)
+            foreach (var directive in directives)
             {
                 _directiveParsers.Add(directive, handler);
                 Keywords.Add(directive);
@@ -143,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void MapKeywords(Action<bool> handler, bool topLevel, params CSharpKeyword[] keywords)
         {
-            foreach (CSharpKeyword keyword in keywords)
+            foreach (var keyword in keywords)
             {
                 _keywordParsers.Add(keyword, handler);
                 if (topLevel)
@@ -587,17 +586,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void CaptureWhitespaceAtEndOfCodeOnlyLine()
         {
-            IEnumerable<CSharpSymbol> ws = ReadWhile(sym => sym.Type == CSharpSymbolType.WhiteSpace);
+            var whitespace = ReadWhile(sym => sym.Type == CSharpSymbolType.WhiteSpace);
             if (At(CSharpSymbolType.NewLine))
             {
-                Accept(ws);
+                Accept(whitespace);
                 AcceptAndMoveNext();
                 PutCurrentBack();
             }
             else
             {
                 PutCurrentBack();
-                PutBack(ws);
+                PutBack(whitespace);
             }
         }
 
@@ -807,11 +806,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void WhileClause()
         {
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
-            IEnumerable<CSharpSymbol> ws = SkipToNextImportantToken();
+            var whitespace = SkipToNextImportantToken();
 
             if (At(CSharpKeyword.While))
             {
-                Accept(ws);
+                Accept(whitespace);
                 Assert(CSharpKeyword.While);
                 AcceptAndMoveNext();
                 AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
@@ -823,7 +822,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             else
             {
                 PutCurrentBack();
-                PutBack(ws);
+                PutBack(whitespace);
             }
         }
 
@@ -1042,12 +1041,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void AfterIfClause()
         {
             // Grab whitespace and razor comments
-            IEnumerable<CSharpSymbol> ws = SkipToNextImportantToken();
+            var whitespace = SkipToNextImportantToken();
 
             // Check for an else part
             if (At(CSharpKeyword.Else))
             {
-                Accept(ws);
+                Accept(whitespace);
                 Assert(CSharpKeyword.Else);
                 ElseClause();
             }
@@ -1055,7 +1054,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 // No else, return whitespace
                 PutCurrentBack();
-                PutBack(ws);
+                PutBack(whitespace);
                 Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
             }
         }
@@ -1355,13 +1354,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             while (!EndOfFile)
             {
                 var bookmark = CurrentStart.AbsoluteIndex;
-                IEnumerable<CSharpSymbol> read = ReadWhile(sym => sym.Type != CSharpSymbolType.Semicolon &&
-                                                                  sym.Type != CSharpSymbolType.RazorCommentTransition &&
-                                                                  sym.Type != CSharpSymbolType.Transition &&
-                                                                  sym.Type != CSharpSymbolType.LeftBrace &&
-                                                                  sym.Type != CSharpSymbolType.LeftParenthesis &&
-                                                                  sym.Type != CSharpSymbolType.LeftBracket &&
-                                                                  sym.Type != CSharpSymbolType.RightBrace);
+                var read = ReadWhile(sym =>
+                    sym.Type != CSharpSymbolType.Semicolon &&
+                    sym.Type != CSharpSymbolType.RazorCommentTransition &&
+                    sym.Type != CSharpSymbolType.Transition &&
+                    sym.Type != CSharpSymbolType.LeftBrace &&
+                    sym.Type != CSharpSymbolType.LeftParenthesis &&
+                    sym.Type != CSharpSymbolType.LeftBracket &&
+                    sym.Type != CSharpSymbolType.RightBrace);
+
                 if (At(CSharpSymbolType.LeftBrace) ||
                     At(CSharpSymbolType.LeftParenthesis) ||
                     At(CSharpSymbolType.LeftBracket))
@@ -1443,8 +1444,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void HandleKeyword(bool topLevel, Action fallback)
         {
             Debug.Assert(CurrentSymbol.Type == CSharpSymbolType.Keyword && CurrentSymbol.Keyword != null);
-            Action<bool> handler;
-            if (_keywordParsers.TryGetValue(CurrentSymbol.Keyword.Value, out handler))
+            if (_keywordParsers.TryGetValue(CurrentSymbol.Keyword.Value, out var handler))
             {
                 handler(topLevel);
             }
@@ -1458,16 +1458,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             while (!EndOfFile)
             {
-                IEnumerable<CSharpSymbol> ws = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
                 if (At(CSharpSymbolType.RazorCommentTransition))
                 {
-                    Accept(ws);
+                    Accept(whitespace);
                     Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
                     RazorComment();
                 }
                 else
                 {
-                    return ws;
+                    return whitespace;
                 }
             }
             return Enumerable.Empty<CSharpSymbol>();
@@ -1814,7 +1814,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Pull out the type name
-            string baseType = string.Concat(Span.Symbols.Select(s => s.Content));
+            var baseType = string.Concat(Span.Symbols.Select(s => s.Content));
 
             // Set up chunk generation
             Span.ChunkGenerator = createChunkGenerator(baseType.Trim());

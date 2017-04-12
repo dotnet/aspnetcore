@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private static readonly HtmlLanguageCharacteristics _instance = new HtmlLanguageCharacteristics();
 
-        private HtmlLanguageCharacteristics()
+        protected HtmlLanguageCharacteristics()
         {
         }
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     Debug.Fail("FlipBracket must be called with a bracket character");
 #else
-                Debug.Assert(false, "FlipBracket must be called with a bracket character");
+                    Debug.Assert(false, "FlipBracket must be called with a bracket character");
 #endif
                     return HtmlSymbolType.Unknown;
             }
