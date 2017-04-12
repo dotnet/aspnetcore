@@ -34,6 +34,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
+        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv4Port5000Default))]
+        [PortSupportedCondition(5000)]
+        public async Task RegisterAddresses_IPv4Port5000Default_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        {
+            await RegisterAddresses_Success(addressInput, testUrls);
+        }
+
         [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv4Port80))]
         [PortSupportedCondition(80)]
         public async Task RegisterAddresses_IPv4Port80_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
@@ -59,6 +66,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv6))]
         [IPv6SupportedCondition]
         public async Task RegisterAddresses_IPv6_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        {
+            await RegisterAddresses_Success(addressInput, testUrls);
+        }
+
+        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
+        [IPv6SupportedCondition]
+        [PortSupportedCondition(5000)]
+        public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
         }
@@ -273,10 +288,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 var dataset = new TheoryData<string, Func<IServerAddressesFeature, string[]>>();
 
-                // Default host and port
-                dataset.Add(null, _ => new[] { "http://127.0.0.1:5000/" });
-                dataset.Add(string.Empty, _ => new[] { "http://127.0.0.1:5000/" });
-
                 // Static ports
                 var port = GetNextPort();
 
@@ -304,6 +315,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 return dataset;
             }
         }
+
+        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv4Port5000Default =>
+            new TheoryData<string, Func<IServerAddressesFeature, string[]>>
+            {
+                { null, _ => new[] { "http://127.0.0.1:5000/" } },
+                { string.Empty, _ => new[] { "http://127.0.0.1:5000/" } }
+            };
 
         public static TheoryData<IPEndPoint, Func<IPEndPoint, string>> IPEndPointRegistrationDataRandomPort
         {
@@ -384,10 +402,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 var dataset = new TheoryData<string, Func<IServerAddressesFeature, string[]>>();
 
-                // Default host and port
-                dataset.Add(null, _ => new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" });
-                dataset.Add(string.Empty, _ => new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" });
-
                 // Static ports
                 var port = GetNextPort();
 
@@ -421,6 +435,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 return dataset;
             }
         }
+
+        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv6Port5000Default =>
+            new TheoryData<string, Func<IServerAddressesFeature, string[]>>
+            {
+                { null, _ => new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } },
+                { string.Empty, _ => new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } }
+            };
 
         public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv6Port80
         {
