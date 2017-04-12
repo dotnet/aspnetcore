@@ -763,6 +763,34 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.Equal(expected, response.Headers.Location.ToString());
         }
 
+        [Fact]
+        public async Task RedirectDoesNotIncludeFormActionByDefault()
+        {
+            // Arrange
+            var expected = "/Pages/Redirects/RedirectFromFormActionHandler";
+
+            // Act
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectFromFormActionHandler/RedirectToPage/10");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task RedirectToOtherHandlersWorks()
+        {
+            // Arrange
+            var expected = "/Pages/Redirects/RedirectFromFormActionHandler/RedirectToPage/11";
+
+            // Act
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectFromFormActionHandler/RedirectToAnotherHandler/11");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);

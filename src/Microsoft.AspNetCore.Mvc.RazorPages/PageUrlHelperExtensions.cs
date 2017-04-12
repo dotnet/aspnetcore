@@ -89,9 +89,9 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var routeValues = new RouteValueDictionary(values);
+            var ambientValues = urlHelper.ActionContext.RouteData.Values;
             if (pageName == null)
             {
-                var ambientValues = urlHelper.ActionContext.RouteData.Values;
                 if (!routeValues.ContainsKey("page") &&
                     ambientValues.TryGetValue("page", out var value))
                 {
@@ -101,6 +101,13 @@ namespace Microsoft.AspNetCore.Mvc
             else
             {
                 routeValues["page"] = pageName;
+            }
+
+            if (!routeValues.ContainsKey("formaction") && 
+                ambientValues.TryGetValue("formaction", out var formaction))
+            {
+                // Clear out formaction unless it's explicitly specified in the routeValues.
+                routeValues["formaction"] = null;
             }
 
             return urlHelper.RouteUrl(

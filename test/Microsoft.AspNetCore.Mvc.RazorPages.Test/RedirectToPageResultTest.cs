@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
-            var urlHelper = GetUrlHelper(returnValue: null);
+            var urlHelper = GetUrlHelper(actionContext, returnValue: null);
             var result = new RedirectToPageResult("some-page", new Dictionary<string, object>())
             {
                 UrlHelper = urlHelper,
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 new RouteData(),
                 new ActionDescriptor());
 
-            var urlHelper = GetUrlHelper(expectedUrl);
+            var urlHelper = GetUrlHelper(actionContext, expectedUrl);
             var result = new RedirectToPageResult("MyPage", new { id = 10, test = "value" }, permanentRedirect)
             {
                 UrlHelper = urlHelper,
@@ -89,10 +89,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             var pageContext = new PageContext
             {
                 HttpContext = httpContext,
+                RouteData = new RouteData(),
             };
 
             UrlRouteContext context = null;
             var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.SetupGet(h => h.ActionContext).Returns(pageContext);
             urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Callback((UrlRouteContext c) => context = c)
                 .Returns("some-value");
@@ -174,6 +176,62 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                });
         }
 
+        [Fact]
+        public async Task RedirectToPage_DoesNotUseAmbientFormAction()
+        {
+            // Arrange
+            var expected = "path/to/this-page";
+            var httpContext = new Mock<HttpContext>();
+            var httpResponse = new Mock<HttpResponse>();
+            httpContext.SetupGet(c => c.Response)
+                .Returns(httpResponse.Object);
+            httpContext.SetupGet(c => c.RequestServices)
+                .Returns(CreateServices());
+            var routeData = new RouteData
+            {
+                Values =
+                {
+                    ["page"] = expected,
+                    ["formaction"] = "delete",
+                }
+            };
+
+            var actionContext = new ActionContext(
+                httpContext.Object,
+                routeData,
+                new ActionDescriptor());
+
+            UrlRouteContext context = null;
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext c) => context = c)
+                .Returns("some-value");
+            urlHelper.SetupGet(h => h.ActionContext)
+                .Returns(actionContext);
+            var pageName = (string)null;
+            var result = new RedirectToPageResult(pageName)
+            {
+                UrlHelper = urlHelper.Object,
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.NotNull(context);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(context.Values),
+               value =>
+               {
+                   Assert.Equal("page", value.Key);
+                   Assert.Equal(expected, value.Value);
+               },
+               value =>
+               {
+                   Assert.Equal("formaction", value.Key);
+                   Assert.Null(value.Value);
+               });
+        }
+
         private static IServiceProvider CreateServices(IUrlHelperFactory factory = null)
         {
             var services = new ServiceCollection();
@@ -192,9 +250,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             return services.BuildServiceProvider();
         }
 
-        private static IUrlHelper GetUrlHelper(string returnValue)
+        private static IUrlHelper GetUrlHelper(ActionContext context, string returnValue)
         {
             var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.SetupGet(h => h.ActionContext).Returns(context);
             urlHelper.Setup(o => o.RouteUrl(It.IsAny<UrlRouteContext>())).Returns(returnValue);
             return urlHelper.Object;
         }

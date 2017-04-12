@@ -27,9 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             {
                 RouteData = routeData,
             };
-            var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.SetupGet(h => h.ActionContext)
-                .Returns(actionContext);
+            var urlHelper = CreateUrlHelper(actionContext);
             urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Callback((UrlRouteContext context) => actual = context);
 
@@ -77,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             // Arrange
             UrlRouteContext actual = null;
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = CreateUrlHelper();
             urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Callback((UrlRouteContext context) => actual = context);
 
@@ -109,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             // Arrange
             UrlRouteContext actual = null;
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = CreateUrlHelper();
             urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Callback((UrlRouteContext context) => actual = context);
 
@@ -141,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             // Arrange
             UrlRouteContext actual = null;
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = CreateUrlHelper();
             urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Callback((UrlRouteContext context) => actual = context);
 
@@ -173,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             // Arrange
             UrlRouteContext actual = null;
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = CreateUrlHelper();
             urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Callback((UrlRouteContext context) => actual = context);
 
@@ -217,9 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 RouteData = routeData,
             };
 
-            var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.SetupGet(p => p.ActionContext)
-                .Returns(actionContext);
+            var urlHelper = CreateUrlHelper(actionContext);
             urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Callback((UrlRouteContext context) => actual = context);
 
@@ -245,6 +241,113 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             Assert.Equal("https", actual.Protocol);
             Assert.Equal("mytesthost", actual.Host);
             Assert.Equal("#toc", actual.Fragment);
+        }
+
+        [Fact]
+        public void Page_SetsFormActionToNull_IfValueIsNotSpecifiedInRouteValues()
+        {
+            // Arrange
+            UrlRouteContext actual = null;
+            var routeData = new RouteData
+            {
+                Values =
+                {
+                    { "page", "ambient-page" },
+                    { "formaction", "ambient-formaction" },
+                }
+            };
+            var actionContext = new ActionContext
+            {
+                RouteData = routeData,
+            };
+
+            var urlHelper = CreateUrlHelper(actionContext);
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext context) => actual = context);
+
+            // Act
+            string page = null;
+            urlHelper.Object.Page(page, new { id = 13 }, "https", "mytesthost", "#toc");
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Null(actual.RouteName);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values),
+                value =>
+                {
+                    Assert.Equal("id", value.Key);
+                    Assert.Equal(13, value.Value);
+                },
+                value =>
+                {
+                    Assert.Equal("page", value.Key);
+                    Assert.Equal("ambient-page", value.Value);
+                },
+                value =>
+                {
+                    Assert.Equal("formaction", value.Key);
+                    Assert.Null(value.Value);
+                });
+        }
+
+        [Fact]
+        public void Page_UsesExplicitlySpecifiedFormActionValue()
+        {
+            // Arrange
+            UrlRouteContext actual = null;
+            var routeData = new RouteData
+            {
+                Values =
+                {
+                    { "page", "ambient-page" },
+                    { "formaction", "ambient-formaction" },
+                }
+            };
+            var actionContext = new ActionContext
+            {
+                RouteData = routeData,
+            };
+
+            var urlHelper = CreateUrlHelper(actionContext);
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext context) => actual = context);
+
+            // Act
+            string page = null;
+            urlHelper.Object.Page(page, new { formaction = "exact-formaction" }, "https", "mytesthost", "#toc");
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Null(actual.RouteName);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values),
+                value =>
+                {
+                    Assert.Equal("formaction", value.Key);
+                    Assert.Equal("exact-formaction", value.Value);
+                },
+                value =>
+                {
+                    Assert.Equal("page", value.Key);
+                    Assert.Equal("ambient-page", value.Value);
+                });
+        }
+
+        private static Mock<IUrlHelper> CreateUrlHelper(ActionContext context = null)
+        {
+            if (context == null)
+            {
+                context = new ActionContext
+                {
+                    RouteData = new RouteData(),
+                };
+            }
+
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.SetupGet(h => h.ActionContext)
+                .Returns(context);
+            return urlHelper;
         }
     }
 }
