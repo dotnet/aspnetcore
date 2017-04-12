@@ -45,6 +45,9 @@
             IF %ERRORLEVEL% LEQ 3 exit 0" />
 
         <Copy SourceFiles="@(VSIXPaths)" DestinationFolder="$(CoherenceDestinationDir)vsix" />
+        <Copy
+            SourceFiles="$([System.IO.Path]::ChangeExtension(%(VSIXPaths.FullPath), '.json'))"
+            DestinationFolder="$(CoherenceDestinationDir)vsix" />
         <Copy SourceFiles="@(PackageCaches)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" />
 
         <ItemGroup>
@@ -247,7 +250,20 @@
 
     </Target>
 
-    <Target Name="RebuildPackages" DependsOnTargets="ReplaceUnsignedFiles;UpdateLicenseURLs;RebuildVSIXes;RebuildPackageCaches">
+    <PropertyGroup>
+      <SignDependsOn>
+        ReplaceUnsignedFiles;
+        UpdateLicenseURLs;
+        RebuildPackages;
+        RebuildVSIXes;
+        RebuildPackageCaches;
+        RunVSDrop;
+      </SignDependsOn>
+    </PropertyGroup>
+
+    <Target Name="Sign" DependsOnTargets="$(SignDependsOn)" />
+
+    <Target Name="RebuildPackages">
         <MakeDir Directories="$(PackageOutputPath)" />
 
         <ItemGroup>
@@ -275,12 +291,22 @@
     <!-- Repacks and signs VSIXes -->
     <Target Name="RebuildVSIXes">
         <ItemGroup>
-            <VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
+            <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
+            <VSIXManifest Include="%(_VSIXManifest.FullPath)">
+              <VSIXDirectory>$([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))</VSIXDirectory>
+              <VSIXName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))))</VSIXName>
+            </VSIXManifest>
         </ItemGroup>
 
         <MSBuild
             Projects="dnx.msbuild"
-            Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);VSIXManifest=%(VSIXManifest.Identity);OutDir=$(UnsignedVSIXWithSignedBinariesPath)"
+            Properties="
+                Configuration=$(Configuration);
+                Sign=$(Sign);
+                TestCodeSign=$(TestCodeSign);
+                VSIXManifest=%(VSIXManifest.Identity);
+                VSIXDirectory=%(VSIXManifest.VSIXDirectory);
+                OutDir=$(UnsignedVSIXWithSignedBinariesPath)"
             Targets="RepackVSIX"/>
 
         <ItemGroup>
@@ -307,6 +333,10 @@
 
         <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(CodeSignCompletionPath) $(SignedVSIXPath)
             IF %ERRORLEVEL% LEQ 3 exit 0" />
+
+        <Copy 
+            SourceFiles="$(CoherenceDestinationDir)vsix\%(VSIXManifest.VSIXName).json"
+            DestinationFolder="$(SignedVSIXPath)" />
     </Target>
 
     <!-- Repacks PackageCache -->
@@ -334,12 +364,11 @@
 
     <Target Name="RepackVSIX">
         <PropertyGroup>
-            <WorkingDir>$([System.IO.Path]::GetDirectoryName($(VSIXManifest)))</WorkingDir>
-            <VSIXName>$([System.IO.Path]::GetFileName($(WorkingDir)))</VSIXName>
+            <VSIXName>$([System.IO.Path]::GetFileName($(VSIXDirectory)))</VSIXName>
         </PropertyGroup>
 
         <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(VSIXName).vsix" WorkingDirectory="$(WorkingDir)" />
+        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(VSIXName).vsix" WorkingDirectory="$(VSIXDirectory)" />
     </Target>
 
     <Target Name="RebuildPackageCache">
@@ -351,11 +380,25 @@
         <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageCacheName).zip * > nul" WorkingDirectory="$(WorkingDir)" />
     </Target>
 
-    <Target Name="InstallNuGetPackageVerifier" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' != 'false'">
+    <Target Name="RunVSDrop">
+        <ItemGroup>
+            <SignedRazorVSIX Include="$(SignedVSIXPath)*.vsix" />
+        </ItemGroup>
+
+        <MSBuild
+            Projects="build\vsdrop\drop.msbuild"
+            Targets="BuildAndPublishManifest"
+            Properties="
+                SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
+                RepositoryRoot=$(MSBuildProjectDirectory)\;
+                ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName)" />
+    </Target>
+
+    <Target Name="InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
         <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
     </Target>
 
-    <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="RebuildPackages; InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
+    <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="Sign;InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
         <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
     </Target>
 
@@ -587,7 +630,7 @@
             DetailedExclusions="@(SrcExclusions)" />
     </Target>
 
-    <Target Name="BeforeBinScope" DependsOnTargets="RebuildPackages" Condition="'$(Sign)' == 'Sign'">
+    <Target Name="BeforeBinScope" DependsOnTargets="Sign" Condition="'$(Sign)' == 'Sign'">
         <ItemGroup>
             <SignedPackagesForBinScope
                 Include="$(PackagesOutputPath)**\*.nupkg"

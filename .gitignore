@@ -26,3 +26,4 @@ debugSettings.json
 project.lock.json
 *.nupkg
 .build
+.vscode
