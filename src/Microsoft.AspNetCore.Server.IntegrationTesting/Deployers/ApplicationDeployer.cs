@@ -22,7 +22,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         // This is the argument that separates the dotnet arguments for the args being passed to the
         // app being run when running dotnet run
-        public static readonly string DotnetArgumentSeparator = "--";
+        // Temporarily remove separator to workaround "dotnet run no longer passes additional arguments
+        // to application" (https://github.com/dotnet/sdk/issues/1118)
+        public static readonly string DotnetArgumentSeparator = "";
 
         private readonly Stopwatch _stopwatch = new Stopwatch();
 
