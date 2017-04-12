@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -11,6 +12,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class ConnectionHandler<TContext> : IConnectionHandler
     {
+        private static long _lastFrameConnectionId = long.MinValue;
+
         private readonly ListenOptions _listenOptions;
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
@@ -28,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var outputPipe = connectionInfo.PipeFactory.Create(GetOutputPipeOptions(connectionInfo.OutputReaderScheduler));
 
             var connectionId = CorrelationIdGenerator.GetNextId();
+            var frameConnectionId = Interlocked.Increment(ref _lastFrameConnectionId);
 
             var frameContext = new FrameContext
             {
@@ -44,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var connection = new FrameConnection(new FrameConnectionContext
             {
                 ConnectionId = connectionId,
+                FrameConnectionId = frameConnectionId,
                 ServiceContext = _serviceContext,
                 PipeFactory = connectionInfo.PipeFactory,
                 ConnectionAdapters = _listenOptions.ConnectionAdapters,

@@ -74,8 +74,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private int _remainingRequestHeadersBytesAllowed;
         private int _requestHeadersParsed;
 
-        protected readonly long _keepAliveMilliseconds;
-        private readonly long _requestHeadersTimeoutMilliseconds;
+        protected readonly long _keepAliveTicks;
+        private readonly long _requestHeadersTimeoutTicks;
 
         protected long _responseBytesWritten;
 
@@ -91,8 +91,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _parser = ServiceContext.HttpParserFactory(new FrameAdapter(this));
 
             FrameControl = this;
-            _keepAliveMilliseconds = (long)ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
-            _requestHeadersTimeoutMilliseconds = (long)ServerOptions.Limits.RequestHeadersTimeout.TotalMilliseconds;
+            _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
+            _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
         }
 
         public ServiceContext ServiceContext => _frameContext.ServiceContext;
@@ -102,10 +102,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public ISocketOutput Output { get; set; }
         public IEnumerable<IAdaptedConnection> AdaptedConnections { get; set; }
         public ConnectionLifetimeControl LifetimeControl { get; set; }
+        public ITimeoutControl TimeoutControl { get; set; }
 
-        protected ITimeoutControl TimeoutControl => ConnectionInformation.TimeoutControl;
         protected IKestrelTrace Log => ServiceContext.Log;
-
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
         private KestrelServerOptions ServerOptions { get; }
@@ -1017,7 +1016,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break;
                     }
 
-                    TimeoutControl.ResetTimeout(_requestHeadersTimeoutMilliseconds, TimeoutAction.SendTimeoutResponse);
+                    TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutAction.SendTimeoutResponse);
 
                     _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                     goto case RequestProcessingStatus.ParsingRequestLine;

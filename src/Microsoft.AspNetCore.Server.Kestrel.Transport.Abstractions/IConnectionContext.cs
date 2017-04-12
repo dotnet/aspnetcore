@@ -17,6 +17,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
         void OnConnectionClosed();
         Task StopAsync();
         void Abort(Exception ex);
-        void Timeout();
     }
 }

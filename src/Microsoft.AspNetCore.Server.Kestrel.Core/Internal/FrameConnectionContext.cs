@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     public class FrameConnectionContext
     {
         public string ConnectionId { get; set; }
+        public long FrameConnectionId { get; set; }
         public ServiceContext ServiceContext { get; set; }
         public PipeFactory PipeFactory { get; set; }
         public List<IConnectionAdapter> ConnectionAdapters { get; set; }

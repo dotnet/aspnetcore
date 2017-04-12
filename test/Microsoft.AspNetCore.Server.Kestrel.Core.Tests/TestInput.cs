@@ -14,7 +14,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    class TestInput : ITimeoutControl, IFrameControl, IDisposable
+    class TestInput : IFrameControl, IDisposable
     {
         private MemoryPool _memoryPool;
         private PipeFactory _pipelineFactory;
@@ -55,18 +55,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         public void End(ProduceEndType endType)
-        {
-        }
-
-        public void SetTimeout(long milliseconds, TimeoutAction timeoutAction)
-        {
-        }
-
-        public void ResetTimeout(long milliseconds, TimeoutAction timeoutAction)
-        {
-        }
-
-        public void CancelTimeout()
         {
         }
 

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private readonly ITransportFactory _transportFactory;
 
         private bool _isRunning;
-        private DateHeaderValueManager _dateHeaderValueManager;
+        private Heartbeat _heartbeat;
 
         public KestrelServer(
             IOptions<KestrelServerOptions> options,
@@ -85,8 +85,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 }
                 _isRunning = true;
 
-                _dateHeaderValueManager = new DateHeaderValueManager();
                 var trace = new KestrelTrace(_logger);
+
+                var systemClock = new SystemClock();
+                var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
+                var connectionManager = new FrameConnectionManager();
+                _heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager, connectionManager }, systemClock, trace);
 
                 IThreadPool threadPool;
                 if (InternalOptions.ThreadPoolDispatching)
@@ -103,7 +107,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     Log = trace,
                     HttpParserFactory = frameParser => new HttpParser<FrameAdapter>(frameParser.Frame.ServiceContext.Log),
                     ThreadPool = threadPool,
-                    DateHeaderValueManager = _dateHeaderValueManager,
+                    SystemClock = systemClock,
+                    DateHeaderValueManager = dateHeaderValueManager,
+                    ConnectionManager = connectionManager,
                     ServerOptions = Options
                 };
 
@@ -232,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Task.WaitAll(tasks);
             }
 
-            _dateHeaderValueManager?.Dispose();
+            _heartbeat?.Dispose();
         }
 
         private void ValidateOptions()

@@ -29,5 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void ConnectionBadRequest(string connectionId, BadHttpRequestException ex);
 
         void ApplicationError(string connectionId, string traceIdentifier, Exception ex);
+
+        void TimerSlow(TimeSpan interval, DateTimeOffset now);
+
     }
 }

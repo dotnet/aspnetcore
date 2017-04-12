@@ -34,5 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void NotAllConnectionsAborted() { }
         public void NotAllConnectionsClosedGracefully() { }
         public void RequestProcessingError(string connectionId, Exception ex) { }
+        public virtual void TimerSlow(TimeSpan interval, DateTimeOffset now) { }
     }
 }

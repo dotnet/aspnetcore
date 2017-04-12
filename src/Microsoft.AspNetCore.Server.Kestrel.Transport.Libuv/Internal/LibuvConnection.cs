@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvConnection : LibuvConnectionContext, ITimeoutControl
+    public class LibuvConnection : LibuvConnectionContext
     {
         private const int MinAllocBufferSize = 2048;
 
@@ -28,16 +28,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
 
-        private long _lastTimestamp;
-        private long _timeoutTimestamp = long.MaxValue;
-        private TimeoutAction _timeoutAction;
         private WritableBuffer? _currentWritableBuffer;
 
         public LibuvConnection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
             socket.Connection = this;
-            TimeoutControl = this;
 
             var tcpHandle = _socket as UvTcpHandle;
             if (tcpHandle != null)
@@ -45,8 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 RemoteEndPoint = tcpHandle.GetPeerIPEndPoint();
                 LocalEndPoint = tcpHandle.GetSockIPEndPoint();
             }
-
-            _lastTimestamp = Thread.Loop.Now();
         }
 
         // For testing
@@ -74,7 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                 // Start socket prior to applying the ConnectionAdapter
                 _socket.ReadStart(_allocCallback, _readCallback, this);
-                _lastTimestamp = Thread.Loop.Now();
 
                 // This *must* happen after socket.ReadStart
                 // The socket output consumer is the only thing that can close the connection. If the
@@ -108,24 +101,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             Input.Complete(new TaskCanceledException("The request was aborted"));
             _socketClosedTcs.TrySetResult(null);
-        }
-
-        // Called on Libuv thread
-        public void Tick(long timestamp)
-        {
-            if (timestamp > PlatformApis.VolatileRead(ref _timeoutTimestamp))
-            {
-                TimeoutControl.CancelTimeout();
-
-                if (_timeoutAction == TimeoutAction.SendTimeoutResponse)
-                {
-                    _connectionContext.Timeout();
-                }
-
-                StopAsync();
-            }
-
-            Interlocked.Exchange(ref _lastTimestamp, timestamp);
         }
 
         private static LibuvFunctions.uv_buf_t AllocCallback(UvStreamHandle handle, int suggestedSize, object state)
@@ -250,31 +225,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     Input.Complete();
                 }
             }
-        }
-
-        void ITimeoutControl.SetTimeout(long milliseconds, TimeoutAction timeoutAction)
-        {
-            Debug.Assert(_timeoutTimestamp == long.MaxValue, "Concurrent timeouts are not supported");
-
-            AssignTimeout(milliseconds, timeoutAction);
-        }
-
-        void ITimeoutControl.ResetTimeout(long milliseconds, TimeoutAction timeoutAction)
-        {
-            AssignTimeout(milliseconds, timeoutAction);
-        }
-
-        void ITimeoutControl.CancelTimeout()
-        {
-            Interlocked.Exchange(ref _timeoutTimestamp, long.MaxValue);
-        }
-
-        private void AssignTimeout(long milliseconds, TimeoutAction timeoutAction)
-        {
-            _timeoutAction = timeoutAction;
-
-            // Add LibuvThread.HeartbeatMilliseconds extra milliseconds since this can be called right before the next heartbeat.
-            Interlocked.Exchange(ref _timeoutTimestamp, _lastTimestamp + milliseconds + LibuvThread.HeartbeatMilliseconds);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 while (!_requestProcessingStopping)
                 {
-                    TimeoutControl.SetTimeout(_keepAliveMilliseconds, TimeoutAction.CloseConnection);
+                    TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutAction.CloseConnection);
 
                     InitializeHeaders();
 

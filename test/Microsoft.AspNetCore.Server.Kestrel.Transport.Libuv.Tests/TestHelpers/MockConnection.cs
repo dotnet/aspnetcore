@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 
         public MockConnection()
         {
-            TimeoutControl = this;
             RequestAbortedSource = new CancellationTokenSource();
             ListenerContext = new ListenerContext(new LibuvTransportContext());
         }

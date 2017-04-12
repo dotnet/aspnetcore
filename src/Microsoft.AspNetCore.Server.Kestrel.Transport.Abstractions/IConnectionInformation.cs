@@ -14,8 +14,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
         PipeFactory PipeFactory { get; }
         IScheduler InputWriterScheduler { get; }
         IScheduler OutputReaderScheduler { get; }
-
-        // TODO: Remove timeout management from transport
-        ITimeoutControl TimeoutControl { get; }
     }
 }

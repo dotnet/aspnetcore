@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -37,18 +38,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private async Task ConnectionAbortedWhenRequestHeadersNotReceivedInTime(TestServer server, string headers)
+        private async Task ConnectionAbortedWhenRequestHeadersNotReceivedInTime(TimeoutTestServer server, string headers)
         {
             using (var connection = server.CreateConnection())
             {
                 await connection.Send(
                     "GET / HTTP/1.1",
                     headers);
-                await ReceiveTimeoutResponse(connection, server.Context);
+                await ReceiveTimeoutResponse(connection);
             }
         }
 
-        private async Task RequestHeadersTimeoutCanceledAfterHeadersReceived(TestServer server)
+        private async Task RequestHeadersTimeoutCanceledAfterHeadersReceived(TimeoutTestServer server)
         {
             using (var connection = server.CreateConnection())
             {
@@ -60,20 +61,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await Task.Delay(RequestHeadersTimeout);
                 await connection.Send(
                     "a");
-                await ReceiveResponse(connection, server.Context);
+                await ReceiveResponse(connection);
             }
         }
 
-        private async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(TestServer server, string requestLine)
+        private async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(TimeoutTestServer server, string requestLine)
         {
             using (var connection = server.CreateConnection())
             {
                 await connection.Send(requestLine);
-                await ReceiveTimeoutResponse(connection, server.Context);
+                await ReceiveTimeoutResponse(connection);
             }
         }
 
-        private async Task TimeoutNotResetOnEachRequestLineCharacterReceived(TestServer server)
+        private async Task TimeoutNotResetOnEachRequestLineCharacterReceived(TimeoutTestServer server)
         {
             using (var connection = server.CreateConnection())
             {
@@ -88,31 +89,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private TestServer CreateServer()
+        private TimeoutTestServer CreateServer()
         {
-            return new TestServer(async httpContext =>
+            return new TimeoutTestServer(async httpContext =>
                 {
                     await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
                     await httpContext.Response.WriteAsync("hello, world");
                 },
-                new TestServiceContext
+                new KestrelServerOptions
                 {
-                    ServerOptions = new KestrelServerOptions
+                    AddServerHeader = false,
+                    Limits =
                     {
-                        AddServerHeader = false,
-                        Limits =
-                        {
-                            RequestHeadersTimeout = RequestHeadersTimeout
-                        }
+                        RequestHeadersTimeout = RequestHeadersTimeout
                     }
                 });
         }
 
-        private async Task ReceiveResponse(TestConnection connection, TestServiceContext testServiceContext)
+        private async Task ReceiveResponse(TestConnection connection)
         {
             await connection.Receive(
                 "HTTP/1.1 200 OK",
-                $"Date: {testServiceContext.DateHeaderValue}",
+                "");
+            await connection.ReceiveStartsWith("Date: ");
+            await connection.Receive(
                 "Transfer-Encoding: chunked",
                 "",
                 "c",
@@ -122,12 +122,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 "");
         }
 
-        private async Task ReceiveTimeoutResponse(TestConnection connection, TestServiceContext testServiceContext)
+        private async Task ReceiveTimeoutResponse(TestConnection connection)
         {
-            await connection.ReceiveForcedEnd(
+            await connection.Receive(
                 "HTTP/1.1 408 Request Timeout",
                 "Connection: close",
-                $"Date: {testServiceContext.DateHeaderValue}",
+                "");
+            await connection.ReceiveStartsWith("Date: ");
+            await connection.ReceiveForcedEnd(
                 "Content-Length: 0",
                 "",
                 "");

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     /// <summary>
     /// Abstracts the system clock to facilitate testing.
     /// </summary>
-    internal interface ISystemClock
+    public interface ISystemClock
     {
         /// <summary>
         /// Retrieves the current system time in UTC.

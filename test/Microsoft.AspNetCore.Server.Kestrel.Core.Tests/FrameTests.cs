@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -67,7 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frame = new TestFrame<object>(application: null, context: _frameContext)
             {
                 Input = _input.Reader,
-                Output = new MockSocketOutput()
+                Output = new MockSocketOutput(),
+                TimeoutControl = Mock.Of<ITimeoutControl>()
             };
 
             _frame.Reset();
@@ -320,16 +320,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ParseRequestStartsRequestHeadersTimeoutOnFirstByteAvailable()
         {
-            var connectionInfo = (MockConnectionInformation)_frameContext.ConnectionInformation;
             var connectionControl = new Mock<ITimeoutControl>();
-            connectionInfo.TimeoutControl = connectionControl.Object;
+            _frame.TimeoutControl = connectionControl.Object;
 
             await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("G"));
 
             _frame.ParseRequest((await _input.Reader.ReadAsync()).Buffer, out _consumed, out _examined);
             _input.Reader.Advance(_consumed, _examined);
 
-            var expectedRequestHeadersTimeout = (long)_serviceContext.ServerOptions.Limits.RequestHeadersTimeout.TotalMilliseconds;
+            var expectedRequestHeadersTimeout = _serviceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
             connectionControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
         }
 
@@ -444,13 +443,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void RequestProcessingAsyncEnablesKeepAliveTimeout()
         {
-            var connectionInfo = (MockConnectionInformation)_frameContext.ConnectionInformation;
             var connectionControl = new Mock<ITimeoutControl>();
-            connectionInfo.TimeoutControl = connectionControl.Object;
+            _frame.TimeoutControl = connectionControl.Object;
 
             var requestProcessingTask = _frame.RequestProcessingAsync();
 
-            var expectedKeepAliveTimeout = (long)_serviceContext.ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
+            var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
             connectionControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
 
             _frame.StopAsync();
@@ -817,7 +815,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public PipeFactory PipeFactory { get; }
             public IScheduler InputWriterScheduler { get; }
             public IScheduler OutputReaderScheduler { get; }
-            public ITimeoutControl TimeoutControl { get; set; } = Mock.Of<ITimeoutControl>();
         }
 
         private class RequestHeadersWrapper : IHeaderDictionary

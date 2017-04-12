@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
@@ -16,12 +18,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class FrameConnection : IConnectionContext
+    public class FrameConnection : IConnectionContext, ITimeoutControl
     {
         private readonly FrameConnectionContext _context;
         private readonly Frame _frame;
         private readonly List<IConnectionAdapter> _connectionAdapters;
         private readonly TaskCompletionSource<object> _frameStartedTcs = new TaskCompletionSource<object>();
+
+        private long _lastTimestamp;
+        private long _timeoutTimestamp = long.MaxValue;
+        private TimeoutAction _timeoutAction;
 
         private AdaptedPipeline _adaptedPipeline;
         private Stream _filteredStream;
@@ -32,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _context = context;
             _frame = context.Frame;
             _connectionAdapters = context.ConnectionAdapters;
+            context.ServiceContext.ConnectionManager.AddConnection(context.FrameConnectionId, this);
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -55,11 +62,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             _frame.Input = _context.Input.Reader;
             _frame.Output = _context.OutputProducer;
+            _frame.TimeoutControl = this;
 
             if (_connectionAdapters.Count == 0)
             {
-                _frame.Start();
-                _frameStartedTcs.SetResult(null);
+                StartFrame();
             }
             else
             {
@@ -75,6 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void OnConnectionClosed()
         {
+            _context.ServiceContext.ConnectionManager.RemoveConnection(_context.FrameConnectionId);
             Log.ConnectionStop(ConnectionId);
             KestrelEventSource.Log.ConnectionStop(this);
         }
@@ -127,8 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
 
                 _frame.AdaptedConnections = adaptedConnections;
-                _frame.Start();
-                _frameStartedTcs.SetResult(null);
+                StartFrame();
             }
             catch (Exception ex)
             {
@@ -160,6 +167,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _filteredStream?.Dispose();
             _context.OutputProducer.Dispose();
             _context.Input.Reader.Complete();
+        }
+
+        private void StartFrame()
+        {
+            _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
+            _frame.Start();
+            _frameStartedTcs.SetResult(null);
+        }
+
+        public void Tick(DateTimeOffset now)
+        {
+            var timestamp = now.Ticks;
+
+            // TODO: Use PlatformApis.VolatileRead equivalent again
+            if (timestamp > Interlocked.Read(ref _timeoutTimestamp))
+            {
+                CancelTimeout();
+
+                if (_timeoutAction == TimeoutAction.SendTimeoutResponse)
+                {
+                    Timeout();
+                }
+
+                var ignore = StopAsync();
+            }
+
+            Interlocked.Exchange(ref _lastTimestamp, timestamp);
+        }
+
+        public void SetTimeout(long ticks, TimeoutAction timeoutAction)
+        {
+            Debug.Assert(_timeoutTimestamp == long.MaxValue, "Concurrent timeouts are not supported");
+
+            AssignTimeout(ticks, timeoutAction);
+        }
+
+        public void ResetTimeout(long ticks, TimeoutAction timeoutAction)
+
+        {
+            AssignTimeout(ticks, timeoutAction);
+        }
+
+        public void CancelTimeout()
+        {
+            Interlocked.Exchange(ref _timeoutTimestamp, long.MaxValue);
+        }
+
+        private void AssignTimeout(long ticks, TimeoutAction timeoutAction)
+        {
+            _timeoutAction = timeoutAction;
+
+            // Add Heartbeat.Interval since this can be called right before the next heartbeat.
+            Interlocked.Exchange(ref _timeoutTimestamp, _lastTimestamp + ticks + Heartbeat.Interval.Ticks);
         }
     }
 }

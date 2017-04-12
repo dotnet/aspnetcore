@@ -45,6 +45,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private static readonly Action<ILogger, string, Exception> _requestProcessingError =
             LoggerMessage.Define<string>(LogLevel.Information, 20, @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
 
+        private static readonly Action<ILogger, TimeSpan, DateTimeOffset, Exception> _timerSlow =
+            LoggerMessage.Define<TimeSpan, DateTimeOffset>(LogLevel.Warning, 21, @"Heartbeat took longer than ""{interval}"" at ""{now}"".");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -105,6 +108,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void RequestProcessingError(string connectionId, Exception ex)
         {
             _requestProcessingError(_logger, connectionId, ex);
+        }
+
+        public virtual void TimerSlow(TimeSpan interval, DateTimeOffset now)
+        {
+            _timerSlow(_logger, interval, now, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

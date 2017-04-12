@@ -26,7 +26,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public PipeFactory PipeFactory => ListenerContext.Thread.PipeFactory;
         public IScheduler InputWriterScheduler => ListenerContext.Thread;
         public IScheduler OutputReaderScheduler => ListenerContext.Thread;
-
-        public ITimeoutControl TimeoutControl { get; set; }
     }
 }
