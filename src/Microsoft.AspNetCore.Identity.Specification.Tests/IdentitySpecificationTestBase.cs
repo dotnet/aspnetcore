@@ -10,8 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -2344,11 +2342,13 @@ namespace Microsoft.AspNetCore.Identity.Test
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             const string error = "No IUserTokenProvider named 'bogus' is registered.";
-            await
-                ExceptionAssert.ThrowsAsync<NotSupportedException>(
-                    () => manager.GenerateTwoFactorTokenAsync(user, "bogus"), error);
-            await ExceptionAssert.ThrowsAsync<NotSupportedException>(
-                () => manager.VerifyTwoFactorTokenAsync(user, "bogus", "bogus"), error);
+            var ex = await
+                Assert.ThrowsAsync<NotSupportedException>(
+                    () => manager.GenerateTwoFactorTokenAsync(user, "bogus"));
+            Assert.Equal(error, ex.Message);
+            ex = await Assert.ThrowsAsync<NotSupportedException>(
+                () => manager.VerifyTwoFactorTokenAsync(user, "bogus", "bogus"));
+            Assert.Equal(error, ex.Message);
         }
 
         /// <summary>
@@ -2597,8 +2597,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails due to threading bugs in Mono")]
+        [Fact]
         public async Task CanGetUsersWithClaims()
         {
             if (ShouldSkipDbTests())
@@ -2627,8 +2626,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails due to threading bugs in Mono")]
+        [Fact]
         public async Task CanGetUsersInRole()
         {
             if (ShouldSkipDbTests())
