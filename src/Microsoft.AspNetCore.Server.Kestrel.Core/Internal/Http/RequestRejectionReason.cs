@@ -27,5 +27,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         LengthRequiredHttp10,
         OptionsMethodRequired,
         ConnectMethodRequired,
+        MissingHostHeader,
+        MultipleHostHeaders,
+        InvalidHostHeader,
     }
 }

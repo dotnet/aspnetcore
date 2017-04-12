@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -104,6 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "Connection: close",
                         "",
                         "");
@@ -141,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -178,6 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -218,6 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "",
                         "");
 
@@ -256,6 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -289,6 +295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // client closing the connection.
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -321,6 +328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // SendEnd is not called, so it isn't the client closing the connection.
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "",
                         "");
 
@@ -358,6 +366,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "",
                         "");
                     await connection.Receive(
@@ -401,6 +410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host: ",
                         "",
                         "");
                     await connection.ReceiveEnd(

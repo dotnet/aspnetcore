@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 await connection.Send(
                     "GET / HTTP/1.1",
+                    "Host:",
                     "",
                     "");
                 await ReceiveResponse(connection);
@@ -72,6 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await Task.Delay(ShortDelay);
@@ -93,6 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "");
@@ -120,6 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 await connection.Send(
                     "GET /longrunning HTTP/1.1",
+                    "Host:",
                     "",
                     "");
                 cts.CancelAfter(LongDelay);
@@ -133,6 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 await connection.Send(
                     "GET / HTTP/1.1",
+                    "Host:",
                     "",
                     "");
                 await ReceiveResponse(connection);
@@ -154,6 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 await connection.Send(
                     "GET /upgrade HTTP/1.1",
+                    "Host:",
                     "",
                     "");
                 await connection.Receive(

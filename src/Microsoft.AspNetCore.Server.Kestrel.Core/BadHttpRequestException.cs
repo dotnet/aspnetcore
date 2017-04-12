@@ -80,6 +80,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 case RequestRejectionReason.ConnectMethodRequired:
                     ex = new BadHttpRequestException("Method not allowed.", StatusCodes.Status405MethodNotAllowed, HttpMethod.Connect);
                     break;
+                case RequestRejectionReason.MissingHostHeader:
+                    ex = new BadHttpRequestException("Request is missing Host header.", StatusCodes.Status400BadRequest);
+                    break;
+                case RequestRejectionReason.MultipleHostHeaders:
+                    ex = new BadHttpRequestException("Multiple Host headers.", StatusCodes.Status400BadRequest);
+                    break;
+                case RequestRejectionReason.InvalidHostHeader:
+                    ex = new BadHttpRequestException("Invalid Host header.", StatusCodes.Status400BadRequest);
+                    break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", StatusCodes.Status400BadRequest);
                     break;
@@ -115,6 +124,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     break;
                 case RequestRejectionReason.LengthRequiredHttp10:
                     ex = new BadHttpRequestException($"{detail} request contains no Content-Length header", StatusCodes.Status400BadRequest);
+                    break;
+                case RequestRejectionReason.InvalidHostHeader:
+                    ex = new BadHttpRequestException($"Invalid Host header: '{detail}'", StatusCodes.Status400BadRequest);
                     break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", StatusCodes.Status400BadRequest);

@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public Task BadRequestIfMethodRequiresLengthButNoContentLengthOrTransferEncodingInRequest(string method)
         {
             return TestBadRequest(
-                $"{method} / HTTP/1.1\r\n\r\n",
+                $"{method} / HTTP/1.1\r\nHost:\r\n\r\n",
                 "411 Length Required",
                 $"{method} request contains no Content-Length or Transfer-Encoding header");
         }
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public Task BadRequestIfContentLengthInvalid(string contentLength)
         {
             return TestBadRequest(
-                $"POST / HTTP/1.1\r\nContent-Length: {contentLength}\r\n\r\n",
+                $"POST / HTTP/1.1\r\nHost:\r\nContent-Length: {contentLength}\r\n\r\n",
                 "400 Bad Request",
                 $"Invalid content length: {contentLength}");
         }
@@ -104,6 +104,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 "405 Method Not Allowed",
                 "Method not allowed.",
                 $"Allow: {allowedMethod}");
+        }
+
+        [Fact]
+        public Task BadRequestIfHostHeaderMissing()
+        {
+            return TestBadRequest(
+                "GET / HTTP/1.1\r\n\r\n",
+                "400 Bad Request",
+                "Request is missing Host header.");
+        }
+
+        [Fact]
+        public Task BadRequestIfMultipleHostHeaders()
+        {
+            return TestBadRequest("GET / HTTP/1.1\r\nHost: localhost\r\nHost: localhost\r\n\r\n",
+                "400 Bad Request",
+                "Multiple Host headers.");
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidHostHeaderData))]
+        public Task BadRequestIfHostHeaderDoesNotMatchRequestTarget(string requestTarget, string host)
+        {
+            return TestBadRequest(
+                $"{requestTarget} HTTP/1.1\r\nHost: {host}\r\n\r\n",
+                "400 Bad Request",
+                $"Invalid Host header: '{host.Trim()}'");
         }
 
         [Fact]
@@ -211,5 +238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public static TheoryData<string> UnrecognizedHttpVersionData => HttpParsingData.UnrecognizedHttpVersionData;
 
         public static IEnumerable<object[]> InvalidRequestHeaderData => HttpParsingData.RequestHeaderInvalidData;
+
+        public static TheoryData<string,string> InvalidHostHeaderData => HttpParsingData.HostHeaderInvalidData;
     }
 }

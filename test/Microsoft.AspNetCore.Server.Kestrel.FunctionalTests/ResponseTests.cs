@@ -326,6 +326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         await connection.Send(
                             "POST / HTTP/1.1",
+                            "Host:",
                             "Transfer-Encoding: chunked",
                             "",
                             "gg");
@@ -360,6 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "gg");
@@ -389,6 +391,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -423,6 +426,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -446,6 +450,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "HEAD / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -478,6 +483,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "HEAD / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -515,6 +521,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -524,7 +531,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "hello,");
 
-                    await connection.WaitForConnectionClose();
+                    await connection.WaitForConnectionClose().TimeoutAfter(TimeSpan.FromSeconds(30));
                 }
             }
 
@@ -554,6 +561,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -589,6 +597,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -624,6 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -664,6 +674,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
 
@@ -718,6 +729,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -757,8 +769,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -801,6 +815,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -836,6 +851,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -872,6 +888,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -900,6 +917,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "HEAD / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -928,6 +946,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "HEAD / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -959,6 +978,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "HEAD / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -990,6 +1010,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -1033,17 +1054,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
 
                     requestStarted.Wait();
                     connection.Shutdown(SocketShutdown.Send);
-                    await connection.WaitForConnectionClose();
+                    await connection.WaitForConnectionClose().TimeoutAfter(TimeSpan.FromSeconds(30));
                 }
 
                 connectionClosed.Set();
 
-                await tcs.Task;
+                await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(30));
             }
         }
 
@@ -1073,10 +1095,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "gg");
-                    await responseWritten.WaitAsync();
+                    await responseWritten.WaitAsync().TimeoutAfter(TimeSpan.FromSeconds(30));
                     await connection.ReceiveEnd(
                         "HTTP/1.1 400 Bad Request",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -1104,6 +1127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -1151,6 +1175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -1197,6 +1222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -1209,6 +1235,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Make sure connection was kept open
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -1245,6 +1272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -1286,6 +1314,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -1327,6 +1356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -1367,6 +1397,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.Receive(
@@ -1397,6 +1428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 1",
                         "",
                         "");
@@ -1430,6 +1462,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "gg");
@@ -1460,6 +1493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "Expect: 100-continue",
                         "",
@@ -1508,6 +1542,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 2",
                         "Expect: 100-continue",
                         "",
@@ -1578,6 +1613,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "GET / HTTP/1.0",
                         "Connection: keep-alive",
@@ -1613,6 +1649,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "Connection: close",
                         "",
                         "");
@@ -1654,6 +1691,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "HEAD / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -1687,15 +1725,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 3",
                         "",
                         "204POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 3",
                         "",
                         "205POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 3",
                         "",
                         "304POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 3",
                         "",
                         "200");
@@ -1736,6 +1778,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -1792,8 +1835,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "GET / HTTP/1.1",
+                        "Host:",
                         "Connection: close",
                         "",
                         "");
@@ -1850,8 +1895,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -1909,6 +1956,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -1955,6 +2003,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -1999,6 +2048,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -2061,6 +2111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 5",
                         "",
                         "Hello");
@@ -2166,8 +2217,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -2217,6 +2270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -2268,6 +2322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(

@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.0",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "5", "Hello",
@@ -95,6 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.0",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "Connection: keep-alive",
                         "",
@@ -146,15 +148,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 5",
                         "",
                         "HelloPOST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "C", "HelloChunked",
                         "0",
                         "",
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 7",
                         "",
                         "Goodbye");
@@ -225,6 +230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 IEnumerable<string> sendSequence = new string[] {
                     "POST / HTTP/1.1",
+                    "Host:",
                     "Transfer-Encoding: chunked",
                     "",
                     "C",
@@ -236,6 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     sendSequence = sendSequence.Concat(new string[] {
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "C",
@@ -247,6 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 sendSequence = sendSequence.Concat(new string[] {
                     "POST / HTTP/1.1",
+                    "Host:",
                     "Content-Length: 7",
                     "",
                     "Goodbye"
@@ -286,6 +294,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.SendAll(
                         "POST / HTTP/1.1",
+                        "Host:",
                         $"{transferEncodingHeaderLine}",
                         $"{headerLine}",
                         "",
@@ -327,6 +336,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.SendAll(
                         "POST / HTTP/1.1",
+                        "Host:",
                         $"{transferEncodingHeaderLine}",
                         $"{headerLine}",
                         "",
@@ -396,6 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 IEnumerable<string> sendSequence = new string[] {
                     "POST / HTTP/1.1",
+                    "Host:",
                     "Transfer-Encoding: chunked",
                     "",
                     "C;hello there",
@@ -407,6 +418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     sendSequence = sendSequence.Concat(new string[] {
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "C;hello there",
@@ -418,6 +430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 sendSequence = sendSequence.Concat(new string[] {
                     "POST / HTTP/1.1",
+                    "Host:",
                     "Content-Length: 7",
                     "",
                     "Goodbye"
@@ -459,6 +472,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.SendAll(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "Cii");
@@ -502,6 +516,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.SendAll(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "C",
@@ -535,6 +550,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.SendAll(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: not-chunked",
                         "",
                         "C",
@@ -557,6 +573,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.SendAll(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: not-chunked",
                         "Content-Length: 22",
                         "",
@@ -579,6 +596,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.SendAll(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked, not-chunked",
                         "",
                         "C",
@@ -601,6 +619,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.SendAll(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Transfer-Encoding: chunked, not-chunked",
                         "Content-Length: 22",
                         "",

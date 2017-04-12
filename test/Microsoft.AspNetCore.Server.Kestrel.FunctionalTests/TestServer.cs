@@ -57,9 +57,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
             catch
             {
-                _transport.UnbindAsync().Wait();
-                _transport.StopAsync().Wait();
-                _transport = null;
+                if (_transport != null)
+                {
+                    _transport.UnbindAsync().Wait();
+                    _transport.StopAsync().Wait();
+                    _transport = null;
+                }
                 throw;
             }
         }

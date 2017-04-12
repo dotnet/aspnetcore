@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         $"GET {requestTarget} HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -109,8 +111,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
+                    var host = method == HttpMethod.Connect 
+                        ? requestTarget 
+                        : string.Empty;
+
                     await connection.Send(
                         $"{HttpUtilities.MethodToString(method)} {requestTarget} HTTP/1.1",
+                        $"Host: {host}",
                         "",
                         "");
                     await connection.ReceiveEnd(

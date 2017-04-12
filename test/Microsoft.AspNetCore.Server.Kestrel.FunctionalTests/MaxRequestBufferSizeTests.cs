@@ -89,8 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             // Initialize data with random bytes
             (new Random()).NextBytes(data);
 
-            var startReadingRequestBody = new ManualResetEvent(false);
-            var clientFinishedSendingRequestBody = new ManualResetEvent(false);
+            var startReadingRequestBody = new TaskCompletionSource<object>();
+            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
             var lastBytesWritten = DateTime.MaxValue;
 
             using (var host = StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody))
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
 
                         Assert.Equal(data.Length, bytesWritten);
-                        clientFinishedSendingRequestBody.Set();
+                        clientFinishedSendingRequestBody.TrySetResult(null);
                     };
 
                     var sendTask = sendFunc();
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         Assert.InRange(bytesWritten, minimumExpectedBytesWritten, maximumExpectedBytesWritten);
 
                         // Tell server to start reading request body
-                        startReadingRequestBody.Set();
+                        startReadingRequestBody.TrySetResult(null);
 
                         // Wait for sendTask to finish sending the remaining bytes
                         await sendTask;
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         await sendTask;
 
                         // Tell server to start reading request body
-                        startReadingRequestBody.Set();
+                        startReadingRequestBody.TrySetResult(null);
                     }
 
                     using (var reader = new StreamReader(stream, Encoding.ASCII))
@@ -181,8 +181,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
             var maxSendSize = 4096;
 
-            var startReadingRequestBody = new ManualResetEvent(false);
-            var clientFinishedSendingRequestBody = new ManualResetEvent(false);
+            var startReadingRequestBody = new TaskCompletionSource<object>();
+            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>();
             var lastBytesWritten = DateTime.MaxValue;
 
             using (var host = StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody))
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             lastBytesWritten = DateTime.Now;
                         }
 
-                        clientFinishedSendingRequestBody.Set();
+                        clientFinishedSendingRequestBody.TrySetResult(null);
                     };
 
                     var ignore = sendFunc();
@@ -244,8 +244,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private static IWebHost StartWebHost(long? maxRequestBufferSize, byte[] expectedBody, bool useConnectionAdapter, ManualResetEvent startReadingRequestBody,
-            ManualResetEvent clientFinishedSendingRequestBody)
+        private static IWebHost StartWebHost(long? maxRequestBufferSize, 
+            byte[] expectedBody, 
+            bool useConnectionAdapter, 
+            TaskCompletionSource<object> startReadingRequestBody,
+            TaskCompletionSource<object> clientFinishedSendingRequestBody)
         {
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -275,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Configure(app => app.Run(async context =>
                 {
-                    startReadingRequestBody.WaitOne();
+                    await startReadingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(30));
 
                     var buffer = new byte[expectedBody.Length];
                     var bytesRead = 0;
@@ -284,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         bytesRead += await context.Request.Body.ReadAsync(buffer, bytesRead, buffer.Length - bytesRead);
                     }
 
-                    clientFinishedSendingRequestBody.WaitOne();
+                    await clientFinishedSendingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(30));
 
                     // Verify client didn't send extra bytes
                     if (context.Request.Body.ReadByte() != -1)

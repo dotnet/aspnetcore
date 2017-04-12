@@ -427,5 +427,58 @@ namespace Microsoft.AspNetCore.Testing
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r ", @"Invalid request headers: missing final CRLF in header fields."  },
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r \n", @"Invalid request headers: missing final CRLF in header fields." },
         };
+
+        public static TheoryData<string, string> HostHeaderData
+            => new TheoryData<string, string>
+                {
+                    { "OPTIONS *", "" },
+                    { "GET /pub/WWW/", "" },
+                    { "GET /pub/WWW/", "   " },
+                    { "GET /pub/WWW/", "www.example.org" },
+                    { "GET http://localhost/", "localhost" },
+                    { "GET http://localhost:80/", "localhost:80" },
+                    { "GET https://localhost/", "localhost" },
+                    { "GET https://localhost:443/", "localhost:443" },
+                    { "CONNECT asp.net:80", "asp.net:80" },
+                    { "CONNECT asp.net:443", "asp.net:443" },
+                };
+
+        public static TheoryData<string, string> HostHeaderInvalidData
+        {
+            get
+            {
+                // see https://tools.ietf.org/html/rfc7230#section-5.4
+                var invalidHostValues = new[] {
+                    "",
+                    "   ",
+                    "contoso.com:4000",
+                    "contoso.com/",
+                    "not-contoso.com",
+                    "user@password:contoso.com",
+                    "user@contoso.com",
+                    "http://contoso.com/",
+                    "http://contoso.com"
+                };
+
+                var data = new TheoryData<string, string>();
+
+                foreach (var host in invalidHostValues)
+                {
+                    // absolute form
+                    // expected: GET http://contoso.com/ => Host: contoso.com
+                    data.Add("GET http://contoso.com/", host);
+
+                    // authority-form
+                    // expected: CONNECT contoso.com => Host: contoso.com
+                    data.Add("CONNECT contoso.com", host);
+                }
+
+                // port mismatch when target contains port
+                data.Add("GET https://contoso.com:443/", "contoso.com:5000");
+                data.Add("CONNECT contoso.com:443", "contoso.com:5000");
+
+                return data;
+            }
+        }
     }
 }

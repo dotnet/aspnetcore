@@ -12,18 +12,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     public class MaxRequestLineSizeTests
     {
         [Theory]
-        [InlineData("GET / HTTP/1.1\r\n\r\n", 16)]
-        [InlineData("GET / HTTP/1.1\r\n\r\n", 17)]
-        [InlineData("GET / HTTP/1.1\r\n\r\n", 137)]
-        [InlineData("POST /abc/de HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 23)]
-        [InlineData("POST /abc/de HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 24)]
-        [InlineData("POST /abc/de HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 287)]
-        [InlineData("PUT /abc/de?f=ghi HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 28)]
-        [InlineData("PUT /abc/de?f=ghi HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 29)]
-        [InlineData("PUT /abc/de?f=ghi HTTP/1.1\r\nContent-Length: 0\r\n\r\n", 589)]
-        [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\n\r\n", 40)]
-        [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\n\r\n", 41)]
-        [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\n\r\n", 1027)]
+        [InlineData("GET / HTTP/1.1\r\nHost:\r\n\r\n", 16)]
+        [InlineData("GET / HTTP/1.1\r\nHost:\r\n\r\n", 17)]
+        [InlineData("GET / HTTP/1.1\r\nHost:\r\n\r\n", 137)]
+        [InlineData("POST /abc/de HTTP/1.1\r\nHost:\r\nContent-Length: 0\r\n\r\n", 23)]
+        [InlineData("POST /abc/de HTTP/1.1\r\nHost:\r\nContent-Length: 0\r\n\r\n", 24)]
+        [InlineData("POST /abc/de HTTP/1.1\r\nHost:\r\nContent-Length: 0\r\n\r\n", 287)]
+        [InlineData("PUT /abc/de?f=ghi HTTP/1.1\r\nHost:\r\nContent-Length: 0\r\n\r\n", 28)]
+        [InlineData("PUT /abc/de?f=ghi HTTP/1.1\r\nHost:\r\nContent-Length: 0\r\n\r\n", 29)]
+        [InlineData("PUT /abc/de?f=ghi HTTP/1.1\r\nHost:\r\nContent-Length: 0\r\n\r\n", 589)]
+        [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\nHost:\r\n\r\n", 40)]
+        [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\nHost:\r\n\r\n", 41)]
+        [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\nHost:\r\n\r\n", 1027)]
         public async Task ServerAcceptsRequestLineWithinLimit(string request, int limit)
         {
             using (var server = CreateServer(limit))

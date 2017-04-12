@@ -125,9 +125,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private static string MakeHeaders(int count)
         {
-            return string.Join("", Enumerable
-                .Range(0, count)
-                .Select(i => $"Header-{i}: value{i}\r\n"));
+            const string host = "Host:\r\n";
+            if (count <= 1) return host;
+
+            return string.Join("", new[] { host }
+                .Concat(Enumerable
+                .Range(0, count -1)
+                .Select(i => $"Header-{i}: value{i}\r\n")));
         }
 
         private TestServer CreateServer(int? maxRequestHeaderCount = null, int? maxRequestHeadersTotalSize = null)

@@ -5,10 +5,20 @@
       "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "true"
     }
   },
+  // requires that you first run build.cmd or build.sh to install local builds of dotnet
+  "windows": {
+    "command": "${env.LOCALAPPDATA}/Microsoft/dotnet/dotnet.exe"
+  },
+  "osx": {
+    "command": "${env.HOME}/.dotnet/dotnet"
+  },
+  "linux": {
+    "command": "${env.HOME}/.dotnet/dotnet"
+  },
+  "suppressTaskName": true,
   "tasks": [
     {
       "taskName": "Restore: solution",
-      "command": "dotnet",
       "args": [
         "restore"
       ]
@@ -16,7 +26,6 @@
     {
       "taskName": "Compile: solution",
       "isBuildCommand": true,
-      "command": "dotnet",
       "args": [
         "build",
         "${workspaceRoot}/KestrelHttpServer.sln"
@@ -41,8 +50,15 @@
       }
     },
     {
+      "taskName": "Test",
+      "args": [
+        "test"
+      ],
+      "problemMatcher": "$msCompile",
+      "isTestCommand": true
+    },
+    {
       "taskName": "Compile: CodeGenerator",
-      "command": "dotnet",
       "args": [
         "build"
       ],
@@ -53,7 +69,6 @@
     },
     {
       "taskName": "Run: CodeGenerator",
-      "command": "dotnet",
       "args": [
         "run"
       ],
@@ -63,7 +78,6 @@
     },
     {
       "taskName": "Run: Benchmarks",
-      "command": "dotnet",
       "args": [
         "run",
         "-c",
@@ -72,33 +86,6 @@
       "options": {
         "cwd": "${workspaceRoot}/test/Microsoft.AspNetCore.Server.Kestrel.Performance/"
       }
-    },
-    {
-      "taskName": "Test: KestrelTests",
-      "isTestCommand": true,
-      "command": "dotnet",
-      "args": [
-        "test",
-        "-f",
-        "netcoreapp1.1"
-      ],
-      "options": {
-        "cwd": "${workspaceRoot}/test/Microsoft.AspNetCore.Server.KestrelTests"
-      },
-      "problemMatcher": "$msCompile"
-    },
-    {
-      "taskName": "Test: FunctionalTests",
-      "command": "dotnet",
-      "args": [
-        "test",
-        "-f",
-        "netcoreapp1.1"
-      ],
-      "options": {
-        "cwd": "${workspaceRoot}/test/Microsoft.AspNetCore.Server.Kestrel.FunctionalTests"
-      },
-      "problemMatcher": "$msCompile"
     }
   ]
 }

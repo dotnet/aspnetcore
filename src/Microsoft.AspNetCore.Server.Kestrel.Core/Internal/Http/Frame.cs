@@ -82,6 +82,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly FrameContext _frameContext;
         private readonly IHttpParser<FrameAdapter> _parser;
 
+        private HttpRequestTarget _requestTargetForm = HttpRequestTarget.Unknown;
+        private Uri _absoluteRequestTarget;
+
         public Frame(FrameContext frameContext)
         {
             _frameContext = frameContext;
@@ -141,6 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public string Path { get; set; }
         public string QueryString { get; set; }
         public string RawTarget { get; set; }
+
         public string HttpVersion
         {
             get
@@ -365,6 +369,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Method = null;
             PathBase = null;
             Path = null;
+            RawTarget = null;
+            _requestTargetForm = HttpRequestTarget.Unknown;
+            _absoluteRequestTarget = null;
             QueryString = null;
             _httpVersion = Http.HttpVersion.Unknown;
             StatusCode = StatusCodes.Status200OK;
@@ -1266,6 +1273,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
 
+            _requestTargetForm = HttpRequestTarget.OriginForm;
+
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
             // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
@@ -1325,8 +1334,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
         {
-            // TODO Validate that target is a correct host[:port] string.
-            // Reject as 400 if not. This is just a quick scan for invalid characters
+            _requestTargetForm = HttpRequestTarget.AuthorityForm;
+
+            // This is not complete validation. It is just a quick scan for invalid characters
             // but doesn't check that the target fully matches the URI spec.
             for (var i = 0; i < target.Length; i++)
             {
@@ -1360,6 +1370,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void OnAsteriskFormTarget(HttpMethod method)
         {
+            _requestTargetForm = HttpRequestTarget.AsteriskForm;
+
             // The asterisk-form of request-target is only used for a server-wide
             // OPTIONS request (https://tools.ietf.org/html/rfc7231#section-4.3.7).
             if (method != HttpMethod.Options)
@@ -1374,6 +1386,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void OnAbsoluteFormTarget(Span<byte> target, Span<byte> query)
         {
+            _requestTargetForm = HttpRequestTarget.AbsoluteForm;
+
             // absolute-form
             // https://tools.ietf.org/html/rfc7230#section-5.3.2
 
@@ -1394,6 +1408,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RejectRequestTarget(target);
             }
 
+            _absoluteRequestTarget = uri;
             Path = uri.LocalPath;
             // don't use uri.Query because we need the unescaped version
             QueryString = query.GetAsciiStringNonNullCharacters();
@@ -1419,6 +1434,63 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var valueString = value.GetAsciiStringNonNullCharacters();
 
             FrameRequestHeaders.Append(name, valueString);
+        }
+
+        protected void EnsureHostHeaderExists()
+        {
+            if (_httpVersion == Http.HttpVersion.Http10)
+            {
+                return;
+            }
+
+            // https://tools.ietf.org/html/rfc7230#section-5.4
+            // A server MUST respond with a 400 (Bad Request) status code to any
+            // HTTP/1.1 request message that lacks a Host header field and to any
+            // request message that contains more than one Host header field or a
+            // Host header field with an invalid field-value.
+
+            var host = FrameRequestHeaders.HeaderHost;
+            if (host.Count <= 0)
+            {
+                RejectRequest(RequestRejectionReason.MissingHostHeader);
+            }
+            else if (host.Count > 1)
+            {
+                RejectRequest(RequestRejectionReason.MultipleHostHeaders);
+            }
+            else if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
+            {
+                if (!host.Equals(RawTarget))
+                {
+                    RejectRequest(RequestRejectionReason.InvalidHostHeader, host.ToString());
+                }
+            }
+            else if (_requestTargetForm == HttpRequestTarget.AbsoluteForm)
+            {
+                // If the target URI includes an authority component, then a
+                // client MUST send a field - value for Host that is identical to that
+                // authority component, excluding any userinfo subcomponent and its "@"
+                // delimiter.
+
+                // System.Uri doesn't not tell us if the port was in the original string or not.
+                // When IsDefaultPort = true, we will allow Host: with or without the default port
+                var authorityAndPort = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port;
+                if ((host != _absoluteRequestTarget.Authority || !_absoluteRequestTarget.IsDefaultPort)
+                    && host != authorityAndPort)
+                {
+                    RejectRequest(RequestRejectionReason.InvalidHostHeader, host.ToString());
+                }
+            }
+        }
+
+        private enum HttpRequestTarget
+        {
+            Unknown = -1,
+            // origin-form is the most common
+            OriginForm,
+            AbsoluteForm,
+            AuthorityForm,
+            AsteriskForm
         }
     }
 }

@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
-                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nConnection: keep-alive, upgrade\r\n\r\n"));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\nConnection: keep-alive, upgrade\r\n\r\n"));
                     socket.Send(Encoding.ASCII.GetBytes("abc"));
 
                     while (socket.Receive(new byte[1024]) > 0) ;
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
-                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n"));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
 
                     // Wait until request is done being processed
                     await requestDone.WaitAsync(TimeSpan.FromSeconds(10));
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
-                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n"));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
 
                     // Wait until connection is established
                     await requestStarted.WaitAsync(TimeSpan.FromSeconds(10));
@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
                     socket.LingerState = new LingerOption(true, 0);
-                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nContent-Length: 1\r\n\r\n"));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\nContent-Length: 1\r\n\r\n"));
                     Assert.True(await requestStarted.WaitAsync(_semaphoreWaitTimeout));
                 }
 
@@ -505,7 +505,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
-                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n"));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
                     await appStarted.WaitAsync();
                     socket.Shutdown(SocketShutdown.Send);
                     await requestAborted.WaitAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -534,13 +534,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var pathTcs = new TaskCompletionSource<PathString>();
             var rawTargetTcs = new TaskCompletionSource<string>();
-            var hostTcs = new TaskCompletionSource<HostString>();
             var queryTcs = new TaskCompletionSource<IQueryCollection>();
 
             using (var server = new TestServer(async context =>
                  {
                      pathTcs.TrySetResult(context.Request.Path);
-                     hostTcs.TrySetResult(context.Request.Host);
                      queryTcs.TrySetResult(context.Request.Query);
                      rawTargetTcs.TrySetResult(context.Features.Get<IHttpRequestFeature>().RawTarget);
                      await context.Response.WriteAsync("Done");
@@ -548,10 +546,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
+                    var requestTarget = new Uri(requestUrl, UriKind.Absolute);
+                    var host = requestTarget.Authority;
+                    if (!requestTarget.IsDefaultPort)
+                    {
+                        host += ":" + requestTarget.Port;
+                    }
+
                     await connection.Send(
                         $"GET {requestUrl} HTTP/1.1",
                         "Content-Length: 0",
-                        "Host: localhost",
+                        $"Host: {host}",
                         "",
                         "");
 
@@ -563,10 +568,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Done")
                         .TimeoutAfter(TimeSpan.FromSeconds(10));
 
-                    await Task.WhenAll(pathTcs.Task, rawTargetTcs.Task, hostTcs.Task, queryTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(30));
+                    await Task.WhenAll(pathTcs.Task, rawTargetTcs.Task, queryTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(30));
                     Assert.Equal(new PathString(expectedPath), pathTcs.Task.Result);
                     Assert.Equal(requestUrl, rawTargetTcs.Task.Result);
-                    Assert.Equal("localhost", hostTcs.Task.Result.ToString());
                     if (queryValue == null)
                     {
                         Assert.False(queryTcs.Task.Result.ContainsKey("q"));
@@ -626,6 +630,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     for (var i = 0; i < iterations; i++)
                     {
                         await connection.Send("GET / HTTP/1.1",
+                            "Host:",
                             "",
                             "");
 
@@ -657,8 +662,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "GET / HTTP/1.1",
+                        "Host:",
                         "Connection: close",
                         "Content-Length: 7",
                         "",
@@ -862,6 +869,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Expect: 100-continue",
                         "Connection: close",
                         "Content-Length: 11",
@@ -901,6 +909,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "Connection: close",
                         "",
                         "");
@@ -917,6 +926,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.0",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -950,6 +960,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 7");
                     connection.Shutdown(SocketShutdown.Send);
                     await connection.ReceiveForcedEnd();
@@ -1008,9 +1019,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Never send the body so CopyToAsync always fails.
                     await connection.Send(
                         "POST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 5",
                         "",
                         "HelloPOST / HTTP/1.1",
+                        "Host:",
                         "Content-Length: 5",
                         "",
                         "");
@@ -1062,8 +1075,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "");
                     await connection.ReceiveEnd(
@@ -1107,6 +1122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
+                        "Host:",
                         "Connection: Upgrade",
                         "",
                         message);
@@ -1163,8 +1179,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var requestData =
-                        Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
-                            .Concat(new[] { "GET / HTTP/1.1\r\nContent-Length: 7\r\nConnection: close\r\n\r\nGoodbye" });
+                        Enumerable.Repeat("GET / HTTP/1.1\r\nHost:\r\n", loopCount)
+                            .Concat(new[] { "GET / HTTP/1.1\r\nHost:\r\nContent-Length: 7\r\nConnection: close\r\n\r\nGoodbye" });
 
                     var response = string.Join("\r\n", new string[] {
                         "HTTP/1.1 200 OK",
@@ -1194,6 +1210,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 Assert.Equal(1, streamCount);
                 Assert.Equal(1, requestHeadersCount);
                 Assert.Equal(1, responseHeadersCount);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HostHeaderData))]
+        public async Task MatchesValidRequestTargetAndHostHeader(string request, string hostHeader)
+        {
+            using (var server = new TestServer(context => Task.CompletedTask))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send($"{request} HTTP/1.1",
+                        $"Host: {hostHeader}",
+                        "",
+                        "");
+
+                    await connection.Receive("HTTP/1.1 200 OK");
+                }
             }
         }
 
@@ -1233,5 +1267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 Assert.NotEmpty(facts["RemotePort"].Value<string>());
             }
         }
+
+        public static TheoryData<string, string> HostHeaderData => HttpParsingData.HostHeaderData;
     }
 }

@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _frame.Start();
 
-            var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n");
+            var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
             await _input.Writer.WriteAsync(data);
 
             var requestProcessingTask = _frame.StopAsync();

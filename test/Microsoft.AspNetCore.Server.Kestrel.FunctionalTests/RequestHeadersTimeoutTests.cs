@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 var tasks = new[]
                 {
-                    ConnectionAbortedWhenRequestHeadersNotReceivedInTime(server, ""),
-                    ConnectionAbortedWhenRequestHeadersNotReceivedInTime(server, "Content-Length: 1\r\n"),
-                    ConnectionAbortedWhenRequestHeadersNotReceivedInTime(server, "Content-Length: 1\r\n\r"),
+                    ConnectionAbortedWhenRequestHeadersNotReceivedInTime(server, "Host:\r\n"),
+                    ConnectionAbortedWhenRequestHeadersNotReceivedInTime(server, "Host:\r\nContent-Length: 1\r\n"),
+                    ConnectionAbortedWhenRequestHeadersNotReceivedInTime(server, "Host:\r\nContent-Length: 1\r\n\r"),
                     RequestHeadersTimeoutCanceledAfterHeadersReceived(server),
                     ConnectionAbortedWhenRequestLineNotReceivedInTime(server, "P"),
                     ConnectionAbortedWhenRequestLineNotReceivedInTime(server, "POST / HTTP/1.1\r"),
@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 await connection.Send(
                     "POST / HTTP/1.1",
+                    "Host:",
                     "Content-Length: 1",
                     "",
                     "");
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
-                    foreach (var ch in "POST / HTTP/1.1\r\n\r\n")
+                    foreach (var ch in "POST / HTTP/1.1\r\nHost:\r\n\r\n")
                     {
                         await connection.Send(ch.ToString());
                         await Task.Delay(ShortDelay);

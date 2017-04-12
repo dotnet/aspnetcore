@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAll("GET / HTTP/1.1",
+                        "Host:",
                         "",
                         "")
                         .TimeoutAfter(TimeSpan.FromSeconds(10));
