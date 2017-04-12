@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains(expectedCompilationContent, content);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/6120")]
         public async Task RuntimeErrorAreListedByErrorPageMiddleware()
         {
             // The desktop CLR does not correctly read the stack trace from portable PDBs. However generating full pdbs
