@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private IConnectionHandler ConnectionHandler => ListenerContext.TransportContext.ConnectionHandler;
         private LibuvThread Thread => ListenerContext.Thread;
 
-        public void Start()
+        public async void Start()
         {
             try
             {
@@ -64,45 +64,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 ConnectionId = _connectionContext.ConnectionId;
 
                 Input = _connectionContext.Input;
-                Output = new LibuvOutputConsumer(_connectionContext.Output, Thread, _socket, this, ConnectionId, Log);
+                Output = new LibuvOutputConsumer(_connectionContext.Output, Thread, _socket, ConnectionId, Log);
 
                 // Start socket prior to applying the ConnectionAdapter
                 _socket.ReadStart(_allocCallback, _readCallback, this);
 
-                // This *must* happen after socket.ReadStart
-                // The socket output consumer is the only thing that can close the connection. If the
-                // output pipe is already closed by the time we start then it's fine since, it'll close gracefully afterwards.
-                var ignore = Output.StartWrites();
+                try
+                {
+                    // This *must* happen after socket.ReadStart
+                    // The socket output consumer is the only thing that can close the connection. If the
+                    // output pipe is already closed by the time we start then it's fine since, it'll close gracefully afterwards.
+                    await Output.WriteOutputAsync();
+                    _connectionContext.Output.Complete();
+                }
+                catch (UvException ex)
+                {
+                    _connectionContext.Output.Complete(ex);
+                }
+                finally
+                {
+                    // Ensure the socket is disposed prior to completing in the input writer.
+                    _socket.Dispose();
+                    Input.Complete(new TaskCanceledException("The request was aborted"));
+                    _socketClosedTcs.TrySetResult(null);
+                }
             }
             catch (Exception e)
             {
-                Log.LogError(0, e, "Connection.StartFrame");
-                throw;
+                Log.LogCritical(0, e, $"{nameof(LibuvConnection)}.{nameof(Start)}() {ConnectionId}");
+            }
+            finally
+            {
+                _connectionContext.OnConnectionClosed();
             }
         }
 
-        public Task StopAsync()
+        public async Task StopAsync()
         {
-            return Task.WhenAll(_connectionContext.StopAsync(), _socketClosedTcs.Task);
+            await _connectionContext.StopAsync();
+            await _socketClosedTcs.Task;
         }
 
-        public virtual Task AbortAsync(Exception error = null)
+        public Task AbortAsync(Exception error)
         {
             _connectionContext.Abort(error);
-            return _socketClosedTcs.Task;
+            return StopAsync();
         }
 
         // Called on Libuv thread
-        public virtual void Close()
-        {
-            _socket.Dispose();
-
-            _connectionContext.OnConnectionClosed();
-
-            Input.Complete(new TaskCanceledException("The request was aborted"));
-            _socketClosedTcs.TrySetResult(null);
-        }
-
         private static LibuvFunctions.uv_buf_t AllocCallback(UvStreamHandle handle, int suggestedSize, object state)
         {
             return ((LibuvConnection)state).OnAlloc(handle, suggestedSize);

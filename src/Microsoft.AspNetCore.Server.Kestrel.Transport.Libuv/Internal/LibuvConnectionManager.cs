@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private void WalkConnectionsAndAbortCore(TaskCompletionSource<object> tcs)
         {
-            WalkConnectionsCore(connection => connection.AbortAsync(), tcs);
+            WalkConnectionsCore(connection => connection.AbortAsync(error: null), tcs);
         }
 
         private void WalkConnectionsCore(Func<LibuvConnection, Task> action, TaskCompletionSource<object> tcs)

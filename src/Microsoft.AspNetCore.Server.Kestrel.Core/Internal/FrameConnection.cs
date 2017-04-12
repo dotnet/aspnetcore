@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -88,11 +87,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        public void OnConnectionClosed()
+        public async void OnConnectionClosed()
         {
-            _context.ServiceContext.ConnectionManager.RemoveConnection(_context.FrameConnectionId);
             Log.ConnectionStop(ConnectionId);
             KestrelEventSource.Log.ConnectionStop(this);
+
+            // The connection is already in the "aborted" state by this point, but we want to track it
+            // until RequestProcessingAsync completes for graceful shutdown.
+            await StopAsync();
+
+            _context.ServiceContext.ConnectionManager.RemoveConnection(_context.FrameConnectionId);
         }
 
         public async Task StopAsync()

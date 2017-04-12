@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // this is temporary until it does
         private TaskCompletionSource<object> _flushTcs;
         private readonly object _flushLock = new object();
-        private readonly Action _onFlushCallback;
 
         public OutputProducer(IPipeWriter pipe, Frame frame, string connectionId, IKestrelTrace log)
         {
@@ -39,7 +38,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _frame = frame;
             _connectionId = connectionId;
             _log = log;
-            _onFlushCallback = OnFlush;
         }
 
         public Task WriteAsync(
@@ -87,6 +85,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var awaitable = writableBuffer.FlushAsync();
             if (awaitable.IsCompleted)
             {
+                AbortIfNeeded(awaitable);
+
                 // The flush task can't fail today
                 return TaskCache.CompletedTask;
             }
@@ -105,16 +105,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _flushTcs = new TaskCompletionSource<object>();
 
-                    awaitable.OnCompleted(_onFlushCallback);
+                    awaitable.OnCompleted(() =>
+                    {
+                        AbortIfNeeded(awaitable);
+                        _flushTcs.TrySetResult(null);
+                    });
                 }
             }
 
             return _flushTcs.Task;
         }
 
-        private void OnFlush()
+        private void AbortIfNeeded(WritableBufferAwaitable awaitable)
         {
-            _flushTcs.TrySetResult(null);
+            try
+            {
+                awaitable.GetResult();
+            }
+            catch (Exception ex)
+            {
+                _frame.Abort(ex);
+            }
         }
 
         void ISocketOutput.Write(ArraySegment<byte> buffer, bool chunk)
@@ -126,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _frame.Abort();
+                _frame.Abort(error: null);
                 _cancelled = true;
                 return Task.FromCanceled(cancellationToken);
             }

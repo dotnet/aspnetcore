@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         void IHttpRequestLifetimeFeature.Abort()
         {
-            Abort();
+            Abort(error: null);
         }
     }
 }

@@ -7,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -316,66 +318,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 return 0;
             };
 
-            using (var mockConnection = new MockConnection())
+            var abortedSource = new CancellationTokenSource();
+
+            var pipeOptions = new PipeOptions
             {
-                var abortedSource = mockConnection.RequestAbortedSource;
+                ReaderScheduler = _libuvThread,
+                MaximumSizeHigh = maxResponseBufferSize,
+                MaximumSizeLow = maxResponseBufferSize,
+            };
 
-                var pipeOptions = new PipeOptions
+            using (var socketOutput = CreateOutputProducer(pipeOptions, abortedSource))
+            {
+                var bufferSize = maxResponseBufferSize - 1;
+
+                var data = new byte[bufferSize];
+                var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
+
+                // Act 
+                var task1Success = socketOutput.WriteAsync(fullBuffer, abortedSource.Token);
+                // task1 should complete successfully as < _maxBytesPreCompleted
+
+                // First task is completed and successful
+                Assert.True(task1Success.IsCompleted);
+                Assert.False(task1Success.IsCanceled);
+                Assert.False(task1Success.IsFaulted);
+
+                // following tasks should wait.
+                var task2Success = socketOutput.WriteAsync(fullBuffer, default(CancellationToken));
+                var task3Canceled = socketOutput.WriteAsync(fullBuffer, abortedSource.Token);
+
+                // Give time for tasks to percolate
+                await _mockLibuv.OnPostTask;
+
+                // Second task is not completed
+                Assert.False(task2Success.IsCompleted);
+                Assert.False(task2Success.IsCanceled);
+                Assert.False(task2Success.IsFaulted);
+
+                // Third task is not completed 
+                Assert.False(task3Canceled.IsCompleted);
+                Assert.False(task3Canceled.IsCanceled);
+                Assert.False(task3Canceled.IsFaulted);
+
+                // Cause all writes to fail
+                while (completeQueue.TryDequeue(out var triggerNextCompleted))
                 {
-                    ReaderScheduler = _libuvThread,
-                    MaximumSizeHigh = maxResponseBufferSize,
-                    MaximumSizeLow = maxResponseBufferSize,
-                };
-
-                using (var socketOutput = CreateOutputProducer(pipeOptions, mockConnection))
-                {
-                    var bufferSize = maxResponseBufferSize - 1;
-
-                    var data = new byte[bufferSize];
-                    var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
-
-                    // Act 
-                    var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
-                    // task1 should complete successfully as < _maxBytesPreCompleted
-
-                    // First task is completed and successful
-                    Assert.True(task1Success.IsCompleted);
-                    Assert.False(task1Success.IsCanceled);
-                    Assert.False(task1Success.IsFaulted);
-
-                    // following tasks should wait.
-                    var task2Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
-                    var task3Canceled = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
-
-                    // Give time for tasks to percolate
-                    await _mockLibuv.OnPostTask;
-
-                    // Second task is not completed
-                    Assert.False(task2Success.IsCompleted);
-                    Assert.False(task2Success.IsCanceled);
-                    Assert.False(task2Success.IsFaulted);
-
-                    // Third task is not completed 
-                    Assert.False(task3Canceled.IsCompleted);
-                    Assert.False(task3Canceled.IsCanceled);
-                    Assert.False(task3Canceled.IsFaulted);
-
-                    // Cause all writes to fail
-                    while (completeQueue.TryDequeue(out var triggerNextCompleted))
-                    {
-                        await _libuvThread.PostAsync(cb => cb(-1), triggerNextCompleted);
-                    }
-
-                    // Second task is now completed
-                    await task2Success.TimeoutAfter(TimeSpan.FromSeconds(5));
-
-                    // Third task is now canceled
-                    // TODO: Cancellation isn't supported right now
-                    // await Assert.ThrowsAsync<TaskCanceledException>(() => task3Canceled);
-                    // Assert.True(task3Canceled.IsCanceled);
-
-                    Assert.True(abortedSource.IsCancellationRequested);
+                    await _libuvThread.PostAsync(cb => cb(-1), triggerNextCompleted);
                 }
+
+                // Second task is now completed
+                Assert.True(task2Success.IsCompleted);
+                Assert.False(task2Success.IsCanceled);
+                Assert.False(task2Success.IsFaulted);
+
+                // A final write guarantees that the error is observed by OutputProducer,
+                // but doesn't return a canceled/faulted task.
+                var task4Success = socketOutput.WriteAsync(fullBuffer, default(CancellationToken));
+                Assert.True(task4Success.IsCompleted);
+                Assert.False(task4Success.IsCanceled);
+                Assert.False(task4Success.IsFaulted);
+
+                // Third task is now canceled
+                // TODO: Cancellation isn't supported right now
+                // await Assert.ThrowsAsync<TaskCanceledException>(() => task3Canceled);
+                // Assert.True(task3Canceled.IsCanceled);
+
+                Assert.True(abortedSource.IsCancellationRequested);
             }
         }
 
@@ -488,22 +496,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         
 
-        private OutputProducer CreateOutputProducer(PipeOptions pipeOptions, MockConnection connection = null)
+        private OutputProducer CreateOutputProducer(PipeOptions pipeOptions, CancellationTokenSource cts = null)
         {
             var pipe = _pipeFactory.Create(pipeOptions);
 
             var logger = new TestApplicationErrorLogger();
-            var serviceContext = new TestServiceContext() { Log = new TestKestrelTrace(logger) };
-            var transportContext = new TestLibuvTransportContext() { Log = new LibuvTrace(logger) };
+            var serviceContext = new TestServiceContext
+            {
+                Log = new TestKestrelTrace(logger),
+                ThreadPool = new InlineLoggingThreadPool(new TestKestrelTrace(logger))
+            };
+            var transportContext = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
 
             var frame = new Frame<object>(null, new FrameContext { ServiceContext = serviceContext });
 
             var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, transportContext.Log);
             var socketOutput = new OutputProducer(pipe.Writer, frame, "0", serviceContext.Log);
-            var consumer = new LibuvOutputConsumer(pipe.Reader, _libuvThread, socket, connection ?? new MockConnection(), "0", transportContext.Log);
-            var ignore = consumer.StartWrites();
+            var consumer = new LibuvOutputConsumer(pipe.Reader, _libuvThread, socket, "0", transportContext.Log);
+
+            frame.LifetimeControl = new ConnectionLifetimeControl("0", pipe.Reader, socketOutput, serviceContext.Log);
+
+            if (cts != null)
+            {
+                frame.RequestAborted.Register(cts.Cancel);
+            }
+
+            var ignore = WriteOutputAsync(consumer, pipe.Reader);
 
             return socketOutput;
+        }
+
+        private async Task WriteOutputAsync(LibuvOutputConsumer consumer, IPipeReader outputReader)
+        {
+            // This WriteOutputAsync() calling code is equivalent to that in LibuvConnection.
+            try
+            {
+                // Ensure that outputReader.Complete() runs on the LibuvThread.
+                // Without ConfigureAwait(false), xunit will dispatch.
+                await consumer.WriteOutputAsync().ConfigureAwait(false);
+                outputReader.Complete();
+            }
+            catch (UvException ex)
+            {
+                outputReader.Complete(ex);
+            }
         }
     }
 }

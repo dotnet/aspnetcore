@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     {
         private readonly LibuvThread _thread;
         private readonly UvStreamHandle _socket;
-        private readonly LibuvConnection _connection;
         private readonly string _connectionId;
         private readonly ILibuvTrace _log;
 
@@ -23,7 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             IPipeReader pipe,
             LibuvThread thread,
             UvStreamHandle socket,
-            LibuvConnection connection,
             string connectionId,
             ILibuvTrace log)
         {
@@ -32,13 +30,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // get's scheduled
             _thread = thread;
             _socket = socket;
-            _connection = connection;
             _connectionId = connectionId;
             _log = log;
             _writeReqPool = thread.WriteReqPool;
         }
 
-        public async Task StartWrites()
+        public async Task WriteOutputAsync()
         {
             while (true)
             {
@@ -53,7 +50,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                         var writeResult = await writeReq.WriteAsync(_socket, buffer);
                         _writeReqPool.Return(writeReq);
 
-                        OnWriteCompleted(writeResult.Status, writeResult.Error);
+                        LogWriteInfo(writeResult.Status, writeResult.Error);
+
+                        if (writeResult.Error != null)
+                        {
+                            throw writeResult.Error;
+                        }
                     }
 
                     if (result.IsCancelled)
@@ -74,27 +76,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     _pipe.Advance(result.Buffer.End);
                 }
             }
-
-            // We're done reading
-            _pipe.Complete();
-
-            // Close the connection
-            _connection.Close();
         }
 
-        private void OnWriteCompleted(int writeStatus, Exception writeError)
+        private void LogWriteInfo(int status, Exception error)
         {
-            // Called inside _contextLock
-            var status = writeStatus;
-            var error = writeError;
-
-            if (error != null)
-            {
-                // Abort the connection for any failed write
-                // Queued on threadpool so get it in as first op.
-                _connection.AbortAsync();
-            }
-
             if (error == null)
             {
                 _log.ConnectionWriteCallback(_connectionId, status);

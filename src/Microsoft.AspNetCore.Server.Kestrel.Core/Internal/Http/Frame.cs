@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// <summary>
         /// Immediate kill the connection and poison the request and response streams.
         /// </summary>
-        public void Abort(Exception error = null)
+        public void Abort(Exception error)
         {
             if (Interlocked.Exchange(ref _requestAborted, 1) == 0)
             {
