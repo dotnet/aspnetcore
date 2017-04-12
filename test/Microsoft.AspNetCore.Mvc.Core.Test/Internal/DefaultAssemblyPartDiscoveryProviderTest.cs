@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // This test verifies DefaultAssemblyPartDiscoveryProvider.ReferenceAssemblies reflects the actual loadable assemblies
         // of the libraries that Microsoft.AspNetCore.Mvc dependes on.
         // If we add or remove dependencies, this test should be changed together.
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/6122")]
         public void ReferenceAssemblies_ReturnsLoadableReferenceAssemblies()
         {
             // Arrange
