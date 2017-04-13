@@ -4,7 +4,14 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "Microsoft.AspNetCore.AzureAppServicesIntegration": { }
+          "Microsoft.AspNetCore.AzureAppServicesIntegration": { },
+          "Microsoft.AspNetCore.AzureAppServices.SiteExtension": {
+            "Exclusions": {
+              "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
+                "Microsoft.AspNetCore.AzureAppServices.SiteExtension; .NETFramework,Version=v4.5.1": "Microsoft.Web.Xdt.Extensions is locally developed and bundled into this package."
+              }
+            }
+          }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
