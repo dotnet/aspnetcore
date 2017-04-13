@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
