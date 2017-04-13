@@ -4,9 +4,9 @@ The SignalR Protocol is a protocol for two-way RPC over any Message-based transp
 
 ## Terms
 
-* Caller - The node that is issuing an `Invocation` message and receiving `Result` messages (a node can be both Caller and Callee for different invocations simultaneously)
-* Callee - The node that is receiving an `Invocation` message and issuing `Result` messages (a node can be both Callee and Caller for different invocations simultaneously)
-* Binder - The component on each node that handles mapping `Invocation` messages to method calls and return values to `Result` messages
+* Caller - The node that is issuing an `Invocation` message and receiving `Completion` and `StreamItem` messages (a node can be both Caller and Callee for different invocations simultaneously)
+* Callee - The node that is receiving an `Invocation` message and issuing `Completion` and `StreamItem` messages (a node can be both Callee and Caller for different invocations simultaneously)
+* Binder - The component on each node that handles mapping `Invocation` messages to method calls and return values to `Completion` and `StreamItem` messages
 
 ## Transport Requirements
 
@@ -23,38 +23,63 @@ There are two encodings of the SignalR protocol: [JSON](http://www.json.org/) an
 In the SignalR protocol, the following types of messages can be sent:
 
 * `Invocation` Message - Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.
-* `Result` Message - Indicates response data from a previous Invocation message.
-* `Completion` Message - Indicates a previous Invocation has completed, and no further `Result` messages will be received. Optionally contains a final item of response data, or an error.
+* `StreamItem` Message - Indicates individual items of streamed response data from a previous Invocation message.
+* `Completion` Message - Indicates a previous Invocation has completed, and no further `StreamItem` messages will be received. Contains an error if the invocation concluded with an error, or the result if the invocation is not a streaming invocation.
 
 In order to perform a single invocation, Caller follows the following basic flow:
 
 1. Allocate a unique `Invocation ID` value (arbitrary string, chosen by the Caller) to represent the invocation
 2. Send an `Invocation` message containing the `Invocation ID`, the name of the `Target` being invoked, and the `Arguments` to provide to the method.
-3. Wait for a `Result` or `Completion` message with a matching `Invocation ID`
-4. If a `Completion` message arrives, go to 7
-5. If the `Result` message has a payload, dispatch the payload to the application (i.e. by yielding a result to an `IObservable`, or by collecting the result for dispatching in step 8)
-6. Go to 3
-7. Complete the invocation, dispatching the final payload item (if any) or the error (if any) to the application
+3. If the `Invocation` is marked as non-blocking (see "Non-Blocking Invocations" below), stop here and immediately yield back to the application.
+4. Wait for a `StreamItem` or `Completion` message with a matching `Invocation ID`
+5. If a `Completion` message arrives, go to 8
+6. If the `StreamItem` message has a payload, dispatch the payload to the application (i.e. by yielding a result to an `IObservable`, or by collecting the result for dispatching in step 8)
+7. Go to 4
+8. Complete the invocation, dispatching the final payload item (if any) or the error (if any) to the application
 
 The `Target` of an `Invocation` message must refer to a specific method, overloading is **not** permitted. In the .NET Binder, the `Target` value for a method is defined as the simple name of the Method (i.e. without qualifying type name, since a SignalR endpoint is specific to a single Hub class). `Target` is case-sensitive
 
 **NOTE**: `Invocation ID`s are arbitrarily chosen by the Caller and the Callee is expected to use the same string in all response messages. Callees may establish reasonable limits on `Invocation ID` lengths and terminate the connection when an `Invocation ID` that is too long is received.
 
-## Multiple Results
+## Non-Blocking Invocations
 
-The SignalR protocol allows for multiple `Result` messages to be transmitted in response to an `Invocation` message, and allows the receiver to dispatch these results as they arrive, to allow for streaming data from one endpoint to another.
+Invocations can be marked as "Non-Blocking" in the `Invocation` message, which indicates to the Callee that the Caller expects no results. When a Callee receives a "Non-Blocking" Invocation, it should dispatch the message, but send no results or errors back to the Caller. In a Caller application, the invocation will immediately return with no results. There is no tracking of completion for Non-Blocking Invocations.
 
-On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `Result` messages, indicating the end of results by sending a `Completion` message. Since the `Completion` message accepts an optional payload value, methods with single results can be handled with a single `Completion` message, bearing the complete results.
+## Streaming
+
+The SignalR protocol allows for multiple `StreamItem` messages to be transmitted in response to an `Invocation` message, and allows the receiver to dispatch these results as they arrive, to allow for streaming data from one endpoint to another.
+
+On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `Completion` message. Since the `Completion` message accepts an optional payload value, methods with single results can be handled with a single `Completion` message, bearing the complete results.
 
 On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to determine how to handle the result. If the Caller expects only a single result, but multiple results are returned, the Caller's Binder should yield an error indicating that multiple results were returned. However, if a Caller expects multiple results, but only a single result is returned, the Caller's Binder should yield that single result and indicate there are no further results.
+
+## Completion and results
+
+An Invocation is only considered completed when the `Completion` message is recevied. Receiving **any** message using the same `Invocation ID` after a `Completion` message has been received for that invocation is considered a protocol error and the recipient may immediately terminate the connection.
+
+If a Callee is going to stream results, it **MUST** send each individual result in a separate `StreamItem` message, and the `Completion` message **MUST NOT** contain a result. If the Callee is going to return a single result, it **MUST** not send any `StreamItem` messages, and **MUST** send the single result in a `Completion` message. This is to ensure that the Caller can unambiguously determine the intended streaming behavior of the method. As an example of why this distinction is necessary, consider the following C# methods:
+
+```csharp
+public int SingleResult();
+
+[return: Streamed]
+public IEnumerable<int> StreamedResults();
+```
+
+If the caller invokes `SingleResult`, they will get a single result back, and there is no problem. The problem arises with `StreamedResults`. If the caller asks for a single `int`, and is thus not expecting a stream, and the callee returns a single int in a `StreamItem` frame, the caller thinks that it has received the correct data, but actually they have disagreed on the return type of the method (the caller believes it is `int` but the callee believes it is `IEnumerable<int>`). Callers and callees should not disagree on the signatures of these methods, so the difference between a streamed result and a single result should be explicit. Thus, the rules above.
 
 ## Errors
 
 Errors are indicated by the presence of the `error` field in a `Completion` message. Errors always indicate the immediate end of the invocation. In the case of streamed responses, the arrival of a `Completion` message indicating an error should **not** stop the dispatching of previously-received results. The error is only yielded after the previously-received results have been dispatched.
 
-## Completion and Results
+If either endpoint commits a Protocol Error (see examples below), the other endpoint may immediately terminate the underlying connection.
 
-A Invocation is only considered completed when the `Completion` message is recevied. Receiving **any** message using the same `Invocation ID` after a `Completion` message has been received for that invocation is considered a protocol error and the recipient should immediately terminate the connection. For non-streamed results, it is up to the Callee whether to encode the result in a separate `Result` message, or within the `Completion` message.
+* It is a protocol error for any message to be missing a required field, or to have an unrecognized field.
+* It is a protocol error for a Caller to send a `StreamItem` or `Completion` message with an `Invocation ID` that has not been received in an `Invocation` message from the Callee
+* It is a protocol error for a Caller to send a `StreamItem` or `Completion` message in response to a Non-Blocking Invocation (see "Non-Blocking Invocations" above)
+* It is a protocol error for a Caller to send a `Completion` message carrying a result when a `StreamItem` message has previously been sent for the same `Invocation ID`.
+* It is a protocol error for a Caller to send a `Completion` message carrying both a result and an error.
+* It is a protocol error for an `Invocation` message to have an `Invocation ID` that has already been used by *that* endpoint. However, it is **not an error** for one endpoint to use an `Invocation ID` that was previously used by the other endpoint (allowing each endpoint to track it's own IDs).
 
 ## Examples
 
@@ -97,6 +122,12 @@ public IEnumerable<int> StreamFailure(int count)
     }
     throw new Exception("Ran out of data!");
 }
+
+private List<string> _callers = new List<string>();
+public void NonBlocking(string caller)
+{
+    _callers.Add(caller);
+}
 ```
 
 In each of the below examples, lines starting `C->S` indicate messages sent from the Caller ("Client") to the Callee ("Server"), and lines starting `S->C` indicate messages sent from the Callee ("Server") back to the Caller ("Client"). Message syntax is just a pseudo-code and is not intended to match any particular encoding.
@@ -108,11 +139,11 @@ C->S: Invocation { Id = 42, Target = "Add", Arguments = [ 40, 2 ] }
 S->C: Completion { Id = 42, Result = 42 }
 ```
 
-The following is also acceptable, since the Callee may choose to encode the `Result` in a separate message
+**NOTE:** The following is **NOT** an acceptable encoding of this invocation:
 
 ```
 C->S: Invocation { Id = 42, Target = "Add", Arguments = [ 40, 2 ] }
-S->C: Result { Id = 42, Result = 42 }
+S->C: StreamItem { Id = 42, Item = 42 }
 S->C: Completion { Id = 42 }
 ```
 
@@ -134,44 +165,48 @@ S->C: Completion { Id = 42, Result = [ 0, 1, 2, 3, 4 ] }
 
 ```
 C->S: Invocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
-S->C: Result { Id = 42, Result = 0 }
-S->C: Result { Id = 42, Result = 1 }
-S->C: Result { Id = 42, Result = 2 }
-S->C: Result { Id = 42, Result = 3 }
-S->C: Result { Id = 42, Result = 4 }
+S->C: StreamItem { Id = 42, Item = 0 }
+S->C: StreamItem { Id = 42, Item = 1 }
+S->C: StreamItem { Id = 42, Item = 2 }
+S->C: StreamItem { Id = 42, Item = 3 }
+S->C: StreamItem { Id = 42, Item = 4 }
 S->C: Completion { Id = 42 }
 ```
 
-Another acceptable sequence of messages for this is the following
+**NOTE:** The following is **NOT** an acceptable encoding of this invocation:
 
 ```
 C->S: Invocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
-S->C: Result { Id = 42, Result = 0 }
-S->C: Result { Id = 42, Result = 1 }
-S->C: Result { Id = 42, Result = 2 }
-S->C: Result { Id = 42, Result = 3 }
-S->C: Completion { Id = 42, Result = 4 }
+S->C: StreamItem { Id = 42, Item = 0 }
+S->C: StreamItem { Id = 42, Item = 1 }
+S->C: StreamItem { Id = 42, Item = 2 }
+S->C: StreamItem { Id = 42, Item = 3 }
+S->C: Completion { Id = 42, Item = 4 }
 ```
-
-It is generally desirable to include the final payload of a stream in the `Completion` message, since it reduces messages sent back and forth. However, some binders may not be able to achieve this. For example, in the .NET Binder, using `IEnumerable` would mean that the server does not know if a result is the final result until it requests the next one (i.e. `MoveNext()` returns `false`). In order to return the final payload in the `Completion` message, it would have to buffer each message to determine if it is the final message. For that reason, the protocol allows the `Completion` message to be missing a payload
 
 ### Streamed Result with Error (`StreamFailure` example above)
 
 ```
 C->S: Invocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
-S->C: Result { Id = 42, Result = 0 }
-S->C: Result { Id = 42, Result = 1 }
-S->C: Result { Id = 42, Result = 2 }
-S->C: Result { Id = 42, Result = 3 }
-S->C: Result { Id = 42, Result = 4 }
+S->C: StreamItem { Id = 42, Item = 0 }
+S->C: StreamItem { Id = 42, Item = 1 }
+S->C: StreamItem { Id = 42, Item = 2 }
+S->C: StreamItem { Id = 42, Item = 3 }
+S->C: StreamItem { Id = 42, Item = 4 }
 S->C: Completion { Id = 42, Error = "Ran out of data!" }
 ```
 
 This should manifest to the Calling code as a sequence which emits `0`, `1`, `2`, `3`, `4`, but then fails with the error `Ran out of data!`.
 
+### Non-Blocking Call (`NonBlocking` example above)
+
+```
+C->S: Invocation { Id = 42, Target = "NonBlocking", Arguments = [ "foo" ] }
+```
+
 ## JSON Encoding
 
-In the JSON Encoding of the SignalR Protocol, each Message is represented as a single JSON object, which should be the only content of the underlying message from the Transport.
+In the JSON Encoding of the SignalR Protocol, each Message is represented as a single JSON object, which should be the only content of the underlying message from the Transport. All property names are case-sensitive. The underlying protocol is expected to handle encoding and decoding of the text, so the JSON string should be encoded in whatever form is expected by the underlying transport. For example, when using the ASP.NET Sockets transports, UTF-8 encoding is always used for text.
 
 ### Invocation Message Encoding
 
@@ -179,6 +214,7 @@ An `Invocation` message is a JSON object with the following properties:
 
 * `type` - A `Number` with the literal value 1, indicating that this message is an Invocation.
 * `invocationId` - A `String` encoding the `Invocation ID` for a message.
+* `nonblocking` - A `Boolean` indicating if the invocation is Non-Blocking (see "Non-Blocking Invocations" above). Optional and defaults to `false` if not present.
 * `target` - A `String` encoding the `Target` name, as expected by the Callee's Binder
 * `arguments` - An `Array` containing arguments to apply to the method referred to in Target. This is a sequence of JSON `Token`s, encoded as indicated below in the "JSON Payload Encoding" section
 
@@ -195,14 +231,28 @@ Example:
     ]
 }
 ```
+Example (Non-Blocking):
 
-### Result Message Encoding
+```json
+{
+    "type": 1,
+    "invocationId": 123,
+    "nonblocking": true,
+    "target": "Send",
+    "arguments": [
+        42,
+        "Test Message"
+    ]
+}
+```
 
-A `Result` message is a JSON object with the following properties:
+### StreamItem Message Encoding
 
-* `type` - A `Number` with the literal value 2, indicating that this message is a Result.
+A `StreamItem` message is a JSON object with the following properties:
+
+* `type` - A `Number` with the literal value 2, indicating that this message is a StreamItem.
 * `invocationId` - A `String` encoding the `Invocation ID` for a message.
-* `result` - A `Token` encoding the result value (see "JSON Payload Encoding" for details).
+* `item` - A `Token` encoding the stream item (see "JSON Payload Encoding" for details).
 
 Example
 
@@ -210,7 +260,7 @@ Example
 {
     "type": 2,
     "invocationId": 123,
-    "result": 42
+    "item": 42
 }
 ```
 
@@ -267,7 +317,7 @@ Example - The following `Completion` message is a protocol error because it has 
 
 ### JSON Payload Encoding
 
-Items in the arguments array within the `Invocation` message type, as well as the `result` value of the `Result` and `Completion` messages, encode values which have meaning to each particular Binder. A general guideline for encoding/decoding these values is provided in the "Type Mapping" section at the end of this document, but Binders should provide configuration to applications to allow them to customize these mappings. These mappings need not be self-describing, because when decoding the value, the Binder is expected to know the destination type (by looking up the definition of the method indicated by the Target).
+Items in the arguments array within the `Invocation` message type, as well as the `item` value of the `StreamItem` message and the `result` value of the `Completion` message, encode values which have meaning to each particular Binder. A general guideline for encoding/decoding these values is provided in the "Type Mapping" section at the end of this document, but Binders should provide configuration to applications to allow them to customize these mappings. These mappings need not be self-describing, because when decoding the value, the Binder is expected to know the destination type (by looking up the definition of the method indicated by the Target).
 
 ## Protocol Buffers (ProtoBuf) Encoding
 
@@ -307,11 +357,12 @@ syntax = "proto3";
 
 message Invocation {
     string target = 1;
-    bytes arguments = 2;
+    bool nonblocking = 2;
+    bytes arguments = 3;
 }
 
-message Result {
-    bytes result = 1;
+message StreamItem {
+    bytes item = 1;
 }
 
 message Completion {
@@ -325,7 +376,7 @@ message SignalRFrame {
     string invocationId = 1;
     oneof message {
         Invocation invocation = 2;
-        Result result = 3;
+        StreamItem streamItem = 3;
         Completion completion = 4;
     }
 }
@@ -335,13 +386,13 @@ message SignalRFrame {
 
 When an invocation is issued by the Caller, we generate the necessary Request message according to the service definition, encode it into the ProtoBuf wire format, and then transmit an `Invocation` ProtoBuf message with that encoded argument data as the `arguments` field. The resulting `Invocation` message is wrapped in a `SignalRFrame` message and the `invocationId` is set. The final message is then encoded in the ProtoBuf format and transmitted to the Callee.
 
-## Result Message
+## StreamItem Message
 
-When a result is emitted by the Callee, it is encoded using the ProtoBuf schema associated with the service and encoded into the `payload` field of a `Result` ProtoBuf message. If an error is emitted, the message is encoded into the error field of a Result ProtoBuf message. The resulting `Result` message is wrapped in a `SignalRFrame` message and the `invocationId` is set. The final message is then encoded in the ProtoBuf format and transmitted to the Callee.
+When a result is emitted by the Callee, it is encoded using the ProtoBuf schema associated with the service and encoded into the `item` field of a `StreamItem` ProtoBuf message. If an error is emitted, the message is encoded into the error field of a StreamItem ProtoBuf message. The resulting `StreamItem` message is wrapped in a `SignalRFrame` message and the `invocationId` is set. The final message is then encoded in the ProtoBuf format and transmitted to the Callee.
 
 ## Completion Message
 
-When a request completes, a `Completion` ProtoBuf message is constructed. If there is a final payload, it is encoded the same way as in the `Result` message and stored in the `result` field of the message. If there is an error, it is encoded in the `error` field of the message. The resulting `Completion` message is wrapped in a `SignalRFrame` message and the `invocationId` is set. The final message is then encoded in the ProtoBuf format and transmitted to the Callee.
+When a request completes, a `Completion` ProtoBuf message is constructed. If there is a final payload, it is encoded the same way as in the `StreamItem` message and stored in the `result` field of the message. If there is an error, it is encoded in the `error` field of the message. The resulting `Completion` message is wrapped in a `SignalRFrame` message and the `invocationId` is set. The final message is then encoded in the ProtoBuf format and transmitted to the Callee.
 
 ## Type Mappings
 
