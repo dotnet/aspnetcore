@@ -32,9 +32,9 @@
       <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.All.csproj</MetaPackageFile>
       <WorkingDirectory>$(MetaPackagePath)bin\work</WorkingDirectory>
       <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
-      <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.win.zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.linux.zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)' == 'macOS'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.osx.zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.win-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.linux-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'macOS'">$(RepositoryRoot)artifacts\AspNetCorePackageCache.osx-$(VersionSuffix).zip</OutputZip>
     </PropertyGroup>
 
     <ItemGroup>
