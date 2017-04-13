@@ -229,30 +229,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // This test verifies DefaultAssemblyPartDiscoveryProvider.ReferenceAssemblies reflects the actual loadable assemblies
         // of the libraries that Microsoft.AspNetCore.Mvc dependes on.
         // If we add or remove dependencies, this test should be changed together.
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/6122")]
+        [Fact]
         public void ReferenceAssemblies_ReturnsLoadableReferenceAssemblies()
         {
             // Arrange
             var excludeAssemblies = new string[]
             {
-                "microsoft.aspnetcore.mvc.core.test",
-                "microsoft.aspnetcore.mvc.testcommon",
-                "microsoft.aspnetcore.mvc.testdiagnosticlistener",
-                "microsoft.aspnetcore.mvc.webapicompatshim",
+                "Microsoft.AspNetCore.Mvc.Core.Test",
+                "Microsoft.AspNetCore.Mvc.TestCommon",
+                "Microsoft.AspNetCore.Mvc.TestDiagnosticListener",
+                "Microsoft.AspNetCore.Mvc.WebApiCompatShim",
             };
 
             var additionalAssemblies = new[]
             {
                 // The following assemblies are not reachable from Microsoft.AspNetCore.Mvc
-                "microsoft.aspnetcore.mvc.taghelpers",
-                "microsoft.aspnetcore.mvc.formatters.xml",
+                "Microsoft.AspNetCore.Mvc.Formatters.Xml",
             };
 
-            var expected = DependencyContext.Load(CurrentAssembly)
+            var dependencyContextLibraries = DependencyContext.Load(CurrentAssembly)
                 .RuntimeLibraries
-                .Where(r => r.Name.StartsWith("microsoft.aspnetcore.mvc", StringComparison.Ordinal) &&
+                .Where(r => r.Name.StartsWith("Microsoft.AspNetCore.Mvc", StringComparison.Ordinal) &&
                     !excludeAssemblies.Contains(r.Name, StringComparer.OrdinalIgnoreCase))
-                .Select(r => r.Name)
+                .Select(r => r.Name);
+
+            var expected = dependencyContextLibraries
                 .Concat(additionalAssemblies)
                 .Distinct()
                 .OrderBy(p => p, StringComparer.Ordinal);
