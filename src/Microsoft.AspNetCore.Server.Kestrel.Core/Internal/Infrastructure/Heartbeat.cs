@@ -32,9 +32,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _trace = trace;
             _timer = new Timer(OnHeartbeat, state: this, dueTime: _interval, period: _interval);
         }
+
+        private static void OnHeartbeat(object state)
+        {
+            ((Heartbeat)state).OnHeartbeat();
+        }
         
         // Called by the Timer (background) thread
-        private void OnHeartbeat(object state)
+        private void OnHeartbeat()
         {
             var now = _systemClock.UtcNow;
 
@@ -58,7 +63,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             else
             {
-                _trace.TimerSlow(_interval, now);
+                // Tests usually pass in a null trace
+                _trace?.TimerSlow(_interval, now);
             }
         }
 
