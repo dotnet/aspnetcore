@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PackagePublisher" Version="1.0.1-*" />
+    <PackageReference Include="PackagePublisher" Version="1.0.2-*" />
   </ItemGroup>
 
   <Import
@@ -109,8 +109,8 @@
       <PackagePublisherPath Include="%(PackageDefinitions.ResolvedPath)" Condition="'%(PackageDefinitions.Name)'=='PackagePublisher'" />
     </ItemGroup>
  
-   <PropertyGroup>
-      <_PackagePublisherPath>@(PackagePublisherPath)\PackagePublisher.exe</_PackagePublisherPath>
+    <PropertyGroup>
+      <_PackagePublisherPath>@(PackagePublisherPath)\PackagePublisher.dll</_PackagePublisherPath>
     </PropertyGroup>
   </Target>
 

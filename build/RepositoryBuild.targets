@@ -77,7 +77,7 @@
       Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Exec
-      Command="$(PackagePublisherPath) -d $(RepositoryArtifactsDirectory) -f $(NuGetPublishVolatileFeed)"
+      Command="$(DotNetPath) $(PackagePublisherPath) -d $(RepositoryArtifactsDirectory) -f $(NuGetPublishVolatileFeed)"
       Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
