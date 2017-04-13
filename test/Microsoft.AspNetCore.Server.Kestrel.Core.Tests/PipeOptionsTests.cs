@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(10, 10, 10)]
         [InlineData(null, 0, 0)]
-        public void AdaptedPipeOptionsConfiguredCorrectly(long? maxRequestBufferSize, long expectedMaximumSizeLow, long expectedMaximumSizeHigh)
+        public void AdaptedInputPipeOptionsConfiguredCorrectly(long? maxRequestBufferSize, long expectedMaximumSizeLow, long expectedMaximumSizeHigh)
         {
             var serviceContext = new TestServiceContext();
             serviceContext.ServerOptions.Limits.MaxRequestBufferSize = maxRequestBufferSize;
@@ -64,10 +64,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ServiceContext = serviceContext
             });
 
-            Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedPipeOptions.MaximumSizeLow);
-            Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedPipeOptions.MaximumSizeHigh);
-            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedPipeOptions.ReaderScheduler);
-            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedPipeOptions.WriterScheduler);
+            Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedInputPipeOptions.MaximumSizeLow);
+            Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedInputPipeOptions.MaximumSizeHigh);
+            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedInputPipeOptions.ReaderScheduler);
+            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedInputPipeOptions.WriterScheduler);
+        }
+
+        [Theory]
+        [InlineData(10, 10, 10)]
+        [InlineData(null, 0, 0)]
+        public void AdaptedOutputPipeOptionsConfiguredCorrectly(long? maxRequestBufferSize, long expectedMaximumSizeLow, long expectedMaximumSizeHigh)
+        {
+            var serviceContext = new TestServiceContext();
+            serviceContext.ServerOptions.Limits.MaxResponseBufferSize = maxRequestBufferSize;
+
+            var connectionLifetime = new FrameConnection(new FrameConnectionContext
+            {
+                ServiceContext = serviceContext
+            });
+
+            Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedOutputPipeOptions.MaximumSizeLow);
+            Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedOutputPipeOptions.MaximumSizeHigh);
+            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedOutputPipeOptions.ReaderScheduler);
+            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedOutputPipeOptions.WriterScheduler);
         }
     }
 }

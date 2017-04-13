@@ -48,12 +48,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private PipeFactory PipeFactory => _context.PipeFactory;
 
         // Internal for testing
-        internal PipeOptions AdaptedPipeOptions => new PipeOptions
+        internal PipeOptions AdaptedInputPipeOptions => new PipeOptions
         {
             ReaderScheduler = InlineScheduler.Default,
             WriterScheduler = InlineScheduler.Default,
             MaximumSizeHigh = _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             MaximumSizeLow = _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+        };
+
+        internal PipeOptions AdaptedOutputPipeOptions => new PipeOptions
+        {
+            ReaderScheduler = InlineScheduler.Default,
+            WriterScheduler = InlineScheduler.Default,
+            MaximumSizeHigh = _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
+            MaximumSizeLow = _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0
         };
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
@@ -125,8 +133,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     _filteredStream = adapterContext.ConnectionStream;
                     _adaptedPipeline = new AdaptedPipeline(
                         adapterContext.ConnectionStream,
-                        PipeFactory.Create(AdaptedPipeOptions),
-                        PipeFactory.Create(AdaptedPipeOptions));
+                        PipeFactory.Create(AdaptedInputPipeOptions),
+                        PipeFactory.Create(AdaptedOutputPipeOptions));
 
                     _frame.Input = _adaptedPipeline.Input.Reader;
                     _frame.Output = _adaptedPipeline.Output;
