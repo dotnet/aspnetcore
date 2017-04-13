@@ -1,0 +1,49 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CSharp7_Runtime -  - 
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [8] CSharp7.cshtml)
+                    RazorIRToken - (0:0,0 [6] CSharp7.cshtml) - Html - <body>
+                    RazorIRToken - (6:0,6 [2] CSharp7.cshtml) - Html - \n
+                CSharpStatement - (8:1,0 [4] CSharp7.cshtml)
+                    RazorIRToken - (8:1,0 [4] CSharp7.cshtml) - CSharp -     
+                CSharpStatement - (14:1,6 [187] CSharp7.cshtml)
+                    RazorIRToken - (14:1,6 [187] CSharp7.cshtml) - CSharp - \n        var nameLookup = new Dictionary<string, (string FirstName, string LastName, object Extra)>()\n        {\n            ["John Doe"] = ("John", "Doe", true)\n        };\n\n        
+                CSharpStatement - (246:7,53 [253] CSharp7.cshtml)
+                    RazorIRToken - (246:7,53 [253] CSharp7.cshtml) - CSharp - \n\n        int Sixteen = 0b0001_0000;\n        long BillionsAndBillions = 100_000_000_000;\n        double AvogadroConstant = 6.022_140_857_747_474e23;\n        decimal GoldenRatio = 1.618_033_988_749_894_848_204_586_834_365_638_117_720_309_179M;\n    
+                HtmlContent - (502:14,0 [2] CSharp7.cshtml)
+                    RazorIRToken - (502:14,0 [2] CSharp7.cshtml) - Html - \n
+                CSharpStatement - (504:15,0 [4] CSharp7.cshtml)
+                    RazorIRToken - (504:15,0 [4] CSharp7.cshtml) - CSharp -     
+                CSharpStatement - (509:15,5 [161] CSharp7.cshtml)
+                    RazorIRToken - (509:15,5 [161] CSharp7.cshtml) - CSharp - if (nameLookup.TryGetValue("John Doe", out var entry))\n    {\n        if (entry.Extra is bool alive)\n        {\n            // Do Something\n        }\n    }\n
+                HtmlContent - (670:22,0 [46] CSharp7.cshtml)
+                    RazorIRToken - (670:22,0 [4] CSharp7.cshtml) - Html -     
+                    RazorIRToken - (674:22,4 [3] CSharp7.cshtml) - Html - <p>
+                    RazorIRToken - (677:22,7 [39] CSharp7.cshtml) - Html - \n        Here's a very unique number: 
+                CSharpExpression - (718:23,39 [62] CSharp7.cshtml)
+                    RazorIRToken - (718:23,39 [62] CSharp7.cshtml) - CSharp - 1.618_033_988_749_894_848_204_586_834_365_638_117_720_309_179M
+                HtmlContent - (781:23,102 [33] CSharp7.cshtml)
+                    RazorIRToken - (781:23,102 [6] CSharp7.cshtml) - Html - \n    
+                    RazorIRToken - (787:24,4 [4] CSharp7.cshtml) - Html - </p>
+                    RazorIRToken - (791:24,8 [8] CSharp7.cshtml) - Html - \n\n    
+                    RazorIRToken - (799:26,4 [5] CSharp7.cshtml) - Html - <div>
+                    RazorIRToken - (804:26,9 [2] CSharp7.cshtml) - Html - \n
+                    RazorIRToken - (806:27,0 [8] CSharp7.cshtml) - Html -         
+                CSharpExpression - (816:27,10 [34] CSharp7.cshtml)
+                    RazorIRToken - (816:27,10 [34] CSharp7.cshtml) - CSharp - (First: "John", Last: "Doe").First
+                HtmlContent - (851:27,45 [1] CSharp7.cshtml)
+                    RazorIRToken - (851:27,45 [1] CSharp7.cshtml) - Html -  
+                HtmlContent - (870:27,64 [16] CSharp7.cshtml)
+                    RazorIRToken - (870:27,64 [6] CSharp7.cshtml) - Html - \n    
+                    RazorIRToken - (876:28,4 [6] CSharp7.cshtml) - Html - </div>
+                    RazorIRToken - (882:28,10 [4] CSharp7.cshtml) - Html - \n\n
+                CSharpStatement - (886:30,0 [4] CSharp7.cshtml)
+                    RazorIRToken - (886:30,0 [4] CSharp7.cshtml) - CSharp -     
+                CSharpStatement - (891:30,5 [293] CSharp7.cshtml)
+                    RazorIRToken - (891:30,5 [293] CSharp7.cshtml) - CSharp - switch (entry.Extra)\n    {\n        case int age:\n            // Do something\n            break;\n        case IEnumerable<string> childrenNames:\n            // Do more something\n            break;\n        case null:\n            // Do even more of something\n            break;\n    }\n
+                HtmlContent - (1184:42,0 [7] CSharp7.cshtml)
+                    RazorIRToken - (1184:42,0 [7] CSharp7.cshtml) - Html - </body>

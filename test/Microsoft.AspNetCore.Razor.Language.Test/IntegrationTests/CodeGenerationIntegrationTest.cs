@@ -10,6 +10,21 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     {
         #region Runtime
         [Fact]
+        public void CSharp7_Runtime()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
         public void BasicImports_Runtime()
         {
             // Arrange
@@ -778,6 +793,21 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         #endregion
 
         #region DesignTime
+        [Fact]
+        public void CSharp7_DesignTime()
+        {
+            // Arrange
+            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDesignTimeDocumentMatchBaseline(document);
+        }
+
         [Fact]
         public void BasicImports_DesignTime()
         {
