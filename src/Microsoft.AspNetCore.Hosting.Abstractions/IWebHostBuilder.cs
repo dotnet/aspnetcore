@@ -14,6 +14,15 @@ namespace Microsoft.AspNetCore.Hosting
     public interface IWebHostBuilder
     {
         /// <summary>
+        /// The <see cref="WebHostBuilderContext"/> used during building.
+        /// </summary>
+        /// <remarks>
+        /// Some properties of this type will be null whilst it is being built, most noteably the <see cref="ILoggerFactory"/> will
+        /// be null inside the <see cref="ConfigureAppConfiguration(Action{WebHostBuilderContext, IConfigurationBuilder})"/> method.
+        /// </remarks>
+        WebHostBuilderContext Context { get; }
+
+        /// <summary>
         /// Builds an <see cref="IWebHost"/> which hosts a web application.
         /// </summary>
         IWebHost Build();
@@ -33,6 +42,13 @@ namespace Microsoft.AspNetCore.Hosting
         IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices);
 
         /// <summary>
+        /// Specify the delegate that is used to configure the services of the web application.
+        /// </summary>
+        /// <param name="configureServices">The delegate that configures the <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        IWebHostBuilder ConfigureServices(Action<WebHostBuilderContext, IServiceCollection> configureServices);
+
+        /// <summary>
         /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
         /// </summary>
         /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
@@ -44,7 +60,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        IWebHostBuilder ConfigureLogging<T>(Action<T> configureLogging) where T : ILoggerFactory;
+        IWebHostBuilder ConfigureLogging<T>(Action<WebHostBuilderContext, T> configureLogging) where T : ILoggerFactory;
 
         /// <summary>
         /// Add or replace a setting in the configuration.
@@ -75,6 +91,6 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="configureDelegate">The delegate for configuring the <see cref="IConfigurationBuilder" /> that will be used to construct an <see cref="IConfiguration" />.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        IWebHostBuilder ConfigureConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate);
+        IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate);
     }
 }

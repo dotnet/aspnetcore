@@ -25,14 +25,17 @@ namespace Microsoft.AspNetCore.Hosting
     public class WebHostBuilder : IWebHostBuilder
     {
         private readonly IHostingEnvironment _hostingEnvironment;
-        private readonly List<Action<IServiceCollection>> _configureServicesDelegates;
-        private readonly List<Action<ILoggerFactory>> _configureLoggingDelegates;
+        private readonly List<Action<WebHostBuilderContext, IServiceCollection>> _configureServicesDelegates;
+        private readonly List<Action<WebHostBuilderContext, ILoggerFactory>> _configureLoggingDelegates;
 
         private IConfiguration _config;
         private WebHostOptions _options;
         private bool _webHostBuilt;
         private Func<WebHostBuilderContext, ILoggerFactory> _createLoggerFactoryDelegate;
         private List<Action<WebHostBuilderContext, IConfigurationBuilder>> _configureConfigurationBuilderDelegates;
+        private WebHostBuilderContext _hostingContext;
+
+        public WebHostBuilderContext Context { get { return _hostingContext; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHostBuilder"/> class.
@@ -40,8 +43,8 @@ namespace Microsoft.AspNetCore.Hosting
         public WebHostBuilder()
         {
             _hostingEnvironment = new HostingEnvironment();
-            _configureServicesDelegates = new List<Action<IServiceCollection>>();
-            _configureLoggingDelegates = new List<Action<ILoggerFactory>>();
+            _configureServicesDelegates = new List<Action<WebHostBuilderContext, IServiceCollection>>();
+            _configureLoggingDelegates = new List<Action<WebHostBuilderContext, ILoggerFactory>>();
             _configureConfigurationBuilderDelegates = new List<Action<WebHostBuilderContext, IConfigurationBuilder>>();
 
             _config = new ConfigurationBuilder()
@@ -113,6 +116,23 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(configureServices));
             }
 
+            _configureServicesDelegates.Add((_, collection) => configureServices(collection));
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a delegate for configuring additional services for the host or web application. This may be called
+        /// multiple times.
+        /// </summary>
+        /// <param name="configureServices">A delegate for configuring the <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public IWebHostBuilder ConfigureServices(Action<WebHostBuilderContext, IServiceCollection> configureServices)
+        {
+            if (configureServices == null)
+            {
+                throw new ArgumentNullException(nameof(configureServices));
+            }
+
             _configureServicesDelegates.Add(configureServices);
             return this;
         }
@@ -129,7 +149,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(configureLogging));
             }
 
-            _configureLoggingDelegates.Add(configureLogging);
+            _configureLoggingDelegates.Add((_, factory) => configureLogging(factory));
             return this;
         }
 
@@ -155,17 +175,17 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder ConfigureLogging<T>(Action<T> configureLogging) where T : ILoggerFactory
+        public IWebHostBuilder ConfigureLogging<T>(Action<WebHostBuilderContext, T> configureLogging) where T : ILoggerFactory
         {
             if (configureLogging == null)
             {
                 throw new ArgumentNullException(nameof(configureLogging));
             }
-            _configureLoggingDelegates.Add(factory =>
+            _configureLoggingDelegates.Add((context, factory) =>
             {
                 if (factory is T typedFactory)
                 {
-                    configureLogging(typedFactory);
+                    configureLogging(context, typedFactory);
                 }
             });
             return this;
@@ -176,7 +196,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="configureDelegate">The delegate for configuring the <see cref="IConfigurationBuilder" /> that will be used to construct an <see cref="IConfiguration" />.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder ConfigureConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
+        public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
         {
             if (configureDelegate == null)
             {
@@ -241,14 +261,15 @@ namespace Microsoft.AspNetCore.Hosting
             var appEnvironment = PlatformServices.Default.Application;
             var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, appEnvironment.ApplicationBasePath);
             var applicationName = _options.ApplicationName ?? appEnvironment.ApplicationName;
-            var hostingContext = new WebHostBuilderContext
+
+            _hostingContext = new WebHostBuilderContext
             {
                 Configuration = _config
             };
 
             // Initialize the hosting environment
             _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
-            hostingContext.HostingEnvironment = _hostingEnvironment;
+            _hostingContext.HostingEnvironment = _hostingEnvironment;
 
             var services = new ServiceCollection();
             services.AddSingleton(_hostingEnvironment);
@@ -259,17 +280,17 @@ namespace Microsoft.AspNetCore.Hosting
 
             foreach (var configureConfiguration in _configureConfigurationBuilderDelegates)
             {
-                configureConfiguration(hostingContext, builder);
+                configureConfiguration(_hostingContext, builder);
             }
 
             var configuration = builder.Build();
             services.AddSingleton<IConfiguration>(configuration);
-            hostingContext.Configuration = configuration;
+            _hostingContext.Configuration = configuration;
 
             // The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
-            var loggerFactory = _createLoggerFactoryDelegate?.Invoke(hostingContext) ?? new LoggerFactory(configuration.GetSection("Logging"));
+            var loggerFactory = _createLoggerFactoryDelegate?.Invoke(_hostingContext) ?? new LoggerFactory(configuration.GetSection("Logging"));
             services.AddSingleton(loggerFactory);
-            hostingContext.LoggerFactory = loggerFactory;
+            _hostingContext.LoggerFactory = loggerFactory;
 
             var exceptions = new List<Exception>();
 
@@ -307,7 +328,7 @@ namespace Microsoft.AspNetCore.Hosting
             // Kept for back-compat, will remove once ConfigureLogging is removed.
             foreach (var configureLogging in _configureLoggingDelegates)
             {
-                configureLogging(loggerFactory);
+                configureLogging(_hostingContext, loggerFactory);
             }
 
             //This is required to add ILogger of T.
@@ -362,7 +383,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             foreach (var configureServices in _configureServicesDelegates)
             {
-                configureServices(services);
+                configureServices(_hostingContext, services);
             }
 
             return services;

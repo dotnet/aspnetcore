@@ -95,26 +95,28 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Configures and use a <see cref="LoggerFactory"/> for the web host.
+        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
         /// </summary>
-        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
-        /// <param name="configure">A callback used to configure the <see cref="LoggerFactory"/> that will be added as a singleton and used by the application.</param>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder" /> to configure.</param>
+        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseLoggerFactory(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, LoggerFactory> configure)
+        public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, LoggerFactory> configureLogging)
         {
-            if (configure == null)
-            {
-                throw new ArgumentNullException(nameof(configure));
-            }
-
-            hostBuilder.UseLoggerFactory(context =>
-            {
-                var loggerFactory = new LoggerFactory();
-                configure(context, loggerFactory);
-                return loggerFactory;
-            });
-
+            hostBuilder.ConfigureLogging(configureLogging);
             return hostBuilder;
         }
+
+        /// <summary>
+        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder" /> to configure.</param>
+        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder ConfigureLogging<T>(this IWebHostBuilder hostBuilder, Action<T> configureLogging) where T : ILoggerFactory
+        {
+            hostBuilder.ConfigureLogging<T>((_, factory) => configureLogging(factory));
+            return hostBuilder;
+        }
+
     }
 }

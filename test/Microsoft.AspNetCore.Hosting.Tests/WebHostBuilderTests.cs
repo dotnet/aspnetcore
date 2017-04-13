@@ -258,6 +258,29 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void HostingContextCanBeUsed()
+        {
+            var hostBuilder = new WebHostBuilder()
+                 .ConfigureAppConfiguration((context, configBuilder) => configBuilder
+                    .AddInMemoryCollection(
+                            new KeyValuePair<string, string>[]
+                            {
+                                new KeyValuePair<string, string>("key1", "value1")
+                            }))
+                 .ConfigureLogging((context, factory) =>
+                 {
+                     Assert.Equal("value1", context.Configuration["key1"]);
+                 })
+                 .UseServer(new TestServer())
+                 .UseStartup<StartupNoServices>();
+
+            hostBuilder.Build();
+
+            //Verify property on builder is set.
+            Assert.Equal("value1", hostBuilder.Context.Configuration["key1"]);
+        }
+
+        [Fact]
         public void ConfigureLoggingCalledIfLoggerFactoryTypeMatches()
         {
             var callCount = 0;
@@ -322,7 +345,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var hostBuilder = new WebHostBuilder()
                 .UseSetting("key1", "value1")
-                .ConfigureConfiguration((context, configBuilder) =>
+                .ConfigureAppConfiguration((context, configBuilder) =>
                 {
                     var config = configBuilder.Build();
                     Assert.Equal("value1", config["key1"]);
@@ -336,7 +359,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void CanConfigureConfigurationAndRetrieveFromDI()
         {
             var hostBuilder = new WebHostBuilder()
-                .ConfigureConfiguration((_, configBuilder) =>
+                .ConfigureAppConfiguration((_, configBuilder) =>
                 {
                     configBuilder
                         .AddInMemoryCollection(
