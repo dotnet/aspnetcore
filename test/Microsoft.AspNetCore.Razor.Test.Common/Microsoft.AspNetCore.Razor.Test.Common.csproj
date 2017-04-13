@@ -2,6 +2,9 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <!-- To generate baselines, run tests with /p:GenerateBaselines=true -->
+    <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
+    <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
     <TargetFrameworks>netstandard1.3</TargetFrameworks>
   </PropertyGroup>
 
