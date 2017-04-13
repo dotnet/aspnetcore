@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var hostingApp = new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory);
-            await Server.StartAsync(hostingApp, cancellationToken);
+            await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
 
             // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
@@ -290,7 +290,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Fire IApplicationLifetime.Stopping
             _applicationLifetime?.StopApplication();
 
-            await Server?.StopAsync(cancellationToken);
+            if (Server != null)
+            {
+                await Server.StopAsync(cancellationToken).ConfigureAwait(false);
+            }
 
             // Fire the IHostedService.Stop
             _hostedServiceExecutor?.Stop();
