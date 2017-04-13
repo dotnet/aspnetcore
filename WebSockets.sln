@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26411.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2C7947A5-9FBD-4267-97C1-2D726D7B3BAF}"
 EndProject
@@ -24,6 +24,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoApp", "samples\EchoApp\EchoApp.csproj", "{421954B0-5C6B-4092-8D4D-EACA4CE60AFB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutobahnTestApp", "test\AutobahnTestApp\AutobahnTestApp.csproj", "{150DF5A8-87C6-42F7-8886-CE07BFD02FD2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{92CE12E6-E127-433B-96D3-164C0113EA17}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
+		build\Key.snk = build\Key.snk
+		build\repo.props = build\repo.props
+		build\repo.targets = build\repo.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

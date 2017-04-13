@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -106,8 +107,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
             };
 
-            var deployer = ApplicationDeployerFactory.Create(parameters, logger);
-            var result = deployer.Deploy();
+            var deployer = ApplicationDeployerFactory.Create(parameters, _loggerFactory);
+            var result = await deployer.DeployAsync();
             _deployers.Add(deployer);
             cancellationToken.ThrowIfCancellationRequested();
 

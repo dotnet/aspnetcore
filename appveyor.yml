@@ -1,5 +1,7 @@
 init:
   - git config --global core.autocrlf true
+environment:
+  AUTOBAHN_SUITES_LOG: 1
 branches:
   only:
     - master
