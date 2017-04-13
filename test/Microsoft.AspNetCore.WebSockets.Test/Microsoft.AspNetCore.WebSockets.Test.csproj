@@ -6,6 +6,12 @@
     <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFrameworks>
     <PlatformTarget Condition="'$(TargetFramework)' == 'net46'">x64</PlatformTarget>
+
+    <!--
+      Workaround for "Explicit RID still required for .NET Framework test projects" (https://github.com/dotnet/sdk/issues/909).
+      Remove when fixed.
+    -->
+    <OutputType>exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
