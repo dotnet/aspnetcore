@@ -1,6 +1,5 @@
 <Project>
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\ServerComparison.TestSites\ServerComparison.TestSites.csproj" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\ServerComparison.TestSites.Standalone\ServerComparison.TestSites.Standalone.csproj" />
   </ItemGroup>
 </Project>
