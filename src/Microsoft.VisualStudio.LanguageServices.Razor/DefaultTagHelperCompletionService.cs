@@ -44,18 +44,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 _ => new HashSet<TagHelperDescriptor>(),
                 StringComparer.OrdinalIgnoreCase);
 
+            var catchAllDescriptors = new HashSet<TagHelperDescriptor>();
             var possibleChildDescriptors = _tagHelperFactsService.GetTagHelpersGivenParent(completionContext.DocumentContext, completionContext.ContainingTagName);
             foreach (var possibleDescriptor in possibleChildDescriptors)
             {
                 var addRuleCompletions = false;
                 var outputHint = possibleDescriptor.TagOutputHint;
 
-                // Filter out catch-all rules because TagHelpers that target attributes only would light up every child tag otherwise. Force those TagHelpers
-                // to have additional requirements before showing them in the element completion list.
-                var nonCatchAllRules = possibleDescriptor.TagMatchingRules.Where(rule => rule.TagName != TagHelperMatchingConventions.ElementCatchAllName);
-                foreach (var rule in nonCatchAllRules)
+                foreach (var rule in possibleDescriptor.TagMatchingRules)
                 {
-                    if (elementCompletions.ContainsKey(rule.TagName))
+                    if (rule.TagName == TagHelperMatchingConventions.ElementCatchAllName)
+                    {
+                        catchAllDescriptors.Add(possibleDescriptor);
+                    }
+                    else if (elementCompletions.ContainsKey(rule.TagName))
                     {
                         addRuleCompletions = true;
                     }
@@ -74,19 +76,35 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
                     if (addRuleCompletions)
                     {
-                        if (!elementCompletions.TryGetValue(rule.TagName, out var existingRuleDescriptors))
-                        {
-                            existingRuleDescriptors = new HashSet<TagHelperDescriptor>();
-                            elementCompletions[rule.TagName] = existingRuleDescriptors;
-                        }
-
-                        existingRuleDescriptors.Add(possibleDescriptor);
+                        UpdateCompletions(rule.TagName, possibleDescriptor);
                     }
+                }
+            }
+
+            // We needed to track all catch-alls and update their completions after all other completions have been completed.
+            // This way, any TagHelper added completions will also have catch-alls listed under their entries.
+            foreach (var catchAllDescriptor in catchAllDescriptors)
+            {
+                foreach (var completionTagNames in elementCompletions.Keys)
+                {
+                    UpdateCompletions(completionTagNames, catchAllDescriptor);
                 }
             }
 
             var result = ElementCompletionResult.Create(elementCompletions);
             return result;
+
+
+            void UpdateCompletions(string tagName, TagHelperDescriptor possibleDescriptor)
+            {
+                if (!elementCompletions.TryGetValue(tagName, out var existingRuleDescriptors))
+                {
+                    existingRuleDescriptors = new HashSet<TagHelperDescriptor>();
+                    elementCompletions[tagName] = existingRuleDescriptors;
+                }
+
+                existingRuleDescriptors.Add(possibleDescriptor);
+            }
         }
 
         private void AddAllowedChildrenCompletions(

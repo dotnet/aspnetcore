@@ -11,6 +11,39 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     public class DefaultTagHelperCompletionServiceTest
     {
         [Fact]
+        public void GetElementCompletions_CatchAllsApplyToAllCompletions()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("SuperLiTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("superli"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("CatchAll", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["superli"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0], documentDescriptors[1] },
+                ["li"] = new HashSet<TagHelperDescriptor> { documentDescriptors[1] },
+            });
+
+            var existingCompletions = new[] { "li" };
+            var completionContext = BuildCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                containingTagName: "ul");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
         public void GetElementCompletions_AllowsMultiTargetingTagHelpers()
         {
             // Arrange
@@ -183,13 +216,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .AllowChildTag("div")
                     .Build(),
             };
-            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
-            {
-                ["p"] = new HashSet<TagHelperDescriptor>(),
-                ["em"] = new HashSet<TagHelperDescriptor>(),
-            });
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>());
 
-            var existingCompletions = new[] { "p", "em" };
+            var existingCompletions = Enumerable.Empty<string>();
             var completionContext = BuildCompletionContext(
                 documentDescriptors,
                 existingCompletions,
