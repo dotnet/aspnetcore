@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     _logger.LogDebug($"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
 
                     // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
-                    await StartLocalhostAsync(ServerAddress.FromUrl(Constants.DefaultServerAddress), serviceContext, application, cancellationToken);
+                    await StartLocalhostAsync(ServerAddress.FromUrl(Constants.DefaultServerAddress), serviceContext, application, cancellationToken).ConfigureAwait(false);
 
                     // If StartLocalhost doesn't throw, there is at least one listener.
                     // The port cannot change for "localhost".
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                             if (string.Equals(parsedAddress.Host, "localhost", StringComparison.OrdinalIgnoreCase))
                             {
                                 // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
-                                await StartLocalhostAsync(parsedAddress, serviceContext, application, cancellationToken);
+                                await StartLocalhostAsync(parsedAddress, serviceContext, application, cancellationToken).ConfigureAwait(false);
 
                                 // If StartLocalhost doesn't throw, there is at least one listener.
                                 // The port cannot change for "localhost".
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                     try
                     {
-                        await transport.BindAsync();
+                        await transport.BindAsync().ConfigureAwait(false);
                     }
                     catch (AddressInUseException ex)
                     {
@@ -236,14 +236,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 {
                     tasks[i] = _transports[i].UnbindAsync();
                 }
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 // TODO: Do transport-agnostic connection management/shutdown.
                 for (int i = 0; i < _transports.Count; i++)
                 {
                     tasks[i] = _transports[i].StopAsync();
                 }
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
 
             _heartbeat?.Dispose();
