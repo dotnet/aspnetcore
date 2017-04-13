@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract IHeaderDictionary Headers { get; }
 
         /// <summary>
-        /// Gets the response body <see cref="Stream"/>.
+        /// Gets or sets the response body <see cref="Stream"/>.
         /// </summary>
         public abstract Stream Body { get; set; }
 
