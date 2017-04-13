@@ -1,7 +1,15 @@
 {
-    "Default": {
-        "rules": [
-            "DefaultCompositeRule"
-        ]
+  "nonshipping": {
+    "rules": [
+      // Don't run any rules for packages that don't ship.
+    ],
+    "packages": {
+      "Microsoft.AspNetCore.Server.IntegrationTesting": {}
     }
+  },
+  "Default": {
+    "rules": [
+      "DefaultCompositeRule"
+    ]
+  }
 }
