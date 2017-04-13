@@ -53,8 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             await StartAsync(endPointInformation, thread).ConfigureAwait(false);
 
-            await Thread.PostAsync(state => ((ListenerPrimary)state).PostCallback(),
-                                   this).ConfigureAwait(false);
+            await Thread.PostAsync(listener => listener.PostCallback(), this).ConfigureAwait(false);
         }
 
         private void PostCallback()
@@ -175,9 +174,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (Thread.FatalError == null && ListenPipe != null)
             {
-                await Thread.PostAsync(state =>
+                await Thread.PostAsync(listener =>
                 {
-                    var listener = (ListenerPrimary)state;
                     listener.ListenPipe.Dispose();
 
                     foreach (var dispatchPipe in listener._dispatchPipes)

@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 var connectionHandler = new ConnectionHandler<TContext>(ipv4ListenOptions, serviceContext, application);
                 var transport = _transportFactory.Create(ipv4ListenOptions, connectionHandler);
                 _transports.Add(transport);
-                await transport.BindAsync();
+                await transport.BindAsync().ConfigureAwait(false);
             }
             catch (AddressInUseException ex)
             {
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 var connectionHandler = new ConnectionHandler<TContext>(ipv6ListenOptions, serviceContext, application);
                 var transport = _transportFactory.Create(ipv6ListenOptions, connectionHandler);
                 _transports.Add(transport);
-                await transport.BindAsync();
+                await transport.BindAsync().ConfigureAwait(false);
             }
             catch (AddressInUseException ex)
             {

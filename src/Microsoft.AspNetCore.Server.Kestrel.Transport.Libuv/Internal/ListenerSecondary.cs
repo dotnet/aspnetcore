@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             Thread = thread;
             DispatchPipe = new UvPipeHandle(Log);
 
-            var tcs = new TaskCompletionSource<int>(this);
+            var tcs = new TaskCompletionSource<int>(this, TaskCreationOptions.RunContinuationsAsynchronously);
             Thread.Post(StartCallback, tcs);
             return tcs.Task;
         }
@@ -185,9 +185,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // the exception that stopped the event loop will never be surfaced.
             if (Thread.FatalError == null)
             {
-                await Thread.PostAsync(state =>
+                await Thread.PostAsync(listener =>
                 {
-                    var listener = (ListenerSecondary)state;
                     listener.DispatchPipe.Dispose();
                     listener.FreeBuffer();
 

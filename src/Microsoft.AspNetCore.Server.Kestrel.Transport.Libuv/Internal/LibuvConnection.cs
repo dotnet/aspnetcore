@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly UvStreamHandle _socket;
         private IConnectionContext _connectionContext;
 
-        private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
+        private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private WritableBuffer? _currentWritableBuffer;
 

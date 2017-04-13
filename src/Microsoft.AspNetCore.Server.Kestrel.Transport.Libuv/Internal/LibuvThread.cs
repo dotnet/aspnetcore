@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly LibuvTransport _transport;
         private readonly IApplicationLifetime _appLifetime;
         private readonly Thread _thread;
-        private readonly TaskCompletionSource<object> _threadTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _threadTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly UvLoopHandle _loop;
         private readonly UvAsyncHandle _post;
         private Queue<Work> _workAdding = new Queue<Work>(1024);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public Task StartAsync()
         {
-            var tcs = new TaskCompletionSource<int>();
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             _thread.Start(tcs);
             return tcs.Task;
         }
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public Task PostAsync<T>(Action<T> callback, T state)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             lock (_workSync)
             {
                 _workAdding.Enqueue(new Work
@@ -332,36 +332,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 try
                 {
                     work.CallbackAdapter(work.Callback, work.State);
-                    if (work.Completion != null)
-                    {
-                        ThreadPool.QueueUserWorkItem(o =>
-                        {
-                            try
-                            {
-                                ((TaskCompletionSource<object>)o).SetResult(null);
-                            }
-                            catch (Exception e)
-                            {
-                                _log.LogError(0, e, $"{nameof(LibuvThread)}.{nameof(DoPostWork)}");
-                            }
-                        }, work.Completion);
-                    }
+                    work.Completion?.TrySetResult(null);
                 }
                 catch (Exception ex)
                 {
                     if (work.Completion != null)
                     {
-                        ThreadPool.QueueUserWorkItem(o =>
-                        {
-                            try
-                            {
-                                ((TaskCompletionSource<object>)o).TrySetException(ex);
-                            }
-                            catch (Exception e)
-                            {
-                                _log.LogError(0, e, $"{nameof(LibuvThread)}.{nameof(DoPostWork)}");
-                            }
-                        }, work.Completion);
+                        work.Completion.TrySetException(ex);
                     }
                     else
                     {

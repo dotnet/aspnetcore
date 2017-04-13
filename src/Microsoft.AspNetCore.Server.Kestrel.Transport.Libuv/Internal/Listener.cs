@@ -31,25 +31,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             EndPointInformation = endPointInformation;
             Thread = thread;
 
-            var tcs = new TaskCompletionSource<int>(this);
-
-            Thread.Post(state =>
+            return Thread.PostAsync(listener =>
             {
-                var tcs2 = state;
-                try
-                {
-                    var listener = ((Listener) tcs2.Task.AsyncState);
-                    listener.ListenSocket = listener.CreateListenSocket();
-                    ListenSocket.Listen(LibuvConstants.ListenBacklog, ConnectionCallback, this);
-                    tcs2.SetResult(0);
-                }
-                catch (Exception ex)
-                {
-                    tcs2.SetException(ex);
-                }
-            }, tcs);
-
-            return tcs.Task;
+                listener.ListenSocket = listener.CreateListenSocket();
+                listener.ListenSocket.Listen(LibuvConstants.ListenBacklog, ConnectionCallback, listener);
+            }, this);
         }
 
         /// <summary>
@@ -157,9 +143,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // the exception that stopped the event loop will never be surfaced.
             if (Thread.FatalError == null && ListenSocket != null)
             {
-                await Thread.PostAsync(state =>
+                await Thread.PostAsync(listener =>
                 {
-                    var listener = (Listener)state;
                     listener.ListenSocket.Dispose();
 
                     listener._closed = true;

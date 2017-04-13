@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private async Task<bool> WalkConnectionsAsync(Action<LibuvConnectionManager, TaskCompletionSource<object>> action, TimeSpan timeout)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _thread.Post(state => action(state, tcs), this);
 
