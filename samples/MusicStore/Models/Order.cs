@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace MusicStore.Models
@@ -64,6 +65,7 @@ namespace MusicStore.Models
 
         [BindNever]
         [ScaffoldColumn(false)]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Total { get; set; }
 
         [BindNever]
