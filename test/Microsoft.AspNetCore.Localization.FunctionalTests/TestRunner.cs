@@ -49,40 +49,37 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             string environmentName,
             string locale)
         {
-            var logger = new LoggerFactory()
-                            .AddConsole()
-                            .CreateLogger(string.Format("Localization Test Site:{0}:{1}:{2}", ServerType.Kestrel, runtimeFlavor, runtimeArchitecture));
+            var loggerFactory = new LoggerFactory();
 
-            using (logger.BeginScope("LocalizationTest"))
+            var deploymentParameters = new DeploymentParameters(_applicationPath, ServerType.Kestrel, runtimeFlavor, runtimeArchitecture)
             {
-                var deploymentParameters = new DeploymentParameters(_applicationPath, ServerType.Kestrel, runtimeFlavor, runtimeArchitecture)
+                ApplicationBaseUriHint = applicationBaseUrl,
+                EnvironmentName = environmentName,
+                TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0"
+            };
+
+            using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+            {
+                var deploymentResult = await deployer.DeployAsync();
+
+                var cookie = new Cookie(CookieRequestCultureProvider.DefaultCookieName, "c=" + locale + "|uic=" + locale);
+                var cookieContainer = new CookieContainer();
+                cookieContainer.Add(new Uri(deploymentResult.ApplicationBaseUri), cookie);
+
+                var httpClientHandler = new HttpClientHandler();
+                httpClientHandler.CookieContainer = cookieContainer;
+
+                using (var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) })
                 {
-                    ApplicationBaseUriHint = applicationBaseUrl,
-                    EnvironmentName = environmentName,
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0"
-                };
+                    var logger = loggerFactory.CreateLogger(string.Format("Localization Test Site:{0}:{1}:{2}", ServerType.Kestrel, runtimeFlavor, runtimeArchitecture));
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
-                {
-                    var deploymentResult = deployer.Deploy();
-
-                    var cookie = new Cookie(CookieRequestCultureProvider.DefaultCookieName, "c=" + locale + "|uic=" + locale);
-                    var cookieContainer = new CookieContainer();
-                    cookieContainer.Add(new Uri(deploymentResult.ApplicationBaseUri), cookie);
-
-                    var httpClientHandler = new HttpClientHandler();
-                    httpClientHandler.CookieContainer = cookieContainer;
-
-                    using (var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) })
+                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                    var response = await RetryHelper.RetryRequest(() =>
                     {
-                        // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
-                        var response = await RetryHelper.RetryRequest(() =>
-                        {
-                            return httpClient.GetAsync(string.Empty);
-                        }, logger, deploymentResult.HostShutdownToken);
+                        return httpClient.GetAsync(string.Empty);
+                    }, logger, deploymentResult.HostShutdownToken);
 
-                        return await response.Content.ReadAsStringAsync();
-                    }
+                    return await response.Content.ReadAsStringAsync();
                 }
             }
         }
