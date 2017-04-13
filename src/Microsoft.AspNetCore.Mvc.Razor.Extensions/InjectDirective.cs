@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         internal class Pass : RazorIRPassBase, IRazorDirectiveClassifierPass
         {
+            // Runs after the @model and @namespace directives
+            public override int Order => 10;
+            
             public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 var visitor = new Visitor();
