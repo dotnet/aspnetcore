@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -44,7 +46,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             _logger.RedirectToPageResultExecuting(result.PageName);
-            context.HttpContext.Response.Redirect(destinationUrl, result.Permanent);
+
+            if (result.PreserveMethod)
+            {
+                context.HttpContext.Response.StatusCode = result.Permanent ?
+                    StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
+                context.HttpContext.Response.Headers[HeaderNames.Location] = destinationUrl;
+            }
+            else
+            {
+                context.HttpContext.Response.Redirect(destinationUrl, result.Permanent);
+            }
         }
     }
 }
