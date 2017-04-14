@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Used by as the default scheme by <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
         /// </summary>
-        public string DefaultAuthenticationScheme { get; set; }
+        public string DefaultAuthenticateScheme { get; set; }
 
         /// <summary>
         /// Used by as the default scheme by <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.

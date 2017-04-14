@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
-        /// This is typically specified via <see cref="AuthenticationOptions.DefaultAuthenticationScheme"/>.
+        /// This is typically specified via <see cref="AuthenticationOptions.DefaultAuthenticateScheme"/>.
         /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.</returns>

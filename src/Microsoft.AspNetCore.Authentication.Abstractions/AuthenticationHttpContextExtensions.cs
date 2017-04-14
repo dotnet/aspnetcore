@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authentication
     public static class AuthenticationHttpContextExtensions
     {
         /// <summary>
-        /// Extension method for authenticate using the <see cref="AuthenticationOptions.DefaultAuthenticationScheme"/> scheme.
+        /// Extension method for authenticate using the <see cref="AuthenticationOptions.DefaultAuthenticateScheme"/> scheme.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <returns>The <see cref="AuthenticateResult"/>.</returns>
