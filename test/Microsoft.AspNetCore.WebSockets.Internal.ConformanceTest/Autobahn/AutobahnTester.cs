@@ -104,8 +104,8 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
                 EnvironmentName = "Development"
             };
 
-            var deployer = ApplicationDeployerFactory.Create(parameters, logger);
-            var result = deployer.Deploy();
+            var deployer = ApplicationDeployerFactory.Create(parameters, _loggerFactory);
+            var result = await deployer.DeployAsync();
             result.HostShutdownToken.ThrowIfCancellationRequested();
 
 #if NET46
