@@ -84,29 +84,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     // Ensure we have some reasonable amount of buffer space
                     var buffer = _input.Alloc(MinAllocBufferSize);
 
-                    int bytesReceived;
-
                     try
                     {
-                        bytesReceived = await _socket.ReceiveAsync(GetArraySegment(buffer.Buffer), SocketFlags.None);
+                        var bytesReceived = await _socket.ReceiveAsync(GetArraySegment(buffer.Buffer), SocketFlags.None);
+
+                        if (bytesReceived == 0)
+                        {
+                            // We receive a FIN so throw an exception so that we cancel the input
+                            // with an error
+                            throw new TaskCanceledException("The request was aborted");
+                        }
+
+                        buffer.Advance(bytesReceived);
                     }
-                    catch (Exception)
+                    finally
                     {
                         buffer.Commit();
-                        throw;
                     }
-
-                    if (bytesReceived == 0)
-                    {
-                        buffer.Commit();
-
-                        // We receive a FIN so throw an exception so that we cancel the input
-                        // with an error
-                        throw new TaskCanceledException("The request was aborted");
-                    }
-
-                    // Record what data we filled into the buffer and push to pipe
-                    buffer.Advance(bytesReceived);
 
                     var result = await buffer.FlushAsync();
                     if (result.IsCompleted)
