@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Routing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -15,10 +14,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void CopyConstructor_CopiesAllProperties()
         {
             // Arrange
-            var route = new AttributeRouteModel(new HttpGetAttribute("/api/Products"));
-
-            route.Name = "products";
-            route.Order = 5;
+            var route = new AttributeRouteModel(new HttpGetAttribute("/api/Products"))
+            {
+                Name = "products",
+                Order = 5,
+                SuppressLinkGeneration = true,
+                SuppressPathMatching = true,
+            };
 
             // Act
             var route2 = new AttributeRouteModel(route);
@@ -275,6 +277,80 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Assert
             Assert.NotNull(combined);
             Assert.Equal(expectedName, combined.Name);
+        }
+
+        [Fact]
+        public void Combine_SetsSuppressLinkGenerationToFalse_IfNeitherIsTrue()
+        {
+            // Arrange
+            var left = new AttributeRouteModel
+            {
+                Template = "Template"
+            };
+            var right = new AttributeRouteModel();
+            var combined = AttributeRouteModel.CombineAttributeRouteModel(left, right);
+
+            // Assert
+            Assert.False(combined.SuppressLinkGeneration);
+        }
+
+        [Theory]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void Combine_SetsSuppressLinkGenerationToTrue_IfEitherIsTrue(bool leftSuppress, bool rightSuppress)
+        {
+            // Arrange
+            var left = new AttributeRouteModel
+            {
+                Template = "Template",
+                SuppressLinkGeneration = leftSuppress,
+            };
+            var right = new AttributeRouteModel
+            {
+                SuppressLinkGeneration = rightSuppress,
+            };
+            var combined = AttributeRouteModel.CombineAttributeRouteModel(left, right);
+
+            // Assert
+            Assert.True(combined.SuppressLinkGeneration);
+        }
+
+        [Fact]
+        public void Combine_SetsSuppressPathGenerationToFalse_IfNeitherIsTrue()
+        {
+            // Arrange
+            var left = new AttributeRouteModel
+            {
+                Template = "Template",
+            };
+            var right = new AttributeRouteModel();
+            var combined = AttributeRouteModel.CombineAttributeRouteModel(left, right);
+
+            // Assert
+            Assert.False(combined.SuppressPathMatching);
+        }
+
+        [Theory]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void Combine_SetsSuppressPathGenerationToTrue_IfEitherIsTrue(bool leftSuppress, bool rightSuppress)
+        {
+            // Arrange
+            var left = new AttributeRouteModel
+            {
+                Template = "Template",
+                SuppressPathMatching = leftSuppress,
+            };
+            var right = new AttributeRouteModel
+            {
+                SuppressPathMatching = rightSuppress,
+            };
+            var combined = AttributeRouteModel.CombineAttributeRouteModel(left, right);
+
+            // Assert
+            Assert.True(combined.SuppressPathMatching);
         }
 
         public static IEnumerable<object[]> CombineNamesTestData

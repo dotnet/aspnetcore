@@ -66,6 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             foreach (var action in context.Actions.OfType<ControllerActionDescriptor>())
             {
+                if (action.AttributeRouteInfo != null && action.AttributeRouteInfo.SuppressPathMatching)
+                {
+                    continue;
+                }
+
                 var extensionData = action.GetProperty<ApiDescriptionActionData>();
                 if (extensionData != null)
                 {

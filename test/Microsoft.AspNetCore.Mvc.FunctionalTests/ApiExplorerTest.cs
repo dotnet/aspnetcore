@@ -1052,6 +1052,19 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("ApiExplorerReload/NewIndex", description.RelativePath);
         }
 
+        [Fact]
+        public async Task ApiExplorer_DoesNotListActionsSuppressedForPathMatching()
+        {
+            // Act
+            var body = await Client.GetStringAsync("ApiExplorerInboundOutbound/SuppressedForLinkGeneration");
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Empty(description.ParameterDescriptions);
+            Assert.Equal("ApiExplorerInboundOutbound/SuppressedForLinkGeneration", description.RelativePath);
+        }
+
         private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)
         {
             return apiResponseType.ResponseFormats

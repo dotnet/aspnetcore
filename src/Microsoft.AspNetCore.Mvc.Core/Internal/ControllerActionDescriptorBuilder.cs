@@ -365,9 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             AttributeRouteModel action,
             AttributeRouteModel controller)
         {
-            var combinedRoute = AttributeRouteModel.CombineAttributeRouteModel(
-                                controller,
-                                action);
+            var combinedRoute = AttributeRouteModel.CombineAttributeRouteModel(controller, action);
 
             if (combinedRoute == null)
             {
@@ -375,11 +373,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             else
             {
-                return new AttributeRouteInfo()
+                return new AttributeRouteInfo
                 {
                     Template = combinedRoute.Template,
                     Order = combinedRoute.Order ?? DefaultAttributeRouteOrder,
                     Name = combinedRoute.Name,
+                    SuppressLinkGeneration = combinedRoute.SuppressLinkGeneration,
+                    SuppressPathMatching = combinedRoute.SuppressPathMatching,
                 };
             }
         }

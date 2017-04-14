@@ -88,6 +88,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // action by expected route values, and then use the TemplateBinder to generate the link.
             foreach (var routeInfo in routeInfos)
             {
+                if (routeInfo.SuppressLinkGeneration)
+                {
+                    continue;
+                }
+
                 var defaults = new RouteValueDictionary();
                 foreach (var kvp in routeInfo.ActionDescriptor.RouteValues)
                 {
@@ -117,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // We're creating one AttributeRouteMatchingEntry per group, so we need to identify the distinct set of
             // groups. It's guaranteed that all members of the group have the same template and precedence,
             // so we only need to hang on to a single instance of the RouteInfo for each group.
-            var groups = GroupRouteInfos(routeInfos);
+            var groups = GetInboundRouteGroups(routeInfos);
             foreach (var group in groups)
             {
                 var handler = _handlerFactory(group.ToArray());
@@ -135,9 +140,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private static IEnumerable<IGrouping<RouteInfo, ActionDescriptor>> GroupRouteInfos(List<RouteInfo> routeInfos)
+        private static IEnumerable<IGrouping<RouteInfo, ActionDescriptor>> GetInboundRouteGroups(List<RouteInfo> routeInfos)
         {
-            return routeInfos.GroupBy(r => r, r => r.ActionDescriptor, RouteInfoEqualityComparer.Instance);
+            return routeInfos
+                .Where(routeInfo => !routeInfo.SuppressPathMatching)
+                .GroupBy(r => r, r => r.ActionDescriptor, RouteInfoEqualityComparer.Instance);
         }
 
         private static List<RouteInfo> GetRouteInfos(IReadOnlyList<ActionDescriptor> actions)
@@ -194,8 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             try
             {
-                RouteTemplate parsedTemplate;
-                if (!templateCache.TryGetValue(action.AttributeRouteInfo.Template, out parsedTemplate))
+                if (!templateCache.TryGetValue(action.AttributeRouteInfo.Template, out var parsedTemplate))
                 {
                     // Parsing with throw if the template is invalid.
                     parsedTemplate = TemplateParser.Parse(action.AttributeRouteInfo.Template);
@@ -203,6 +209,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
 
                 routeInfo.RouteTemplate = parsedTemplate;
+                routeInfo.SuppressPathMatching = action.AttributeRouteInfo.SuppressPathMatching;
+                routeInfo.SuppressLinkGeneration = action.AttributeRouteInfo.SuppressLinkGeneration;
             }
             catch (Exception ex)
             {
@@ -243,6 +251,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public string RouteName { get; set; }
 
             public RouteTemplate RouteTemplate { get; set; }
+
+            public bool SuppressPathMatching { get; set; }
+
+            public bool SuppressLinkGeneration { get; set; }
         }
 
         private class RouteInfoEqualityComparer : IEqualityComparer<RouteInfo>

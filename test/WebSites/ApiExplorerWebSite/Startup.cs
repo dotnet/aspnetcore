@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Linq;
+using ApiExplorerWebSite.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -25,6 +26,8 @@ namespace ApiExplorerWebSite
                 options.Conventions.Add(new ApiExplorerVisibilityEnabledConvention());
                 options.Conventions.Add(new ApiExplorerVisibilityDisabledConvention(
                     typeof(ApiExplorerVisbilityDisabledByConventionController)));
+                options.Conventions.Add(new ApiExplorerInboundOutboundConvention(
+                    typeof(ApiExplorerInboundOutBoundController)));
 
                 var jsonOutputFormatter = options.OutputFormatters.OfType<JsonOutputFormatter>().First();
 
