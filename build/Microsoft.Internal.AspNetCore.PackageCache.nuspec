@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Microsoft.Internal.AspNetCore.PackageCache</id>
+    <authors>Microsoft</authors>
+    <description>Runtime Package Store for ASP.NET Core</description>
+  </metadata>
+  <files>
+    <file src="*.zip" target="" />
+  </files>
+</package>

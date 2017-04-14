@@ -32,9 +32,10 @@
       <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.All.csproj</MetaPackageFile>
       <WorkingDirectory>$(MetaPackagePath)bin\work</WorkingDirectory>
       <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
-      <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(RepositoryRoot)artifacts\Microsoft.Internal.AspNetCorePackageCache.win-$(VersionSuffix).zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(RepositoryRoot)artifacts\Microsoft.Internal.AspNetCorePackageCache.linux-$(VersionSuffix).zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)' == 'macOS'">$(RepositoryRoot)artifacts\Microsoft.Internal.AspNetCorePackageCache.osx-$(VersionSuffix).zip</OutputZip>
+      <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
+      <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(ArtifactsDir)Microsoft.Internal.AspNetCorePackageCache.win-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(ArtifactsDir)Microsoft.Internal.AspNetCorePackageCache.linux-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'macOS'">$(ArtifactsDir)Microsoft.Internal.AspNetCorePackageCache.osx-$(VersionSuffix).zip</OutputZip>
     </PropertyGroup>
 
     <ItemGroup>
@@ -53,5 +54,9 @@
     </ItemGroup>
 
     <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)" />
+
+    <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
+    <Copy SourceFiles="$(RepositoryRoot)build\Microsoft.Internal.AspNetCore.PackageCache.nuspec" DestinationFolder="ArtifactsDir" Condition="'$(OSPlatform)' == 'Windows'" />
+    <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)' == 'Windows'" />
   </Target>
 </Project>
