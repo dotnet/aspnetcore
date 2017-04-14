@@ -1,7 +1,7 @@
 Document - 
     Checksum - 
     NamespaceDeclaration -  - AspNetCore
-        UsingStatement -  - TModel = DateTime
+        UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
         UsingStatement -  - System.Threading.Tasks
         UsingStatement - (16:1,1 [17] ) - System.Linq

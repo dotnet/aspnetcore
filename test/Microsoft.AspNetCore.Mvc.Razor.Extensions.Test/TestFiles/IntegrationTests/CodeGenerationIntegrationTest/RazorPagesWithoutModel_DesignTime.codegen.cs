@@ -1,7 +1,7 @@
 namespace AspNetCore
 {
     #line hidden
-    using TModel = TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml;
+    using TModel = global::System.Object;
     using System;
     using System.Threading.Tasks;
     using System.Linq;

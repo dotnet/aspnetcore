@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var @namespace = FindNamespaceNode(irDocument);
             var usingNode = Assert.IsType<UsingStatementIRNode>(@namespace.Children[0]);
-            Assert.Equal($"TModel = SomeType", usingNode.Content);
+            Assert.Equal($"TModel = global::System.Object", usingNode.Content);
         }
 
         private RazorCodeDocument CreateDocument(string content)

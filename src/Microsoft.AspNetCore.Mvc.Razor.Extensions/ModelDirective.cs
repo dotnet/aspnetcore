@@ -75,9 +75,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                 if (_designTime)
                 {
-                    // Alias the TModel token to a known type ('object' if the model type is unknown).
+                    // Alias the TModel token to a known type.
                     // This allows design time compilation to succeed for Razor files where the token isn't replaced.
-                    var typeName = modelType == "dynamic" ? $"global::{typeof(object).FullName}" : modelType;
+                    var typeName = $"global::{typeof(object).FullName}";
                     var usingNode = new UsingStatementIRNode()
                     {
                         Content = $"TModel = {typeName}"

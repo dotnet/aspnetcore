@@ -1,7 +1,7 @@
 namespace Test.Namespace
 {
     #line hidden
-    using TModel = PageWithNamespace_Page;
+    using TModel = global::System.Object;
     using System;
     using System.Threading.Tasks;
     using System.Linq;

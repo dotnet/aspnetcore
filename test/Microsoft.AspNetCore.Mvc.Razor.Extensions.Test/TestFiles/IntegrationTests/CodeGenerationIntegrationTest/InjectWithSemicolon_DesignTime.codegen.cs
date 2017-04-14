@@ -1,7 +1,7 @@
 namespace AspNetCore
 {
     #line hidden
-    using TModel = MyModel;
+    using TModel = global::System.Object;
     using System;
     using System.Threading.Tasks;
     using System.Linq;
