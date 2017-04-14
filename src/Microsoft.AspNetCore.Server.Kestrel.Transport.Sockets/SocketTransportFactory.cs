@@ -1,0 +1,44 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
+using System;
+
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
+{
+    public sealed class SocketTransportFactory : ITransportFactory
+    {
+        private readonly PipeFactory _pipeFactory = new PipeFactory();
+        private readonly bool _forceDispatch;
+
+        public SocketTransportFactory(bool forceDispatch = false)
+        {
+            _forceDispatch = forceDispatch;
+        }
+
+        public ITransport Create(IEndPointInformation endPointInformation, IConnectionHandler handler)
+        {
+            if (endPointInformation == null)
+            {
+                throw new ArgumentNullException(nameof(endPointInformation));
+            }
+
+            if (endPointInformation.Type != ListenType.IPEndPoint)
+            {
+                throw new ArgumentException("Only ListenType.IPEndPoint is supported", nameof(endPointInformation));
+            }
+
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            return new SocketTransport(this, endPointInformation, handler);
+        }
+
+        internal PipeFactory PipeFactory => _pipeFactory;
+
+        internal bool ForceDispatch => _forceDispatch;
+    }
+}

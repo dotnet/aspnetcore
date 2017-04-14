@@ -12,6 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
         IPEndPoint LocalEndPoint { get; }
 
         PipeFactory PipeFactory { get; }
+
+        bool RequiresDispatch { get; }
+
         IScheduler InputWriterScheduler { get; }
         IScheduler OutputReaderScheduler { get; }
     }

@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public IPEndPoint LocalEndPoint { get; }
 
         public PipeFactory PipeFactory { get; }
+        public bool RequiresDispatch { get; }
         public IScheduler InputWriterScheduler { get; }
         public IScheduler OutputReaderScheduler { get; }
     }
