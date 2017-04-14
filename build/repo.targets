@@ -33,9 +33,9 @@
       <WorkingDirectory>$(MetaPackagePath)bin\work</WorkingDirectory>
       <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
       <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
-      <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(ArtifactsDir)Microsoft.Internal.AspNetCorePackageCache.win-$(VersionSuffix).zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(ArtifactsDir)Microsoft.Internal.AspNetCorePackageCache.linux-$(VersionSuffix).zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)' == 'macOS'">$(ArtifactsDir)Microsoft.Internal.AspNetCorePackageCache.osx-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(ArtifactsDir)Build.RuntimeStore.win-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(ArtifactsDir)Build.RuntimeStore.linux-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)' == 'macOS'">$(ArtifactsDir)Build.RuntimeStore.osx-$(VersionSuffix).zip</OutputZip>
     </PropertyGroup>
 
     <ItemGroup>
@@ -56,7 +56,7 @@
     <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)" />
 
     <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
-    <Copy SourceFiles="$(RepositoryRoot)build\Microsoft.Internal.AspNetCore.PackageCache.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)' == 'Windows'" />
+    <Copy SourceFiles="$(RepositoryRoot)build\Build.RuntimeStore.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)' == 'Windows'" />
     <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)' == 'Windows'" />
   </Target>
 </Project>

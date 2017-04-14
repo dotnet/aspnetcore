@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>Microsoft.Internal.AspNetCore.PackageCache</id>
+    <id>PackageStore.Int</id>
     <authors>Microsoft</authors>
-    <description>Runtime Package Store for ASP.NET Core</description>
+    <description>Runtime Package Store for ASP.NET Core, for internal builds</description>
   </metadata>
   <files>
     <file src="*.zip" target="" />
