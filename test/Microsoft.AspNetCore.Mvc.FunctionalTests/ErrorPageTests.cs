@@ -136,5 +136,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains("Loader Exceptions:", content);
             Assert.Contains(expectedMessage, content);
         }
+
+        [Fact]
+        public async void AggregateException_FlattensInnerExceptions()
+        {
+            // Arrange
+            var aggregateException = "AggregateException: One or more errors occurred.";
+            var nullReferenceException = "NullReferenceException: Foo cannot be null";
+            var indexOutOfRangeException = "IndexOutOfRangeException: Index is out of range";
+
+            // Act
+            var response = await Client.GetAsync("http://localhost/AggregateException");
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Contains(aggregateException, content);
+            Assert.Contains(nullReferenceException, content);
+            Assert.Contains(indexOutOfRangeException, content);
+        }
     }
 }
