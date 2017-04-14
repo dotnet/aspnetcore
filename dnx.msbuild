@@ -356,7 +356,7 @@
         <!-- Create a Build.PackageStore-{version}.nupkg to push to internal feed -->
         <Copy SourceFiles="@(PackageCacheNuspec)" DestinationFolder="$(PackageCacheOutputPath)" />
         <ReadLinesFromFile File="$(CoherencePackageCacheDestinationDir)version.txt">
-            <Output TaskParameter="Lines" PropertyName="VersionNumber">
+            <Output TaskParameter="Lines" PropertyName="VersionNumber" />
         </ReadLinesFromFile>
         <Exec Command="$(DNXToolsPath)NuGet.exe pack @(PackageCacheNuspec) -Version $(VersionNumber) -OutputDirectory $(PackageCacheOutputPath) -BasePath $(PackageCacheOutputPath)"/>
     </Target>
