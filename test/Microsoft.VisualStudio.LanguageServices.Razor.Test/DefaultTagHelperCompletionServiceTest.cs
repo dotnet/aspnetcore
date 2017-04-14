@@ -11,6 +11,42 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     public class DefaultTagHelperCompletionServiceTest
     {
         [Fact]
+        public void GetElementCompletions_TagOutputHintDoesNotFallThroughToSchemaCheck()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("MyTableTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("my-table"))
+                    .TagOutputHint("table")
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("MyTrTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("my-tr"))
+                    .TagOutputHint("tr")
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["my-table"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0] },
+                ["table"] = new HashSet<TagHelperDescriptor>(),
+            });
+
+            var existingCompletions = new[] { "table" };
+            var completionContext = BuildCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                containingTagName: "body",
+                containingParentTagName: null);
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
         public void GetElementCompletions_CatchAllsOnlyApplyToCompletionsStartingWithPrefix()
         {
             // Arrange

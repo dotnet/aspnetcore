@@ -62,11 +62,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     {
                         addRuleCompletions = true;
                     }
-                    else if (outputHint != null && elementCompletions.ContainsKey(outputHint))
+                    else if (outputHint != null)
                     {
-                        // If the possible descriptors final output tag already exists in our list of completions, we should add every representation
-                        // of that descriptor to the possible element completions.
-                        addRuleCompletions = true;
+                        // If the current descriptor has an output hint we need to make sure it shows up only when its output hint would normally show up.
+                        // Example: We have a MyTableTagHelper that has an output hint of "table" and a MyTrTagHelper that has an output hint of "tr".
+                        // If we try typing in a situation like this: <body > | </body>
+                        // We'd expect to only get "my-table" as a completion because the "body" tag doesn't allow "tr" tags.
+                        addRuleCompletions = elementCompletions.ContainsKey(outputHint);
                     }
                     else if (!completionContext.InHTMLSchema(rule.TagName))
                     {
