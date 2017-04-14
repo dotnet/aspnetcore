@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// </summary>
     public class RazorViewEngineOptions
     {
-        private CSharpParseOptions _parseOptions = new CSharpParseOptions(LanguageVersion.CSharp6);
+        private CSharpParseOptions _parseOptions = new CSharpParseOptions(LanguageVersion.CSharp7);
         private CSharpCompilationOptions _compilationOptions =
             new CSharpCompilationOptions(CodeAnalysis.OutputKind.DynamicallyLinkedLibrary);
         private Action<RoslynCompilationContext> _compilationCallback = c => { };

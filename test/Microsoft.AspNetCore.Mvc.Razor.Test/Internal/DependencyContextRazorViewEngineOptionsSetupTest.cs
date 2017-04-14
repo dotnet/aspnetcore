@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 });
 
             Assert.Empty(parseOptions.PreprocessorSymbolNames);
-            Assert.Equal(LanguageVersion.CSharp6, parseOptions.LanguageVersion);
+            Assert.Equal(LanguageVersion.CSharp7, parseOptions.LanguageVersion);
         }
 
         [Fact]

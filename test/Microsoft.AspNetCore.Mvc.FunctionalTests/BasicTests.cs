@@ -31,6 +31,30 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
+        public async Task CanRender_CSharp7Views()
+        {
+            // Arrange
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var outputFile = "compiler/resources/BasicWebSite.Home.CSharp7View.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            var response = await Client.GetAsync("Home/CSharp7View");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+#endif
+        }
+
+        [Fact]
         public async Task CanRender_ViewComponentWithArgumentsFromController()
         {
             // Arrange
