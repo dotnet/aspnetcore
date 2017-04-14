@@ -19,12 +19,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         [Fact]
         public async Task Precompilation_RunsConfiguredCompilationCallbacks()
         {
-            // Arrange
-            var deploymentResult = Fixture.CreateDeployment();
-
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                deploymentResult.ApplicationBaseUri,
+                Fixture.DeploymentResult.ApplicationBaseUri,
                 Fixture.Logger);
 
             // Assert
@@ -34,12 +31,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         [Fact]
         public async Task Precompilation_UsesConfiguredParseOptions()
         {
-            // Arrange
-            var deploymentResult = Fixture.CreateDeployment();
-
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                deploymentResult.ApplicationBaseUri + "Home/ViewWithPreprocessor",
+                "Home/ViewWithPreprocessor",
                 Fixture.Logger);
 
             // Assert

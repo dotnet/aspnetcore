@@ -26,11 +26,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
         {
             // Arrange
             var expectedText = "Hello Index!";
-            var deploymentResult = Fixture.CreateDeployment();
 
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                deploymentResult.ApplicationBaseUri,
+                Fixture.DeploymentResult.ApplicationBaseUri,
                 Fixture.Logger);
 
             // Assert
@@ -46,11 +45,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
                 "/Views/Home/About.cshtml",
                 "/Views/Home/Index.cshtml",
             };
-            var deploymentResult = Fixture.CreateDeployment();
 
             // Act
             var response2 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                $"{deploymentResult.ApplicationBaseUri}Home/GetPrecompiledResourceNames",
+                "Home/GetPrecompiledResourceNames",
                 Fixture.Logger);
 
             // Assert
@@ -73,8 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
             {
                 "NotIncluded.cshtml",
             };
-            var deploymentResult = Fixture.CreateDeployment();
-            var viewsDirectory = Path.Combine(deploymentResult.ContentRoot, "Views", "Home");
+            var viewsDirectory = Path.Combine(Fixture.DeploymentResult.ContentRoot, "Views", "Home");
 
             // Act & Assert
             foreach (var file in viewsPublished)

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
@@ -20,26 +21,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         [Fact]
         public void Precompilation_PreventsRefAssembliesFromBeingPublished()
         {
-            // Arrange & Act
-            var deploymentResult = Fixture.CreateDeployment();
-
-            // Assert
-            Assert.False(Directory.Exists(Path.Combine(deploymentResult.ContentRoot, "refs")));
+            // Act & Assert
+            Assert.False(Directory.Exists(Path.Combine(Fixture.DeploymentResult.ContentRoot, "refs")));
         }
 
         [Fact]
-        public void PublishingWithOption_AllowsPublishingRefAssemblies()
+        public async Task PublishingWithOption_AllowsPublishingRefAssemblies()
         {
             // Arrange
             var deploymentParameters = Fixture.GetDeploymentParameters();
             deploymentParameters.PublishEnvironmentVariables.Add(
                 new KeyValuePair<string, string>("MvcRazorExcludeRefAssembliesFromPublish", "false"));
-            var logger = Fixture.CreateLogger();
 
-            using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
+            using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, Fixture.LoggerFactory))
             {
                 // Act
-                var deploymentResult = deployer.Deploy();
+                var deploymentResult = await deployer.DeployAsync();
 
                 // Assert
                 Assert.True(Directory.Exists(Path.Combine(deploymentResult.ContentRoot, "refs")));

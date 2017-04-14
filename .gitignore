@@ -39,3 +39,4 @@ node_modules
 *.orig
 BuildInfo.generated.cs
 msbuild.log
+global.json

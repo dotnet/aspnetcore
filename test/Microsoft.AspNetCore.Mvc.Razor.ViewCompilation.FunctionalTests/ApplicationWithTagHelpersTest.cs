@@ -31,12 +31,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         [MemberData(nameof(ApplicationWithTagHelpersData))]
         public async Task Precompilation_WorksForViewsThatUseTagHelpers(string url)
         {
-            // Arrange
-            var deploymentResult = Fixture.CreateDeployment();
-
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                $"{deploymentResult.ApplicationBaseUri}Home/{url}",
+                $"Home/{url}",
                 Fixture.Logger);
 
             // Assert

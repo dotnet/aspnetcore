@@ -12,6 +12,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 {
     public static class HttpClientExtensions
     {
+        public static Task<string> GetStringWithRetryAsync(
+            this HttpClient httpClient,
+            ILogger logger)
+        {
+            return GetStringWithRetryAsync(httpClient, httpClient.BaseAddress.AbsoluteUri, logger);
+        }
+
         public static async Task<string> GetStringWithRetryAsync(
             this HttpClient httpClient,
             string url,

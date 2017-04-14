@@ -19,13 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         [Fact]
         public async Task ConsumingClassLibrariesWithPrecompiledViewsWork()
         {
-            // Arrange
-            var deploymentResult = Fixture.CreateDeployment();
-
             // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                deploymentResult.ApplicationBaseUri + "Manage/Home",
-                Fixture.Logger);
+            var response = await Fixture.HttpClient.GetStringWithRetryAsync("Manage/Home", Fixture.Logger);
 
             // Assert
             TestEmbeddedResource.AssertContent("ApplicationConsumingPrecompiledViews.Manage.Home.Index.txt", response);

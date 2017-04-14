@@ -32,15 +32,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
                 "/Views/Home/Index.cshtml",
             };
             var expectedText = "Hello Index!";
-            var deploymentResult = Fixture.CreateDeployment();
 
             var assemblyPath = Path.Combine(
-                deploymentResult.DeploymentParameters.PublishedApplicationRootPath,
+                Fixture.DeploymentResult.DeploymentParameters.PublishedApplicationRootPath,
                 $"{ApplicationName}.PrecompiledViews.dll");
 
             // Act - 1
             var response1 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                $"{deploymentResult.ApplicationBaseUri}Home/Index",
+                "Home/Index",
                 Fixture.Logger);
 
             // Assert - 1
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
 
             // Act - 2
             var response2 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                $"{deploymentResult.ApplicationBaseUri}Home/GetPrecompiledResourceNames",
+                "Home/GetPrecompiledResourceNames",
                 Fixture.Logger);
 
             // Assert - 2
