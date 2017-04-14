@@ -1,13 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
@@ -85,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 listenSocket.Dispose();
 
                 Debug.Assert(_listenTask != null);
-                await _listenTask;
+                await _listenTask.ConfigureAwait(false);
                 _listenTask = null;
             }
         }
@@ -101,11 +100,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 while (true)
                 {
-                    Socket acceptSocket = await _listenSocket.AcceptAsync();
+                    var acceptSocket = await _listenSocket.AcceptAsync();
 
                     acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
-                    SocketConnection connection = new SocketConnection(acceptSocket, this);
+                    var connection = new SocketConnection(acceptSocket, this);
                     connection.Start(_handler);
                 }
             }
