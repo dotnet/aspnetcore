@@ -37,7 +37,7 @@ namespace ServerComparison.FunctionalTests
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Kestrel_ContentLength(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckContentLengthAsync, applicationType);
@@ -46,7 +46,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Nginx_ContentLength(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckContentLengthAsync, applicationType);
@@ -74,7 +74,7 @@ namespace ServerComparison.FunctionalTests
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Kestrel_Http10ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp10ConnectionCloseAsync, applicationType);
@@ -82,7 +82,7 @@ namespace ServerComparison.FunctionalTests
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Kestrel_Http11ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp11ConnectionCloseAsync, applicationType);
@@ -100,7 +100,7 @@ namespace ServerComparison.FunctionalTests
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Kestrel_Chunked(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckChunkedAsync, applicationType);
@@ -109,7 +109,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Nginx_Chunked(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckChunkedAsync, applicationType);
@@ -127,7 +127,7 @@ namespace ServerComparison.FunctionalTests
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Kestrel_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAsync, applicationType);
@@ -136,7 +136,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Nginx_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAsync, applicationType);
@@ -154,7 +154,7 @@ namespace ServerComparison.FunctionalTests
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/73")]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public Task ResponseFormats_Kestrel_ManuallyChunkAndClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAndCloseAsync, applicationType);
