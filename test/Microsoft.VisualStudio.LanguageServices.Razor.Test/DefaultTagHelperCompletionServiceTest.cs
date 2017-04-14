@@ -11,6 +11,75 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     public class DefaultTagHelperCompletionServiceTest
     {
         [Fact]
+        public void GetElementCompletions_CatchAllsOnlyApplyToCompletionsStartingWithPrefix()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("CatchAllTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("LiTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["th:li"] = new HashSet<TagHelperDescriptor> { documentDescriptors[1], documentDescriptors[0] },
+                ["li"] = new HashSet<TagHelperDescriptor>(),
+            });
+
+            var existingCompletions = new[] { "li" };
+            var completionContext = BuildCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                containingTagName: "ul",
+                tagHelperPrefix: "th:");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetElementCompletions_TagHelperPrefixIsPrependedToTagHelperCompletions()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("SuperLiTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("superli"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("LiTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["th:superli"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0] },
+                ["th:li"] = new HashSet<TagHelperDescriptor> { documentDescriptors[1] },
+                ["li"] = new HashSet<TagHelperDescriptor>(),
+            });
+
+            var existingCompletions = new[] { "li" };
+            var completionContext = BuildCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                containingTagName: "ul",
+                tagHelperPrefix: "th:");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
         public void GetElementCompletions_CatchAllsApplyToAllCompletions()
         {
             // Arrange
@@ -382,9 +451,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             IEnumerable<TagHelperDescriptor> descriptors,
             IEnumerable<string> existingCompletions,
             string containingTagName,
-            string containingParentTagName = "body")
+            string containingParentTagName = "body",
+            string tagHelperPrefix = "")
         {
-            var documentContext = TagHelperDocumentContext.Create(string.Empty, descriptors);
+            var documentContext = TagHelperDocumentContext.Create(tagHelperPrefix, descriptors);
             var completionContext = new ElementCompletionContext(
                 documentContext,
                 existingCompletions,

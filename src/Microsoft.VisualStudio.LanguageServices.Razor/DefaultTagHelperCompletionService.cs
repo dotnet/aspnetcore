@@ -45,6 +45,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 StringComparer.OrdinalIgnoreCase);
 
             var catchAllDescriptors = new HashSet<TagHelperDescriptor>();
+            var prefix = completionContext.DocumentContext.Prefix ?? string.Empty;
             var possibleChildDescriptors = _tagHelperFactsService.GetTagHelpersGivenParent(completionContext.DocumentContext, completionContext.ContainingTagName);
             foreach (var possibleDescriptor in possibleChildDescriptors)
             {
@@ -76,7 +77,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
                     if (addRuleCompletions)
                     {
-                        UpdateCompletions(rule.TagName, possibleDescriptor);
+                        UpdateCompletions(prefix + rule.TagName, possibleDescriptor);
                     }
                 }
             }
@@ -85,15 +86,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // This way, any TagHelper added completions will also have catch-alls listed under their entries.
             foreach (var catchAllDescriptor in catchAllDescriptors)
             {
-                foreach (var completionTagNames in elementCompletions.Keys)
+                foreach (var completionTagName in elementCompletions.Keys)
                 {
-                    UpdateCompletions(completionTagNames, catchAllDescriptor);
+                    if (completionTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        UpdateCompletions(completionTagName, catchAllDescriptor);
+                    }
                 }
             }
 
             var result = ElementCompletionResult.Create(elementCompletions);
             return result;
-
 
             void UpdateCompletions(string tagName, TagHelperDescriptor possibleDescriptor)
             {
