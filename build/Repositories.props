@@ -40,7 +40,6 @@
     <Repository Include="Mvc" Commit="" />
     <Repository Include="MvcPrecompilation" Commit="" />
     <Repository Include="Options" Commit="" />
-    <Repository Include="PlatformAbstractions" Commit="" />
     <Repository Include="Proxy" Commit="" />
     <Repository Include="Razor" Commit="" />
     <Repository Include="ResponseCaching" Commit="" />
