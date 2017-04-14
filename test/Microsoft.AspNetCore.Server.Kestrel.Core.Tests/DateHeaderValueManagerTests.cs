@@ -46,8 +46,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var timerInterval = TimeSpan.FromSeconds(10);
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
+            var testKestrelTrace = new TestKestrelTrace();
 
-            using (new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, null, timerInterval))
+            using (new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, testKestrelTrace, timerInterval))
             {
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
                 systemClock.UtcNow = future;
@@ -69,13 +70,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var timerInterval = TimeSpan.FromMilliseconds(100);
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
+            var testKestrelTrace = new TestKestrelTrace();
 
             var heartbeatTcs = new TaskCompletionSource<object>();
             var mockHeartbeatHandler = new Mock<IHeartbeatHandler>();
 
             mockHeartbeatHandler.Setup(h => h.OnHeartbeat(future)).Callback(() => heartbeatTcs.TrySetResult(null));
 
-            using (new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, systemClock, null, timerInterval))
+            using (new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, systemClock, testKestrelTrace, timerInterval))
             {
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
 
@@ -100,8 +102,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var timerInterval = TimeSpan.FromSeconds(10);
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
+            var testKestrelTrace = new TestKestrelTrace();
 
-            using (new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, null, timerInterval))
+            using (new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, testKestrelTrace, timerInterval))
             {
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
             }

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() => handlerMre.Wait());
             kestrelTrace.Setup(t => t.TimerSlow(heartbeatInterval, systemClock.UtcNow)).Callback(() => traceMre.Set());
 
-            using (new Heartbeat(new[] {heartbeatHandler.Object}, systemClock, kestrelTrace.Object, heartbeatInterval))
+            using (new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace.Object, heartbeatInterval))
             {
                 Assert.True(traceMre.Wait(TimeSpan.FromSeconds(10)));
             }
@@ -42,13 +42,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ExceptionFromHeartbeatHandlerIsLoggedAsError()
         {
             var systemClock = new MockSystemClock();
+            var heartbeatInterval = TimeSpan.FromMilliseconds(10);
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var kestrelTrace = new TestKestrelTrace();
             var ex = new Exception();
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Throws(ex);
 
-            using (new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace))
+            using (new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace, heartbeatInterval))
             {
                 Assert.True(kestrelTrace.Logger.MessageLoggedTask.Wait(TimeSpan.FromSeconds(10)));
             }

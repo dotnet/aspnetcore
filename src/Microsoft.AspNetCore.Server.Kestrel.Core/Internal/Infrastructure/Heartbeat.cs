@@ -63,8 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             else
             {
-                // Tests usually pass in a null trace
-                _trace?.TimerSlow(_interval, now);
+                _trace.TimerSlow(_interval, now);
             }
         }
 
