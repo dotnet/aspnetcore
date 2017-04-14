@@ -55,7 +55,7 @@
             <Url>$(CodeSignUrl)</Url>
             <Certificates>$(ThirdParthCodeSignCertificates)</Certificates>
         </PackageCacheThirdPartyBinariesToSign>
-        
+
         <PackageCacheBinariesToSign>
             <Description>Signing AspNetCore binaries</Description>
             <DisplayName>$(CodeSignDisplayName)</DisplayName>
