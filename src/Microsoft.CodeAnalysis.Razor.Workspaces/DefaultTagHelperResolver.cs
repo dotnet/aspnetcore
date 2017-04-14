@@ -21,6 +21,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var descriptors = new List<TagHelperDescriptor>();
 
             VisitTagHelpers(compilation, assemblyNameFilters, descriptors);
+            VisitViewComponents(compilation, assemblyNameFilters, descriptors);
 
             var diagnostics = new List<RazorDiagnostic>();
             var resolutionResult = new TagHelperResolutionResult(descriptors, diagnostics);
@@ -47,6 +48,25 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         results.Add(descriptor);
                     }
+                }
+            }
+        }
+
+        private void VisitViewComponents(Compilation compilation, IEnumerable<string> assemblyNameFilters, List<TagHelperDescriptor> results)
+        {
+            var types = new List<INamedTypeSymbol>();
+            var visitor = ViewComponentTypeVisitor.Create(compilation, types);
+
+            VisitCompilation(visitor, compilation);
+
+            var factory = new ViewComponentTagHelperDescriptorFactory(compilation);
+            foreach (var type in types)
+            {
+                if (assemblyNameFilters.Contains(type.ContainingAssembly.Identity.Name))
+                {
+                    var descriptor = factory.CreateDescriptor(type);
+
+                    results.Add(descriptor);
                 }
             }
         }
