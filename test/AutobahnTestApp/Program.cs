@@ -27,7 +27,7 @@ namespace AutobahnTestApp
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
             {
                 // ANCM is hosting the process.
-                // The port will not yet be configure at this point, but will also not require HTTPS.
+                // The port will not yet be configured at this point, but will also not require HTTPS.
                 builder.UseKestrel();
             }
             else

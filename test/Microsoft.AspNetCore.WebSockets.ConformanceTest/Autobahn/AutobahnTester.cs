@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 {
     public class AutobahnTester : IDisposable
     {
-        private int _nextPort;
         private readonly List<IApplicationDeployer> _deployers = new List<IApplicationDeployer>();
         private readonly List<AutobahnExpectations> _expectations = new List<AutobahnExpectations>();
         private readonly ILoggerFactory _loggerFactory;
@@ -24,11 +23,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
         public AutobahnSpec Spec { get; }
 
-        public AutobahnTester(ILoggerFactory loggerFactory, AutobahnSpec baseSpec) : this(7000, loggerFactory, baseSpec) { }
-
-        public AutobahnTester(int startPort, ILoggerFactory loggerFactory, AutobahnSpec baseSpec)
+        public AutobahnTester(ILoggerFactory loggerFactory, AutobahnSpec baseSpec)
         {
-            _nextPort = startPort;
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger("AutobahnTester");
 
@@ -89,8 +85,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
         public async Task DeployTestAndAddToSpec(ServerType server, bool ssl, string environment, CancellationToken cancellationToken, Action<AutobahnExpectations> expectationConfig = null)
         {
-            var port = Interlocked.Increment(ref _nextPort);
-            var baseUrl = ssl ? $"https://localhost:{port}" : $"http://localhost:{port}";
+            var baseUrl = ssl ? "https://localhost:0" : "http://localhost:0";
             var sslNamePart = ssl ? "SSL" : "NoSSL";
             var name = $"{server}|{sslNamePart}|{environment}";
             var logger = _loggerFactory.CreateLogger($"AutobahnTestApp:{server}:{sslNamePart}:{environment}");
