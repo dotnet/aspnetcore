@@ -57,6 +57,6 @@
 
     <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
     <Copy SourceFiles="$(RepositoryRoot)build\Build.RuntimeStore.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)' == 'Windows'" />
-    <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)' == 'Windows'" />
+    <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)' == 'Windows'" />
   </Target>
 </Project>
