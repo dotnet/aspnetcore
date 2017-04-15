@@ -11,6 +11,72 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     public class DesignTimeBasicWriterTest
     {
         [Fact]
+        public void WriteUsingStatement_NoSource_WritesContent()
+        {
+            // Arrange
+            var writer = new DesignTimeBasicWriter();
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter()
+            };
+
+            var node = new UsingStatementIRNode()
+            {
+                Content = "System",
+            };
+
+            // Act
+            writer.WriteUsingStatement(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"using System;
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteUsingStatement_WithSource_WritesContentWithLinePragmaAndMapping()
+        {
+            // Arrange
+            var writer = new DesignTimeBasicWriter();
+            var sourceDocument = TestRazorSourceDocument.Create("@using System;");
+            var context = new CSharpRenderingContext()
+            {
+                Writer = new Legacy.CSharpCodeWriter(),
+                CodeDocument = RazorCodeDocument.Create(sourceDocument)
+            };
+
+            var originalSpan = new SourceSpan("test.cshtml", 0, 0, 0, 6);
+            var generatedSpan = new SourceSpan(null, 23, 1, 0, 6);
+            var expectedLineMapping = new LineMapping(originalSpan, generatedSpan);
+            var node = new UsingStatementIRNode()
+            {
+                Content = "System",
+                Source = originalSpan,
+            };
+
+            // Act
+            writer.WriteUsingStatement(context, node);
+
+            // Assert
+            var mapping = Assert.Single(context.LineMappings);
+            Assert.Equal(expectedLineMapping, mapping);
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"#line 1 ""test.cshtml""
+using System;
+
+#line default
+#line hidden
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
         public void WriteCSharpExpression_SkipsLinePragma_WithoutSource()
         {
             // Arrange

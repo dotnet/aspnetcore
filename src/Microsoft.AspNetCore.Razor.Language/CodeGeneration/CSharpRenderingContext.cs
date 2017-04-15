@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public class CSharpRenderingContext
     {
-        private CSharpRenderingConventions _renderingConventions;
-
         internal ICollection<DirectiveDescriptor> Directives { get; set; }
 
         internal Func<string> IdGenerator { get; set; } = () => Guid.NewGuid().ToString("N");
@@ -19,23 +17,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         internal List<LineMapping> LineMappings { get; } = new List<LineMapping>();
 
         public CSharpCodeWriter Writer { get; set; }
-
-        internal CSharpRenderingConventions RenderingConventions
-        {
-            get
-            {
-                if (_renderingConventions == null)
-                {
-                    _renderingConventions = new CSharpRenderingConventions(Writer);
-                }
-
-                return _renderingConventions;
-            }
-            set
-            {
-                _renderingConventions = value;
-            }
-        }
 
         internal IList<RazorDiagnostic> Diagnostics { get; } = new List<RazorDiagnostic>();
 
@@ -101,6 +82,18 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return scope;
         }
 
+        public TagHelperRenderingContextScope Push(TagHelperRenderingContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var scope = new TagHelperRenderingContextScope(this, TagHelperRenderingContext);
+            TagHelperRenderingContext = context;
+            return scope;
+        }
+
         public struct BasicWriterScope : IDisposable
         {
             private readonly CSharpRenderingContext _context;
@@ -152,6 +145,28 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             public void Dispose()
             {
                 _context.TagHelperWriter = _writer;
+            }
+        }
+
+        public struct TagHelperRenderingContextScope : IDisposable
+        {
+            private readonly CSharpRenderingContext _context;
+            private readonly TagHelperRenderingContext _renderingContext;
+
+            public TagHelperRenderingContextScope(CSharpRenderingContext context, TagHelperRenderingContext renderingContext)
+            {
+                if (context == null)
+                {
+                    throw new ArgumentNullException(nameof(context));
+                }
+
+                _context = context;
+                _renderingContext = renderingContext;
+            }
+
+            public void Dispose()
+            {
+                _context.TagHelperRenderingContext = _renderingContext;
             }
         }
     }

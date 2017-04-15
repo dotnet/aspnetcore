@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _textWriter = textWriter;
         }
 
-        public new string WriteTagHelperOutputMethod { get; set; } = "WriteTo";
+        public override string WriteTagHelperOutputMethod { get; set; } = "WriteTo";
 
         public override void WriteExecuteTagHelpers(CSharpRenderingContext context, ExecuteTagHelpersIRNode node)
         {

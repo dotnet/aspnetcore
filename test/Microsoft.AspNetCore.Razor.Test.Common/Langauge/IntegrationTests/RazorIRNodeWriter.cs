@@ -96,29 +96,31 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("HtmlAttributeValueStyle.{0}", node.ValueStyle));
         }
 
-        public override void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
-        {
-            WriteContentNode(node, node.VariableName, node.Name, node.Value, string.Format("HtmlAttributeValueStyle.{0}", node.ValueStyle));
-        }
-
-        public override void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
-        {
-            WriteContentNode(node, node.VariableName, node.AttributeName, node.PropertyName);
-        }
-
         public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
         {
             WriteContentNode(node, node.Name, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), node.ValueStyle));
         }
 
-        public override void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
+        public override void VisitExtension(ExtensionIRNode node)
         {
-            WriteContentNode(node, node.VariableName, node.Name, node.Value, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), node.ValueStyle));
-        }
-
-        public override void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
-        {
-            WriteContentNode(node, node.VariableName);
+            switch (node)
+            {
+                case DeclarePreallocatedTagHelperHtmlAttributeIRNode n:
+                    WriteContentNode(n, n.VariableName, n.Name, n.Value, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), n.ValueStyle));
+                    break;
+                case AddPreallocatedTagHelperHtmlAttributeIRNode n:
+                    WriteContentNode(n, n.VariableName);
+                    break;
+                case DeclarePreallocatedTagHelperAttributeIRNode n:
+                    WriteContentNode(n, n.VariableName, n.Name, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.ValueStyle));
+                    break;
+                case SetPreallocatedTagHelperPropertyIRNode n:
+                    WriteContentNode(n, n.VariableName, n.AttributeName, n.PropertyName);
+                    break;
+                default:
+                    base.VisitExtension(node);
+                    break;
+            }
         }
 
         protected void WriteBasicNode(RazorIRNode node)

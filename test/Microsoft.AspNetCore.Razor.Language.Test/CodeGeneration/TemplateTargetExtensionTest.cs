@@ -32,8 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Assert.Same(node, n);
 
-                var conventions = Assert.IsType<CSharpRedirectRenderingConventions>(context.RenderingConventions);
-                Assert.Equal("__razor_template_writer", conventions.RedirectWriter);
+                Assert.IsType<RedirectedRuntimeBasicWriter>(context.BasicWriter);
 
                 context.Writer.Write(" var s = \"Inside\"");
             };

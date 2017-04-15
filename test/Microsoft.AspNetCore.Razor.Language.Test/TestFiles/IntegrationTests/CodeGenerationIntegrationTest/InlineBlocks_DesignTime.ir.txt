@@ -4,16 +4,8 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InlineBlocks_DesignTime -  - 
-            DirectiveTokenHelper - 
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning disable 219
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+            DesignTimeDirective - 
                 DirectiveToken - (9:0,9 [4] InlineBlocks.cshtml) - Link
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - }
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning restore 219
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

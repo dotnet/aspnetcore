@@ -8,6 +8,27 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public class DesignTimeBasicWriter : BasicWriter
     {
+        public override void WriteChecksum(CSharpRenderingContext context, ChecksumIRNode node)
+        {
+            // Do nothing
+        }
+
+        public override void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIRNode node)
+        {
+            if (node.Source.HasValue)
+            {
+                using (context.Writer.BuildLinePragma(node.Source.Value))
+                {
+                    context.AddLineMappingFor(node);
+                    context.Writer.WriteUsing(node.Content);
+                }
+            }
+            else
+            {
+                context.Writer.WriteUsing(node.Content);
+            }
+        }
+
         public override void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIRNode node)
         {
             if (context == null)
@@ -124,7 +145,17 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIRNode node)
         {
-            throw new NotImplementedException();
+            context.RenderChildren(node);
+        }
+
+        public override void WriteHtmlAttributeValue(CSharpRenderingContext context, HtmlAttributeValueIRNode node)
+        {
+            context.RenderChildren(node);
+        }
+
+        public override void WriteCSharpAttributeValue(CSharpRenderingContext context, CSharpAttributeValueIRNode node)
+        {
+            context.RenderChildren(node);
         }
 
         public override void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIRNode node)

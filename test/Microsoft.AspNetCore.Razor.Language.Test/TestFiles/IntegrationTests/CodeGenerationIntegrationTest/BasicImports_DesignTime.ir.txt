@@ -7,16 +7,8 @@ Document -
         UsingStatement - (80:3,1 [27] BasicImports_Imports0.cshtml) - System.ComponentModel
         UsingStatement - (23:1,1 [18] BasicImports_Imports1.cshtml) - System.Text
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_DesignTime - Hello - 
-            DirectiveTokenHelper - 
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning disable 219
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+            DesignTimeDirective - 
                 DirectiveToken - (119:4,10 [5] BasicImports_Imports0.cshtml) - Hello
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - }
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning restore 219
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

@@ -13,6 +13,11 @@
     @foo("")
 }
 
+@{ 
+    Func<dynamic, object> bar = @<p class="@item">Hello</p>;
+    @bar("myclass")
+}
+
 <ul>
 @(Repeat(10, @<li>Item #@item</li>))
 </ul>

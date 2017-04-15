@@ -1,12 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class DeclarePreallocatedTagHelperAttributeIRNode : RazorIRNode
+    public class DeclarePreallocatedTagHelperAttributeIRNode : ExtensionIRNode
     {
         public override IList<RazorIRNode> Children { get; } = EmptyArray;
 
@@ -24,7 +26,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {
-            visitor.VisitDeclarePreallocatedTagHelperAttribute(this);
+            if (visitor == null)
+            {
+                throw new ArgumentNullException(nameof(visitor));
+            }
+
+            AcceptExtensionNode<DeclarePreallocatedTagHelperAttributeIRNode>(this, visitor);
+        }
+
+        public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
+        {
+            var extension = target.GetExtension<IPreallocatedAttributeTargetExtension>();
+            extension.WriteDeclarePreallocatedTagHelperAttribute(context, this);
         }
     }
 }

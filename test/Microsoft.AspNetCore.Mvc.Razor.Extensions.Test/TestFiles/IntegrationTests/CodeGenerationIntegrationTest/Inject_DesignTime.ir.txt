@@ -11,11 +11,7 @@ Document -
         UsingStatement - (147:5,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         UsingStatement - (1:0,1 [17] Inject.cshtml) - MyNamespace
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inject_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
-            DirectiveTokenHelper - 
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning disable 219
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+            DesignTimeDirective - 
                 DirectiveToken - (200:6,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (263:6,71 [4] ) - Html
                 DirectiveToken - (277:7,8 [54] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
@@ -31,10 +27,6 @@ Document -
                 DirectiveToken - (801:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (28:1,8 [5] Inject.cshtml) - MyApp
                 DirectiveToken - (34:1,14 [14] Inject.cshtml) - MyPropertyName
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - }
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning restore 219
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync

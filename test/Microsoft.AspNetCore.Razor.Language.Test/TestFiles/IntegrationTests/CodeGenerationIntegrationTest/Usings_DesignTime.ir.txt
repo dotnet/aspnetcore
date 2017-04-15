@@ -9,15 +9,7 @@ Document -
         UsingStatement - (93:5,1 [27] Usings.cshtml) - static System.Console
         UsingStatement - (123:6,1 [41] Usings.cshtml) - static global::System.Text.Encoding
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Usings_DesignTime -  - 
-            DirectiveTokenHelper - 
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning disable 219
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - }
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning restore 219
+            DesignTimeDirective - 
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

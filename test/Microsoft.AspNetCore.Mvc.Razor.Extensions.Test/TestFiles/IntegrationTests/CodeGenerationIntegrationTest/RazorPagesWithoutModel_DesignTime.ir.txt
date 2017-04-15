@@ -11,11 +11,7 @@ Document -
         UsingStatement - (147:5,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         UsingStatement - (43:3,1 [41] RazorPagesWithoutModel.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
-            DirectiveTokenHelper - 
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning disable 219
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - private void __RazorDirectiveTokenHelpers__() {
+            DesignTimeDirective - 
                 DirectiveToken - (200:6,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (263:6,71 [4] ) - Html
                 DirectiveToken - (277:7,8 [54] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
@@ -30,10 +26,6 @@ Document -
                 DirectiveToken - (698:12,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (801:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (23:2,14 [17] RazorPagesWithoutModel.cshtml) - "*, TestAssembly"
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - }
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - #pragma warning restore 219
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - DivTagHelper

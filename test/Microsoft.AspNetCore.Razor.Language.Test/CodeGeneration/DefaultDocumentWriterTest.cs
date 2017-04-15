@@ -22,9 +22,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Options = options,
                 Writer = new Legacy.CSharpCodeWriter(),
             };
-            var renderer = new RuntimeCSharpRenderer(target, context);
 
-            var writer = new DefaultDocumentWriter(target, context, renderer);
+            var writer = new DefaultDocumentWriter(target, context);
 
             var builder = RazorIRBuilder.Document();
             builder.Add(new NamespaceDeclarationIRNode()
@@ -62,9 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Options = options,
                 Writer = new Legacy.CSharpCodeWriter(),
             };
-            var renderer = new RuntimeCSharpRenderer(target, context);
-
-            var writer = new DefaultDocumentWriter(target, context, renderer);
+            var writer = new DefaultDocumentWriter(target, context);
 
             var builder = RazorIRBuilder.Document();
             builder.Add(new ClassDeclarationIRNode()
@@ -104,9 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Options = options,
                 Writer = new Legacy.CSharpCodeWriter(),
             };
-            var renderer = new RuntimeCSharpRenderer(target, context);
-
-            var writer = new DefaultDocumentWriter(target, context, renderer);
+            var writer = new DefaultDocumentWriter(target, context);
 
             var builder = RazorIRBuilder.Document();
             builder.Add(new RazorMethodDeclarationIRNode()

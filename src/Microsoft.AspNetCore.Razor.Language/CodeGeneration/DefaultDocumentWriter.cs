@@ -10,9 +10,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     {
         private readonly CSharpRenderingContext _context;
         private readonly RuntimeTarget _target;
-        private readonly PageStructureCSharpRenderer _renderer;
 
-        public DefaultDocumentWriter(RuntimeTarget target, CSharpRenderingContext context, PageStructureCSharpRenderer renderer)
+        public DefaultDocumentWriter(RuntimeTarget target, CSharpRenderingContext context)
         {
             if (target == null)
             {
@@ -24,14 +23,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (renderer == null)
-            {
-                throw new ArgumentNullException(nameof(renderer));
-            }
-
             _target = target;
             _context = context;
-            _renderer = renderer;
         }
 
         public override void WriteDocument(DocumentIRNode node)
@@ -41,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 throw new ArgumentNullException(nameof(node));
             }
 
-            var visitor = new Visitor(_target, _context, _renderer);
+            var visitor = new Visitor(_target, _context);
             _context.RenderChildren = visitor.RenderChildren;
             _context.RenderNode = visitor.Visit;
 
@@ -56,13 +49,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             private readonly CSharpRenderingContext _context;
             private readonly RuntimeTarget _target;
-            private readonly PageStructureCSharpRenderer _renderer;
 
-            public Visitor(RuntimeTarget target, CSharpRenderingContext context, PageStructureCSharpRenderer renderer)
+            public Visitor(RuntimeTarget target, CSharpRenderingContext context)
             {
                 _target = target;
                 _context = context;
-                _renderer = renderer;
             }
 
             private CSharpRenderingContext Context => _context;
@@ -79,6 +70,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             public override void VisitDocument(DocumentIRNode node)
             {
                 RenderChildren(node);
+            }
+
+            public override void VisitChecksum(ChecksumIRNode node)
+            {
+                Context.BasicWriter.WriteChecksum(Context, node);
+            }
+
+            public override void VisitUsingStatement(UsingStatementIRNode node)
+            {
+                Context.BasicWriter.WriteUsingStatement(Context, node);
             }
 
             public override void VisitNamespace(NamespaceDeclarationIRNode node)
@@ -188,6 +189,21 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.BasicWriter.WriteCSharpStatement(Context, node);
             }
 
+            public override void VisitHtmlAttribute(HtmlAttributeIRNode node)
+            {
+                Context.BasicWriter.WriteHtmlAttribute(Context, node);
+            }
+
+            public override void VisitHtmlAttributeValue(HtmlAttributeValueIRNode node)
+            {
+                Context.BasicWriter.WriteHtmlAttributeValue(Context, node);
+            }
+
+            public override void VisitCSharpAttributeValue(CSharpAttributeValueIRNode node)
+            {
+                Context.BasicWriter.WriteCSharpAttributeValue(Context, node);
+            }
+
             public override void VisitHtml(HtmlContentIRNode node)
             {
                 Context.BasicWriter.WriteHtmlContent(Context, node);
@@ -200,10 +216,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitTagHelper(TagHelperIRNode node)
             {
-                var initialRenderingContext = Context.TagHelperRenderingContext;
-                Context.TagHelperRenderingContext = new TagHelperRenderingContext();
-                Context.RenderChildren(node);
-                Context.TagHelperRenderingContext = initialRenderingContext;
+                using (Context.Push(new TagHelperRenderingContext()))
+                {
+                    Context.RenderChildren(node);
+                }
             }
 
             public override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
@@ -221,6 +237,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.TagHelperWriter.WriteAddTagHelperHtmlAttribute(Context, node);
             }
 
+            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            {
+                Context.TagHelperWriter.WriteSetTagHelperProperty(Context, node);
+            }
+
             public override void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
             {
                 Context.TagHelperWriter.WriteExecuteTagHelpers(Context, node);
@@ -228,9 +249,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitDefault(RazorIRNode node)
             {
-                // This is a temporary bridge to the renderer, which allows us to move functionality piecemeal
-                // into this class. 
-                _renderer.Visit(node);
+                Context.RenderChildren(node);
             }
         }
     }

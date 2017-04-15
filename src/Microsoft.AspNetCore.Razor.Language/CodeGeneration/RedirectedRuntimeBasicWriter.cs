@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -16,9 +19,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _textWriter = textWriter;
         }
 
-        public new string WriteCSharpExpressionMethod { get; set; } = "WriteTo";
+        public override string WriteCSharpExpressionMethod { get; set; } = "WriteTo";
 
-        public new string WriteHtmlContentMethod { get; set; } = "WriteLiteralTo";
+        public override string WriteHtmlContentMethod { get; set; } = "WriteLiteralTo";
+
+        public override string BeginWriteAttributeMethod { get; set; } = "BeginWriteAttributeTo";
+
+        public override string EndWriteAttributeMethod { get; set; } = "EndWriteAttributeTo";
+
+        public override string WriteAttributeValueMethod { get; set; } = "WriteAttributeValueTo";
 
         public override void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIRNode node)
         {
@@ -92,7 +101,112 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     .WriteEndMethodInvocation();
 
                     charactersConsumed += textToRender.Length;
-                }
             }
+        }
+
+        public override void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIRNode node)
+        {
+            var valuePieceCount = node
+                .Children
+                .Count(child => child is HtmlAttributeValueIRNode || child is CSharpAttributeValueIRNode);
+            var prefixLocation = node.Source.Value.AbsoluteIndex;
+            var suffixLocation = node.Source.Value.AbsoluteIndex + node.Source.Value.Length - node.Suffix.Length;
+            context.Writer
+                .WriteStartMethodInvocation(BeginWriteAttributeMethod)
+                .Write(_textWriter)
+                .WriteParameterSeparator()
+                .WriteStringLiteral(node.Name)
+                .WriteParameterSeparator()
+                .WriteStringLiteral(node.Prefix)
+                .WriteParameterSeparator()
+                .Write(prefixLocation.ToString(CultureInfo.InvariantCulture))
+                .WriteParameterSeparator()
+                .WriteStringLiteral(node.Suffix)
+                .WriteParameterSeparator()
+                .Write(suffixLocation.ToString(CultureInfo.InvariantCulture))
+                .WriteParameterSeparator()
+                .Write(valuePieceCount.ToString(CultureInfo.InvariantCulture))
+                .WriteEndMethodInvocation();
+
+            context.RenderChildren(node);
+
+            context.Writer
+                .WriteStartMethodInvocation(EndWriteAttributeMethod)
+                .Write(_textWriter)
+                .WriteEndMethodInvocation();
+        }
+
+        public override void WriteHtmlAttributeValue(CSharpRenderingContext context, HtmlAttributeValueIRNode node)
+        {
+            var prefixLocation = node.Source.Value.AbsoluteIndex;
+            var valueLocation = node.Source.Value.AbsoluteIndex + node.Prefix.Length;
+            var valueLength = node.Source.Value.Length;
+            context.Writer
+                .WriteStartMethodInvocation(WriteAttributeValueMethod)
+                .Write(_textWriter)
+                .WriteParameterSeparator()
+                .WriteStringLiteral(node.Prefix)
+                .WriteParameterSeparator()
+                .Write(prefixLocation.ToString(CultureInfo.InvariantCulture))
+                .WriteParameterSeparator()
+                .WriteStringLiteral(node.Content)
+                .WriteParameterSeparator()
+                .Write(valueLocation.ToString(CultureInfo.InvariantCulture))
+                .WriteParameterSeparator()
+                .Write(valueLength.ToString(CultureInfo.InvariantCulture))
+                .WriteParameterSeparator()
+                .WriteBooleanLiteral(true)
+                .WriteEndMethodInvocation();
+        }
+
+        public override void WriteCSharpAttributeValue(CSharpRenderingContext context, CSharpAttributeValueIRNode node)
+        {
+            const string ValueWriterName = "__razor_attribute_value_writer";
+
+            var expressionValue = node.Children.FirstOrDefault() as CSharpExpressionIRNode;
+            var linePragma = expressionValue != null ? context.Writer.BuildLinePragma(node.Source.Value) : null;
+            var prefixLocation = node.Source.Value.AbsoluteIndex;
+            var valueLocation = node.Source.Value.AbsoluteIndex + node.Prefix.Length;
+            var valueLength = node.Source.Value.Length - node.Prefix.Length;
+            context.Writer
+                .WriteStartMethodInvocation(WriteAttributeValueMethod)
+                .Write(_textWriter)
+                .WriteParameterSeparator()
+                .WriteStringLiteral(node.Prefix)
+                .WriteParameterSeparator()
+                .Write(prefixLocation.ToString(CultureInfo.InvariantCulture))
+                .WriteParameterSeparator();
+
+            if (expressionValue != null)
+            {
+                Debug.Assert(node.Children.Count == 1);
+
+                RenderExpressionInline(context, expressionValue);
+            }
+            else
+            {
+                // Not an expression; need to buffer the result.
+                context.Writer.WriteStartNewObject(TemplateTypeName);
+
+                using (context.Push(new RedirectedRuntimeBasicWriter(ValueWriterName)))
+                using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: ValueWriterName))
+                {
+                    context.RenderChildren(node);
+                }
+
+                context.Writer.WriteEndMethodInvocation(false);
+            }
+
+            context.Writer
+                .WriteParameterSeparator()
+                .Write(valueLocation.ToString(CultureInfo.InvariantCulture))
+                .WriteParameterSeparator()
+                .Write(valueLength.ToString(CultureInfo.InvariantCulture))
+                .WriteParameterSeparator()
+                .WriteBooleanLiteral(false)
+                .WriteEndMethodInvocation();
+
+            linePragma?.Dispose();
+        }
     }
 }

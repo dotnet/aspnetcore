@@ -128,25 +128,5 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             VisitDefault(node);
         }
-
-        public virtual void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
-        {
-            VisitDefault(node);
-        }
-
-        public virtual void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
-        {
-            VisitDefault(node);
-        }
-
-        public virtual void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
-        {
-            VisitDefault(node);
-        }
-
-        public virtual void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
-        {
-            VisitDefault(node);
-        }
     }
 }

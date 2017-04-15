@@ -21,17 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override DocumentWriter CreateWriter(CSharpRenderingContext context)
         {
-            PageStructureCSharpRenderer renderer;
-            if (_options.DesignTimeMode)
-            {
-                renderer =  new DesignTimeCSharpRenderer(this, context);
-            }
-            else
-            {
-                renderer = new RuntimeCSharpRenderer(this, context);
-            }
-
-            return new DefaultDocumentWriter(this, context, renderer);
+            return new DefaultDocumentWriter(this, context);
         }
 
         public override TExtension GetExtension<TExtension>()

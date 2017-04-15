@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class RedirectedBasicWriterTest
+    public class RedirectedRuntimeBasicWriterTest
     {
         [Fact]
         public void WriteCSharpExpression_Runtime_SkipsLinePragma_WithoutSource()
@@ -241,6 +242,155 @@ WriteLiteralTo(test_writer, @""{1}"");
 ", new string('*', 1024), new string('*', 976)),
                 csharp,
                 ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteHtmlAttribute_RendersCorrectly()
+        {
+            var writer = new RedirectedRuntimeBasicWriter("test_writer");
+            var context = GetCSharpRenderingContext(writer);
+
+            var content = "<input checked=\"hello-world @false\" />";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var irDocument = Lower(codeDocument);
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single();
+
+            // Act
+            writer.WriteHtmlAttribute(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"BeginWriteAttributeTo(test_writer, ""checked"", "" checked=\"""", 6, ""\"""", 34, 2);
+Render Children
+EndWriteAttributeTo(test_writer);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteHtmlAttributeValue_RendersCorrectly()
+        {
+            var writer = new RedirectedRuntimeBasicWriter("test_writer");
+            var context = GetCSharpRenderingContext(writer);
+
+            var content = "<input checked=\"hello-world @false\" />";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var irDocument = Lower(codeDocument);
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[0] as HtmlAttributeValueIRNode;
+
+            // Act
+            writer.WriteHtmlAttributeValue(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"WriteAttributeValueTo(test_writer, """", 16, ""hello-world"", 16, 11, true);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteCSharpAttributeValue_RendersCorrectly()
+        {
+            var writer = new RedirectedRuntimeBasicWriter("test_writer");
+            var context = GetCSharpRenderingContext(writer);
+
+            var content = "<input checked=\"hello-world @false\" />";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var irDocument = Lower(codeDocument);
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpAttributeValueIRNode;
+
+            // Act
+            writer.WriteCSharpAttributeValue(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"#line 1 ""test.cshtml""
+WriteAttributeValueTo(test_writer, "" "", 27, false, 28, 6, false);
+
+#line default
+#line hidden
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteCSharpAttributeValue_NonExpression_BuffersResult()
+        {
+            var writer = new RedirectedRuntimeBasicWriter("test_writer");
+            var context = GetCSharpRenderingContext(writer);
+
+            var content = "<input checked=\"hello-world @if(@true){ }\" />";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var irDocument = Lower(codeDocument);
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpAttributeValueIRNode;
+
+            // Act
+            writer.WriteCSharpAttributeValue(context, node);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"WriteAttributeValueTo(test_writer, "" "", 27, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+    Render Children
+}
+), 28, 13, false);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        private static CSharpRenderingContext GetCSharpRenderingContext(BasicWriter writer)
+        {
+            var options = RazorParserOptions.CreateDefaultOptions();
+            var codeWriter = new Legacy.CSharpCodeWriter();
+            var context = new CSharpRenderingContext()
+            {
+                Writer = codeWriter,
+                Options = options,
+                BasicWriter = writer,
+                RenderChildren = n =>
+                {
+                    codeWriter.WriteLine("Render Children");
+                }
+            };
+
+            return context;
+        }
+
+        private static DocumentIRNode Lower(RazorCodeDocument codeDocument)
+        {
+            var engine = RazorEngine.Create();
+
+            return Lower(codeDocument, engine);
+        }
+
+        private static DocumentIRNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+        {
+            for (var i = 0; i < engine.Phases.Count; i++)
+            {
+                var phase = engine.Phases[i];
+                phase.Execute(codeDocument);
+
+                if (phase is IRazorIRLoweringPhase)
+                {
+                    break;
+                }
+            }
+
+            var irDocument = codeDocument.GetIRDocument();
+            Assert.NotNull(irDocument);
+
+            return irDocument;
         }
 
         private class MyExtensionIRNode : ExtensionIRNode

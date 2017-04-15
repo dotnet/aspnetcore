@@ -5,7 +5,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     internal class TagHelperHtmlAttributeRuntimeBasicWriter : RuntimeBasicWriter
     {
-        // This will be used when HtmlAttributeValueIRNode and CSharpAttributeValueIRNode are moved to writers.
-        public new string WriteAttributeValueMethod { get; set; } = "AddHtmlAttributeValue";
+        public override string WriteAttributeValueMethod { get; set; } = "AddHtmlAttributeValue";
     }
 }
