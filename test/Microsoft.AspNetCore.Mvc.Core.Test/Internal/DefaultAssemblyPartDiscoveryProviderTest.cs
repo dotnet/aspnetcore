@@ -249,22 +249,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var dependencyContextLibraries = DependencyContext.Load(CurrentAssembly)
                 .RuntimeLibraries
-                .Where(r => r.Name.StartsWith("Microsoft.AspNetCore.Mvc", StringComparison.Ordinal) &&
+                .Where(r => r.Name.StartsWith("Microsoft.AspNetCore.Mvc", StringComparison.OrdinalIgnoreCase) &&
                     !excludeAssemblies.Contains(r.Name, StringComparer.OrdinalIgnoreCase))
                 .Select(r => r.Name);
 
             var expected = dependencyContextLibraries
                 .Concat(additionalAssemblies)
-                .Distinct()
-                .OrderBy(p => p, StringComparer.Ordinal);
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
 
             // Act
             var referenceAssemblies = DefaultAssemblyPartDiscoveryProvider
                 .ReferenceAssemblies
-                .OrderBy(p => p, StringComparer.Ordinal);
+                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
 
             // Assert
-            Assert.Equal(expected, referenceAssemblies);
+            Assert.Equal(expected, referenceAssemblies, StringComparer.OrdinalIgnoreCase);
         }
 
         private static RuntimeLibrary GetLibrary(string name, params string[] dependencyNames)
