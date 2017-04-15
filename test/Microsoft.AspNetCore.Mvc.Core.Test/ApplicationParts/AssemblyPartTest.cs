@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             Assert.Equal(part.Assembly, assembly);
         }
 
-        [Fact(Skip= "https://github.com/aspnet/Mvc/issues/6138")]
+        [Fact]
         public void GetReferencePaths_ReturnsReferencesFromDependencyContext_IfPreserveCompilationContextIsSet()
         {
             // Arrange
