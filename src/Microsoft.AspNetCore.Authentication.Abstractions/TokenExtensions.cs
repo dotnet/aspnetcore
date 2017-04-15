@@ -130,6 +130,16 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="auth">The <see cref="IAuthenticationService"/>.</param>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
+        /// <param name="tokenName">The name of the token.</param>
+        /// <returns>The value of the token.</returns>
+        public static Task<string> GetTokenAsync(this IAuthenticationService auth, HttpContext context, string tokenName) 
+            => auth.GetTokenAsync(context, scheme: null, tokenName: tokenName);
+
+        /// <summary>
+        /// Extension method for getting the value of an authentication token.
+        /// </summary>
+        /// <param name="auth">The <see cref="IAuthenticationService"/>.</param>
+        /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <returns>The value of the token.</returns>
