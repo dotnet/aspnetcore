@@ -432,13 +432,13 @@
         <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre PackagePublisher -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
 
         <PropertyGroup>
-            <PackagePublisherBinary>$(CommandsPath)\PackagePublisher\PackagePublisher.exe</PackagePublisherBinary>
+            <PackagePublisherBinary>$(CommandsPath)\PackagePublisher\PackagePublisher.dll</PackagePublisherBinary>
         </PropertyGroup>
 
-        <Exec Command="$(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(NUGET_FEED)" />
-        <Exec Command="$(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackagesCache -f $(NUGET_FEED)" />
-        <Exec Command="$(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(NUGET_FEED)" />
-        <Exec Command="$(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(NUGET_FEED)" />
+        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(NUGET_FEED)" />
+        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackagesCache -f $(NUGET_FEED)" />
+        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(NUGET_FEED)" />
+        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(NUGET_FEED)" />
     </Target>
 
     <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
