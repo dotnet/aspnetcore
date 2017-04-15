@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ExceptionFromHeartbeatHandlerIsLoggedAsError()
         {
             var systemClock = new MockSystemClock();
-            var heartbeatInterval = TimeSpan.FromMilliseconds(10);
+            var heartbeatInterval = TimeSpan.FromSeconds(1);
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var kestrelTrace = new TestKestrelTrace();
             var ex = new Exception();
