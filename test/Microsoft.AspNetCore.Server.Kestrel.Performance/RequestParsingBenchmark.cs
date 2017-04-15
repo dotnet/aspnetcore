@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             };
 
             Frame = new Frame<object>(application: null, frameContext: frameContext);
+            Frame.TimeoutControl = new MockTimeoutControl();
             PipelineFactory = new PipeFactory();
             Pipe = PipelineFactory.Create();
         }
