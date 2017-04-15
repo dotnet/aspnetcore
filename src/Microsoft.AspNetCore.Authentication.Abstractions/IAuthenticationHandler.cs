@@ -22,9 +22,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Authentication behavior.
         /// </summary>
-        /// <param name="context">The <see cref="AuthenticateContext"/> context.</param>
         /// <returns>The <see cref="AuthenticateResult"/> result.</returns>
-        Task<AuthenticateResult> AuthenticateAsync(AuthenticateContext context);
+        Task<AuthenticateResult> AuthenticateAsync();
 
         /// <summary>
         /// Challenge behavior.

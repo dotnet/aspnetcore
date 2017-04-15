@@ -65,8 +65,7 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new InvalidOperationException($"No authentication handler is configured to authenticate for the scheme: {scheme}");
             }
 
-            var authContext = new AuthenticateContext(context, scheme);
-            var result = await handler.AuthenticateAsync(authContext);
+            var result = await handler.AuthenticateAsync();
             if (result.Succeeded)
             {
                 var transformed = await Transform.TransformAsync(result.Principal);
