@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -26,42 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             catch (Exception e)
             {
                 _log.LogError(0, e, "InlineLoggingThreadPool.Run");
-            }
-        }
-
-        public void Complete(TaskCompletionSource<object> tcs)
-        {
-            try
-            {
-                tcs.TrySetResult(null);
-            }
-            catch (Exception e)
-            {
-                _log.LogError(0, e, "InlineLoggingThreadPool.Complete");
-            }
-        }
-
-        public void Cancel(TaskCompletionSource<object> tcs)
-        {
-            try
-            {
-                tcs.TrySetCanceled();
-            }
-            catch (Exception e)
-            {
-                _log.LogError(0, e, "InlineLoggingThreadPool.Cancel");
-            }
-        }
-
-        public void Error(TaskCompletionSource<object> tcs, Exception ex)
-        {
-            try
-            {
-                tcs.TrySetException(ex);
-            }
-            catch (Exception e)
-            {
-                _log.LogError(0, e, "InlineLoggingThreadPool.Error");
             }
         }
 
