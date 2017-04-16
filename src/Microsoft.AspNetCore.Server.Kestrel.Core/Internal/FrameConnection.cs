@@ -216,7 +216,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         public void ResetTimeout(long ticks, TimeoutAction timeoutAction)
-
         {
             AssignTimeout(ticks, timeoutAction);
         }
