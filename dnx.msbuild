@@ -403,7 +403,9 @@
             Properties="
                 SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
                 RepositoryRoot=$(MSBuildProjectDirectory)\;
-                ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName)" />
+                ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
+                ManifestBuildBranch=$(BUILD_BRANCH);
+                ManifestBuildNumber=$(BUILD_NUMBER)" />
     </Target>
 
     <Target Name="InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
