@@ -407,9 +407,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
-
-            // When testing parser can be null
-            _parser.Reset();
         }
 
         /// <summary>

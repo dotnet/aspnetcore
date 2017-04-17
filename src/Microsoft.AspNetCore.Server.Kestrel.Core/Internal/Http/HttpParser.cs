@@ -491,9 +491,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Log.IsEnabled(LogLevel.Information)
                     ? new Span<byte>(detail, length).GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
                     : string.Empty);
-
-        public void Reset()
-        {
-        }
     }
 }
