@@ -33,17 +33,17 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="hostBuilder">
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
         /// </param>
-        /// <param name="options">
+        /// <param name="configureOptions">
         /// A callback to configure Libuv options.
         /// </param>
         /// <returns>
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
         /// </returns>
-        public static IWebHostBuilder UseLibuv(this IWebHostBuilder hostBuilder, Action<LibuvTransportOptions> options)
+        public static IWebHostBuilder UseLibuv(this IWebHostBuilder hostBuilder, Action<LibuvTransportOptions> configureOptions)
         {
             return hostBuilder.UseLibuv().ConfigureServices(services =>
             {
-                services.Configure(options);
+                services.Configure(configureOptions);
             });
         }
     }

@@ -54,20 +54,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             Options = options.Value ?? new KestrelServerOptions();
-            InternalOptions = new InternalKestrelServerOptions();
             _transportFactory = transportFactory;
             _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set(_serverAddresses);
-            Features.Set(InternalOptions);
         }
 
         public IFeatureCollection Features { get; }
 
         public KestrelServerOptions Options { get; }
-
-        private InternalKestrelServerOptions InternalOptions { get; }
 
         public async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
@@ -95,13 +91,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 _heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager, connectionManager }, systemClock, trace);
 
                 IThreadPool threadPool;
-                if (InternalOptions.ThreadPoolDispatching)
+                if (Options.UseTransportThread)
                 {
-                    threadPool = new LoggingThreadPool(trace);
+                    threadPool = new InlineLoggingThreadPool(trace);
                 }
                 else
                 {
-                    threadPool = new InlineLoggingThreadPool(trace);
+                    threadPool = new LoggingThreadPool(trace);
                 }
 
                 var serviceContext = new ServiceContext

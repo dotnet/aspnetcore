@@ -215,10 +215,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public PipeFactory PipeFactory => _transport.TransportFactory.PipeFactory;
 
-        public bool RequiresDispatch => _transport.TransportFactory.ForceDispatch;
-
         public IScheduler InputWriterScheduler => InlineScheduler.Default;
 
-        public IScheduler OutputReaderScheduler => InlineScheduler.Default;
+        public IScheduler OutputReaderScheduler => TaskRunScheduler.Default;
     }
 }

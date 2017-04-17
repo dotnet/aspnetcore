@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var connectionHandler = new ConnectionHandler<object>(listenOptions: null, serviceContext: serviceContext, application: null);
             var mockScheduler = Mock.Of<IScheduler>();
-            var outputPipeOptions = connectionHandler.GetOutputPipeOptions(requiresDispatch: true, readerScheduler: mockScheduler);
+            var outputPipeOptions = connectionHandler.GetOutputPipeOptions(readerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, outputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, outputPipeOptions.MaximumSizeHigh);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var connectionHandler = new ConnectionHandler<object>(listenOptions: null, serviceContext: serviceContext, application: null);
             var mockScheduler = Mock.Of<IScheduler>();
-            var inputPipeOptions = connectionHandler.GetInputPipeOptions(requiresDispatch: true, writerScheduler: mockScheduler);
+            var inputPipeOptions = connectionHandler.GetInputPipeOptions(writerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, inputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, inputPipeOptions.MaximumSizeHigh);

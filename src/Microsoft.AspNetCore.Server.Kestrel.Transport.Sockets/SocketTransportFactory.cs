@@ -4,17 +4,16 @@
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     public sealed class SocketTransportFactory : ITransportFactory
     {
         private readonly PipeFactory _pipeFactory = new PipeFactory();
-        private readonly bool _forceDispatch;
 
-        public SocketTransportFactory(bool forceDispatch = false)
+        public SocketTransportFactory(IOptions<SocketTransportOptions> options)
         {
-            _forceDispatch = forceDispatch;
         }
 
         public ITransport Create(IEndPointInformation endPointInformation, IConnectionHandler handler)
@@ -38,7 +37,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         }
 
         internal PipeFactory PipeFactory => _pipeFactory;
-
-        internal bool ForceDispatch => _forceDispatch;
     }
 }

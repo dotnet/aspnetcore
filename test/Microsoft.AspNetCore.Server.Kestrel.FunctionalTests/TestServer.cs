@@ -49,7 +49,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             Context = context;
 
-            _transport = s_transportFactory.Create(listenOptions, new ConnectionHandler<HttpContext>(listenOptions, context, new DummyApplication(app, httpContextFactory)));
+            // Switch this to test on socket transport
+            var transportFactory = CreateLibuvTransportFactory(context);
+            // var transportFactory = CreateSocketTransportFactory(context);
+
+            _transport = transportFactory.Create(listenOptions, new ConnectionHandler<HttpContext>(listenOptions, context, new DummyApplication(app, httpContextFactory)));
 
             try
             {
@@ -67,11 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        // Switch this to test on socket transport
-        private static readonly ITransportFactory s_transportFactory = CreateLibuvTransportFactory();
-//        private static readonly ITransportFactory s_transportFactory = CreateSocketTransportFactory();
-
-        private static ITransportFactory CreateLibuvTransportFactory()
+        private static ITransportFactory CreateLibuvTransportFactory(TestServiceContext context)
         {
             var transportOptions = new LibuvTransportOptions()
             {
@@ -87,12 +87,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return transportFactory;
         }
 
-        private static ITransportFactory CreateSocketTransportFactory()
+        private static ITransportFactory CreateSocketTransportFactory(TestServiceContext context)
         {
-            // For now, force the socket transport to do threadpool dispatch for tests.
-            // There are a handful of tests that deadlock due to test issues if we don't do dispatch.
-            // We should clean these up, but for now, make them work by forcing dispatch.
-            return new SocketTransportFactory(true);
+            var options = new SocketTransportOptions();
+
+            return new SocketTransportFactory(Options.Create(options));
         }
         
         public IPEndPoint EndPoint => _listenOptions.IPEndPoint;

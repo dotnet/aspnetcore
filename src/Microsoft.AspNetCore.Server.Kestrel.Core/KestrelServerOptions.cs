@@ -29,6 +29,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool AddServerHeader { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets a value that determines if Kestrel should use the transport thread thread when executing user code.
+        /// </summary>
+        public bool UseTransportThread { get; set; }
+
+        /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.
         /// Typically initialized by UseKestrel()"/>.
         /// </summary>

@@ -44,6 +44,9 @@ namespace SampleApp
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
+                    // Run callbacks on the transport thread
+                    options.UseTransportThread = true;
+
                     options.Listen(IPAddress.Loopback, 5000, listenOptions =>
                     {
                         // Uncomment the following to enable Nagle's algorithm for this endpoint.
@@ -51,6 +54,7 @@ namespace SampleApp
 
                         listenOptions.UseConnectionLogging();
                     });
+
                     options.Listen(IPAddress.Loopback, 5001, listenOptions =>
                     {
                         listenOptions.UseHttps("testCert.pfx", "testPassword");
@@ -65,13 +69,11 @@ namespace SampleApp
                 .UseLibuv(options =>
                 {
                     // Uncomment the following line to change the default number of libuv threads for all endpoints.
-                    options.ThreadCount = 4;
+                    // options.ThreadCount = 4;
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();
-
-            host.ServerFeatures.Get<InternalKestrelServerOptions>().ThreadPoolDispatching = false;
 
             host.Run();
         }

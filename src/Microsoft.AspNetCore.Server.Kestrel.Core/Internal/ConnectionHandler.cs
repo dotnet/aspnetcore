@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public IConnectionContext OnConnection(IConnectionInformation connectionInfo)
         {
-            var inputPipe = connectionInfo.PipeFactory.Create(GetInputPipeOptions(requiresDispatch: connectionInfo.RequiresDispatch, writerScheduler: connectionInfo.InputWriterScheduler));
-            var outputPipe = connectionInfo.PipeFactory.Create(GetOutputPipeOptions(requiresDispatch: connectionInfo.RequiresDispatch, readerScheduler: connectionInfo.OutputReaderScheduler));
+            var inputPipe = connectionInfo.PipeFactory.Create(GetInputPipeOptions(connectionInfo.InputWriterScheduler));
+            var outputPipe = connectionInfo.PipeFactory.Create(GetOutputPipeOptions(connectionInfo.OutputReaderScheduler));
 
             var connectionId = CorrelationIdGenerator.GetNextId();
             var frameConnectionId = Interlocked.Increment(ref _lastFrameConnectionId);
@@ -70,18 +70,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // Internal for testing
-        internal PipeOptions GetInputPipeOptions(bool requiresDispatch, IScheduler writerScheduler) => new PipeOptions
+        internal PipeOptions GetInputPipeOptions(IScheduler writerScheduler) => new PipeOptions
         {
-            ReaderScheduler = (requiresDispatch ? (IScheduler)_serviceContext.ThreadPool : (IScheduler)InlineScheduler.Default),
+            ReaderScheduler = _serviceContext.ThreadPool,
             WriterScheduler = writerScheduler,
             MaximumSizeHigh = _serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             MaximumSizeLow = _serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
         };
 
-        internal PipeOptions GetOutputPipeOptions(bool requiresDispatch, IScheduler readerScheduler) => new PipeOptions
+        internal PipeOptions GetOutputPipeOptions(IScheduler readerScheduler) => new PipeOptions
         {
             ReaderScheduler = readerScheduler,
-            WriterScheduler = (requiresDispatch ? (IScheduler)_serviceContext.ThreadPool : (IScheduler)InlineScheduler.Default),
+            WriterScheduler = _serviceContext.ThreadPool,
             MaximumSizeHigh = GetOutputResponseBufferSize(),
             MaximumSizeLow = GetOutputResponseBufferSize()
         };
