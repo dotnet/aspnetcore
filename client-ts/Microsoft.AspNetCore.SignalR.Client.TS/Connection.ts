@@ -27,18 +27,18 @@ export class Connection implements IConnection {
         this.connectionState = ConnectionState.Initial;
     }
 
-    async start(transportType: TransportType = TransportType.WebSockets): Promise<void> {
+    async start(transport: TransportType | ITransport = TransportType.WebSockets): Promise<void> {
         if (this.connectionState != ConnectionState.Initial) {
             return Promise.reject(new Error("Cannot start a connection that is not in the 'Initial' state."));
         }
 
         this.connectionState = ConnectionState.Connecting;
 
-        this.startPromise = this.startInternal(transportType);
+        this.startPromise = this.startInternal(transport);
         return this.startPromise;
     }
 
-    private async startInternal(transportType: TransportType): Promise<void> {
+    private async startInternal(transportType: TransportType | ITransport): Promise<void> {
         try {
             this.connectionId = await this.httpClient.get(`${this.url}/negotiate?${this.queryString}`);
 
@@ -57,7 +57,7 @@ export class Connection implements IConnection {
             // the state if the connection is already marked as Disconnected
             this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
         }
-        catch(e) {
+        catch (e) {
             console.log("Failed to start the connection. " + e)
             this.connectionState = ConnectionState.Disconnected;
             this.transport = null;
@@ -65,18 +65,26 @@ export class Connection implements IConnection {
         };
     }
 
-    private createTransport(transportType: TransportType): ITransport {
-        if (transportType === TransportType.WebSockets) {
+    private createTransport(transport: TransportType | ITransport): ITransport {
+        if (transport === TransportType.WebSockets) {
             return new WebSocketTransport();
         }
-        if (transportType === TransportType.ServerSentEvents) {
+        if (transport === TransportType.ServerSentEvents) {
             return new ServerSentEventsTransport(this.httpClient);
         }
-        if (transportType === TransportType.LongPolling) {
+        if (transport === TransportType.LongPolling) {
             return new LongPollingTransport(this.httpClient);
         }
 
+        if (this.isITransport(transport)) {
+            return transport;
+        }
+
         throw new Error("No valid transports requested.");
+    }
+
+    private isITransport(transport: any): transport is ITransport {
+        return "connect" in transport;
     }
 
     private changeState(from: ConnectionState, to: ConnectionState): Boolean {

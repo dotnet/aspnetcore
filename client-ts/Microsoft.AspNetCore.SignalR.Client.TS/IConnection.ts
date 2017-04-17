@@ -1,8 +1,8 @@
 import { DataReceived, ConnectionClosed } from "./Common"
-import { TransportType } from  "./Transports"
+import { TransportType, ITransport } from  "./Transports"
 
 export interface IConnection {
-    start(transportType: TransportType): Promise<void>;
+    start(transportType: TransportType | ITransport): Promise<void>;
     send(data: any): Promise<void>;
     stop(): void;
 

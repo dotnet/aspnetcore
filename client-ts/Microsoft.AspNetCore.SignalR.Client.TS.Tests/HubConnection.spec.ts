@@ -1,12 +1,12 @@
 import { IConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/IConnection"
 import { HubConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/HubConnection"
 import { DataReceived, ConnectionClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
-import { TransportType } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
+import { TransportType, ITransport } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
 
 describe("HubConnection", () => {
     it("completes pending invocations when stopped", async (done) => {
         let connection: IConnection = {
-            start(transportType: TransportType): Promise<void> {
+            start(transportType: TransportType | ITransport): Promise<void> {
                 return Promise.resolve();
             },
 
@@ -40,7 +40,7 @@ describe("HubConnection", () => {
 
     it("completes pending invocations when connection is lost", async (done) => {
         let connection: IConnection = {
-            start(transportType: TransportType): Promise<void> {
+            start(transportType: TransportType | ITransport): Promise<void> {
                 return Promise.resolve();
             },
 
