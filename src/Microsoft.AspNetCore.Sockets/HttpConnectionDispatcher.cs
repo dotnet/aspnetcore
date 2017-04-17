@@ -338,31 +338,24 @@ namespace Microsoft.AspNetCore.Sockets
                 buffer = stream.ToArray();
             }
 
-            IList<Message> messages;
+            MessageFormat messageFormat;
             if (string.Equals(context.Request.ContentType, MessageFormatter.TextContentType, StringComparison.OrdinalIgnoreCase))
             {
-                var reader = new BytesReader(buffer);
-                messages = ParseSendBatch(ref reader, MessageFormat.Text);
+                messageFormat = MessageFormat.Text;
             }
             else if (string.Equals(context.Request.ContentType, MessageFormatter.BinaryContentType, StringComparison.OrdinalIgnoreCase))
             {
-                var reader = new BytesReader(buffer);
-                messages = ParseSendBatch(ref reader, MessageFormat.Binary);
+                messageFormat = MessageFormat.Binary;
             }
             else
             {
-                // Legacy, single message raw format
-
-                var format =
-                    string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
-                        ? MessageType.Binary
-                        : MessageType.Text;
-                messages = new List<Message>()
-                {
-                    new Message(buffer, format, endOfMessage: true)
-                };
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsync($"'{context.Request.ContentType}' is not a valid Content-Type for send requests.");
+                return;
             }
 
+            var reader = new BytesReader(buffer);
+            var messages = ParseSendBatch(ref reader, messageFormat);
 
             // REVIEW: Do we want to return a specific status code here if the connection has ended?
             _logger.LogDebug("Received batch of {0} message(s) in '/send'", messages.Count);
@@ -449,7 +442,7 @@ namespace Microsoft.AspNetCore.Sockets
             return connectionState;
         }
 
-        private IList<Message> ParseSendBatch(ref BytesReader payload, MessageFormat messageFormat)
+        private List<Message> ParseSendBatch(ref BytesReader payload, MessageFormat messageFormat)
         {
             var messages = new List<Message>();
 

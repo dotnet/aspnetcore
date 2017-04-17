@@ -1,24 +1,25 @@
 export interface IHttpClient {
-    get(url: string): Promise<string>;
-    post(url: string, content: string): Promise<string>;
+    get(url: string, headers?: Map<string, string>): Promise<string>;
+    post(url: string, content: string, headers?: Map<string, string>): Promise<string>;
 }
 
 export class HttpClient implements IHttpClient {
-    get(url: string): Promise<string> {
-        return this.xhr("GET", url);
+    get(url: string, headers?: Map<string, string>): Promise<string> {
+        return this.xhr("GET", url, headers);
     }
 
-    post(url: string, content: string): Promise<string> {
-        return this.xhr("POST", url, content);
+    post(url: string, content: string, headers?: Map<string, string>): Promise<string> {
+        return this.xhr("POST", url, headers, content);
     }
 
-    private xhr(method: string, url: string, content?: string): Promise<string> {
+    private xhr(method: string, url: string, headers?: Map<string, string>, content?: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             let xhr = new XMLHttpRequest();
+
             xhr.open(method, url, true);
 
-            if (method === "POST" && content != null) {
-                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            if (headers) {
+                headers.forEach((value, header) => xhr.setRequestHeader(header, value));
             }
 
             xhr.send(content);

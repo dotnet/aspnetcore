@@ -109,6 +109,32 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
+        [Fact]
+        public async Task SendRequestsWithInvalidContentTypeAreRejected()
+        {
+            var manager = CreateConnectionManager();
+            var connectionState = manager.CreateConnection();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            using (var strm = new MemoryStream())
+            {
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddEndPoint<TestEndPoint>();
+                context.RequestServices = services.BuildServiceProvider();
+                context.Request.Path = "/send";
+                context.Request.QueryString = new QueryString($"?id={connectionState.Connection.ConnectionId}");
+                context.Request.ContentType = "text/plain";
+                context.Response.Body = strm;
+
+                await dispatcher.ExecuteAsync<TestEndPoint>("", context);
+
+                Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+                await strm.FlushAsync();
+                Assert.Equal("'text/plain' is not a valid Content-Type for send requests.", Encoding.UTF8.GetString(strm.ToArray()));
+            }
+        }
+
         [Theory]
         [InlineData(TransportType.LongPolling, 204)]
         [InlineData(TransportType.WebSockets, 404)]
@@ -417,8 +443,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData("", "text", "Hello, World", "Hello, World", MessageType.Text)] // Legacy format
-        [InlineData("", "binary", "Hello, World", "Hello, World", MessageType.Binary)] // Legacy format
         [InlineData(TextContentType, null, "T12:T:Hello, World;", "Hello, World", MessageType.Text)]
         [InlineData(TextContentType, null, "T16:B:SGVsbG8sIFdvcmxk;", "Hello, World", MessageType.Binary)]
         [InlineData(TextContentType, null, "T12:E:Hello, World;", "Hello, World", MessageType.Error)]

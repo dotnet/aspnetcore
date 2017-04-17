@@ -139,7 +139,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        await this.httpClient.post(this.url + "/send?" + this.queryString, data);
+        return send(this.httpClient, `${this.url}/send?${this.queryString}`, data);
     }
 
     stop(): void {
@@ -231,7 +231,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        await this.httpClient.post(this.url + "/send?" + this.queryString, data);
+        return send(this.httpClient, `${this.url}/send?${this.queryString}`, data);
     }
 
     stop(): void {
@@ -244,4 +244,12 @@ export class LongPollingTransport implements ITransport {
 
     onDataReceived: DataReceived;
     onClosed: TransportClosed;
+}
+
+const headers = new Map<string, string>();
+headers.set("Content-Type", "application/vnd.microsoft.aspnetcore.endpoint-messages.v1+text");
+
+async function send(httpClient: IHttpClient, url: string, data: any): Promise<void> {
+    let message = `T${data.length.toString()}:T:${data};`;
+    await httpClient.post(url, message, headers);
 }
