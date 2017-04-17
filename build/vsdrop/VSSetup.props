@@ -39,7 +39,7 @@
         <ManifestBuildBranch>$(BUILD_SOURCEBRANCHNAME)</ManifestBuildBranch>
         <ManifestBuildBranch Condition="'$(ManifestBuildBranch)' == ''">local_build</ManifestBuildBranch>
         <ManifestBuildNumber>$(BUILD_BUILDNUMBER)</ManifestBuildNumber>
-        <ManifestBuildNumber Condition="'$(ManifestBuildNumber)' == ''">$([System.DateTime]::Now.ToString("yyMMdd")).1</ManifestBuildNumber>
+        <ManifestBuildNumber Condition="'$(ManifestBuildNumber)' == ''">$([System.DateTime]::Now.ToString("yyMMddHHmmss")).1</ManifestBuildNumber>
     </PropertyGroup>
 
     <PropertyGroup>
