@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
 
                 var response = await HttpClientSlim.GetStringAsync($"https://localhost:{host.GetPort()}/", validateCertificate: false)
                                                    .TimeoutAfter(TimeSpan.FromSeconds(10));

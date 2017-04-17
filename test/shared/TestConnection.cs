@@ -52,9 +52,9 @@ namespace Microsoft.AspNetCore.Testing
         {
             var text = string.Join("\r\n", lines);
             var writer = new StreamWriter(_stream, Encoding.GetEncoding("iso-8859-1"));
-            await writer.WriteAsync(text);
-            writer.Flush();
-            _stream.Flush();
+            await writer.WriteAsync(text).ConfigureAwait(false);
+            await writer.FlushAsync().ConfigureAwait(false);
+            await _stream.FlushAsync().ConfigureAwait(false);
         }
 
         public async Task Send(params string[] lines)
@@ -64,13 +64,13 @@ namespace Microsoft.AspNetCore.Testing
             for (var index = 0; index < text.Length; index++)
             {
                 var ch = text[index];
-                await writer.WriteAsync(ch);
-                await writer.FlushAsync();
+                writer.Write(ch);
+                await writer.FlushAsync().ConfigureAwait(false);
                 // Re-add delay to help find socket input consumption bugs more consistently
                 //await Task.Delay(TimeSpan.FromMilliseconds(5));
             }
-            writer.Flush();
-            _stream.Flush();
+            await writer.FlushAsync().ConfigureAwait(false);
+            await _stream.FlushAsync().ConfigureAwait(false);
         }
 
         public async Task Receive(params string[] lines)
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Testing
                 {
                     task = task.TimeoutAfter(Timeout);
                 }
-                var count = await task;
+                var count = await task.ConfigureAwait(false);
                 if (count == 0)
                 {
                     break;
@@ -99,22 +99,22 @@ namespace Microsoft.AspNetCore.Testing
 
         public async Task ReceiveEnd(params string[] lines)
         {
-            await Receive(lines);
+            await Receive(lines).ConfigureAwait(false);
             _socket.Shutdown(SocketShutdown.Send);
             var ch = new char[128];
-            var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout);
+            var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout).ConfigureAwait(false);
             var text = new string(ch, 0, count);
             Assert.Equal("", text);
         }
 
         public async Task ReceiveForcedEnd(params string[] lines)
         {
-            await Receive(lines);
+            await Receive(lines).ConfigureAwait(false);
 
             try
             {
                 var ch = new char[128];
-                var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout);
+                var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(Timeout).ConfigureAwait(false);
                 var text = new string(ch, 0, count);
                 Assert.Equal("", text);
             }
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Testing
                 {
                     Assert.True(task.Wait(4000), "timeout");
                 }
-                var count = await task;
+                var count = await task.ConfigureAwait(false);
                 if (count == 0)
                 {
                     break;

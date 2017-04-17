@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         while (bytesWritten < data.Length)
                         {
                             var size = Math.Min(data.Length - bytesWritten, maxSendSize);
-                            await stream.WriteAsync(data, bytesWritten, size);
+                            await stream.WriteAsync(data, bytesWritten, size).ConfigureAwait(false);
                             bytesWritten += size;
                             lastBytesWritten = DateTime.Now;
                         }
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         while (bytesWritten < data.Length)
                         {
                             var size = Math.Min(data.Length - bytesWritten, maxSendSize);
-                            await stream.WriteAsync(data, bytesWritten, size);
+                            await stream.WriteAsync(data, bytesWritten, size).ConfigureAwait(false);
                             bytesWritten += size;
                             lastBytesWritten = DateTime.Now;
                         }
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 foreach (var line in _requestLines)
                 {
-                    await writer.WriteAsync(line);
+                    await writer.WriteAsync(line).ConfigureAwait(false);
                 }
             }
         }
