@@ -35,10 +35,11 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var builder = CreateWebHostBuilder().UseServer(new TestServer());
 
-            var host = (WebHost)builder.UseStartup("MyStartupAssembly").Build();
-
-            Assert.Equal("MyStartupAssembly", host.Options.ApplicationName);
-            Assert.Equal("MyStartupAssembly", host.Options.StartupAssembly);
+            using (var host = (WebHost)builder.UseStartup("MyStartupAssembly").Build())
+            {
+                Assert.Equal("MyStartupAssembly", host.Options.ApplicationName);
+                Assert.Equal("MyStartupAssembly", host.Options.StartupAssembly);
+            }
         }
 
         [Fact]
@@ -46,8 +47,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var host = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build();
-            using (host)
+            using (var host = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build())
             {
                 await host.StartAsync();
                 await AssertResponseContains(server.RequestDelegate, "MissingStartupAssembly");
@@ -158,9 +158,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-
-            Assert.NotNull(host.Services.GetService<ILoggerFactory>());
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.NotNull(host.Services.GetService<ILoggerFactory>());
+            }
         }
 
         [Fact]
@@ -195,9 +196,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-
-            Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
+            }
         }
 
         [Fact]
@@ -216,8 +218,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-            Assert.Equal(2, callCount);
+            using (hostBuilder.Build())
+            {
+                Assert.Equal(2, callCount);
+            }
         }
 
         [Fact]
@@ -230,9 +234,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-
-            Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
+            }
         }
 
         [Fact]
@@ -252,21 +257,23 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
-            var host = (WebHost)hostBuilder.Build();
-            Assert.Equal(2, callCount);
-            Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.Equal(2, callCount);
+                Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
+            }
         }
 
         [Fact]
-        public void HostingContextCanBeUsed()
+        public void HostingContextContainsAppConfigurationDuringConfigureLogging()
         {
             var hostBuilder = new WebHostBuilder()
-                 .ConfigureAppConfiguration((context, configBuilder) => configBuilder
-                    .AddInMemoryCollection(
-                            new KeyValuePair<string, string>[]
-                            {
-                                new KeyValuePair<string, string>("key1", "value1")
-                            }))
+                 .ConfigureAppConfiguration((context, configBuilder) =>
+                    configBuilder.AddInMemoryCollection(
+                        new KeyValuePair<string, string>[]
+                        {
+                            new KeyValuePair<string, string>("key1", "value1")
+                        }))
                  .ConfigureLogging((context, factory) =>
                  {
                      Assert.Equal("value1", context.Configuration["key1"]);
@@ -274,10 +281,27 @@ namespace Microsoft.AspNetCore.Hosting
                  .UseServer(new TestServer())
                  .UseStartup<StartupNoServices>();
 
-            hostBuilder.Build();
+            using (hostBuilder.Build()) { }
+        }
 
-            //Verify property on builder is set.
-            Assert.Equal("value1", hostBuilder.Context.Configuration["key1"]);
+        [Fact]
+        public void HostingContextContainsAppConfigurationDuringConfigureServices()
+        {
+            var hostBuilder = new WebHostBuilder()
+                 .ConfigureAppConfiguration((context, configBuilder) =>
+                    configBuilder.AddInMemoryCollection(
+                        new KeyValuePair<string, string>[]
+                        {
+                            new KeyValuePair<string, string>("key1", "value1")
+                        }))
+                 .ConfigureServices((context, factory) =>
+                 {
+                     Assert.Equal("value1", context.Configuration["key1"]);
+                 })
+                 .UseServer(new TestServer())
+                 .UseStartup<StartupNoServices>();
+
+            using (hostBuilder.Build()) { }
         }
 
         [Fact]
@@ -293,8 +317,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-            Assert.Equal(1, callCount);
+            using (hostBuilder.Build())
+            {
+                Assert.Equal(1, callCount);
+            }
         }
 
         [Fact]
@@ -310,8 +336,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-            Assert.Equal(0, callCount);
+            using (hostBuilder.Build())
+            {
+                Assert.Equal(0, callCount);
+            }
         }
 
         [Fact]
@@ -325,8 +353,11 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
-            var host = (WebHost)hostBuilder.Build();
-            Assert.IsType(typeof(CustomLoggerFactory), host.Services.GetService<ILoggerFactory>());
+
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.IsType(typeof(CustomLoggerFactory), host.Services.GetService<ILoggerFactory>());
+            }
         }
 
         [Fact]
@@ -335,9 +366,11 @@ namespace Microsoft.AspNetCore.Hosting
             var hostBuilder = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
-            var host = (WebHost)hostBuilder.Build();
 
-            Assert.NotNull(host.Services.GetService<IConfiguration>());
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.NotNull(host.Services.GetService<IConfiguration>());
+            }
         }
 
         [Fact]
@@ -352,7 +385,8 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
-            var host = (WebHost)hostBuilder.Build();
+
+            using (hostBuilder.Build()) { }
         }
 
         [Fact]
@@ -371,11 +405,13 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
-            var host = (WebHost)hostBuilder.Build();
 
-            var config = host.Services.GetService<IConfiguration>();
-            Assert.NotNull(config);
-            Assert.Equal("value1", config["key1"]);
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                var config = host.Services.GetService<IConfiguration>();
+                Assert.NotNull(config);
+                Assert.Equal("value1", config["key1"]);
+            }
         }
 
         [Fact]
@@ -419,11 +455,13 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .Configure(app => { });
 
-            var host = hostBuilder.Build();
-            Assert.Equal(2, callCount);
+            using (var host = hostBuilder.Build())
+            {
+                Assert.Equal(2, callCount);
 
-            Assert.NotNull(host.Services.GetRequiredService<ServiceA>());
-            Assert.NotNull(host.Services.GetRequiredService<ServiceB>());
+                Assert.NotNull(host.Services.GetRequiredService<ServiceA>());
+                Assert.NotNull(host.Services.GetRequiredService<ServiceB>());
+            }
         }
 
         [Fact]
@@ -435,9 +473,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-
-            Assert.Equal("EnvB", host.Options.Environment);
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.Equal("EnvB", host.Options.Environment);
+            }
         }
 
         [Fact]
@@ -458,9 +497,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-
-            Assert.Equal("EnvB", host.Options.Environment);
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.Equal("EnvB", host.Options.Environment);
+            }
         }
 
         [Fact]
@@ -481,9 +521,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-
-            Assert.Equal("EnvB", host.Options.Environment);
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.Equal("EnvB", host.Options.Environment);
+            }
         }
 
         [Fact]
@@ -513,9 +554,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
 
-            var host = (WebHost)hostBuilder.Build();
-
-            Assert.Equal("EnvB", host.Options.Environment);
+            using (var host = (WebHost)hostBuilder.Build())
+            {
+                Assert.Equal("EnvB", host.Options.Environment);
+            }
         }
 
         [Fact]
@@ -530,14 +572,17 @@ namespace Microsoft.AspNetCore.Hosting
             var config = builder.Build();
 
             var expected = "MY_TEST_ENVIRONMENT";
-            var host = new WebHostBuilder()
+
+
+            using (var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseEnvironment(expected)
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
-                .Build();
-
-            Assert.Equal(expected, host.Services.GetService<IHostingEnvironment>().EnvironmentName);
+                .Build())
+            {
+                Assert.Equal(expected, host.Services.GetService<IHostingEnvironment>().EnvironmentName);
+            }
         }
 
         [Fact]
@@ -552,14 +597,12 @@ namespace Microsoft.AspNetCore.Hosting
             var config = builder.Build();
 
             var expected = "MY_TEST_ENVIRONMENT";
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseEnvironment(expected)
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
-                .Build();
-
-            host.Dispose();
+                .Build()) { }
         }
 
         [Fact]
@@ -573,105 +616,113 @@ namespace Microsoft.AspNetCore.Hosting
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseContentRoot("/")
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
-                .Build();
-
-            Assert.Equal("/", host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+                .Build())
+            {
+                Assert.Equal("/", host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+            }
         }
 
         [Fact]
         public void RelativeContentRootIsResolved()
         {
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseContentRoot("testroot")
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
-                .Build();
-
-            var basePath = host.Services.GetRequiredService<IHostingEnvironment>().ContentRootPath;
-            Assert.True(Path.IsPathRooted(basePath));
-            Assert.EndsWith(Path.DirectorySeparatorChar + "testroot", basePath);
+                .Build())
+            {
+                var basePath = host.Services.GetRequiredService<IHostingEnvironment>().ContentRootPath;
+                Assert.True(Path.IsPathRooted(basePath));
+                Assert.EndsWith(Path.DirectorySeparatorChar + "testroot", basePath);
+            }
         }
 
         [Fact]
         public void DefaultContentRootIsApplicationBasePath()
         {
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
-                .Build();
-
-            var appBase = PlatformServices.Default.Application.ApplicationBasePath;
-            Assert.Equal(appBase, host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+                .Build())
+            {
+                var appBase = PlatformServices.Default.Application.ApplicationBasePath;
+                Assert.Equal(appBase, host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+            }
         }
 
         [Fact]
         public void DefaultApplicationNameToStartupAssemblyName()
         {
             var builder = new ConfigurationBuilder();
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
-                .Build();
-
-            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+                .Build())
+            {
+                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+            }
         }
 
         [Fact]
         public void DefaultApplicationNameToStartupType()
         {
             var builder = new ConfigurationBuilder();
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>()
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
-                .Build();
-
-            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests.NonExistent", hostingEnv.ApplicationName);
+                .Build())
+            {
+                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                Assert.Equal("Microsoft.AspNetCore.Hosting.Tests.NonExistent", hostingEnv.ApplicationName);
+            }
         }
 
         [Fact]
         public void DefaultApplicationNameAndBasePathToStartupMethods()
         {
             var builder = new ConfigurationBuilder();
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .Configure(app => { })
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
-                .Build();
-
-            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests.NonExistent", hostingEnv.ApplicationName);
+                .Build())
+            {
+                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                Assert.Equal("Microsoft.AspNetCore.Hosting.Tests.NonExistent", hostingEnv.ApplicationName);
+            }
         }
 
         [Fact]
         public void Configure_SupportsNonStaticMethodDelegate()
         {
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .Configure(app => { })
-                .Build();
-
-            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+                .Build())
+            {
+                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+            }
         }
 
         [Fact]
         public void Configure_SupportsStaticMethodDelegate()
         {
-            var host = new WebHostBuilder()
+            using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .Configure(StaticConfigureMethod)
-                .Build();
-
-            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+                .Build())
+            {
+                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+            }
         }
 
         [Fact]
@@ -679,13 +730,13 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            builder.UseServer(server)
+            using (builder.UseServer(server)
                 .UseStartup<StartupNoServices>()
-                .Build();
-
-            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
-
-            Assert.Equal("WebHostBuilder allows creation only of a single instance of WebHost", ex.Message);
+                .Build())
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+                Assert.Equal("WebHostBuilder allows creation only of a single instance of WebHost", ex.Message);
+            }
         }
 
         [Fact]
@@ -693,13 +744,13 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var host = builder.UseServer(server)
+            using (var host = builder.UseServer(server)
                 .UseStartup<StartupWithILoggerFactory>()
-                .Build();
-
-            var startup = host.Services.GetService<StartupWithILoggerFactory>();
-
-            Assert.Equal(startup.ConfigureLoggerFactory, startup.ConstructorLoggerFactory);
+                .Build())
+            {
+                var startup = host.Services.GetService<StartupWithILoggerFactory>();
+                Assert.Equal(startup.ConfigureLoggerFactory, startup.ConstructorLoggerFactory);
+            }
         }
 
         [Fact]
@@ -708,15 +759,15 @@ namespace Microsoft.AspNetCore.Hosting
             var factory = new LoggerFactory();
             var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var host = builder.UseServer(server)
+            using (var host = builder.UseServer(server)
                 .UseLoggerFactory(factory)
                 .UseStartup<StartupWithILoggerFactory>()
-                .Build();
-
-            var startup = host.Services.GetService<StartupWithILoggerFactory>();
-
-            Assert.Equal(factory, startup.ConfigureLoggerFactory);
-            Assert.Equal(factory, startup.ConstructorLoggerFactory);
+                .Build())
+            {
+                var startup = host.Services.GetService<StartupWithILoggerFactory>();
+                Assert.Equal(factory, startup.ConfigureLoggerFactory);
+                Assert.Equal(factory, startup.ConstructorLoggerFactory);
+            }
         }
 
         [Fact]
@@ -726,12 +777,10 @@ namespace Microsoft.AspNetCore.Hosting
             var builder = CreateWebHostBuilder();
             var server = new TestServer();
 
-            var host = builder.UseServer(server)
+            using (var host = builder.UseServer(server)
                 .UseLoggerFactory(factory)
                 .UseStartup<StartupWithILoggerFactory>()
-                .Build();
-
-            host.Dispose();
+                .Build()) { }
 
             Assert.Equal(false, factory.Disposed);
         }
@@ -743,13 +792,14 @@ namespace Microsoft.AspNetCore.Hosting
             var builder = CreateWebHostBuilder();
             var server = new TestServer();
 
-            var host = builder.UseServer(server)
+            using (var host = builder.UseServer(server)
                 .ConfigureServices(collection => collection.AddSingleton<ILoggerFactory>(factory))
                 .UseStartup<StartupWithILoggerFactory>()
-                .Build();
-
-            var factoryFromHost = host.Services.GetService<ILoggerFactory>();
-            Assert.Equal(factory, factoryFromHost);
+                .Build())
+            {
+                var factoryFromHost = host.Services.GetService<ILoggerFactory>();
+                Assert.Equal(factory, factoryFromHost);
+            }
         }
 
         [Fact]
@@ -761,9 +811,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(app => { })
                 .UseServer(new TestServer());
 
-            var host = (WebHost)builder.Build();
-
-            Assert.Equal("1", builder.GetSetting("testhostingstartup"));
+            using (var host = builder.Build())
+            {
+                Assert.Equal("1", builder.GetSetting("testhostingstartup"));
+            }
         }
 
         [Fact]
@@ -782,10 +833,11 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer());
 
-            var host = (WebHost)builder.Build();
-
-            Assert.NotNull(startup.ServiceADescriptor);
-            Assert.NotNull(startup.ServiceA);
+            using (builder.Build())
+            {
+                Assert.NotNull(startup.ServiceADescriptor);
+                Assert.NotNull(startup.ServiceA);
+            }
         }
 
         [Fact]
@@ -802,9 +854,11 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer());
 
-            var host = (WebHost)builder.Build();
-            var sink = host.Services.GetRequiredService<ITestSink>();
-            Assert.True(sink.Writes.Any(w => w.State.ToString() == "From startup"));
+            using (var host = (WebHost)builder.Build())
+            {
+                var sink = host.Services.GetRequiredService<ITestSink>();
+                Assert.True(sink.Writes.Any(w => w.State.ToString() == "From startup"));
+            }
         }
 
         [Fact]
@@ -814,9 +868,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(app => { })
                 .UseServer(new TestServer());
 
-            var host = (WebHost)builder.Build();
-
-            Assert.Null(builder.GetSetting("testhostingstartup"));
+            using (builder.Build())
+            {
+                Assert.Null(builder.GetSetting("testhostingstartup"));
+            }
         }
 
         [Fact]
@@ -828,7 +883,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(app => { })
                 .UseServer(new TestServer());
 
-            var ex = Assert.Throws<AggregateException>(() => (WebHost)builder.Build());
+            var ex = Assert.Throws<AggregateException>(() => builder.Build());
             Assert.IsType<InvalidOperationException>(ex.InnerExceptions[0]);
             Assert.IsType<FileNotFoundException>(ex.InnerExceptions[0].InnerException);
         }
@@ -867,8 +922,7 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Throws<ArgumentException>(() => new HostingStartupAttribute(typeof(WebHostTests)));
         }
 
-        private static void StaticConfigureMethod(IApplicationBuilder app)
-        { }
+        private static void StaticConfigureMethod(IApplicationBuilder app) { }
 
         private IWebHostBuilder CreateWebHostBuilder()
         {
@@ -898,10 +952,7 @@ namespace Microsoft.AspNetCore.Hosting
             IFeatureCollection IServer.Features { get; }
             public RequestDelegate RequestDelegate { get; private set; }
 
-            public void Dispose()
-            {
-
-            }
+            public void Dispose() { }
 
             public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
             {
@@ -923,10 +974,7 @@ namespace Microsoft.AspNetCore.Hosting
                 return Task.CompletedTask;
             }
 
-            public Task StopAsync(CancellationToken cancellationToken)
-            {
-                return Task.CompletedTask;
-            }
+            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         }
 
         internal class StartupVerifyServiceA : IStartup
@@ -964,39 +1012,21 @@ namespace Microsoft.AspNetCore.Hosting
         {
             public TestSink Sink { get; set; } = new TestSink();
 
-            public ILogger CreateLogger(string categoryName)
-            {
-                return new TestLogger(categoryName, Sink, enabled: true);
-            }
+            public ILogger CreateLogger(string categoryName) => new TestLogger(categoryName, Sink, enabled: true);
 
-            public void Dispose()
-            {
-
-            }
+            public void Dispose() { }
         }
 
         private class ServiceC
         {
-            public ServiceC(ServiceD serviceD)
-            {
-
-            }
+            public ServiceC(ServiceD serviceD) { }
         }
 
-        internal class ServiceD
-        {
+        internal class ServiceD { }
 
-        }
+        internal class ServiceA { }
 
-        internal class ServiceA
-        {
-
-        }
-
-        internal class ServiceB
-        {
-
-        }
+        internal class ServiceB { }
 
         private class DisposableLoggerFactory : ILoggerFactory
         {
@@ -1007,14 +1037,9 @@ namespace Microsoft.AspNetCore.Hosting
 
             public bool Disposed { get; set; }
 
-            public ILogger CreateLogger(string categoryName)
-            {
-                return NullLogger.Instance;
-            }
+            public ILogger CreateLogger(string categoryName) => NullLogger.Instance;
 
-            public void AddProvider(ILoggerProvider provider)
-            {
-            }
+            public void AddProvider(ILoggerProvider provider) { }
         }
     }
 }

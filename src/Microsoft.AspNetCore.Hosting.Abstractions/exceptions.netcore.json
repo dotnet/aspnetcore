@@ -39,12 +39,6 @@
   {
     "OldTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
     "NewTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
-    "NewMemberId": "Microsoft.AspNetCore.Hosting.WebHostBuilderContext get_Context()",
-    "Kind": "Addition"
-  },
-  {
-    "OldTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
-    "NewTypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
     "NewMemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceCollection> configureServices)",
     "Kind": "Addition"
   }

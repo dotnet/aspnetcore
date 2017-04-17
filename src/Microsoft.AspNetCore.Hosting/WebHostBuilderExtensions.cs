@@ -28,14 +28,15 @@ namespace Microsoft.AspNetCore.Hosting
 
             var startupAssemblyName = configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
 
-            return hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
-                              .ConfigureServices(services =>
-                              {
-                                  services.AddSingleton<IStartup>(sp =>
-                                  {
-                                      return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), configureApp);
-                                  });
-                              });
+            return hostBuilder
+                .UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<IStartup>(sp =>
+                    {
+                        return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), configureApp);
+                    });
+                });
         }
 
 
@@ -49,22 +50,23 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var startupAssemblyName = startupType.GetTypeInfo().Assembly.GetName().Name;
 
-            return hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
-                              .ConfigureServices(services =>
-                              {
-                                  if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
-                                  {
-                                      services.AddSingleton(typeof(IStartup), startupType);
-                                  }
-                                  else
-                                  {
-                                      services.AddSingleton(typeof(IStartup), sp =>
-                                      {
-                                          var hostingEnvironment = sp.GetRequiredService<IHostingEnvironment>();
-                                          return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName));
-                                      });
-                                  }
-                              });
+            return hostBuilder
+                .UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
+                .ConfigureServices(services =>
+                {
+                    if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
+                    {
+                        services.AddSingleton(typeof(IStartup), startupType);
+                    }
+                    else
+                    {
+                        services.AddSingleton(typeof(IStartup), sp =>
+                        {
+                            var hostingEnvironment = sp.GetRequiredService<IHostingEnvironment>();
+                            return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName));
+                        });
+                    }
+                });
         }
 
         /// <summary>
@@ -102,8 +104,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, LoggerFactory> configureLogging)
         {
-            hostBuilder.ConfigureLogging(configureLogging);
-            return hostBuilder;
+            return hostBuilder.ConfigureLogging(configureLogging);
         }
 
         /// <summary>
@@ -114,9 +115,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder ConfigureLogging<T>(this IWebHostBuilder hostBuilder, Action<T> configureLogging) where T : ILoggerFactory
         {
-            hostBuilder.ConfigureLogging<T>((_, factory) => configureLogging(factory));
-            return hostBuilder;
+            return hostBuilder.ConfigureLogging<T>((_, factory) => configureLogging(factory));
         }
-
     }
 }
