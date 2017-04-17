@@ -146,4 +146,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(AspNetCoreVersion)" PrivateAssets="None" Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="build\**\*.xml" Package="true" />
+    <Content Include="build\**\*.targets" Package="true" />
+  </ItemGroup>
+
 </Project>
