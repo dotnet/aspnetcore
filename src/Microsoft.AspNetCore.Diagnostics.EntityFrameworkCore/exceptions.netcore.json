@@ -1,0 +1,10 @@
+[
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views.DatabaseErrorPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views.DatabaseErrorPageModel",
+        "Kind": "Removal"
+    }
+]
