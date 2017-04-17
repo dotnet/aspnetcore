@@ -436,7 +436,7 @@
         </PropertyGroup>
 
         <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(NUGET_FEED)" />
-        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackagesCache -f $(NUGET_FEED)" />
+        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackageCache -f $(NUGET_FEED)" />
         <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(NUGET_FEED)" />
         <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(NUGET_FEED)" />
     </Target>
