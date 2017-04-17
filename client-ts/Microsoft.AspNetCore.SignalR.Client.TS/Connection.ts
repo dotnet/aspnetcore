@@ -22,7 +22,7 @@ export class Connection implements IConnection {
 
     constructor(url: string, queryString: string = "", options: ISignalROptions = {}) {
         this.url = url;
-        this.queryString = queryString;
+        this.queryString = queryString || "";
         this.httpClient = options.httpClient || new HttpClient();
         this.connectionState = ConnectionState.Initial;
     }
@@ -47,7 +47,10 @@ export class Connection implements IConnection {
                 return;
             }
 
-            this.queryString = `id=${this.connectionId}`;
+            if (this.queryString) {
+                this.queryString += "&";
+            }
+            this.queryString += `id=${this.connectionId}`;
 
             this.transport = this.createTransport(transportType);
             this.transport.onDataReceived = this.onDataReceived;

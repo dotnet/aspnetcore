@@ -1,6 +1,8 @@
 import { IHttpClient } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpClient"
 import { Connection } from "../Microsoft.AspNetCore.SignalR.Client.TS/Connection"
 import { ISignalROptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/ISignalROptions"
+import { DataReceived, TransportClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
+import { ITransport } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
 
 describe("Connection", () => {
 
@@ -120,6 +122,46 @@ describe("Connection", () => {
     it("can stop a non-started connection", async (done) => {
         var connection = new Connection("http://tempuri.org");
         await connection.stop();
+        done();
+    });
+
+    it("preserves users connection string", async done => {
+        let options: ISignalROptions = {
+            httpClient: <IHttpClient>{
+                get(url: string): Promise<string> {
+                    if (url.includes("negotiate")) {
+                        return Promise.resolve("42");
+                    }
+                    return Promise.resolve("");
+                }
+            }
+        } as ISignalROptions;
+
+        let connectQueryString: string;
+        let fakeTransport: ITransport = {
+            connect(url: string, queryString: string): Promise<void> {
+                connectQueryString = queryString;
+                return Promise.reject("");
+            },
+            send(data: any): Promise<void> {
+                return Promise.reject("");
+            },
+            stop(): void { },
+            onDataReceived: undefined,
+            onClosed: undefined
+        }
+
+        var connection = new Connection("http://tempuri.org", "q=myData", options);
+
+        try {
+            await connection.start(fakeTransport);
+            fail();
+            done();
+        }
+        catch (e) {
+        }
+
+        expect(connectQueryString).toBe("q=myData&id=42");
         done();
     });
 });
