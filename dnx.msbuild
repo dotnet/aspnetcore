@@ -1,685 +1,697 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.SubmitCodeSignJob" />
-    <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.WaitForCodeSignJobs" />
-    <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
-    <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks.dll" TaskName="Microsoft.Web.MsBuildTasks.RegexReplace" />
+  <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.SubmitCodeSignJob" />
+  <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.WaitForCodeSignJobs" />
+  <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
+  <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks.dll" TaskName="Microsoft.Web.MsBuildTasks.RegexReplace" />
 
-    <Import Project="tools\dnx.settings.targets" />
-    <Import Project="tools\QERM.targets" />
+  <Import Project="tools\dnx.settings.targets" />
+  <Import Project="tools\QERM.targets" />
 
-    <PropertyGroup>
-        <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
-        <BuildToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</BuildToolsFeed>
-        <CoherenceDestinationDir>$(ArtifactsPath)coherence\</CoherenceDestinationDir>
-        <CoherencePackageCacheDestinationDir>$(ArtifactsPath)coherence-packageCache\</CoherencePackageCacheDestinationDir>
-        <CoherenceSignedDestinationDir>$(ArtifactsPath)Signed\</CoherenceSignedDestinationDir>
-    </PropertyGroup>
+  <PropertyGroup>
+    <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
+    <BuildToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</BuildToolsFeed>
+    <CoherenceDestinationDir>$(ArtifactsPath)coherence\</CoherenceDestinationDir>
+    <CoherencePackageCacheDestinationDir>$(ArtifactsPath)coherence-packageCache\</CoherencePackageCacheDestinationDir>
+    <CoherenceSignedDestinationDir>$(ArtifactsPath)Signed\</CoherenceSignedDestinationDir>
+    <CodeSignApprovers>elipton;joeloff</CodeSignApprovers>
+  </PropertyGroup>
 
-    <Target Name="Build" DependsOnTargets="BinScope;NuGetVerify;" />
+  <Target Name="Build" DependsOnTargets="BinScope;NuGetVerify;" />
 
-    <Target Name="Clean">
-        <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
-    </Target>
+  <Target Name="Clean">
+    <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
+  </Target>
 
-    <Target Name="Rebuild" DependsOnTargets="Clean;Build">
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build">
 
-    </Target>
+  </Target>
 
-    <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="Clean">
-        <MakeDir Directories="$(OutputPath)" />
-        <MakeDir Directories="$(CoherenceDestinationDir)" />
-        <MakeDir Directories="$(CoherencePackageCacheDestinationDir)" />
-        <MakeDir Directories="$(CoherenceDestinationDir)vsix" />
+  <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="Clean">
+    <MakeDir Directories="$(OutputPath)" />
+    <MakeDir Directories="$(CoherenceDestinationDir)" />
+    <MakeDir Directories="$(CoherencePackageCacheDestinationDir)" />
+    <MakeDir Directories="$(CoherenceDestinationDir)vsix" />
 
-        <ItemGroup>
-          <VSIXPaths Include="$(COHERENCE_DROP_LOCATION)\build\*.vsix" />
-          <PackageCaches Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.zip" />
-          <PackageCachesArtifacts
-            Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.nuspec;
+    <ItemGroup>
+      <VSIXPaths Include="$(COHERENCE_DROP_LOCATION)\build\*.vsix" />
+      <PackageCaches Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.zip" />
+      <PackageCachesArtifacts
+        Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.nuspec;
                 $(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.txt" />
-        </ItemGroup>
+    </ItemGroup>
 
-        <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{build-number}"
-            Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
-        <Error Text="COHERENCE_PACKAGECACHE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence-PackageCache\{build-number}"
-            Condition=" '$(COHERENCE_PACKAGECACHE_DROP_LOCATION)' == '' " />
+    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{build-number}"
+        Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
+    <Error Text="COHERENCE_PACKAGECACHE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence-PackageCache\{build-number}"
+        Condition=" '$(COHERENCE_PACKAGECACHE_DROP_LOCATION)' == '' " />
 
-        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(COHERENCE_DROP_LOCATION) $(CoherenceDestinationDir) /XD build packages-expanded
+    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(COHERENCE_DROP_LOCATION) $(CoherenceDestinationDir) /XD build packages-expanded
             IF %ERRORLEVEL% LEQ 3 exit 0" />
 
-        <Copy SourceFiles="@(VSIXPaths)" DestinationFolder="$(CoherenceDestinationDir)vsix" />
-        <Copy
-            SourceFiles="$([System.IO.Path]::ChangeExtension(%(VSIXPaths.FullPath), '.json'))"
-            DestinationFolder="$(CoherenceDestinationDir)vsix" />
-        <Copy SourceFiles="@(PackageCaches)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" />
-        <Copy SourceFiles="@(PackageCachesArtifacts)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" />
+    <Copy SourceFiles="@(VSIXPaths)" DestinationFolder="$(CoherenceDestinationDir)vsix" />
+    <Copy
+        SourceFiles="$([System.IO.Path]::ChangeExtension(%(VSIXPaths.FullPath), '.json'))"
+        DestinationFolder="$(CoherenceDestinationDir)vsix" />
+    <Copy SourceFiles="@(PackageCaches)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" />
+    <Copy SourceFiles="@(PackageCachesArtifacts)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" />
 
-        <ItemGroup>
-            <UnsignedPackages Include="$(CoherenceDestinationDir)ship\*.nupkg" />
-            <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
-            <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
-            <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)*.zip" />
-        </ItemGroup>
+    <ItemGroup>
+      <UnsignedPackages Include="$(CoherenceDestinationDir)ship\*.nupkg" />
+      <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
+      <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
+      <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)*.zip" />
+    </ItemGroup>
 
-        <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
-        <Error Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
-        <Error Text="No package cache found for signing." Condition="'@(UnsignedPackageCaches)'==''" />
+    <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
+    <Error Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
+    <Error Text="No package cache found for signing." Condition="'@(UnsignedPackageCaches)'==''" />
 
-        <PropertyGroup>
-            <UnzipCommand>$(DNXToolsPath)7za.exe x -y -scsUTF-8</UnzipCommand>
-        </PropertyGroup>
+    <PropertyGroup>
+      <UnzipCommand>$(DNXToolsPath)7za.exe x -y -scsUTF-8</UnzipCommand>
+    </PropertyGroup>
 
-        <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul" />
-        <Exec Command="$(UnzipCommand) -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity) > nul"
-            Condition=" '@(UnsignedSymbolPackages)' != '' " />
-        <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul" />
-        <Exec Command="$(UnzipCommand) -o@(UnsignedPackageCaches->'$(UnsignedPackageCachePath)%(Filename)') %(UnsignedPackageCaches.Identity) > nul" />
+    <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul" />
+    <Exec Command="$(UnzipCommand) -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity) > nul"
+        Condition=" '@(UnsignedSymbolPackages)' != '' " />
+    <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul" />
+    <Exec Command="$(UnzipCommand) -o@(UnsignedPackageCaches->'$(UnsignedPackageCachePath)%(Filename)') %(UnsignedPackageCaches.Identity) > nul" />
 
-        <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
-    </Target>
+    <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
+  </Target>
 
-    <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
-        <!-- Flatten the file names -->
-        <ItemGroup>
-            <_UnsignedBinaries
-                Include="$(UnsignedPackagesPath)**\*.dll;
+  <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
+    <!-- Flatten the file names -->
+    <ItemGroup>
+      <_UnsignedBinaries
+          Include="$(UnsignedPackagesPath)**\*.dll;
                     $(UnsignedPackagesPath)**\*.exe;
                     $(UnsignedPackagesPath)**\*.psd1;
                     $(UnsignedPackagesPath)**\*.psm1;
                     $(UnsignedPackagesPath)**\*.ps1;"
             />
 
-            <_UnsignedVSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
+      <_UnsignedVSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
-            <_UnsignedPackageCacheBinaries
-                Include="$(UnsignedPackageCachePath)**\netcoreapp2.0\microsoft.*\**\*.dll;
+      <_UnsignedPackageCacheBinaries
+          Include="$(UnsignedPackageCachePath)**\netcoreapp2.0\microsoft.*\**\*.dll;
                     $(UnsignedPackageCachePath)**\netcoreapp2.0\system.*\**\*.dll" />
-            <_UnsignedPackageCacheThirdPartyBinaries
-                Include="$(UnsignedPackageCachePath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
+      <_UnsignedPackageCacheThirdPartyBinaries
+          Include="$(UnsignedPackageCachePath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
                     $(UnsignedPackageCachePath)**\netcoreapp2.0\remotion*\**\*.dll;
                     $(UnsignedPackageCachePath)**\netcoreapp2.0\serilog*\**\*.dll;
                     $(UnsignedPackageCachePath)**\netcoreapp2.0\sqlitepclraw*\**\*.dll;
                     $(UnsignedPackageCachePath)**\netcoreapp2.0\stackexchange*\**\*.dll" />
 
-            <UnsignedBinaries Include="@(_UnsignedBinaries)">
-                <!-- Flattened file for signing -->
-                <UnsignedFlatFileName>$(UnsignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-                <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-                <!-- Replaces "PackageName\lib\tfm" with "PackageName.symbols\lib\tfm" -->
-                <SymbolsBinaryFullName>$(UnsignedSymbolPackagesPath)$([System.String]::new('%(RecursiveDir)').Substring(0, $([System.String]::new('%(RecursiveDir)').IndexOf('\')))).symbols$([System.String]::new('%(RecursiveDir)').Substring($([System.String]::new('%(RecursiveDir)').IndexOf('\'))))%(Filename)%(Extension)</SymbolsBinaryFullName>
-            </UnsignedBinaries>
+      <UnsignedBinaries Include="@(_UnsignedBinaries)">
+        <!-- Flattened file for signing -->
+        <UnsignedFlatFileName>$(UnsignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
+        <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
+        <!-- Replaces "PackageName\lib\tfm" with "PackageName.symbols\lib\tfm" -->
+        <SymbolsBinaryFullName>$(UnsignedSymbolPackagesPath)$([System.String]::new('%(RecursiveDir)').Substring(0, $([System.String]::new('%(RecursiveDir)').IndexOf('\')))).symbols$([System.String]::new('%(RecursiveDir)').Substring($([System.String]::new('%(RecursiveDir)').IndexOf('\'))))%(Filename)%(Extension)</SymbolsBinaryFullName>
+      </UnsignedBinaries>
 
-            <UnsignedVSIXBinaries Include="@(_UnsignedVSIXBinaries)">
-                <!-- Flattened file for signing -->
-                <UnsignedFlatFileName>$(UnsignedVSIXPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-                <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-            </UnsignedVSIXBinaries>
+      <UnsignedVSIXBinaries Include="@(_UnsignedVSIXBinaries)">
+        <!-- Flattened file for signing -->
+        <UnsignedFlatFileName>$(UnsignedVSIXPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
+        <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
+      </UnsignedVSIXBinaries>
 
-            <UnsignedPackageCacheBinaries Include="@(_UnsignedPackageCacheBinaries)">
-                <!-- Flattened file for signing -->
-                <UnsignedFlatFileName>$(UnsignedPackageCachePath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-                <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-            </UnsignedPackageCacheBinaries>
+      <UnsignedPackageCacheBinaries Include="@(_UnsignedPackageCacheBinaries)">
+        <!-- Flattened file for signing -->
+        <UnsignedFlatFileName>$(UnsignedPackageCachePath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
+        <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
+      </UnsignedPackageCacheBinaries>
 
-            <UnsignedPackageCacheThirdPartyBinaries Include="@(_UnsignedPackageCacheThirdPartyBinaries)">
-                <!-- Flattened file for signing -->
-                <UnsignedFlatFileName>$(UnsignedPackageCachePath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-                <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-            </UnsignedPackageCacheThirdPartyBinaries>
+      <UnsignedPackageCacheThirdPartyBinaries Include="@(_UnsignedPackageCacheThirdPartyBinaries)">
+        <!-- Flattened file for signing -->
+        <UnsignedFlatFileName>$(UnsignedPackageCachePath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
+        <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
+      </UnsignedPackageCacheThirdPartyBinaries>
 
-            <PackageBinariesToSign Include="%(UnsignedBinaries.UnsignedFlatFileName)" />
-            <PackageCacheBinariesToSign Include="%(UnsignedPackageCacheBinaries.UnsignedFlatFileName)" />
-            <PackageCacheThirdPartyBinariesToSign Include="%(UnsignedPackageCacheThirdPartyBinaries.UnsignedFlatFileName)" />
-            <VSIXBinariesToSign Include="%(UnsignedVSIXBinaries.UnsignedFlatFileName)" />
-        </ItemGroup>
+      <PackageBinariesToSign Include="%(UnsignedBinaries.UnsignedFlatFileName)" />
+      <PackageCacheBinariesToSign Include="%(UnsignedPackageCacheBinaries.UnsignedFlatFileName)" />
+      <PackageCacheThirdPartyBinariesToSign Include="%(UnsignedPackageCacheThirdPartyBinaries.UnsignedFlatFileName)" />
+      <VSIXBinariesToSign Include="%(UnsignedVSIXBinaries.UnsignedFlatFileName)" />
+    </ItemGroup>
 
-        <Copy SourceFiles="@(UnsignedBinaries)" DestinationFiles="@(UnsignedBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-        <Copy SourceFiles="@(UnsignedPackageCacheBinaries)" DestinationFiles="@(UnsignedPackageCacheBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-        <Copy SourceFiles="@(UnsignedPackageCacheThirdPartyBinaries)" DestinationFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-        <Copy SourceFiles="@(UnsignedVSIXBinaries)" DestinationFiles="@(UnsignedVSIXBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-    </Target>
+    <Copy SourceFiles="@(UnsignedBinaries)" DestinationFiles="@(UnsignedBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(UnsignedPackageCacheBinaries)" DestinationFiles="@(UnsignedPackageCacheBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(UnsignedPackageCacheThirdPartyBinaries)" DestinationFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(UnsignedVSIXBinaries)" DestinationFiles="@(UnsignedVSIXBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
+  </Target>
 
-    <Target Name="SignFiles" DependsOnTargets="PrepareFilesForSigning">
-        <RemoveDir Directories="$(CodeSignScriptsPath)" />
-        <MakeDir Directories="$(CodeSignScriptsPath)" />
+  <Target Name="SignFiles" DependsOnTargets="PrepareFilesForSigning">
+    <RemoveDir Directories="$(CodeSignScriptsPath)" />
+    <MakeDir Directories="$(CodeSignScriptsPath)" />
 
-        <ItemGroup>
-            <BinariesToSign Include="
+    <ItemGroup>
+      <BinariesToSign Include="
                 @(PackageBinariesToSign);
                 @(VSIXBinariesToSign)" />
-        </ItemGroup>
+    </ItemGroup>
 
-        <SubmitCodeSignJob
-            Approvers="$(CodeSignApprovers)"
-            Certificates="%(Certificates)"
-            Description="%(Description)"
-            DisplayName="%(DisplayName)"
-            DisplayUrl="%(Url)"
-            Files="@(BinariesToSign)"
-            GenerateCopyScript="false"
-            Poll="false"
-            SSL="true"
-            CreateTestJob="$(CodeSignCreateTestJob)"
-            Test="$(TestCodeSign)">
-            <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
-            <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
-        </SubmitCodeSignJob>
+    <SubmitCodeSignJob
+        Approvers="$(CodeSignApprovers)"
+        Certificates="%(Certificates)"
+        Description="%(Description)"
+        DisplayName="%(DisplayName)"
+        DisplayUrl="%(Url)"
+        Files="@(BinariesToSign)"
+        GenerateCopyScript="false"
+        Poll="false"
+        SSL="true"
+        CreateTestJob="$(CodeSignCreateTestJob)"
+        Test="$(TestCodeSign)">
+      <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
+      <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
+    </SubmitCodeSignJob>
 
-        <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
+    <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
 
-        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(CodeSignCompletionPath) $(SignedOutputPath)
+    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(CodeSignCompletionPath) $(SignedOutputPath)
             IF %ERRORLEVEL% LEQ 3 exit 0" />
-    </Target>
+  </Target>
 
-    <Target Name="SignPackageCache" DependsOnTargets="PrepareFilesForSigning">
-        <RemoveDir Directories="$(CodeSignScriptsPath)" />
-        <MakeDir Directories="$(CodeSignScriptsPath)" />
+  <Target Name="SignPackageCache" DependsOnTargets="PrepareFilesForSigning">
+    <RemoveDir Directories="$(CodeSignScriptsPath)" />
+    <MakeDir Directories="$(CodeSignScriptsPath)" />
 
-        <SubmitCodeSignJob
-            Approvers="$(CodeSignApprovers)"
-            Certificates="%(Certificates)"
-            Description="%(Description)"
-            DisplayName="%(DisplayName)"
-            DisplayUrl="%(Url)"
-            Files="@(PackageCacheBinariesToSign)"
-            GenerateCopyScript="false"
-            Poll="false"
-            SSL="true"
-            CreateTestJob="$(CodeSignCreateTestJob)"
-            Test="$(TestCodeSign)">
-            <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
-            <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
-        </SubmitCodeSignJob>
+    <SubmitCodeSignJob
+        Approvers="$(CodeSignApprovers)"
+        Certificates="%(Certificates)"
+        Description="%(Description)"
+        DisplayName="%(DisplayName)"
+        DisplayUrl="%(Url)"
+        Files="@(PackageCacheBinariesToSign)"
+        GenerateCopyScript="false"
+        Poll="false"
+        SSL="true"
+        CreateTestJob="$(CodeSignCreateTestJob)"
+        Test="$(TestCodeSign)">
+      <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
+      <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
+    </SubmitCodeSignJob>
 
-        <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
+    <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
 
-        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(CodeSignCompletionPath) $(SignedOutputPath)
+    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(CodeSignCompletionPath) $(SignedOutputPath)
             IF %ERRORLEVEL% LEQ 3 exit 0" />
 
-        <SubmitCodeSignJob
-            Approvers="$(CodeSignApprovers)"
-            Certificates="%(Certificates)"
-            Description="%(Description)"
-            DisplayName="%(DisplayName)"
-            DisplayUrl="%(Url)"
-            Files="@(PackageCacheThirdPartyBinariesToSign)"
-            GenerateCopyScript="false"
-            Poll="false"
-            SSL="true"
-            CreateTestJob="$(CodeSignCreateTestJob)"
-            Test="$(TestCodeSign)">
-            <Output TaskParameter="JobNumber" ItemName="ThirdPartyCodeSignJobNumbers" />
-            <Output TaskParameter="CompletionPath" PropertyName="ThirdPartyCodeSignCompletionPath" />
-        </SubmitCodeSignJob>
+    <SubmitCodeSignJob
+        Approvers="$(CodeSignApprovers)"
+        Certificates="%(Certificates)"
+        Description="%(Description)"
+        DisplayName="%(DisplayName)"
+        DisplayUrl="%(Url)"
+        Files="@(PackageCacheThirdPartyBinariesToSign)"
+        GenerateCopyScript="false"
+        Poll="false"
+        SSL="true"
+        CreateTestJob="$(CodeSignCreateTestJob)"
+        Test="$(TestCodeSign)">
+      <Output TaskParameter="JobNumber" ItemName="ThirdPartyCodeSignJobNumbers" />
+      <Output TaskParameter="CompletionPath" PropertyName="ThirdPartyCodeSignCompletionPath" />
+    </SubmitCodeSignJob>
 
-        <WaitForCodeSignJobs JobNumbers="@(ThirdPartyCodeSignJobNumbers)" Test="$(TestCodeSign)" />
+    <WaitForCodeSignJobs JobNumbers="@(ThirdPartyCodeSignJobNumbers)" Test="$(TestCodeSign)" />
 
-        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(ThirdPartyCodeSignCompletionPath) $(SignedOutputPath)
+    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(ThirdPartyCodeSignCompletionPath) $(SignedOutputPath)
             IF %ERRORLEVEL% LEQ 3 exit 0" />
-    </Target>
+  </Target>
 
-    <Target Name="ReplaceUnsignedFiles" DependsOnTargets="SignFiles;SignPackageCache">
-        <Copy SourceFiles="@(UnsignedBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedBinaries->'%(FullPath)')" />
-        <Copy SourceFiles="@(UnsignedVSIXBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedVSIXBinaries->'%(FullPath)')" />
-        <Copy SourceFiles="@(UnsignedPackageCacheBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageCacheBinaries->'%(FullPath)')" />
-        <Copy SourceFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(FullPath)')" />
-        <ItemGroup>
-            <!-- only overwrite existing unsigned binaries in the symbols packages. We don't create symbols-packages for all packages. -->
-            <_SignedSymbolsBinaries Include="@(UnsignedBinaries)" Condition="Exists('%(SymbolsBinaryFullName)')" />
-        </ItemGroup>
-        <Copy SourceFiles="@(_SignedSymbolsBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(_SignedSymbolsBinaries->'%(SymbolsBinaryFullName)')" />
-    </Target>
+  <Target Name="ReplaceUnsignedFiles" DependsOnTargets="SignFiles;SignPackageCache">
+    <Copy SourceFiles="@(UnsignedBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedBinaries->'%(FullPath)')" />
+    <Copy SourceFiles="@(UnsignedVSIXBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedVSIXBinaries->'%(FullPath)')" />
+    <Copy SourceFiles="@(UnsignedPackageCacheBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageCacheBinaries->'%(FullPath)')" />
+    <Copy SourceFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(FullPath)')" />
+    <ItemGroup>
+      <!-- only overwrite existing unsigned binaries in the symbols packages. We don't create symbols-packages for all packages. -->
+      <_SignedSymbolsBinaries Include="@(UnsignedBinaries)" Condition="Exists('%(SymbolsBinaryFullName)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_SignedSymbolsBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(_SignedSymbolsBinaries->'%(SymbolsBinaryFullName)')" />
+  </Target>
 
-    <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
-        <ItemGroup>
-            <NuSpecEULA
-                Include=
+  <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
+    <ItemGroup>
+      <NuSpecEULA
+          Include=
                     "$(UnsignedPackagesPath)**\*.nuspec;
                     $(UnsignedSymbolPackagesPath)**\*.nuspec;"
             />
-        </ItemGroup>
+    </ItemGroup>
 
-        <MSBuild
-            Projects="dnx.msbuild"
-            Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
-            Targets="AddOrUpdateRequiredNuspecFields"/>
-    </Target>
+    <MSBuild
+        Projects="dnx.msbuild"
+        Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
+        Targets="AddOrUpdateRequiredNuspecFields"/>
+  </Target>
 
-    <Target Name="AddOrUpdateRequiredNuspecFields">
-        <Message Text="Checking required NUSPEC fields in $(NuSpecFileToUpdate)..." />
+  <Target Name="AddOrUpdateRequiredNuspecFields">
+    <Message Text="Checking required NUSPEC fields in $(NuSpecFileToUpdate)..." />
 
-        <FixRequiredNuSpecInfo
-            NuSpec="$(NuSpecFileToUpdate)"
+    <FixRequiredNuSpecInfo
+        NuSpec="$(NuSpecFileToUpdate)"
         />
 
-    </Target>
+  </Target>
 
+  <PropertyGroup>
+    <SignDependsOn>
+      ReplaceUnsignedFiles;
+      UpdateLicenseURLs;
+      RebuildPackages;
+      RebuildVSIXes;
+      RebuildPackageCaches;
+      RunVSDrop;
+    </SignDependsOn>
+  </PropertyGroup>
+
+  <Target Name="TestSign" DependsOnTargets="SetupTestSign;Sign" />
+
+  <Target Name="SetupTestSign">
     <PropertyGroup>
-      <SignDependsOn>
-        ReplaceUnsignedFiles;
-        UpdateLicenseURLs;
-        RebuildPackages;
-        RebuildVSIXes;
-        RebuildPackageCaches;
-        RunVSDrop;
-      </SignDependsOn>
+      <CodeSignCreateTestJob>false</CodeSignCreateTestJob>
+      <TestCodeSign>true</TestCodeSign>
+      <COHERENCE_DROP_LOCATION Condition="'$(COHERENCE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence\dev\Latest</COHERENCE_DROP_LOCATION>
+      <COHERENCE_PACKAGECACHE_DROP_LOCATION Condition="'$(COHERENCE_PACKAGECACHE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence-PackageCache\dev\Latest</COHERENCE_PACKAGECACHE_DROP_LOCATION>
     </PropertyGroup>
+  </Target>
 
-    <Target Name="Sign" DependsOnTargets="$(SignDependsOn)" />
+  <Target Name="Sign" DependsOnTargets="$(SignDependsOn)" />
 
-    <Target Name="RebuildPackages">
-        <MakeDir Directories="$(PackageOutputPath)" />
+  <Target Name="RebuildPackages">
+    <MakeDir Directories="$(PackageOutputPath)" />
 
-        <ItemGroup>
-            <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
-            <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
-        </ItemGroup>
+    <ItemGroup>
+      <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
+      <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
+    </ItemGroup>
 
-        <MSBuild
-            Projects="dnx.msbuild"
-            Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpec.Identity);OutDir=$(PackagesOutputPath)"
-            Targets="RebuildPackage"/>
+    <MSBuild
+        Projects="dnx.msbuild"
+        Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpec.Identity);OutDir=$(PackagesOutputPath)"
+        Targets="RebuildPackage"/>
 
-        <MSBuild
-            Projects="dnx.msbuild"
-            Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(SymbolsNuSpec.Identity);OutDir=$(SymbolsOutputPath)"
-            Targets="RebuildPackage"/>
+    <MSBuild
+        Projects="dnx.msbuild"
+        Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(SymbolsNuSpec.Identity);OutDir=$(SymbolsOutputPath)"
+        Targets="RebuildPackage"/>
 
-        <!-- Capture packages that contain content we signed since that will become the list of items we will submit to BinScope -->
-        <ItemGroup>
-            <SignedPackages Include="$(PackagesOutputPath)**\*.nupkg" />
-            <SignedSymbolsPackages Include="$(SymbolsOutputPath)**\*.nupkg" />
-        </ItemGroup>
-    </Target>
+    <!-- Capture packages that contain content we signed since that will become the list of items we will submit to BinScope -->
+    <ItemGroup>
+      <SignedPackages Include="$(PackagesOutputPath)**\*.nupkg" />
+      <SignedSymbolsPackages Include="$(SymbolsOutputPath)**\*.nupkg" />
+    </ItemGroup>
+  </Target>
 
-    <!-- Repacks and signs VSIXes -->
-    <Target Name="RebuildVSIXes">
-        <ItemGroup>
-            <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
-            <VSIXManifest Include="%(_VSIXManifest.FullPath)">
-              <VSIXDirectory>$([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))</VSIXDirectory>
-              <VSIXName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))))</VSIXName>
-            </VSIXManifest>
-        </ItemGroup>
+  <!-- Repacks and signs VSIXes -->
+  <Target Name="RebuildVSIXes">
+    <ItemGroup>
+      <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
+      <VSIXManifest Include="%(_VSIXManifest.FullPath)">
+        <VSIXDirectory>$([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))</VSIXDirectory>
+        <VSIXName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))))</VSIXName>
+      </VSIXManifest>
+    </ItemGroup>
 
-        <MSBuild
-            Projects="dnx.msbuild"
-            Properties="
+    <MSBuild
+        Projects="dnx.msbuild"
+        Properties="
                 Configuration=$(Configuration);
                 Sign=$(Sign);
                 TestCodeSign=$(TestCodeSign);
                 VSIXManifest=%(VSIXManifest.Identity);
                 VSIXDirectory=%(VSIXManifest.VSIXDirectory);
                 OutDir=$(UnsignedVSIXWithSignedBinariesPath)"
-            Targets="RepackVSIX"/>
+        Targets="RepackVSIX"/>
 
-        <ItemGroup>
-            <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
-        </ItemGroup>
+    <ItemGroup>
+      <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
+    </ItemGroup>
 
-        <SubmitCodeSignJob
-            Approvers="$(CodeSignApprovers)"
-            Certificates="$(VSIXCodeSignCertificates)"
-            Description="Signing AspNetCore VSIX"
-            DisplayName="$(CodeSignDisplayName)"
-            DisplayUrl="$(CodeSignUrl)"
-            Files="@(VSIXToSign)"
-            GenerateCopyScript="false"
-            Poll="false"
-            SSL="true"
-            CreateTestJob="$(CodeSignCreateTestJob)"
-            Test="$(TestCodeSign)">
-            <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
-            <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
-        </SubmitCodeSignJob>
+    <SubmitCodeSignJob
+        Approvers="$(CodeSignApprovers)"
+        Certificates="$(VSIXCodeSignCertificates)"
+        Description="Signing AspNetCore VSIX"
+        DisplayName="$(CodeSignDisplayName)"
+        DisplayUrl="$(CodeSignUrl)"
+        Files="@(VSIXToSign)"
+        GenerateCopyScript="false"
+        Poll="false"
+        SSL="true"
+        CreateTestJob="$(CodeSignCreateTestJob)"
+        Test="$(TestCodeSign)">
+      <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
+      <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
+    </SubmitCodeSignJob>
 
-        <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
+    <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
 
-        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(CodeSignCompletionPath) $(SignedVSIXPath)
+    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(CodeSignCompletionPath) $(SignedVSIXPath)
             IF %ERRORLEVEL% LEQ 3 exit 0" />
 
-        <Copy
-            SourceFiles="$(CoherenceDestinationDir)vsix\%(VSIXManifest.VSIXName).json"
-            DestinationFolder="$(SignedVSIXPath)" />
-    </Target>
+    <Copy
+        SourceFiles="$(CoherenceDestinationDir)vsix\%(VSIXManifest.VSIXName).json"
+        DestinationFolder="$(SignedVSIXPath)" />
+  </Target>
 
-    <!-- Repacks PackageCache -->
-    <Target Name="RebuildPackageCaches">
-        <MakeDir Directories="$(PackageCacheOutputPath)" />
+  <!-- Repacks PackageCache -->
+  <Target Name="RebuildPackageCaches">
+    <MakeDir Directories="$(PackageCacheOutputPath)" />
 
-        <ItemGroup>
-            <PackageCachesFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedPackageCachePath)&quot;))" />
-            <PackageCacheNuspec Include="$(CoherencePackageCacheDestinationDir)*.nuspec" />
-        </ItemGroup>
+    <ItemGroup>
+      <PackageCachesFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedPackageCachePath)&quot;))" />
+      <PackageCacheNuspec Include="$(CoherencePackageCacheDestinationDir)*.nuspec" />
+    </ItemGroup>
 
-        <MSBuild
-            Projects="dnx.msbuild"
-            Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);PackageCacheFile=%(PackageCachesFiles.Identity);OutDir=$(PackageCacheOutputPath)"
-            Targets="RebuildPackageCache"/>
+    <MSBuild
+        Projects="dnx.msbuild"
+        Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);PackageCacheFile=%(PackageCachesFiles.Identity);OutDir=$(PackageCacheOutputPath)"
+        Targets="RebuildPackageCache"/>
 
-        <!-- Create a Build.PackageStore-{version}.nupkg to push to internal feed -->
-        <Copy SourceFiles="@(PackageCacheNuspec)" DestinationFolder="$(PackageCacheOutputPath)" />
-        <ReadLinesFromFile File="$(CoherencePackageCacheDestinationDir)version.txt">
-            <Output TaskParameter="Lines" PropertyName="VersionNumber" />
-        </ReadLinesFromFile>
-        <Exec Command="$(DNXToolsPath)NuGet.exe pack @(PackageCacheNuspec) -Version $(VersionNumber) -OutputDirectory $(PackageCacheOutputPath) -BasePath $(PackageCacheOutputPath)"/>
-    </Target>
+    <!-- Create a Build.PackageStore-{version}.nupkg to push to internal feed -->
+    <Copy SourceFiles="@(PackageCacheNuspec)" DestinationFolder="$(PackageCacheOutputPath)" />
+    <ReadLinesFromFile File="$(CoherencePackageCacheDestinationDir)version.txt">
+      <Output TaskParameter="Lines" PropertyName="VersionNumber" />
+    </ReadLinesFromFile>
+    <Exec Command="$(DNXToolsPath)NuGet.exe pack @(PackageCacheNuspec) -Version $(VersionNumber) -OutputDirectory $(PackageCacheOutputPath) -BasePath $(PackageCacheOutputPath)"/>
+  </Target>
 
-    <Target Name="RebuildPackage">
-        <PropertyGroup>
-            <WorkingDir>$([System.IO.Path]::GetDirectoryName($(NuSpecFile)))</WorkingDir>
-            <PackageName>$([System.IO.Path]::GetFileName($(WorkingDir)))</PackageName>
-        </PropertyGroup>
-        <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageName).nupkg * > nul" WorkingDirectory="$(WorkingDir)" />
-    </Target>
+  <Target Name="RebuildPackage">
+    <PropertyGroup>
+      <WorkingDir>$([System.IO.Path]::GetDirectoryName($(NuSpecFile)))</WorkingDir>
+      <PackageName>$([System.IO.Path]::GetFileName($(WorkingDir)))</PackageName>
+    </PropertyGroup>
+    <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
+    <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageName).nupkg * > nul" WorkingDirectory="$(WorkingDir)" />
+  </Target>
 
-    <Target Name="RepackVSIX">
-        <PropertyGroup>
-            <VSIXName>$([System.IO.Path]::GetFileName($(VSIXDirectory)))</VSIXName>
-        </PropertyGroup>
+  <Target Name="RepackVSIX">
+    <PropertyGroup>
+      <VSIXName>$([System.IO.Path]::GetFileName($(VSIXDirectory)))</VSIXName>
+    </PropertyGroup>
 
-        <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(VSIXName).vsix" WorkingDirectory="$(VSIXDirectory)" />
-    </Target>
+    <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
+    <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(VSIXName).vsix" WorkingDirectory="$(VSIXDirectory)" />
+  </Target>
 
-    <Target Name="RebuildPackageCache">
-        <PropertyGroup>
-            <WorkingDir>$(PackageCacheFile)</WorkingDir>
-            <PackageCacheName>$([System.IO.Path]::GetFileName($(PackageCacheFile)))</PackageCacheName>
-        </PropertyGroup>
-        <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageCacheName).zip * > nul" WorkingDirectory="$(WorkingDir)" />
-    </Target>
+  <Target Name="RebuildPackageCache">
+    <PropertyGroup>
+      <WorkingDir>$(PackageCacheFile)</WorkingDir>
+      <PackageCacheName>$([System.IO.Path]::GetFileName($(PackageCacheFile)))</PackageCacheName>
+    </PropertyGroup>
+    <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
+    <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageCacheName).zip * > nul" WorkingDirectory="$(WorkingDir)" />
+  </Target>
 
-    <Target Name="RunVSDrop">
-        <ItemGroup>
-            <SignedRazorVSIX Include="$(SignedVSIXPath)*.vsix" />
-        </ItemGroup>
+  <Target Name="RunVSDrop">
+    <ItemGroup>
+      <SignedRazorVSIX Include="$(SignedVSIXPath)*.vsix" />
+    </ItemGroup>
 
-        <MSBuild
-            Projects="build\vsdrop\drop.msbuild"
-            Targets="BuildAndPublishManifest"
-            Properties="
+    <MSBuild
+        Projects="build\vsdrop\drop.msbuild"
+        Targets="BuildAndPublishManifest"
+        Properties="
                 SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
                 RepositoryRoot=$(MSBuildProjectDirectory)\;
                 ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
                 ManifestBuildBranch=$(BUILD_BRANCH);
                 ManifestBuildNumber=$(BUILD_NUMBER)" />
-    </Target>
+  </Target>
 
-    <Target Name="InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
-        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
-    </Target>
+  <Target Name="InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
+    <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
+  </Target>
 
-    <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="Sign;InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
-        <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
-    </Target>
+  <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="Sign;InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
+    <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
+  </Target>
 
-    <Target Name="CreateTimestampFreePackages" DependsOnTargets="NuGetVerifyTimestampPackages">
-        <Error Text="PUSH_NUGET_EXE is not set" Condition="'$(PUSH_NUGET_EXE)' == ''" />
-        <Exec Command="$(PUSH_NUGET_EXE) restore CreateTimestampFreePackages.sln" />
-        <MSBuild Projects="src\CreateTimestampFreePackages\CreateTimestampFreePackages.csproj" Properties="Configuration=$(Configuration)" />
-        <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT)" />
-    </Target>
+  <Target Name="CreateTimestampFreePackages" DependsOnTargets="NuGetVerifyTimestampPackages">
+    <Error Text="PUSH_NUGET_EXE is not set" Condition="'$(PUSH_NUGET_EXE)' == ''" />
+    <Exec Command="$(PUSH_NUGET_EXE) restore CreateTimestampFreePackages.sln" />
+    <MSBuild Projects="src\CreateTimestampFreePackages\CreateTimestampFreePackages.csproj" Properties="Configuration=$(Configuration)" />
+    <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT)" />
+  </Target>
 
-    <Target Name="NuGetVerifyTimestampFreePackages" DependsOnTargets="CreateTimestampFreePackages" Condition="'$(VerifySignatures)' != 'false'">
-        <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(TimestampFreePackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
-        <RemoveDir Directories="$(CommandsPath)"/>
-    </Target>
+  <Target Name="NuGetVerifyTimestampFreePackages" DependsOnTargets="CreateTimestampFreePackages" Condition="'$(VerifySignatures)' != 'false'">
+    <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(TimestampFreePackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
+    <RemoveDir Directories="$(CommandsPath)"/>
+  </Target>
 
-    <Target Name="NuGetVerify" DependsOnTargets="InstallNuGetPackageVerifier;NuGetVerifyTimestampPackages;NuGetVerifyTimestampFreePackages" />
+  <Target Name="NuGetVerify" DependsOnTargets="InstallNuGetPackageVerifier;NuGetVerifyTimestampPackages;NuGetVerifyTimestampFreePackages" />
 
-    <Target Name="PushPackages" DependsOnTargets="NuGetVerifyTimestampFreePackages">
-        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre PackagePublisher -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
+  <Target Name="PushPackages" DependsOnTargets="NuGetVerifyTimestampFreePackages">
+    <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre PackagePublisher -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
 
-        <PropertyGroup>
-            <PackagePublisherBinary>$(CommandsPath)\PackagePublisher\PackagePublisher.dll</PackagePublisherBinary>
-        </PropertyGroup>
+    <PropertyGroup>
+      <PackagePublisherBinary>$(CommandsPath)\PackagePublisher\PackagePublisher.dll</PackagePublisherBinary>
+    </PropertyGroup>
 
-        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(NUGET_FEED)" />
-        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackageCache -f $(NUGET_FEED)" />
-        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(NUGET_FEED)" />
-        <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(NUGET_FEED)" />
-    </Target>
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(NUGET_FEED)" />
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackageCache -f $(NUGET_FEED)" />
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(NUGET_FEED)" />
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(NUGET_FEED)" />
+  </Target>
 
-    <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
-        <ItemGroup>
-            <PoliCheckPackages Include="$(CoherenceDestinationDir)\symbols\*.nupkg;"/>
-        </ItemGroup>
+  <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
+    <ItemGroup>
+      <PoliCheckPackages Include="$(CoherenceDestinationDir)\symbols\*.nupkg;"/>
+    </ItemGroup>
 
-        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
+    <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
 
-        <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
-        <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
+    <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
+    <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
 
-        <!-- These are terms that appear frequently but are not used offensively e.g. red is a color constant name. -->
-        <PropertyGroup>
-            <Exclusions>countries;country;foo;red;region;patch</Exclusions>
-        </PropertyGroup>
+    <!-- These are terms that appear frequently but are not used offensively e.g. red is a color constant name. -->
+    <PropertyGroup>
+      <Exclusions>countries;country;foo;red;region;patch</Exclusions>
+    </PropertyGroup>
 
-        <ItemGroup>
-            <!-- List is sorted OrdinalIgnoreCase -->
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\MonsterContext`.cs;
+    <ItemGroup>
+      <!-- List is sorted OrdinalIgnoreCase -->
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\MonsterContext`.cs;
                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\HttpReasonPhrase.cs;
                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs">
-                <term>420</term>
-                <Justification>HTTP response code</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
-                <term>BS</term>
-                <Justification>Culture info</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
-                <term>butt</term>
-                <Justification>Text appears in base64 encoded string of an image.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\net451\Microsoft.AspNetCore.Authentication.Cookies.xml;
+        <term>420</term>
+        <Justification>HTTP response code</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
+        <term>BS</term>
+        <Justification>Culture info</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
+        <term>butt</term>
+        <Justification>Text appears in base64 encoded string of an image.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\net451\Microsoft.AspNetCore.Authentication.Cookies.xml;
                     $(PoliCheckPath)**\netstandard1.3\Microsoft.AspNetCore.Authentication.Cookies.xml;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Authentication.Cookies\ICookieManager.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Proxy\ProxyMiddleware.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.WebUtilities\HttpResponseStreamWriter.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Server.HttpSys\RequestProcessing\BoundaryType.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Server.HttpSys\RequestProcessing\Response.cs">
-                <term>chunking</term>
-                <Justification>Used to describe network chunks</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.VisualStudio.Web.CodeGenerators.Mvc\Controller\CommandLineGeneratorModel.cs">
-                <term>crud</term>
-                <Justification>Acronym for Create, Read, Update, and Delete</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\dnx451\Microsoft.Dnx.Tooling.dll;
+        <term>chunking</term>
+        <Justification>Used to describe network chunks</Justification>
+      </SrcExclusions>
+      <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.VisualStudio.Web.CodeGenerators.Mvc\Controller\CommandLineGeneratorModel.cs">
+        <term>crud</term>
+        <Justification>Acronym for Create, Read, Update, and Delete</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\dnx451\Microsoft.Dnx.Tooling.dll;
                     $(PoliCheckPath)**\dnxcore50\Microsoft.Dnx.Tooling.dll">
-                <term>dans</term>
-                <Justification>French translation in resources.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Identity\Rfc6238AuthenticationService.cs">
-                <term>DT</term>
-                <Justification>abbreviation for DateTime</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\WelcomePage\Views\WelcomePage.Designer.cs;
+        <term>dans</term>
+        <Justification>French translation in resources.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Identity\Rfc6238AuthenticationService.cs">
+        <term>DT</term>
+        <Justification>abbreviation for DateTime</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\WelcomePage\Views\WelcomePage.Designer.cs;
                     $(PoliCheckPath)**\WelcomePage\Views\Obsolete\WelcomePage.cs">
-                <term>FE</term>
-                <Justification>Text appears in base64 encoded string of an image.</Justification>
-            </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Routing\Template\TemplateMatcher.cs">
-                <term>foo/bar</term>
-                <Justification>Sample data</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\NuGet\Authoring\PathResolver.cs;
+        <term>FE</term>
+        <Justification>Text appears in base64 encoded string of an image.</Justification>
+      </SrcExclusions>
+      <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Routing\Template\TemplateMatcher.cs">
+        <term>foo/bar</term>
+        <Justification>Sample data</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\NuGet\Authoring\PathResolver.cs;
                     $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\Publish\PublishManager.cs">
-                <term>foo\bar</term>
-                <Justification>Sample data</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
-                <term>FU</term>
-                <Justification>Text appears in base64 encoded string of an image.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\QueryTestBase.cs">
-                <term>fubar</term>
-                <Justification>Temporary exclusion to pass the build.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
-                <term>FY</term>
-                <Justification>Culture info</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.SignalR.Server\Transports\LongPollingTransport.cs;
+        <term>foo\bar</term>
+        <Justification>Sample data</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
+        <term>FU</term>
+        <Justification>Text appears in base64 encoded string of an image.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\QueryTestBase.cs">
+        <term>fubar</term>
+        <Justification>Temporary exclusion to pass the build.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
+        <term>FY</term>
+        <Justification>Culture info</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.SignalR.Server\Transports\LongPollingTransport.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
                     $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\NuGet\Core\Configuration\Settings.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.SignalR.Client\**\HubConnection.cs">
-                <term>hang</term>
-                <Justification>Refers to a stuck process/thread.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Internal\DataAnnotationsMetadataProvider.cs;
+        <term>hang</term>
+        <Justification>Refers to a stuck process/thread.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Internal\DataAnnotationsMetadataProvider.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.SignalR.Messaging\MessageBus.cs">
-                <term>hanging</term>
-                <Justification>Refers to a stuck process/thread.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Sockets\ConnectionManager.cs">
-                <term>hung</term>
-                <Justification>Refers to a stuck process/thread.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs">
-                <term>ho</term>
-                <Justification>Part of a name</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
-                <term>ku</term>
-                <Justification>CultureInfo term</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)Microsoft.EntityFrameworkCore.SqlServer*\src\Storage\Internal\SqlServerTypeMapper.cs;">
-                <term>national</term>
-                <Justification>Refers to SQL Server datatype</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Authentication.OpenIdConnect\OpenIdConnectHandler.cs">
-                <term>nuts</term>
-                <Justification>Temporary exclusion, will be removed.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\MonsterFixupTestBase.cs;
+        <term>hanging</term>
+        <Justification>Refers to a stuck process/thread.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Sockets\ConnectionManager.cs">
+        <term>hung</term>
+        <Justification>Refers to a stuck process/thread.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs">
+        <term>ho</term>
+        <Justification>Part of a name</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs">
+        <term>ku</term>
+        <Justification>CultureInfo term</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)Microsoft.EntityFrameworkCore.SqlServer*\src\Storage\Internal\SqlServerTypeMapper.cs;">
+        <term>national</term>
+        <Justification>Refers to SQL Server datatype</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Authentication.OpenIdConnect\OpenIdConnectHandler.cs">
+        <term>nuts</term>
+        <Justification>Temporary exclusion, will be removed.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\MonsterFixupTestBase.cs;
                                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\MonsterContext`.cs">
-                <term>pig</term>
-                <Justification>Acceptable within context</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.StaticFiles\FileExtensionContentTypeProvider.cs">
-                <term>pot</term>
-                <Justification>file extension - powerpoint</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\netstandard1.3\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.xml;
+        <term>pig</term>
+        <Justification>Acceptable within context</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.StaticFiles\FileExtensionContentTypeProvider.cs">
+        <term>pot</term>
+        <Justification>file extension - powerpoint</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\netstandard1.3\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.xml;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Core\Internal\AttributeRoute.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Server.Kestrel\Internal\Infrastructure\MemoryPoolIterator.cs">
-                <term>race</term>
-                <Justification>Refers to race condition.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Razor\Internal\CompilerCache.cs;
+        <term>race</term>
+        <Justification>Refers to race condition.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Mvc.Razor\Internal\CompilerCache.cs;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\Driver.cs;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\Team.cs;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\OptimisticConcurrencyTestBase.cs;
                     $(PoliCheckPath)**\src\Microsoft.Net.WebSockets.Server\WebSocketBuffer.cs">
-                <term>races</term>
-                <Justification>Refers to race conditions; property name.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs;
+        <term>races</term>
+        <Justification>Refers to race conditions; property name.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs;
                     $(PoliCheckPath)**\src\Microsoft.Dnx.Compilation.CSharp.Common\CultureInfoCache.cs;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\AsyncQueryTestBase.cs;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\QueryTestBase.cs">
-                <term>UK</term>
-                <Justification>Text appears in base64 encoded string of an image; Culture info.</Justification>
-            </SrcExclusions>
-            <SrcExclusions
-                Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
+        <term>UK</term>
+        <Justification>Text appears in base64 encoded string of an image; Culture info.</Justification>
+      </SrcExclusions>
+      <SrcExclusions
+          Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\Team.cs">
-                <term>virgin</term>
-                <Justification>Test data</Justification>
-            </SrcExclusions>
-        </ItemGroup>
+        <term>virgin</term>
+        <Justification>Test data</Justification>
+      </SrcExclusions>
+    </ItemGroup>
 
-        <ItemGroup>
-            <FileExclusions
-                Include="$(PoliCheckPath)**\net46\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
+    <ItemGroup>
+      <FileExclusions
+          Include="$(PoliCheckPath)**\net46\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
                     $(PoliCheckPath)**\netstandard1.3\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\Northwind\NorthwindData.Objects.cs;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\DatabindingTestBase.cs">
-                <Justification>Northwind database contains too many violations to track them individually.</Justification>
-            </FileExclusions>
-            <FileExclusions
-                Include="$(PoliCheckPath)**\Content\bootstrap.css;
+        <Justification>Northwind database contains too many violations to track them individually.</Justification>
+      </FileExclusions>
+      <FileExclusions
+          Include="$(PoliCheckPath)**\Content\bootstrap.css;
                     $(PoliCheckPath)**\Content\bootstrap.min.css;
                     $(PoliCheckPath)**\Scripts\bootstrap.js;
                     $(PoliCheckPath)**\Scripts\jquery-*.js;
                     $(PoliCheckPath)**\Scripts\modernizr-*.js">
-              <Justification>External files shipped in our templates are not under our control.</Justification>
-            </FileExclusions>
-        </ItemGroup>
+        <Justification>External files shipped in our templates are not under our control.</Justification>
+      </FileExclusions>
+    </ItemGroup>
 
-        <PoliCheck
-            FolderToScan="$(PoliCheckPath.TrimEnd('\'))"
-            Severity="2"
-            FailSeverity="2"
-            ExcludeTerms="$(Exclusions)"
-            ExcludeFiles="@(FileExclusions)"
-            DetailedExclusions="@(SrcExclusions)" />
-    </Target>
+    <PoliCheck
+        FolderToScan="$(PoliCheckPath.TrimEnd('\'))"
+        Severity="2"
+        FailSeverity="2"
+        ExcludeTerms="$(Exclusions)"
+        ExcludeFiles="@(FileExclusions)"
+        DetailedExclusions="@(SrcExclusions)" />
+  </Target>
 
-    <Target Name="BeforeBinScope" DependsOnTargets="Sign" Condition="'$(Sign)' == 'Sign'">
-        <ItemGroup>
-            <SignedPackagesForBinScope
-                Include="$(PackagesOutputPath)**\*.nupkg"
-                Exclude="$(PackagesOutputPath)**\CoreCLR*.nupkg;
+  <Target Name="BeforeBinScope" DependsOnTargets="Sign" Condition="'$(Sign)' == 'Sign'">
+    <ItemGroup>
+      <SignedPackagesForBinScope
+          Include="$(PackagesOutputPath)**\*.nupkg"
+          Exclude="$(PackagesOutputPath)**\CoreCLR*.nupkg;
                     $(PackagesOutputPath)**\dnx*.nupkg;
                     $(PackagesOutputPath)**\Microsoft.CSharp*.nupkg;" />
-        </ItemGroup>
+    </ItemGroup>
 
-        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(SignedPackagesForBinScope->'$(BinScopePackagesPath)%(Filename)') %(SignedPackagesForBinScope.Identity)" />
+    <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(SignedPackagesForBinScope->'$(BinScopePackagesPath)%(Filename)') %(SignedPackagesForBinScope.Identity)" />
 
-        <ItemGroup>
-            <BinScopeTargetFiles Include="$(BinScopePackagesPath)**\Microsoft*.dll" />
-            <BinScopeTargetFiles Include="$(BinScopePackagesPath)**\Microsoft*.pdb" />
-            <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.dll" />
-            <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.pdb" />
-        </ItemGroup>
-    </Target>
+    <ItemGroup>
+      <BinScopeTargetFiles Include="$(BinScopePackagesPath)**\Microsoft*.dll" />
+      <BinScopeTargetFiles Include="$(BinScopePackagesPath)**\Microsoft*.pdb" />
+      <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.dll" />
+      <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.pdb" />
+    </ItemGroup>
+  </Target>
 
-    <UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-        <ParameterGroup>
-            <RootDirectory ParameterType="System.String" Required="true" />
-        </ParameterGroup>
-        <Task>
-            <Reference Include="System.Xml" />
-            <Reference Include="System.Core" />
-            <Using Namespace="System" />
-            <Using Namespace="System.Collections.Generic" />
-            <Using Namespace="System.Diagnostics" />
-            <Using Namespace="System.IO" />
-            <Using Namespace="System.Xml" />
-            <Using Namespace="Microsoft.Build.Framework" />
-            <Using Namespace="Microsoft.Build.Utilities" />
-            <Code Type="Fragment" Language="cs">
-                <![CDATA[
+  <UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <RootDirectory ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Xml" />
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Diagnostics" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Xml" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="Microsoft.Build.Utilities" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
             try
             {
                 Log.LogMessage(MessageImportance.Normal, RootDirectory);
@@ -701,26 +713,26 @@
 
             return !Log.HasLoggedErrors;
         ]]>
-            </Code>
-        </Task>
-    </UsingTask>
+      </Code>
+    </Task>
+  </UsingTask>
 
-    <UsingTask TaskName="FixRequiredNuSpecInfo" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-        <ParameterGroup>
-            <NuSpec ParameterType="System.String" Required="true" />
-        </ParameterGroup>
-        <Task>
-            <Reference Include="System.Xml" />
-            <Reference Include="System.Core" />
-            <Using Namespace="System" />
-            <Using Namespace="System.Collections.Generic" />
-            <Using Namespace="System.Diagnostics" />
-            <Using Namespace="System.IO" />
-            <Using Namespace="System.Xml" />
-            <Using Namespace="Microsoft.Build.Framework" />
-            <Using Namespace="Microsoft.Build.Utilities" />
-            <Code Type="Fragment" Language="cs">
-                <![CDATA[
+  <UsingTask TaskName="FixRequiredNuSpecInfo" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <NuSpec ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Xml" />
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Diagnostics" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Xml" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="Microsoft.Build.Utilities" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
             var LicenseUrl = "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm";
             var IconUrl = "https://go.microsoft.com/fwlink/?LinkID=288859";
             var CopyrightText = "Copyright © Microsoft Corporation";
@@ -839,28 +851,28 @@
 
             return !Log.HasLoggedErrors;
         ]]>
-            </Code>
-        </Task>
-    </UsingTask>
+      </Code>
+    </Task>
+  </UsingTask>
 
-    <UsingTask TaskName="GetBuildNumberFromPackageName" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-        <ParameterGroup>
-            <PackagePath ParameterType="System.String" Required="true" />
-            <BuildNumber ParameterType="System.String" Output="true" />
-        </ParameterGroup>
-        <Task>
-            <Reference Include="System.Xml" />
-            <Reference Include="System.Core" />
-            <Using Namespace="System" />
-            <Using Namespace="System.Collections.Generic" />
-            <Using Namespace="System.Diagnostics" />
-            <Using Namespace="System.IO" />
-            <Using Namespace="System.Linq" />
-            <Using Namespace="System.Xml" />
-            <Using Namespace="Microsoft.Build.Framework" />
-            <Using Namespace="Microsoft.Build.Utilities" />
-            <Code Type="Fragment" Language="cs">
-                <![CDATA[
+  <UsingTask TaskName="GetBuildNumberFromPackageName" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <PackagePath ParameterType="System.String" Required="true" />
+      <BuildNumber ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Xml" />
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Diagnostics" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Xml" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="Microsoft.Build.Utilities" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
             try
             {
                 string packageName = Path.GetFileNameWithoutExtension(PackagePath);
@@ -874,7 +886,7 @@
 
             return !Log.HasLoggedErrors;
         ]]>
-            </Code>
-        </Task>
-    </UsingTask>
+      </Code>
+    </Task>
+  </UsingTask>
 </Project>
