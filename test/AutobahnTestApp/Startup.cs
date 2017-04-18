@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace AutobahnTestApp
@@ -17,10 +16,12 @@ namespace AutobahnTestApp
         {
             app.UseWebSockets();
 
+            var logger = loggerFactory.CreateLogger<Startup>();
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
+                    logger.LogInformation("Received WebSocket request");
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                     await Echo(webSocket);
                 }
