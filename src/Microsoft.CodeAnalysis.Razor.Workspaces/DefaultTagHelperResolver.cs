@@ -62,7 +62,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var factory = new ViewComponentTagHelperDescriptorFactory(compilation);
             foreach (var type in types)
             {
-                if (assemblyNameFilters.Contains(type.ContainingAssembly.Identity.Name))
+                if (assemblyNameFilters == null || assemblyNameFilters.Contains(type.ContainingAssembly.Identity.Name))
                 {
                     var descriptor = factory.CreateDescriptor(type);
 
