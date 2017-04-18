@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -13,12 +15,43 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
     {
+        private static readonly Assembly _resourcesAssembly = typeof(RazorPagesTest).GetTypeInfo().Assembly;
+
         public RazorPagesTest(MvcTestFixture<RazorPagesWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
 
         public HttpClient Client { get; }
+
+        [Fact]
+        public async Task Page_SimpleForms_RenderAntiforgery()
+        {
+            // Arrange
+            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+            var outputFile = "compiler/resources/RazorPagesWebSite.SimpleForms.html";
+            var expectedContent = await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            var response = await Client.GetAsync("http://localhost/SimpleForms");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+            responseContent = responseContent.Trim();
+
+            var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "SimpleForms");
+#if GENERATE_BASELINES
+            // Reverse usual substitution and insert a format item into the new file content.
+            responseContent = responseContent.Replace(forgeryToken, "{0}");
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            expectedContent = string.Format(expectedContent, forgeryToken);
+            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
+#endif
+        }
 
         [Fact]
         public async Task Page_Handler_HandlerFromQueryString()

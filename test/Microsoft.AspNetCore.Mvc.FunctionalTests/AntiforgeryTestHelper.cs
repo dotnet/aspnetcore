@@ -19,21 +19,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             foreach (var form in htmlDocument.Descendants("form"))
             {
-                foreach (var attribute in form.Attributes())
+                foreach (var input in form.Descendants("input"))
                 {
-                    if (string.Equals(attribute.Name.LocalName, "action", StringComparison.OrdinalIgnoreCase))
+                    if (input.Attribute("name") != null &&
+                        input.Attribute("type") != null &&
+                        input.Attribute("type").Value == "hidden" &&
+                        (input.Attribute("name").Value == "__RequestVerificationToken" ||
+                         input.Attribute("name").Value == "HtmlEncode[[__RequestVerificationToken]]"))
                     {
-                        foreach (var input in form.Descendants("input"))
-                        {
-                            if (input.Attribute("name") != null &&
-                                input.Attribute("type") != null &&
-                                input.Attribute("type").Value == "hidden" &&
-                                (input.Attribute("name").Value == "__RequestVerificationToken" ||
-                                 input.Attribute("name").Value == "HtmlEncode[[__RequestVerificationToken]]"))
-                            {
-                                return input.Attributes("value").First().Value;
-                            }
-                        }
+                        return input.Attributes("value").First().Value;
                     }
                 }
             }

@@ -26,6 +26,122 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     public class FormTagHelperTest
     {
         [Fact]
+        public async Task ProcessAsync_EmptyHtmlStringActionGeneratesAntiforgery()
+        {
+            // Arrange
+            var expectedTagName = "form";
+            var metadataProvider = new TestModelMetadataProvider();
+            var tagHelperContext = new TagHelperContext(
+                tagName: "form",
+                allAttributes: new TagHelperAttributeList()
+                {
+                    { "method", new HtmlString("post") }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                expectedTagName,
+                attributes: new TagHelperAttributeList()
+                {
+                    { "action", HtmlString.Empty },
+                },
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(mock => mock.Action(It.IsAny<UrlActionContext>())).Returns("home/index");
+
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider, urlHelper.Object);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
+            var expectedPostContent = HtmlContentUtilities.HtmlContentToString(
+                htmlGenerator.GenerateAntiforgery(viewContext),
+                HtmlEncoder.Default);
+            var formTagHelper = new FormTagHelper(htmlGenerator)
+            {
+                ViewContext = viewContext,
+                Method = "post",
+            };
+
+            // Act
+            await formTagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("action"));
+            Assert.Equal(HtmlString.Empty, attribute.Value);
+            Assert.Empty(output.PreElement.GetContent());
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.Empty(output.Content.GetContent());
+            Assert.Equal(expectedPostContent, output.PostContent.GetContent());
+            Assert.Empty(output.PostElement.GetContent());
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_EmptyStringActionGeneratesAntiforgery()
+        {
+            // Arrange
+            var expectedTagName = "form";
+            var metadataProvider = new TestModelMetadataProvider();
+            var tagHelperContext = new TagHelperContext(
+                tagName: "form",
+                allAttributes: new TagHelperAttributeList()
+                {
+                    { "method", new HtmlString("post") }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                expectedTagName,
+                attributes: new TagHelperAttributeList()
+                {
+                    { "action", string.Empty },
+                },
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(mock => mock.Action(It.IsAny<UrlActionContext>())).Returns("home/index");
+
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider, urlHelper.Object);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
+            var expectedPostContent = HtmlContentUtilities.HtmlContentToString(
+                htmlGenerator.GenerateAntiforgery(viewContext),
+                HtmlEncoder.Default);
+            var formTagHelper = new FormTagHelper(htmlGenerator)
+            {
+                ViewContext = viewContext,
+                Method = "post",
+            };
+
+            // Act
+            await formTagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("action"));
+            Assert.Equal(string.Empty, attribute.Value);
+            Assert.Empty(output.PreElement.GetContent());
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.Empty(output.Content.GetContent());
+            Assert.Equal(expectedPostContent, output.PostContent.GetContent());
+            Assert.Empty(output.PostElement.GetContent());
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Fact]
         public async Task ProcessAsync_GeneratesExpectedOutput()
         {
             // Arrange
