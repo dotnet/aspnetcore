@@ -2,6 +2,13 @@
   <Import Project="common.props" />
 
   <PropertyGroup>
+    <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.All\</MetaPackagePath>
+    <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.All.csproj</MetaPackageFile>
+    <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
+    <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
+    <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
+    <TempDir>$(ArtifactsDir)temp\</TempDir>
+    <ToolsDir>$(RepositoryRoot)tools\</ToolsDir>
     <DependencyBuildDirectory>$(RepositoryRoot).deps\build\</DependencyBuildDirectory>
     <PrepareDependsOn>
       $(PrepareDependsOn);
@@ -28,35 +35,54 @@
     </GetOSPlatform>
 
     <PropertyGroup>
-      <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.All\</MetaPackagePath>
-      <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.All.csproj</MetaPackageFile>
-      <WorkingDirectory>$(MetaPackagePath)bin\work</WorkingDirectory>
-      <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
-      <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
-      <OutputZip Condition="'$(OSPlatform)' == 'Windows'">$(ArtifactsDir)Build.RuntimeStore.win-$(VersionSuffix).zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)' == 'Linux'">$(ArtifactsDir)Build.RuntimeStore.linux-$(VersionSuffix).zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)' == 'macOS'">$(ArtifactsDir)Build.RuntimeStore.osx-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)'=='Windows'">$(ArtifactsDir)Build.RuntimeStore.win-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)'=='Linux'">$(ArtifactsDir)Build.RuntimeStore.linux-$(VersionSuffix).zip</OutputZip>
+      <OutputZip Condition="'$(OSPlatform)'=='macOS'">$(ArtifactsDir)Build.RuntimeStore.osx-$(VersionSuffix).zip</OutputZip>
     </PropertyGroup>
 
     <ItemGroup>
-      <RIDs Include="win7-x64" Condition="'$(OSPlatform)' == 'Windows'" />
-      <RIDs Include="win7-x86" Condition="'$(OSPlatform)' == 'Windows'" />
-      <RIDs Include="linux-x64" Condition="'$(OSPlatform)' == 'Linux'" />
-      <RIDs Include="osx.10.12-x64" Condition="'$(OSPlatform)' == 'macOS'" />
+      <RIDs Include="win7-x64;win7-x86" Condition="'$(OSPlatform)'=='Windows'" />
+      <RIDs Include="linux-x64" Condition="'$(OSPlatform)'=='Linux'" />
+      <RIDs Include="osx.10.12-x64" Condition="'$(OSPlatform)'=='macOS'" />
     </ItemGroup>
 
-    <RemoveDir Directories="$(OutputPath)" />
-    <RemoveDir Directories="$(WorkingDirectory)-%(RIDs.Identity)\" />
-    <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)-%(RIDs.Identity)\" />
+    <RemoveDir Directories="$(OutputPath)%(RIDs.Identity)\" />
+    <RemoveDir Directories="$(WorkingDirectory)%(RIDs.Identity)\" />
+    <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath)%(RIDs.Identity)\ --framework-version 2.0.0-* --working-dir $(WorkingDirectory)%(RIDs.Identity)\" />
 
     <ItemGroup>
-      <PackageCacheFiles Include="$(OutputPath)**\*" />
+      <PackageCacheFiles Include="$(OutputPath)%(RIDs.Identity)\**\*" />
+      <PackageStoreManifestFiles Include="$(OutputPath)%(RIDs.Identity)\**\artifact.xml">
+        <DestinationFile>manifest.%(RIDs.Identity).xml</DestinationFile>
+      </PackageStoreManifestFiles>
     </ItemGroup>
 
     <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)" />
 
+    <Copy SourceFiles="%(PackageStoreManifestFiles.FullPath)" DestinationFiles="$(ArtifactsDir)%(PackageStoreManifestFiles.DestinationFile)" />
+
     <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
-    <Copy SourceFiles="$(RepositoryRoot)build\Build.RuntimeStore.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)' == 'Windows'" />
-    <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)' == 'Windows'" />
+    <Copy SourceFiles="$(RepositoryRoot)build\Build.RuntimeStore.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Windows'" />
+    <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)'=='Windows'" />
+  </Target>
+
+  <Target Name="AddManifestsToNupkg">
+    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{build-number}"
+        Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
+
+    <ItemGroup>
+      <MetaPackageNupkg Include="$(COHERENCE_DROP_LOCATION)\ship\Microsoft.AspNetCore.All.*.nupkg" />
+      <ManifestFiles Include="$(ArtifactsDir)*.xml"/>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(MetaPackageNupkg)" DestinationFolder="$(ArtifactsDir)" />
+    <UnzipArchive File="$(ArtifactsDir)%(MetaPackageNupkg.FileName)%(MetaPackageNupkg.Extension)" Destination="@(MetaPackageNupkg->'$(TempDir)%(Filename)')" />
+    <Copy SourceFiles="@(ManifestFiles)" DestinationFolder="@(MetaPackageNupkg->'$(TempDir)%(Filename)\content\build\')" />
+
+    <ItemGroup>
+      <ArchiveFiles Include="$(TempDir)%(MetaPackageNupkg.Filename)\**\*" />
+    </ItemGroup>
+
+    <ZipArchive File="%(MetaPackageNupkg.FullPath)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="@(MetaPackageNupkg->'$(TempDir)%(Filename)')" />
   </Target>
 </Project>
