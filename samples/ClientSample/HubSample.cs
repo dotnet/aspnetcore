@@ -2,40 +2,48 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
 namespace ClientSample
 {
     internal class HubSample
     {
-        public static async Task MainAsync(string[] args)
+        internal static void Register(CommandLineApplication app)
         {
-            var baseUrl = "http://localhost:5000/hubs";
-            if (args.Length > 0)
+            app.Command("hub", cmd =>
             {
-                baseUrl = args[0];
-            }
+                cmd.Description = "Tests a connection to a hub";
+
+                var baseUrlArgument = cmd.Argument("<BASEURL>", "The URL to the Chat Hub to test");
+
+                cmd.OnExecute(() => ExecuteAsync(baseUrlArgument.Value));
+            });
+        }
+
+        public static async Task<int> ExecuteAsync(string baseUrl)
+        {
+            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/hubs" : baseUrl;
 
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddConsole(LogLevel.Debug);
-            var logger = loggerFactory.CreateLogger<Program>();
 
-            logger.LogInformation("Connecting to {0}", baseUrl);
+            Console.WriteLine("Connecting to {0}", baseUrl);
             var connection = new HubConnection(new Uri(baseUrl), new JsonNetInvocationAdapter(), loggerFactory);
             try
             {
                 await connection.StartAsync();
-                logger.LogInformation("Connected to {0}", baseUrl);
+                Console.WriteLine("Connected to {0}", baseUrl);
 
                 var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (sender, a) =>
                 {
                     a.Cancel = true;
-                    logger.LogInformation("Stopping loops...");
+                    Console.WriteLine("Stopping loops...");
                     cts.Cancel();
                 };
 
@@ -43,21 +51,32 @@ namespace ClientSample
                 connection.On("Send", new[] { typeof(string) }, a =>
                 {
                     var message = (string)a[0];
-                    Console.WriteLine("RECEIVED: " + message);
+                    Console.WriteLine(message);
                 });
 
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    var line = Console.ReadLine();
-                    logger.LogInformation("Sending: {0}", line);
+                    var line = await Task.Run(() => Console.ReadLine(), cts.Token);
 
-                    await connection.Invoke<object>("Send", line);
+                    if (line == null)
+                    {
+                        break;
+                    }
+
+                    await connection.Invoke<object>("Send", cts.Token, line);
                 }
+            }
+            catch (AggregateException aex) when (aex.InnerExceptions.All(e => e is OperationCanceledException))
+            {
+            }
+            catch (OperationCanceledException)
+            {
             }
             finally
             {
                 await connection.DisposeAsync();
             }
+            return 0;
         }
     }
 }

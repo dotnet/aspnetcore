@@ -10,70 +10,73 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
 namespace ClientSample
 {
     internal class RawSample
     {
-        public static async Task MainAsync(string[] args)
+        internal static void Register(CommandLineApplication app)
         {
-            if (args.Contains("--debug"))
+            app.Command("raw", cmd =>
             {
-                Console.WriteLine($"Ready for debugger to attach. Process ID: {Process.GetCurrentProcess().Id}");
-                Console.Write("Press ENTER to Continue");
-                Console.ReadLine();
-                args = args.Except(new[] { "--debug" }).ToArray();
-            }
+                cmd.Description = "Tests a connection to an endpoint";
 
-            var baseUrl = "http://localhost:5000/chat";
-            if (args.Length > 0)
-            {
-                baseUrl = args[0];
-            }
+                var baseUrlArgument = cmd.Argument("<BASEURL>", "The URL to the Chat EndPoint to test");
+
+                cmd.OnExecute(() => ExecuteAsync(baseUrlArgument.Value));
+            });
+        }
+
+        public static async Task<int> ExecuteAsync(string baseUrl)
+        {
+            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/chat" : baseUrl;
 
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddConsole(LogLevel.Debug);
             var logger = loggerFactory.CreateLogger<Program>();
 
-            logger.LogInformation("Connecting to {0}", baseUrl);
+            Console.WriteLine($"Connecting to {baseUrl}...");
             var connection = new Connection(new Uri(baseUrl), loggerFactory);
             try
             {
                 var cts = new CancellationTokenSource();
-                connection.Received += (data, format) => logger.LogInformation($"Received: {Encoding.UTF8.GetString(data)}");
+                connection.Received += (data, format) => Console.WriteLine($"{Encoding.UTF8.GetString(data)}");
                 connection.Closed += e => cts.Cancel();
 
                 await connection.StartAsync();
 
-                logger.LogInformation("Connected to {0}", baseUrl);
+                Console.WriteLine($"Connected to {baseUrl}");
 
                 Console.CancelKeyPress += (sender, a) =>
                 {
                     a.Cancel = true;
-                    logger.LogInformation("Stopping loops...");
                     cts.Cancel();
                 };
 
-                await StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
+                while (!cts.Token.IsCancellationRequested)
+                {
+                    var line = await Task.Run(() => Console.ReadLine(), cts.Token);
+
+                    if (line == null)
+                    {
+                        break;
+                    }
+
+                    await connection.SendAsync(Encoding.UTF8.GetBytes(line), MessageType.Text, cts.Token);
+                }
+            }
+            catch (AggregateException aex) when (aex.InnerExceptions.All(e => e is OperationCanceledException))
+            {
+            }
+            catch (OperationCanceledException)
+            {
             }
             finally
             {
                 await connection.DisposeAsync();
             }
-        }
-
-        private static async Task StartSending(ILogger logger, Connection connection, CancellationToken cancellationToken)
-        {
-            logger.LogInformation("Send loop starting");
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var line = Console.ReadLine();
-                logger.LogInformation("Sending: {0}", line);
-
-                await connection.SendAsync(Encoding.UTF8.GetBytes(line), MessageType.Text);
-            }
-            logger.LogInformation("Send loop terminated");
+            return 0;
         }
     }
 }
