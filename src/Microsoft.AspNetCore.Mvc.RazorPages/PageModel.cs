@@ -3,16 +3,21 @@
 
 using System;
 using System.IO;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
@@ -21,6 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public abstract class PageModel
     {
         private PageArgumentBinder _binder;
+        private IObjectModelValidator _objectValidator;
+        private IModelMetadataProvider _metadataProvider;
+        private IModelBinderFactory _modelBinderFactory;
         private IUrlHelper _urlHelper;
 
         /// <summary>
@@ -107,9 +115,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         public HttpResponse Response => HttpContext?.Response;
 
         /// <summary>
+        /// Gets the <see cref="AspNetCore.Routing.RouteData"/> for the executing action.
+        /// </summary>
+        public RouteData RouteData => PageContext.RouteData;
+
+        /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/>.
         /// </summary>
         public ModelStateDictionary ModelState => PageContext.ModelState;
+
+        /// <summary>
+        /// Gets the <see cref="ClaimsPrincipal"/> for user associated with the executing action.
+        /// </summary>
+        public ClaimsPrincipal User => HttpContext?.User;
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="PageContext"/>.
@@ -117,57 +135,384 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <remarks>Returns null if <see cref="PageContext"/> is null.</remarks>
         public ITempDataDictionary TempData => PageContext?.TempData;
 
+        private IObjectModelValidator ObjectValidator
+        {
+            get
+            {
+                if (_objectValidator == null)
+                {
+                    _objectValidator = HttpContext?.RequestServices?.GetRequiredService<IObjectModelValidator>();
+                }
+
+                return _objectValidator;
+            }
+        }
+
+        private IModelMetadataProvider MetadataProvider
+        {
+            get
+            {
+                if (_metadataProvider == null)
+                {
+                    _metadataProvider = HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
+                }
+
+                return _metadataProvider;
+            }
+        }
+
+        private IModelBinderFactory ModelBinderFactory
+        {
+            get
+            {
+                if (_modelBinderFactory == null)
+                {
+                    _modelBinderFactory = HttpContext?.RequestServices?.GetRequiredService<IModelBinderFactory>();
+                }
+
+                return _modelBinderFactory;
+            }
+        }
+
         /// <summary>
         /// Gets the <see cref="ViewDataDictionary"/>.
         /// </summary>
         public ViewDataDictionary ViewData => PageContext?.ViewData;
 
         /// <summary>
-        /// Binds the model with the specified <paramref name="name"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The model type.</typeparam>
-        /// <param name="name">The model name.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns the bound model.</returns>
-        protected internal Task<TModel> BindAsync<TModel>(string name)
-        {
-            return Binder.BindModelAsync<TModel>(PageContext, name);
-        }
-
-        /// <summary>
-        /// Binds the model with the specified <paramref name="name"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The model type.</typeparam>
-        /// <param name="name">The model name.</param>
-        /// <param name="default">The default model value.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns the bound model.</returns>
-        protected internal Task<TModel> BindAsync<TModel>(TModel @default, string name)
-        {
-            return Binder.BindModelAsync(PageContext, @default, name);
-        }
-
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the pageModel's current
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
         /// <see cref="IValueProvider"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
         protected internal Task<bool> TryUpdateModelAsync<TModel>(TModel model)
+            where TModel : class
         {
-            return Binder.TryUpdateModelAsync(PageContext, model);
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            return TryUpdateModelAsync(model, name: string.Empty);
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the pageModel's current
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
         /// <see cref="IValueProvider"/>.
         /// </summary>
         /// <typeparam name="TModel">The type of the model object.</typeparam>
         /// <param name="model">The model instance to update.</param>
         /// <param name="name">The model name.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal Task<bool> TryUpdateModelAsync<TModel>(TModel model, string name)
+        protected internal async Task<bool> TryUpdateModelAsync<TModel>(TModel model, string name)
+            where TModel : class
         {
-            return Binder.TryUpdateModelAsync(PageContext, model, name);
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            return await TryUpdateModelAsync(model, name, valueProvider);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
+        /// <paramref name="name"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="name">The name to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string name,
+            IValueProvider valueProvider)
+            where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                name,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
+        /// <see cref="IValueProvider"/> and a <paramref name="name"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="name">The name to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
+        /// which need to be included for the current model.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal async Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string name,
+            params Expression<Func<TModel, object>>[] includeExpressions)
+           where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (includeExpressions == null)
+            {
+                throw new ArgumentNullException(nameof(includeExpressions));
+            }
+
+            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                name,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                includeExpressions);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
+        /// <see cref="IValueProvider"/> and a <paramref name="name"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="name">The name to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal async Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string name,
+            Func<ModelMetadata, bool> propertyFilter)
+            where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (propertyFilter == null)
+            {
+                throw new ArgumentNullException(nameof(propertyFilter));
+            }
+
+            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                name,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                propertyFilter);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
+        /// <paramref name="name"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="name">The name to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
+        /// which need to be included for the current model.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string name,
+            IValueProvider valueProvider,
+            params Expression<Func<TModel, object>>[] includeExpressions)
+           where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (includeExpressions == null)
+            {
+                throw new ArgumentNullException(nameof(includeExpressions));
+            }
+
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                name,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                includeExpressions);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
+        /// <paramref name="name"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="name">The name to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string name,
+            IValueProvider valueProvider,
+            Func<ModelMetadata, bool> propertyFilter)
+            where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (propertyFilter == null)
+            {
+                throw new ArgumentNullException(nameof(propertyFilter));
+            }
+
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                name,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                propertyFilter);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
+        /// <see cref="IValueProvider"/> and a <paramref name="name"/>.
+        /// </summary>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="modelType">The type of model instance to update.</param>
+        /// <param name="name">The name to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal async Task<bool> TryUpdateModelAsync(
+            object model,
+            Type modelType,
+            string name)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                modelType,
+                name,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
+        /// <paramref name="name"/>.
+        /// </summary>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="modelType">The type of model instance to update.</param>
+        /// <param name="name">The name to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        protected internal Task<bool> TryUpdateModelAsync(
+            object model,
+            Type modelType,
+            string name,
+            IValueProvider valueProvider,
+            Func<ModelMetadata, bool> propertyFilter)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (propertyFilter == null)
+            {
+                throw new ArgumentNullException(nameof(propertyFilter));
+            }
+
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                modelType,
+                name,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                propertyFilter);
         }
 
         #region Factory methods
@@ -1176,5 +1521,45 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             return new PageViewResult(Page);
         }
         #endregion Factory methods
+
+        /// <summary>
+        /// Validates the specified <paramref name="model"/> instance.
+        /// </summary>
+        /// <param name="model">The model to validate.</param>
+        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid; <c>false</c> otherwise.</returns>
+        public virtual bool TryValidateModel(
+            object model)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            return TryValidateModel(model, name: null);
+        }
+
+        /// <summary>
+        /// Validates the specified <paramref name="model"/> instance.
+        /// </summary>
+        /// <param name="model">The model to validate.</param>
+        /// <param name="name">The key to use when looking up information in <see cref="ModelState"/>.
+        /// </param>
+        /// <returns><c>true</c> if the <see cref="ModelState"/> is valid;<c>false</c> otherwise.</returns>
+        public virtual bool TryValidateModel(
+            object model,
+            string name)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            ObjectValidator.Validate(
+                PageContext,
+                validationState: null,
+                prefix: name ?? string.Empty,
+                model: model);
+            return ModelState.IsValid;
+        }
     }
 }

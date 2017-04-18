@@ -52,7 +52,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var factories = controllerContext.ValueProviderFactories;
-            var valueProviderFactoryContext = new ValueProviderFactoryContext(controllerContext);
+
+            return await CreateAsync(controllerContext, factories);
+        }
+
+        /// <summary>
+        /// Asynchronously creates a <see cref="CompositeValueProvider"/> using the provided
+        /// <paramref name="actionContext"/>.
+        /// </summary>
+        /// <param name="actionContext">The <see cref="ActionContext"/> associated with the current request.</param>
+        /// <param name="factories">The <see cref="IValueProviderFactory"/> to be applied to the context.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> which, when completed, asynchronously returns a
+        /// <see cref="CompositeValueProvider"/>.
+        /// </returns>
+        public static async Task<CompositeValueProvider> CreateAsync(
+            ActionContext actionContext,
+            IList<IValueProviderFactory> factories)
+        {
+            var valueProviderFactoryContext = new ValueProviderFactoryContext(actionContext);
+
             for (var i = 0; i < factories.Count; i++)
             {
                 var factory = factories[i];

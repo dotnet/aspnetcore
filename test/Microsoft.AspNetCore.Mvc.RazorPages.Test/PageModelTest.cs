@@ -1464,31 +1464,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         [Fact]
-        public async Task BindModel_InvokesBindOnPageArgumentBinder()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            var binder = new TestPageArgumentBinder();
-            httpContext.RequestServices = new ServiceCollection()
-                .AddSingleton<PageArgumentBinder>(binder)
-                .BuildServiceProvider();
-            var pageContext = new PageContext
-            {
-                HttpContext = httpContext,
-            };
-            var pageModel = new TestPageModel
-            {
-                PageContext = pageContext,
-            };
-
-            // Act
-            var result = await pageModel.BindAsync<Guid>("test-name");
-
-            // Assert
-            Assert.NotNull(result);
-        }
-
-        [Fact]
         public void Redirect_ReturnsARedirectResult()
         {
             // Arrange
