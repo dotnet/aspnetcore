@@ -229,15 +229,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
         }
-        [ConditionalFact]
-        [PortSupportedCondition(5002)]
+
+        [Fact]
         public async Task OverrideDirectConfigurationWithIServerAddressesFeature_Succeeds()
         {
-            var overrideAddress = "http://localhost:5002";
+            var overrideAddressPort = GetNextPort();
+            var listenOptionsPort = GetNextPort();
+
+            var overrideAddress = $"http://localhost:{overrideAddressPort}";
             var testLogger = new TestApplicationErrorLogger();
 
             var hostBuilder = new WebHostBuilder()
-               .UseKestrel(options => options.Listen(IPAddress.Loopback, 5001))
+               .UseKestrel(options => options.Listen(IPAddress.Loopback, listenOptionsPort))
                .UseUrls(overrideAddress)
                .PreferHostingUrls(true)
                .UseLoggerFactory(_ => new KestrelTestLoggerFactory(testLogger))
@@ -247,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                Assert.Equal(5002, host.GetPort());
+                Assert.Equal(overrideAddressPort, host.GetPort());
                 Assert.Single(testLogger.Messages, log => log.LogLevel == LogLevel.Information &&
                     string.Equals($"Overriding endpoints defined in UseKestrel() since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true. Binding to address(es) '{overrideAddress}' instead.",
                     log.Message, StringComparison.Ordinal));
@@ -256,15 +259,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
-        [PortSupportedCondition(5001)]
+        [Fact]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfPreferHostingUrlsFalse()
         {
-            var endPointAddress = "http://localhost:5001";
+            var endPointPort = GetNextPort();
+            var useUrlsPort = GetNextPort();
+
+            var endPointAddress = $"http://localhost:{endPointPort}";
 
             var hostBuilder = new WebHostBuilder()
-               .UseKestrel(options => options.Listen(IPAddress.Loopback, 5001))
-               .UseUrls("http://localhost:5002")
+               .UseKestrel(options => options.Listen(IPAddress.Loopback, endPointPort))
+               .UseUrls($"http://localhost:{useUrlsPort}")
                .PreferHostingUrls(false)
                .Configure(ConfigureEchoAddress);
 
@@ -272,19 +277,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                Assert.Equal(5001, host.GetPort());
+                Assert.Equal(endPointPort, host.GetPort());
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress));
             }
         }
 
-        [ConditionalFact]
-        [PortSupportedCondition(5001)]
+        [Fact]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfAddressesEmpty()
         {
-            var endPointAddress = "http://localhost:5001";
+            var endPointPort = GetNextPort();
+            var endPointAddress = $"http://localhost:{endPointPort}";
 
             var hostBuilder = new WebHostBuilder()
-               .UseKestrel(options => options.Listen(IPAddress.Loopback, 5001))
+               .UseKestrel(options => options.Listen(IPAddress.Loopback, endPointPort))
                .PreferHostingUrls(true)
                .Configure(ConfigureEchoAddress);
 
@@ -292,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                Assert.Equal(5001, host.GetPort());
+                Assert.Equal(endPointPort, host.GetPort());
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress));
             }
         }
