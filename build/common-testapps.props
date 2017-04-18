@@ -4,7 +4,7 @@
     <TestIncludeViewCompilationTargets Condition="'$(TestIncludeViewCompilationTargets)'==''">$(MvcRazorCompileOnPublish)</TestIncludeViewCompilationTargets>
   </PropertyGroup>
 
-  <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netcoreapp1.1\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
+  <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
     Condition="'$(TestIncludeViewCompilationTargets)'=='true'"/>
 
   <ItemGroup Condition="'$(TestIncludeViewCompilationTargets)'=='true'">
