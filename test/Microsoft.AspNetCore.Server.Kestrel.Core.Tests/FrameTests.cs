@@ -256,10 +256,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var originalRequestBody = _frame.RequestBody;
             var originalResponseBody = _frame.ResponseBody;
-            var originalDuplexStream = _frame.DuplexStream;
             _frame.RequestBody = new MemoryStream();
             _frame.ResponseBody = new MemoryStream();
-            _frame.DuplexStream = new MemoryStream();
 
             // Act
             _frame.InitializeStreams(messageBody);
@@ -267,7 +265,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Assert
             Assert.Same(originalRequestBody, _frame.RequestBody);
             Assert.Same(originalResponseBody, _frame.ResponseBody);
-            Assert.Same(originalDuplexStream, _frame.DuplexStream);
         }
 
         [Theory]

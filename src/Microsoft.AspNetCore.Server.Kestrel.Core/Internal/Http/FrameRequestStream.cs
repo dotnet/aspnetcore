@@ -5,11 +5,12 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    class FrameRequestStream : Stream
+    internal class FrameRequestStream : ReadOnlyStream
     {
         private MessageBody _body;
         private FrameStreamState _state;
@@ -20,30 +21,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _state = FrameStreamState.Closed;
         }
 
-        public override bool CanRead => true;
-
         public override bool CanSeek => false;
 
-        public override bool CanWrite => false;
-
         public override long Length
-        {
-            get
-            {
-                throw new NotSupportedException();
-            }
-        }
+            => throw new NotSupportedException();
 
         public override long Position
         {
-            get
-            {
-                throw new NotSupportedException();
-            }
-            set
-            {
-                throw new NotSupportedException();
-            }
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         public override void Flush()
@@ -143,11 +129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return _body.CopyToAsync(destination, cancellationToken);
             }
             return task;
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotSupportedException();
         }
 
         public void StartAcceptingReads(MessageBody body)

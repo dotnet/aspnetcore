@@ -5,10 +5,11 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    class FrameResponseStream : Stream
+    internal class FrameResponseStream : WriteOnlyStream
     {
         private IFrameControl _frameControl;
         private FrameStreamState _state;
@@ -19,30 +20,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _state = FrameStreamState.Closed;
         }
 
-        public override bool CanRead => false;
-
         public override bool CanSeek => false;
 
-        public override bool CanWrite => true;
-
         public override long Length
-        {
-            get
-            {
-                throw new NotSupportedException();
-            }
-        }
+            => throw new NotSupportedException();
 
         public override long Position
         {
-            get
-            {
-                throw new NotSupportedException();
-            }
-            set
-            {
-                throw new NotSupportedException();
-            }
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         public override void Flush()
@@ -68,11 +54,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
         }

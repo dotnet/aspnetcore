@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             await FlushAsync(default(CancellationToken));
 
-            return DuplexStream;
+            return _frameStreams.Upgrade();
         }
 
         IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();

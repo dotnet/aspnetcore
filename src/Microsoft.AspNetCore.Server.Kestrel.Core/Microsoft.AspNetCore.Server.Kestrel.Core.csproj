@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
 
+    <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
@@ -31,6 +32,12 @@
     <PackageReference Include="System.Diagnostics.Process" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Threading.Thread" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Threading.ThreadPool" Version="$(CoreFxVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="CoreStrings.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>
