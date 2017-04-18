@@ -560,13 +560,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     context.Response.CacheTtl = TimeSpan.FromSeconds(10);
                     context.Dispose();
 
-                    var response = await responseTask;
+                    HttpResponseMessage response;
+                    try
+                    {
+                        response = await responseTask;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Failed to get first response for {status}", ex);
+                    }
                     Assert.Equal(status, (int)response.StatusCode);
                     Assert.Equal(status.ToString(), response.Headers.GetValues("x-request-count").FirstOrDefault());
                     Assert.Equal(new byte[0], await response.Content.ReadAsByteArrayAsync());
 
                     // Send a second request and make sure we get the same response (without listening for one on the server).
-                    response = await SendRequestAsync(address + status);
+                    try
+                    {
+                        response = await SendRequestAsync(address + status);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Failed to get second response for {status}", ex);
+                    }
                     Assert.Equal(status, (int)response.StatusCode);
                     Assert.Equal(status.ToString(), response.Headers.GetValues("x-request-count").FirstOrDefault());
                     Assert.Equal(new byte[0], await response.Content.ReadAsByteArrayAsync());
@@ -1137,7 +1152,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         {
             using (var handler = new HttpClientHandler() { AllowAutoRedirect = false })
             {
-                using (var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(5) })
+                using (var client = new HttpClient(handler) { Timeout = Utilities.DefaultTimeout })
                 {
                     var request = new HttpRequestMessage(new HttpMethod(method), uri);
                     if (!string.IsNullOrEmpty(extraHeader))
