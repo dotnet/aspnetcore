@@ -48,7 +48,7 @@
 
     <RemoveDir Directories="$(OutputPath)%(RIDs.Identity)\" />
     <RemoveDir Directories="$(WorkingDirectory)%(RIDs.Identity)\" />
-    <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath)%(RIDs.Identity)\ --framework-version 2.0.0-* --working-dir $(WorkingDirectory)%(RIDs.Identity)\" />
+    <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath)%(RIDs.Identity)/ --framework-version 2.0.0-* --working-dir $(WorkingDirectory)%(RIDs.Identity)/" />
 
     <ItemGroup>
       <PackageCacheFiles Include="$(OutputPath)%(RIDs.Identity)\**\*" />
