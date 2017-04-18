@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             if ((availableServerTransports & TransportType.ServerSentEvents & _requestedTransportType) == TransportType.ServerSentEvents)
             {
-                throw new NotImplementedException();
+                return new ServerSentEventsTransport(_httpClient, _loggerFactory);
             }
 
             if ((availableServerTransports & TransportType.LongPolling & _requestedTransportType) == TransportType.LongPolling)

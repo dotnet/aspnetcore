@@ -78,16 +78,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var receiveTcs = new TaskCompletionSource<string>();
                 connection.Received += (data, format) => receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
                 connection.Closed += e =>
+                {
+                    if (e != null)
                     {
-                        if (e != null)
-                        {
-                            receiveTcs.TrySetException(e);
-                        }
-                        else
-                        {
-                            receiveTcs.TrySetResult(null);
-                        }
-                    };
+                        receiveTcs.TrySetException(e);
+                    }
+                    else
+                    {
+                        receiveTcs.TrySetResult(null);
+                    }
+                };
 
                 await connection.StartAsync(transportType);
 
@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             new[]
             {
                 new object[] { TransportType.WebSockets },
+                new object[] { TransportType.ServerSentEvents },
                 new object[] { TransportType.LongPolling }
             };
     }
