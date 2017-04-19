@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             protected override void Up(MigrationBuilder migrationBuilder)
             {
-                migrationBuilder.CreateTable("Blog",
+                migrationBuilder.CreateTable("Blogs",
                 c => new
                 {
                     BlogId = c.Column<int>().Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             protected override void Down(MigrationBuilder migrationBuilder)
             {
-                migrationBuilder.DropTable("Blog");
+                migrationBuilder.DropTable("Blogs");
             }
         }
 

@@ -98,9 +98,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     })
                     .ConfigureServices(services =>
                     {
-                        services.AddEntityFrameworkSqlServer();
-                        services.AddScoped<BloggingContextWithMigrations>();
-                        services.AddSingleton(optionsBuilder.Options);
+                        services.AddDbContext<BloggingContextWithMigrations>(options =>
+                        {
+                            options.UseSqlServer(database.ConnectionString);
+                        });
                     });
                 var server = new TestServer(builder);
 
@@ -205,16 +206,14 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var optionsBuilder = new DbContextOptionsBuilder();
-                optionsBuilder.UseSqlServer(database.ConnectionString);
-
                 var builder = new WebHostBuilder()
                     .Configure(app => app.UseMigrationsEndPoint())
                     .ConfigureServices(services =>
                     {
-                        services.AddEntityFrameworkSqlServer();
-                        services.AddScoped<BloggingContextWithSnapshotThatThrows>();
-                        services.AddSingleton(optionsBuilder.Options);
+                        services.AddDbContext<BloggingContextWithSnapshotThatThrows>(optionsBuilder =>
+                        {
+                            optionsBuilder.UseSqlServer(database.ConnectionString);
+                        });
                     });
                 var server = new TestServer(builder);
 

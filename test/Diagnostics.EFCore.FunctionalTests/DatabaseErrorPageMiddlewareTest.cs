@@ -76,16 +76,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Existing_database_not_using_migrations_exception_passes_thru()
         {
-            TestServer server = SetupTestServer<BloggingContext, DatabaseErrorButNoMigrationsMiddleware>();
-            var ex = await Assert.ThrowsAsync<DbUpdateException>(async () =>
-                await server.CreateClient().GetAsync("http://localhost/"));
+            using (var database = SqlServerTestStore.CreateScratch())
+            {
+                TestServer server = SetupTestServer<BloggingContext, DatabaseErrorButNoMigrationsMiddleware>(database);
+                var ex = await Assert.ThrowsAsync<DbUpdateException>(async () =>
+                    await server.CreateClient().GetAsync("http://localhost/"));
 
-            Assert.Equal("Invalid column name 'Name'.", ex.InnerException.Message);
+                Assert.Equal("Invalid column name 'Name'.", ex.InnerException.Message);
+            }
         }
 
         class DatabaseErrorButNoMigrationsMiddleware
@@ -97,7 +100,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             {
                 var db = context.RequestServices.GetService<BloggingContext>();
                 db.Database.EnsureCreated();
-                db.Database.ExecuteSqlCommand("ALTER TABLE dbo.Blog DROP COLUMN Name");
+                db.Database.ExecuteSqlCommand("ALTER TABLE dbo.Blogs DROP COLUMN Name");
 
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
@@ -105,19 +108,22 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_displayed_no_migrations()
         {
-            TestServer server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>();
-            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
+            using (var database = SqlServerTestStore.CreateScratch())
+            {
+                TestServer server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>(database);
+                HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", typeof(BloggingContext).Name), content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", typeof(BloggingContext).Name), content);
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
+            }
         }
 
         class NoMigrationsMiddleware
@@ -134,23 +140,26 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_displayed_pending_migrations()
         {
-            TestServer server = SetupTestServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>();
-            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
+            using (var database = SqlServerTestStore.CreateScratch())
+            {
+                TestServer server = SetupTestServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>(database);
+                HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingMigrationsTitle", typeof(BloggingContextWithMigrations).Name), content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
-            Assert.Contains("<li>111111111111111_MigrationOne</li>", content);
-            Assert.Contains("<li>222222222222222_MigrationTwo</li>", content);
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingMigrationsTitle", typeof(BloggingContextWithMigrations).Name), content);
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Contains("<li>111111111111111_MigrationOne</li>", content);
+                Assert.Contains("<li>222222222222222_MigrationTwo</li>", content);
 
-            Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
+                Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
+            }
         }
 
         class PendingMigrationsMiddleware
@@ -167,20 +176,25 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_displayed_pending_model_changes()
         {
-            TestServer server = SetupTestServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>();
-            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
+            using (var database = SqlServerTestStore.CreateScratch())
+            {
+                TestServer server = SetupTestServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>(database);
+                HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingChangesTitle", typeof(BloggingContextWithPendingModelChanges).Name), content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommand").Replace(">", "&gt;"), content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommand").Replace(">", "&gt;"), content);
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingChangesTitle", typeof(BloggingContextWithPendingModelChanges).Name), content);
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandCLI").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandCLI").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
+            }
         }
 
         class PendingModelChangesMiddleware
@@ -191,50 +205,53 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             public virtual Task Invoke(HttpContext context)
             {
                 var db = context.RequestServices.GetService<BloggingContextWithPendingModelChanges>();
-                    db.Database.Migrate();
+                db.Database.Migrate();
 
-                    db.Blogs.Add(new Blog());
-                    db.SaveChanges();
-                    throw new Exception("SaveChanges should have thrown");
+                db.Blogs.Add(new Blog());
+                db.SaveChanges();
+                throw new Exception("SaveChanges should have thrown");
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_then_apply_migrations()
         {
-            TestServer server = SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>();
-            var client = server.CreateClient();
-
-            var expectedMigrationsEndpoint = "/ApplyDatabaseMigrations";
-            var expectedContextType = typeof(BloggingContextWithMigrations).AssemblyQualifiedName;
-
-            // Step One: Initial request with database failure
-            HttpResponseMessage response = await client.GetAsync("http://localhost/");
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            var content = await response.Content.ReadAsStringAsync();
-
-            // Ensure the url we're going to test is what the page is using in it's JavaScript
-            var javaScriptEncoder = JavaScriptEncoder.Default;
-            Assert.Contains("req.open(\"POST\", \"" + JavaScriptEncode(expectedMigrationsEndpoint) + "\", true);", content);
-            Assert.Contains("var formBody = \"context=" + JavaScriptEncode(UrlEncode(expectedContextType)) + "\";", content);
-
-            // Step Two: Request to migrations endpoint
-            var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
+            using (var database = SqlServerTestStore.CreateScratch())
             {
-                new KeyValuePair<string, string>("context", expectedContextType)
-            });
+                TestServer server = SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>(database);
+                var client = server.CreateClient();
 
-            response = await client.PostAsync("http://localhost" + expectedMigrationsEndpoint, formData);
-            content = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(content);
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                var expectedMigrationsEndpoint = "/ApplyDatabaseMigrations";
+                var expectedContextType = typeof(BloggingContextWithMigrations).AssemblyQualifiedName;
 
-            // Step Three: Successful request after migrations applied
-            response = await client.GetAsync("http://localhost/");
-            content = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Saved a Blog", content);
+                // Step One: Initial request with database failure
+                HttpResponseMessage response = await client.GetAsync("http://localhost/");
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                var content = await response.Content.ReadAsStringAsync();
+
+                // Ensure the url we're going to test is what the page is using in it's JavaScript
+                var javaScriptEncoder = JavaScriptEncoder.Default;
+                Assert.Contains("req.open(\"POST\", \"" + JavaScriptEncode(expectedMigrationsEndpoint) + "\", true);", content);
+                Assert.Contains("var formBody = \"context=" + JavaScriptEncode(UrlEncode(expectedContextType)) + "\";", content);
+
+                // Step Two: Request to migrations endpoint
+                var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("context", expectedContextType)
+                });
+
+                response = await client.PostAsync("http://localhost" + expectedMigrationsEndpoint, formData);
+                content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(content);
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+                // Step Three: Successful request after migrations applied
+                response = await client.GetAsync("http://localhost/");
+                content = await response.Content.ReadAsStringAsync();
+                Assert.Equal("Saved a Blog", content);
+            }
         }
 
         class ApplyMigrationsMiddleware
@@ -251,7 +268,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Customize_migrations_end_point()
@@ -272,12 +289,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     })
                     .ConfigureServices(services =>
                     {
-                        services.AddEntityFrameworkSqlServer();
-                        services.AddScoped<BloggingContextWithMigrations>();
-
-                        var optionsBuilder = new DbContextOptionsBuilder();
-                        optionsBuilder.UseSqlServer(database.ConnectionString);
-                        services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
+                        services.AddDbContext<BloggingContextWithMigrations>(optionsBuilder =>
+                        {
+                            optionsBuilder.UseSqlServer(database.ConnectionString);
+                        });
                     });
                 var server = new TestServer(builder);
 
@@ -290,45 +305,27 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Pass_thru_when_context_not_in_services()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
-            {
-                var logProvider = new TestLoggerProvider();
+            var logProvider = new TestLoggerProvider();
 
-                var builder = new WebHostBuilder()
-                    .Configure(app =>
-                    {
-                        app.UseDatabaseErrorPage();
-                        app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
-                        app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
-                    })
-                    .ConfigureServices(
-                    services =>
-                    {
-                        services.AddEntityFrameworkSqlServer();
-                        var optionsBuilder = new DbContextOptionsBuilder();
-                        if (!PlatformHelper.IsMono)
-                        {
-                            optionsBuilder.UseSqlServer(database.ConnectionString);
-                        }
-                        else
-                        {
-                            optionsBuilder.UseInMemoryDatabase("Scratch");
-                        }
-                        services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
-                    });
-                var server = new TestServer(builder);
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseDatabaseErrorPage();
+                    app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
+                    app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+                });
+            var server = new TestServer(builder);
 
-                var ex = await Assert.ThrowsAsync<SqlException>(async () =>
-                    await server.CreateClient().GetAsync("http://localhost/"));
+            var ex = await Assert.ThrowsAsync<SqlException>(async () =>
+                await server.CreateClient().GetAsync("http://localhost/"));
 
-                Assert.True(logProvider.Logger.Messages.Any(m =>
-                    m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext)))));
-            }
+            Assert.True(logProvider.Logger.Messages.Any(m =>
+                m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext)))));
         }
 
         class ContextNotRegisteredInServicesMiddleware
@@ -338,15 +335,28 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var options = context.RequestServices.GetService<DbContextOptions>();
-                var db = new BloggingContext(options);
-                db.Blogs.Add(new Blog());
-                db.SaveChanges();
-                throw new Exception("SaveChanges should have thrown");
+                using (var database = SqlServerTestStore.CreateScratch())
+                {
+                    var optionsBuilder = new DbContextOptionsBuilder()
+                        .UseLoggerFactory(context.RequestServices.GetService<ILoggerFactory>());
+                    if (!PlatformHelper.IsMono)
+                    {
+                        optionsBuilder.UseSqlServer(database.ConnectionString);
+                    }
+                    else
+                    {
+                        optionsBuilder.UseInMemoryDatabase("Scratch");
+                    }
+
+                    var db = new BloggingContext(optionsBuilder.Options);
+                    db.Blogs.Add(new Blog());
+                    db.SaveChanges();
+                    throw new Exception("SaveChanges should have thrown");
+                }
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Pass_thru_when_exception_in_logic()
@@ -355,12 +365,12 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             {
                 var logProvider = new TestLoggerProvider();
 
-                var server = SetupTestServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(logProvider);
+                var server = SetupTestServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(database, logProvider);
 
                 var ex = await Assert.ThrowsAsync<SqlException>(async () =>
                     await server.CreateClient().GetAsync("http://localhost/"));
 
-                Assert.True(logProvider.Logger.Messages.Any(m =>
+                Assert.True(logProvider.Logger.Messages.ToList().Any(m =>
                     m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_Exception"))));
             }
         }
@@ -379,18 +389,21 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalFact(Skip = "aspnet/Diagnostics#350")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_displayed_when_exception_wrapped()
         {
-            TestServer server = SetupTestServer<BloggingContext, WrappedExceptionMiddleware>();
-            HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
+            using (var database = SqlServerTestStore.CreateScratch())
+            {
+                TestServer server = SetupTestServer<BloggingContext, WrappedExceptionMiddleware>(database);
+                HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("I wrapped your exception", content);
-            Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", typeof(BloggingContext).Name), content);
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.Contains("I wrapped your exception", content);
+                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", typeof(BloggingContext).Name), content);
+            }
         }
 
         class WrappedExceptionMiddleware
@@ -414,30 +427,25 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        private static TestServer SetupTestServer<TContext, TMiddleware>(ILoggerProvider logProvider = null)
+        private static TestServer SetupTestServer<TContext, TMiddleware>(SqlServerTestStore database, ILoggerProvider logProvider = null)
             where TContext : DbContext
         {
-            using (var database = SqlServerTestStore.CreateScratch())
-            {
-                var builder = new WebHostBuilder()
-                    .Configure(app =>
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseDatabaseErrorPage();
+
+                    app.UseMiddleware<TMiddleware>();
+
+                    if (logProvider != null)
                     {
-                        app.UseDatabaseErrorPage();
-
-                        app.UseMiddleware<TMiddleware>();
-
-                        if (logProvider != null)
-                        {
-                            app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
-                        }
-                    })
-                    .ConfigureServices(services =>
+                        app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+                    }
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddDbContext<TContext>(optionsBuilder =>
                     {
-                        services.AddEntityFrameworkSqlServer();
-
-                        services.AddScoped<TContext>();
-
-                        var optionsBuilder = new DbContextOptionsBuilder();
                         if (!PlatformHelper.IsMono)
                         {
                             optionsBuilder.UseSqlServer(database.ConnectionString);
@@ -446,10 +454,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         {
                             optionsBuilder.UseInMemoryDatabase("Scratch");
                         }
-                        services.AddSingleton(optionsBuilder.Options);
                     });
-                return new TestServer(builder);
-            }
+                });
+            return new TestServer(builder);
         }
 
         private static UrlEncoder _urlEncoder = UrlEncoder.Default;
