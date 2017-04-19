@@ -41,23 +41,32 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <RIDs Include="win7-x64;win7-x86" Condition="'$(OSPlatform)'=='Windows'" />
-      <RIDs Include="linux-x64" Condition="'$(OSPlatform)'=='Linux'" />
-      <RIDs Include="osx.10.12-x64" Condition="'$(OSPlatform)'=='macOS'" />
+      <RIDs Include="win7-x64" Condition="'$(OSPlatform)'=='Windows'" >
+        <PlatformDir>x64</PlatformDir>
+      </RIDs>
+      <RIDs Include="win7-x86" Condition="'$(OSPlatform)'=='Windows'" >
+        <PlatformDir>x86</PlatformDir>
+      </RIDs>
+      <RIDs Include="linux-x64" Condition="'$(OSPlatform)'=='Linux'" >
+        <PlatformDir>x64</PlatformDir>
+      </RIDs>
+      <RIDs Include="osx.10.12-x64" Condition="'$(OSPlatform)'=='macOS'" >
+        <PlatformDir>x64</PlatformDir>
+      </RIDs>
     </ItemGroup>
 
-    <RemoveDir Directories="$(OutputPath)%(RIDs.Identity)\" />
+    <RemoveDir Directories="$(OutputPath)" />
     <RemoveDir Directories="$(WorkingDirectory)%(RIDs.Identity)\" />
-    <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath)%(RIDs.Identity)/ --framework-version 2.0.0-* --working-dir $(WorkingDirectory)%(RIDs.Identity)/" />
+    <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)%(RIDs.Identity)/" />
 
     <ItemGroup>
-      <PackageCacheFiles Include="$(OutputPath)%(RIDs.Identity)\**\*" />
-      <PackageStoreManifestFiles Include="$(OutputPath)%(RIDs.Identity)\**\artifact.xml">
+      <PackageCacheFiles Include="$(OutputPath)**\*" />
+      <PackageStoreManifestFiles Include="$(OutputPath)%(RIDs.PlatformDir)\**\artifact.xml">
         <DestinationFile>manifest.%(RIDs.Identity).xml</DestinationFile>
       </PackageStoreManifestFiles>
     </ItemGroup>
 
-    <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)%(RIDs.Identity)\" />
+    <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)" />
 
     <Copy SourceFiles="%(PackageStoreManifestFiles.FullPath)" DestinationFiles="$(ArtifactsDir)%(PackageStoreManifestFiles.DestinationFile)" />
 
