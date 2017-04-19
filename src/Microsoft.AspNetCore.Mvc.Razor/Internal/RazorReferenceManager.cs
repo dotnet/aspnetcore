@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly IList<MetadataReference> _additionalMetadataReferences;
         private object _compilationReferencesLock = new object();
         private bool _compilationReferencesInitialized;
-        private IList<MetadataReference> _compilationReferences;
+        private IReadOnlyList<MetadataReference> _compilationReferences;
 
         public RazorReferenceManager(
             ApplicationPartManager partManager,
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _additionalMetadataReferences = optionsAccessor.Value.AdditionalCompilationReferences;
         }
 
-        public IList<MetadataReference> CompilationReferences
+        public IReadOnlyList<MetadataReference> CompilationReferences
         {
             get
             {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
         }
 
-        private IList<MetadataReference> GetCompilationReferences()
+        private IReadOnlyList<MetadataReference> GetCompilationReferences()
         {
             var feature = new MetadataReferenceFeature();
             _partManager.PopulateFeature(feature);
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             if (_additionalMetadataReferences.Count == 0)
             {
-                return applicationReferences;
+                return applicationReferences.ToArray();
             }
 
             var compilationReferences = new List<MetadataReference>(applicationReferences.Count + _additionalMetadataReferences.Count);

@@ -155,13 +155,13 @@ namespace Microsoft.Extensions.DependencyInjection
             // creating the singleton RazorViewEngine instance.
             services.TryAddTransient<IRazorPageFactoryProvider, DefaultRazorPageFactoryProvider>();
 
-
             //
             // Razor compilation infrastructure
             //
             services.TryAddSingleton<RazorProject, DefaultRazorProject>();
             services.TryAddSingleton<RazorTemplateEngine, MvcRazorTemplateEngine>();
             services.TryAddSingleton<RazorCompiler>();
+            services.TryAddSingleton<LazyMetadataReferenceFeature>();
 
             services.TryAddSingleton<RazorEngine>(s =>
             {
@@ -171,11 +171,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
                     b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperFeature());
 
-                    var referenceManager = s.GetRequiredService<RazorReferenceManager>();
-                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultMetadataReferenceFeature()
-                    {
-                        References = referenceManager.CompilationReferences.ToArray(),
-                    });
+                    var metadataReferenceFeature = s.GetRequiredService<LazyMetadataReferenceFeature>();
+                    b.Features.Add(metadataReferenceFeature);
                 });
             });
 
