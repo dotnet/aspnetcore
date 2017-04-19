@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,33 +21,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private static readonly TimeSpan ShortDelay = TimeSpan.FromSeconds(LongDelay.TotalSeconds / 10);
 
         [Fact]
-        public async Task TestKeepAliveTimeout()
+        public Task TestKeepAliveTimeout()
         {
             // Delays in these tests cannot be much longer than expected.
-            // Call ConfigureAwait(false) to get rid of Xunit's synchronization context,
+            // Call Task.Run() to get rid of Xunit's synchronization context,
             // otherwise it can cause unexpectedly longer delays when multiple tests
             // are running in parallel. These tests becomes flaky on slower
             // hardware because the continuations for the delay tasks might take too long to be
             // scheduled if running on Xunit's synchronization context.
-            await Task.Delay(1).ConfigureAwait(false);
-
-            var longRunningCancellationTokenSource = new CancellationTokenSource();
-            var upgradeCancellationTokenSource = new CancellationTokenSource();
-
-            using (var server = CreateServer(longRunningCancellationTokenSource.Token, upgradeCancellationTokenSource.Token))
+            return Task.Run(async () =>
             {
-                var tasks = new[]
-                {
-                    ConnectionClosedWhenKeepAliveTimeoutExpires(server),
-                    ConnectionKeptAliveBetweenRequests(server),
-                    ConnectionNotTimedOutWhileRequestBeingSent(server),
-                    ConnectionNotTimedOutWhileAppIsRunning(server, longRunningCancellationTokenSource),
-                    ConnectionTimesOutWhenOpenedButNoRequestSent(server),
-                    KeepAliveTimeoutDoesNotApplyToUpgradedConnections(server, upgradeCancellationTokenSource)
-                };
+                var longRunningCancellationTokenSource = new CancellationTokenSource();
+                var upgradeCancellationTokenSource = new CancellationTokenSource();
 
-                await Task.WhenAll(tasks);
-            }
+                using (var server = CreateServer(longRunningCancellationTokenSource.Token, upgradeCancellationTokenSource.Token))
+                {
+                    var tasks = new[]
+                    {
+                        ConnectionClosedWhenKeepAliveTimeoutExpires(server),
+                        ConnectionKeptAliveBetweenRequests(server),
+                        ConnectionNotTimedOutWhileRequestBeingSent(server),
+                        ConnectionNotTimedOutWhileAppIsRunning(server, longRunningCancellationTokenSource),
+                        ConnectionTimesOutWhenOpenedButNoRequestSent(server),
+                        KeepAliveTimeoutDoesNotApplyToUpgradedConnections(server, upgradeCancellationTokenSource)
+                    };
+
+                    await Task.WhenAll(tasks);
+                }
+            });
         }
 
         private async Task ConnectionClosedWhenKeepAliveTimeoutExpires(TimeoutTestServer server)
