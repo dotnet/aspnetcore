@@ -1,9 +1,11 @@
-﻿@model ExternalLoginListViewModel
-@inject SignInManager<ApplicationUser> SignInManager
+﻿@using Microsoft.AspNetCore.Authentication
+@model ExternalLoginListViewModel
+@inject IAuthenticationSchemeProvider SchemeProvider
 <h4>Use another service to log in.</h4>
 <hr />
 @{
-    var loginProviders = SignInManager.GetExternalAuthenticationSchemes();
+    var schemes = await SchemeProvider.GetAllSchemesAsync();
+    var loginProviders = schemes.ToList();
     if (!loginProviders.Any())
     {
         <div>
@@ -20,7 +22,7 @@
                 <p>
                     @foreach (var p in loginProviders)
                     {
-                        <button type="submit" class="btn btn-default" id="@p.AuthenticationScheme" name="provider" value="@p.AuthenticationScheme" title="Log in using your @p.DisplayName account">@p.AuthenticationScheme</button>
+                        <button type="submit" class="btn btn-default" id="@p.Name" name="provider" value="@p.Name" title="Log in using your @p.Name account">@p.Name</button>
                     }
                 </p>
             </div>

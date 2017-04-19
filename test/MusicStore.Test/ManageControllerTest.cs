@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MusicStore.Models;
 using Xunit;
@@ -23,6 +24,7 @@ namespace MusicStore.Controllers
             var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
 
             var services = new ServiceCollection();
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
             services.AddOptions();
             services
                 .AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
@@ -30,12 +32,12 @@ namespace MusicStore.Controllers
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<MusicStoreContext>();
 
+            services.AddMvc();
+            services.AddSingleton<IAuthenticationService, NoOpAuth>();
             services.AddLogging();
-            services.AddOptions();
 
             // IHttpContextAccessor is required for SignInManager, and UserManager
             var context = new DefaultHttpContext();
-            context.Features.Set<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = new TestAuthHandler() });
             services.AddSingleton<IHttpContextAccessor>(
                 new HttpContextAccessor()
                     {
@@ -63,8 +65,11 @@ namespace MusicStore.Controllers
 
             var httpContext = _serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
-
-            var controller = new ManageController(userManager, signInManager);
+            httpContext.RequestServices = _serviceProvider;
+ 
+            var schemeProvider = _serviceProvider.GetRequiredService<IAuthenticationSchemeProvider>();
+  
+            var controller = new ManageController(userManager, signInManager, schemeProvider);
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -83,38 +88,28 @@ namespace MusicStore.Controllers
             Assert.True(model.HasPassword);
         }
 
-        private class TestAuthHandler : IAuthenticationHandler
+        public class NoOpAuth : IAuthenticationService
         {
-            public void Authenticate(AuthenticateContext context)
+            public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme)
             {
-                context.NotAuthenticated();
+                return Task.FromResult(AuthenticateResult.None());
             }
 
-            public Task AuthenticateAsync(AuthenticateContext context)
+            public Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties, ChallengeBehavior behavior)
             {
-                context.NotAuthenticated();
                 return Task.FromResult(0);
             }
 
-            public Task ChallengeAsync(ChallengeContext context)
+            public Task SignInAsync(HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
 
-            public void GetDescriptions(DescribeSchemesContext context)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SignInAsync(SignInContext context)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SignOutAsync(SignOutContext context)
+            public Task SignOutAsync(HttpContext context, string scheme, AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
         }
+
     }
 }

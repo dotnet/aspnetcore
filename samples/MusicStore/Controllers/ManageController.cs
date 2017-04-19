@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,19 @@ namespace MusicStore.Controllers
     {
         public ManageController(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            IAuthenticationSchemeProvider schemes)
         {
             UserManager = userManager;
             SignInManager = signInManager;
+            SchemeProvider = schemes;
         }
 
         public UserManager<ApplicationUser> UserManager { get; }
 
         public SignInManager<ApplicationUser> SignInManager { get; }
+
+        public IAuthenticationSchemeProvider SchemeProvider { get; }
 
         //
         // GET: /Manage/Index
@@ -285,7 +290,8 @@ namespace MusicStore.Controllers
                 return View("Error");
             }
             var userLogins = await UserManager.GetLoginsAsync(user);
-            var otherLogins = SignInManager.GetExternalAuthenticationSchemes().Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider)).ToList();
+            var schemes = await SchemeProvider.GetAllSchemesAsync();
+            var otherLogins = schemes.Where(auth => userLogins.All(ul => auth.Name != ul.LoginProvider)).ToList();
             ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
             {

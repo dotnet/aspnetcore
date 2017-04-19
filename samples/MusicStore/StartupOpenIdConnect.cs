@@ -101,6 +101,14 @@ namespace MusicStore
                         authBuilder.RequireClaim("ManageStore", "Allowed");
                     });
             });
+
+            // Create an Azure Active directory application and copy paste the following
+            services.AddOpenIdConnectAuthentication(options =>
+            {
+                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
+                options.ClientId = "[ClientId]";
+                options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+            });
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
@@ -120,17 +128,6 @@ namespace MusicStore
 
             // Add static files to the request pipeline
             app.UseStaticFiles();
-
-            // Add cookie-based authentication to the request pipeline
-            app.UseIdentity();
-
-            // Create an Azure Active directory application and copy paste the following
-            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
-            {
-                Authority = "https://login.windows.net/[tenantName].onmicrosoft.com",
-                ClientId = "[ClientId]",
-                ResponseType = OpenIdConnectResponseType.CodeIdToken,
-            });
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>

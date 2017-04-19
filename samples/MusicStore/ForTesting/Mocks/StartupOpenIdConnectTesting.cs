@@ -58,6 +58,29 @@ namespace MusicStore
                     .AddEntityFrameworkStores<MusicStoreContext>()
                     .AddDefaultTokenProviders();
 
+            // Create an Azure Active directory application and copy paste the following
+            services.AddOpenIdConnectAuthentication(options =>
+            {
+                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
+                options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
+                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
+                options.StringDataFormat = new CustomStringDataFormat();
+                options.StateDataFormat = new CustomStateDataFormat();
+                options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+                options.UseTokenLifetime = false;
+                options.TokenValidationParameters.ValidateLifetime = false;
+                options.ProtocolValidator.RequireNonce = true;
+                options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
+
+                options.Events = new OpenIdConnectEvents
+                {
+                    OnMessageReceived = TestOpenIdConnectEvents.MessageReceived,
+                    OnAuthorizationCodeReceived = TestOpenIdConnectEvents.AuthorizationCodeReceived,
+                    OnRedirectToIdentityProvider = TestOpenIdConnectEvents.RedirectToIdentityProvider,
+                    OnTokenValidated = TestOpenIdConnectEvents.TokenValidated,
+                };
+            });
+
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder =>
@@ -105,32 +128,8 @@ namespace MusicStore
             // Add static files to the request pipeline
             app.UseStaticFiles();
 
-            // Add cookie-based authentication to the request pipeline
-            app.UseIdentity();
-
-            // Create an Azure Active directory application and copy paste the following
-            var options = new OpenIdConnectOptions
-            {
-                Authority = "https://login.windows.net/[tenantName].onmicrosoft.com",
-                ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef",
-                BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler(),
-                StringDataFormat = new CustomStringDataFormat(),
-                StateDataFormat = new CustomStateDataFormat(),
-                ResponseType = OpenIdConnectResponseType.CodeIdToken,
-                UseTokenLifetime = false,
-
-                Events = new OpenIdConnectEvents
-                {
-                    OnMessageReceived = TestOpenIdConnectEvents.MessageReceived,
-                    OnAuthorizationCodeReceived = TestOpenIdConnectEvents.AuthorizationCodeReceived,
-                    OnRedirectToIdentityProvider = TestOpenIdConnectEvents.RedirectToIdentityProvider,
-                    OnTokenValidated = TestOpenIdConnectEvents.TokenValidated,
-                }
-            };
-            options.TokenValidationParameters.ValidateLifetime = false;
-            options.ProtocolValidator.RequireNonce = true;
-            options.ProtocolValidator.NonceLifetime = TimeSpan.FromDays(36500);
-            app.UseOpenIdConnectAuthentication(options);
+            // Add authentication to the request pipeline
+            app.UseAuthentication();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
