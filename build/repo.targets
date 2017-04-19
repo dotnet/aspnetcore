@@ -57,7 +57,7 @@
       </PackageStoreManifestFiles>
     </ItemGroup>
 
-    <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)" />
+    <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)%(RIDs.Identity)\" />
 
     <Copy SourceFiles="%(PackageStoreManifestFiles.FullPath)" DestinationFiles="$(ArtifactsDir)%(PackageStoreManifestFiles.DestinationFile)" />
 
