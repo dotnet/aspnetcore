@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/MvcPrecompilation/issues/115")]
         public void Precompilation_PreventsRefAssembliesFromBeingPublished()
         {
             // Act & Assert
