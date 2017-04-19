@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// Initializes a new instance of <see cref="IdentityRole"/>.
         /// </summary>
         /// <remarks>
-        /// The Id property is initialized to from a new GUID string value.
+        /// The Id property is initialized to form a new GUID string value.
         /// </remarks>
         public IdentityRole()
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         /// <param name="roleName">The role name.</param>
         /// <remarks>
-        /// The Id property is initialized to from a new GUID string value.
+        /// The Id property is initialized to form a new GUID string value.
         /// </remarks>
         public IdentityRole(string roleName) : this()
         {
