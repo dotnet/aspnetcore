@@ -35,7 +35,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler", // full name of the ASP.NET Core type
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
                 Cookies.CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var interopServer = TestServer.Create(app =>
@@ -89,7 +89,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler", // full name of the ASP.NET Core type
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
                 Cookies.CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var interopServer = TestServer.Create(app =>
@@ -146,7 +146,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler", // full name of the ASP.NET Core type
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
                 Cookies.CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var builder = new WebHostBuilder()
@@ -193,7 +193,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler", // full name of the ASP.NET Core type
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
                 Cookies.CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var builder = new WebHostBuilder()
