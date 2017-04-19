@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     var exception = Assert.Throws<IOException>(() => host.Start());
                     Assert.Equal(
-                        $"Failed to bind to address http://localhost:{port} on the {(addressFamily == AddressFamily.InterNetwork ? "IPv4" : "IPv6")} loopback interface: port already in use.",
+                        $"Failed to bind to address http://{(addressFamily == AddressFamily.InterNetwork ? "127.0.0.1" : "[::1]")}:{port}: address already in use.",
                         exception.Message);
                 }
             }
