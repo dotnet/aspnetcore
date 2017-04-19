@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
         /// <remarks>
-        /// The behavior of this method depends on the <see cref="AuthenticationManager"/> in use.
+        /// The behavior of this method depends on the <see cref="IAuthenticationService"/> in use.
         /// <see cref="StatusCodes.Status401Unauthorized"/> and <see cref="StatusCodes.Status403Forbidden"/>
         /// are among likely status results.
         /// </remarks>
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
         /// <remarks>
-        /// The behavior of this method depends on the <see cref="AuthenticationManager"/> in use.
+        /// The behavior of this method depends on the <see cref="IAuthenticationService"/> in use.
         /// <see cref="StatusCodes.Status401Unauthorized"/> and <see cref="StatusCodes.Status403Forbidden"/>
         /// are among likely status results.
         /// </remarks>
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// challenge.</param>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
         /// <remarks>
-        /// The behavior of this method depends on the <see cref="AuthenticationManager"/> in use.
+        /// The behavior of this method depends on the <see cref="AuthenticationService"/> in use.
         /// <see cref="StatusCodes.Status401Unauthorized"/> and <see cref="StatusCodes.Status403Forbidden"/>
         /// are among likely status results.
         /// </remarks>
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
         /// <remarks>
-        /// The behavior of this method depends on the <see cref="AuthenticationManager"/> in use.
+        /// The behavior of this method depends on the <see cref="IAuthenticationService"/> in use.
         /// <see cref="StatusCodes.Status401Unauthorized"/> and <see cref="StatusCodes.Status403Forbidden"/>
         /// are among likely status results.
         /// </remarks>
