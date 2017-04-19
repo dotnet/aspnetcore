@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -162,7 +161,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 pageContext,
                 filters,
                 new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories),
-                cacheEntry);
+                cacheEntry,
+                _parameterBinder);
         }
 
         private PageActionInvokerCacheEntry CreateCacheEntry(
@@ -264,16 +264,57 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
                 var formAction = new StringSegment(method.Name, formActionStart, formActionLength);
 
+                var parameters = GetHandlerParameters(method);
+
                 var handlerMethodDescriptor = new HandlerMethodDescriptor
                 {
                     Method = method,
-                    Executor = ExecutorFactory.CreateExecutor(actionDescriptor, method),
+                    Executor = ExecutorFactory.CreateExecutor(actionDescriptor, method, parameters),
                     FormAction = formAction,
                     HttpMethod = httpMethod,
+                    Parameters = parameters,
+                    OnPage = actionDescriptor.PageTypeInfo == type,
                 };
 
                 actionDescriptor.HandlerMethods.Add(handlerMethodDescriptor);
             }
+        }
+
+        private static HandlerParameterDescriptor[] GetHandlerParameters(MethodInfo methodInfo)
+        {
+            var methodParameters = methodInfo.GetParameters();
+            var parameters = new HandlerParameterDescriptor[methodParameters.Length];
+
+            for (var i = 0; i < methodParameters.Length; i++)
+            {
+                var parameter = methodParameters[i];
+
+                parameters[i] = new HandlerParameterDescriptor()
+                {
+                    BindingInfo = BindingInfo.GetBindingInfo(parameter.GetCustomAttributes()),
+                    DefaultValue = GetDefaultValue(parameter),
+                    Name = parameter.Name,
+                    Parameter = parameter,
+                    ParameterType = parameter.ParameterType,
+                };
+            }
+
+            return parameters;
+        }
+
+        private static object GetDefaultValue(ParameterInfo methodParameter)
+        {
+            object defaultValue = null;
+            if (methodParameter.HasDefaultValue)
+            {
+                defaultValue = methodParameter.DefaultValue;
+            }
+            else if (methodParameter.ParameterType.GetTypeInfo().IsValueType)
+            {
+                defaultValue = Activator.CreateInstance(methodParameter.ParameterType);
+            }
+
+            return defaultValue;
         }
 
         private static bool IsValidHandler(MethodInfo methodInfo)

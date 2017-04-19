@@ -12,10 +12,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         public MethodInfo Method { get; set; }
 
-        public Func<Page, object, Task<IActionResult>> Executor { get; set; }
+        public Func<object, object[], Task<IActionResult>> Executor { get; set; }
 
         public string HttpMethod { get; set; }
 
         public StringSegment FormAction { get; set; }
+
+        public HandlerParameterDescriptor[] Parameters { get; set; }
+
+        public bool OnPage { get; set; }
     }
 }

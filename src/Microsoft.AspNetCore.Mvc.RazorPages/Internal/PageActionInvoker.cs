@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         private readonly IPageHandlerMethodSelector _selector;
         private readonly PageContext _pageContext;
+        private readonly ParameterBinder _parameterBinder;
 
         private Page _page;
         private object _model;
@@ -34,7 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             PageContext pageContext,
             IFilterMetadata[] filterMetadata,
             IList<IValueProviderFactory> valueProviderFactories,
-            PageActionInvokerCacheEntry cacheEntry)
+            PageActionInvokerCacheEntry cacheEntry,
+            ParameterBinder parameterBinder)
             : base(
                   diagnosticSource,
                   logger,
@@ -45,6 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _selector = handlerMethodSelector;
             _pageContext = pageContext;
             CacheEntry = cacheEntry;
+            _parameterBinder = parameterBinder;
         }
 
         public PageActionInvokerCacheEntry CacheEntry { get; }
@@ -374,8 +377,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var handler = _selector.Select(_pageContext);
             if (handler != null)
             {
+                var arguments = await GetArguments(handler);
+
                 var executor = handler.Executor;
-                result = await executor(_page, _model);
+                result = await executor(handler.OnPage ? _page : _model, arguments);
             }
 
             if (result == null)
@@ -384,6 +389,27 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             await result.ExecuteResultAsync(_pageContext);
+        }
+
+        private async Task<object[]> GetArguments(HandlerMethodDescriptor handler)
+        {
+            var arguments = new object[handler.Parameters.Length];
+            var valueProvider = await CompositeValueProvider.CreateAsync(_pageContext, _pageContext.ValueProviderFactories);
+
+            for (var i = 0; i < handler.Parameters.Length; i++)
+            {
+                var parameter = handler.Parameters[i];
+
+                var result = await _parameterBinder.BindModelAsync(
+                    _page.PageContext,
+                    valueProvider,
+                    parameter,
+                    value: null);
+
+                arguments[i] = result.IsModelSet ? result.Model : parameter.DefaultValue;
+            }
+
+            return arguments;
         }
 
         private async Task InvokeNextExceptionFilterAsync()

@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -25,37 +24,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
     public abstract class PageModel
     {
-        private PageArgumentBinder _binder;
         private IObjectModelValidator _objectValidator;
         private IModelMetadataProvider _metadataProvider;
         private IModelBinderFactory _modelBinderFactory;
         private IUrlHelper _urlHelper;
-
-        /// <summary>
-        /// Gets or sets the <see cref="PageArgumentBinder"/>.
-        /// </summary>
-        public PageArgumentBinder Binder
-        {
-            get
-            {
-                if (_binder == null)
-                {
-                    _binder = HttpContext?.RequestServices?.GetRequiredService<PageArgumentBinder>();
-                }
-
-                return _binder;
-            }
-
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _binder = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper"/>.

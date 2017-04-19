@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     /// </summary>
     public abstract class Page : RazorPageBase, IRazorPage
     {
-        private PageArgumentBinder _binder;
         private IObjectModelValidator _objectValidator;
         private IModelMetadataProvider _metadataProvider;
         private IModelBinderFactory _modelBinderFactory;
@@ -61,32 +60,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets the <see cref="HttpResponse"/>.
         /// </summary>
         public HttpResponse Response => HttpContext?.Response;
-
-        /// <summary>
-        /// Gets or sets the <see cref="PageArgumentBinder"/>.
-        /// </summary>
-        public PageArgumentBinder Binder
-        {
-            get
-            {
-                if (_binder == null)
-                {
-                    _binder = PageContext.HttpContext.RequestServices.GetRequiredService<PageArgumentBinder>();
-                }
-
-                return _binder;
-            }
-
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _binder = value;
-            }
-        }
 
         /// <summary>
         /// Gets the <see cref="AspNetCore.Routing.RouteData"/> for the executing action.
