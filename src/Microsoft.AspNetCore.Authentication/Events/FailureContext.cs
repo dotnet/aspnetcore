@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Authentication
 {
     /// <summary>
-    /// Provides failure context information to middleware providers.
+    /// Provides failure context information to handler providers.
     /// </summary>
     public class FailureContext : BaseControlContext
     {

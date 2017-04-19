@@ -8,24 +8,60 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
-    public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions
+    public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions, new()
     {
-        public OAuthHandler(HttpClient backchannel)
+        protected HttpClient Backchannel => Options.Backchannel;
+
+        /// <summary>
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// If it is not provided a default instance is supplied which does nothing when the methods are called.
+        /// </summary>
+        protected new OAuthEvents Events
         {
-            Backchannel = backchannel;
+            get { return (OAuthEvents)base.Events; }
+            set { base.Events = value; }
         }
 
-        protected HttpClient Backchannel { get; private set; }
+        public OAuthHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
+            : base(sharedOptions, options, dataProtection, logger, encoder, clock)
+        { }
+
+        protected override void InitializeOptions()
+        {
+            base.InitializeOptions();
+
+            if (Options.Backchannel == null)
+            {
+                Options.Backchannel = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
+                Options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core OAuth handler");
+                Options.Backchannel.Timeout = Options.BackchannelTimeout;
+                Options.Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+            }
+
+            if (Options.StateDataFormat == null)
+            {
+                var dataProtector = DataProtection.CreateProtector(
+                    GetType().FullName, Scheme.Name, "v1");
+                Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new instance of the events instance.
+        /// </summary>
+        /// <returns>A new instance of the events instance.</returns>
+        protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new OAuthEvents());
 
         protected override async Task<AuthenticateResult> HandleRemoteAuthenticateAsync()
         {
@@ -107,7 +143,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     {
                         // https://www.w3.org/TR/xmlschema-2/#dateTime
                         // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
-                        var expiresAt = Options.SystemClock.UtcNow + TimeSpan.FromSeconds(value);
+                        var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
                         authTokens.Add(new AuthenticationToken
                         {
                             Name = "expires_at",
@@ -170,21 +206,20 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), properties, Options.AuthenticationScheme);
-            var context = new OAuthCreatingTicketContext(ticket, Context, Options, Backchannel, tokens);
-            await Options.Events.CreatingTicket(context);
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), properties, Scheme.Name);
+            var context = new OAuthCreatingTicketContext(ticket, Context, Scheme, Options, Backchannel, tokens);
+            await Events.CreatingTicket(context);
             return context.Ticket;
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleUnauthorizedAsync(ChallengeContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var properties = new AuthenticationProperties(context.Properties);
-
+            var properties = context.Properties;
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = CurrentUri;
@@ -197,8 +232,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var redirectContext = new OAuthRedirectToAuthorizationContext(
                 Context, Options,
                 properties, authorizationEndpoint);
-            await Options.Events.RedirectToAuthorizationEndpoint(redirectContext);
-            return true;
+            await Events.RedirectToAuthorizationEndpoint(redirectContext);
         }
 
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)

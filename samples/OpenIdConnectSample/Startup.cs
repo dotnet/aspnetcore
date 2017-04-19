@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -42,46 +42,22 @@ namespace OpenIdConnectSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(sharedOptions =>
-                sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
-        }
-
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
-        {
-            loggerfactory.AddConsole(LogLevel.Information);
-            loggerfactory.AddDebug(LogLevel.Information);
-
-            // Simple error page
-            app.Use(async (context, next) =>
             {
-                try
-                {
-                    await next();
-                }
-                catch (Exception ex)
-                {
-                    if (!context.Response.HasStarted)
-                    {
-                        context.Response.Clear();
-                        context.Response.StatusCode = 500;
-                        await context.Response.WriteAsync(ex.ToString());
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             });
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions());
+            services.AddCookieAuthentication();
 
-            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
+            services.AddOpenIdConnectAuthentication(o =>
             {
-                ClientId = Configuration["oidc:clientid"],
-                ClientSecret = Configuration["oidc:clientsecret"], // for code flow
-                Authority = Configuration["oidc:authority"],
-                ResponseType = OpenIdConnectResponseType.CodeIdToken,
-                GetClaimsFromUserInfoEndpoint = true,
-                Events = new OpenIdConnectEvents()
+                o.ClientId = Configuration["oidc:clientid"];
+                o.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
+                o.Authority = Configuration["oidc:authority"];
+                o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+                o.GetClaimsFromUserInfoEndpoint = true;
+                o.Events = new OpenIdConnectEvents()
                 {
                     OnAuthenticationFailed = c =>
                     {
@@ -96,8 +72,17 @@ namespace OpenIdConnectSample
                         }
                         return c.Response.WriteAsync("An error occurred processing your authentication.");
                     }
-                }
+                };
             });
+        }
+
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        {
+            loggerfactory.AddConsole(LogLevel.Information);
+            loggerfactory.AddDebug(LogLevel.Information);
+
+            app.UseDeveloperExceptionPage();
+            app.UseAuthentication();
 
             app.Run(async context =>
             {
@@ -113,7 +98,7 @@ namespace OpenIdConnectSample
 
                 if (context.Request.Path.Equals("/signout"))
                 {
-                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response, async res =>
                     {
                         await context.Response.WriteAsync($"<h1>Signed out {HtmlEncode(context.User.Identity.Name)}</h1>");
@@ -125,8 +110,8 @@ namespace OpenIdConnectSample
                 if (context.Request.Path.Equals("/signout-remote"))
                 {
                     // Redirects
-                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    await context.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties()
+                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties()
                     {
                         RedirectUri = "/signedout"
                     });
@@ -135,7 +120,7 @@ namespace OpenIdConnectSample
 
                 if (context.Request.Path.Equals("/Account/AccessDenied"))
                 {
-                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response, async res =>
                     {
                         await context.Response.WriteAsync($"<h1>Access Denied for user {HtmlEncode(context.User.Identity.Name)} to resource '{HtmlEncode(context.Request.Query["ReturnUrl"])}'</h1>");
@@ -144,24 +129,23 @@ namespace OpenIdConnectSample
                     return;
                 }
 
-                // CookieAuthenticationOptions.AutomaticAuthenticate = true (default) causes User to be set
+                // DefaultAuthenticateScheme causes User to be set
                 var user = context.User;
 
                 // This is what [Authorize] calls
-                // var user = await context.Authentication.AuthenticateAsync(AuthenticationManager.AutomaticScheme);
+                // var user = await context.AuthenticateAsync();
 
                 // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
-                // var user = await context.Authentication.AuthenticateAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                // var user = await context.AuthenticateAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
                 // Not authenticated
                 if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
                 {
                     // This is what [Authorize] calls
-                    // The cookie middleware will intercept this 401 and redirect to /login
-                    await context.Authentication.ChallengeAsync();
+                    await context.ChallengeAsync();
 
                     // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
-                    // await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                    // await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
                     return;
                 }
@@ -169,10 +153,9 @@ namespace OpenIdConnectSample
                 // Authenticated, but not authorized
                 if (context.Request.Path.Equals("/restricted") && !user.Identities.Any(identity => identity.HasClaim("special", "true")))
                 {
-                    await context.Authentication.ChallengeAsync();
+                    await context.ChallengeAsync();
                     return;
                 }
-
 
                 await WriteHtmlAsync(context.Response, async response =>
                 {

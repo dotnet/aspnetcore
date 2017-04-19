@@ -8,9 +8,9 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
-    /// Default <see cref="IOAuthEvents"/> implementation.
+    /// Default implementation.
     /// </summary>
-    public class OAuthEvents : RemoteAuthenticationEvents, IOAuthEvents
+    public class OAuthEvents : RemoteAuthenticationEvents
     {
         /// <summary>
         /// Gets or sets the function that is invoked when the CreatingTicket method is invoked.
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public virtual Task CreatingTicket(OAuthCreatingTicketContext context) => OnCreatingTicket(context);
 
         /// <summary>
-        /// Called when a Challenge causes a redirect to authorize endpoint in the OAuth middleware.
+        /// Called when a Challenge causes a redirect to authorize endpoint in the OAuth handler.
         /// </summary>
         /// <param name="context">Contains redirect URI and <see cref="Http.Authentication.AuthenticationProperties"/> of the challenge.</param>
         public virtual Task RedirectToAuthorizationEndpoint(OAuthRedirectToAuthorizationContext context) => OnRedirectToAuthorizationEndpoint(context);

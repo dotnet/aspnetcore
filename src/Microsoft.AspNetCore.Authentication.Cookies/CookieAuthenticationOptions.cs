@@ -2,19 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     /// <summary>
-    /// Configuration options for <see cref="CookieAuthenticationMiddleware"/>.
+    /// Configuration options for <see cref="CookieAuthenticationOptions"/>.
     /// </summary>
-    public class CookieAuthenticationOptions : AuthenticationOptions, IOptions<CookieAuthenticationOptions>
+    public class CookieAuthenticationOptions : AuthenticationSchemeOptions
     {
         private string _cookieName;
 
@@ -23,21 +19,18 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public CookieAuthenticationOptions()
         {
-            AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            AutomaticAuthenticate = true;
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
             ExpireTimeSpan = TimeSpan.FromDays(14);
             SlidingExpiration = true;
             CookieHttpOnly = true;
             CookieSecure = CookieSecurePolicy.SameAsRequest;
-            SystemClock = new SystemClock();
             Events = new CookieAuthenticationEvents();
         }
 
         /// <summary>
         /// Determines the cookie name used to persist the identity. The default value is ".AspNetCore.Cookies".
         /// This value should be changed if you change the name of the AuthenticationScheme, especially if your
-        /// system uses the cookie authentication middleware multiple times.
+        /// system uses the cookie authentication handler multiple times.
         /// </summary>
         public string CookieName
         {
@@ -90,13 +83,13 @@ namespace Microsoft.AspNetCore.Builder
         public TimeSpan ExpireTimeSpan { get; set; }
 
         /// <summary>
-        /// The SlidingExpiration is set to true to instruct the middleware to re-issue a new cookie with a new
+        /// The SlidingExpiration is set to true to instruct the handler to re-issue a new cookie with a new
         /// expiration time any time it processes a request which is more than halfway through the expiration window.
         /// </summary>
         public bool SlidingExpiration { get; set; }
 
         /// <summary>
-        /// The LoginPath property informs the middleware that it should change an outgoing 401 Unauthorized status
+        /// The LoginPath property informs the handler that it should change an outgoing 401 Unauthorized status
         /// code into a 302 redirection onto the given login path. The current url which generated the 401 is added
         /// to the LoginPath as a query string parameter named by the ReturnUrlParameter. Once a request to the
         /// LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect the browser back  
@@ -105,18 +98,18 @@ namespace Microsoft.AspNetCore.Builder
         public PathString LoginPath { get; set; }
 
         /// <summary>
-        /// If the LogoutPath is provided the middleware then a request to that path will redirect based on the ReturnUrlParameter.
+        /// If the LogoutPath is provided the handler then a request to that path will redirect based on the ReturnUrlParameter.
         /// </summary>
         public PathString LogoutPath { get; set; }
 
         /// <summary>
-        /// The AccessDeniedPath property informs the middleware that it should change an outgoing 403 Forbidden status
+        /// The AccessDeniedPath property informs the handler that it should change an outgoing 403 Forbidden status
         /// code into a 302 redirection onto the given path.
         /// </summary>
         public PathString AccessDeniedPath { get; set; }
 
         /// <summary>
-        /// The ReturnUrlParameter determines the name of the query string parameter which is appended by the middleware
+        /// The ReturnUrlParameter determines the name of the query string parameter which is appended by the handler
         /// when a 401 Unauthorized status code is changed to a 302 redirect onto the login path. This is also the query 
         /// string parameter looked for when a request arrives on the login path or logout path, in order to return to the 
         /// original url after the action is performed.
@@ -124,11 +117,15 @@ namespace Microsoft.AspNetCore.Builder
         public string ReturnUrlParameter { get; set; }
 
         /// <summary>
-        /// The Provider may be assigned to an instance of an object created by the application at startup time. The middleware
+        /// The Provider may be assigned to an instance of an object created by the application at startup time. The handler
         /// calls methods on the provider which give the application control at certain points where processing is occurring. 
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
-        public ICookieAuthenticationEvents Events { get; set; }
+        public new CookieAuthenticationEvents Events
+        {
+            get { return (CookieAuthenticationEvents)base.Events; }
+            set { base.Events = value; }
+        }
 
         /// <summary>
         /// The TicketDataFormat is used to protect and unprotect the identity and other properties which are stored in the
@@ -150,13 +147,5 @@ namespace Microsoft.AspNetCore.Builder
         /// to the client. This can be used to mitigate potential problems with very large identities.
         /// </summary>
         public ITicketStore SessionStore { get; set; }
-
-        CookieAuthenticationOptions IOptions<CookieAuthenticationOptions>.Value
-        {
-            get
-            {
-                return this;
-            }
-        }
     }
 }

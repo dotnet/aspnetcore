@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Builder
     public static class CookiePolicyAppBuilderExtensions
     {
         /// <summary>
-        /// Adds the <see cref="CookiePolicyMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables cookie policy capabilities.
+        /// Adds the <see cref="CookiePolicyMiddleware"/> handler to the specified <see cref="IApplicationBuilder"/>, which enables cookie policy capabilities.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseCookiePolicy(this IApplicationBuilder app)
         {
@@ -28,10 +28,10 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Adds the <see cref="CookiePolicyMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables cookie policy capabilities.
+        /// Adds the <see cref="CookiePolicyMiddleware"/> handler to the specified <see cref="IApplicationBuilder"/>, which enables cookie policy capabilities.
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
-        /// <param name="options">A <see cref="CookiePolicyOptions"/> that specifies options for the middleware.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
+        /// <param name="options">A <see cref="CookiePolicyOptions"/> that specifies options for the handler.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseCookiePolicy(this IApplicationBuilder app, CookiePolicyOptions options)
         {

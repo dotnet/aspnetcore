@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,18 +15,14 @@ namespace CookieSessionSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAuthentication();
+            services.AddCookieAuthentication(o => o.SessionStore = new MemoryCacheTicketStore());
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AutomaticAuthenticate = true,
-                SessionStore = new MemoryCacheTicketStore()
-            });
+            app.UseAuthentication();
 
             app.Run(async context =>
             {
@@ -39,7 +36,7 @@ namespace CookieSessionSample
                         claims.Add(new Claim(ClaimTypes.Role, "SomeRandomGroup" + i, ClaimValueTypes.String, "IssuedByBob", "OriginalIssuerJoe"));
                     }
 
-                    await context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                    await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                         new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
 
                     context.Response.ContentType = "text/plain";

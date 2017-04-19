@@ -5,6 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -239,7 +240,12 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddAuthentication();
+                    services.AddCookieAuthentication(o =>
+                    {
+                        o.CookieName = "TestCookie";
+                        o.CookieHttpOnly = false;
+                        o.CookieSecure = CookieSecurePolicy.None;
+                    });
                 })
                 .Configure(app =>
                 {
@@ -248,15 +254,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                         HttpOnly = HttpOnlyPolicy.Always,
                         Secure = CookieSecurePolicy.Always,
                     });
-                    app.UseCookieAuthentication(new CookieAuthenticationOptions()
-                    {
-                        CookieName = "TestCookie",
-                        CookieHttpOnly = false,
-                        CookieSecure = CookieSecurePolicy.None,
-                    });
+                    app.UseAuthentication();
                     app.Run(context =>
                     {
-                        return context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                        return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                             new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("TestUser", "Cookies"))));
                     });
                 });
@@ -279,7 +280,12 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddAuthentication();
+                    services.AddCookieAuthentication(o =>
+                    {
+                        o.CookieName = "TestCookie";
+                        o.CookieHttpOnly = false;
+                        o.CookieSecure = CookieSecurePolicy.None;
+                    });
                 })
                 .Configure(app =>
                 {
@@ -288,15 +294,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                         HttpOnly = HttpOnlyPolicy.Always,
                         Secure = CookieSecurePolicy.Always,
                     });
-                    app.UseCookieAuthentication(new CookieAuthenticationOptions()
-                    {
-                        CookieName = "TestCookie",
-                        CookieHttpOnly = false,
-                        CookieSecure = CookieSecurePolicy.None,
-                    });
+                    app.UseAuthentication();
                     app.Run(context =>
                     {
-                        return context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                        return context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                             new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity(new string('c', 1024 * 5), "Cookies"))));
                     });
                 });

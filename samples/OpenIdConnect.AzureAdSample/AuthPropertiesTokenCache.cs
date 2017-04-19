@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace OpenIdConnect.AzureAdSample
@@ -58,10 +57,9 @@ namespace OpenIdConnect.AzureAdSample
         private void BeforeAccessNotificationWithContext(TokenCacheNotificationArgs args)
         {
             // Retrieve the auth session with the cached tokens
-             var authenticateContext = new AuthenticateContext(_signInScheme);
-            _httpContext.Authentication.AuthenticateAsync(authenticateContext).Wait();
-            _authProperties = new AuthenticationProperties(authenticateContext.Properties);
-            _principal = authenticateContext.Principal;
+            var result = _httpContext.AuthenticateAsync(_signInScheme).Result;
+            _authProperties = result.Ticket.Properties;
+            _principal = result.Ticket.Principal;
 
             BeforeAccessNotificationWithProperties(args);
         }
@@ -87,7 +85,7 @@ namespace OpenIdConnect.AzureAdSample
                 var cachedTokens = Serialize();
                 var cachedTokensText = Convert.ToBase64String(cachedTokens);
                 _authProperties.Items[TokenCacheKey] = cachedTokensText;
-                _httpContext.Authentication.SignInAsync(_signInScheme, _principal, _authProperties).Wait();
+                _httpContext.SignInAsync(_signInScheme, _principal, _authProperties).Wait();
             }
         }
 

@@ -4,14 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -21,6 +23,65 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     internal class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     {
         private OpenIdConnectConfiguration _configuration;
+
+        public JwtBearerHandler(IOptionsSnapshot<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
+            : base(options, logger, encoder, clock)
+        { }
+
+        /// <summary>
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// If it is not provided a default instance is supplied which does nothing when the methods are called.
+        /// </summary>
+        protected new JwtBearerEvents Events
+        {
+            get { return (JwtBearerEvents)base.Events; }
+            set { base.Events = value; }
+        }
+
+        protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new JwtBearerEvents());
+
+        protected override void InitializeOptions()
+        {
+            base.InitializeOptions();
+
+            if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.Audience))
+            {
+                Options.TokenValidationParameters.ValidAudience = Options.Audience;
+            }
+
+            if (Options.ConfigurationManager == null)
+            {
+                if (Options.Configuration != null)
+                {
+                    Options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(Options.Configuration);
+                }
+                else if (!(string.IsNullOrEmpty(Options.MetadataAddress) && string.IsNullOrEmpty(Options.Authority)))
+                {
+                    if (string.IsNullOrEmpty(Options.MetadataAddress) && !string.IsNullOrEmpty(Options.Authority))
+                    {
+                        Options.MetadataAddress = Options.Authority;
+                        if (!Options.MetadataAddress.EndsWith("/", StringComparison.Ordinal))
+                        {
+                            Options.MetadataAddress += "/";
+                        }
+
+                        Options.MetadataAddress += ".well-known/openid-configuration";
+                    }
+
+                    if (Options.RequireHttpsMetadata && !Options.MetadataAddress.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.");
+                    }
+
+                    var httpClient = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
+                    httpClient.Timeout = Options.BackchannelTimeout;
+                    httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+
+                    Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
+                        new HttpDocumentRetriever(httpClient) { RequireHttps = Options.RequireHttpsMetadata });
+                }
+            }
+        }
 
         /// <summary>
         /// Searches the 'Authorization' header for a 'Bearer' token. If the 'Bearer' token is found, it is validated using <see cref="TokenValidationParameters"/> set in the options.
@@ -33,11 +94,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             try
             {
                 // Give application opportunity to find from a different location, adjust, or reject token
-                var messageReceivedContext = new MessageReceivedContext(Context, Options);
+                var messageReceivedContext = new MessageReceivedContext(Context, Scheme, Options);
 
                 // event can set the token
-                await Options.Events.MessageReceived(messageReceivedContext);
-                if (messageReceivedContext.CheckEventResult(out result))
+                await Events.MessageReceived(messageReceivedContext);
+                if (messageReceivedContext.IsProcessingComplete(out result))
                 {
                     return result;
                 }
@@ -52,7 +113,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
                     {
-                        return AuthenticateResult.Skip();
+                        return AuthenticateResult.None();
                     }
 
                     if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -63,7 +124,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     // If no token found, no further work possible
                     if (string.IsNullOrEmpty(token))
                     {
-                        return AuthenticateResult.Skip();
+                        return AuthenticateResult.None();
                     }
                 }
 
@@ -120,15 +181,15 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                         Logger.TokenValidationSucceeded();
 
-                        var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
-                        var tokenValidatedContext = new TokenValidatedContext(Context, Options)
+                        var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Scheme.Name);
+                        var tokenValidatedContext = new TokenValidatedContext(Context, Scheme, Options)
                         {
                             Ticket = ticket,
                             SecurityToken = validatedToken,
                         };
 
-                        await Options.Events.TokenValidated(tokenValidatedContext);
-                        if (tokenValidatedContext.CheckEventResult(out result))
+                        await Events.TokenValidated(tokenValidatedContext);
+                        if (tokenValidatedContext.IsProcessingComplete(out result))
                         {
                             return result;
                         }
@@ -148,13 +209,13 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 if (validationFailures != null)
                 {
-                    var authenticationFailedContext = new AuthenticationFailedContext(Context, Options)
+                    var authenticationFailedContext = new AuthenticationFailedContext(Context, Scheme, Options)
                     {
                         Exception = (validationFailures.Count == 1) ? validationFailures[0] : new AggregateException(validationFailures)
                     };
 
-                    await Options.Events.AuthenticationFailed(authenticationFailedContext);
-                    if (authenticationFailedContext.CheckEventResult(out result))
+                    await Events.AuthenticationFailed(authenticationFailedContext);
+                    if (authenticationFailedContext.IsProcessingComplete(out result))
                     {
                         return result;
                     }
@@ -168,13 +229,13 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             {
                 Logger.ErrorProcessingMessage(ex);
 
-                var authenticationFailedContext = new AuthenticationFailedContext(Context, Options)
+                var authenticationFailedContext = new AuthenticationFailedContext(Context, Scheme, Options)
                 {
                     Exception = ex
                 };
 
-                await Options.Events.AuthenticationFailed(authenticationFailedContext);
-                if (authenticationFailedContext.CheckEventResult(out result))
+                await Events.AuthenticationFailed(authenticationFailedContext);
+                if (authenticationFailedContext.IsProcessingComplete(out result))
                 {
                     return result;
                 }
@@ -183,11 +244,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleUnauthorizedAsync(ChallengeContext context)
         {
             var authResult = await HandleAuthenticateOnceSafeAsync();
-
-            var eventContext = new JwtBearerChallengeContext(Context, Options, new AuthenticationProperties(context.Properties))
+            var eventContext = new JwtBearerChallengeContext(Context, Scheme, Options, context.Properties)
             {
                 AuthenticateFailure = authResult?.Failure
             };
@@ -199,14 +259,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 eventContext.ErrorDescription = CreateErrorDescription(eventContext.AuthenticateFailure);
             }
 
-            await Options.Events.Challenge(eventContext);
-            if (eventContext.HandledResponse)
+            await Events.Challenge(eventContext);
+            if (eventContext.IsProcessingComplete(out var ignored))
             {
-                return true;
-            }
-            if (eventContext.Skipped)
-            {
-                return false;
+                return;
             }
 
             Response.StatusCode = 401;
@@ -259,8 +315,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 Response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
             }
-
-            return false;
         }
 
         private static string CreateErrorDescription(Exception authFailure)

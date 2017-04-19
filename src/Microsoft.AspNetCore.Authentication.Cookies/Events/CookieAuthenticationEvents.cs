@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
     /// application only needs to override a few of the interface methods. This may be used as a base class
     /// or may be instantiated directly.
     /// </summary>
-    public class CookieAuthenticationEvents : ICookieAuthenticationEvents
+    public class CookieAuthenticationEvents
     {
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called.

@@ -3,32 +3,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
     /// <summary>
-    /// Options class provides information needed to control Bearer Authentication middleware behavior
+    /// Options class provides information needed to control Bearer Authentication handler behavior
     /// </summary>
-    public class JwtBearerOptions : AuthenticationOptions
+    public class JwtBearerOptions : AuthenticationSchemeOptions
     {
-        /// <summary>
-        /// Creates an instance of bearer authentication options with default values.
-        /// </summary>
-        public JwtBearerOptions() : base()
-        {
-            AuthenticationScheme = JwtBearerDefaults.AuthenticationScheme;
-            AutomaticAuthenticate = true;
-            AutomaticChallenge = true;
-        }
-
         /// <summary>
         /// Gets or sets if HTTPS is required for the metadata address or authority.
         /// The default is true. This should be disabled only in development environments.
@@ -59,11 +46,15 @@ namespace Microsoft.AspNetCore.Builder
         public string Challenge { get; set; } = JwtBearerDefaults.AuthenticationScheme;
 
         /// <summary>
-        /// The object provided by the application to process events raised by the bearer authentication middleware.
+        /// The object provided by the application to process events raised by the bearer authentication handler.
         /// The application may implement the interface fully, or it may create an instance of JwtBearerAuthenticationEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
-        public IJwtBearerEvents Events { get; set; } = new JwtBearerEvents();
+        public new JwtBearerEvents Events
+        {
+            get { return (JwtBearerEvents)base.Events; }
+            set { base.Events = value; }
+        }
 
         /// <summary>
         /// The HttpMessageHandler used to retrieve metadata.
@@ -115,7 +106,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Defines whether the token validation errors should be returned to the caller.
-        /// Enabled by default, this option can be disabled to prevent the JWT middleware
+        /// Enabled by default, this option can be disabled to prevent the JWT handler
         /// from returning an error and an error_description in the WWW-Authenticate header.
         /// </summary>
         public bool IncludeErrorDetails { get; set; } = true;

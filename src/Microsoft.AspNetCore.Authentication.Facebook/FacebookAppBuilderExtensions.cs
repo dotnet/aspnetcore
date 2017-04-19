@@ -1,9 +1,8 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNetCore.Authentication.Facebook;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -13,38 +12,26 @@ namespace Microsoft.AspNetCore.Builder
     public static class FacebookAppBuilderExtensions
     {
         /// <summary>
-        /// Adds the <see cref="FacebookMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Facebook authentication capabilities.
+        /// Obsolete, see https://go.microsoft.com/fwlink/?linkid=845470
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
         public static IApplicationBuilder UseFacebookAuthentication(this IApplicationBuilder app)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            return app.UseMiddleware<FacebookMiddleware>();
+            throw new NotSupportedException("This method is no longer supported, see https://go.microsoft.com/fwlink/?linkid=845470");
         }
 
         /// <summary>
-        /// Adds the <see cref="FacebookMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Facebook authentication capabilities.
+        /// Obsolete, see https://go.microsoft.com/fwlink/?linkid=845470
         /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
-        /// <param name="options">A <see cref="FacebookOptions"/> that specifies options for the middleware.</param>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
+        /// <param name="options">A <see cref="FacebookOptions"/> that specifies options for the handler.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
         public static IApplicationBuilder UseFacebookAuthentication(this IApplicationBuilder app, FacebookOptions options)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return app.UseMiddleware<FacebookMiddleware>(Options.Create(options));
+            throw new NotSupportedException("This method is no longer supported, see https://go.microsoft.com/fwlink/?linkid=845470");
         }
     }
 }

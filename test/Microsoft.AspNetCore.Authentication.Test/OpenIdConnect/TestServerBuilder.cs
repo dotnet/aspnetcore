@@ -9,13 +9,12 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 {
     internal class TestServerBuilder
     {
@@ -38,12 +37,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         public static OpenIdConnectOptions CreateOpenIdConnectOptions(Action<OpenIdConnectOptions> update)
         {
             var options = CreateOpenIdConnectOptions();
-
-            if (update != null)
-            {
-                update(options);
-            }
-
+            update?.Invoke(options);
             return options;
         }
 
@@ -58,26 +52,20 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         public static IConfigurationManager<OpenIdConnectConfiguration> CreateDefaultOpenIdConnectConfigurationManager() =>
             new StaticConfigurationManager<OpenIdConnectConfiguration>(CreateDefaultOpenIdConnectConfiguration());
 
-        public static TestServer CreateServer(OpenIdConnectOptions options)
+        public static TestServer CreateServer(Action<OpenIdConnectOptions> options)
         {
             return CreateServer(options, handler: null, properties: null);
         }
 
         public static TestServer CreateServer(
-            OpenIdConnectOptions options,
+            Action<OpenIdConnectOptions> options,
             Func<HttpContext, Task> handler,
             AuthenticationProperties properties)
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(new CookieAuthenticationOptions
-                    {
-                        AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme
-                    });
-
-                    app.UseOpenIdConnectAuthentication(options);
-
+                    app.UseAuthentication();
                     app.Use(async (context, next) =>
                     {
                         var req = context.Request;
@@ -85,11 +73,11 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 
                         if (req.Path == new PathString(Challenge))
                         {
-                            await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                            await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
                         }
                         else if (req.Path == new PathString(ChallengeWithProperties))
                         {
-                            await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, properties);
+                            await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, properties);
                         }
                         else if (req.Path == new PathString(ChallengeWithOutContext))
                         {
@@ -97,16 +85,15 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                         }
                         else if (req.Path == new PathString(Signin))
                         {
-                            // REVIEW: this used to just be res.SignIn()
-                            await context.Authentication.SignInAsync(OpenIdConnectDefaults.AuthenticationScheme, new ClaimsPrincipal());
+                            await context.SignInAsync(OpenIdConnectDefaults.AuthenticationScheme, new ClaimsPrincipal());
                         }
                         else if (req.Path == new PathString(Signout))
                         {
-                            await context.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                            await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
                         }
                         else if (req.Path == new PathString("/signout_with_specific_redirect_uri"))
                         {
-                            await context.Authentication.SignOutAsync(
+                            await context.SignOutAsync(
                                 OpenIdConnectDefaults.AuthenticationScheme,
                                 new AuthenticationProperties() { RedirectUri = "http://www.example.com/specific_redirect_uri" });
                         }
@@ -122,8 +109,13 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddAuthentication();
-                    services.Configure<SharedAuthenticationOptions>(authOptions => authOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
+                    services.AddAuthentication(o =>
+                    {
+                        o.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        o.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    });
+                    services.AddCookieAuthentication();
+                    services.AddOpenIdConnectAuthentication(options);
                 });
 
             return new TestServer(builder);

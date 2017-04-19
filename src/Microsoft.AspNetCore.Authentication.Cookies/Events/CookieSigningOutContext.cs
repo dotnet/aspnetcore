@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
@@ -16,18 +14,19 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// 
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="scheme"></param>
         /// <param name="options"></param>
         /// <param name="properties"></param>
         /// <param name="cookieOptions"></param>
         public CookieSigningOutContext(
-            HttpContext context, 
+            HttpContext context,
+            AuthenticationScheme scheme,
             CookieAuthenticationOptions options, 
             AuthenticationProperties properties, 
             CookieOptions cookieOptions)
-            : base(context, options)
+            : base(context, scheme, options, properties)
         {
             CookieOptions = cookieOptions;
-            Properties = properties;
         }
 
         /// <summary>
@@ -35,7 +34,5 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// May be replace or altered during the SigningOut call.
         /// </summary>
         public CookieOptions CookieOptions { get; set; }
-
-        public AuthenticationProperties Properties { get; set; }
     }
 }

@@ -3,13 +3,13 @@
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Authentication.Google
 {
     /// <summary>
-    /// Configuration options for <see cref="GoogleMiddleware"/>.
+    /// Configuration options for <see cref="GoogleHandler"/>.
     /// </summary>
     public class GoogleOptions : OAuthOptions
     {
@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public GoogleOptions()
         {
-            AuthenticationScheme = GoogleDefaults.AuthenticationScheme;
-            DisplayName = AuthenticationScheme;
             CallbackPath = new PathString("/signin-google");
             AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint;
             TokenEndpoint = GoogleDefaults.TokenEndpoint;

@@ -3,12 +3,11 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
-    /// Context passed when a Challenge causes a redirect to authorize endpoint in the middleware.
+    /// Context passed when a Challenge causes a redirect to authorize endpoint in the handler.
     /// </summary>
     public class OAuthRedirectToAuthorizationContext : BaseContext
     {

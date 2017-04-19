@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
     public class AuthenticationFailedContext : BaseOpenIdConnectContext
     {
-        public AuthenticationFailedContext(HttpContext context, OpenIdConnectOptions options)
-            : base(context, options)
+        public AuthenticationFailedContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options)
+            : base(context, scheme, options)
         {
         }
 

@@ -1,6 +1,6 @@
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 {
     internal class MockOpenIdConnectMessage : OpenIdConnectMessage
     {

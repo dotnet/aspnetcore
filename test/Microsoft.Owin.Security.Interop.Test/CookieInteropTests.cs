@@ -13,6 +13,8 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -33,8 +35,8 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
-                CookieAuthenticationDefaults.AuthenticationType, "v2");
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler", // full name of the ASP.NET Core type
+                Cookies.CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var interopServer = TestServer.Create(app =>
             {
@@ -59,17 +61,14 @@ namespace Microsoft.Owin.Security.Interop
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(new AspNetCore.Builder.CookieAuthenticationOptions
-                    {
-                        DataProtectionProvider = dataProtection
-                    });
+                    app.UseAuthentication();
                     app.Run(async context => 
                     {
-                        var result = await context.Authentication.AuthenticateAsync("Cookies");
-                        await context.Response.WriteAsync(result.Identity.Name);
+                        var result = await context.AuthenticateAsync("Cookies");
+                        await context.Response.WriteAsync(result.Ticket.Principal.Identity.Name);
                     });
                 })
-                .ConfigureServices(services => services.AddAuthentication());
+                .ConfigureServices(services => services.AddCookieAuthentication(o => o.DataProtectionProvider = dataProtection));
             var newServer = new AspNetCore.TestHost.TestServer(builder);
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/login");
@@ -90,8 +89,8 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
-                CookieAuthenticationDefaults.AuthenticationType, "v2");
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler", // full name of the ASP.NET Core type
+                Cookies.CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var interopServer = TestServer.Create(app =>
             {
@@ -117,17 +116,14 @@ namespace Microsoft.Owin.Security.Interop
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(new AspNetCore.Builder.CookieAuthenticationOptions
-                    {
-                        DataProtectionProvider = dataProtection
-                    });
+                    app.UseAuthentication();
                     app.Run(async context =>
                     {
-                        var result = await context.Authentication.AuthenticateAsync("Cookies");
-                        await context.Response.WriteAsync(result.Identity.Name);
+                        var result = await context.AuthenticateAsync("Cookies");
+                        await context.Response.WriteAsync(result.Ticket.Principal.Identity.Name);
                     });
                 })
-                .ConfigureServices(services => services.AddAuthentication());
+                .ConfigureServices(services => services.AddCookieAuthentication(o => o.DataProtectionProvider = dataProtection));
             var newServer = new AspNetCore.TestHost.TestServer(builder);
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/login");
@@ -150,19 +146,16 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
-                CookieAuthenticationDefaults.AuthenticationType, "v2");
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler", // full name of the ASP.NET Core type
+                Cookies.CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(new AspNetCore.Builder.CookieAuthenticationOptions
-                    {
-                        DataProtectionProvider = dataProtection
-                    });
-                    app.Run(context => context.Authentication.SignInAsync("Cookies", user));
+                    app.UseAuthentication();
+                    app.Run(context => context.SignInAsync("Cookies", user));
                 })
-                .ConfigureServices(services => services.AddAuthentication());
+                .ConfigureServices(services => services.AddCookieAuthentication(o => o.DataProtectionProvider = dataProtection));
             var newServer = new AspNetCore.TestHost.TestServer(builder);
 
             var cookies = await SendAndGetCookies(newServer, "http://example.com/login");
@@ -200,19 +193,16 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = DataProtectionProvider.Create(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET Core type
-                CookieAuthenticationDefaults.AuthenticationType, "v2");
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler", // full name of the ASP.NET Core type
+                Cookies.CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(new AspNetCore.Builder.CookieAuthenticationOptions
-                    {
-                        DataProtectionProvider = dataProtection
-                    });
-                    app.Run(context => context.Authentication.SignInAsync("Cookies", user));
+                    app.UseAuthentication();
+                    app.Run(context => context.SignInAsync("Cookies", user));
                 })
-                .ConfigureServices(services => services.AddAuthentication());
+                .ConfigureServices(services => services.AddCookieAuthentication(o => o.DataProtectionProvider = dataProtection));
             var newServer = new AspNetCore.TestHost.TestServer(builder);
 
             var cookies = await SendAndGetCookies(newServer, "http://example.com/login");

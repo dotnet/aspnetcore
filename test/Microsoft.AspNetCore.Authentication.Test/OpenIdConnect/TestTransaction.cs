@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 {
     internal class TestTransaction
     {

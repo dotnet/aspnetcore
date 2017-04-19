@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -42,39 +43,12 @@ namespace JwtBearerSample
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAuthentication();
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app)
-        {
-            // Simple error page to avoid a repo dependency.
-            app.Use(async (context, next) =>
-            {
-                try
-                {
-                    await next();
-                }
-                catch (Exception ex)
-                {
-                    if (context.Response.HasStarted)
-                    {
-                        throw;
-                    }
-                    context.Response.StatusCode = 500;
-                    await context.Response.WriteAsync(ex.ToString());
-                }
-            });
-
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
-
-            app.UseJwtBearerAuthentication(new JwtBearerOptions
+            services.AddJwtBearerAuthentication(o =>
             {
                 // You also need to update /wwwroot/app/scripts/app.js
-                Authority = Configuration["jwt:authority"],
-                Audience = Configuration["jwt:audience"],
-                Events = new JwtBearerEvents()
+                o.Authority = Configuration["jwt:authority"];
+                o.Audience = Configuration["jwt:audience"];
+                o.Events = new JwtBearerEvents()
                 {
                     OnAuthenticationFailed = c =>
                     {
@@ -89,24 +63,34 @@ namespace JwtBearerSample
                         }
                         return c.Response.WriteAsync("An error occurred processing your authentication.");
                     }
-                }
+                };
             });
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseDeveloperExceptionPage();
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
+            app.UseAuthentication();
 
             // [Authorize] would usually handle this
             app.Use(async (context, next) =>
             {
-                // Use this if options.AutomaticAuthenticate = false
+                // Use this if there are multiple authentication schemes
                 // var user = await context.Authentication.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
 
-                var user = context.User; // We can do this because of  options.AutomaticAuthenticate = true;
+                var user = context.User; // We can do this because of there's only a single authentication scheme
                 if (user?.Identity?.IsAuthenticated ?? false)
                 {
                     await next();
                 }
                 else
                 {
-                    // We can do this because of options.AutomaticChallenge = true;
-                    await context.Authentication.ChallengeAsync();
+                    await context.ChallengeAsync();
                 }
             });
 
@@ -136,4 +120,3 @@ namespace JwtBearerSample
         }
     }
 }
-

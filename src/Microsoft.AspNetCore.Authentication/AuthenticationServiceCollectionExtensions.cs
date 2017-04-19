@@ -2,7 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -11,11 +15,6 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class AuthenticationServiceCollectionExtensions
     {
-        /// <summary>
-        /// Adds authentication services to the specified <see cref="IServiceCollection" />. 
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection AddAuthentication(this IServiceCollection services)
         {
             if (services == null)
@@ -23,19 +22,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddWebEncoders();
+            services.AddAuthenticationCore();
             services.AddDataProtection();
+            services.AddWebEncoders();
+            services.TryAddSingleton<ISystemClock, SystemClock>();
             return services;
         }
 
-        /// <summary>
-        /// Adds authentication services to the specified <see cref="IServiceCollection" />. 
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <param name="configureOptions">An action delegate to configure the provided <see cref="SharedAuthenticationOptions"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        public static IServiceCollection AddAuthentication(this IServiceCollection services, Action<SharedAuthenticationOptions> configureOptions)
-        {
+        public static IServiceCollection AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
@@ -46,8 +40,33 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
+            services.AddAuthentication();
             services.Configure(configureOptions);
-            return services.AddAuthentication();
+            return services;
         }
+
+        public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<AuthenticationSchemeBuilder> configureScheme, Action<TOptions> configureOptions)
+            where TOptions : AuthenticationSchemeOptions, new()
+            where THandler : AuthenticationHandler<TOptions>
+        {
+            services.AddAuthentication(o =>
+            {
+                o.AddScheme(authenticationScheme, scheme => {
+                    scheme.HandlerType = typeof(THandler);
+                    configureScheme?.Invoke(scheme);
+                });
+            });
+            if (configureOptions != null)
+            {
+                services.Configure(authenticationScheme, configureOptions);
+            }
+            services.AddTransient<THandler>();
+            return services;
+        }
+
+        public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)
+            where TOptions : AuthenticationSchemeOptions, new()
+            where THandler : AuthenticationHandler<TOptions>
+            => services.AddScheme<TOptions, THandler>(authenticationScheme, configureScheme: null, configureOptions: configureOptions);
     }
 }

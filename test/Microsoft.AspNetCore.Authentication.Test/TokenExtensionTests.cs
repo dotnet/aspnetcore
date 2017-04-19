@@ -1,14 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -126,62 +120,62 @@ namespace Microsoft.AspNetCore.Authentication
 
         }
 
-        public class TestAuthHandler : IAuthenticationHandler
-        {
-            private readonly AuthenticationProperties _props;
-            public TestAuthHandler(AuthenticationProperties props)
-            {
-                _props = props;
-            }
+        //public class TestAuthHandler : IAuthenticationHandler
+        //{
+        //    private readonly AuthenticationProperties _props;
+        //    public TestAuthHandler(AuthenticationProperties props)
+        //    {
+        //        _props = props;
+        //    }
 
-            public Task AuthenticateAsync(AuthenticateContext context)
-            {
-                context.Authenticated(new ClaimsPrincipal(), _props.Items, new Dictionary<string, object>());
-                return Task.FromResult(0);
-            }
+        //    public Task AuthenticateAsync(AuthenticateContext context)
+        //    {
+        //        context.Authenticated(new ClaimsPrincipal(), _props.Items, new Dictionary<string, object>());
+        //        return Task.FromResult(0);
+        //    }
 
-            public Task ChallengeAsync(ChallengeContext context)
-            {
-                throw new NotImplementedException();
-            }
+        //    public Task ChallengeAsync(ChallengeContext context)
+        //    {
+        //        throw new NotImplementedException();
+        //    }
 
-            public void GetDescriptions(DescribeSchemesContext context)
-            {
-                throw new NotImplementedException();
-            }
+        //    public void GetDescriptions(DescribeSchemesContext context)
+        //    {
+        //        throw new NotImplementedException();
+        //    }
 
-            public Task SignInAsync(SignInContext context)
-            {
-                throw new NotImplementedException();
-            }
+        //    public Task SignInAsync(SignInContext context)
+        //    {
+        //        throw new NotImplementedException();
+        //    }
 
-            public Task SignOutAsync(SignOutContext context)
-            {
-                throw new NotImplementedException();
-            }
-        }
+        //    public Task SignOutAsync(SignOutContext context)
+        //    {
+        //        throw new NotImplementedException();
+        //    }
+        //}
 
-        [Fact]
-        public async Task CanGetTokenFromContext()
-        {
-            var props = new AuthenticationProperties();
-            var tokens = new List<AuthenticationToken>();
-            var tok1 = new AuthenticationToken { Name = "One", Value = "1" };
-            var tok2 = new AuthenticationToken { Name = "Two", Value = "2" };
-            var tok3 = new AuthenticationToken { Name = "Three", Value = "3" };
-            tokens.Add(tok1);
-            tokens.Add(tok2);
-            tokens.Add(tok3);
-            props.StoreTokens(tokens);
+        //[Fact]
+        //public async Task CanGetTokenFromContext()
+        //{
+        //    var props = new AuthenticationProperties();
+        //    var tokens = new List<AuthenticationToken>();
+        //    var tok1 = new AuthenticationToken { Name = "One", Value = "1" };
+        //    var tok2 = new AuthenticationToken { Name = "Two", Value = "2" };
+        //    var tok3 = new AuthenticationToken { Name = "Three", Value = "3" };
+        //    tokens.Add(tok1);
+        //    tokens.Add(tok2);
+        //    tokens.Add(tok3);
+        //    props.StoreTokens(tokens);
 
-            var context = new DefaultHttpContext();
-            var handler = new TestAuthHandler(props);
-            context.Features.Set<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = handler });
+        //    var context = new DefaultHttpContext();
+        //    var handler = new TestAuthHandler(props);
+        //    context.Features.Set<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = handler });
 
-            Assert.Equal("1", await context.Authentication.GetTokenAsync("One"));
-            Assert.Equal("2", await context.Authentication.GetTokenAsync("Two"));
-            Assert.Equal("3", await context.Authentication.GetTokenAsync("Three"));
-        }
+        //    Assert.Equal("1", await context.GetTokenAsync("One"));
+        //    Assert.Equal("2", await context.GetTokenAsync("Two"));
+        //    Assert.Equal("3", await context.GetTokenAsync("Three"));
+        //}
 
     }
 }

@@ -2,118 +2,137 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 {
     public class OpenIdConnectConfigurationTests
     {
         [Fact]
-        public void MetadataAddressIsGeneratedFromAuthorityWhenMissing()
+        public async Task MetadataAddressIsGeneratedFromAuthorityWhenMissing()
         {
-            var options = new OpenIdConnectOptions
-            {
-                Authority = TestServerBuilder.DefaultAuthority,
-                ClientId = Guid.NewGuid().ToString(),
-                SignInScheme = Guid.NewGuid().ToString()
-            };
-
-            BuildTestServer(options);
-
-            Assert.Equal($"{options.Authority}/.well-known/openid-configuration", options.MetadataAddress);
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddCookieAuthentication();
+                    services.AddOpenIdConnectAuthentication(o =>
+                    {
+                        o.Authority = TestServerBuilder.DefaultAuthority;
+                        o.ClientId = Guid.NewGuid().ToString();
+                        o.SignInScheme = Guid.NewGuid().ToString();
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseAuthentication();
+                    app.Run(async context =>
+                    {
+                        var resolver = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+                        var handler = await resolver.GetHandlerAsync(context, OpenIdConnectDefaults.AuthenticationScheme) as OpenIdConnectHandler;
+                        Assert.Equal($"{TestServerBuilder.DefaultAuthority}/.well-known/openid-configuration", handler.Options.MetadataAddress);
+                    });
+                });
+            var server = new TestServer(builder);
+            var transaction = await server.SendAsync(@"https://example.com");
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
-        public void ThrowsWhenSignInSchemeIsMissing()
+        [Fact]
+        public Task ThrowsWhenSignInSchemeIsMissing()
         {
-            TestConfigurationException<ArgumentException>(
-                new OpenIdConnectOptions
+            return TestConfigurationException<ArgumentException>(
+                o =>
                 {
-                    Authority = TestServerBuilder.DefaultAuthority,
-                    ClientId = Guid.NewGuid().ToString()
+                    o.ClientId = "Test Id";
+                    o.Authority = TestServerBuilder.DefaultAuthority;
+                    o.CallbackPath = "/";
                 },
                 ex => Assert.Equal("SignInScheme", ex.ParamName));
         }
 
         [Fact]
-        public void ThrowsWhenClientIdIsMissing()
+        public Task ThrowsWhenClientIdIsMissing()
         {
-            TestConfigurationException<ArgumentException>(
-                new OpenIdConnectOptions
+            return TestConfigurationException<ArgumentException>(
+                o =>
                 {
-                    SignInScheme = "TestScheme",
-                    Authority = TestServerBuilder.DefaultAuthority,
+                    o.SignInScheme = "TestScheme";
+                    o.Authority = TestServerBuilder.DefaultAuthority;
                 },
                 ex => Assert.Equal("ClientId", ex.ParamName));
         }
 
         [Fact]
-        public void ThrowsWhenAuthorityIsMissing()
+        public Task ThrowsWhenAuthorityIsMissing()
         {
-            TestConfigurationException<InvalidOperationException>(
-                new OpenIdConnectOptions
+            return TestConfigurationException<InvalidOperationException>(
+                o =>
                 {
-                    SignInScheme = "TestScheme",
-                    ClientId = "Test Id",
+                    o.SignInScheme = "TestScheme";
+                    o.ClientId = "Test Id";
+                    o.CallbackPath = "/";
                 },
                 ex => Assert.Equal("Provide Authority, MetadataAddress, Configuration, or ConfigurationManager to OpenIdConnectOptions", ex.Message)
             );
         }
 
         [Fact]
-        public void ThrowsWhenAuthorityIsNotHttps()
+        public Task ThrowsWhenAuthorityIsNotHttps()
         {
-            TestConfigurationException<InvalidOperationException>(
-                new OpenIdConnectOptions
+            return TestConfigurationException<InvalidOperationException>(
+                o =>
                 {
-                    SignInScheme = "TestScheme",
-                    ClientId = "Test Id",
-                    Authority = "http://example.com"
+                    o.SignInScheme = "TestScheme";
+                    o.ClientId = "Test Id";
+                    o.MetadataAddress = "http://example.com";
+                    o.CallbackPath = "/";
                 },
                 ex => Assert.Equal("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.", ex.Message)
             );
         }
 
         [Fact]
-        public void ThrowsWhenMetadataAddressIsNotHttps()
+        public Task ThrowsWhenMetadataAddressIsNotHttps()
         {
-            TestConfigurationException<InvalidOperationException>(
-                new OpenIdConnectOptions
+            return TestConfigurationException<InvalidOperationException>(
+                o =>
                 {
-                    SignInScheme = "TestScheme",
-                    ClientId = "Test Id",
-                    MetadataAddress = "http://example.com"
+                    o.SignInScheme = "TestScheme";
+                    o.ClientId = "Test Id";
+                    o.MetadataAddress = "http://example.com";
+                    o.CallbackPath = "/";
                 },
                 ex => Assert.Equal("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.", ex.Message)
             );
         }
 
-        private TestServer BuildTestServer(OpenIdConnectOptions options)
+        private TestServer BuildTestServer(Action<OpenIdConnectOptions> options)
         {
             var builder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddAuthentication())
-                .Configure(app => app.UseOpenIdConnectAuthentication(options));
+                .ConfigureServices(services =>
+                {
+                    services.AddCookieAuthentication();
+                    services.AddOpenIdConnectAuthentication(options);
+                })
+                .Configure(app => app.UseAuthentication());
 
             return new TestServer(builder);
         }
 
-        private void TestConfigurationException<T>(
-            OpenIdConnectOptions options,
+        private async Task TestConfigurationException<T>(
+            Action<OpenIdConnectOptions> options,
             Action<T> verifyException)
             where T : Exception
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddAuthentication())
-                .Configure(app => app.UseOpenIdConnectAuthentication(options));
-
-            var exception = Assert.Throws<T>(() =>
-            {
-                new TestServer(builder);
-            });
-
+            var exception = await Assert.ThrowsAsync<T>(() => BuildTestServer(options).SendAsync(@"https://example.com"));
             verifyException(exception);
         }
     }

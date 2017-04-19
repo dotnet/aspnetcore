@@ -9,19 +9,19 @@ using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 {
     /// <summary>
     /// This helper class is used to check that query string parameters are as expected.
     /// </summary>
     internal class TestSettings
     {
-        private readonly OpenIdConnectOptions _options;
+        private readonly Action<OpenIdConnectOptions> _configureOptions;
 
         public TestSettings() : this(configure: null)
         {
@@ -29,21 +29,18 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 
         public TestSettings(Action<OpenIdConnectOptions> configure)
         {
-            _options = TestServerBuilder.CreateOpenIdConnectOptions(configure);
+            _configureOptions = o =>
+            {
+                configure?.Invoke(o);
+                _options = o;
+            };
         }
-
-        public TestSettings(OpenIdConnectOptions options)
-        {
-            _options = options;
-        }
-
-        public OpenIdConnectOptions Options => _options;
 
         public UrlEncoder Encoder => UrlEncoder.Default;
 
         public string ExpectedState { get; set; }
 
-        public TestServer CreateTestServer() => TestServerBuilder.CreateServer(Options);
+        public TestServer CreateTestServer(AuthenticationProperties properties = null) => TestServerBuilder.CreateServer(_configureOptions, handler: null, properties: properties);
 
         public IDictionary<string, string> ValidateChallengeFormPost(string responseBody, params string[] parametersToValidate)
         {
@@ -165,6 +162,8 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             }
         }
 
+        OpenIdConnectOptions _options = null;
+
         private void ValidateExpectedAuthority(string absoluteUri, ICollection<string> errors, OpenIdConnectRequestType requestType)
         {
             string expectedAuthority;
@@ -212,8 +211,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             ValidateQueryParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET", actualQuery, errors, htmlEncoded);
 
         private void ValidateVersionTelemetry(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.VersionTelemetry,
-                typeof(OpenIdConnectMessage).GetTypeInfo().Assembly.GetName().Version.ToString(), actualQuery, errors, htmlEncoded);
+            ValidateQueryParameter(OpenIdConnectParameterNames.VersionTelemetry, typeof(OpenIdConnectMessage).GetTypeInfo().Assembly.GetName().Version.ToString(), actualQuery, errors, htmlEncoded);
 
         private void ValidateQueryParameter(
             string parameterName,

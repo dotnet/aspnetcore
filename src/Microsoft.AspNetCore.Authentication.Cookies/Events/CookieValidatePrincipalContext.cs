@@ -3,14 +3,12 @@
 
 using System;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     /// <summary>
-    /// Context object passed to the ICookieAuthenticationProvider method ValidatePrincipal.
+    /// Context object passed to the CookieAuthenticationEvents ValidatePrincipal method.
     /// </summary>
     public class CookieValidatePrincipalContext : BaseCookieContext
     {
@@ -18,10 +16,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Creates a new instance of the context object.
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="scheme"></param>
         /// <param name="ticket">Contains the initial values for identity and extra data</param>
         /// <param name="options"></param>
-        public CookieValidatePrincipalContext(HttpContext context, AuthenticationTicket ticket, CookieAuthenticationOptions options)
-            : base(context, options)
+        public CookieValidatePrincipalContext(HttpContext context, AuthenticationScheme scheme, AuthenticationTicket ticket, CookieAuthenticationOptions options)
+            : base(context, scheme, options, ticket?.Properties)
         {
             if (context == null)
             {
@@ -39,7 +38,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
 
             Principal = ticket.Principal;
-            Properties = ticket.Properties;
         }
 
         /// <summary>
@@ -47,11 +45,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// details of the authenticated user.
         /// </summary>
         public ClaimsPrincipal Principal { get; private set; }
-
-        /// <summary>
-        /// Contains the extra meta-data arriving with the request ticket. May be altered.
-        /// </summary>
-        public AuthenticationProperties Properties { get; private set; }
 
         /// <summary>
         /// If true, the cookie will be renewed

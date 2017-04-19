@@ -3,16 +3,18 @@
 
 using System;
 using System.Security.Cryptography;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
-    public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions> where TOptions : RemoteAuthenticationOptions
+    public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler 
+        where TOptions : RemoteAuthenticationOptions, new()
     {
         private const string CorrelationPrefix = ".AspNetCore.Correlation.";
         private const string CorrelationProperty = ".xsrf";
@@ -21,21 +23,64 @@ namespace Microsoft.AspNetCore.Authentication
 
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
-        public override async Task<bool> HandleRequestAsync()
-        {
-            if (Options.CallbackPath == Request.Path)
-            {
-                return await HandleRemoteCallbackAsync();
-            }
+        protected string SignInScheme => Options.SignInScheme;
 
-            return false;
+        protected IDataProtectionProvider DataProtection { get; set; }
+
+        private readonly AuthenticationOptions _authOptions;
+
+        /// <summary>
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// If it is not provided a default instance is supplied which does nothing when the methods are called.
+        /// </summary>
+        protected new RemoteAuthenticationEvents Events
+        {
+            get { return (RemoteAuthenticationEvents)base.Events; }
+            set { base.Events = value; }
         }
 
-        protected virtual async Task<bool> HandleRemoteCallbackAsync()
+        protected RemoteAuthenticationHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<TOptions> options, IDataProtectionProvider dataProtection, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
         {
+            _authOptions = sharedOptions.Value;
+            DataProtection = dataProtection;
+        }
+
+        protected override Task InitializeHandlerAsync()
+        {
+            DataProtection = Options.DataProtectionProvider ?? DataProtection;
+            return TaskCache.CompletedTask;
+        }
+
+        protected override Task<object> CreateEventsAsync()
+        {
+            return Task.FromResult<object>(new RemoteAuthenticationEvents());
+        }
+
+        protected override void InitializeOptions()
+        {
+            base.InitializeOptions();
+
+            if (Options.SignInScheme == null)
+            {
+                Options.SignInScheme = _authOptions.DefaultSignInScheme;
+            }
+        }
+
+        public virtual Task<bool> ShouldHandleRequestAsync()
+        {
+            return Task.FromResult(Options.CallbackPath == Request.Path);
+        }
+
+        public virtual async Task<bool> HandleRequestAsync()
+        {
+            if (!await ShouldHandleRequestAsync())
+            {
+                return false;
+            }
+
             AuthenticationTicket ticket = null;
             Exception exception = null;
-
             try
             {
                 var authResult = await HandleRemoteAuthenticateAsync();
@@ -47,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     return true;
                 }
-                else if (authResult.Skipped)
+                else if (authResult.Nothing)
                 {
                     return false;
                 }
@@ -68,14 +113,13 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 Logger.RemoteAuthenticationError(exception.Message);
                 var errorContext = new FailureContext(Context, exception);
-                await Options.Events.RemoteFailure(errorContext);
+                await Events.RemoteFailure(errorContext);
 
                 if (errorContext.HandledResponse)
                 {
                     return true;
                 }
-
-                if (errorContext.Skipped)
+                else if (errorContext.Skipped)
                 {
                     return false;
                 }
@@ -84,7 +128,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             // We have a ticket if we get here
-            var context = new TicketReceivedContext(Context, Options, ticket)
+            var ticketContext = new TicketReceivedContext(Context, Options, ticket)
             {
                 ReturnUri = ticket.Properties.RedirectUri,
             };
@@ -92,30 +136,30 @@ namespace Microsoft.AspNetCore.Authentication
             ticket.Properties.RedirectUri = null;
 
             // Mark which provider produced this identity so we can cross-check later in HandleAuthenticateAsync
-            context.Properties.Items[AuthSchemeKey] = Options.AuthenticationScheme;
+            ticketContext.Properties.Items[AuthSchemeKey] = Scheme.Name;
 
-            await Options.Events.TicketReceived(context);
+            await Events.TicketReceived(ticketContext);
 
-            if (context.HandledResponse)
+            if (ticketContext.HandledResponse)
             {
                 Logger.SigninHandled();
                 return true;
             }
-            else if (context.Skipped)
+            else if (ticketContext.Skipped)
             {
                 Logger.SigninSkipped();
                 return false;
             }
 
-            await Context.Authentication.SignInAsync(Options.SignInScheme, context.Principal, context.Properties);
+            await Context.SignInAsync(SignInScheme, ticketContext.Principal, ticketContext.Properties);
 
             // Default redirect path is the base path
-            if (string.IsNullOrEmpty(context.ReturnUri))
+            if (string.IsNullOrEmpty(ticketContext.ReturnUri))
             {
-                context.ReturnUri = "/";
+                ticketContext.ReturnUri = "/";
             }
 
-            Response.Redirect(context.ReturnUri);
+            Response.Redirect(ticketContext.ReturnUri);
             return true;
         }
 
@@ -128,34 +172,29 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            // Most RemoteAuthenticationHandlers will have a PriorHandler, but it might not be set up during unit tests.
-            if (PriorHandler != null)
+            var result = await Context.AuthenticateAsync(SignInScheme);
+            if (result != null)
             {
-                var authenticateContext = new AuthenticateContext(Options.SignInScheme);
-                await PriorHandler.AuthenticateAsync(authenticateContext);
-                if (authenticateContext.Accepted)
+                if (result.Failure != null)
                 {
-                    if (authenticateContext.Error != null)
-                    {
-                        return AuthenticateResult.Fail(authenticateContext.Error);
-                    }
-
-                    // The SignInScheme may be shared with multiple providers, make sure this middleware issued the identity.
-                    string authenticatedScheme;
-                    if (authenticateContext.Principal != null && authenticateContext.Properties != null
-                        && authenticateContext.Properties.TryGetValue(AuthSchemeKey, out authenticatedScheme)
-                        && string.Equals(Options.AuthenticationScheme, authenticatedScheme, StringComparison.Ordinal))
-                    {
-                        return AuthenticateResult.Success(new AuthenticationTicket(authenticateContext.Principal,
-                            new AuthenticationProperties(authenticateContext.Properties), Options.AuthenticationScheme));
-                    }
-
-                    return AuthenticateResult.Fail("Not authenticated");
+                    return result;
                 }
 
+                // The SignInScheme may be shared with multiple providers, make sure this provider issued the identity.
+                string authenticatedScheme;
+                var ticket = result.Ticket;
+                if (ticket != null && ticket.Principal != null && ticket.Properties != null
+                    && ticket.Properties.Items.TryGetValue(AuthSchemeKey, out authenticatedScheme)
+                    && string.Equals(Scheme.Name, authenticatedScheme, StringComparison.Ordinal))
+                {
+                    return AuthenticateResult.Success(new AuthenticationTicket(ticket.Principal,
+                        ticket.Properties, Scheme.Name));
+                }
+
+                return AuthenticateResult.Fail("Not authenticated");
             }
 
-            return AuthenticateResult.Fail("Remote authentication does not directly support authenticate");
+            return AuthenticateResult.Fail("Remote authentication does not directly support AuthenticateAsync");
         }
 
         protected override Task HandleSignOutAsync(SignOutContext context)
@@ -168,11 +207,10 @@ namespace Microsoft.AspNetCore.Authentication
             throw new NotSupportedException();
         }
 
-        protected override async Task<bool> HandleForbiddenAsync(ChallengeContext context)
+        // REVIEW: This behaviour needs a test (forwarding of forbidden to sign in scheme)
+        protected override Task HandleForbiddenAsync(ChallengeContext context)
         {
-            var challengeContext = new ChallengeContext(Options.SignInScheme, context.Properties, ChallengeBehavior.Forbidden);
-            await PriorHandler.ChallengeAsync(challengeContext);
-            return challengeContext.Accepted;
+            return Context.ForbidAsync(SignInScheme);
         }
 
         protected virtual void GenerateCorrelationId(AuthenticationProperties properties)
@@ -190,12 +228,12 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 HttpOnly = true,
                 Secure = Request.IsHttps,
-                Expires = Options.SystemClock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
+                Expires = Clock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
             };
 
             properties.Items[CorrelationProperty] = correlationId;
 
-            var cookieName = CorrelationPrefix + Options.AuthenticationScheme + "." + correlationId;
+            var cookieName = CorrelationPrefix + Scheme.Name + "." + correlationId;
 
             Response.Cookies.Append(cookieName, CorrelationMarker, cookieOptions);
         }
@@ -216,7 +254,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             properties.Items.Remove(CorrelationProperty);
 
-            var cookieName = CorrelationPrefix + Options.AuthenticationScheme + "." + correlationId;
+            var cookieName = CorrelationPrefix + Scheme.Name + "." + correlationId;
 
             var correlationCookie = Request.Cookies[cookieName];
             if (string.IsNullOrEmpty(correlationCookie))

@@ -8,13 +8,13 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
@@ -28,11 +28,46 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         private const string AuthenticationEndpoint = "https://api.twitter.com/oauth/authenticate?oauth_token=";
         private const string AccessTokenEndpoint = "https://api.twitter.com/oauth/access_token";
 
-        private readonly HttpClient _httpClient;
+        private HttpClient Backchannel => Options.Backchannel;
 
-        public TwitterHandler(HttpClient httpClient)
+        /// <summary>
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// If it is not provided a default instance is supplied which does nothing when the methods are called.
+        /// </summary>
+        protected new TwitterEvents Events
         {
-            _httpClient = httpClient;
+            get { return (TwitterEvents)base.Events; }
+            set { base.Events = value; }
+        }
+
+        public TwitterHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
+            : base(sharedOptions, options, dataProtection, logger, encoder, clock)
+        { }
+
+        protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new TwitterEvents());
+
+        protected override void InitializeOptions()
+        {
+            base.InitializeOptions();
+
+            if (Options.StateDataFormat == null)
+            {
+                var dataProtector = DataProtection.CreateProtector(
+                    GetType().FullName, Scheme.Name, "v1");
+                Options.StateDataFormat = new SecureDataFormat<RequestToken>(
+                    new RequestTokenSerializer(),
+                    dataProtector);
+            }
+
+            if (Options.Backchannel == null)
+            {
+                Options.Backchannel = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
+                Options.Backchannel.Timeout = Options.BackchannelTimeout;
+                Options.Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
+                Options.Backchannel.DefaultRequestHeaders.Accept.ParseAdd("*/*");
+                Options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core Twitter handler");
+                Options.Backchannel.DefaultRequestHeaders.ExpectContinue = false;
+            }
         }
 
         protected override async Task<AuthenticateResult> HandleRemoteAuthenticateAsync()
@@ -113,30 +148,29 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 action.Run(user, identity, Options.ClaimsIssuer);
             }
 
-            var context = new TwitterCreatingTicketContext(Context, Options, token.UserId, token.ScreenName, token.Token, token.TokenSecret, user)
+            var context = new TwitterCreatingTicketContext(Context, Scheme, Options, properties, token.UserId, token.ScreenName, token.Token, token.TokenSecret, user)
             {
-                Principal = new ClaimsPrincipal(identity),
-                Properties = properties
+                Principal = new ClaimsPrincipal(identity)
             };
 
-            await Options.Events.CreatingTicket(context);
+            await Events.CreatingTicket(context);
 
             if (context.Principal?.Identity == null)
             {
                 return null;
             }
 
-            return new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme);
+            return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleUnauthorizedAsync(ChallengeContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var properties = new AuthenticationProperties(context.Properties);
+            var properties = context.Properties;
 
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
@@ -151,16 +185,13 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             {
                 HttpOnly = true,
                 Secure = Request.IsHttps,
-                Expires = Options.SystemClock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
+                Expires = Clock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
             };
 
             Response.Cookies.Append(StateCookie, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
-            var redirectContext = new TwitterRedirectToAuthorizationEndpointContext(
-                Context, Options,
-                properties, twitterAuthenticationEndpoint);
-            await Options.Events.RedirectToAuthorizationEndpoint(redirectContext);
-            return true;
+            var redirectContext = new TwitterRedirectToAuthorizationEndpointContext(Context, Scheme, Options, properties, twitterAuthenticationEndpoint);
+            await Events.RedirectToAuthorizationEndpoint(redirectContext);
         }
 
         private async Task<RequestToken> ObtainRequestTokenAsync(string callBackUri, AuthenticationProperties properties)
@@ -209,7 +240,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var request = new HttpRequestMessage(HttpMethod.Post, RequestTokenEndpoint);
             request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
 
-            var response = await _httpClient.SendAsync(request, Context.RequestAborted);
+            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
             response.EnsureSuccessStatusCode();
             var responseText = await response.Content.ReadAsStringAsync();
 
@@ -279,7 +310,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             request.Content = new FormUrlEncodedContent(formPairs);
 
-            var response = await _httpClient.SendAsync(request, Context.RequestAborted);
+            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -350,7 +381,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var request = new HttpRequestMessage(HttpMethod.Get, resource_url + "?include_email=true");
             request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
 
-            var response = await _httpClient.SendAsync(request, Context.RequestAborted);
+            var response = await Backchannel.SendAsync(request, Context.RequestAborted);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("Email request failed with a status code of " + response.StatusCode);

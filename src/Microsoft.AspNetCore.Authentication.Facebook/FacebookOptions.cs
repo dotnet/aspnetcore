@@ -1,16 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Facebook;
+using System.Globalization;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Authentication.Facebook
 {
     /// <summary>
-    /// Configuration options for <see cref="FacebookMiddleware"/>.
+    /// Configuration options for <see cref="FacebookHandler"/>.
     /// </summary>
     public class FacebookOptions : OAuthOptions
     {
@@ -19,8 +21,6 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public FacebookOptions()
         {
-            AuthenticationScheme = FacebookDefaults.AuthenticationScheme;
-            DisplayName = AuthenticationScheme;
             CallbackPath = new PathString("/signin-facebook");
             SendAppSecretProof = true;
             AuthorizationEndpoint = FacebookDefaults.AuthorizationEndpoint;
@@ -47,6 +47,24 @@ namespace Microsoft.AspNetCore.Builder
             ClaimActions.MapJsonSubKey("urn:facebook:location", "location", "name");
             ClaimActions.MapJsonKey(ClaimTypes.Locality, "locale");
             ClaimActions.MapJsonKey("urn:facebook:timezone", "timezone");
+        }
+
+        /// <summary>
+        /// Check that the options are valid.  Should throw an exception if things are not ok.
+        /// </summary>
+        public override void Validate()
+        {
+            if (string.IsNullOrEmpty(AppId))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(AppId)), nameof(AppId));
+            }
+
+            if (string.IsNullOrEmpty(AppSecret))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(AppSecret)), nameof(AppSecret));
+            }
+
+            base.Validate();
         }
 
         // Facebook uses a non-standard term for this field.

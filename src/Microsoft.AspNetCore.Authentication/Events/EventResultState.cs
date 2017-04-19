@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Authentication
         Continue,
 
         /// <summary>
-        /// Discontinue processing the request in the current middleware and pass control to the next one.
+        /// Discontinue processing the request.
         /// </summary>
         Skipped,
 

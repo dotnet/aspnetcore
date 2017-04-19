@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
     /// <summary>
-    /// Default values related to OpenIdConnect authentication middleware
+    /// Default values related to OpenIdConnect authentication handler
     /// </summary>
     public static class OpenIdConnectDefaults
     {

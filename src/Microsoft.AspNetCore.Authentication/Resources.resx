@@ -126,4 +126,7 @@
   <data name="Exception_AuthenticationTokenDoesNotProvideSyncMethods" xml:space="preserve">
     <value>The AuthenticationTokenProvider's required synchronous events have not been registered.</value>
   </data>
+  <data name="Exception_OptionMustBeProvided" xml:space="preserve">
+    <value>The '{0}' option must be provided.</value>
+  </data>
 </root>

@@ -8,9 +8,9 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     /// <summary>
-    /// Default <see cref="ITwitterEvents"/> implementation.
+    /// Default <see cref="TwitterEvents"/> implementation.
     /// </summary>
-    public class TwitterEvents : RemoteAuthenticationEvents, ITwitterEvents
+    public class TwitterEvents : RemoteAuthenticationEvents
     {
         /// <summary>
         /// Gets or sets the function that is invoked when the Authenticated method is invoked.
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         public virtual Task CreatingTicket(TwitterCreatingTicketContext context) => OnCreatingTicket(context);
 
         /// <summary>
-        /// Called when a Challenge causes a redirect to authorize endpoint in the Twitter middleware
+        /// Called when a Challenge causes a redirect to authorize endpoint in the Twitter handler
         /// </summary>
         /// <param name="context">Contains redirect URI and <see cref="Http.Authentication.AuthenticationProperties"/> of the challenge </param>
         public virtual Task RedirectToAuthorizationEndpoint(TwitterRedirectToAuthorizationEndpointContext context) => OnRedirectToAuthorizationEndpoint(context);

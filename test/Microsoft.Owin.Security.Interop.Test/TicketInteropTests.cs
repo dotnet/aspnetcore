@@ -58,7 +58,7 @@ namespace Microsoft.Owin.Security.Interop.Test
 
             var expires = DateTime.Today;
             var issued = new DateTime(1979, 11, 11);
-            var properties = new AspNetCore.Http.Authentication.AuthenticationProperties();
+            var properties = new AspNetCore.Authentication.AuthenticationProperties();
             properties.IsPersistent = true;
             properties.RedirectUri = "/redirect";
             properties.Items["key"] = "value";

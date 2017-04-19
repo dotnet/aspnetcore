@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,68 +37,55 @@ namespace OpenIdConnect.AzureAdSample
 
         public IConfiguration Configuration { get; set; }
 
+        private string ClientId => Configuration["oidc:clientid"];
+        private string ClientSecret => Configuration["oidc:clientsecret"];
+        private string Authority => Configuration["oidc:authority"];
+        private string Resource => "https://graph.windows.net";
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(sharedOptions =>
-                sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
+            {
+                sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+            });
+
+            services.AddCookieAuthentication();
+
+            services.AddOpenIdConnectAuthentication(o =>
+            {
+                o.ClientId = ClientId;
+                o.ClientSecret = ClientSecret; // for code flow
+                o.Authority = Authority;
+                o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+                o.PostLogoutRedirectUri = "/signed-out";
+                // GetClaimsFromUserInfoEndpoint = true,
+                o.Events = new OpenIdConnectEvents()
+                {
+                    OnAuthorizationCodeReceived = async context =>
+                    {
+                        var request = context.HttpContext.Request;
+                        var currentUri = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
+                        var credential = new ClientCredential(ClientId, ClientSecret);
+                        var authContext = new AuthenticationContext(Authority, AuthPropertiesTokenCache.ForCodeRedemption(context.Properties));
+
+                        var result = await authContext.AcquireTokenByAuthorizationCodeAsync(
+                            context.ProtocolMessage.Code, new Uri(currentUri), credential, Resource);
+
+                        context.HandleCodeRedemption(result.AccessToken, result.IdToken);
+                    }
+                };
+            });
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
             loggerfactory.AddConsole(Microsoft.Extensions.Logging.LogLevel.Information);
 
-            // Simple error page
-            app.Use(async (context, next) =>
-            {
-                try
-                {
-                    await next();
-                }
-                catch (Exception ex)
-                {
-                    if (!context.Response.HasStarted)
-                    {
-                        context.Response.Clear();
-                        context.Response.StatusCode = 500;
-                        await context.Response.WriteAsync(ex.ToString());
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-            });
+            app.UseDeveloperExceptionPage();
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions());
-
-            var clientId = Configuration["oidc:clientid"];
-            var clientSecret = Configuration["oidc:clientsecret"];
-            var authority = Configuration["oidc:authority"];
-            var resource = "https://graph.windows.net";
-            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
-            {
-                ClientId = clientId,
-                ClientSecret = clientSecret, // for code flow
-                Authority = authority,
-                ResponseType = OpenIdConnectResponseType.CodeIdToken,
-                PostLogoutRedirectUri = "/signed-out",
-                // GetClaimsFromUserInfoEndpoint = true,
-                Events = new OpenIdConnectEvents()
-                {
-                    OnAuthorizationCodeReceived = async context =>
-                    {
-                        var request = context.HttpContext.Request;
-                        var currentUri = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path);
-                        var credential = new ClientCredential(clientId, clientSecret);
-                        var authContext = new AuthenticationContext(authority, AuthPropertiesTokenCache.ForCodeRedemption(context.Properties));
-
-                        var result = await authContext.AcquireTokenByAuthorizationCodeAsync(
-                            context.ProtocolMessage.Code, new Uri(currentUri), credential, resource);
-
-                        context.HandleCodeRedemption(result.AccessToken, result.IdToken);
-                    }
-                }
-            });
+            app.UseAuthentication();
 
             app.Run(async context =>
             {
@@ -111,13 +98,11 @@ namespace OpenIdConnect.AzureAdSample
                         return;
                     }
 
-                    await context.Authentication.ChallengeAsync(
-                        OpenIdConnectDefaults.AuthenticationScheme,
-                        new AuthenticationProperties { RedirectUri = "/" });
+                    await context.ChallengeAsync(new AuthenticationProperties { RedirectUri = "/" });
                 }
                 else if (context.Request.Path.Equals("/signout"))
                 {
-                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response,
                         async response =>
                         {
@@ -127,8 +112,8 @@ namespace OpenIdConnect.AzureAdSample
                 }
                 else if (context.Request.Path.Equals("/signout-remote"))
                 {
-                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    await context.Authentication.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
                 }
                 else if (context.Request.Path.Equals("/signed-out"))
                 {
@@ -141,7 +126,7 @@ namespace OpenIdConnect.AzureAdSample
                 }
                 else if (context.Request.Path.Equals("/remote-signedout"))
                 {
-                    await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     await WriteHtmlAsync(context.Response,
                         async response =>
                         {
@@ -153,7 +138,7 @@ namespace OpenIdConnect.AzureAdSample
                 {
                     if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
                     {
-                        await context.Authentication.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
+                        await context.ChallengeAsync(new AuthenticationProperties { RedirectUri = "/" });
                         return;
                     }
 
@@ -170,10 +155,10 @@ namespace OpenIdConnect.AzureAdSample
                         try
                         {
                             // Use ADAL to get the right token
-                            var authContext = new AuthenticationContext(authority, AuthPropertiesTokenCache.ForApiCalls(context, CookieAuthenticationDefaults.AuthenticationScheme));
-                            var credential = new ClientCredential(clientId, clientSecret);
+                            var authContext = new AuthenticationContext(Authority, AuthPropertiesTokenCache.ForApiCalls(context, CookieAuthenticationDefaults.AuthenticationScheme));
+                            var credential = new ClientCredential(ClientId, ClientSecret);
                             string userObjectID = context.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
-                            var result = await authContext.AcquireTokenSilentAsync(resource, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
+                            var result = await authContext.AcquireTokenSilentAsync(Resource, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
 
                             await response.WriteAsync($"<h3>access_token</h3><code>{HtmlEncode(result.AccessToken)}</code><br>");
                         }

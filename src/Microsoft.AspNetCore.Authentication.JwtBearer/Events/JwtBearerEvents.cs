@@ -8,9 +8,9 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
     /// <summary>
-    /// Specifies events which the <see cref="JwtBearerMiddleware"/> invokes to enable developer control over the authentication process.
+    /// Specifies events which the <see cref="JwtBearerHandler"/> invokes to enable developer control over the authentication process.
     /// </summary>
-    public class JwtBearerEvents : IJwtBearerEvents
+    public class JwtBearerEvents
     {
         /// <summary>
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
