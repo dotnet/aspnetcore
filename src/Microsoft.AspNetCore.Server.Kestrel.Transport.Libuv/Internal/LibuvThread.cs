@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
@@ -76,6 +77,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public WriteReqPool WriteReqPool { get; }
 
+#if DEBUG
+        public List<WeakReference> Requests { get; } = new List<WeakReference>();
+#endif
+
         public ExceptionDispatchInfo FatalError { get { return _closeError; } }
 
         public Action<Action<IntPtr>, IntPtr> QueueCloseHandle { get; }
@@ -140,6 +145,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 _closeError.Throw();
             }
         }
+
+#if DEBUG
+        private void CheckUvReqLeaks()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            // Detect leaks in UvRequest objects
+            foreach (var request in Requests)
+            {
+                Debug.Assert(request.Target == null, $"{request.Target?.GetType()} object is still alive.");
+            }
+        }
+#endif
 
         private async Task DisposeConnectionsAsync()
         {
@@ -299,6 +319,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 WriteReqPool.Dispose();
                 thisHandle.Free();
                 _threadTcs.SetResult(null);
+
+#if DEBUG
+                // Check for handle leaks after disposing everything
+                CheckUvReqLeaks();
+#endif
             }
         }
 

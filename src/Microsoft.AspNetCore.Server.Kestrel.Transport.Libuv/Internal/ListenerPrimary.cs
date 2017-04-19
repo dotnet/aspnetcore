@@ -105,17 +105,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 DetachFromIOCP(socket);
                 var dispatchPipe = _dispatchPipes[index];
                 var write = new UvWriteReq(Log);
-                write.Init(Thread.Loop);
-                write.Write2(
-                    dispatchPipe,
-                    _dummyMessage,
-                    socket,
-                    (write2, status, error, state) =>
-                    {
-                        write2.Dispose();
-                        ((UvStreamHandle)state).Dispose();
-                    },
-                    socket);
+                try
+                {
+                    write.Init(Thread);
+                    write.Write2(
+                        dispatchPipe,
+                        _dummyMessage,
+                        socket,
+                        (write2, status, error, state) =>
+                        {
+                            write2.Dispose();
+                            ((UvStreamHandle)state).Dispose();
+                        },
+                        socket);
+                }
+                catch (UvException)
+                {
+                    write.Dispose();
+                    throw;
+                }
             }
         }
 
@@ -230,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                         if (correctMessage)
                         {
-                            _listener._dispatchPipes.Add((UvPipeHandle) dispatchPipe);
+                            _listener._dispatchPipes.Add((UvPipeHandle)dispatchPipe);
                             dispatchPipe.ReadStop();
                             _bufHandle.Free();
                         }

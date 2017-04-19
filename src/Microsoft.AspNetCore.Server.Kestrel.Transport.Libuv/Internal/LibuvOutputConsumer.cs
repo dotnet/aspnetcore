@@ -47,14 +47,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     if (!buffer.IsEmpty)
                     {
                         var writeReq = _writeReqPool.Allocate();
-                        var writeResult = await writeReq.WriteAsync(_socket, buffer);
-                        _writeReqPool.Return(writeReq);
 
-                        LogWriteInfo(writeResult.Status, writeResult.Error);
-
-                        if (writeResult.Error != null)
+                        try
                         {
-                            throw writeResult.Error;
+                            var writeResult = await writeReq.WriteAsync(_socket, buffer);
+
+                            LogWriteInfo(writeResult.Status, writeResult.Error);
+
+                            if (writeResult.Error != null)
+                            {
+                                throw writeResult.Error;
+                            }
+                        }
+                        finally
+                        {
+                            // Make sure we return the writeReq to the pool
+                            _writeReqPool.Return(writeReq);
                         }
                     }
 
@@ -104,15 +112,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _log.ConnectionWriteFin(_connectionId);
 
             var shutdownReq = new UvShutdownReq(_log);
-            shutdownReq.Init(_thread.Loop);
-            shutdownReq.Shutdown(_socket, (req, status, state) =>
+            try
             {
-                req.Dispose();
-                _log.ConnectionWroteFin(_connectionId, status);
+                shutdownReq.Init(_thread);
+                shutdownReq.Shutdown(_socket, (req, status, state) =>
+                {
+                    req.Dispose();
+                    _log.ConnectionWroteFin(_connectionId, status);
 
-                tcs.TrySetResult(null);
-            },
-            this);
+                    tcs.TrySetResult(null);
+                },
+                this);
+            }
+            catch (Exception)
+            {
+                shutdownReq.Dispose();
+                throw;
+            }
 
             return tcs.Task;
         }

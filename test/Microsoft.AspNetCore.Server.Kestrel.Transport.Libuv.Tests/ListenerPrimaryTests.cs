@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var connectReq = new UvConnectRequest(connectionTrace);
 
                 pipe.Init(libuvThreadPrimary.Loop, libuvThreadPrimary.QueueCloseHandle);
-                connectReq.Init(libuvThreadPrimary.Loop);
+                connectReq.Init(libuvThreadPrimary);
 
                 connectReq.Connect(
                     pipe,

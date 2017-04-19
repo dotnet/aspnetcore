@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 }
 
                 var writeRequest = new UvWriteReq(_logger);
-                writeRequest.Init(loop);
+                writeRequest.DangerousInit(loop);
 
                 await writeRequest.WriteAsync(
                     serverConnectionPipe,
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, (a, b) => { }, true);
-                connect.Init(loop2);
+                connect.DangerousInit(loop2);
                 connect.Connect(clientConnectionPipe, pipeName, (handle, status, error, state) =>
                 {
                     var buf = loop2.Libuv.buf_init(Marshal.AllocHGlobal(8192), 8192);
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 serverConnectionPipeAcceptedEvent.WaitOne();
 
                 var writeRequest = new UvWriteReq(_logger);
-                writeRequest.Init(loop);
+                writeRequest.DangerousInit(loop);
                 writeRequest.Write2(
                     serverConnectionPipe,
                     new ArraySegment<ArraySegment<byte>>(new ArraySegment<byte>[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) }),
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 loop2.Init(_uv);
                 clientConnectionPipe.Init(loop2, (a, b) => { }, true);
-                connect.Init(loop2);
+                connect.DangerousInit(loop2);
                 connect.Connect(clientConnectionPipe, pipeName, (handle, status, error, state) =>
                 {
                     connect.Dispose();

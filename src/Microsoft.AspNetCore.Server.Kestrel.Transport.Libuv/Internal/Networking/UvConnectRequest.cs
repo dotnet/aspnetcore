@@ -20,7 +20,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
         }
 
-        public void Init(UvLoopHandle loop)
+        public override void Init(LibuvThread thread)
+        {
+            DangerousInit(thread.Loop);
+
+            base.Init(thread);
+        }
+
+        public void DangerousInit(UvLoopHandle loop)
         {
             var requestSize = loop.Libuv.req_size(LibuvFunctions.RequestType.CONNECT);
             CreateMemory(
@@ -38,14 +45,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             _callback = callback;
             _state = state;
 
-            Pin();
             Libuv.pipe_connect(this, pipe, name, _uv_connect_cb);
         }
 
         private static void UvConnectCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvConnectRequest>(ptr);
-            req.Unpin();
 
             var callback = req._callback;
             req._callback = null;

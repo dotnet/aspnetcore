@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                             for (var x = 0; x < 2; x++)
                             {
                                 var req = new UvWriteReq(_logger);
-                                req.Init(loop);
+                                req.DangerousInit(loop);
                                 var block = ReadableBuffer.Create(new byte[] { 65, 66, 67, 68, 69 });
 
                                 await req.WriteAsync(

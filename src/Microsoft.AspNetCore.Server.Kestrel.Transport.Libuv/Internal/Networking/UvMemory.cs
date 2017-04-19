@@ -17,10 +17,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         protected LibuvFunctions _uv;
         protected int _threadId;
         protected readonly ILibuvTrace _log;
+        private readonly GCHandleType _handleType;
 
-        protected UvMemory(ILibuvTrace logger) : base(IntPtr.Zero, true)
+        protected UvMemory(ILibuvTrace logger, GCHandleType handleType = GCHandleType.Weak) : base(IntPtr.Zero, true)
         {
             _log = logger;
+            _handleType = handleType;
         }
 
         public LibuvFunctions Libuv { get { return _uv; } }
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             ThreadId = threadId;
             
             handle = Marshal.AllocCoTaskMem(size);
-            *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this, GCHandleType.Weak));
+            *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this, _handleType));
         }
 
         unsafe protected static void DestroyMemory(IntPtr memory)

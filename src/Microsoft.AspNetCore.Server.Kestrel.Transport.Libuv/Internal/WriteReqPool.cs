@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             else
             {
                 req = new UvWriteReq(_log);
-                req.Init(_thread.Loop);
+                req.Init(_thread);
             }
 
             return req;

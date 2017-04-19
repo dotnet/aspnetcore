@@ -31,7 +31,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
         }
 
-        public void Init(UvLoopHandle loop)
+        public override void Init(LibuvThread thread)
+        {
+            DangerousInit(thread.Loop);
+
+            base.Init(thread);
+        }
+
+        public void DangerousInit(UvLoopHandle loop)
         {
             var requestSize = loop.Libuv.req_size(LibuvFunctions.RequestType.WRITE);
             var bufferSize = Marshal.SizeOf<LibuvFunctions.uv_buf_t>() * BUFFER_COUNT;
@@ -62,9 +69,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             try
             {
-                // add GCHandle to keeps this SafeHandle alive while request processing
-                _pins.Add(GCHandle.Alloc(this, GCHandleType.Normal));
-
                 var nBuffers = 0;
                 if (buffer.IsSingleSpan)
                 {
@@ -157,9 +161,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             try
             {
-                // add GCHandle to keeps this SafeHandle alive while request processing
-                _pins.Add(GCHandle.Alloc(this, GCHandleType.Normal));
-
                 var pBuffers = (LibuvFunctions.uv_buf_t*)_bufs;
                 var nBuffers = bufs.Count;
                 if (nBuffers > BUFFER_COUNT)
