@@ -13,7 +13,7 @@
     <PropertyGroup>
         <IntermediateOutputPath Condition="'$(BuildWorkingDirectory)'!=''">$(BuildWorkingDirectory)</IntermediateOutputPath>
         <IntermediateOutputPath Condition="'$(IntermediateOutputPath)'==''">$(DNXRootPath)obj\</IntermediateOutputPath>
-        <SignedOutputPath>$(DNXBinPath)Signed\</SignedOutputPath>
+        <SignedOutputPath>$(IntermediateOutputPath)Signed\</SignedOutputPath>
         <ArtifactsPath>$(DNXRootPath)artifacts\</ArtifactsPath>
         <OutputPath Condition="'$(Sign)' == 'Sign'">$(SignedOutputPath)</OutputPath>
         <OutputPath Condition="'$(Sign)' != 'Sign'">$(DNXBinPath)$(Configuration)\</OutputPath>
