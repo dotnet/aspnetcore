@@ -11,6 +11,7 @@ namespace RazorPagesWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services
+                .AddCookieAuthentication(options => options.LoginPath = "/Login")
                 .AddMvc()
                 .AddCookieTempDataProvider()
                 .AddRazorPagesOptions(options =>
@@ -25,12 +26,7 @@ namespace RazorPagesWebSite
         {
             app.UseCultureReplacer();
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                LoginPath = "/Login",
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true
-            });
+            app.UseAuthentication();
 
             app.UseStaticFiles();
 

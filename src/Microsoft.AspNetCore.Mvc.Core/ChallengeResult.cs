@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -103,17 +103,16 @@ namespace Microsoft.AspNetCore.Mvc
 
             logger.ChallengeResultExecuting(AuthenticationSchemes);
 
-            var authentication = context.HttpContext.Authentication;
             if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)
             {
                 foreach (var scheme in AuthenticationSchemes)
                 {
-                    await authentication.ChallengeAsync(scheme, Properties);
+                    await context.HttpContext.ChallengeAsync(scheme, Properties);
                 }
             }
             else
             {
-                await authentication.ChallengeAsync(Properties);
+                await context.HttpContext.ChallengeAsync(Properties);
             }
         }
     }

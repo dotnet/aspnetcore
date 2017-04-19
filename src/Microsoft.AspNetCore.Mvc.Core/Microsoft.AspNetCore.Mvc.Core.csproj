@@ -21,6 +21,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Abstractions\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
 
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(AspNetCoreVersion)" />

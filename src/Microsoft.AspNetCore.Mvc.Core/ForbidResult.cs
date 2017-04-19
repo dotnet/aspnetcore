@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -103,18 +103,16 @@ namespace Microsoft.AspNetCore.Mvc
 
             logger.ForbidResultExecuting(AuthenticationSchemes);
 
-            var authentication = context.HttpContext.Authentication;
-
             if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)
             {
                 for (var i = 0; i < AuthenticationSchemes.Count; i++)
                 {
-                    await authentication.ForbidAsync(AuthenticationSchemes[i], Properties);
+                    await context.HttpContext.ForbidAsync(AuthenticationSchemes[i], Properties);
                 }
             }
             else
             {
-                await authentication.ForbidAsync(Properties);
+                await context.HttpContext.ForbidAsync(Properties);
             }
         }
     }

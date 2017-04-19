@@ -90,6 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for testing.
         internal static void AddAuthorizationServices(IServiceCollection services)
         {
+            services.AddAuthenticationCore();
             services.AddAuthorization();
 
             services.TryAddEnumerable(

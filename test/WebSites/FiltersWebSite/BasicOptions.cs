@@ -6,17 +6,11 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Options;
 
 namespace FiltersWebSite
 {
-    public class BasicOptions : AuthenticationOptions, IOptions<BasicOptions>
+    public class BasicOptions : AuthenticationSchemeOptions
     {
-        public BasicOptions()
-        {
-        }
-
-        public BasicOptions Value { get { return this; } }
     }
 }

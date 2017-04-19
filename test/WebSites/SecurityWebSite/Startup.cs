@@ -14,19 +14,17 @@ namespace SecurityWebSite
             // Add framework services.
             services.AddMvc();
             services.AddAntiforgery();
-            services.AddAuthentication();
+            services.AddCookieAuthentication(options => 
+            {
+                options.LoginPath = "/Home/Login";
+                options.LogoutPath = "/Home/Logout";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                LoginPath = "/Home/Login",
-                LogoutPath = "/Home/Logout",
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true
-            });
+            app.UseAuthentication();
 
             app.UseMvc(routes =>
             {

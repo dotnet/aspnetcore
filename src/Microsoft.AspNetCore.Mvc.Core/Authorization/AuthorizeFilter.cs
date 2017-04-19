@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -131,10 +132,10 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 for (var i = 0; i < effectivePolicy.AuthenticationSchemes.Count; i++)
                 {
                     var scheme = effectivePolicy.AuthenticationSchemes[i];
-                    var result = await context.HttpContext.Authentication.AuthenticateAsync(scheme);
-                    if (result != null)
+                    var result = await context.HttpContext.AuthenticateAsync(scheme);
+                    if (result.Succeeded)
                     {
-                        newPrincipal = SecurityHelper.MergeUserPrincipal(newPrincipal, result);
+                        newPrincipal = SecurityHelper.MergeUserPrincipal(newPrincipal, result.Principal);
                     }
                 }
                 // If all schemes failed authentication, provide a default identity anyways

@@ -3,16 +3,21 @@
 
 using System;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace FiltersWebSite
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<BasicOptions>
     {
+        public BasicAuthenticationHandler(IOptionsSnapshot<BasicOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
+        { }
+
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var principal = new ClaimsPrincipal();
@@ -23,9 +28,9 @@ namespace FiltersWebSite
                     new Claim(ClaimTypes.Role, "Administrator"),
                     new Claim(ClaimTypes.NameIdentifier, "John")
                 },
-                Options.AuthenticationScheme));
+                Scheme.Name));
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, 
-                new AuthenticationProperties(), Options.AuthenticationScheme)));
+                new AuthenticationProperties(), Scheme.Name)));
         }
     }
 }

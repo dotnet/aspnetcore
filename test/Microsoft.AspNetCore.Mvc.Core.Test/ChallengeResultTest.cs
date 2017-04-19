@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,11 +22,11 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var result = new ChallengeResult("", null);
 
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices).Returns(CreateServices().BuildServiceProvider());
+            var auth = new Mock<IAuthenticationService>();
 
-            var auth = new Mock<AuthenticationManager>();
-            httpContext.Setup(o => o.Authentication).Returns(auth.Object);
+            var httpContext = new Mock<HttpContext>();
+            httpContext.SetupGet(c => c.RequestServices)
+                .Returns(CreateServices().AddSingleton(auth.Object).BuildServiceProvider());
 
             var routeData = new RouteData();
             routeData.Routers.Add(Mock.Of<IRouter>());
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            auth.Verify(c => c.ChallengeAsync("", null), Times.Exactly(1));
+            auth.Verify(c => c.ChallengeAsync(httpContext.Object, "", null, ChallengeBehavior.Automatic), Times.Exactly(1));
         }
 
         [Fact]
@@ -48,11 +48,10 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var result = new ChallengeResult(new string[] { }, null);
 
+            var auth = new Mock<IAuthenticationService>();
             var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices).Returns(CreateServices().BuildServiceProvider());
-
-            var auth = new Mock<AuthenticationManager>();
-            httpContext.Setup(o => o.Authentication).Returns(auth.Object);
+            httpContext.SetupGet(c => c.RequestServices)
+                .Returns(CreateServices().AddSingleton(auth.Object).BuildServiceProvider());
 
             var routeData = new RouteData();
             routeData.Routers.Add(Mock.Of<IRouter>());
@@ -65,13 +64,14 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            auth.Verify(c => c.ChallengeAsync((AuthenticationProperties)null), Times.Exactly(1));
+            auth.Verify(c => c.ChallengeAsync(httpContext.Object, null, null, ChallengeBehavior.Automatic), Times.Exactly(1));
         }
 
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddAuthenticationCore();
             return services;
         }
     }
