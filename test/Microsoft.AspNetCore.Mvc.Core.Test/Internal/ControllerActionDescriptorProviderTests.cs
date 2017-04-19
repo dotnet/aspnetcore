@@ -277,11 +277,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var descriptorWithoutValue = Assert.Single(
                 descriptors,
-                ad => ad.RouteValues.Any(kvp => kvp.Key == "key" && string.IsNullOrEmpty(kvp.Value)));
+                ad => !ad.RouteValues.ContainsKey("key"));
 
             var descriptorWithValue = Assert.Single(
                 descriptors,
-                ad => ad.RouteValues.Any(kvp => kvp.Key == "key" && kvp.Value == "value"));
+                ad => ad.RouteValues.ContainsKey("key"));
 
             // Assert
             Assert.Equal(2, descriptors.Length);
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     c.Key == "key" &&
                     c.Value == "value");
 
-            Assert.Equal(3, descriptorWithoutValue.RouteValues.Count);
+            Assert.Equal(2, descriptorWithoutValue.RouteValues.Count);
             Assert.Single(
                 descriptorWithoutValue.RouteValues,
                 c =>
@@ -314,11 +314,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 c =>
                     c.Key == "action" &&
                     c.Value == "OnlyPost");
-            Assert.Single(
-                descriptorWithoutValue.RouteValues,
-                c =>
-                    c.Key == "key" &&
-                    c.Value == string.Empty);
         }
 
         [Fact]
@@ -932,7 +927,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var indexAction = Assert.Single(actionDescriptors, ad => ad.ActionName.Equals("Index"));
 
-            Assert.Equal(5, indexAction.RouteValues.Count);
+            Assert.Equal(3, indexAction.RouteValues.Count);
 
             var controllerDefault = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("controller", StringComparison.OrdinalIgnoreCase));
             Assert.Equal("ConventionalAndAttributeRoutedActionsWithArea", controllerDefault.Value);
@@ -942,12 +937,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var areaDefault = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("area", StringComparison.OrdinalIgnoreCase));
             Assert.Equal("Home", areaDefault.Value);
-
-            var mvRouteValueDefault = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("key", StringComparison.OrdinalIgnoreCase));
-            Assert.Equal(string.Empty, mvRouteValueDefault.Value);
-
-            var anotherRouteValue = Assert.Single(indexAction.RouteValues, rd => rd.Key.Equals("second", StringComparison.OrdinalIgnoreCase));
-            Assert.Equal(string.Empty, anotherRouteValue.Value);
         }
 
         [Fact]
@@ -1353,6 +1342,42 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(2, action.ActionConstraints.Count);
             Assert.Single(action.ActionConstraints, a => (a as RouteAndConstraintAttribute)?.Template == "~/A2");
             Assert.Single(action.ActionConstraints, a => a is ConstraintAttribute);
+        }
+
+        [Fact]
+        public void OnProviderExecuted_AddsGlobalRouteValues()
+        {
+            // Arrange
+            var context = new ActionDescriptorProviderContext();
+            context.Results.Add(new ActionDescriptor()
+            {
+                RouteValues = new Dictionary<string, string>()
+                {
+                    { "controller", "Home" },
+                    { "action", "Index" },
+                }
+            });
+            context.Results.Add(new ActionDescriptor()
+            {
+                RouteValues = new Dictionary<string, string>()
+                {
+                    { "page", "/Some/Page" }
+                }
+            });
+
+            var provider = GetProvider();
+
+            // Act
+            provider.OnProvidersExecuted(context);
+
+            // Assert
+            Assert.True(context.Results[0].RouteValues.ContainsKey("page"));
+            Assert.Null(context.Results[0].RouteValues["page"]);
+
+            Assert.True(context.Results[1].RouteValues.ContainsKey("controller"));
+            Assert.Null(context.Results[1].RouteValues["controller"]);
+            Assert.True(context.Results[1].RouteValues.ContainsKey("action"));
+            Assert.Null(context.Results[1].RouteValues["action"]);
         }
 
         private ControllerActionDescriptorProvider GetProvider(

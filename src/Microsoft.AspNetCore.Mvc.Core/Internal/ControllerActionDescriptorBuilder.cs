@@ -34,8 +34,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var actions = new List<ControllerActionDescriptor>();
 
-            var routeValueKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
             var methodInfoMap = new MethodToActionMap();
 
             var routeTemplateErrors = new List<string>();
@@ -64,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         actionDescriptor.ControllerTypeInfo = controller.ControllerType;
 
                         AddApiExplorerInfo(actionDescriptor, application, controller, action);
-                        AddRouteValues(routeValueKeys, actionDescriptor, controller, action);
+                        AddRouteValues(actionDescriptor, controller, action);
                         AddProperties(actionDescriptor, action, controller, application);
 
                         actionDescriptor.BoundProperties = controllerPropertyDescriptors;
@@ -108,12 +106,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     // attribute routes with a given name have the same template.
                     AddActionToNamedGroup(actionsByRouteName, attributeRouteInfo.Name, actionDescriptor);
                 }
-
-                // Add a route value with 'null' for each user-defined route value in the set to all the
-                // actions that don't have that value. For example, if a controller defines
-                // an area, all actions that don't belong to an area must have a route
-                // value that prevents them from matching an incoming request when area is specified.
-                AddGlobalRouteValues(actionDescriptor, routeValueKeys);
             }
 
             if (attributeRoutingConfigurationErrors.Any())
@@ -409,7 +401,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         public static void AddRouteValues(
-            ISet<string> keys,
             ControllerActionDescriptor actionDescriptor,
             ControllerModel controller,
             ActionModel action)
@@ -421,8 +412,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // generating a link.
             foreach (var kvp in action.RouteValues)
             {
-                keys.Add(kvp.Key);
-
                 // Skip duplicates
                 if (!actionDescriptor.RouteValues.ContainsKey(kvp.Key))
                 {
@@ -432,8 +421,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             foreach (var kvp in controller.RouteValues)
             {
-                keys.Add(kvp.Key);
-
                 // Skip duplicates - this also means that a value on the action will take precedence
                 if (!actionDescriptor.RouteValues.ContainsKey(kvp.Key))
                 {
@@ -480,19 +467,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     ex.Message);
 
                 routeTemplateErrors.Add(message);
-            }
-        }
-
-        private static void AddGlobalRouteValues(
-            ControllerActionDescriptor actionDescriptor,
-            ISet<string> removalConstraints)
-        {
-            foreach (var key in removalConstraints)
-            {
-                if (!actionDescriptor.RouteValues.ContainsKey(key))
-                {
-                    actionDescriptor.RouteValues.Add(key, string.Empty);
-                }
             }
         }
 

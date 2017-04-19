@@ -66,6 +66,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// <inheritdoc />
         public void OnProvidersExecuted(ActionDescriptorProviderContext context)
         {
+            // After all of the providers have run, we need to provide a 'null' for each all of route values that 
+            // participate in action selection.
+            //
+            // This is important for scenarios like Razor Pages, that use the 'page' route value. An action that
+            // uses 'page' shouldn't match when 'action' is set, and an action that uses 'action' shouldn't match when
+            // 'page is specified.
+            //
+            // Or for another example, consider areas. A controller that's not in an area needs a 'null' value for
+            // area so it can't match when the route produces an 'area' value.
+            var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < context.Results.Count; i++)
+            {
+                var action = context.Results[i];
+                foreach (var key in action.RouteValues.Keys)
+                {
+                    keys.Add(key);
+                }
+            }
+
+            for (var i = 0; i < context.Results.Count; i++)
+            {
+                var action = context.Results[i];
+                foreach (var key in keys)
+                {
+                    if (!action.RouteValues.ContainsKey(key))
+                    {
+                        action.RouteValues.Add(key, null);
+                    }
+                }
+            }
         }
 
         internal protected IEnumerable<ControllerActionDescriptor> GetDescriptors()

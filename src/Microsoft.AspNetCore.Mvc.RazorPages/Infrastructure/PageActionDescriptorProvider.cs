@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _pagesOptions = pagesOptionsAccessor.Value;
         }
 
-        public int Order { get; set; }
+        public int Order { get; set; } = -900; // Run after the default MVC provider, but before others.
 
         public void OnProvidersExecuting(ActionDescriptorProviderContext context)
         {
