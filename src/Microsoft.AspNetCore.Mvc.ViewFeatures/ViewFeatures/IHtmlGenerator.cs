@@ -55,6 +55,38 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             object htmlAttributes);
 
         /// <summary>
+        /// Generate a &lt;a&gt; element for a link to an action.
+        /// </summary>
+        /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="linkText">The text to insert inside the element.</param>
+        /// <param name="pageName">The page name.</param>
+        /// <param name="protocol">The protocol (scheme) for the generated link.</param>
+        /// <param name="hostname">The hostname for the generated link.</param>
+        /// <param name="fragment">The fragment for the genrated link.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// A <see cref="TagBuilder"/> instance for the &lt;a&gt; element.
+        /// </returns>
+        TagBuilder GeneratePageLink(
+            ViewContext viewContext,
+            string linkText,
+            string pageName,
+            string protocol,
+            string hostname,
+            string fragment,
+            object routeValues,
+            object htmlAttributes);
+
+        /// <summary>
         /// Generate an &lt;input type="hidden".../&gt; element containing an antiforgery token.
         /// </summary>
         /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
@@ -121,6 +153,35 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             string actionName,
             string controllerName,
             object routeValues,
+            string method,
+            object htmlAttributes);
+
+        /// <summary>
+        /// Generate a &lt;form&gt; element. When the user submits the form, the page with name
+        /// <paramref name="pageName"/> will process the request.
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="pageName">The name of the action method.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the route parameters.
+        /// </param>
+        /// <param name="fragment">The url fragment.</param>
+        /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{String, Object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// A <see cref="TagBuilder"/> instance for the &lt;/form&gt; element.
+        /// </returns>
+        TagBuilder GeneratePageForm(
+            ViewContext viewContext,
+            string pageName,
+            object routeValues,
+            string fragment,
             string method,
             object htmlAttributes);
 

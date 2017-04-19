@@ -117,14 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AnchorTagHelper_CannotDetermineHrefRouteActionOrControllerSpecified" xml:space="preserve">
-    <value>Cannot determine an '{4}' attribute for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.</value>
+  <data name="CannotDetermineAttributeFor" xml:space="preserve">
+    <value>Cannot determine the '{0}' attribute for {1}. The following attributes are mutually exclusive:</value>
   </data>
   <data name="AnchorTagHelper_CannotOverrideHref" xml:space="preserve">
-    <value>Cannot override the '{9}' attribute for {0}. An {0} with a specified '{9}' must not have attributes starting with '{8}' or an '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', or '{7}' attribute.</value>
+    <value>Cannot override the '{0}' attribute for {1}. An {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', or '{10}' attribute.</value>
   </data>
   <data name="FormTagHelper_CannotOverrideAction" xml:space="preserve">
-    <value>Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{7}' or an '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.</value>
+    <value>Cannot override the '{0}' attribute for {1}. A {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}' or '{8}' attribute.</value>
   </data>
   <data name="InputTagHelper_InvalidExpressionResult" xml:space="preserve">
     <value>Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' or '{4}' that can be parsed as a '{3}' if '{5}' is '{6}'.</value>
@@ -144,16 +144,10 @@
   <data name="TagHelperOutput_AttributeDoesNotExist" xml:space="preserve">
     <value>The attribute '{0}' does not exist in the {1}.</value>
   </data>
-  <data name="FormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified" xml:space="preserve">
-    <value>Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}', '{3}', or '{5}' attribute.</value>
-  </data>
   <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
     <value>The '{0}' property of '{1}' must not be null.</value>
   </data>
   <data name="FormActionTagHelper_CannotOverrideFormAction" xml:space="preserve">
     <value>Cannot override the '{7}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{7}' must not have attributes starting with '{6}' or an '{1}', '{2}', '{3}', '{4}', or '{5}' attribute.</value>
-  </data>
-  <data name="FormActionTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified" xml:space="preserve">
-    <value>Cannot determine a '{4}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{1}' must not have an '{2}', '{3}', or '{5}' attribute.</value>
   </data>
 </root>

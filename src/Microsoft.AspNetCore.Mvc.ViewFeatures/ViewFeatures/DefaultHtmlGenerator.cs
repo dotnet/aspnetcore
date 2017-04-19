@@ -143,6 +143,32 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
+        public virtual TagBuilder GeneratePageLink(
+            ViewContext viewContext,
+            string linkText,
+            string pageName,
+            string protocol,
+            string hostname,
+            string fragment,
+            object routeValues,
+            object htmlAttributes)
+        {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
+            if (linkText == null)
+            {
+                throw new ArgumentNullException(nameof(linkText));
+            }
+
+            var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
+            var url = urlHelper.Page(pageName, routeValues, protocol, hostname, fragment);
+            return GenerateLink(linkText, url, htmlAttributes);
+        }
+
+        /// <inheritdoc />
         public virtual IHtmlContent GenerateAntiforgery(ViewContext viewContext)
         {
             if (viewContext == null)
@@ -276,6 +302,52 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
                 action = urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
+            }
+
+            return GenerateFormCore(viewContext, action, method, htmlAttributes);
+        }
+
+        /// <inheritdoc />
+        public virtual TagBuilder GeneratePageForm(
+            ViewContext viewContext,
+            string pageName,
+            object routeValues,
+            string fragment,
+            string method,
+            object htmlAttributes)
+        {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
+            var defaultMethod = false;
+            if (string.IsNullOrEmpty(method))
+            {
+                defaultMethod = true;
+            }
+            else if (string.Equals(method, "post", StringComparison.OrdinalIgnoreCase))
+            {
+                defaultMethod = true;
+            }
+
+            string action;
+            if (pageName == null && routeValues == null && defaultMethod)
+            {
+                // Submit to the original URL in the special case that user called the BeginForm() overload without
+                // parameters (except for the htmlAttributes parameter). Also reachable in the even-more-unusual case
+                // that user called another BeginForm() overload with default argument values.
+                var request = viewContext.HttpContext.Request;
+                action = request.PathBase + request.Path + request.QueryString;
+                if (fragment != null)
+                {
+                    action += "#" + fragment;
+                }
+            }
+            else
+            {
+                var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
+                action = urlHelper.Page(pageName, values: routeValues,protocol: null, host: null, fragment: fragment);
             }
 
             return GenerateFormCore(viewContext, action, method, htmlAttributes);

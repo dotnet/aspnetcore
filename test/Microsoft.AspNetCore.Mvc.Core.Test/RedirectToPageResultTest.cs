@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var urlHelper = GetUrlHelper(actionContext, returnValue: null);
-            var result = new RedirectToPageResult("some-page", new Dictionary<string, object>())
+            var result = new RedirectToPageResult("/some-page", new Dictionary<string, object>())
             {
                 UrlHelper = urlHelper,
             };
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Act & Assert
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(
                 () => result.ExecuteResultAsync(actionContext),
-                "No page named 'some-page' matches the supplied values.");
+                "No page named '/some-page' matches the supplied values.");
         }
 
         [Theory]
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc
                 new ActionDescriptor());
 
             var urlHelper = GetUrlHelper(actionContext, expectedUrl);
-            var result = new RedirectToPageResult("MyPage", new { id = 10, test = "value" }, permanentRedirect)
+            var result = new RedirectToPageResult("/MyPage", new { id = 10, test = "value" }, permanentRedirect)
             {
                 UrlHelper = urlHelper,
             };
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc
                 .Callback((UrlRouteContext c) => context = c)
                 .Returns("some-value");
             var values = new { test = "test-value" };
-            var result = new RedirectToPageResult("MyPage", values, true, "test-fragment")
+            var result = new RedirectToPageResult("/MyPage", values, true, "test-fragment")
             {
                 UrlHelper = urlHelper.Object,
                 Protocol = "ftp",
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc
                 value =>
                 {
                     Assert.Equal("page", value.Key);
-                    Assert.Equal("MyPage", value.Value);
+                    Assert.Equal("/MyPage", value.Value);
                 });
             Assert.Equal("ftp", context.Protocol);
             Assert.Equal("test-fragment", context.Fragment);
