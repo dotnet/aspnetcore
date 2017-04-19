@@ -11,11 +11,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,14 +26,6 @@ namespace Microsoft.AspNetCore.Identity.InMemory
     public class FunctionalTest
     {
         const string TestPassword = "1qaz!QAZ";
-
-        [Fact]
-        public void UseIdentityThrowsWithoutAddIdentity()
-        {
-            var builder = new WebHostBuilder()
-                .Configure(app => app.UseIdentity());
-            Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
-        }
 
         [Fact]
         public async Task CanChangePasswordOptions()
@@ -57,12 +49,15 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration()
         {
             var clock = new TestClock();
-            var server = CreateServer(services => services.Configure<IdentityOptions>(options =>
+            var server = CreateServer(services =>
             {
-                options.Cookies.ApplicationCookie.SystemClock = clock;
-                options.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.Cookies.ApplicationCookie.SlidingExpiration = false;
-            }));
+                services.ConfigureApplicationCookie(options =>
+                {
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                    options.SlidingExpiration = false;
+                });
+                services.AddSingleton<ISystemClock>(clock);
+            });
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -96,10 +91,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe)
         {
             var clock = new TestClock();
-            var server = CreateServer(services => services.Configure<IdentityOptions>(options =>
-            {
-                options.Cookies.ApplicationCookie.SystemClock = clock;
-            }));
+            var server = CreateServer(services => services.AddSingleton<ISystemClock>(clock));
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -143,17 +135,20 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         public async Task CanAccessOldPrincipalDuringSecurityStampReplacement()
         {
             var clock = new TestClock();
-            var server = CreateServer(services => services.Configure<IdentityOptions>(options =>
+            var server = CreateServer(services =>
             {
-                options.Cookies.ApplicationCookie.SystemClock = clock;
-                options.OnSecurityStampRefreshingPrincipal = c =>
+                services.Configure<IdentityOptions>(options =>
                 {
-                    var newId = new ClaimsIdentity();
-                    newId.AddClaim(new Claim("PreviousName", c.CurrentPrincipal.Identity.Name));
-                    c.NewPrincipal.AddIdentity(newId);
-                    return Task.FromResult(0);
-                };
-            }));
+                    options.OnSecurityStampRefreshingPrincipal = c =>
+                    {
+                        var newId = new ClaimsIdentity();
+                        newId.AddClaim(new Claim("PreviousName", c.CurrentPrincipal.Identity.Name));
+                        c.NewPrincipal.AddIdentity(newId);
+                        return Task.FromResult(0);
+                    };
+                });
+                services.AddSingleton<ISystemClock>(clock);
+            });
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -233,7 +228,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseIdentity();
+                    app.UseAuthentication();
                     app.Use(async (context, next) =>
                     {
                         var req = context.Request;
@@ -282,14 +277,11 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                         }
                         else if (req.Path == new PathString("/me"))
                         {
-                            var auth = new AuthenticateContext("Application");
-                            auth.Authenticated(context.User, new AuthenticationProperties().Items, new AuthenticationDescription().Items);
-                            Describe(res, auth);
+                            Describe(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, null, "Application")));
                         }
                         else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
                         {
-                            var auth = new AuthenticateContext(remainder.Value.Substring(1));
-                            await context.Authentication.AuthenticateAsync(auth);
+                            var auth = await context.AuthenticateAsync(remainder.Value.Substring(1));
                             Describe(res, auth);
                         }
                         else if (req.Path == new PathString("/testpath") && testpath != null)
@@ -307,17 +299,14 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                     services.AddIdentity<TestUser, TestRole>();
                     services.AddSingleton<IUserStore<TestUser>, InMemoryStore<TestUser, TestRole>>();
                     services.AddSingleton<IRoleStore<TestRole>, InMemoryStore<TestUser, TestRole>>();
-                    if (configureServices != null)
-                    {
-                        configureServices(services);
-                    }
+                    configureServices?.Invoke(services);
                 });
             var server = new TestServer(builder);
             server.BaseAddress = baseAddress;
             return server;
         }
 
-        private static void Describe(HttpResponse res, AuthenticateContext result)
+        private static void Describe(HttpResponse res, AuthenticateResult result)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";
@@ -328,7 +317,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             }
             if (result != null && result.Properties != null)
             {
-                xml.Add(result.Properties.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
+                xml.Add(result.Properties.Items.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
             }
             using (var memory = new MemoryStream())
             {

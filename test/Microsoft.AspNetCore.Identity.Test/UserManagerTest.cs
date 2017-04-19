@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -21,7 +22,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void EnsureDefaultServicesDefaultsWithStoreWorks()
         {
+            var config = new ConfigurationBuilder().Build();
             var services = new ServiceCollection()
+                    .AddSingleton<IConfiguration>(config)
                     .AddTransient<IUserStore<TestUser>, NoopUserStore>();
             services.AddIdentity<TestUser, TestRole>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -35,7 +38,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void AddUserManagerWithCustomManagerReturnsSameInstance()
         {
+            var config = new ConfigurationBuilder().Build();
             var services = new ServiceCollection()
+                    .AddSingleton<IConfiguration>(config)
                     .AddTransient<IUserStore<TestUser>, NoopUserStore>()
                     .AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -682,10 +687,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void UserManagerWillUseTokenProviderInstance()
         {
-            var services = new ServiceCollection();
             var provider = new ATokenProvider();
-            services.AddLogging()
-                .AddIdentity<TestUser, TestRole>(o => o.Tokens.ProviderMap.Add("A", new TokenProviderDescriptor(typeof(ATokenProvider))
+            var config = new ConfigurationBuilder().Build();
+            var services = new ServiceCollection()
+                    .AddSingleton<IConfiguration>(config)
+                    .AddLogging();
+
+            services.AddIdentity<TestUser, TestRole>(o => o.Tokens.ProviderMap.Add("A", new TokenProviderDescriptor(typeof(ATokenProvider))
             {
                 ProviderInstance = provider
             })).AddUserStore<NoopUserStore>();
@@ -836,10 +844,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void UserManagerWillUseTokenProviderInstanceOverDefaults()
         {
-            var services = new ServiceCollection();
             var provider = new ATokenProvider();
-            services.AddLogging()
-                .AddIdentity<TestUser, TestRole>(o => o.Tokens.ProviderMap.Add(TokenOptions.DefaultProvider, new TokenProviderDescriptor(typeof(ATokenProvider))
+            var config = new ConfigurationBuilder().Build();
+            var services = new ServiceCollection()
+                    .AddSingleton<IConfiguration>(config)
+                    .AddLogging();
+
+            services.AddIdentity<TestUser, TestRole>(o => o.Tokens.ProviderMap.Add(TokenOptions.DefaultProvider, new TokenProviderDescriptor(typeof(ATokenProvider))
                 {
                     ProviderInstance = provider
                 })).AddUserStore<NoopUserStore>().AddDefaultTokenProviders();
@@ -1668,14 +1679,17 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanCustomizeUserValidatorErrors()
         {
-            var services = new ServiceCollection();
             var store = new Mock<IUserEmailStore<TestUser>>();
             var describer = new TestErrorDescriber();
-            services.AddSingleton<IdentityErrorDescriber>(describer)
-                .AddSingleton<IUserStore<TestUser>>(store.Object)
-                .AddIdentity<TestUser, TestRole>();
-            services.AddLogging();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            var config = new ConfigurationBuilder().Build();
+            var services = new ServiceCollection()
+                    .AddSingleton<IConfiguration>(config)
+                    .AddLogging()
+                    .AddSingleton<IdentityErrorDescriber>(describer)
+                    .AddSingleton<IUserStore<TestUser>>(store.Object)
+                    .AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddIdentity<TestUser, TestRole>();
 
             var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
 

@@ -36,11 +36,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(ClaimTypes.Name, options.ClaimsIdentity.UserNameClaimType);
             Assert.Equal(ClaimTypes.NameIdentifier, options.ClaimsIdentity.UserIdClaimType);
             Assert.Equal("AspNet.Identity.SecurityStamp", options.ClaimsIdentity.SecurityStampClaimType);
-
-            Assert.True(options.Cookies.ApplicationCookie.AutomaticAuthenticate);
-            Assert.False(options.Cookies.ExternalCookie.AutomaticAuthenticate);
-            Assert.False(options.Cookies.TwoFactorRememberMeCookie.AutomaticAuthenticate);
-            Assert.False(options.Cookies.TwoFactorUserIdCookie.AutomaticAuthenticate);
         }
 
         [Fact]
@@ -73,8 +68,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(roleClaimType, config["identity:claimsidentity:roleclaimtype"]);
 
             var services = new ServiceCollection();
+            services.AddSingleton<IConfiguration>(config);
             services.AddIdentity<TestUser,TestRole>();
-            services.Configure<IdentityOptions>(config.GetSection("identity"));
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
             var options = accessor.Value;
@@ -106,7 +101,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             builder.AddInMemoryCollection(dic);
             var config = builder.Build();
             var services = new ServiceCollection();
-            services.Configure<IdentityOptions>(config.GetSection("identity"));
+            services.AddSingleton<IConfiguration>(config);
             services.AddIdentity<TestUser, TestRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
@@ -119,6 +114,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public void CanCustomizeIdentityOptions()
         {
             var services = new ServiceCollection()
+                .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .Configure<IdentityOptions>(options => options.Password.RequiredLength = -1);
             services.AddIdentity<TestUser,TestRole>();
             var serviceProvider = services.BuildServiceProvider();
@@ -139,7 +135,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void CanSetupIdentityOptions()
         {
-            var services = new ServiceCollection();
+            var services = new ServiceCollection()
+                .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
             services.AddIdentity<TestUser,TestRole>(options => options.User.RequireUniqueEmail = true);
             var serviceProvider = services.BuildServiceProvider();
 

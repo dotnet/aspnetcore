@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             var services = new ServiceCollection();
 
             services
+                .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .AddDbContext<IdentityDbContext>(o => o.UseSqlServer(fixture.ConnectionString))
                 .AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>();

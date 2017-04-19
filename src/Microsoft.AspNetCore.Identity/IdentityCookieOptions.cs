@@ -3,8 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Identity
 {
@@ -14,95 +12,72 @@ namespace Microsoft.AspNetCore.Identity
     public class IdentityCookieOptions
     {
         private static readonly string CookiePrefix = "Identity";
-        private static readonly string DefaultApplicationScheme = CookiePrefix + ".Application";
-        private static readonly string DefaultExternalScheme = CookiePrefix + ".External";
-        private static readonly string DefaultTwoFactorRememberMeScheme = CookiePrefix + ".TwoFactorRememberMe";
-        private static readonly string DefaultTwoFactorUserIdScheme = CookiePrefix + ".TwoFactorUserId";
+        /// <summary>
+        /// The scheme used to identify application authentication cookies.
+        /// </summary>
+        public static readonly string ApplicationScheme = CookiePrefix + ".Application";
 
         /// <summary>
-        /// Constructs a new instance of <see cref="IdentityCookieOptions"/>.
+        /// The scheme used to identify external authentication cookies.
         /// </summary>
-        public IdentityCookieOptions()
-        {
-            // Configure all of the cookie middlewares
-            ApplicationCookie = new CookieAuthenticationOptions
-            {
-                AuthenticationScheme = DefaultApplicationScheme,
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                LoginPath = new PathString("/Account/Login"),
-                Events = new CookieAuthenticationEvents
-                {
-                    OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
-                }
-            };
+        public static readonly string ExternalScheme = CookiePrefix + ".External";
 
-            ExternalCookie = new CookieAuthenticationOptions
-            {
-                AutomaticAuthenticate = false,
-                AuthenticationScheme = DefaultExternalScheme,
-                CookieName = DefaultExternalScheme,
-                ExpireTimeSpan = TimeSpan.FromMinutes(5)
-            };
+        /// <summary>
+        /// The scheme used to identify Two Factor authentication cookies for saving the Remember Me state.
+        /// </summary>
+        public static readonly string TwoFactorRememberMeScheme = CookiePrefix + ".TwoFactorRememberMe";
 
-            TwoFactorRememberMeCookie = new CookieAuthenticationOptions
-            {
-                AutomaticAuthenticate = false,
-                AuthenticationScheme = DefaultTwoFactorRememberMeScheme,
-                CookieName = DefaultTwoFactorRememberMeScheme
-            };
-
-            TwoFactorUserIdCookie = new CookieAuthenticationOptions
-            {
-                AutomaticAuthenticate = false,
-                AuthenticationScheme = DefaultTwoFactorUserIdScheme,
-                CookieName = DefaultTwoFactorUserIdScheme,
-                ExpireTimeSpan = TimeSpan.FromMinutes(5)
-            };
-        }
+        /// <summary>
+        /// The scheme used to identify Two Factor authentication cookies for round tripping user identities.
+        /// </summary>
+        public static readonly string TwoFactorUserIdScheme = CookiePrefix + ".TwoFactorUserId";
 
         /// <summary>
         /// The options for the application cookie.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
         public CookieAuthenticationOptions ApplicationCookie { get; set; }
 
         /// <summary>
         /// The options for the external cookie.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
         public CookieAuthenticationOptions ExternalCookie { get; set; }
 
         /// <summary>
         /// The options for the two factor remember me cookie.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
         public CookieAuthenticationOptions TwoFactorRememberMeCookie { get; set; }
 
         /// <summary>
         /// The options for the two factor user id cookie.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
         public CookieAuthenticationOptions TwoFactorUserIdCookie { get; set; }
 
         /// <summary>
         /// Gets the scheme used to identify application authentication cookies.
         /// </summary>
         /// <value>The scheme used to identify application authentication cookies.</value>
-        public string ApplicationCookieAuthenticationScheme => ApplicationCookie?.AuthenticationScheme;
+        public string ApplicationCookieAuthenticationScheme { get; set; } = ApplicationScheme;
 
         /// <summary>
         /// Gets the scheme used to identify external authentication cookies.
         /// </summary>
         /// <value>The scheme used to identify external authentication cookies.</value>
-        public string ExternalCookieAuthenticationScheme => ExternalCookie?.AuthenticationScheme;
+        public string ExternalCookieAuthenticationScheme { get; set; } = ExternalScheme;
 
         /// <summary>
         /// Gets the scheme used to identify Two Factor authentication cookies for round tripping user identities.
         /// </summary>
         /// <value>The scheme used to identify user identity 2fa authentication cookies.</value>
-        public string TwoFactorUserIdCookieAuthenticationScheme => TwoFactorUserIdCookie?.AuthenticationScheme;
+        public string TwoFactorUserIdCookieAuthenticationScheme { get; set; } = TwoFactorUserIdScheme;
 
         /// <summary>
         /// Gets the scheme used to identify Two Factor authentication cookies for saving the Remember Me state.
         /// </summary>
         /// <value>The scheme used to identify remember me application authentication cookies.</value>        
-        public string TwoFactorRememberMeCookieAuthenticationScheme => TwoFactorRememberMeCookie?.AuthenticationScheme;
+        public string TwoFactorRememberMeCookieAuthenticationScheme { get; set; } = TwoFactorRememberMeScheme;
     }
 }

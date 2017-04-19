@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -14,6 +17,13 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class IdentityServiceCollectionExtensions
     {
+        internal class IdentityConfigureOptions : ConfigureOptions<IdentityOptions>
+        {
+            public IdentityConfigureOptions(IConfiguration config) :
+                base(options => config.GetSection("Identity").Bind(options))
+            { }
+        }
+
         /// <summary>
         /// Adds the default identity system configuration for the specified User and Role types.
         /// </summary>
@@ -30,6 +40,24 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Configures the application cookie.
+        /// </summary>
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="configure">An action to configure the <see cref="CookieAuthenticationOptions"/>.</param>
+        /// <returns>The services.</returns>
+        public static IServiceCollection ConfigureApplicationCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
+            => services.Configure(IdentityCookieOptions.ApplicationScheme, configure);
+
+        /// <summary>
+        /// Configure the external cookie.
+        /// </summary>
+        /// <param name="services">The services available in the application.</param>
+        /// <param name="configure">An action to configure the <see cref="CookieAuthenticationOptions"/>.</param>
+        /// <returns>The services.</returns>
+        public static IServiceCollection ConfigureExternalCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
+            => services.Configure(IdentityCookieOptions.ExternalScheme, configure);
+
+        /// <summary>
         /// Adds and configures the identity system for the specified User and Role types.
         /// </summary>
         /// <typeparam name="TUser">The type representing a User in the system.</typeparam>
@@ -44,16 +72,40 @@ namespace Microsoft.Extensions.DependencyInjection
             where TRole : class
         {
             // Services used by identity
-            services.AddAuthentication(options =>
+            services.AddAuthenticationCore(options =>
             {
-                // This is the Default value for ExternalCookieAuthenticationScheme
-                options.SignInScheme = new IdentityCookieOptions().ExternalCookieAuthenticationScheme;
+                options.DefaultAuthenticateScheme = IdentityCookieOptions.ApplicationScheme;
+                options.DefaultChallengeScheme = IdentityCookieOptions.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityCookieOptions.ExternalScheme;
+            });
+
+            services.AddCookieAuthentication(IdentityCookieOptions.ApplicationScheme, o =>
+            {
+                o.LoginPath = new PathString("/Account/Login");
+                o.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
+                };
+            });
+
+            services.AddCookieAuthentication(IdentityCookieOptions.ExternalScheme, o =>
+            {
+                o.CookieName = IdentityCookieOptions.ExternalScheme;
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+            });
+
+            services.AddCookieAuthentication(IdentityCookieOptions.TwoFactorRememberMeScheme, 
+                o => o.CookieName = IdentityCookieOptions.TwoFactorRememberMeScheme);
+
+            services.AddCookieAuthentication(IdentityCookieOptions.TwoFactorUserIdScheme, o =>
+            {
+                o.CookieName = IdentityCookieOptions.TwoFactorUserIdScheme;
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
             });
 
             // Hosting doesn't add IHttpContextAccessor by default
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             // Identity services
-            services.TryAddSingleton<IdentityMarkerService>();
             services.TryAddScoped<IUserValidator<TUser>, UserValidator<TUser>>();
             services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
             services.TryAddScoped<IPasswordHasher<TUser>, PasswordHasher<TUser>>();
@@ -67,6 +119,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<SignInManager<TUser>, SignInManager<TUser>>();
             services.TryAddScoped<RoleManager<TRole>, RoleManager<TRole>>();
 
+            services.AddSingleton<IConfigureOptions<IdentityOptions>, IdentityConfigureOptions>();
             if (setupAction != null)
             {
                 services.Configure(setupAction);

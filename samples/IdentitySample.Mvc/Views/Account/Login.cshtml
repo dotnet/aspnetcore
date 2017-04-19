@@ -1,8 +1,9 @@
 @using System.Collections.Generic
 @using Microsoft.AspNetCore.Http
-@using Microsoft.AspNetCore.Http.Authentication
+@using Microsoft.AspNetCore.Authentication
 @model LoginViewModel
 @inject SignInManager<ApplicationUser> SignInManager
+@inject IAuthenticationSchemeProvider SchemeProvider
 
 @{
     ViewData["Title"] = "Log in";
@@ -59,7 +60,8 @@
             <h4>Use another service to log in.</h4>
             <hr />
             @{
-                var loginProviders = SignInManager.GetExternalAuthenticationSchemes().ToList();
+                var schemes = await SchemeProvider.GetAllSchemesAsync();
+                var loginProviders = schemes.ToList();
                 if (loginProviders.Count == 0)
                 {
                     <div>
@@ -76,7 +78,7 @@
                             <p>
                                 @foreach (var provider in loginProviders)
                                 {
-                                    <button type="submit" class="btn btn-default" name="provider" value="@provider.AuthenticationScheme" title="Log in using your @provider.DisplayName account">@provider.AuthenticationScheme</button>
+                                    <button type="submit" class="btn btn-default" name="provider" value="@provider.AuthenticationScheme" title="Log in using your @provider.Name account">@provider.Name</button>
                                 }
                             </p>
                         </div>
