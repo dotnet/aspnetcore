@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authentication
 @model LoginViewModel
 @inject SignInManager<ApplicationUser> SignInManager
+@inject IAuthenticationSchemeProvider SchemeProvider
 
 @{
     ViewData["Title"] = "Log in";
