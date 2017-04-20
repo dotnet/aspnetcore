@@ -150,7 +150,6 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.TraceSource" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.ObjectPool" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Primitives" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
