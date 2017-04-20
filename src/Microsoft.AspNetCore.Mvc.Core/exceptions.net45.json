@@ -4,6 +4,121 @@
         "Kind": "Removal"
     },
     {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ForbidResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(System.Collections.Generic.IList<System.String> authenticationSchemes, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ForbidResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ForbidResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ForbidResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ForbidResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(System.String authenticationScheme, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.SignInResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.SignInResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(System.String authenticationScheme, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.SignInResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ChallengeResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ChallengeResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(System.String authenticationScheme, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ChallengeResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(System.Collections.Generic.IList<System.String> authenticationSchemes, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ChallengeResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ChallengeResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.SignOutResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.SignOutResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.SignOutResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(System.String authenticationScheme, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.SignOutResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public .ctor(System.Collections.Generic.IList<System.String> authenticationSchemes, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Mvc.ControllerBase",
+        "OldMemberId": "public virtual Microsoft.AspNetCore.Mvc.ChallengeResult Challenge(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Mvc.ControllerBase",
+        "OldMemberId": "public virtual Microsoft.AspNetCore.Mvc.ChallengeResult Challenge(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, params System.String[] authenticationSchemes)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Mvc.ControllerBase",
+        "OldMemberId": "public virtual Microsoft.AspNetCore.Mvc.ForbidResult Forbid(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Mvc.ControllerBase",
+        "OldMemberId": "public virtual Microsoft.AspNetCore.Mvc.SignOutResult SignOut(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, params System.String[] authenticationSchemes)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Mvc.ControllerBase",
+        "OldMemberId": "public virtual Microsoft.AspNetCore.Mvc.ForbidResult Forbid(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, params System.String[] authenticationSchemes)",
+        "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Mvc.ControllerBase",
+        "OldMemberId": "public virtual Microsoft.AspNetCore.Mvc.SignInResult SignIn(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, System.String authenticationScheme)",
+        "Kind": "Removal"
+    },
+    {
         "OldTypeId": "public static class Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResultExtensions",
         "Kind": "Removal"
     }
