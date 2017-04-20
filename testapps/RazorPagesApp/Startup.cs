@@ -10,19 +10,14 @@ namespace RazorPagesApp
         public void ConfigureServices(IServiceCollection services)
         {
             var builder = services.AddMvc();
+            services.AddCookieAuthentication(options => options.LoginPath = "/Login");
             ConfigureMvc(builder);
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                LoginPath = "/Login",
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true
-            });
-
+            app.UseAuthentication();
             app.UseMvc();
         }
 
