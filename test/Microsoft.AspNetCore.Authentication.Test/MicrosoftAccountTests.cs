@@ -28,6 +28,18 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
     public class MicrosoftAccountTests
     {
         [Fact]
+        public async Task VerifySchemeDefaults()
+        {
+            var services = new ServiceCollection().AddMicrosoftAccountAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var sp = services.BuildServiceProvider();
+            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+            var scheme = await schemeProvider.GetSchemeAsync(MicrosoftAccountDefaults.AuthenticationScheme);
+            Assert.NotNull(scheme);
+            Assert.Equal("MicrosoftAccountHandler", scheme.HandlerType.Name);
+            Assert.Equal(MicrosoftAccountDefaults.AuthenticationScheme, scheme.DisplayName);
+        }
+
+        [Fact]
         public void AddCanBindAgainstDefaultConfig()
         {
             var dic = new Dictionary<string, string>

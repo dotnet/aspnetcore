@@ -28,6 +28,18 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
     public class FacebookTests
     {
         [Fact]
+        public async Task VerifySchemeDefaults()
+        {
+            var services = new ServiceCollection().AddFacebookAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var sp = services.BuildServiceProvider();
+            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+            var scheme = await schemeProvider.GetSchemeAsync(FacebookDefaults.AuthenticationScheme);
+            Assert.NotNull(scheme);
+            Assert.Equal("FacebookHandler", scheme.HandlerType.Name);
+            Assert.Equal(FacebookDefaults.AuthenticationScheme, scheme.DisplayName);
+        }
+
+        [Fact]
         public void AddCanBindAgainstDefaultConfig()
         {
             var dic = new Dictionary<string, string>

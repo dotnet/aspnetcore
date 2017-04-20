@@ -27,6 +27,18 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         private TestClock _clock = new TestClock();
 
         [Fact]
+        public async Task VerifySchemeDefaults()
+        {
+            var services = new ServiceCollection().AddCookieAuthentication();
+            var sp = services.BuildServiceProvider();
+            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+            var scheme = await schemeProvider.GetSchemeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            Assert.NotNull(scheme);
+            Assert.Equal("CookieAuthenticationHandler", scheme.HandlerType.Name);
+            Assert.Null(scheme.DisplayName);
+        }
+
+        [Fact]
         public async Task NormalRequestPassesThrough()
         {
             var server = CreateServer(s => { });

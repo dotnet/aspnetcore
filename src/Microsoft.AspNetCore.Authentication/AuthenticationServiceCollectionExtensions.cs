@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<AuthenticationSchemeBuilder> configureScheme, Action<TOptions> configureOptions)
+        public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<AuthenticationSchemeBuilder> configureScheme, Action<TOptions> configureOptions)
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : AuthenticationHandler<TOptions>
         {
@@ -53,6 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 o.AddScheme(authenticationScheme, scheme => {
                     scheme.HandlerType = typeof(THandler);
+                    scheme.DisplayName = displayName;
                     configureScheme?.Invoke(scheme);
                 });
             });
@@ -67,6 +68,11 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : AuthenticationHandler<TOptions>
-            => services.AddScheme<TOptions, THandler>(authenticationScheme, configureScheme: null, configureOptions: configureOptions);
+            => services.AddScheme<TOptions, THandler>(authenticationScheme, displayName: null, configureScheme: null, configureOptions: configureOptions);
+
+        public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<TOptions> configureOptions)
+            where TOptions : AuthenticationSchemeOptions, new()
+            where THandler : AuthenticationHandler<TOptions>
+            => services.AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureScheme: null, configureOptions: configureOptions);
     }
 }

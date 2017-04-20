@@ -21,6 +21,18 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     public class TwitterTests
     {
         [Fact]
+        public async Task VerifySchemeDefaults()
+        {
+            var services = new ServiceCollection().AddTwitterAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var sp = services.BuildServiceProvider();
+            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+            var scheme = await schemeProvider.GetSchemeAsync(TwitterDefaults.AuthenticationScheme);
+            Assert.NotNull(scheme);
+            Assert.Equal("TwitterHandler", scheme.HandlerType.Name);
+            Assert.Equal(TwitterDefaults.AuthenticationScheme, scheme.DisplayName);
+        }
+
+        [Fact]
         public void AddCanBindAgainstDefaultConfig()
         {
             var dic = new Dictionary<string, string>

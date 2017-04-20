@@ -27,6 +27,18 @@ namespace Microsoft.AspNetCore.Authentication.Google
     public class GoogleTests
     {
         [Fact]
+        public async Task VerifySchemeDefaults()
+        {
+            var services = new ServiceCollection().AddGoogleAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var sp = services.BuildServiceProvider();
+            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+            var scheme = await schemeProvider.GetSchemeAsync(GoogleDefaults.AuthenticationScheme);
+            Assert.NotNull(scheme);
+            Assert.Equal("GoogleHandler", scheme.HandlerType.Name);
+            Assert.Equal(GoogleDefaults.AuthenticationScheme, scheme.DisplayName);
+        }
+
+        [Fact]
         public void AddCanBindAgainstDefaultConfig()
         {
             var dic = new Dictionary<string, string>

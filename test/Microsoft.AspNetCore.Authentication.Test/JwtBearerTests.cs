@@ -27,6 +27,18 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     public class JwtBearerTests
     {
         [Fact]
+        public async Task VerifySchemeDefaults()
+        {
+            var services = new ServiceCollection().AddJwtBearerAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var sp = services.BuildServiceProvider();
+            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+            var scheme = await schemeProvider.GetSchemeAsync(JwtBearerDefaults.AuthenticationScheme);
+            Assert.NotNull(scheme);
+            Assert.Equal("JwtBearerHandler", scheme.HandlerType.Name);
+            Assert.Null(scheme.DisplayName);
+        }
+
+        [Fact]
         public void AddCanBindAgainstDefaultConfig()
         {
             var dic = new Dictionary<string, string>

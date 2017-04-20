@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Authentication
                         {
                             var name = remainder.Value.Substring(1);
                             var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                            var scheme = new AuthenticationScheme(name, typeof(TestHandler));
+                            var scheme = new AuthenticationScheme(name, name, typeof(TestHandler));
                             auth.AddScheme(scheme);
                         }
                         else if (req.Path.StartsWithSegments(new PathString("/auth"), out remainder))

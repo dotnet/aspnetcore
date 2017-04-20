@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services, string authenticationScheme, Action<FacebookOptions> configureOptions)
         {
-            return services.AddScheme<FacebookOptions, FacebookHandler>(authenticationScheme, configureOptions);
+            return services.AddScheme<FacebookOptions, FacebookHandler>(authenticationScheme, authenticationScheme, configureOptions);
         }
     }
 }

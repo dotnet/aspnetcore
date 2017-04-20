@@ -238,7 +238,7 @@ namespace SocialSample
                     foreach (var provider in await schemeProvider.GetAllSchemesAsync())
                     {
                         // REVIEW: we lost access to display name (which is buried in the handler options)
-                        await context.Response.WriteAsync("<a href=\"?authscheme=" + provider.Name + "\">" + (provider.Name ?? "(suppressed)") + "</a><br>");
+                        await context.Response.WriteAsync("<a href=\"?authscheme=" + provider.Name + "\">" + (provider.DisplayName ?? "(suppressed)") + "</a><br>");
                     }
                     await context.Response.WriteAsync("</body></html>");
                 });

@@ -16,6 +16,18 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     public class OAuthTests
     {
         [Fact]
+        public async Task VerifySchemeDefaults()
+        {
+            var services = new ServiceCollection().AddOAuthAuthentication("oauth", o => { });
+            var sp = services.BuildServiceProvider();
+            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
+            var scheme = await schemeProvider.GetSchemeAsync("oauth");
+            Assert.NotNull(scheme);
+            Assert.Equal("OAuthHandler`1", scheme.HandlerType.Name);
+            Assert.Equal("oauth", scheme.DisplayName);
+        }
+
+        [Fact]
         public async Task ThrowsIfClientIdMissing()
         {
             var server = CreateServer(

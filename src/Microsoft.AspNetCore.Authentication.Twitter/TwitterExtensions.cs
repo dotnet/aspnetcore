@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddTwitterAuthentication(this IServiceCollection services, string authenticationScheme, Action<TwitterOptions> configureOptions)
         {
-            return services.AddScheme<TwitterOptions, TwitterHandler>(authenticationScheme, configureOptions);
+            return services.AddScheme<TwitterOptions, TwitterHandler>(authenticationScheme, authenticationScheme, configureOptions);
         }
     }
 }
