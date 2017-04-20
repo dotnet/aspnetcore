@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 {
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         private static string GetSolutionDirectory()
         {
-            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+            var applicationBasePath = AppContext.BaseDirectory;
 
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
