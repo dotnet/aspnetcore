@@ -31,12 +31,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RazorDiagnostic.Create(
                     new RazorError(
                         LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(16, 1, 14),
+                        new SourceLocation(14 + Environment.NewLine.Length, 1, 14),
                         length: 1)),
                 RazorDiagnostic.Create(
                     new RazorError(
                         Resources.FormatInvalidTagHelperLookupText("\""),
-                        new SourceLocation(16, 1, 14),
+                        new SourceLocation(14 + Environment.NewLine.Length, 1, 14),
                         length: 1))
             };
                 
@@ -73,12 +73,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RazorDiagnostic.Create(
                     new RazorError(
                         LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(19, 1, 17),
+                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
                         length: 1)),
                 RazorDiagnostic.Create(
                     new RazorError(
                         Resources.FormatInvalidTagHelperLookupText("\""),
-                        new SourceLocation(19, 1, 17),
+                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
                         length: 1))
             };
 
@@ -115,12 +115,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RazorDiagnostic.Create(
                     new RazorError(
                         LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(19, 1, 17),
+                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
                         length: 1)),
                 RazorDiagnostic.Create(
                     new RazorError(
                         Resources.FormatInvalidTagHelperPrefixValue("tagHelperPrefix", "\"", "\""),
-                        new SourceLocation(19, 1, 17),
+                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
                         length: 1))
             };
 
