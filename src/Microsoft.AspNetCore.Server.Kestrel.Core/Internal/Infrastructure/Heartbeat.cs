@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly TimeSpan _interval;
         private readonly ISystemClock _systemClock;
         private readonly IKestrelTrace _trace;
-        private readonly Timer _timer;
+        private Timer _timer;
         private int _executingOnHeartbeat;
 
         public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IKestrelTrace trace)
@@ -30,6 +30,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _interval = interval;
             _systemClock = systemClock;
             _trace = trace;
+        }
+
+        public void Start()
+        {
             _timer = new Timer(OnHeartbeat, state: this, dueTime: _interval, period: _interval);
         }
 
@@ -37,9 +41,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             ((Heartbeat)state).OnHeartbeat();
         }
-        
+
         // Called by the Timer (background) thread
-        private void OnHeartbeat()
+        internal void OnHeartbeat()
         {
             var now = _systemClock.UtcNow;
 
@@ -69,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Dispose()
         {
-            _timer.Dispose();
+            _timer?.Dispose();
         }
     }
 }

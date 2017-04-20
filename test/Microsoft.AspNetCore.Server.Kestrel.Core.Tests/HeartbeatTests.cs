@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -27,8 +28,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() => handlerMre.Wait());
             kestrelTrace.Setup(t => t.TimerSlow(heartbeatInterval, systemClock.UtcNow)).Callback(() => traceMre.Set());
 
-            using (new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace.Object, heartbeatInterval))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace.Object, heartbeatInterval))
             {
+                heartbeat.Start();
                 Assert.True(traceMre.Wait(TimeSpan.FromSeconds(10)));
             }
 
@@ -49,12 +51,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Throws(ex);
 
-            using (new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace, heartbeatInterval))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace, heartbeatInterval))
             {
-                Assert.True(kestrelTrace.Logger.MessageLoggedTask.Wait(TimeSpan.FromSeconds(10)));
+                heartbeat.OnHeartbeat();
             }
 
-            Assert.Equal(ex, kestrelTrace.Logger.Messages.First(message => message.LogLevel == LogLevel.Error).Exception);
+            Assert.Equal(ex, kestrelTrace.Logger.Messages.Single(message => message.LogLevel == LogLevel.Error).Exception);
         }
     }
 }

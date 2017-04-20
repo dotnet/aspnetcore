@@ -121,6 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     throw new InvalidOperationException("Server has already started.");
                 }
                 _hasStarted = true;
+                _heartbeat.Start();
 
                 async Task OnBind(ListenOptions endpoint)
                 {
@@ -172,7 +173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            _heartbeat?.Dispose();
+            _heartbeat.Dispose();
         }
 
         // Ungraceful shutdown

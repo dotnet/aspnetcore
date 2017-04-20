@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
             var testKestrelTrace = new TestKestrelTrace();
 
-            using (new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, testKestrelTrace, timerInterval))
+            using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, testKestrelTrace, timerInterval))
             {
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
                 systemClock.UtcNow = future;
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task GetDateHeaderValue_ReturnsUpdatedValueAfterHeartbeat()
+        public void GetDateHeaderValue_ReturnsUpdatedValueAfterHeartbeat()
         {
             var now = DateTimeOffset.UtcNow;
             var future = now.AddSeconds(10);
@@ -72,18 +71,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
             var testKestrelTrace = new TestKestrelTrace();
 
-            var heartbeatTcs = new TaskCompletionSource<object>();
             var mockHeartbeatHandler = new Mock<IHeartbeatHandler>();
 
-            mockHeartbeatHandler.Setup(h => h.OnHeartbeat(future)).Callback(() => heartbeatTcs.TrySetResult(null));
-
-            using (new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, systemClock, testKestrelTrace, timerInterval))
+            using (var heartbeat = new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, systemClock, testKestrelTrace, timerInterval))
             {
+                heartbeat.OnHeartbeat();
+
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
 
                 // Wait for the next heartbeat before verifying GetDateHeaderValues picks up new time.
                 systemClock.UtcNow = future;
-                await heartbeatTcs.Task;
+
+                heartbeat.OnHeartbeat();
 
                 Assert.Equal(future.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
                 Assert.True(systemClock.UtcNowCalled >= 2);
@@ -104,8 +103,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
             var testKestrelTrace = new TestKestrelTrace();
 
-            using (new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, testKestrelTrace, timerInterval))
+            using (var heatbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, testKestrelTrace, timerInterval))
             {
+                heatbeat.OnHeartbeat();
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
             }
 
