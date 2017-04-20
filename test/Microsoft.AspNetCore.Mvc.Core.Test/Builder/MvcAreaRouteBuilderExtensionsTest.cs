@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Builder
 
                     var values = new RouteValueDictionary(new { area = areaName });
                     var match = kvp.Value.Match(
-                        httpContext: Mock.Of<HttpContext>(),
+                        new DefaultHttpContext(),
                         route: new Mock<IRouter>().Object,
                         routeKey: kvp.Key,
                         values: values,

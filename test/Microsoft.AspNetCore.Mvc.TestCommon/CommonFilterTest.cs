@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
         private static ActionContext CreateActionContext()
         {
-            return new ActionContext(Mock.Of<HttpContext>(), new RouteData(), new ActionDescriptor());
+            return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
         }
 
         private class NoOpResult : IActionResult

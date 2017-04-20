@@ -429,8 +429,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
 
         private static ActionContext GetActionContext()
         {
-            var httpContext = Mock.Of<HttpContext>();
-            return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
         }
 
         private class TestViewEngine : IViewEngine
