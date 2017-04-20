@@ -33,8 +33,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.Globalization.Extensions" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
