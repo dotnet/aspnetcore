@@ -1727,10 +1727,5 @@ namespace Microsoft.AspNetCore.Routing
                 return true;
             }
         }
-
-        private class TestRouteOptions : IOptions<RouteOptions>
-        {
-            public RouteOptions Value => new RouteOptions();
-        }
     }
 }
