@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -2626,7 +2627,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task InvokeAction_AsyncAction_WithCustomTaskReturnTypeThrows()
+        public async Task InvokeAction_AsyncAction_WithCustomTaskReturnType()
         {
             // Arrange
             var inputParam1 = 1;
@@ -2646,19 +2647,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 nameof(TestController.TaskActionWithCustomTaskReturnType),
                 actionParameters);
 
-            var expectedException = string.Format(
-                CultureInfo.CurrentCulture,
-                "The method 'TaskActionWithCustomTaskReturnType' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
-                typeof(TestController));
+            // Act
+            await invoker.InvokeAsync();
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => invoker.InvokeAsync());
-            Assert.Equal(expectedException, ex.Message);
+            // Assert
+            Assert.IsType(typeof(EmptyResult), result);
         }
 
         [Fact]
-        public async Task InvokeAction_AsyncAction_WithCustomTaskOfTReturnTypeThrows()
+        public async Task InvokeAction_AsyncAction_WithCustomTaskOfTReturnType()
         {
             // Arrange
             var inputParam1 = 1;
@@ -2678,15 +2675,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 nameof(TestController.TaskActionWithCustomTaskOfTReturnType),
                 actionParameters);
 
-            var expectedException = string.Format(
-                CultureInfo.CurrentCulture,
-                "The method 'TaskActionWithCustomTaskOfTReturnType' on type '{0}' returned a Task instance even though it is not an asynchronous method.",
-                typeof(TestController));
+            // Act
+            await invoker.InvokeAsync();
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => invoker.InvokeAsync());
-            Assert.Equal(expectedException, ex.Message);
+            // Assert
+            Assert.IsType(typeof(ObjectResult), result);
+            Assert.IsType(typeof(int), ((ObjectResult)result).Value);
+            Assert.Equal(1, ((ObjectResult)result).Value);
         }
 
         [Fact]
@@ -2941,7 +2936,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new IFilterMetadata[0],
                 ObjectMethodExecutor.Create(
                     actionDescriptor.MethodInfo,
-                    actionDescriptor.ControllerTypeInfo));
+                    actionDescriptor.ControllerTypeInfo,
+                    ParameterDefaultValues.GetParameterDefaultValues(actionDescriptor.MethodInfo)));
 
             // Act
             await invoker.InvokeAsync();
@@ -3378,12 +3374,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             public TaskDerivedType TaskActionWithCustomTaskReturnType(int i, string s)
             {
-                return new TaskDerivedType();
+                var task = new TaskDerivedType();
+                task.Start();
+                return task;
             }
 
             public TaskOfTDerivedType<int> TaskActionWithCustomTaskOfTReturnType(int i, string s)
             {
-                return new TaskOfTDerivedType<int>(1);
+                var task = new TaskOfTDerivedType<int>(1);
+                task.Start();
+                return task;
             }
 
             /// <summary>
@@ -3517,7 +3517,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             private static ObjectMethodExecutor CreateExecutor(ControllerActionDescriptor actionDescriptor)
             {
-                return ObjectMethodExecutor.Create(actionDescriptor.MethodInfo, actionDescriptor.ControllerTypeInfo);
+                return ObjectMethodExecutor.Create(
+                    actionDescriptor.MethodInfo,
+                    actionDescriptor.ControllerTypeInfo,
+                    ParameterDefaultValues.GetParameterDefaultValues(actionDescriptor.MethodInfo));
             }
 
             private static ControllerContext CreatControllerContext(

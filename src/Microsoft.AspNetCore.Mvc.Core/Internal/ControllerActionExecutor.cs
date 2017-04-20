@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IDictionary<string, object> actionParameters,
             ObjectMethodExecutor actionMethodExecutor)
         {
-            var declaredParameterInfos = actionMethodExecutor.ActionParameters;
+            var declaredParameterInfos = actionMethodExecutor.MethodParameters;
             var count = declaredParameterInfos.Length;
             if (count == 0)
             {

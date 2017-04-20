@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -54,9 +55,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var filterFactoryResult = FilterFactory.GetAllFilters(_filterProviders, controllerContext);
                 filters = filterFactoryResult.Filters;
 
+                var parameterDefaultValues = ParameterDefaultValues
+                    .GetParameterDefaultValues(actionDescriptor.MethodInfo);
+
                 var executor = ObjectMethodExecutor.Create(
                     actionDescriptor.MethodInfo,
-                    actionDescriptor.ControllerTypeInfo);
+                    actionDescriptor.ControllerTypeInfo,
+                    parameterDefaultValues);
 
                 cacheEntry = new Entry(filterFactoryResult.CacheableFilters, executor);
                 cacheEntry = cache.Entries.GetOrAdd(actionDescriptor, cacheEntry);
