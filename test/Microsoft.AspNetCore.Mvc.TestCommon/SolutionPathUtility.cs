@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc
         public static string GetProjectPath(string solutionRelativePath, Assembly assembly)
         {
             var projectName = assembly.GetName().Name;
-            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+            var applicationBasePath = AppContext.BaseDirectory;
 
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
