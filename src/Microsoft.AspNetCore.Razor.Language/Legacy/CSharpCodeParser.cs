@@ -1614,18 +1614,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         break;
 
                     case DirectiveTokenKind.String:
-                        if (At(CSharpSymbolType.StringLiteral))
+                        if (At(CSharpSymbolType.StringLiteral) && CurrentSymbol.Errors.Count == 0)
                         {
                             AcceptAndMoveNext();
                         }
                         else
                         {
-                            var startLocation = CurrentStart;
-                            AcceptUntil(CSharpSymbolType.WhiteSpace, CSharpSymbolType.NewLine);
                             Context.ErrorSink.OnError(
-                                startLocation,
+                                CurrentStart,
                                 LegacyResources.FormatDirectiveExpectsQuotedStringLiteral(descriptor.Name),
-                                Span.End.AbsoluteIndex - Span.Start.AbsoluteIndex);
+                                CurrentSymbol.Content.Length);
+                            return;
                         }
                         break;
                 }

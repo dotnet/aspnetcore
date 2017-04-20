@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Execute_Custom_RemovesDirectiveIRNodeFromIRDocument()
         {
             // Arrange
-            var content = "@custom Hello";
+            var content = "@custom \"Hello\"";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var defaultEngine = RazorEngine.Create(b =>
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Execute_MultipleCustomDirectives_RemovesDirectiveIRNodesFromIRDocument()
         {
             // Arrange
-            var content = "@custom Hello" + Environment.NewLine + "@custom World";
+            var content = "@custom \"Hello\"" + Environment.NewLine + "@custom \"World\"";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var defaultEngine = RazorEngine.Create(b =>

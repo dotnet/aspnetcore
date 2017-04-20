@@ -128,10 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "AString", markup: false)
-                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)), expectedError);
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)), expectedError);
         }
 
         [Fact]
@@ -142,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expectedError = new RazorError(
                 LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
                 new SourceLocation(8, 0, 8),
-                length: 6);
+                length: 1);
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -152,10 +149,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "{foo?}", markup: false)
-                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)), expectedError);
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)), expectedError);
         }
 
         [Fact]
@@ -176,10 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "'AString'", markup: false)
-                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)), expectedError);
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)), expectedError);
         }
 
         [Fact]
@@ -187,14 +178,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
-            var expectedError1 = new RazorError(
-                LegacyResources.ParseError_Unterminated_String_Literal,
-                new SourceLocation(15, 0, 15),
-                length: 1);
-            var expectedError2 = new RazorError(
+            var expectedError = new RazorError(
                 LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
                 new SourceLocation(8, 0, 8),
-                length: 8);
+                length: 7);
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -204,12 +191,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "AString\"", markup: false)
-                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                expectedError1,
-                expectedError2);
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                expectedError);
         }
 
         [Fact]

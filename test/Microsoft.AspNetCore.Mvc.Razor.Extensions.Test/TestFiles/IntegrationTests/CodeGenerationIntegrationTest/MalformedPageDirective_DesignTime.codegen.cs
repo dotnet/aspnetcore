@@ -13,10 +13,6 @@ namespace AspNetCore
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-global::System.Object __typeHelper = "foo;
-        }
-        ))();
         }
         #pragma warning restore 219
         private static System.Object __o = null;

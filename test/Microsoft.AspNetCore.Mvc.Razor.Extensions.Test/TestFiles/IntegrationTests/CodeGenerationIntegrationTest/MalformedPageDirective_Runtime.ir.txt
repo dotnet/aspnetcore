@@ -11,9 +11,9 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - 
-                    RazorIRToken -  - CSharp - BeginContext(12, 43, true);
-                HtmlContent - (12:1,0 [43] MalformedPageDirective.cshtml)
-                    RazorIRToken - (12:1,0 [2] MalformedPageDirective.cshtml) - Html - \n
+                    RazorIRToken -  - CSharp - BeginContext(6, 49, true);
+                HtmlContent - (6:0,6 [49] MalformedPageDirective.cshtml)
+                    RazorIRToken - (6:0,6 [8] MalformedPageDirective.cshtml) - Html - "foo\n\n
                     RazorIRToken - (14:2,0 [4] MalformedPageDirective.cshtml) - Html - <h1>
                     RazorIRToken - (18:2,4 [8] MalformedPageDirective.cshtml) - Html - About Us
                     RazorIRToken - (26:2,12 [5] MalformedPageDirective.cshtml) - Html - </h1>
