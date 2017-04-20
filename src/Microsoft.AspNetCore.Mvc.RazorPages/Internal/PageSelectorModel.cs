@@ -20,11 +20,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     model.RelativePath));
             }
 
-            model.Selectors.Add(CreateSelectorModel(model.ViewEnginePath, routeTemplate));
+            var selectorModel = CreateSelectorModel(model.ViewEnginePath, routeTemplate);
+            model.Selectors.Add(selectorModel);
 
             var fileName = Path.GetFileName(model.RelativePath);
             if (string.Equals(IndexFileName, fileName, StringComparison.OrdinalIgnoreCase))
             {
+                // For pages ending in /Index.cshtml, we want to allow incoming routing, but
+                // force outgoing routes to match to the path sans /Index.
+                selectorModel.AttributeRouteModel.SuppressLinkGeneration = true;
+
                 var parentDirectoryPath = model.ViewEnginePath;
                 var index = parentDirectoryPath.LastIndexOf('/');
                 if (index == -1)

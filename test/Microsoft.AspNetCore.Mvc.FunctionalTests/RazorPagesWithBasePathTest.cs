@@ -142,5 +142,33 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(expected, response.Trim());
         }
+
+        [Fact]
+        public async Task RedirectFromPage_RedirectsToPathWithoutIndexSegment()
+        {
+            //Arrange
+            var expected = "/Redirects";
+
+            // Act
+            var response = await Client.GetAsync("/Redirects/Index");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task RedirectFromPage_ToIndex_RedirectsToPathWithoutIndexSegment()
+        {
+            //Arrange
+            var expected = "/Redirects";
+
+            // Act
+            var response = await Client.GetAsync("/Redirects/RedirectToIndex");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
     }
 }
