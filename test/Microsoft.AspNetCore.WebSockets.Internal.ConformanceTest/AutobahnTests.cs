@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest
             var reportDir = Environment.GetEnvironmentVariable("AUTOBAHN_SUITES_REPORT_DIR");
             var outDir = !string.IsNullOrEmpty(reportDir) ?
                 reportDir :
-                Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "autobahnreports");
+                Path.Combine(AppContext.BaseDirectory, "autobahnreports");
 
             if (Directory.Exists(outDir))
             {
