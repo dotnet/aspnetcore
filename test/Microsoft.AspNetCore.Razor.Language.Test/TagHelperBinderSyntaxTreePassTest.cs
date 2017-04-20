@@ -14,6 +14,132 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class TagHelperBinderSyntaxTreePassTest
     {
         [Fact]
+        public void Execute_CanHandleSingleLengthAddTagHelperDirective()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(builder =>
+            {
+                builder.AddTagHelpers(new TagHelperDescriptor[0]);
+            });
+
+            var pass = new TagHelperBinderSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+            var expectedDiagnostics = new[]
+            {
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.ParseError_Unterminated_String_Literal,
+                        new SourceLocation(16, 1, 14),
+                        length: 1)),
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        Resources.FormatInvalidTagHelperLookupText("\""),
+                        new SourceLocation(16, 1, 14),
+                        length: 1))
+            };
+                
+
+            var content =
+            @"
+@addTagHelper """;
+            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+
+            // Act
+            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+
+            // Assert
+            Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
+        }
+
+        [Fact]
+        public void Execute_CanHandleSingleLengthRemoveTagHelperDirective()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(builder =>
+            {
+                builder.AddTagHelpers(new TagHelperDescriptor[0]);
+            });
+
+            var pass = new TagHelperBinderSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+            var expectedDiagnostics = new[]
+            {
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.ParseError_Unterminated_String_Literal,
+                        new SourceLocation(19, 1, 17),
+                        length: 1)),
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        Resources.FormatInvalidTagHelperLookupText("\""),
+                        new SourceLocation(19, 1, 17),
+                        length: 1))
+            };
+
+
+            var content =
+            @"
+@removeTagHelper """;
+            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+
+            // Act
+            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+
+            // Assert
+            Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
+        }
+
+        [Fact]
+        public void Execute_CanHandleSingleLengthTagHelperPrefix()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(builder =>
+            {
+                builder.AddTagHelpers(new TagHelperDescriptor[0]);
+            });
+
+            var pass = new TagHelperBinderSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+            var expectedDiagnostics = new[]
+            {
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.ParseError_Unterminated_String_Literal,
+                        new SourceLocation(19, 1, 17),
+                        length: 1)),
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        Resources.FormatInvalidTagHelperPrefixValue("tagHelperPrefix", "\"", "\""),
+                        new SourceLocation(19, 1, 17),
+                        length: 1))
+            };
+
+
+            var content =
+            @"
+@tagHelperPrefix """;
+            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+
+            // Act
+            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+
+            // Assert
+            Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
+        }
+
+        [Fact]
         public void Execute_RewritesTagHelpers()
         {
             // Arrange

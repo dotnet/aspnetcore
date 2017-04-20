@@ -345,7 +345,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 TagHelperDirectiveType directiveType)
             {
                 directiveText = directiveText.Trim();
-                if (directiveText.StartsWith("\"", StringComparison.Ordinal) &&
+                if (directiveText.Length >= 2 &&
+                    directiveText.StartsWith("\"", StringComparison.Ordinal) &&
                     directiveText.EndsWith("\"", StringComparison.Ordinal))
                 {
                     directiveText = directiveText.Substring(1, directiveText.Length - 2);
