@@ -31,7 +31,13 @@
         <Exec Command="$(DropPublishCmd)" />
         <Exec Command="$(DropFinalizeCmd)" />
         <Exec Command="$(DropUpdateCmd)" />
-     </Target>
+
+        <ItemGroup>
+            <DropManifests Include="$(VSDropSource)\*.vsman" />
+        </ItemGroup>
+
+        <WriteLinesToFile File="$(VSDropTxt)" Overwrite="true" Lines="@(DropManifests->'$(ManifestPublishUrl)%(Filename)%(Extension)')" />
+    </Target>
 
     <Target Name="GetDropCmdLine">
         <!-- Properties that will depend on each build configuration. We can only build the commandlines onces these are defined -->
