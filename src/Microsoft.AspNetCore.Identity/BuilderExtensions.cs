@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance this method extends.</returns>
-        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
-        public static IApplicationBuilder UseIdentity(this IApplicationBuilder app) => app;
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
+        public static IApplicationBuilder UseIdentity(this IApplicationBuilder app)
+            => app.UseAuthentication(); 
     }
 }
