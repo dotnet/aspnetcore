@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
+  <Import Project="..\..\build\hostingstartup.targets" />
 
   <PropertyGroup>
     <Description>ASP.NET Core lightup integration with Application Insights.</Description>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputType>Exe</OutputType>
     <PackageTags>aspnetcore;ApplicationInsights;Analytics;Telemetry;AppInsights</PackageTags>
   </PropertyGroup>
 

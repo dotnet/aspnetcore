@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
+  <Import Project="..\..\build\hostingstartup.targets" />
 
   <PropertyGroup>
     <Description>ASP.NET Core lightup integration with Azure AppServices.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputType>Exe</OutputType>
     <PackageTags>aspnetcore;azure;appservices</PackageTags>
   </PropertyGroup>
 

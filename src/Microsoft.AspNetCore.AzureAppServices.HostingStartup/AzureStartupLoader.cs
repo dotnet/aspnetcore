@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Hosting;
 
 [assembly: HostingStartup(typeof(Microsoft.AspNetCore.AzureAppServices.HostingStartup.AzureAppServicesHostingStartup))]
 
+// To be able to build as <OutputType>Exe</OutputType>
+internal class Program { public static void Main() { } }
+
 namespace Microsoft.AspNetCore.AzureAppServices.HostingStartup
 {
     /// <summary>
