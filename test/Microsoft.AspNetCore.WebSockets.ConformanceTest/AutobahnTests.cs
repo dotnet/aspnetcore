@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
-using Microsoft.Extensions.PlatformAbstractions;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                 var reportDir = Environment.GetEnvironmentVariable("AUTOBAHN_SUITES_REPORT_DIR");
                 var outDir = !string.IsNullOrEmpty(reportDir) ?
                     reportDir :
-                    Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "autobahnreports");
+                    Path.Combine(AppContext.BaseDirectory, "autobahnreports");
 
                 if (Directory.Exists(outDir))
                 {

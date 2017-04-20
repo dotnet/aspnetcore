@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
 {
@@ -8,7 +7,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
     {
         public static string GetApplicationPath(string projectName)
         {
-            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+            var applicationBasePath = AppContext.BaseDirectory;
 
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
