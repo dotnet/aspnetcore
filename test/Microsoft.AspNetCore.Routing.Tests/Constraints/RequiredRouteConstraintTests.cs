@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Act
             var result = constraint.Match(
-                Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 Mock.Of<IRouter>(),
                 "area",
                 new RouteValueDictionary(new { controller = "Home", action = "Index" }),
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Act
             var result = constraint.Match(
-                Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 Mock.Of<IRouter>(),
                 "area",
                 new RouteValueDictionary(new { controller = "Home", action = "Index", area = (string)null }),
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Act
             var result = constraint.Match(
-                Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 Mock.Of<IRouter>(),
                 "area",
                 new RouteValueDictionary(new { controller = "Home", action = "Index", area = string.Empty}),
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Act
             var result = constraint.Match(
-                Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 Mock.Of<IRouter>(),
                 "area",
                 new RouteValueDictionary(new { controller = "Home", action = "Index", area = "Store" }),

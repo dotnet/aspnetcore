@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             var values = new RouteValueDictionary(new { controller = "home" });
 
             var match = constraint.Match(
-                httpContext: Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 route: new Mock<IRouter>().Object,
                 routeKey: "controller",
                 values: values,
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             var values = new RouteValueDictionary(new { controller = "home" });
 
             var match = constraint.Match(
-              httpContext: Mock.Of<HttpContext>(),
+              new DefaultHttpContext(),
               route: new Mock<IRouter>().Object,
               routeKey: "controller",
               values: values,
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             var values = new RouteValueDictionary(new { controller = "home" });
 
             var match = constraint.Match(
-                httpContext: Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 route: new Mock<IRouter>().Object,
                 routeKey: "controller",
                 values: values,
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             var values = new RouteValueDictionary(new { controller = "home" });
 
             var match = constraint.Match(
-                httpContext: Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 route: new Mock<IRouter>().Object,
                 routeKey: "controller",
                 values: values,
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             var values = new RouteValueDictionary(new { controller = "admin" });
 
             var match = constraint.Match(
-                httpContext: Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 route: new Mock<IRouter>().Object,
                 routeKey: "action",
                 values: values,
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             var values = new RouteValueDictionary(new { controller = "admin" });
 
             var match = constraint.Match(
-                httpContext: Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 route: new Mock<IRouter>().Object,
                 routeKey: "action",
                 values: values,
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             var values = new RouteValueDictionary(new { controller = routeValue });
 
             var match = constraint.Match(
-                httpContext: Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 route: new Mock<IRouter>().Object,
                 routeKey: "controller",
                 values: values,

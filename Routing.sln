@@ -31,7 +31,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{6DC6B416-C8C4-4BFA-8C1E-A55A6D7EFD08}"
 	ProjectSection(SolutionItems) = preProject
 		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
 		build\Key.snk = build\Key.snk
+		build\repo.props = build\repo.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Performance", "test\Microsoft.AspNetCore.Routing.Performance\Microsoft.AspNetCore.Routing.Performance.csproj", "{F3D86714-4E64-41A6-9B36-A47B3683CF5D}"

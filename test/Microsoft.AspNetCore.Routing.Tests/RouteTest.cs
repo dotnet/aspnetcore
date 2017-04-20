@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(exception.InnerException);
             expected = "The constraint entry 'p1' - 'regex(abc' on the route " +
                 "'{controller}/{action}/ {p1:regex(abc} ' could not be resolved by the constraint resolver of type " +
-                "'IInlineConstraintResolverProxy'.";
+                $"'{nameof(DefaultInlineConstraintResolver)}'.";
             Assert.Equal(expected, exception.InnerException.Message);
         }
 
@@ -1704,15 +1704,12 @@ namespace Microsoft.AspNetCore.Routing
 
         private static IInlineConstraintResolver GetInlineConstraintResolver()
         {
-            var resolverMock = new Mock<IInlineConstraintResolver>();
-            resolverMock.Setup(o => o.ResolveConstraint("int")).Returns(new IntRouteConstraint());
-            resolverMock.Setup(o => o.ResolveConstraint("range(1,20)")).Returns(new RangeRouteConstraint(1, 20));
-            resolverMock.Setup(o => o.ResolveConstraint("alpha")).Returns(new AlphaRouteConstraint());
-            resolverMock.Setup(o => o.ResolveConstraint(@"regex(^\d{3}-\d{3}-\d{4}$)")).Returns(
-                new RegexInlineRouteConstraint(@"^\d{3}-\d{3}-\d{4}$"));
-            resolverMock.Setup(o => o.ResolveConstraint(@"regex(^\d{1,2}\/\d{1,2}\/\d{4}$)")).Returns(
-                new RegexInlineRouteConstraint(@"^\d{1,2}\/\d{1,2}\/\d{4}$"));
-            return resolverMock.Object;
+            var routeOptions = new Mock<IOptions<RouteOptions>>();
+            routeOptions
+                .SetupGet(o => o.Value)
+                .Returns(new RouteOptions());
+
+            return new DefaultInlineConstraintResolver(routeOptions.Object);
         }
 
         private class CapturingConstraint : IRouteConstraint
@@ -1729,6 +1726,11 @@ namespace Microsoft.AspNetCore.Routing
                 Values = new RouteValueDictionary(values);
                 return true;
             }
+        }
+
+        private class TestRouteOptions : IOptions<RouteOptions>
+        {
+            public RouteOptions Value => new RouteOptions();
         }
     }
 }

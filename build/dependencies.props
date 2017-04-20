@@ -4,7 +4,7 @@
     <BenchmarkDotNetVersion>0.10.3</BenchmarkDotNetVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
-    <MoqVersion>4.6.36-alpha</MoqVersion>
+    <MoqVersion>4.7.1</MoqVersion>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>

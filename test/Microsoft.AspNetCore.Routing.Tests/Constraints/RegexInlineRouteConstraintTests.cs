@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Act
             var match = constraint.Match(
-                httpContext: Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 route: new Mock<IRouter>().Object,
                 routeKey: "controller",
                 values: values,
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Act
             var match = constraint.Match(
-                httpContext: Mock.Of<HttpContext>(),
+                new DefaultHttpContext(),
                 route: new Mock<IRouter>().Object,
                 routeKey: "controller",
                 values: values,
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             {
                 // Act
                 var match = constraint.Match(
-                    httpContext: Mock.Of<HttpContext>(),
+                    new DefaultHttpContext(),
                     route: new Mock<IRouter>().Object,
                     routeKey: "controller",
                     values: values,
