@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://127.0.0.1:0")
+                .UseUrls("http://127.0.0.1:0")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -174,7 +173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var builder = new WebHostBuilder()
                .UseKestrel()
-               .UseUrls($"http://127.0.0.1:0")
+               .UseUrls("http://127.0.0.1:0")
                .Configure(app =>
                {
                    app.Run(async context =>
@@ -217,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var dataRead = false;
             var builder = new WebHostBuilder()
                .UseKestrel()
-               .UseUrls($"http://127.0.0.1:0")
+               .UseUrls("http://127.0.0.1:0")
                .Configure(app =>
                {
                    app.Run(async context =>
@@ -280,13 +279,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"))
                 .Returns(mockLogger.Object);
             mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsNotIn(new[] { "Microsoft.AspNetCore.Server.Kestrel" })))
+                .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv"))
+                .Returns(mockLogger.Object);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsNotIn("Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv")))
                 .Returns(Mock.Of<ILogger>());
 
             var builder = new WebHostBuilder()
                 .UseLoggerFactory(mockLoggerFactory.Object)
                 .UseKestrel()
-                .UseUrls($"http://127.0.0.1:0")
+                .UseUrls("http://127.0.0.1:0")
                 .Configure(app => app.Run(context => TaskCache.CompletedTask));
 
             using (var host = builder.Build())
@@ -298,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
 
                     // Wait until connection is established
-                    await connectionStarted.WaitAsync(TimeSpan.FromSeconds(10));
+                    Assert.True(await connectionStarted.WaitAsync(TimeSpan.FromSeconds(10)));
 
                     // Force a reset
                     socket.LingerState = new LingerOption(true, 0);
@@ -308,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // This check MUST come before disposing the server, otherwise there's a race where the RST
                 // is still in flight when the connection is aborted, leading to the reset never being received
                 // and therefore not logged.
-                await connectionReset.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.True(await connectionReset.WaitAsync(TimeSpan.FromSeconds(10)));
             }
         }
 
@@ -340,14 +342,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"))
                 .Returns(mockLogger.Object);
             mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsNotIn(new[] { "Microsoft.AspNetCore.Server.Kestrel" })))
+                .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv"))
+                .Returns(mockLogger.Object);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsNotIn("Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv")))
                 .Returns(Mock.Of<ILogger>());
 
 
             var builder = new WebHostBuilder()
                 .UseLoggerFactory(mockLoggerFactory.Object)
                 .UseKestrel()
-                .UseUrls($"http://127.0.0.1:0")
+                .UseUrls("http://127.0.0.1:0")
                 .Configure(app => app.Run(context => TaskCache.CompletedTask));
 
             using (var host = builder.Build())
@@ -360,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
 
                     // Wait until request is done being processed
-                    await requestDone.WaitAsync(TimeSpan.FromSeconds(10));
+                    Assert.True(await requestDone.WaitAsync(TimeSpan.FromSeconds(10)));
 
                     // Force a reset
                     socket.LingerState = new LingerOption(true, 0);
@@ -370,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // This check MUST come before disposing the server, otherwise there's a race where the RST
                 // is still in flight when the connection is aborted, leading to the reset never being received
                 // and therefore not logged.
-                await connectionReset.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.True(await connectionReset.WaitAsync(TimeSpan.FromSeconds(10)));
             }
         }
 
@@ -395,7 +400,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"))
                 .Returns(mockLogger.Object);
             mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsNotIn(new[] { "Microsoft.AspNetCore.Server.Kestrel" })))
+                .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv"))
+                .Returns(mockLogger.Object);
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsNotIn("Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv")))
                 .Returns(Mock.Of<ILogger>());
 
             var requestStarted = new SemaphoreSlim(0);
@@ -403,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var builder = new WebHostBuilder()
                 .UseLoggerFactory(mockLoggerFactory.Object)
                 .UseKestrel()
-                .UseUrls($"http://127.0.0.1:0")
+                .UseUrls("http://127.0.0.1:0")
                 .Configure(app => app.Run(async context =>
                 {
                     requestStarted.Release();
@@ -420,7 +428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
 
                     // Wait until connection is established
-                    await requestStarted.WaitAsync(TimeSpan.FromSeconds(10));
+                    Assert.True(await requestStarted.WaitAsync(TimeSpan.FromSeconds(10)));
 
                     // Force a reset
                     socket.LingerState = new LingerOption(true, 0);
@@ -430,7 +438,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // This check MUST come before disposing the server, otherwise there's a race where the RST
                 // is still in flight when the connection is aborted, leading to the reset never being received
                 // and therefore not logged.
-                await connectionReset.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.True(await connectionReset.WaitAsync(TimeSpan.FromSeconds(10)));
             }
         }
 
@@ -444,7 +452,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://127.0.0.1:0")
+                .UseUrls("http://127.0.0.1:0")
                 .Configure(app => app.Run(async context =>
                 {
                     requestStarted.Release();
@@ -488,7 +496,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var requestAborted = new SemaphoreSlim(0);
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls($"http://127.0.0.1:0")
+                .UseUrls("http://127.0.0.1:0")
                 .Configure(app => app.Run(async context =>
                 {
                     appStarted.Release();

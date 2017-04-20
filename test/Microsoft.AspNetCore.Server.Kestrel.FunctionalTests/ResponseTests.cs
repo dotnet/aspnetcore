@@ -722,7 +722,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await httpContext.Response.WriteAsync("hello,");
 
                 // Wait until the request is aborted so we know Frame will skip the response content length check.
-                await requestAborted.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.True(await requestAborted.WaitAsync(TimeSpan.FromSeconds(10)));
             }, new TestServiceContext { Log = mockTrace.Object }))
             {
                 using (var connection = server.CreateConnection())
@@ -746,7 +746,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // Await before disposing the server to prevent races between the
                 // abort triggered by the connection RST and the abort called when
                 // disposing the server.
-                await requestAborted.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.True(await requestAborted.WaitAsync(TimeSpan.FromSeconds(10)));
             }
 
             // With the server disposed we know all connections were drained and all messages were logged.
