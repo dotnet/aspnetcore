@@ -2,10 +2,11 @@
   <Import Project="common.props" />
 
   <PropertyGroup>
-    <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.All\</MetaPackagePath>
-    <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.All.csproj</MetaPackageFile>
+    <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\</MetaPackagePath>
+    <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.RuntimeStore.csproj</MetaPackageFile>
     <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
     <OutputPath>$(MetaPackagePath)bin\packageCache\</OutputPath>
+    <DepsOutputPath>$(MetaPackagePath)bin\deps\</DepsOutputPath>
     <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
     <TempDir>$(ArtifactsDir)temp\</TempDir>
     <ToolsDir>$(RepositoryRoot)tools\</ToolsDir>
@@ -35,9 +36,12 @@
     </GetOSPlatform>
 
     <PropertyGroup>
-      <OutputZip Condition="'$(OSPlatform)'=='Windows'">$(ArtifactsDir)Build.RuntimeStore.win-$(VersionSuffix).zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)'=='Linux'">$(ArtifactsDir)Build.RuntimeStore.linux-$(VersionSuffix).zip</OutputZip>
-      <OutputZip Condition="'$(OSPlatform)'=='macOS'">$(ArtifactsDir)Build.RuntimeStore.osx-$(VersionSuffix).zip</OutputZip>
+      <OutputZipSufix Condition="'$(OSPlatform)' == 'Windows'">win</OutputZipSufix>
+      <OutputZipSufix Condition="'$(OSPlatform)' == 'Linux'">linux</OutputZipSufix>
+      <OutputZipSufix Condition="'$(OSPlatform)' == 'macOS'">osx</OutputZipSufix>
+
+      <OutputZip>$(ArtifactsDir)Build.RuntimeStore.$(OutputZipSufix)-$(VersionSuffix).zip</OutputZip>
+      <DepsOutputZip>$(ArtifactsDir)Build.Deps.$(OutputZipSufix)-$(VersionSuffix).zip</DepsOutputZip>
     </PropertyGroup>
 
     <ItemGroup>
@@ -59,14 +63,17 @@
     <RemoveDir Directories="$(WorkingDirectory)%(RIDs.Identity)\" />
     <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime %(RIDs.Identity) --output $(OutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)%(RIDs.Identity)/" />
 
+    <MsBuild Projects="$(MetaPackageFile)" Targets="CollectDeps" Properties="DepsOutputPath=$(DepsOutputPath)"/>
     <ItemGroup>
       <PackageCacheFiles Include="$(OutputPath)**\*" />
       <PackageStoreManifestFiles Include="$(OutputPath)%(RIDs.PlatformDir)\**\artifact.xml">
         <DestinationFile>manifest.%(RIDs.Identity).xml</DestinationFile>
       </PackageStoreManifestFiles>
+      <DepsFiles Include="$(DepsOutputPath)**\*" />
     </ItemGroup>
 
     <ZipArchive File="$(OutputZip)" SourceFiles="@(PackageCacheFiles)" WorkingDirectory="$(OutputPath)" />
+    <ZipArchive File="$(DepsOutputZip)" SourceFiles="@(DepsFiles)" WorkingDirectory="$(DepsOutputPath)" />
 
     <Copy SourceFiles="%(PackageStoreManifestFiles.FullPath)" DestinationFiles="$(ArtifactsDir)%(PackageStoreManifestFiles.DestinationFile)" />
 

@@ -10,18 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- set PrivateAssets=None to ensure that all assets, including Build and Analyzer, are included in the nuspec -->
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.AspNetCore.Routing" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+   <PackageReference Include="@(MetaPackagePackageReference)" />
   </ItemGroup>
 
 </Project>

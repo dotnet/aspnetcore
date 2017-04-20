@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\Microsoft.AspNetCore.RuntimeStore.csproj" />
+  </ItemGroup>
+</Project>
