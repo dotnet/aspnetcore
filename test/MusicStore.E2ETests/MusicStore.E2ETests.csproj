@@ -20,7 +20,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(AspNetIntegrationTestingVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="$(DotNetPlatformAbstractionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" />

@@ -3,7 +3,6 @@
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <AspNetIntegrationTestingVersion>0.4.0-*</AspNetIntegrationTestingVersion>
     <AspNetCoreModuleVersion>1.0.0-*</AspNetCoreModuleVersion>
-    <DotNetPlatformAbstractionsVersion>1.1.0</DotNetPlatformAbstractionsVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
