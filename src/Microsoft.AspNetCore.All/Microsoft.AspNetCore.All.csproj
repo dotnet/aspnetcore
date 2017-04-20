@@ -7,7 +7,7 @@
     <TargetFramework>netstandard1.6</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore.All</Description>
-    <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>

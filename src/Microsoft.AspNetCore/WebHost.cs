@@ -21,16 +21,16 @@ namespace Microsoft.AspNetCore
     {
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
-        /// See <see cref="WebHost.CreateDefaultBuilder"/> for details.
+        /// See <see cref="CreateDefaultBuilder()"/> for details.
         /// </summary>
         /// <param name="app">A delegate that handles requests to the application.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost Start(RequestDelegate app) =>
-            Start(null, app);
+            Start(url: null, app: app);
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
-        /// See <see cref="WebHost.CreateDefaultBuilder"/> for details.
+        /// See <see cref="CreateDefaultBuilder()"/> for details.
         /// </summary>
         /// <param name="url">The URL the hosted application will listen on.</param>
         /// <param name="app">A delegate that handles requests to the application.</param>
@@ -40,16 +40,16 @@ namespace Microsoft.AspNetCore
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
-        /// See <see cref="WebHost.CreateDefaultBuilder"/> for details.
+        /// See <see cref="CreateDefaultBuilder()"/> for details.
         /// </summary>
         /// <param name="routeBuilder">A delegate that configures the router for handling requests to the application.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost Start(Action<IRouteBuilder> routeBuilder) =>
-            Start(null, routeBuilder);
+            Start(url: null, routeBuilder: routeBuilder);
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
-        /// See <see cref="WebHost.CreateDefaultBuilder"/> for details.
+        /// See <see cref="CreateDefaultBuilder()"/> for details.
         /// </summary>
         /// <param name="url">The URL the hosted application will listen on.</param>
         /// <param name="routeBuilder">A delegate that configures the router for handling requests to the application.</param>
@@ -59,22 +59,22 @@ namespace Microsoft.AspNetCore
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
-        /// See <see cref="WebHost.CreateDefaultBuilder"/> for details.
+        /// See <see cref="CreateDefaultBuilder()"/> for details.
         /// </summary>
-        /// <param name="app">A delegate that handles requests to the application.</param>
+        /// <param name="app">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost StartWith(Action<IApplicationBuilder> app) =>
-            StartWith(null, app);
+            StartWith(url: null, app: app);
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
-        /// See <see cref="WebHost.CreateDefaultBuilder"/> for details.
+        /// See <see cref="CreateDefaultBuilder()"/> for details.
         /// </summary>
         /// <param name="url">The URL the hosted application will listen on.</param>
         /// <param name="app">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost StartWith(string url, Action<IApplicationBuilder> app) =>
-            StartWith(url, null, app);
+            StartWith(url: url, configureServices: null, app: app);
 
         private static IWebHost StartWith(string url, Action<IServiceCollection> configureServices, Action<IApplicationBuilder> app)
         {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore
         /// </remarks>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder CreateDefaultBuilder() =>
-            CreateDefaultBuilder(null);
+            CreateDefaultBuilder(args: null);
 
         /// <summary>
         ///   Initializes a new instance of the <see cref="WebHostBuilder"/> class with pre-configured defaults.
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore
             var builder = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureConfiguration((hostingContext, config) =>
+                .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     var env = hostingContext.HostingEnvironment;
 
@@ -166,7 +166,6 @@ namespace Microsoft.AspNetCore
                 {
                     logging.AddConsole();
                 })
-                // TODO: Remove this when ANCM injects it by default
                 .UseIISIntegration()
                 .ConfigureServices(services =>
                 {

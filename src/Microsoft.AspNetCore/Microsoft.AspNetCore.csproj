@@ -3,14 +3,11 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <IncludeBuildOutput>true</IncludeBuildOutput>
     <TargetFramework>netstandard1.5</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore</Description>
-    <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
-    <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>

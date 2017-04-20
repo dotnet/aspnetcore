@@ -6,6 +6,10 @@
     <Product>Microsoft ASP.NET Core</Product>
     <RepositoryUrl>https://github.com/aspnet/MetaPackages</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
+    <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 
     <!-- Pin versions to work around CLI bug -->
@@ -20,7 +24,7 @@
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
     <PackageReference Include="NETStandard.Library" Version="$(NetStandardImplicitPackageVersion)" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <!-- set PrivateAssets=None to ensure that all assets, including Build and Analyzer, are included in the nuspec -->
     <MetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
@@ -28,6 +32,7 @@
     <MetaPackagePackageReference Include="Microsoft.AspNetCore.Routing" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
@@ -102,7 +107,6 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Session" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
