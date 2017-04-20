@@ -119,9 +119,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Wait for all writes to complete so the completeQueue isn't modified during enumeration.
                 await _mockLibuv.OnPostTask;
 
-                foreach (var triggerCompleted in completeQueue)
+                // Drain the write queue
+                while (completeQueue.TryDequeue(out var triggerNextCompleted))
                 {
-                    await _libuvThread.PostAsync(cb => cb(0), triggerCompleted);
+                    await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                 }
             }
         }
@@ -174,9 +175,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Wait for all writes to complete so the completeQueue isn't modified during enumeration.
                 await _mockLibuv.OnPostTask;
 
-                foreach (var triggerCompleted in completeQueue)
+                // Drain the write queue
+                while (completeQueue.TryDequeue(out triggerNextCompleted))
                 {
-                    await _libuvThread.PostAsync(cb => cb(0), triggerCompleted);
+                    await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                 }
             }
         }
@@ -234,9 +236,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Wait for all writes to complete so the completeQueue isn't modified during enumeration.
                 await _mockLibuv.OnPostTask;
 
-                foreach (var triggerCompleted in completeQueue)
+                // Drain the write queue
+                while (completeQueue.TryDequeue(out triggerNextCompleted))
                 {
-                    await _libuvThread.PostAsync(cb => cb(0), triggerCompleted);
+                    await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                 }
             }
         }
@@ -493,8 +496,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 Assert.Equal(1, writeCount);
             }
         }
-
-        
 
         private OutputProducer CreateOutputProducer(PipeOptions pipeOptions, CancellationTokenSource cts = null)
         {
