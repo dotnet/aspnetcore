@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -31,11 +32,13 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="claimsFactory">The factory to use to create claims principals for a user.</param>
         /// <param name="optionsAccessor">The accessor used to access the <see cref="IdentityOptions"/>.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>
+        /// <param name="schemes">The logger used to log messages, warnings and errors.</param>
         public SignInManager(UserManager<TUser> userManager,
             IHttpContextAccessor contextAccessor,
             IUserClaimsPrincipalFactory<TUser> claimsFactory,
             IOptions<IdentityOptions> optionsAccessor,
-            ILogger<SignInManager<TUser>> logger)
+            ILogger<SignInManager<TUser>> logger,
+            IAuthenticationSchemeProvider schemes)
         {
             if (userManager == null)
             {
@@ -55,10 +58,12 @@ namespace Microsoft.AspNetCore.Identity
             ClaimsFactory = claimsFactory;
             Options = optionsAccessor?.Value ?? new IdentityOptions();
             Logger = logger;
+            _schemes = schemes;
         }
 
         private readonly IHttpContextAccessor _contextAccessor;
         private HttpContext _context;
+        private IAuthenticationSchemeProvider _schemes;
 
         /// <summary>
         /// Gets the <see cref="ILogger"/> used to log messages from the manager.
@@ -316,7 +321,6 @@ namespace Microsoft.AspNetCore.Identity
             return SignInResult.Failed;
         }
 
-
         /// <summary>
         /// Returns a flag indicating if the current client browser has been remembered by two factor authentication
         /// for the user attempting to login, as an asynchronous operation.
@@ -454,8 +458,7 @@ namespace Microsoft.AspNetCore.Identity
         /// two factor authentication prompts.</param>
         /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
         /// for the sign-in attempt.</returns>
-        public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent,
-            bool rememberClient)
+        public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
         {
             var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
             if (twoFactorInfo == null || twoFactorInfo.UserId == null)
@@ -533,6 +536,16 @@ namespace Microsoft.AspNetCore.Identity
                 return error;
             }
             return await SignInOrTwoFactorAsync(user, isPersistent, loginProvider, bypassTwoFactor);
+        }
+
+        /// <summary>
+        /// Gets a collection of <see cref="AuthenticationScheme"/>s for the known external login providers.		
+        /// </summary>		
+        /// <returns>A collection of <see cref="AuthenticationScheme"/>s for the known external login providers.</returns>		
+        public virtual async Task<IEnumerable<AuthenticationScheme>> GetExternalAuthenticationSchemesAsync()
+        {
+            var schemes = await _schemes.GetAllSchemesAsync();
+            return schemes.Where(s => !string.IsNullOrEmpty(s.DisplayName));
         }
 
         /// <summary>

@@ -3,7 +3,6 @@
 @using Microsoft.AspNetCore.Authentication
 @model LoginViewModel
 @inject SignInManager<ApplicationUser> SignInManager
-@inject IAuthenticationSchemeProvider SchemeProvider
 
 @{
     ViewData["Title"] = "Log in";
@@ -60,7 +59,7 @@
             <h4>Use another service to log in.</h4>
             <hr />
             @{
-                var schemes = await SchemeProvider.GetAllSchemesAsync();
+                var schemes = await SignInManager.GetExternalAuthenticationSchemesAsync();
                 var loginProviders = schemes.ToList();
                 if (loginProviders.Count == 0)
                 {
