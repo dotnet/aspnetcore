@@ -1,0 +1,34 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - AspNetCore
+        UsingStatement - (1:0,1 [14] ) - System
+        UsingStatement -  - System.Threading.Tasks
+        UsingStatement - (16:1,1 [19] ) - System.Linq
+        UsingStatement - (36:2,1 [34] ) - System.Collections.Generic
+        UsingStatement - (71:3,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingStatement - (104:4,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingStatement - (147:5,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - BeginContext(12, 43, true);
+                HtmlContent - (12:1,0 [43] MalformedPageDirective.cshtml)
+                    RazorIRToken - (12:1,0 [2] MalformedPageDirective.cshtml) - Html - \n
+                    RazorIRToken - (14:2,0 [4] MalformedPageDirective.cshtml) - Html - <h1>
+                    RazorIRToken - (18:2,4 [8] MalformedPageDirective.cshtml) - Html - About Us
+                    RazorIRToken - (26:2,12 [5] MalformedPageDirective.cshtml) - Html - </h1>
+                    RazorIRToken - (31:2,17 [2] MalformedPageDirective.cshtml) - Html - \n
+                    RazorIRToken - (33:3,0 [3] MalformedPageDirective.cshtml) - Html - <p>
+                    RazorIRToken - (36:3,3 [15] MalformedPageDirective.cshtml) - Html - We are awesome.
+                    RazorIRToken - (51:3,18 [4] MalformedPageDirective.cshtml) - Html - </p>
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - EndContext();
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml>)PageContext?.ViewData;
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml Model => ViewData.Model;

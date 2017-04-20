@@ -10,6 +10,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     public class PageDirectiveTest
     {
         [Fact]
+        public void TryGetPageDirective_CanHandleMalformedPageDirectives()
+        {
+            // Arrange
+            var content = "@page \"";
+            var sourceDocument = RazorSourceDocument.Create(content, "file");
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var engine = CreateEngine();
+            var irDocument = CreateIRDocument(engine, codeDocument);
+
+            // Act
+            var result = PageDirective.TryGetPageDirective(irDocument, out var pageDirective);
+
+            // Assert
+            Assert.True(result);
+            Assert.Null(pageDirective.RouteTemplate);
+            Assert.Null(pageDirective.PageName);
+        }
+
+        [Fact]
         public void TryGetPageDirective_ReturnsFalse_IfPageDoesNotHaveDirective()
         {
             // Arrange

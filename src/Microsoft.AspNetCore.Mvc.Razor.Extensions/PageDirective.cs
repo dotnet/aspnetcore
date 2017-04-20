@@ -67,10 +67,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private static string TrimQuotes(string content)
         {
-            Debug.Assert(content.StartsWith("\"", StringComparison.Ordinal));
-            Debug.Assert(content.EndsWith("\"", StringComparison.Ordinal));
+            if (content.Length >= 2 &&
+                content.StartsWith("\"", StringComparison.Ordinal) &&
+                content.EndsWith("\"", StringComparison.Ordinal))
+            {
+                return content.Substring(1, content.Length - 2);
+            }
 
-            return content.Substring(1, content.Length - 2);
+            // The extensible directive system handed us invalid content. There's already an error logged.
+            return null;
         }
 
         private class Visitor : RazorIRNodeWalker

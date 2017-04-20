@@ -24,7 +24,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         private static readonly RazorSourceDocument DefaultImports = MvcRazorTemplateEngine.GetDefaultImports();
 
         #region Runtime
-        
+
+        [Fact]
+        public void MalformedPageDirective_Runtime()
+        {
+            // Arrange
+            var engine = CreateRuntimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
         [Fact]
         public void Basic_Runtime()
         {
@@ -192,6 +207,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         #endregion
 
         #region DesignTime
+
+        [Fact]
+        public void MalformedPageDirective_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
         [Fact]
         public void Basic_DesignTime()
         {
