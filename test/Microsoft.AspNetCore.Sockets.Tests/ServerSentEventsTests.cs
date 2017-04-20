@@ -49,9 +49,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData("Hello World", "data: T\r\ndata: Hello World\r\n\r\n")]
-        [InlineData("Hello\nWorld", "data: T\r\ndata: Hello\r\ndata: World\r\n\r\n")]
-        [InlineData("Hello\r\nWorld", "data: T\r\ndata: Hello\r\ndata: World\r\n\r\n")]
+        [InlineData("Hello World", ":\r\ndata: T\r\ndata: Hello World\r\n\r\n")]
+        [InlineData("Hello\nWorld", ":\r\ndata: T\r\ndata: Hello\r\ndata: World\r\n\r\n")]
+        [InlineData("Hello\r\nWorld", ":\r\ndata: T\r\ndata: Hello\r\ndata: World\r\n\r\n")]
         public async Task SSEAddsAppropriateFraming(string message, string expected)
         {
             var channel = Channel.CreateUnbounded<Message>();

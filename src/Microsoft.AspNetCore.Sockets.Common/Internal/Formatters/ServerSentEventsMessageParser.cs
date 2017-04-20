@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
     {
         private const byte ByteCR = (byte)'\r';
         private const byte ByteLF = (byte)'\n';
+        private const byte ByteColon = (byte)':';
         private const byte ByteT = (byte)'T';
         private const byte ByteB = (byte)'B';
         private const byte ByteC = (byte)'C';
@@ -38,7 +39,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
             while (!reader.End)
             {
-
                 if (ReadCursorOperations.Seek(start, end, out var lineEnd, ByteLF) == -1)
                 {
                     // For the case of  data: Foo\r\n\r\<Anytine except \n>
@@ -61,6 +61,14 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 if (line.Length <= 1)
                 {
                     throw new FormatException("There was an error in the frame format");
+                }
+
+                // Skip comments
+                if (line[0] == ByteColon)
+                {
+                    start = lineEnd;
+                    consumed = lineEnd;
+                    continue;
                 }
 
                 if (IsMessageEnd(line))

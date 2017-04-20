@@ -37,6 +37,9 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
             context.Response.Headers["Content-Encoding"] = "identity";
 
+            // Workaround for a Firefox bug where EventSource won't fire the open event
+            // until it receives some data
+            await context.Response.WriteAsync(":\r\n");
             await context.Response.Body.FlushAsync();
 
             var pipe = context.Response.Body.AsPipelineWriter();

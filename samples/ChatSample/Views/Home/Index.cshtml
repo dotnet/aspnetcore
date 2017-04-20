@@ -14,26 +14,45 @@
 </div>
 <script src="lib/signalr-client/signalr-client.js"></script>
 <script>
+let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 let connection = new signalR.HubConnection(`http://${document.location.host}/chat`, 'formatType=json&format=text');
 
-connection.on('Send', function (message) {
-    var child = document.createElement('li');
-    child.innerText = message;
-    document.getElementById('messages').appendChild(child);
-});
+connection.on('Send', message => appendLine(message));
+connection.onClosed = e => {
+    if (e) {
+        appendLine('Connection closed with error: ' + e, 'red');
+    }
+    else {
+        appendLine('Disconnected', 'green');
+    }
+};
 
-connection.start();
+connection.start(transportType).catch(err => appendLine(err, 'red'));
 
 document.getElementById('sendmessage').addEventListener('submit', event => {
     let data = document.getElementById('new-message').value;
-
-    connection.invoke('Send', data).catch(err => {
-        var child = document.createElement('li');
-        child.style.color = 'red';
-        child.innerText = err;
-        document.getElementById('messages').appendChild(child);
-    });
-
+    connection.invoke('Send', data).catch(err => appendLine(err, 'red'));
     event.preventDefault();
 });
+
+function appendLine(line, color) {
+    let child = document.createElement('li');
+    if (color) {
+        child.style.color = color;
+    }
+    child.innerText = line;
+    document.getElementById('messages').appendChild(child);
+}
+
+function getParameterByName(name, url) {
+    if (!url) {
+        url = window.location.href;
+    }
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
 </script>
