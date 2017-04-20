@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Testing
             ThreadPool = new LoggingThreadPool(Log);
             SystemClock = new MockSystemClock();
             DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
-            ConnectionManager = new FrameConnectionManager();
+            ConnectionManager = new FrameConnectionManager(Log);
             DateHeaderValue = DateHeaderValueManager.GetDateHeaderValues().String;
             HttpParserFactory = frameAdapter => new HttpParser<FrameAdapter>(frameAdapter.Frame.ServiceContext.Log);
             ServerOptions = new KestrelServerOptions

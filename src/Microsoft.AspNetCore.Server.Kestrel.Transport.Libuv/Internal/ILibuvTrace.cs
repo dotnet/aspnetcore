@@ -23,9 +23,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         void ConnectionError(string connectionId, Exception ex);
 
         void ConnectionReset(string connectionId);
-
-        void NotAllConnectionsClosedGracefully();
-
-        void NotAllConnectionsAborted();
     }
 }

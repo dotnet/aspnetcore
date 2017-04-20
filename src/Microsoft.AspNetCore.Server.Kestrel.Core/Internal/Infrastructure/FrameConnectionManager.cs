@@ -6,14 +6,19 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class FrameConnectionManager : IHeartbeatHandler
+    public class FrameConnectionManager
     {
-        private readonly ConcurrentDictionary<long, FrameConnection> _connections
-            = new ConcurrentDictionary<long, FrameConnection>();
+        private readonly ConcurrentDictionary<long, FrameConnectionReference> _connectionReferences = new ConcurrentDictionary<long, FrameConnectionReference>();
+        private readonly IKestrelTrace _trace;
+
+        public FrameConnectionManager(IKestrelTrace trace)
+        {
+            _trace = trace;
+        }
 
         public void AddConnection(long id, FrameConnection connection)
         {
-            if (!_connections.TryAdd(id, connection))
+            if (!_connectionReferences.TryAdd(id, new FrameConnectionReference(connection)))
             {
                 throw new ArgumentException(nameof(id));
             }
@@ -21,17 +26,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void RemoveConnection(long id)
         {
-            if (!_connections.TryRemove(id, out _))
+            if (!_connectionReferences.TryRemove(id, out _))
             {
                 throw new ArgumentException(nameof(id));
             }
         }
 
-        public void OnHeartbeat(DateTimeOffset now)
+        public void Walk(Action<FrameConnection> callback)
         {
-            foreach (var kvp in _connections)
+            foreach (var kvp in _connectionReferences)
             {
-                kvp.Value.Tick(now);
+                var reference = kvp.Value;
+
+                if (reference.TryGetConnection(out var connection))
+                {
+                    callback(connection);
+                }
+                else if (_connectionReferences.TryRemove(kvp.Key, out reference))
+                {
+                    // It's safe to modify the ConcurrentDictionary in the foreach.
+                    // The connection reference has become unrooted because the application never completed.
+                    _trace.ApplicationNeverCompleted(reference.ConnectionId);
+                }
+
+                // If both conditions are false, the connection was removed during the heartbeat.
             }
         }
     }

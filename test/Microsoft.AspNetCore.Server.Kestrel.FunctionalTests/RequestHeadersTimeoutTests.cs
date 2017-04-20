@@ -5,8 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.TestHelpers;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private async Task ConnectionAbortedWhenRequestHeadersNotReceivedInTime(TimeoutTestServer server, string headers)
+        private async Task ConnectionAbortedWhenRequestHeadersNotReceivedInTime(TestServer server, string headers)
         {
             using (var connection = server.CreateConnection())
             {
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private async Task RequestHeadersTimeoutCanceledAfterHeadersReceived(TimeoutTestServer server)
+        private async Task RequestHeadersTimeoutCanceledAfterHeadersReceived(TestServer server)
         {
             using (var connection = server.CreateConnection())
             {
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(TimeoutTestServer server, string requestLine)
+        private async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(TestServer server, string requestLine)
         {
             using (var connection = server.CreateConnection())
             {
@@ -75,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private async Task TimeoutNotResetOnEachRequestLineCharacterReceived(TimeoutTestServer server)
+        private async Task TimeoutNotResetOnEachRequestLineCharacterReceived(TestServer server)
         {
             using (var connection = server.CreateConnection())
             {
@@ -90,21 +89,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private TimeoutTestServer CreateServer()
+        private TestServer CreateServer()
         {
-            return new TimeoutTestServer(async httpContext =>
-                {
-                    await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
-                    await httpContext.Response.WriteAsync("hello, world");
-                },
-                new KestrelServerOptions
+            return new TestServer(async httpContext =>
+            {
+                await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
+                await httpContext.Response.WriteAsync("hello, world");
+            },
+            new TestServiceContext
+            {
+                // Use real SystemClock so timeouts trigger.
+                SystemClock = new SystemClock(),
+                ServerOptions =
                 {
                     AddServerHeader = false,
-                    Limits =
-                    {
-                        RequestHeadersTimeout = RequestHeadersTimeout
-                    }
-                });
+                    Limits = { RequestHeadersTimeout = RequestHeadersTimeout }
+                }
+            });
         }
 
         private async Task ReceiveResponse(TestConnection connection)

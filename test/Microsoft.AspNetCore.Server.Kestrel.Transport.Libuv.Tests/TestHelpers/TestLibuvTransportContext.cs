@@ -16,11 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
             AppLifetime = new LifetimeNotImplemented();
             ConnectionHandler = new MockConnectionHandler();
             Log = new LibuvTrace(logger);
-            Options = new LibuvTransportOptions
-            {
-                ThreadCount = 1,
-                ShutdownTimeout = TimeSpan.FromSeconds(5)
-            };
+            Options = new LibuvTransportOptions { ThreadCount = 1 };
         }
     }
 }

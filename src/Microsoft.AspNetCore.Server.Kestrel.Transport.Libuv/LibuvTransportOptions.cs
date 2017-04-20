@@ -18,17 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         /// </remarks>
         public int ThreadCount { get; set; } = ProcessorThreadCount;
 
-        // TODO: Move all shutdown timeout logic back into core project.
-        /// <summary>
-        /// The amount of time after the server begins shutting down before connections will be forcefully closed.
-        /// Kestrel will wait for the duration of the timeout for any ongoing request processing to complete before
-        /// terminating the connection. No new connections or requests will be accepted during this time.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to 5 seconds.
-        /// </remarks>
-        public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
-
         private static int ProcessorThreadCount
         {
             get

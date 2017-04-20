@@ -446,12 +446,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var connectionControl = new Mock<ITimeoutControl>();
             _frame.TimeoutControl = connectionControl.Object;
 
-            var requestProcessingTask = _frame.RequestProcessingAsync();
+            _frame.Start();
 
             var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
             connectionControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
 
-            _frame.StopAsync();
+            var requestProcessingTask = _frame.StopAsync();
             _input.Writer.Complete();
 
             requestProcessingTask.Wait();

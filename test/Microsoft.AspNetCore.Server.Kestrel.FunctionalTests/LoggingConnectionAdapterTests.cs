@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     public class LoggingConnectionAdapterTests
     {
         [Fact]
-        public async Task LoggingConnectionFilterCanBeAddedBeforeAndAfterHttpsFilter()
+        public async Task LoggingConnectionAdapterCanBeAddedBeforeAndAfterHttpsAdapter()
         {
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         listenOptions.UseConnectionLogging();
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                        listenOptions.UseConnectionLogging();
                     });
                 })
             .Configure(app =>

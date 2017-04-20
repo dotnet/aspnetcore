@@ -26,14 +26,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly UvStreamHandle _socket;
         private IConnectionContext _connectionContext;
 
-        private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
         private WritableBuffer? _currentWritableBuffer;
 
         public LibuvConnection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
-            socket.Connection = this;
 
             var tcpHandle = _socket as UvTcpHandle;
             if (tcpHandle != null)
@@ -86,29 +83,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // Ensure the socket is disposed prior to completing in the input writer.
                     _socket.Dispose();
                     Input.Complete(new TaskCanceledException("The request was aborted"));
-                    _socketClosedTcs.TrySetResult(null);
+                    _connectionContext.OnConnectionClosed();
                 }
             }
             catch (Exception e)
             {
                 Log.LogCritical(0, e, $"{nameof(LibuvConnection)}.{nameof(Start)}() {ConnectionId}");
             }
-            finally
-            {
-                _connectionContext.OnConnectionClosed();
-            }
-        }
-
-        public async Task StopAsync()
-        {
-            await _connectionContext.StopAsync();
-            await _socketClosedTcs.Task;
-        }
-
-        public Task AbortAsync(Exception error)
-        {
-            _connectionContext.Abort(error);
-            return StopAsync();
         }
 
         // Called on Libuv thread
@@ -201,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (!normalRead)
             {
-                var ignore = AbortAsync(error);
+                _connectionContext.Abort(error);
 
                 // Complete after aborting the connection
                 Input.Complete(error);

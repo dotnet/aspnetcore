@@ -27,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
         }
 
-        public LibuvConnection Connection { get; set; }
-
         protected override bool ReleaseHandle()
         {
             if (_listenVitality.IsAllocated)

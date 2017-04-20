@@ -38,14 +38,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private bool _initCompleted = false;
         private ExceptionDispatchInfo _closeError;
         private readonly ILibuvTrace _log;
-        private readonly TimeSpan _shutdownTimeout;
 
         public LibuvThread(LibuvTransport transport)
         {
             _transport = transport;
             _appLifetime = transport.AppLifetime;
             _log = transport.Log;
-            _shutdownTimeout = transport.TransportOptions.ShutdownTimeout;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
             _thread = new Thread(ThreadStart);
@@ -59,7 +57,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             QueueCloseAsyncHandle = EnqueueCloseHandle;
             PipeFactory = new PipeFactory();
             WriteReqPool = new WriteReqPool(this, _log);
-            ConnectionManager = new LibuvConnectionManager(this);
         }
 
         // For testing
@@ -73,8 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public PipeFactory PipeFactory { get; }
 
-        public LibuvConnectionManager ConnectionManager { get; }
-
         public WriteReqPool WriteReqPool { get; }
 
 #if DEBUG
@@ -86,9 +81,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public Action<Action<IntPtr>, IntPtr> QueueCloseHandle { get; }
 
         private Action<Action<IntPtr>, IntPtr> QueueCloseAsyncHandle { get; }
-
-        // The cached result of Loop.Now() which is a timestamp in milliseconds
-        private long Now { get; set; }
 
         public Task StartAsync()
         {
@@ -109,10 +101,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (!_threadTcs.Task.IsCompleted)
             {
-                // These operations need to run on the libuv thread so it only makes
-                // sense to attempt execution if it's still running
-                await DisposeConnectionsAsync().ConfigureAwait(false);
-
                 var stepTimeout = TimeSpan.FromTicks(timeout.Ticks / 3);
 
                 Post(t => t.AllowStop());
@@ -160,20 +148,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 #endif
-
-        private async Task DisposeConnectionsAsync()
-        {
-            // Close and wait for all connections
-            if (!await ConnectionManager.WalkConnectionsAndCloseAsync(_shutdownTimeout).ConfigureAwait(false))
-            {
-                _log.NotAllConnectionsClosedGracefully();
-
-                if (!await ConnectionManager.WalkConnectionsAndAbortAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false))
-                {
-                    _log.NotAllConnectionsAborted();
-                }
-            }
-        }
 
         private void AllowStop()
         {
@@ -285,9 +259,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
             }
 
-            // This is used to access a 64-bit timestamp (this.Now) using a potentially 32-bit IntPtr.
-            var thisHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-
             try
             {
                 _loop.Run();
@@ -317,7 +288,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 PipeFactory.Dispose();
                 WriteReqPool.Dispose();
-                thisHandle.Free();
                 _threadTcs.SetResult(null);
 
 #if DEBUG
@@ -434,6 +404,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             public static readonly Action<object, object> PostCallbackAdapter = (callback, state) => ((Action<T>)callback).Invoke((T)state);
             public static readonly Action<object, object> PostAsyncCallbackAdapter = (callback, state) => ((Action<T>)callback).Invoke((T)state);
         }
-
     }
 }

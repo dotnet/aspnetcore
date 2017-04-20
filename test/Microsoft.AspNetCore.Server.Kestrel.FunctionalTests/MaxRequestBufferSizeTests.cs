@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         bytesRead += await context.Request.Body.ReadAsync(buffer, bytesRead, buffer.Length - bytesRead);
                     }
 
-                    await clientFinishedSendingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(30));
+                    await clientFinishedSendingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
 
                     // Verify client didn't send extra bytes
                     if (context.Request.Body.ReadByte() != -1)
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             // Timeouts large enough to prevent false positives, but small enough to fail quickly.
             socket.SendTimeout = 10 * 1000;
-            socket.ReceiveTimeout = 30 * 1000;
+            socket.ReceiveTimeout = 120 * 1000;
 
             socket.Connect(IPAddress.Loopback, port);
 

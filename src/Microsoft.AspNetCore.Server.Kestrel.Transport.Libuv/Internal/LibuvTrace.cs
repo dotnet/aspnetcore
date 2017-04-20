@@ -26,14 +26,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private static readonly Action<ILogger, string, Exception> _connectionError =
             LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error.");
 
-        private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully =
-            LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
-
         private static readonly Action<ILogger, string, Exception> _connectionReset =
             LoggerMessage.Define<string>(LogLevel.Debug, 19, @"Connection id ""{ConnectionId}"" reset.");
-
-        private static readonly Action<ILogger, Exception> _notAllConnectionsAborted =
-            LoggerMessage.Define(LogLevel.Debug, 21, "Some connections failed to abort during server shutdown.");
 
         private readonly ILogger _logger;
 
@@ -83,16 +77,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public void ConnectionReset(string connectionId)
         {
             _connectionReset(_logger, connectionId, null);
-        }
-
-        public void NotAllConnectionsClosedGracefully()
-        {
-            _notAllConnectionsClosedGracefully(_logger, null);
-        }
-
-        public void NotAllConnectionsAborted()
-        {
-            _notAllConnectionsAborted(_logger, null);
         }
 
         public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);

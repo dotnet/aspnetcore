@@ -26,11 +26,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void ConnectionHeadResponseBodyWrite(string connectionId, long count);
 
+        void NotAllConnectionsClosedGracefully();
+
         void ConnectionBadRequest(string connectionId, BadHttpRequestException ex);
 
         void ApplicationError(string connectionId, string traceIdentifier, Exception ex);
 
+        void NotAllConnectionsAborted();
+
         void TimerSlow(TimeSpan interval, DateTimeOffset now);
 
+        void ApplicationNeverCompleted(string connectionId);
     }
 }
