@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class FrameConnectionManagerTests
     {
-        [Fact(Skip = "Flaky test")]
+        [Fact]
         public void UnrootedConnectionsGetRemovedFromHeartbeat()
         {
             var connectionId = "0";
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             // The FrameConnection constructor adds itself to the connection manager.
-            var ignore = new FrameConnection(new FrameConnectionContext
+            var frameConnection = new FrameConnection(new FrameConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionId = connectionId
@@ -56,6 +56,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(1, connectionCount);
             trace.Verify(t => t.ApplicationNeverCompleted(connectionId), Times.Never());
+
+            // Ensure frameConnection doesn't get GC'd before this point.
+            GC.KeepAlive(frameConnection);
         }
     }
 }
