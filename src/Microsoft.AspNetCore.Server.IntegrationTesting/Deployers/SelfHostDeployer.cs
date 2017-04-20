@@ -39,6 +39,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
                     DotnetPublish();
+
+                    // Temporary workaround for https://github.com/dotnet/cli/issues/6286
+                    ProvideExecutePermission();
                 }
 
                 var hintUrl = TestUriHelper.BuildTestUri(DeploymentParameters.ApplicationBaseUriHint);
@@ -187,6 +190,63 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 InvokeUserApplicationCleanup();
 
                 StopTimer();
+            }
+        }
+
+        // Temporary workaround for https://github.com/dotnet/cli/issues/6286
+        private void ProvideExecutePermission()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                && DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
+                && DeploymentParameters.ApplicationType == ApplicationType.Standalone)
+            {
+                var executablePath = Path.Combine(
+                    DeploymentParameters.PublishedApplicationRootPath,
+                    DeploymentParameters.ApplicationName);
+
+                var chmodProcessStartInfo = new ProcessStartInfo
+                {
+                    FileName = "chmod",
+                    Arguments = $"755 {executablePath}",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                var chmodProcess = new Process() { StartInfo = chmodProcessStartInfo };
+                try
+                {
+                    chmodProcess.StartAndCaptureOutAndErrToLogger("chmod", Logger);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(
+                        "Error occurred while starting the process '{processName}'. Exception: {exception}",
+                        chmodProcessStartInfo.FileName,
+                        ex.ToString());
+                }
+
+                var hasExited = chmodProcess.WaitForExit(3 * 1000);
+
+                if (hasExited)
+                {
+                    if (chmodProcess.ExitCode != 0)
+                    {
+                        Logger.LogError(
+                            "Process {processName} with id {pid} exited with code {exitCode} or failed to start.",
+                            chmodProcessStartInfo.FileName,
+                            HostProcess.Id,
+                            HostProcess.ExitCode);
+                    }
+                }
+                else
+                {
+                    Logger.LogError(
+                            "Process {processName} with id {pid} did not exit in the given amount of time.",
+                            chmodProcessStartInfo.FileName,
+                            HostProcess.Id);
+                }
             }
         }
     }
