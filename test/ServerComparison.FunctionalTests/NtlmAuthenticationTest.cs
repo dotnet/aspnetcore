@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #if NET46
 
@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;

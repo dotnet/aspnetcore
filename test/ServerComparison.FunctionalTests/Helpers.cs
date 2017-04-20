@@ -1,10 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace ServerComparison.FunctionalTests
 {
@@ -12,7 +11,7 @@ namespace ServerComparison.FunctionalTests
     {
         public static string GetApplicationPath(ApplicationType applicationType)
         {
-            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+            var applicationBasePath = AppContext.BaseDirectory;
 
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
@@ -32,7 +31,7 @@ namespace ServerComparison.FunctionalTests
 
         public static string GetConfigContent(ServerType serverType, string iisConfig, string nginxConfig)
         {
-            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+            var applicationBasePath = AppContext.BaseDirectory;
 
             string content = null;
             if (serverType == ServerType.IISExpress)
