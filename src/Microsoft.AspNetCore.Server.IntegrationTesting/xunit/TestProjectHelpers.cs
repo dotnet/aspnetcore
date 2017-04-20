@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.xunit
 {
@@ -13,8 +12,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.xunit
 
         public static string GetSolutionRoot()
         {
-            var applicationName = PlatformServices.Default.Application.ApplicationName;
-            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+            var applicationBasePath = AppContext.BaseDirectory;
 
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do

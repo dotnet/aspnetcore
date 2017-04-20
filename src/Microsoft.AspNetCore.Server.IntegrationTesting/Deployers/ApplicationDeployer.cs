@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using PlatformAbstractions = Microsoft.DotNet.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
@@ -214,18 +214,35 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         private string GetRuntimeIdentifier()
         {
-            var architecture = PlatformAbstractions.RuntimeEnvironment.RuntimeArchitecture;
-            switch (PlatformAbstractions.RuntimeEnvironment.OperatingSystemPlatform)
+            var architecture = GetArchitecture();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                case PlatformAbstractions.Platform.Windows:
-                    return "win7-" + architecture;
-                case PlatformAbstractions.Platform.Linux:
-                    return "linux-" + architecture;
-                case PlatformAbstractions.Platform.Darwin:
-                    return "osx.10.12-" + architecture;
+                return "win7-" + architecture;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "linux-" + architecture;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return "osx.10.12-" + architecture;
+            }
+            else
+            {
+                throw new InvalidOperationException("Unrecognized operation system platform");
+            }
+        }
+
+        private string GetArchitecture()
+        {
+            switch (RuntimeInformation.OSArchitecture)
+            {
+                case Architecture.X86:
+                    return "x86";
+                case Architecture.X64:
+                    return "x64";
                 default:
-                    throw new InvalidOperationException(
-                        "Unrecognized operation system platform: " + PlatformAbstractions.RuntimeEnvironment.OperatingSystemPlatform);
+                    throw new NotSupportedException($"Unsupported architecture: {RuntimeInformation.OSArchitecture}");
             }
         }
     }

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,7 +21,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 [assembly: HostingStartup(typeof(WebHostBuilderTests.TestHostingStartup))]
@@ -650,52 +649,79 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                var appBase = PlatformServices.Default.Application.ApplicationBasePath;
+                var appBase = AppContext.BaseDirectory;
                 Assert.Equal(appBase, host.Services.GetService<IHostingEnvironment>().ContentRootPath);
             }
         }
 
         [Fact]
-        public void DefaultApplicationNameToStartupAssemblyName()
+        public void DefaultApplicationNameWithNoStartupThrows()
+        {
+            var builder = new ConfigurationBuilder();
+            var host = new WebHostBuilder()
+                .UseServer(new TestServer());
+
+            var ex = Assert.Throws<ArgumentException>(() => host.Build());
+
+            // ArgumentException adds "Parameter name" to the message and this is the cleanest way to make sure we get the right
+            // expected string
+            Assert.Equal(new ArgumentException("A valid non-empty application name must be provided.", "applicationName").Message , ex.Message);
+        }
+
+        [Fact]
+        public void DefaultApplicationNameWithUseStartupOfString()
         {
             var builder = new ConfigurationBuilder();
             using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
-                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .UseStartup(typeof(Startup).Assembly.GetName().Name)
                 .Build())
             {
                 var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-                Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
+                Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv.ApplicationName);
             }
         }
 
         [Fact]
-        public void DefaultApplicationNameToStartupType()
+        public void DefaultApplicationNameWithUseStartupOfT()
         {
             var builder = new ConfigurationBuilder();
             using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>()
-                .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
                 .Build())
             {
                 var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-                Assert.Equal("Microsoft.AspNetCore.Hosting.Tests.NonExistent", hostingEnv.ApplicationName);
+                Assert.Equal(typeof(StartupNoServices).Assembly.GetName().Name, hostingEnv.ApplicationName);
             }
         }
 
         [Fact]
-        public void DefaultApplicationNameAndBasePathToStartupMethods()
+        public void DefaultApplicationNameWithUseStartupOfType()
+        {
+            var builder = new ConfigurationBuilder();
+            var host = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .UseStartup(typeof(StartupNoServices))
+                .Build();
+
+            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+            Assert.Equal(typeof(StartupNoServices).Assembly.GetName().Name, hostingEnv.ApplicationName);
+        }
+
+        [Fact]
+        public void DefaultApplicationNameWithConfigure()
         {
             var builder = new ConfigurationBuilder();
             using (var host = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .Configure(app => { })
-                .UseStartup("Microsoft.AspNetCore.Hosting.Tests.NonExistent")
                 .Build())
             {
                 var hostingEnv = host.Services.GetService<IHostingEnvironment>();
-                Assert.Equal("Microsoft.AspNetCore.Hosting.Tests.NonExistent", hostingEnv.ApplicationName);
+
+                // Should be the assembly containing this test, because that's where the delegate comes from
+                Assert.Equal(typeof(WebHostBuilderTests).Assembly.GetName().Name, hostingEnv.ApplicationName);
             }
         }
 

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -274,9 +273,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             _options = new WebHostOptions(_config);
 
-            var appEnvironment = PlatformServices.Default.Application;
-            var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, appEnvironment.ApplicationBasePath);
-            var applicationName = _options.ApplicationName ?? appEnvironment.ApplicationName;
+            var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, AppContext.BaseDirectory);
+            var applicationName = _options.ApplicationName;
 
             // Initialize the hosting environment
             _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
