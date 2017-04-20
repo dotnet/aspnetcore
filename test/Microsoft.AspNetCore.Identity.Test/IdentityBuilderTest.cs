@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private class MySignInManager : SignInManager<TestUser>
         {
-            public MySignInManager(UserManager<TestUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<TestUser> claimsFactory) : base(manager, context, claimsFactory, null, null) { }
+            public MySignInManager(UserManager<TestUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<TestUser> claimsFactory) : base(manager, context, claimsFactory, null, null, null) { }
         }
 
         private class MyUserManager : UserManager<TestUser>

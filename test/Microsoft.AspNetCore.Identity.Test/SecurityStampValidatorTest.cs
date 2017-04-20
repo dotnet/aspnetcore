@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             var properties = new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow.AddSeconds(-1), IsPersistent = isPersistent };
             var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
-                contextAccessor.Object, claimsManager.Object, options.Object, null);
+                contextAccessor.Object, claimsManager.Object, options.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(user).Verifiable();
             signInManager.Setup(s => s.CreateUserPrincipalAsync(user)).ReturnsAsync(principal).Verifiable();
             var services = new ServiceCollection();
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
-                contextAccessor.Object, claimsManager.Object, options.Object, null);
+                contextAccessor.Object, claimsManager.Object, options.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(default(TestUser)).Verifiable();
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
-                contextAccessor.Object, claimsManager.Object, options.Object, null);
+                contextAccessor.Object, claimsManager.Object, options.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(default(TestUser)).Verifiable();
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<TestUser>>(userManager.Object,
-                contextAccessor.Object, claimsManager.Object, options.Object, null);
+                contextAccessor.Object, claimsManager.Object, options.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>())).Throws(new Exception("Shouldn't be called"));
             signInManager.Setup(s => s.SignInAsync(user, false, null)).Throws(new Exception("Shouldn't be called"));
             var services = new ServiceCollection();

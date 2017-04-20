@@ -68,13 +68,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void ConstructorNullChecks()
         {
-            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<TestUser>(null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<TestUser>(null, null, null, null, null, null));
             var userManager = MockHelpers.MockUserManager<TestUser>().Object;
-            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<TestUser>(userManager, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<TestUser>(userManager, null, null, null, null, null));
             var contextAccessor = new Mock<IHttpContextAccessor>();
             var context = new Mock<HttpContext>();
             contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null, null));
+            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<TestUser>(userManager, contextAccessor.Object, null, null, null, null));
         }
 
         //[Fact]
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger.Object, new Mock<IAuthenticationSchemeProvider>().Object);
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager.Object, roleManager.Object, options.Object);
             var logStore = new StringBuilder();
             var logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore);
-            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger.Object);
+            var helper = new SignInManager<TestUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger.Object, new Mock<IAuthenticationSchemeProvider>().Object);
 
             // Act
             var result = await helper.CheckPasswordSignInAsync(user, "bogus", false);
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<TestUser, TestRole>(manager, roleManager.Object, options.Object);
-            var sm = new SignInManager<TestUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null);
+            var sm = new SignInManager<TestUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
             sm.Logger = MockHelpers.MockILogger<SignInManager<TestUser>>(logStore ?? new StringBuilder()).Object;
             return sm;
         }
@@ -514,7 +514,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var signInManager = new Mock<SignInManager<TestUser>>(manager.Object,
                 new HttpContextAccessor { HttpContext = context },
                 new Mock<IUserClaimsPrincipalFactory<TestUser>>().Object,
-                null, null)
+                null, null, new Mock<IAuthenticationSchemeProvider>().Object)
             { CallBase = true };
             //signInManager.Setup(s => s.SignInAsync(user, It.Is<AuthenticationProperties>(p => p.IsPersistent == isPersistent),
             //externalLogin? loginProvider : null)).Returns(Task.FromResult(0)).Verifiable();
