@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Core.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 
@@ -413,7 +416,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var routeValues = new RouteValueDictionary(values);
             var ambientValues = urlHelper.ActionContext.RouteData.Values;
-            if (pageName == null)
+            if (string.IsNullOrEmpty(pageName))
             {
                 if (!routeValues.ContainsKey("page") &&
                     ambientValues.TryGetValue("page", out var value))
@@ -423,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
             else
             {
-                routeValues["page"] = pageName;
+                routeValues["page"] = CalculatePageName(urlHelper.ActionContext, pageName);
             }
 
             if (!routeValues.ContainsKey("formaction") &&
@@ -439,6 +442,25 @@ namespace Microsoft.AspNetCore.Mvc
                 protocol: protocol,
                 host: host,
                 fragment: fragment);
+        }
+
+        private static object CalculatePageName(ActionContext actionContext, string pageName)
+        {
+            Debug.Assert(pageName.Length > 0);
+            // Paths not qualified with a leading slash are treated as relative to the current page.
+            if (pageName[0] != '/')
+            {
+                var currentPagePath = NormalizedRouteValue.GetNormalizedRouteValue(actionContext, "page");
+                if (string.IsNullOrEmpty(currentPagePath))
+                {
+                    // Disallow the use sibling page routing, a Razor page specific feature, from a non-page action.
+                    throw new InvalidOperationException(Resources.FormatUrlHelper_RelativePagePathIsNotSupported(pageName));
+                }
+
+                return ViewEnginePath.CombinePath(currentPagePath, pageName);
+            }
+
+            return pageName;
         }
     }
 }

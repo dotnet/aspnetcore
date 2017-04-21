@@ -855,6 +855,54 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.Equal(expected, response.Headers.Location.ToString());
         }
 
+        [Fact]
+        public async Task RedirectToSibling_Works()
+        {
+            // Arrange
+            var expected = "/Pages/Redirects/Redirect/10";
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectToSibling/RedirectToRedirect");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task RedirectToSibling_RedirectsToIndexPage_WithoutIndexSegment()
+        {
+            // Arrange
+            var expected = "/Pages/Redirects";
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectToSibling/RedirectToIndex");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task RedirectToSibling_RedirectsToSubDirectory()
+        {
+            // Arrange
+            var expected = "/Pages/Redirects/SubDir/SubDirPage";
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectToSibling/RedirectToSubDir");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task RedirectToSibling_RedirectsToParentDirectory()
+        {
+            // Arrange
+            var expected = "/Pages/Conventions/AuthFolder";
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectToSibling/RedirectToParent");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);

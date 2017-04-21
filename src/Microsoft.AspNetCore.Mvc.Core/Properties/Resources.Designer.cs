@@ -1284,6 +1284,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatNoRoutesMatchedForPage(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("NoRoutesMatchedForPage"), p0);
 
+        /// <summary>
+        /// The relative page path '{0}' can only can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.
+        /// </summary>
+        internal static string UrlHelper_RelativePagePathIsNotSupported
+        {
+            get => GetString("UrlHelper_RelativePagePathIsNotSupported");
+        }
+
+        /// <summary>
+        /// The relative page path '{0}' can only can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.
+        /// </summary>
+        internal static string FormatUrlHelper_RelativePagePathIsNotSupported(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("UrlHelper_RelativePagePathIsNotSupported"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
