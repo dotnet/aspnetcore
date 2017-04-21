@@ -9,21 +9,15 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 {
-    public class MockConnectionHandler : IConnectionHandler, IDisposable
+    public class MockConnectionHandler : IConnectionHandler
     {
-        private readonly PipeFactory _pipeFactory;
-
-        public MockConnectionHandler()
-        {
-            _pipeFactory = new PipeFactory();
-        }
+        public PipeOptions InputOptions { get; set; } = new PipeOptions();
+        public PipeOptions OutputOptions { get; set; } = new PipeOptions();
 
         public IConnectionContext OnConnection(IConnectionInformation connectionInfo)
         {
-            Assert.Null(Input);
-
-            Input = _pipeFactory.Create();
-            Output = _pipeFactory.Create();
+            Input = connectionInfo.PipeFactory.Create(InputOptions ?? new PipeOptions());
+            Output = connectionInfo.PipeFactory.Create(OutputOptions ?? new PipeOptions());
 
             return new TestConnectionContext
             {
@@ -34,13 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 
         public IPipe Input { get; private set; }
         public IPipe Output { get; private set; }
-
-        public void Dispose()
-        {
-            Input?.Writer.Complete();
-            _pipeFactory.Dispose();
-        }
-
+        
         private class TestConnectionContext : IConnectionContext
         {
             public string ConnectionId { get; }
@@ -49,22 +37,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 
             public void OnConnectionClosed()
             {
-                throw new NotImplementedException();
-            }
 
-            public Task StopAsync()
-            {
-                throw new NotImplementedException();
             }
 
             public void Abort(Exception ex)
             {
-                throw new NotImplementedException();
-            }
-
-            public void Timeout()
-            {
-                throw new NotImplementedException();
             }
         }
     }

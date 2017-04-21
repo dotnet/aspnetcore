@@ -102,11 +102,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     (handle, status2, state) => ((ListenerSecondary)state).ReadStartCallback(handle, status2),
                     this);
 
-               writeReq.Init(Thread);
-               var result = await writeReq.WriteAsync(
-                    DispatchPipe,
-                    new ArraySegment<ArraySegment<byte>>(new [] { new ArraySegment<byte>(_pipeMessage) }));
-                
+                writeReq.Init(Thread);
+                var result = await writeReq.WriteAsync(
+                     DispatchPipe,
+                     new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(_pipeMessage) }));
+
                 if (result.Error != null)
                 {
                     tcs.SetException(result.Error);
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 var connection = new LibuvConnection(this, acceptSocket);
-                connection.Start();
+                _ = connection.Start();
             }
             catch (UvException ex)
             {

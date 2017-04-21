@@ -120,7 +120,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
             _uv_err_name = errno => IntPtr.Zero;
             _uv_strerror = errno => IntPtr.Zero;
             _uv_read_start = UvReadStart;
-            _uv_read_stop = handle => 0;
+            _uv_read_stop = (handle) =>
+            {
+                AllocCallback = null;
+                ReadCallback = null;
+                return 0;
+            };
             _uv_unsafe_async_send = handle =>
             {
                 throw new Exception($"Why is this getting called?{Environment.NewLine}{_stackTrace}");

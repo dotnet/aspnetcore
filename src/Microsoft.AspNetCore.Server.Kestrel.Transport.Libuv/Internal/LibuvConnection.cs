@@ -4,11 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private IConnectionHandler ConnectionHandler => ListenerContext.TransportContext.ConnectionHandler;
         private LibuvThread Thread => ListenerContext.Thread;
 
-        public async void Start()
+        public async Task Start()
         {
             try
             {
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 Output = new LibuvOutputConsumer(_connectionContext.Output, Thread, _socket, ConnectionId, Log);
 
                 // Start socket prior to applying the ConnectionAdapter
-                _socket.ReadStart(_allocCallback, _readCallback, this);
+                StartReading();
 
                 try
                 {
@@ -80,9 +79,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
                 finally
                 {
-                    // Ensure the socket is disposed prior to completing in the input writer.
-                    _socket.Dispose();
+                    // Make sure it isn't possible for a paused read to resume reading after calling uv_close
+                    // on the stream handle
+                    Input.CancelPendingFlush();
+
+                    // Now, complete the input so that no more reads can happen
                     Input.Complete(new TaskCanceledException("The request was aborted"));
+
+                    // We're done with the socket now
+                    _socket.Dispose();
+
+                    // Tell the kestrel we're done with this connection
                     _connectionContext.OnConnectionClosed();
                 }
             }
@@ -171,12 +178,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _currentWritableBuffer = null;
             if (flushTask?.IsCompleted == false)
             {
-                Pause();
+                Log.ConnectionPause(ConnectionId);
+                StopReading();
+
                 var result = await flushTask.Value;
                 // If the reader isn't complete then resume
-                if (!result.IsCompleted)
+                if (!result.IsCompleted && !result.IsCancelled)
                 {
-                    Resume();
+                    Log.ConnectionResume(ConnectionId);
+                    StartReading();
                 }
             }
 
@@ -189,31 +199,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
-        private void Pause()
+        private void StopReading()
         {
-            // It's possible that uv_close was called between the call to Thread.Post() and now.
-            if (!_socket.IsClosed)
-            {
-                _socket.ReadStop();
-            }
+            _socket.ReadStop();
         }
 
-        private void Resume()
+        private void StartReading()
         {
-            // It's possible that uv_close was called even before the call to Resume().
-            if (!_socket.IsClosed)
+            try
             {
-                try
-                {
-                    _socket.ReadStart(_allocCallback, _readCallback, this);
-                }
-                catch (UvException)
-                {
-                    // ReadStart() can throw a UvException in some cases (e.g. socket is no longer connected).
-                    // This should be treated the same as OnRead() seeing a "normalDone" condition.
-                    Log.ConnectionReadFin(ConnectionId);
-                    Input.Complete();
-                }
+                _socket.ReadStart(_allocCallback, _readCallback, this);
+            }
+            catch (UvException)
+            {
+                // ReadStart() can throw a UvException in some cases (e.g. socket is no longer connected).
+                // This should be treated the same as OnRead() seeing a "normalDone" condition.
+                Log.ConnectionReadFin(ConnectionId);
+                Input.Complete();
             }
         }
     }

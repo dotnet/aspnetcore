@@ -10,6 +10,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     {
         // ConnectionRead: Reserved: 3
 
+        private static readonly Action<ILogger, string, Exception> _connectionPause =
+            LoggerMessage.Define<string>(LogLevel.Debug, 4, @"Connection id ""{ConnectionId}"" paused.");
+
+        private static readonly Action<ILogger, string, Exception> _connectionResume =
+            LoggerMessage.Define<string>(LogLevel.Debug, 5, @"Connection id ""{ConnectionId}"" resumed.");
+
         private static readonly Action<ILogger, string, Exception> _connectionReadFin =
             LoggerMessage.Define<string>(LogLevel.Debug, 6, @"Connection id ""{ConnectionId}"" received FIN.");
 
@@ -77,6 +83,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public void ConnectionReset(string connectionId)
         {
             _connectionReset(_logger, connectionId, null);
+        }
+
+        public void ConnectionPause(string connectionId)
+        {
+            _connectionPause(_logger, connectionId, null);
+        }
+
+        public void ConnectionResume(string connectionId)
+        {
+            _connectionResume(_logger, connectionId, null);
         }
 
         public IDisposable BeginScope<TState>(TState state) => _logger.BeginScope(state);

@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
-            var listener = (Listener) state;
+            var listener = (Listener)state;
 
             if (error != null)
             {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         protected virtual void DispatchConnection(UvStreamHandle socket)
         {
             var connection = new LibuvConnection(this, socket);
-            connection.Start();
+            _ = connection.Start();
         }
 
         public virtual async Task DisposeAsync()
