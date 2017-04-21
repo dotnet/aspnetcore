@@ -39,12 +39,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var action2 = new ActionModel(action);
 
             // Assert
-            Assert.NotSame(action, action2.Parameters[0]);
+            Assert.NotSame(action.Parameters, action2.Parameters);
+            Assert.NotNull(action2.Parameters);
+            Assert.Single(action2.Parameters);
+            Assert.NotSame(parameter, action2.Parameters[0]);
             Assert.NotSame(apiExplorer, action2.ApiExplorer);
             Assert.NotSame(action.Selectors, action2.Selectors);
             Assert.NotNull(action2.Selectors);
             Assert.Single(action2.Selectors);
+            Assert.NotSame(action.Selectors[0], action2.Selectors[0]);
             Assert.NotSame(route, action2.Selectors[0].AttributeRouteModel);
+
+            Assert.NotSame(action, action2.Parameters[0].Action);
+            Assert.Same(action2, action2.Parameters[0].Action);
         }
 
         [Fact]

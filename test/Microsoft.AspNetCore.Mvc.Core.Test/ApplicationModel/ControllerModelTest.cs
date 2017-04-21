@@ -27,6 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             controller.Actions.Add(action);
             action.Controller = controller;
 
+            controller.ControllerProperties.Add(new PropertyModel(
+                controller.ControllerType.AsType().GetProperty("TestProperty"),
+                new List<object>() { }));
+
             var route = new AttributeRouteModel(new HttpGetAttribute("api/Products"));
             controller.Selectors.Add(new SelectorModel() { AttributeRouteModel = route });
 
@@ -39,6 +43,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Assert
             Assert.NotSame(action, controller2.Actions[0]);
+            Assert.NotNull(controller2.ControllerProperties);
+            Assert.Single(controller2.ControllerProperties);
             Assert.NotNull(controller2.Selectors);
             Assert.Single(controller2.Selectors);
             Assert.NotSame(route, controller2.Selectors[0].AttributeRouteModel);
@@ -49,6 +55,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Assert.NotSame(controller.Attributes, controller2.Attributes);
             Assert.NotSame(controller.Filters, controller2.Filters);
             Assert.NotSame(controller.RouteValues, controller2.RouteValues);
+
+            Assert.NotSame(controller, controller2.Actions[0].Controller);
+            Assert.Same(controller2, controller2.Actions[0].Controller);
+            Assert.NotSame(controller, controller2.ControllerProperties[0].Controller);
+            Assert.Same(controller2, controller2.ControllerProperties[0].Controller);
         }
 
         [Fact]

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Make a deep copy of other 'model' types.
             ApiExplorer = new ApiExplorerModel(other.ApiExplorer);
-            Parameters = new List<ParameterModel>(other.Parameters.Select(p => new ParameterModel(p)));
+            Parameters = new List<ParameterModel>(other.Parameters.Select(p => new ParameterModel(p) { Action = this }));
             Selectors = new List<SelectorModel>(other.Selectors.Select(s => new SelectorModel(s)));
         }
 
