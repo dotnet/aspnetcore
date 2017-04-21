@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             };
 
             var originalSpan = new SourceSpan("test.cshtml", 0, 0, 0, 6);
-            var generatedSpan = new SourceSpan(null, 23, 1, 0, 6);
+            var generatedSpan = new SourceSpan(null, 21 + Environment.NewLine.Length, 1, 0, 6);
             var expectedLineMapping = new LineMapping(originalSpan, generatedSpan);
             var node = new UsingStatementIRNode()
             {
