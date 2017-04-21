@@ -950,7 +950,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the current page.
         /// </summary>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
-        protected RedirectToPageResult RedirectToPage()
+        public virtual RedirectToPageResult RedirectToPage()
             => RedirectToPage(pageName: null);
 
         /// <summary>
@@ -958,7 +958,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
-        protected RedirectToPageResult RedirectToPage(object routeValues)
+        public virtual RedirectToPageResult RedirectToPage(object routeValues)
             => RedirectToPage(pageName: null, routeValues: routeValues);
 
         /// <summary>
@@ -966,7 +966,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="pageName">The name of the page.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
-        protected RedirectToPageResult RedirectToPage(string pageName)
+        public virtual RedirectToPageResult RedirectToPage(string pageName)
             => RedirectToPage(pageName, routeValues: null);
 
         /// <summary>
@@ -976,7 +976,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="pageName">The name of the page.</param>
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
-        protected RedirectToPageResult RedirectToPage(string pageName, object routeValues)
+        public virtual RedirectToPageResult RedirectToPage(string pageName, object routeValues)
             => RedirectToPage(pageName, routeValues, fragment: null);
 
         /// <summary>
@@ -986,7 +986,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="pageName">The name of the page.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
-        protected RedirectToPageResult RedirectToPage(string pageName, string fragment)
+        public virtual RedirectToPageResult RedirectToPage(string pageName, string fragment)
             => RedirectToPage(pageName, routeValues: null, fragment: fragment);
 
         /// <summary>
@@ -997,7 +997,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeValues">The parameters for a route.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
-        protected RedirectToPageResult RedirectToPage(string pageName, object routeValues, string fragment)
+        public virtual RedirectToPageResult RedirectToPage(string pageName, object routeValues, string fragment)
             => new RedirectToPageResult(pageName, routeValues, fragment);
 
         /// <summary>
@@ -1005,7 +1005,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="pageName">The name of the page.</param>
         /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
-        protected RedirectToPageResult RedirectToPagePermanent(string pageName)
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName)
             => RedirectToPagePermanent(pageName, routeValues: null);
 
         /// <summary>
@@ -1015,7 +1015,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="pageName">The name of the page.</param>
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
-        protected RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues)
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues)
             => RedirectToPagePermanent(pageName, routeValues, fragment: null);
 
         /// <summary>
@@ -1025,7 +1025,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="pageName">The name of the page.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
-        protected RedirectToPageResult RedirectToPagePermanent(string pageName, string fragment)
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, string fragment)
             => RedirectToPagePermanent(pageName, routeValues: null, fragment: fragment);
 
         /// <summary>

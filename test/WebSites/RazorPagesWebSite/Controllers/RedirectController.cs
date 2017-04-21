@@ -8,9 +8,9 @@ namespace RazorPagesWebSite
     public class RedirectController : Controller
     {
         [HttpGet("/RedirectToPage")]
-        public IActionResult RedirectToPage()
+        public IActionResult RedirectToPageAction()
         {
-            return RedirectToRoute(new { page = "/RedirectToController", param = 17 });
+            return RedirectToPage("/RedirectToController", new { param = 17 });
         }
     }
 }

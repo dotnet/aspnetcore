@@ -944,6 +944,148 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPage(string pageName)
+            => RedirectToPage(pageName, routeValues: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="routeValues"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPage(string pageName, object routeValues)
+            => RedirectToPage(pageName, routeValues, fragment: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPage(string pageName, string fragment)
+            => RedirectToPage(pageName, routeValues: null, fragment: fragment);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="routeValues"/> and <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPage(string pageName, object routeValues, string fragment)
+            => new RedirectToPageResult(pageName, routeValues, fragment);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName)
+            => RedirectToPagePermanent(pageName, routeValues: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="routeValues"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues)
+            => RedirectToPagePermanent(pageName, routeValues, fragment: null);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, string fragment)
+            => RedirectToPagePermanent(pageName, routeValues: null, fragment: fragment);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="routeValues"/> and <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The parameters for a route.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues, string fragment)
+            => new RedirectToPageResult(pageName, routeValues, permanent: true, fragment: fragment);
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified page with 
+        /// <see cref="RedirectToRouteResult.Permanent"/> set to false and <see cref="RedirectToRouteResult.PreserveMethod"/>
+        /// set to true, using the specified <paramref name="pageName"/>, <paramref name="routeValues"/>, and <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns> 
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPagePreserveMethod(
+            string pageName,
+            object routeValues = null,
+            string fragment = null)
+        {
+            if (pageName == null)
+            {
+                throw new ArgumentNullException(nameof(pageName));
+            }
+
+            return new RedirectToPageResult(
+                pageName: pageName,
+                routeValues: routeValues,
+                permanent: false,
+                preserveMethod: true,
+                fragment: fragment);
+        }
+
+        /// <summary>
+        /// Redirects (<see cref="StatusCodes.Status308PermanentRedirect"/>) to the specified route with
+        /// <see cref="RedirectToRouteResult.Permanent"/> set to true and <see cref="RedirectToRouteResult.PreserveMethod"/>
+        /// set to true, using the specified <paramref name="pageName"/>, <paramref name="routeValues"/>, and <paramref name="fragment"/>.
+        /// </summary>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>  
+        [NonAction]
+        public virtual RedirectToPageResult RedirectToPagePermanentPreserveMethod(
+            string pageName,
+            object routeValues = null,
+            string fragment = null)
+        {
+            if (pageName == null)
+            {
+                throw new ArgumentNullException(nameof(pageName));
+            }
+
+            return new RedirectToPageResult(
+                pageName: pageName,
+                routeValues: routeValues,
+                permanent: true,
+                preserveMethod: true,
+                fragment: fragment);
+        }
+
+        /// <summary>
         /// Returns a file with the specified <paramref name="fileContents" /> as content
         /// (<see cref="StatusCodes.Status200OK"/>) and the specified <paramref name="contentType" /> as the Content-Type.
         /// </summary>

@@ -3,11 +3,12 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class RedirectToPageResultExecutor
     {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             if (string.IsNullOrEmpty(destinationUrl))
             {
-                throw new InvalidOperationException(Resources.FormatNoRoutesMatched(result.PageName));
+                throw new InvalidOperationException(Resources.FormatNoRoutesMatchedForPage(result.PageName));
             }
 
             _logger.RedirectToPageResultExecuting(result.PageName);

@@ -122,20 +122,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         internal static string FormatPathMustBeAnAppRelativePath()
             => GetString("PathMustBeAnAppRelativePath");
 
-        /// <summary>
-        /// No page named '{0}' matches the supplied values.
-        /// </summary>
-        internal static string NoRoutesMatched
-        {
-            get => GetString("NoRoutesMatched");
-        }
-
-        /// <summary>
-        /// No page named '{0}' matches the supplied values.
-        /// </summary>
-        internal static string FormatNoRoutesMatched(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("NoRoutesMatched"), p0);
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -986,6 +986,65 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(expected, resultPermanent.RouteValues);
         }
 
+        [Fact]
+        public void RedirectToPagePreserveMethod_WithParameterUrl_SetsRedirectResultPreserveMethod()
+        {
+            // Arrange
+            var pageModel = new TestableController();
+            var url = "/test/url";
+
+            // Act
+            var result = pageModel.RedirectToPagePreserveMethod(url);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.True(result.PreserveMethod);
+            Assert.False(result.Permanent);
+            Assert.Same(url, result.PageName);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToPagePreserveMethod_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var pageModel = new TestableController();
+            var pageName = "CustomRouteName";
+
+            // Act
+            var resultPermanent = pageModel.RedirectToPagePreserveMethod(pageName, routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
+            Assert.False(resultPermanent.Permanent);
+            Assert.Same(pageName, resultPermanent.PageName);
+            Assert.Equal(expected, resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToPagePermanentPreserveMethod_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expected)
+        {
+            // Arrange
+            var pageModel = new TestableController();
+            var routeName = "CustomRouteName";
+
+            // Act
+            var resultPermanent = pageModel.RedirectToPagePermanentPreserveMethod(routeName, routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(resultPermanent);
+            Assert.True(resultPermanent.PreserveMethod);
+            Assert.True(resultPermanent.Permanent);
+            Assert.Same(routeName, resultPermanent.PageName);
+            Assert.Equal(expected, resultPermanent.RouteValues);
+        }
+
         [Theory]
         [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoutePermanentPreserveMethod_WithParameterRouteNameAndRouteValues_SetsResultProperties(

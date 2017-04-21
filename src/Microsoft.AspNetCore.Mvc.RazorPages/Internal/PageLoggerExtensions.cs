@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private static readonly Action<ILogger, string, double, Exception> _pageExecuted;
         private static readonly Action<ILogger, object, Exception> _exceptionFilterShortCircuit;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
-        private static readonly Action<ILogger, string, Exception> _redirectToPageResultExecuting;
 
         static PageLoggerExtensions()
         {
@@ -41,11 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                LogLevel.Debug,
                3,
                "Request was short circuited at page filter '{PageFilter}'.");
-
-            _redirectToPageResultExecuting = LoggerMessage.Define<string>(
-                LogLevel.Information,
-                5,
-                "Executing RedirectToPageResult, redirecting to {Page}.");
         }
 
         public static IDisposable PageScope(this ILogger logger, ActionDescriptor actionDescriptor)
@@ -86,9 +80,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             _pageFilterShortCircuit(logger, filter, null);
         }
-
-        public static void RedirectToPageResultExecuting(this ILogger logger, string page)
-            => _redirectToPageResultExecuting(logger, page, null);
 
         private class PageLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
