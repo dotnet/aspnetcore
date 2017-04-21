@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Moq;
 using Xunit;
 
@@ -149,20 +151,51 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public async Task ModelBinderFactory_BindsPropertiesOnPage()
         {
             // Arrange
+            var type = typeof(PageWithProperty).GetTypeInfo();
+
             var actionDescriptor = new CompiledPageActionDescriptor
             {
-                PageTypeInfo = typeof(PageWithProperty).GetTypeInfo(),
+                BoundProperties = new []
+                {
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageWithProperty.Id),
+                        ParameterType = typeof(int),
+                        Property = type.GetProperty(nameof(PageWithProperty.Id)),
+                    },
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageWithProperty.RouteDifferentValue),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageWithProperty.RouteDifferentValue)),
+                    },
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageWithProperty.PropertyWithNoValue),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageWithProperty.PropertyWithNoValue)),
+                    }
+                },
+                HandlerTypeInfo = type,
+                PageTypeInfo = type,
             };
+
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
             var binder = new TestParameterBinder(new Dictionary<string, object>
             {
                 { nameof(PageWithProperty.Id), 10 },
                 { nameof(PageWithProperty.RouteDifferentValue), "route-value" }
             });
+
             var factory = PagePropertyBinderFactory.CreateBinder(binder, modelMetadataProvider, actionDescriptor);
+
             var page = new PageWithProperty
             {
-                PageContext = new PageContext(),
+                PageContext = new PageContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                },
             };
 
             // Act
@@ -172,56 +205,60 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Equal(10, page.Id);
             Assert.Equal("route-value", page.RouteDifferentValue);
             Assert.Null(page.PropertyWithNoValue);
-            Assert.Collection(binder.Descriptors,
-                descriptor =>
-                {
-                    Assert.Equal(nameof(PageWithProperty.Id), descriptor.Name);
-                    Assert.Null(descriptor.BindingInfo.BinderModelName);
-                    Assert.Equal(BindingSource.Query, descriptor.BindingInfo.BindingSource);
-                    Assert.Null(descriptor.BindingInfo.BinderType);
-                    Assert.Null(descriptor.BindingInfo.PropertyFilterProvider);
-                    Assert.Equal(typeof(int), descriptor.ParameterType);
-                },
-                descriptor =>
-                {
-                    Assert.Equal(nameof(PageWithProperty.RouteDifferentValue), descriptor.Name);
-                    Assert.Equal("route-value", descriptor.BindingInfo.BinderModelName);
-                    Assert.Equal(BindingSource.Path, descriptor.BindingInfo.BindingSource);
-                    Assert.Null(descriptor.BindingInfo.BinderType);
-                    Assert.Null(descriptor.BindingInfo.PropertyFilterProvider);
-                    Assert.Equal(typeof(string), descriptor.ParameterType);
-                },
-                descriptor =>
-                {
-                    Assert.Equal(nameof(PageWithProperty.PropertyWithNoValue), descriptor.Name);
-                    Assert.Null(descriptor.BindingInfo.BinderModelName);
-                    Assert.Equal(BindingSource.Form, descriptor.BindingInfo.BindingSource);
-                    Assert.Null(descriptor.BindingInfo.BinderType);
-                    Assert.Null(descriptor.BindingInfo.PropertyFilterProvider);
-                    Assert.Equal(typeof(string), descriptor.ParameterType);
-                });
         }
 
         [Fact]
         public async Task ModelBinderFactory_BindsPropertiesOnPageModel()
         {
             // Arrange
+            var type = typeof(PageModelWithProperty).GetTypeInfo();
+
             var actionDescriptor = new CompiledPageActionDescriptor
             {
+                BoundProperties = new[]
+                {
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageModelWithProperty.Id),
+                        ParameterType = typeof(int),
+                        Property = type.GetProperty(nameof(PageModelWithProperty.Id)),
+                    },
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageModelWithProperty.RouteDifferentValue),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageModelWithProperty.RouteDifferentValue)),
+                    },
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageModelWithProperty.PropertyWithNoValue),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageModelWithProperty.PropertyWithNoValue)),
+                    }
+                },
+
+                HandlerTypeInfo = typeof(PageModelWithProperty).GetTypeInfo(),
                 PageTypeInfo = typeof(PageWithProperty).GetTypeInfo(),
                 ModelTypeInfo = typeof(PageModelWithProperty).GetTypeInfo(),
             };
+
             var binder = new TestParameterBinder(new Dictionary<string, object>
             {
                 { nameof(PageModelWithProperty.Id), 10 },
                 { nameof(PageModelWithProperty.RouteDifferentValue), "route-value" }
             });
+
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var factory = PagePropertyBinderFactory.CreateBinder(binder, modelMetadataProvider, actionDescriptor);
+
             var page = new PageWithProperty
             {
-                PageContext = new PageContext(),
+                PageContext = new PageContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
             };
+
             var model = new PageModelWithProperty();
 
             // Act
@@ -235,123 +272,44 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Equal(10, model.Id);
             Assert.Equal("route-value", model.RouteDifferentValue);
             Assert.Null(model.PropertyWithNoValue);
+        }
 
-            Assert.Collection(binder.Descriptors,
-                descriptor =>
+        [Fact]
+        public async Task ModelBinderFactory_PreservesExistingValueIfModelBindingFailed()
+        {
+            // Arrange
+            var type = typeof(PageModelWithDefaultValue).GetTypeInfo();
+
+            var actionDescriptor = new CompiledPageActionDescriptor
+            {
+                BoundProperties = new[]
                 {
-                    Assert.Equal(nameof(PageModelWithProperty.Id), descriptor.Name);
-                    Assert.Equal(BindingSource.Query, descriptor.BindingInfo.BindingSource);
-                    Assert.Null(descriptor.BindingInfo.BinderType);
-                    Assert.Null(descriptor.BindingInfo.PropertyFilterProvider);
-                    Assert.Equal(typeof(int), descriptor.ParameterType);
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageModelWithDefaultValue.PropertyWithDefaultValue),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageModelWithDefaultValue.PropertyWithDefaultValue)),
+                    },
                 },
-                descriptor =>
-                {
-                    Assert.Equal(nameof(PageModelWithProperty.RouteDifferentValue), descriptor.Name);
-                    Assert.Equal("route-value", descriptor.BindingInfo.BinderModelName);
-                    Assert.Equal(BindingSource.Path, descriptor.BindingInfo.BindingSource);
-                    Assert.Null(descriptor.BindingInfo.BinderType);
-                    Assert.Null(descriptor.BindingInfo.PropertyFilterProvider);
-                    Assert.Equal(typeof(string), descriptor.ParameterType);
-                },
-                descriptor =>
-                {
-                    Assert.Equal(nameof(PageModelWithProperty.PropertyWithNoValue), descriptor.Name);
-                    Assert.Null(descriptor.BindingInfo.BinderModelName);
-                    Assert.Equal(BindingSource.Form, descriptor.BindingInfo.BindingSource);
-                    Assert.Null(descriptor.BindingInfo.BinderType);
-                    Assert.Null(descriptor.BindingInfo.PropertyFilterProvider);
-                    Assert.Equal(typeof(string), descriptor.ParameterType);
-                });
-        }
 
-        [Fact]
-        public async Task ModelBinderFactory_DiscoversBinderType()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
+                HandlerTypeInfo = type,
                 PageTypeInfo = typeof(PageWithProperty).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModelWithModelBinderAttribute).GetTypeInfo(),
+                ModelTypeInfo = type,
             };
-            var expected = Guid.NewGuid();
-            var binder = new TestParameterBinder(new Dictionary<string, object>
-            {
-                { nameof(PageModelWithModelBinderAttribute.PropertyWithBinderType), expected },
-            });
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var factory = PagePropertyBinderFactory.CreateBinder(binder, modelMetadataProvider, actionDescriptor);
-            var page = new PageWithProperty
-            {
-                PageContext = new PageContext(),
-            };
-            var model = new PageModelWithModelBinderAttribute();
 
-            // Act
-            await factory(page, model);
-
-            // Assert
-            Assert.Equal(expected, model.PropertyWithBinderType);
-            Assert.Collection(binder.Descriptors,
-                descriptor =>
-                {
-                    Assert.Equal(nameof(PageModelWithModelBinderAttribute.PropertyWithBinderType), descriptor.Name);
-                    Assert.Equal(BindingSource.Custom, descriptor.BindingInfo.BindingSource);
-                    Assert.Equal(typeof(DeclarativeSecurityAction), descriptor.BindingInfo.BinderType);
-                    Assert.Null(descriptor.BindingInfo.PropertyFilterProvider);
-                    Assert.Equal(typeof(Guid), descriptor.ParameterType);
-                });
-        }
-
-        [Fact]
-        public async Task ModelBinderFactory_DiscoversPropertyFilter()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(PageWithProperty).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModelWithPropertyFilterAttribute).GetTypeInfo(),
-            };
             var binder = new TestParameterBinder(new Dictionary<string, object>());
+
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var factory = PagePropertyBinderFactory.CreateBinder(binder, modelMetadataProvider, actionDescriptor);
+
             var page = new PageWithProperty
             {
-                PageContext = new PageContext(),
-            };
-            var model = new PageModelWithPropertyFilterAttribute();
-
-            // Act
-            await factory(page, model);
-
-            // Assert
-            Assert.Collection(binder.Descriptors,
-                descriptor =>
+                PageContext = new PageContext()
                 {
-                    Assert.Equal(nameof(PageModelWithPropertyFilterAttribute.PropertyWithFilter), descriptor.Name);
-                    Assert.Null(descriptor.BindingInfo.BindingSource);
-                    Assert.Null(descriptor.BindingInfo.BinderType);
-                    Assert.IsType<TestPropertyFilterProvider>(descriptor.BindingInfo.PropertyFilterProvider);
-                    Assert.Equal(typeof(object), descriptor.ParameterType);
-                });
-        }
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
 
-        [Fact]
-        public async Task ModelBinderFactory_UsesDefaultValueIfModelBindingFailed()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(PageWithProperty).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModelWithDefaultValue).GetTypeInfo(),
-            };
-            var binder = new TestParameterBinder(new Dictionary<string, object>());
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var factory = PagePropertyBinderFactory.CreateBinder(binder, modelMetadataProvider, actionDescriptor);
-            var page = new PageWithProperty
-            {
-                PageContext = new PageContext(),
-            };
             var model = new PageModelWithDefaultValue();
             var defaultValue = model.PropertyWithDefaultValue;
 
@@ -362,34 +320,125 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Equal(defaultValue, model.PropertyWithDefaultValue);
         }
 
-        [Fact]
-        public async Task ModelBinderFactory_OverwritesDefaultValue()
+        [Theory]
+        [InlineData("Get")]
+        [InlineData("GET")]
+        [InlineData("gET")]
+        public async Task ModelBinderFactory_IgnoresPropertyWithoutSupportsGet_WhenRequestIsGet(string method)
         {
             // Arrange
+            var type = typeof(PageModelWithSupportsGetProperty).GetTypeInfo();
+
             var actionDescriptor = new CompiledPageActionDescriptor
             {
+                BoundProperties = new[]
+                {
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageModelWithSupportsGetProperty.SupportsGet),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageModelWithSupportsGetProperty.SupportsGet)),
+                        SupportsGet = true,
+                    },
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageModelWithSupportsGetProperty.Default),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageModelWithSupportsGetProperty.Default)),
+                    },
+                },
+
+                HandlerTypeInfo = type,
                 PageTypeInfo = typeof(PageWithProperty).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModelWithDefaultValue).GetTypeInfo(),
+                ModelTypeInfo = type,
             };
-            var expected = "not-default-value";
-            var binder = new TestParameterBinder(new Dictionary<string, object>
+
+            var binder = new TestParameterBinder(new Dictionary<string, object>()
             {
-                { nameof(PageModelWithDefaultValue.PropertyWithDefaultValue), expected },
+                { "SupportsGet", "value" },
+                { "Default", "ignored" },
             });
+
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var factory = PagePropertyBinderFactory.CreateBinder(binder, modelMetadataProvider, actionDescriptor);
+
             var page = new PageWithProperty
             {
-                PageContext = new PageContext(),
+                PageContext = new PageContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
             };
-            var model = new PageModelWithDefaultValue();
-            var defaultValue = model.PropertyWithDefaultValue;
+
+            page.HttpContext.Request.Method = method;
+
+            var model = new PageModelWithSupportsGetProperty();
 
             // Act
             await factory(page, model);
 
             // Assert
-            Assert.Equal(expected, model.PropertyWithDefaultValue);
+            Assert.Equal("value", model.SupportsGet);
+            Assert.Null(model.Default);
+        }
+
+        [Fact]
+        public async Task ModelBinderFactory_BindsPropertyWithoutSupportsGet_WhenRequestIsNotGet()
+        {
+            // Arrange
+            var type = typeof(PageModelWithSupportsGetProperty).GetTypeInfo();
+
+            var actionDescriptor = new CompiledPageActionDescriptor
+            {
+                BoundProperties = new[]
+                {
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageModelWithSupportsGetProperty.SupportsGet),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageModelWithSupportsGetProperty.SupportsGet)),
+                        SupportsGet = true,
+                    },
+                    new PageBoundPropertyDescriptor()
+                    {
+                        Name = nameof(PageModelWithSupportsGetProperty.Default),
+                        ParameterType = typeof(string),
+                        Property = type.GetProperty(nameof(PageModelWithSupportsGetProperty.Default)),
+                    },
+                },
+
+                HandlerTypeInfo = type,
+                PageTypeInfo = typeof(PageWithProperty).GetTypeInfo(),
+                ModelTypeInfo = type,
+            };
+
+            var binder = new TestParameterBinder(new Dictionary<string, object>()
+            {
+                { "SupportsGet", "value" },
+                { "Default", "value" },
+            });
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var factory = PagePropertyBinderFactory.CreateBinder(binder, modelMetadataProvider, actionDescriptor);
+
+            var page = new PageWithProperty
+            {
+                PageContext = new PageContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                }
+            };
+
+            page.HttpContext.Request.Method = "Post";
+
+            var model = new PageModelWithSupportsGetProperty();
+
+            // Act
+            await factory(page, model);
+
+            // Assert
+            Assert.Equal("value", model.SupportsGet);
+            Assert.Equal("value", model.Default);
         }
 
         private class TestParameterBinder : ParameterBinder
@@ -517,6 +566,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             [ModelBinder]
             public string PropertyWithDefaultValue { get; set; } = "Hello world";
+        }
+
+        private class PageModelWithSupportsGetProperty
+        {
+            [BindProperty(SupportsGet = true)]
+            public string SupportsGet { get; set; }
+
+            public string Default { get; set; }
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -181,19 +182,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             Func<PageContext, object> modelFactory = null;
             Action<PageContext, object> modelReleaser = null;
-            if (compiledActionDescriptor.ModelTypeInfo == null)
+            if (compiledActionDescriptor.ModelTypeInfo != compiledActionDescriptor.PageTypeInfo)
             {
-                PopulateHandlerMethodDescriptors(compiledActionDescriptor.PageTypeInfo, compiledActionDescriptor);
-            }
-            else
-            {
-                PopulateHandlerMethodDescriptors(compiledActionDescriptor.ModelTypeInfo, compiledActionDescriptor);
-
                 modelFactory = _modelFactoryProvider.CreateModelFactory(compiledActionDescriptor);
                 modelReleaser = _modelFactoryProvider.CreateModelDisposer(compiledActionDescriptor);
             }
 
             var viewStartFactories = GetViewStartFactories(compiledActionDescriptor);
+
+            var executors = GetExecutors(compiledActionDescriptor);
 
             return new PageActionInvokerCacheEntry(
                 compiledActionDescriptor,
@@ -202,6 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelFactory,
                 modelReleaser,
                 propertyBinder,
+                executors,
                 viewStartFactories,
                 cachedFilters);
         }
@@ -226,82 +224,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             return viewStartFactories;
         }
 
-        // Internal for testing.
-        internal static void PopulateHandlerMethodDescriptors(TypeInfo type, CompiledPageActionDescriptor actionDescriptor)
-        {
-            var methods = type.GetMethods();
-            for (var i = 0; i < methods.Length; i++)
-            {
-                var method = methods[i];
-                if (!IsValidHandler(method))
-                {
-                    continue;
-                }
-
-                string httpMethod;
-                int formActionStart;
-
-                if (method.Name.StartsWith("OnGet", StringComparison.Ordinal))
-                {
-                    httpMethod = "GET";
-                    formActionStart = "OnGet".Length;
-                }
-                else if (method.Name.StartsWith("OnPost", StringComparison.Ordinal))
-                {
-                    httpMethod = "POST";
-                    formActionStart = "OnPost".Length;
-                }
-                else
-                {
-                    continue;
-                }
-
-                var formActionLength = method.Name.Length - formActionStart;
-                if (method.Name.EndsWith("Async", StringComparison.OrdinalIgnoreCase))
-                {
-                    formActionLength -= "Async".Length;
-                }
-
-                var formAction = new StringSegment(method.Name, formActionStart, formActionLength);
-
-                var parameters = GetHandlerParameters(method);
-
-                var handlerMethodDescriptor = new HandlerMethodDescriptor
-                {
-                    Method = method,
-                    Executor = ExecutorFactory.CreateExecutor(actionDescriptor, method, parameters),
-                    FormAction = formAction,
-                    HttpMethod = httpMethod,
-                    Parameters = parameters,
-                    OnPage = actionDescriptor.PageTypeInfo == type,
-                };
-
-                actionDescriptor.HandlerMethods.Add(handlerMethodDescriptor);
-            }
-        }
-
-        private static HandlerParameterDescriptor[] GetHandlerParameters(MethodInfo methodInfo)
-        {
-            var methodParameters = methodInfo.GetParameters();
-            var parameters = new HandlerParameterDescriptor[methodParameters.Length];
-
-            for (var i = 0; i < methodParameters.Length; i++)
-            {
-                var parameter = methodParameters[i];
-
-                parameters[i] = new HandlerParameterDescriptor()
-                {
-                    BindingInfo = BindingInfo.GetBindingInfo(parameter.GetCustomAttributes()),
-                    DefaultValue = GetDefaultValue(parameter),
-                    Name = parameter.Name,
-                    Parameter = parameter,
-                    ParameterType = parameter.ParameterType,
-                };
-            }
-
-            return parameters;
-        }
-
         private static object GetDefaultValue(ParameterInfo methodParameter)
         {
             object defaultValue = null;
@@ -317,42 +239,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             return defaultValue;
         }
 
-        private static bool IsValidHandler(MethodInfo methodInfo)
+        private static Func<object, object[], Task<IActionResult>>[] GetExecutors(CompiledPageActionDescriptor actionDescriptor)
         {
-            // The SpecialName bit is set to flag members that are treated in a special way by some compilers
-            // (such as property accessors and operator overloading methods).
-            if (methodInfo.IsSpecialName)
+            if (actionDescriptor.HandlerMethods == null || actionDescriptor.HandlerMethods.Count == 0)
             {
-                return false;
+                return Array.Empty<Func<object, object[], Task<IActionResult>>>();
             }
 
-            // Overriden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
-            if (methodInfo.GetBaseDefinition().DeclaringType == typeof(object))
+            var results = new Func<object, object[], Task<IActionResult>>[actionDescriptor.HandlerMethods.Count];
+
+            for (var i = 0; i < actionDescriptor.HandlerMethods.Count; i++)
             {
-                return false;
+                results[i] = ExecutorFactory.CreateExecutor(actionDescriptor.HandlerMethods[i]);
             }
 
-            if (methodInfo.IsStatic)
-            {
-                return false;
-            }
-
-            if (methodInfo.IsAbstract)
-            {
-                return false;
-            }
-
-            if (methodInfo.IsConstructor)
-            {
-                return false;
-            }
-
-            if (methodInfo.IsGenericMethod)
-            {
-                return false;
-            }
-
-            return methodInfo.IsPublic;
+            return results;
         }
 
         internal class InnerCache

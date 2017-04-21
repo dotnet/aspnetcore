@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     /// <summary>
     /// A base class for a Razor page.
     /// </summary>
+    [PagesBaseClass]
     public abstract class Page : RazorPageBase, IRazorPage
     {
         private IObjectModelValidator _objectValidator;

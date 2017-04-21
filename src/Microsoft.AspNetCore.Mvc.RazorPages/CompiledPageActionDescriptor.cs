@@ -30,15 +30,25 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="TypeInfo"/> of the page.
+        /// Gets the list of handler methods for the page. 
         /// </summary>
-        public TypeInfo PageTypeInfo { get; set; }
+        public IList<HandlerMethodDescriptor> HandlerMethods { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="TypeInfo"/> of the type that defines handler methods for the page. This can be
+        /// the same as <see cref="PageTypeInfo"/> and <see cref="ModelTypeInfo"/> if the page does not have an
+        /// explicit model type defined.
+        /// </summary>
+        public TypeInfo HandlerTypeInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="TypeInfo"/> of the model.
         /// </summary>
         public TypeInfo ModelTypeInfo { get; set; }
 
-        public IList<HandlerMethodDescriptor> HandlerMethods { get; } = new List<HandlerMethodDescriptor>();
+        /// <summary>
+        /// Gets or sets the <see cref="TypeInfo"/> of the page.
+        /// </summary>
+        public TypeInfo PageTypeInfo { get; set; }
     }
 }

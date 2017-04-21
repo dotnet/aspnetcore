@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
                 if (ambiguousMatches != null)
                 {
-                    var ambiguousMethods = string.Join(", ", ambiguousMatches.Select(m => m.Method));
+                    var ambiguousMethods = string.Join(", ", ambiguousMatches.Select(m => m.MethodInfo));
                     throw new InvalidOperationException(Resources.FormatAmbiguousHandler(Environment.NewLine, ambiguousMethods));
                 }
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     continue;
                 }
-                else if (handler.FormAction.HasValue &&
+                else if (handler.FormAction != null &&
                     !handler.FormAction.Equals(formAction, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;

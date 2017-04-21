@@ -16,17 +16,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
     public class ExecutorFactoryTest
     {
         [Fact]
-        public async Task CreateExecutor_ForActionResultMethod_OnPage()
+        public async Task CreateExecutor_ForActionResultMethod()
         {
             // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
+            var handler = new HandlerMethodDescriptor()
             {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
+                MethodInfo = typeof(TestPage).GetMethod(nameof(TestPage.ActionResultReturningHandler)),
+                Parameters = new HandlerParameterDescriptor[0],
             };
-            var methodInfo = typeof(TestPage).GetMethod(nameof(TestPage.ActionResultReturningHandler));
 
             // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, new HandlerParameterDescriptor[0]);
+            var executor = ExecutorFactory.CreateExecutor(handler);
 
             // Assert
             Assert.NotNull(executor);
@@ -36,17 +36,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
         }
 
         [Fact]
-        public async Task CreateExecutor_ForMethodReturningConcreteSubtypeOfIActionResult_OnPage()
+        public async Task CreateExecutor_ForMethodReturningConcreteSubtypeOfIActionResult()
         {
             // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
+            var handler = new HandlerMethodDescriptor()
             {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
+                MethodInfo = typeof(TestPage).GetMethod(nameof(TestPage.ConcreteActionResult)),
+                Parameters = new HandlerParameterDescriptor[0],
             };
-            var methodInfo = typeof(TestPage).GetMethod(nameof(TestPage.ConcreteActionResult));
 
             // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, new HandlerParameterDescriptor[0]);
+            var executor = ExecutorFactory.CreateExecutor(handler);
 
             // Assert
             Assert.NotNull(executor);
@@ -56,18 +56,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
         }
 
         [Fact]
-        public async Task CreateExecutor_ForActionResultReturningMethod_WithParameters_OnPage()
+        public async Task CreateExecutor_ForActionResultReturningMethod_WithParameters()
         {
             // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-            };
             var methodInfo = typeof(TestPage).GetMethod(nameof(TestPage.ActionResultReturnHandlerWithParameters));
-            var parameters = CreateParameters(methodInfo);
+            var handler = new HandlerMethodDescriptor()
+            {
+                MethodInfo = methodInfo,
+                Parameters = CreateParameters(methodInfo),
+            };
 
             // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, parameters);
+            var executor = ExecutorFactory.CreateExecutor(handler);
 
             // Assert
             Assert.NotNull(executor);
@@ -78,18 +78,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
         }
 
         [Fact]
-        public async Task CreateExecutor_ForVoidReturningMethod_OnPage()
+        public async Task CreateExecutor_ForVoidReturningMethod()
         {
             // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
+            var handler = new HandlerMethodDescriptor()
             {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
+                MethodInfo = typeof(TestPage).GetMethod(nameof(TestPage.VoidReturningHandler)),
+                Parameters = new HandlerParameterDescriptor[0],
             };
+
             var page = new TestPage();
-            var methodInfo = typeof(TestPage).GetMethod(nameof(TestPage.VoidReturningHandler));
 
             // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, new HandlerParameterDescriptor[0]);
+            var executor = ExecutorFactory.CreateExecutor(handler);
 
             // Assert
             Assert.NotNull(executor);
@@ -100,18 +101,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
         }
 
         [Fact]
-        public async Task CreateExecutor_ForVoidTaskReturningMethod_OnPage()
+        public async Task CreateExecutor_ForVoidTaskReturningMethod()
         {
             // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
+            var handler = new HandlerMethodDescriptor()
             {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
+                MethodInfo = typeof(TestPage).GetMethod(nameof(TestPage.VoidTaskReturningHandler)),
+                Parameters = new HandlerParameterDescriptor[0],
             };
+
             var page = new TestPage();
-            var methodInfo = typeof(TestPage).GetMethod(nameof(TestPage.VoidTaskReturningHandler));
 
             // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, new HandlerParameterDescriptor[0]);
+            var executor = ExecutorFactory.CreateExecutor(handler);
 
             // Assert
             Assert.NotNull(executor);
@@ -122,17 +124,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
         }
 
         [Fact]
-        public async Task CreateExecutor_ForTaskOfIActionResultReturningMethod_OnPage()
+        public async Task CreateExecutor_ForTaskOfIActionResultReturningMethod()
         {
             // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-            };
             var methodInfo = typeof(TestPage).GetMethod(nameof(TestPage.GenericTaskHandler));
+            var handler = new HandlerMethodDescriptor()
+            {
+                MethodInfo = methodInfo,
+                Parameters = CreateParameters(methodInfo),
+            };
 
             // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, CreateParameters(methodInfo));
+            var executor = ExecutorFactory.CreateExecutor(handler);
 
             // Assert
             Assert.NotNull(executor);
@@ -142,174 +145,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
         }
 
         [Fact]
-        public async Task CreateExecutor_ForTaskOfConcreteActionResultReturningMethod_OnPage()
+        public async Task CreateExecutor_ForTaskOfConcreteActionResultReturningMethod()
         {
             // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-            };
             var methodInfo = typeof(TestPage).GetMethod(nameof(TestPage.TaskReturningConcreteSubtype));
+            var handler = new HandlerMethodDescriptor()
+            {
+                MethodInfo = methodInfo,
+                Parameters = CreateParameters(methodInfo),
+            };
 
             // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, CreateParameters(methodInfo));
+            var executor = ExecutorFactory.CreateExecutor(handler);
 
             // Assert
             Assert.NotNull(executor);
             var actionResultTask = executor(new TestPage(), CreateArguments(methodInfo));
-            var actionResult = await actionResultTask;
-            var contentResult = Assert.IsType<ContentResult>(actionResult);
-            Assert.Equal("value", contentResult.Content);
-        }
-
-        [Fact]
-        public async Task CreateExecutor_ForActionResultMethod_OnPageModel()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModel).GetTypeInfo(),
-            };
-            var methodInfo = typeof(TestPageModel).GetMethod(nameof(TestPageModel.ActionResultReturningHandler));
-
-            // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, new HandlerParameterDescriptor[0]);
-
-            // Assert
-            Assert.NotNull(executor);
-            var actionResultTask = executor(new TestPageModel(), null);
-            var actionResult = await actionResultTask;
-            Assert.IsType<EmptyResult>(actionResult);
-        }
-
-        [Fact]
-        public async Task CreateExecutor_ForMethodReturningConcreteSubtypeOfIActionResult_OnPageModel()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModel).GetTypeInfo(),
-            };
-            var methodInfo = typeof(TestPageModel).GetMethod(nameof(TestPageModel.ConcreteActionResult));
-
-            // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, CreateParameters(methodInfo));
-
-            // Assert
-            Assert.NotNull(executor);
-            var actionResultTask = executor(new TestPageModel(), null);
-            var actionResult = await actionResultTask;
-            Assert.IsType<ViewResult>(actionResult);
-        }
-
-        [Fact]
-        public async Task CreateExecutor_ForActionResultReturningMethod_WithParameters_OnPageModel()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModel).GetTypeInfo(),
-            };
-            var methodInfo = typeof(TestPageModel).GetMethod(nameof(TestPageModel.ActionResultReturnHandlerWithParameters));
-
-            // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, CreateParameters(methodInfo));
-
-            // Assert
-            Assert.NotNull(executor);
-            var actionResultTask = executor(new TestPageModel(), CreateArguments(methodInfo));
-            var actionResult = await actionResultTask;
-            var contentResult = Assert.IsType<ContentResult>(actionResult);
-            Assert.Equal("Hello 0", contentResult.Content);
-        }
-
-        [Fact]
-        public async Task CreateExecutor_ForVoidReturningMethod_OnPageModel()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModel).GetTypeInfo(),
-            };
-            var model = new TestPageModel();
-            var methodInfo = typeof(TestPageModel).GetMethod(nameof(TestPageModel.VoidReturningHandler));
-
-            // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, new HandlerParameterDescriptor[0]);
-
-            // Assert
-            Assert.NotNull(executor);
-            var actionResultTask = executor(model, null);
-            var actionResult = await actionResultTask;
-            Assert.Null(actionResult);
-            Assert.True(model.SideEffects);
-        }
-
-        [Fact]
-        public async Task CreateExecutor_ForVoidTaskReturningMethod_OnPageModel()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModel).GetTypeInfo(),
-            };
-            var model = new TestPageModel();
-            var methodInfo = typeof(TestPageModel).GetMethod(nameof(TestPageModel.VoidTaskReturningHandler));
-
-            // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, new HandlerParameterDescriptor[0]);
-
-            // Assert
-            Assert.NotNull(executor);
-            var actionResultTask = executor(model, null);
-            var actionResult = await actionResultTask;
-            Assert.Null(actionResult);
-            Assert.True(model.SideEffects);
-        }
-
-        [Fact]
-        public async Task CreateExecutor_ForTaskOfIActionResultReturningMethod_OnPageModel()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModel).GetTypeInfo(),
-            };
-            var methodInfo = typeof(TestPageModel).GetMethod(nameof(TestPageModel.GenericTaskHandler));
-
-            // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, CreateParameters(methodInfo));
-
-            // Assert
-            Assert.NotNull(executor);
-            var actionResultTask = executor(new TestPageModel(), null);
-            var actionResult = await actionResultTask;
-            Assert.IsType<EmptyResult>(actionResult);
-        }
-
-        [Fact]
-        public async Task CreateExecutor_ForTaskOfConcreteActionResultReturningMethod_OnPageModel()
-        {
-            // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModel).GetTypeInfo(),
-            };
-            var methodInfo = typeof(TestPageModel).GetMethod(nameof(TestPageModel.TaskReturningConcreteSubtype));
-
-            // Act
-            var executor = ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, CreateParameters(methodInfo));
-
-            // Assert
-            Assert.NotNull(executor);
-            var actionResultTask = executor(new TestPageModel(), CreateArguments(methodInfo));
             var actionResult = await actionResultTask;
             var contentResult = Assert.IsType<ContentResult>(actionResult);
             Assert.Equal("value", contentResult.Content);
@@ -322,16 +173,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
         public void CreateExecutor_ThrowsIfTypeIsNotAValidReturnType(string methodName)
         {
             // Arrange
-            var actionDescriptor = new CompiledPageActionDescriptor
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(PageModel).GetTypeInfo(),
-            };
             var methodInfo = typeof(TestPageModel).GetMethod(methodName);
+            var handler = new HandlerMethodDescriptor()
+            {
+                MethodInfo = methodInfo,
+                Parameters = CreateParameters(methodInfo),
+            };
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-                ExecutorFactory.CreateExecutor(actionDescriptor, methodInfo, new HandlerParameterDescriptor[0]));
+            var ex = Assert.Throws<InvalidOperationException>(() => ExecutorFactory.CreateExecutor(handler));
             Assert.Equal($"Unsupported handler method return type '{methodInfo.ReturnType}'.", ex.Message);
         }
 
@@ -365,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Test.Internal
             {
                 BindingInfo = BindingInfo.GetBindingInfo(p.GetCustomAttributes()),
                 Name = p.Name,
-                Parameter = p,
+                ParameterInfo = p,
                 ParameterType = p.ParameterType,
             }).ToArray();
         }

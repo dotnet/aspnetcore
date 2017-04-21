@@ -3,12 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Internal;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -29,13 +28,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
-            var bindPropertiesOnPage = actionDescriptor.ModelTypeInfo == null;
-            var target = bindPropertiesOnPage ? actionDescriptor.PageTypeInfo : actionDescriptor.ModelTypeInfo;
-            var propertiesToBind = GetPropertiesToBind(modelMetadataProvider, target);
-
-            if (propertiesToBind.Count == 0)
+            var properties = actionDescriptor.BoundProperties;
+            if (properties == null || properties.Count == 0)
             {
                 return null;
+            }
+
+            var isHandlerThePage = actionDescriptor.HandlerTypeInfo == actionDescriptor.PageTypeInfo;
+            
+            var type = actionDescriptor.HandlerTypeInfo.AsType();
+            var metadata = new ModelMetadata[properties.Count];
+            for (var i = 0; i < properties.Count; i++)
+            {
+                metadata[i] = modelMetadataProvider.GetMetadataForProperty(type, properties[i].Name);
             }
 
             return Bind;
@@ -47,14 +52,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     throw new ArgumentNullException(nameof(page));
                 }
 
-                if (!bindPropertiesOnPage && model == null)
+                if (!isHandlerThePage && model == null)
                 {
                     throw new ArgumentNullException(nameof(model));
                 }
 
                 var pageContext = page.PageContext;
-                var instance = bindPropertiesOnPage ? page : model;
-                return BindPropertiesAsync(parameterBinder, pageContext, instance, propertiesToBind);
+                var instance = isHandlerThePage ? page : model;
+                return BindPropertiesAsync(parameterBinder, pageContext, instance, properties, metadata);
             }
         }
 
@@ -62,92 +67,25 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ParameterBinder parameterBinder,
             PageContext pageContext,
             object instance,
-            IList<PropertyBindingInfo> propertiesToBind)
+            IList<ParameterDescriptor> properties,
+            IList<ModelMetadata> metadata)
         {
-            var valueProvider = await GetCompositeValueProvider(pageContext);
-            for (var i = 0; i < propertiesToBind.Count; i++)
+            var isGet = string.Equals("GET", pageContext.HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase);
+
+            var valueProvider = await CompositeValueProvider.CreateAsync(pageContext, pageContext.ValueProviderFactories);
+            for (var i = 0; i < properties.Count; i++)
             {
-                var propertyBindingInfo = propertiesToBind[i];
-                var modelBindingResult = await parameterBinder.BindModelAsync(
-                    pageContext, 
-                    valueProvider, 
-                    propertyBindingInfo.ParameterDescriptor);
-                if (modelBindingResult.IsModelSet)
-                {
-                    var modelMetadata = propertyBindingInfo.ModelMetadata;
-                    PropertyValueSetter.SetValue(
-                        modelMetadata,
-                        instance,
-                        modelBindingResult.Model);
-                }
-            }
-        }
-
-        private static IList<PropertyBindingInfo> GetPropertiesToBind(
-            IModelMetadataProvider modelMetadataProvider,
-            TypeInfo handlerSourceTypeInfo)
-        {
-            var handlerType = handlerSourceTypeInfo.AsType();
-            var properties = PropertyHelper.GetVisibleProperties(type: handlerType);
-            var typeMetadata = modelMetadataProvider.GetMetadataForType(handlerType);
-
-            var propertyBindingInfo = new List<PropertyBindingInfo>();
-            for (var i = 0; i < properties.Length; i++)
-            {
-                var property = properties[i];
-                var bindingInfo = BindingInfo.GetBindingInfo(property.Property.GetCustomAttributes());
-
-                if (bindingInfo == null)
+                if (isGet && !((PageBoundPropertyDescriptor)properties[i]).SupportsGet)
                 {
                     continue;
                 }
 
-                var propertyMetadata = typeMetadata.Properties[property.Name] ??
-                        modelMetadataProvider.GetMetadataForProperty(handlerType, property.Name);
-                if (propertyMetadata == null)
+                var result = await parameterBinder.BindModelAsync(pageContext, valueProvider, properties[i]);
+                if (result.IsModelSet)
                 {
-                    continue;
+                    PropertyValueSetter.SetValue(metadata[i], instance, result.Model);
                 }
-
-                var parameterDescriptor = new ParameterDescriptor
-                {
-                    BindingInfo = bindingInfo,
-                    Name = property.Name,
-                    ParameterType = property.Property.PropertyType,
-                };
-
-                propertyBindingInfo.Add(new PropertyBindingInfo(parameterDescriptor, propertyMetadata));
             }
-
-            return propertyBindingInfo;
-        }
-
-        private static async Task<CompositeValueProvider> GetCompositeValueProvider(PageContext pageContext)
-        {
-            var factories = pageContext.ValueProviderFactories;
-            var valueProviderFactoryContext = new ValueProviderFactoryContext(pageContext);
-            for (var i = 0; i < factories.Count; i++)
-            {
-                var factory = factories[i];
-                await factory.CreateValueProviderAsync(valueProviderFactoryContext);
-            }
-
-            return new CompositeValueProvider(valueProviderFactoryContext.ValueProviders);
-        }
-
-        private struct PropertyBindingInfo
-        {
-            public PropertyBindingInfo(
-                ParameterDescriptor parameterDescriptor,
-                ModelMetadata modelMetadata)
-            {
-                ParameterDescriptor = parameterDescriptor;
-                ModelMetadata = modelMetadata;
-            }
-
-            public ParameterDescriptor ParameterDescriptor { get; }
-
-            public ModelMetadata ModelMetadata { get; }
         }
     }
 }

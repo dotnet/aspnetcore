@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Routing;
@@ -30,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -67,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor,
                     },
@@ -109,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -140,20 +142,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Add"),
+                FormAction = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Delete"),
+                FormAction = "Delete",
             };
 
             var pageContext = new PageContext
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -190,20 +192,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Add"),
+                FormAction = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Delete"),
+                FormAction = "Delete",
             };
 
             var pageContext = new PageContext
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -240,20 +242,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Add"),
+                FormAction = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Delete"),
+                FormAction = "Delete",
             };
 
             var pageContext = new PageContext
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -285,20 +287,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Add"),
+                FormAction = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Delete"),
+                FormAction = "Delete",
             };
 
             var pageContext = new PageContext
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -336,20 +338,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Add"),
+                FormAction = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Delete"),
+                FormAction = "Delete",
             };
 
             var pageContext = new PageContext
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -381,7 +383,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Subscribe"),
+                FormAction = "Subscribe",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
@@ -393,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -429,13 +431,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
-                Method = GetType().GetMethod(nameof(Post)),
+                MethodInfo = GetType().GetMethod(nameof(Post)),
                 HttpMethod = "POST",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
-                Method = GetType().GetMethod(nameof(PostAsync)),
+                MethodInfo = GetType().GetMethod(nameof(PostAsync)),
                 HttpMethod = "POST",
             };
 
@@ -448,7 +450,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -468,7 +470,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => selector.Select(pageContext));
-            var methods = descriptor1.Method + ", " + descriptor2.Method;
+            var methods = descriptor1.MethodInfo + ", " + descriptor2.MethodInfo;
             var message = "Multiple handlers matched. The following handlers matched route data and had all constraints satisfied:" +
                 Environment.NewLine + Environment.NewLine + methods;
 
@@ -481,16 +483,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
-                Method = GetType().GetMethod(nameof(Post)),
+                MethodInfo = GetType().GetMethod(nameof(Post)),
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Add"),
+                FormAction = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
-                Method = GetType().GetMethod(nameof(PostAsync)),
+                MethodInfo = GetType().GetMethod(nameof(PostAsync)),
                 HttpMethod = "POST",
-                FormAction = new StringSegment("Add"),
+                FormAction = "Add",
             };
 
             var descriptor3 = new HandlerMethodDescriptor
@@ -502,7 +504,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
-                    HandlerMethods =
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
                     {
                         descriptor1,
                         descriptor2,
@@ -528,7 +530,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => selector.Select(pageContext));
-            var methods = descriptor1.Method + ", " + descriptor2.Method;
+            var methods = descriptor1.MethodInfo + ", " + descriptor2.MethodInfo;
             var message = "Multiple handlers matched. The following handlers matched route data and had all constraints satisfied:" +
                 Environment.NewLine + Environment.NewLine + methods;
 

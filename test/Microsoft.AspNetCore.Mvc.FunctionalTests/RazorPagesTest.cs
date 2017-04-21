@@ -717,6 +717,22 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task PageProperty_WithSupportsGet_BoundInGet()
+        {
+            // Arrange
+            var expected = "<p>11</p>";
+            var request = new HttpRequestMessage(HttpMethod.Get, "Pages/PropertyBinding/BindPropertyWithGet?value=11");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith(expected, content.Trim());
+        }
+
+        [Fact]
         public async Task PagePropertiesAreInjected()
         {
             // Arrange

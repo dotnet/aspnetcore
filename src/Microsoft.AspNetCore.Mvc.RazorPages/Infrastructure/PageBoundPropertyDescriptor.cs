@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class HandlerParameterDescriptor : ParameterDescriptor
+    public class PageBoundPropertyDescriptor : ParameterDescriptor
     {
-        public ParameterInfo ParameterInfo { get; set; }
+        public PropertyInfo Property { get; set; }
+
+        public bool SupportsGet { get; set; }
     }
 }

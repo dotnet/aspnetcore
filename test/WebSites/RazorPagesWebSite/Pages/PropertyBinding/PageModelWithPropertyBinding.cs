@@ -13,5 +13,7 @@ namespace RazorPagesWebSite
 
         [FromRoute]
         public int Id { get; set; }
+
+        public void OnGet() { }
     }
 }

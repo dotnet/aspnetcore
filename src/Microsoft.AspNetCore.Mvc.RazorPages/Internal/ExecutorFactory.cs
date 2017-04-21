@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -12,38 +13,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public static class ExecutorFactory
     {
-        public static Func<object, object[], Task<IActionResult>> CreateExecutor(
-            CompiledPageActionDescriptor actionDescriptor,
-            MethodInfo method,
-            HandlerParameterDescriptor[] parameters)
+        public static Func<object, object[], Task<IActionResult>> CreateExecutor(HandlerMethodDescriptor handlerDescriptor)
         {
-            if (actionDescriptor == null)
+            if (handlerDescriptor == null)
             {
-                throw new ArgumentNullException(nameof(actionDescriptor));
+                throw new ArgumentNullException(nameof(handlerDescriptor));
             }
+            
+            var handler = CreateHandlerMethod(handlerDescriptor);
 
-            if (method == null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
-
-            if (parameters == null)
-            {
-                throw new ArgumentNullException(nameof(parameters));
-            }
-
-            var methodIsDeclaredOnPage = method.DeclaringType.GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo);
-            var handler = CreateHandlerMethod(method, parameters);
-
-            return async (receiver, arguments) =>
-            {
-                var result = await handler.Execute(receiver, arguments);
-                return result;
-            };
+            return handler.Execute;
         }
 
-        private static HandlerMethod CreateHandlerMethod(MethodInfo method, HandlerParameterDescriptor[] parameters)
+        private static HandlerMethod CreateHandlerMethod(HandlerMethodDescriptor handlerDescriptor)
         {
+            var method = handlerDescriptor.MethodInfo;
+            var parameters = handlerDescriptor.Parameters.ToArray();
+
             var methodParameters = method.GetParameters();
 
             var returnType = method.ReturnType;

@@ -22,6 +22,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
+    [PagesBaseClass]
     public abstract class PageModel
     {
         private IObjectModelValidator _objectValidator;
