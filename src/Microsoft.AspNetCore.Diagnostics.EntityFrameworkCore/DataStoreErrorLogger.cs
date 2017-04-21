@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
     public class DataStoreErrorLogger : ILogger
     {
 #if NETSTANDARD1_3
-        private readonly AsyncLocal<DataStoreErrorLog> _log = new AsyncLocal<DataStoreErrorLog>(); 
+        private static readonly AsyncLocal<DataStoreErrorLog> _log = new AsyncLocal<DataStoreErrorLog>();
 #else
         private static readonly string ContextName = "__DataStoreErrorLog" + AppDomain.CurrentDomain.Id;
 #endif
