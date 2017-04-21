@@ -2,7 +2,6 @@
   <Import Project="dependencies.props" />
   <PropertyGroup>
     <TestIncludeViewCompilationTargets Condition="'$(TestIncludeViewCompilationTargets)'==''">$(MvcRazorCompileOnPublish)</TestIncludeViewCompilationTargets>
-    <MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
   </PropertyGroup>
 
   <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
