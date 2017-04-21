@@ -33,7 +33,7 @@
         <Exec Command="$(DropUpdateCmd)" />
 
         <ItemGroup>
-            <DropManifests Include="$(VSDropSource)\*.vsman" />
+            <DropManifests Include="$(DropSource)\*.vsman" />
         </ItemGroup>
 
         <WriteLinesToFile File="$(VSDropTxt)" Overwrite="true" Lines="@(DropManifests->'$(ManifestPublishUrl)%(Filename)%(Extension)')" />
