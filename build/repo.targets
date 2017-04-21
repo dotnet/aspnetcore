@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
   <PropertyGroup>
     <NuGetPublishVolatileFeed>https://dotnet.myget.org/F/aspnetcore-volatile-dev/api/v2/package</NuGetPublishVolatileFeed>
 
@@ -104,18 +104,8 @@
       Condition="'$(CloneRepositoryCommit)'!=''" />
   </Target>
 
-  <Target Name="_ResolvePackagePublisherPath" DependsOnTargets="RunResolvePackageDependencies">
-    <ItemGroup>
-      <PackagePublisherPath Include="%(PackageDefinitions.ResolvedPath)" Condition="'%(PackageDefinitions.Name)'=='PackagePublisher'" />
-    </ItemGroup>
- 
-    <PropertyGroup>
-      <_PackagePublisherPath>@(PackagePublisherPath)\PackagePublisher.dll</_PackagePublisherPath>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="BuildRepositories"
-     DependsOnTargets="_FilterRepositories;_FindDotNetPath;_ResolvePackagePublisherPath;_GenerateRestoreGraphSpecs;_GenerateBuildGraph;_UpdateNuGetConfig;_CreateRepositoriesListWithCommits">
+     DependsOnTargets="_FilterRepositories;_FindDotNetPath;_GenerateRestoreGraphSpecs;_GenerateBuildGraph;_UpdateNuGetConfig;_CreateRepositoriesListWithCommits">
 
     <PropertyGroup>
       <_BuildRepositoryProperties>
@@ -132,7 +122,7 @@
         _DependencyPackagesDirectory=$(_DependencyPackagesDirectory);
         _RepositoryBuildTargets=$(_RepositoryBuildTargets);
         _RestoreGraphSpecsDirectory=$(_RestoreGraphSpecsDirectory);
-        PackagePublisherPath=$(_PackagePublisherPath)
+        PackagePublisherPath=$(PackagePublisherNetCoreApp)
       </_BuildRepositoryProperties>
 
       <_BuildRepositoryProperties Condition="'$(PublishPackages)'=='true'">
