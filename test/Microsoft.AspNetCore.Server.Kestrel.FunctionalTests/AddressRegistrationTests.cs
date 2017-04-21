@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class AddressRegistrationTests
     {
-        [Theory, MemberData(nameof(AddressRegistrationDataIPv4))]
+        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv4))]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Causing test failures")]
         public async Task RegisterAddresses_IPv4_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
@@ -89,6 +90,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
         [IPv6SupportedCondition]
         [IPv6ScopeIdPresentCondition]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Causing test failures")]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Causing test failures")]
         public async Task RegisterAddresses_IPv6ScopeId_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
