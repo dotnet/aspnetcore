@@ -21,6 +21,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
+        public async Task Page_Handler_FormActionFromQueryString()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage?formaction=Customer");
+
+            // Assert
+            Assert.StartsWith("Method: OnGetCustomer", content.Trim());
+        }
+
+        [Fact]
+        public async Task Page_Handler_FormActionRouteDataChosenOverQueryString()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage/Customer?formaction=ViewCustomer");
+
+            // Assert
+            Assert.StartsWith("Method: OnGetCustomer", content.Trim());
+        }
+
+        [Fact]
         public async Task Page_Handler_FormAction()
         {
             // Arrange & Act

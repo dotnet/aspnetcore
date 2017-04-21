@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
@@ -65,6 +66,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             List<HandlerMethodDescriptor> handlersToConsider = null;
 
             var formAction = Convert.ToString(context.RouteData.Values[FormAction]);
+
+            if (string.IsNullOrEmpty(formAction) &&
+                context.HttpContext.Request.Query.TryGetValue(FormAction, out StringValues queryValues))
+            {
+                formAction = queryValues[0];
+            }
+
             for (var i = 0; i < handlers.Count; i++)
             {
                 var handler = handlers[i];

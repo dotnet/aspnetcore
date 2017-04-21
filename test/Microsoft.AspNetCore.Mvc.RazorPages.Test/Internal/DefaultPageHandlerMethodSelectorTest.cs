@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Routing;
@@ -232,6 +231,147 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Assert
             Assert.Same(descriptor1, actual);
+        }
+
+        [Fact]
+        public void Select_FormActionFromQueryString()
+        {
+            // Arrange
+            var descriptor1 = new HandlerMethodDescriptor
+            {
+                HttpMethod = "POST",
+                FormAction = new StringSegment("Add"),
+            };
+
+            var descriptor2 = new HandlerMethodDescriptor
+            {
+                HttpMethod = "POST",
+                FormAction = new StringSegment("Delete"),
+            };
+
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = new CompiledPageActionDescriptor
+                {
+                    HandlerMethods =
+                    {
+                        descriptor1,
+                        descriptor2,
+                    },
+                },
+                RouteData = new RouteData(),
+                HttpContext = new DefaultHttpContext
+                {
+                    Request =
+                    {
+                        Method = "Post",
+                        QueryString = new QueryString("?formaction=Delete"),
+                    },
+                },
+            };
+            var selector = new DefaultPageHandlerMethodSelector();
+
+            // Act
+            var actual = selector.Select(pageContext);
+
+            // Assert
+            Assert.Same(descriptor2, actual);
+        }
+
+        [Fact]
+        public void Select_FormActionConsidersRouteDataFirst()
+        {
+            // Arrange
+            var descriptor1 = new HandlerMethodDescriptor
+            {
+                HttpMethod = "POST",
+                FormAction = new StringSegment("Add"),
+            };
+
+            var descriptor2 = new HandlerMethodDescriptor
+            {
+                HttpMethod = "POST",
+                FormAction = new StringSegment("Delete"),
+            };
+
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = new CompiledPageActionDescriptor
+                {
+                    HandlerMethods =
+                    {
+                        descriptor1,
+                        descriptor2,
+                    },
+                },
+                RouteData = new RouteData
+                {
+                    Values =
+                    {
+                        { "formaction", "Add" }
+                    }
+                },
+                HttpContext = new DefaultHttpContext
+                {
+                    Request =
+                    {
+                        Method = "Post",
+                        QueryString = new QueryString("?formaction=Delete"),
+                    },
+                },
+            };
+            var selector = new DefaultPageHandlerMethodSelector();
+
+            // Act
+            var actual = selector.Select(pageContext);
+
+            // Assert
+            Assert.Same(descriptor1, actual);
+        }
+
+        [Fact]
+        public void Select_FormActionMultipleTimesInQueryString_UsesFirst()
+        {
+            // Arrange
+            var descriptor1 = new HandlerMethodDescriptor
+            {
+                HttpMethod = "POST",
+                FormAction = new StringSegment("Add"),
+            };
+
+            var descriptor2 = new HandlerMethodDescriptor
+            {
+                HttpMethod = "POST",
+                FormAction = new StringSegment("Delete"),
+            };
+
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = new CompiledPageActionDescriptor
+                {
+                    HandlerMethods =
+                    {
+                        descriptor1,
+                        descriptor2,
+                    },
+                },
+                RouteData = new RouteData(),
+                HttpContext = new DefaultHttpContext
+                {
+                    Request =
+                    {
+                        Method = "Post",
+                        QueryString = new QueryString("?formaction=Delete&formaction=Add"),
+                    },
+                },
+            };
+            var selector = new DefaultPageHandlerMethodSelector();
+
+            // Act
+            var actual = selector.Select(pageContext);
+
+            // Assert
+            Assert.Same(descriptor2, actual);
         }
 
         [Fact]
