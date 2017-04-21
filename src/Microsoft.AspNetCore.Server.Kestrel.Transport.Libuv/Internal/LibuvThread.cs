@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -165,9 +164,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     handle?.Dispose();
                 }
             });
-
-            // uv_unref is idempotent so it's OK to call this here and in AllowStop.
-            _post.Unreference();
         }
 
         private void OnStopImmediate()

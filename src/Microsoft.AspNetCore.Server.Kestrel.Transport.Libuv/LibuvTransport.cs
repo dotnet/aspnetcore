@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         {
             try
             {
-                await Task.WhenAll(Threads.Select(thread => thread.StopAsync(TimeSpan.FromSeconds(2.5))).ToArray())
+                await Task.WhenAll(Threads.Select(thread => thread.StopAsync(TimeSpan.FromSeconds(5))).ToArray())
                     .ConfigureAwait(false);
             }
             catch (AggregateException aggEx)
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         {
             var disposeTasks = _listeners.Select(listener => listener.DisposeAsync()).ToArray();
 
-            if (!await WaitAsync(Task.WhenAll(disposeTasks), TimeSpan.FromSeconds(2.5)).ConfigureAwait(false))
+            if (!await WaitAsync(Task.WhenAll(disposeTasks), TimeSpan.FromSeconds(5)).ConfigureAwait(false))
             {
                 Log.LogError(0, null, "Disposing listeners failed");
             }
