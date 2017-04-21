@@ -3,10 +3,11 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetFramework>netstandard1.3</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
