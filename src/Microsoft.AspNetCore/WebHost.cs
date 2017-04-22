@@ -35,8 +35,11 @@ namespace Microsoft.AspNetCore
         /// <param name="url">The URL the hosted application will listen on.</param>
         /// <param name="app">A delegate that handles requests to the application.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-        public static IWebHost Start(string url, RequestDelegate app) =>
-            StartWith(url, appBuilder => appBuilder.Run(app));
+        public static IWebHost Start(string url, RequestDelegate app)
+        {
+            var startupAssemblyName = app.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+            return StartWith(url: url, configureServices: null, app: appBuilder => appBuilder.Run(app), applicationName: startupAssemblyName);
+        }
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
@@ -54,8 +57,11 @@ namespace Microsoft.AspNetCore
         /// <param name="url">The URL the hosted application will listen on.</param>
         /// <param name="routeBuilder">A delegate that configures the router for handling requests to the application.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-        public static IWebHost Start(string url, Action<IRouteBuilder> routeBuilder) =>
-            StartWith(url, services => services.AddRouting(), app => app.UseRouter(routeBuilder));
+        public static IWebHost Start(string url, Action<IRouteBuilder> routeBuilder)
+        {
+            var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+            return StartWith(url, services => services.AddRouting(), appBuilder => appBuilder.UseRouter(routeBuilder), applicationName: startupAssemblyName);
+        }
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
@@ -74,9 +80,9 @@ namespace Microsoft.AspNetCore
         /// <param name="app">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
         public static IWebHost StartWith(string url, Action<IApplicationBuilder> app) =>
-            StartWith(url: url, configureServices: null, app: app);
+            StartWith(url: url, configureServices: null, app: app, applicationName: null);
 
-        private static IWebHost StartWith(string url, Action<IServiceCollection> configureServices, Action<IApplicationBuilder> app)
+        private static IWebHost StartWith(string url, Action<IServiceCollection> configureServices, Action<IApplicationBuilder> app, string applicationName)
         {
             var builder = CreateDefaultBuilder();
 
@@ -90,9 +96,14 @@ namespace Microsoft.AspNetCore
                 builder.ConfigureServices(configureServices);
             }
 
-            var host = builder
-                .Configure(app)
-                .Build();
+            builder.Configure(app);
+
+            if (!string.IsNullOrEmpty(applicationName))
+            {
+                builder.UseSetting(WebHostDefaults.ApplicationKey, applicationName);
+            }
+
+            var host = builder.Build();
 
             host.Start();
 
@@ -109,7 +120,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
-        ///     configures the <see cref="ILoggerFactory"/> to log to the console,
+        ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
         ///     enables IIS integration,
         ///     and adds the developer exception page when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development'
         /// </remarks>
@@ -128,7 +139,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
-        ///     configures the <see cref="ILoggerFactory"/> to log to the console,
+        ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
         ///     enables IIS integration,
         ///     and adds the developer exception page when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development'
         /// </remarks>
@@ -165,6 +176,7 @@ namespace Microsoft.AspNetCore
                 .ConfigureLogging(logging =>
                 {
                     logging.AddConsole();
+                    logging.AddDebug();
                 })
                 .UseIISIntegration()
                 .ConfigureServices(services =>

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -18,6 +20,8 @@ namespace SampleApp
             CustomUrl();
 
             CustomRouter();
+
+            CustomApplicationBuilder();
 
             StartupClass(args);
         }
@@ -55,6 +59,24 @@ namespace SampleApp
             {
                 //host.WaitForShutdown(); // TODO: https://github.com/aspnet/Hosting/issues/1022
                 Console.WriteLine("Running CustomRouter: Press any key to shutdown and start the next sample...");
+                Console.ReadKey();
+            }
+        }
+
+        private static void CustomApplicationBuilder()
+        {
+            // Using a application builder
+            using (WebHost.StartWith(app =>
+            {
+                app.UseStaticFiles();
+                app.Run(async context =>
+                {
+                    await context.Response.WriteAsync("Hello, World!");
+                });
+            }))
+            {
+                //host.WaitForShutdown(); // TODO: https://github.com/aspnet/Hosting/issues/1022
+                Console.WriteLine("Running CustomApplicationBuilder: Press any key to shutdown and start the next sample...");
                 Console.ReadKey();
             }
         }
