@@ -85,13 +85,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 });
 
             Assert.Null(builder.GetSetting(WebHostDefaults.ServerUrlsKey));
-            Assert.Null(builder.GetSetting(WebHostDefaults.PreferHostingUrls));
+            Assert.Null(builder.GetSetting(WebHostDefaults.PreferHostingUrlsKey));
 
             // Adds a server and calls Build()
             var server = new TestServer(builder);
 
             Assert.Equal("http://localhost:12345", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
-            Assert.Equal("true", builder.GetSetting(WebHostDefaults.PreferHostingUrls));
+            Assert.Equal("true", builder.GetSetting(WebHostDefaults.PreferHostingUrlsKey));
         }
 
         [Fact]
