@@ -86,17 +86,25 @@ namespace Microsoft.AspNetCore.HttpOverrides
         }
 
         [Theory]
-        [InlineData(1, "11.111.111.11:12345", "11.111.111.11", 12345, "")]
-        [InlineData(10, "11.111.111.11:12345", "11.111.111.11", 12345, "")]
-        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "11.111.111.11", 12345, "12.112.112.12:23456")]
-        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "")]
-        [InlineData(10, "12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "")]
-        [InlineData(10, "12.112.112.12.23456, 11.111.111.11:12345", "10.0.0.1", 99, "12.112.112.12.23456, 11.111.111.11:12345")] // Invalid
-        [InlineData(10, "13.113.113.13:34567, 12.112.112.12.23456, 11.111.111.11:12345", "10.0.0.1", 99,
-            "13.113.113.13:34567, 12.112.112.12.23456, 11.111.111.11:12345")] // Invalid
-        [InlineData(2, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "13.113.113.13:34567")]
-        [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "13.113.113.13", 34567, "")]
-        public async Task XForwardedForForwardLimit(int limit, string header, string expectedIp, int expectedPort, string remainingHeader)
+        [InlineData(1, "11.111.111.11:12345", "11.111.111.11", 12345, "", false)]
+        [InlineData(1, "11.111.111.11:12345", "11.111.111.11", 12345, "", true)]
+        [InlineData(10, "11.111.111.11:12345", "11.111.111.11", 12345, "", false)]
+        [InlineData(10, "11.111.111.11:12345", "11.111.111.11", 12345, "", true)]
+        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "11.111.111.11", 12345, "12.112.112.12:23456", false)]
+        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "11.111.111.11", 12345, "12.112.112.12:23456", true)]
+        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "", false)]
+        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "", true)]
+        [InlineData(10, "12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "", false)]
+        [InlineData(10, "12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "", true)]
+        [InlineData(10, "12.112.112.12.23456, 11.111.111.11:12345", "11.111.111.11", 12345, "12.112.112.12.23456", false)] // Invalid 2nd value
+        [InlineData(10, "12.112.112.12.23456, 11.111.111.11:12345", "11.111.111.11", 12345, "12.112.112.12.23456", true)] // Invalid 2nd value
+        [InlineData(10, "13.113.113.13:34567, 12.112.112.12.23456, 11.111.111.11:12345", "11.111.111.11", 12345, "13.113.113.13:34567,12.112.112.12.23456", false)] // Invalid 2nd value
+        [InlineData(10, "13.113.113.13:34567, 12.112.112.12.23456, 11.111.111.11:12345", "11.111.111.11", 12345, "13.113.113.13:34567,12.112.112.12.23456", true)] // Invalid 2nd value
+        [InlineData(2, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "13.113.113.13:34567", false)]
+        [InlineData(2, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "12.112.112.12", 23456, "13.113.113.13:34567", true)]
+        [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "13.113.113.13", 34567, "", false)]
+        [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "13.113.113.13", 34567, "", true)]
+        public async Task XForwardedForForwardLimit(int limit, string header, string expectedIp, int expectedPort, string remainingHeader, bool requireSymmetry)
         {
             var assertsExecuted = false;
 
@@ -112,6 +120,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                        RequireHeaderSymmetry = requireSymmetry,
                         ForwardLimit = limit,
                     };
                     options.KnownProxies.Clear();
@@ -186,19 +195,29 @@ namespace Microsoft.AspNetCore.HttpOverrides
         }
 
         [Theory]
-        [InlineData(1, "11.111.111.11:12345", "20.0.0.1", "10.0.0.1", 99)]
-        [InlineData(1, "", "10.0.0.1", "10.0.0.1", 99)]
-        [InlineData(1, "11.111.111.11:12345", "10.0.0.1", "11.111.111.11", 12345)]
-        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1", "11.111.111.11", 12345)]
-        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1", "11.111.111.11", 12345)]
-        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11", "11.111.111.11", 12345)]
-        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11", "12.112.112.12", 23456)]
-        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "11.111.111.11", 12345)]
-        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "12.112.112.12", 23456)]
-        [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "13.113.113.13", 34567)]
-        [InlineData(3, "13.113.113.13:34567, 12.112.112.12;23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "10.0.0.1", 99)] // Invalid 2nd IP
-        [InlineData(3, "13.113.113.13;34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "10.0.0.1", 99)] // Invalid 3rd IP
-        public async Task XForwardedForForwardKnownIps(int limit, string header, string knownIPs, string expectedIp, int expectedPort)
+        [InlineData(1, "11.111.111.11:12345", "20.0.0.1", "10.0.0.1", 99, false)]
+        [InlineData(1, "11.111.111.11:12345", "20.0.0.1", "10.0.0.1", 99, true)]
+        [InlineData(1, "", "10.0.0.1", "10.0.0.1", 99, false)]
+        [InlineData(1, "", "10.0.0.1", "10.0.0.1", 99, true)]
+        [InlineData(1, "11.111.111.11:12345", "10.0.0.1", "11.111.111.11", 12345, false)]
+        [InlineData(1, "11.111.111.11:12345", "10.0.0.1", "11.111.111.11", 12345, true)]
+        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1", "11.111.111.11", 12345, false)]
+        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1", "11.111.111.11", 12345, true)]
+        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11", "11.111.111.11", 12345, false)]
+        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11", "11.111.111.11", 12345, true)]
+        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11", "12.112.112.12", 23456, false)]
+        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11", "12.112.112.12", 23456, true)]
+        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "11.111.111.11", 12345, false)]
+        [InlineData(1, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "11.111.111.11", 12345, true)]
+        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "12.112.112.12", 23456, false)]
+        [InlineData(2, "12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "12.112.112.12", 23456, true)]
+        [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "13.113.113.13", 34567, false)]
+        [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "13.113.113.13", 34567, true)]
+        [InlineData(3, "13.113.113.13:34567, 12.112.112.12;23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "11.111.111.11", 12345, false)] // Invalid 2nd IP
+        [InlineData(3, "13.113.113.13:34567, 12.112.112.12;23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "11.111.111.11", 12345, true)] // Invalid 2nd IP
+        [InlineData(3, "13.113.113.13;34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "12.112.112.12", 23456, false)] // Invalid 3rd IP
+        [InlineData(3, "13.113.113.13;34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "12.112.112.12", 23456, true)] // Invalid 3rd IP
+        public async Task XForwardedForForwardKnownIps(int limit, string header, string knownIPs, string expectedIp, int expectedPort, bool requireSymmetry)
         {
             var assertsExecuted = false;
 
@@ -214,6 +233,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                        RequireHeaderSymmetry = requireSymmetry,
                         ForwardLimit = limit,
                     };
                     foreach (var ip in knownIPs.Split(',').Select(text => IPAddress.Parse(text)))
@@ -334,7 +354,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(3, "h2, h1", "::1", "http")]
         [InlineData(5, "h2, h1", "::1, ::1", "h2")]
         [InlineData(10, "h3, h2, h1", "::1, ::1, ::1", "h3")]
-        [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "http")]
+        [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h1")]
         public async Task XForwardedProtoOverrideLimitedByXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
         {
             var assertsExecuted = false;
@@ -345,6 +365,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     app.UseForwardedHeaders(new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+                        RequireHeaderSymmetry = true,
                         ForwardLimit = limit,
                     });
                     app.Run(context =>
@@ -373,7 +394,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(3, "h2, h1", "::1", "h2")]
         [InlineData(5, "h2, h1", "::1, ::1", "h2")]
         [InlineData(10, "h3, h2, h1", "::1, ::1, ::1", "h3")]
-        [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h3")]
+        [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h1")]
         public async Task XForwardedProtoOverrideCanBeIndependentOfXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
         {
             var assertsExecuted = false;
@@ -432,6 +453,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+                        RequireHeaderSymmetry = true,
                         ForwardLimit = 5,
                     };
                     if (!loopback)

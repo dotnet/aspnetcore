@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Require the number of header values to be in sync between the different headers being processed.
-        /// The default is 'true'.
+        /// The default is 'false'.
         /// </summary>
-        public bool RequireHeaderSymmetry { get; set; } = true;
+        public bool RequireHeaderSymmetry { get; set; } = false;
     }
 }

@@ -164,9 +164,15 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         currentValues.IpAndPortText = set.IpAndPortText;
                         currentValues.RemoteIpAndPort = set.RemoteIpAndPort;
                     }
+                    else if (!string.IsNullOrEmpty(set.IpAndPortText))
+                    {
+                        // Stop at the first unparsable IP, but still apply changes processed so far.
+                        _logger.LogDebug(1, $"Unparsable IP: {set.IpAndPortText}");
+                        break;
+                    }
                     else if (_options.RequireHeaderSymmetry)
                     {
-                        _logger.LogWarning(2, $"Failed to parse forwarded IPAddress: {currentValues.IpAndPortText}");
+                        _logger.LogWarning(2, $"Missing forwarded IPAddress.");
                         return;
                     }
                 }
