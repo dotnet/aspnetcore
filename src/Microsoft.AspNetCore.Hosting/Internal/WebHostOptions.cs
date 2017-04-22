@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             WebRoot = configuration[WebHostDefaults.WebRootKey];
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
             HostingStartupAssemblies = configuration[WebHostDefaults.HostingStartupAssembliesKey]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
-            PreferHostingUrls = ParseBool(configuration, WebHostDefaults.PreferHostingUrls);
+            PreferHostingUrls = ParseBool(configuration, WebHostDefaults.PreferHostingUrlsKey);
 
             var timeout = configuration[WebHostDefaults.ShutdownTimeoutKey];
             if (!string.IsNullOrEmpty(timeout)

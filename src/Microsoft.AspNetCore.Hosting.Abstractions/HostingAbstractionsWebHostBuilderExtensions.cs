@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder PreferHostingUrls(this IWebHostBuilder hostBuilder, bool preferHostingUrls)
         {
-            return hostBuilder.UseSetting(WebHostDefaults.PreferHostingUrls, preferHostingUrls ? "true" : "false");
+            return hostBuilder.UseSetting(WebHostDefaults.PreferHostingUrlsKey, preferHostingUrls ? "true" : "false");
         }
 
         /// <summary>
