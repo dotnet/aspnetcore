@@ -16,7 +16,6 @@ namespace RazorPagesWebSite
                 .AddCookieTempDataProvider()
                 .AddRazorPagesOptions(options =>
                 {
-                    options.RootDirectory = "/Pages";
                     options.AuthorizePage("/Conventions/Auth");
                     options.AuthorizeFolder("/Conventions/AuthFolder");
                 });

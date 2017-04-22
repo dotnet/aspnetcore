@@ -16,7 +16,7 @@ namespace MvcSandbox
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddCookieTempDataProvider();
+            services.AddMvc();
 
             services.Insert(0, ServiceDescriptor.Singleton(
                 typeof(IConfigureOptions<AntiforgeryOptions>),

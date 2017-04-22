@@ -58,6 +58,28 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Configures Razor Pages to use the specified <paramref name="rootDirectory"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="rootDirectory">The application relative path to use as the root directory.</param>
+        /// <returns></returns>
+        public static IMvcCoreBuilder WithRazorPagesRoot(this IMvcCoreBuilder builder, string rootDirectory)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (string.IsNullOrEmpty(rootDirectory))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(rootDirectory));
+            }
+
+            builder.Services.Configure<RazorPagesOptions>(options => options.RootDirectory = rootDirectory);
+            return builder;
+        }
+
         private static void AddFeatureProviders(IMvcCoreBuilder builder)
         {
             if (!builder.PartManager.FeatureProviders.OfType<CompiledPageFeatureProvider>().Any())

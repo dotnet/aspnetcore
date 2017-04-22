@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Always require an antiforgery token on post
             options.ConfigureFilter(new AutoValidateAntiforgeryTokenAttribute());
+
+            options.RootDirectory = "/Pages";
         }
     }
 }

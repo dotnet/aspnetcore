@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task RazorPages_ReturnSuccess()
         {
             // Arrange & Act
-            var response = await Client.GetStringAsync("http://localhost/Pages/");
+            var response = await Client.GetStringAsync("http://localhost/PagesHome");
 
             // Assert
             Assert.Contains("This file should give you a quick view of a Mvc Razor Page in action.", response);
