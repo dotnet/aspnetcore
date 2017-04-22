@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <param name="app">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-        public static IWebHost StartWith(Action<IApplicationBuilder> app) =>
-            StartWith(url: null, app: app);
+        public static IWebHost Start(Action<IApplicationBuilder> app) =>
+            Start(url: null, app: app);
 
         /// <summary>
         /// Initializes and starts a new <see cref="IWebHost"/> with pre-configured defaults.
