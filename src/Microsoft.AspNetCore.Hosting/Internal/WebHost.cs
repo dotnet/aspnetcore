@@ -23,7 +23,7 @@ using Microsoft.Extensions.StackTrace.Sources;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
-    public class WebHost : IWebHost
+    internal class WebHost : IWebHost
     {
         private static readonly string DeprecatedServerUrlsKey = "server.urls";
 

@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             // Arrange
             // This logger will attempt to access information from HttpRequest once the HttpContext is createds
-            var logger = new VerifierLogger(); 
+            var logger = new VerifierLogger();
             RequestDelegate appDelegate = async ctx =>
             {
                 if (ctx.WebSockets.IsWebSocketRequest)
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.TestHost
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<ILogger<WebHost>>(logger);
+                    services.AddSingleton<ILogger<IWebHost>>(logger);
                 })
                 .Configure(app =>
                 {
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
 
-        private class VerifierLogger : ILogger<WebHost>
+        private class VerifierLogger : ILogger<IWebHost>
         {
             public IDisposable BeginScope<TState>(TState state) => new NoopDispoasble();
 

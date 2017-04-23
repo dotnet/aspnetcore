@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -336,24 +335,24 @@ namespace Microsoft.AspNetCore.TestHost
             // This logger will attempt to access information from HttpRequest once the HttpContext is created
             var logger = new VerifierLogger();
             var builder = new WebHostBuilder()
-                            .ConfigureServices(services =>
-                            {
-                                services.AddSingleton<ILogger<WebHost>>(logger);
-                            })
-                            .Configure(app =>
-                            {
-                                app.Run(context =>
-                                {
-                                    return Task.FromResult(0);
-                                });
-                            });
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ILogger<IWebHost>>(logger);
+                })
+                .Configure(app =>
+                {
+                    app.Run(context =>
+                    {
+                        return Task.FromResult(0);
+                    });
+                });
             var server = new TestServer(builder);
 
             // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
             var result = await server.CreateClient().GetStringAsync("/");
         }
 
-        private class VerifierLogger : ILogger<WebHost>
+        private class VerifierLogger : ILogger<IWebHost>
         {
             public IDisposable BeginScope<TState>(TState state) => new NoopDispoasble();
 
