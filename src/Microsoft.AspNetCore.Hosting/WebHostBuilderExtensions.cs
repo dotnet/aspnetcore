@@ -113,6 +113,17 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder" /> to configure.</param>
         /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<LoggerFactory> configureLogging)
+        {
+            return hostBuilder.ConfigureLogging<LoggerFactory>((_, loggerFactory) => configureLogging(loggerFactory));
+        }
+
+        /// <summary>
+        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder" /> to configure.</param>
+        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, LoggerFactory> configureLogging)
         {
             return hostBuilder.ConfigureLogging(configureLogging);

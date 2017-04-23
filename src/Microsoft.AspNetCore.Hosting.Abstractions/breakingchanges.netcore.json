@@ -33,5 +33,10 @@
     "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHost : System.IDisposable",
     "MemberId": "System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken)",
     "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureLogging(System.Action<Microsoft.Extensions.Logging.ILoggerFactory> configureLogging)",
+    "Kind": "Removal"
   }
 ]
