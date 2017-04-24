@@ -149,10 +149,6 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 throw new ArgumentNullException(nameof(auth));
             }
-            if (scheme == null)
-            {
-                throw new ArgumentNullException(nameof(scheme));
-            }
             if (tokenName == null)
             {
                 throw new ArgumentNullException(nameof(tokenName));
