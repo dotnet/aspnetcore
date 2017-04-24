@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,14 +9,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Logging.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class ServerFixture : IDisposable
     {
         private ILoggerFactory _loggerFactory;
+        private ILogger _logger;
         private IWebHost host;
         private IApplicationLifetime lifetime;
+        private readonly IDisposable _logToken;
 
         public string BaseUrl => "http://localhost:3000";
 
@@ -24,17 +28,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ServerFixture()
         {
-            _loggerFactory = new LoggerFactory();
+            var testLog = AssemblyTestLog.ForAssembly(typeof(ServerFixture).Assembly);
+            _logToken = testLog.StartTestLog(null, typeof(ServerFixture).FullName, out _loggerFactory, "ServerFixture");
+            _logger = _loggerFactory.CreateLogger<ServerFixture>();
 
-            var _verbose = string.Equals(Environment.GetEnvironmentVariable("SIGNALR_TESTS_VERBOSE"), "1");
-            if (_verbose)
-            {
-                _loggerFactory.AddConsole(LogLevel.Debug);
-            }
-            if (Debugger.IsAttached)
-            {
-                _loggerFactory.AddDebug();
-            }
             StartServer();
         }
 
@@ -64,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 .Build();
 
             var t = Task.Run(() => host.Start());
-            Console.WriteLine("Starting test server...");
+            _logger.LogInformation("Starting test server...");
             lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
             if (!lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
             {
@@ -75,10 +72,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
                 throw new TimeoutException("Timed out waiting for application to start.");
             }
+            _logger.LogInformation("Test Server started");
+
+            lifetime.ApplicationStopped.Register(() =>
+            {
+                _logger.LogInformation("Test server shut down");
+                _logToken.Dispose();
+            });
         }
 
         public void Dispose()
         {
+            _logger.LogInformation("Shutting down test server");
             host.Dispose();
         }
     }

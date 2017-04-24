@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,6 +16,7 @@ using Xunit;
 using ClientConnection = Microsoft.AspNetCore.Sockets.Client.Connection;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Xunit.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -26,13 +27,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     }
 
     [Collection(EndToEndTestsCollection.Name)]
-    public class EndToEndTests
+    public class EndToEndTests : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
         private readonly ServerFixture _serverFixture;
 
-        public EndToEndTests(ServerFixture serverFixture, ITestOutputHelper output)
+        public EndToEndTests(ServerFixture serverFixture, ITestOutputHelper output) : base(output)
         {
             if (serverFixture == null)
             {
@@ -40,25 +39,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
 
             _serverFixture = serverFixture;
-            _output = output;
         }
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task WebSocketsTest()
         {
-            const string message = "Hello, World!";
-            using (var ws = new ClientWebSocket())
+            using (StartLog(out var loggerFactory))
             {
-                await ws.ConnectAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo/ws"), CancellationToken.None);
-                var bytes = Encoding.UTF8.GetBytes(message);
-                await ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Binary, true, CancellationToken.None);
-                var buffer = new ArraySegment<byte>(new byte[1024]);
-                var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+                var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                Assert.Equal(bytes, buffer.Array.AsSpan().Slice(0, message.Length).ToArray());
+                const string message = "Hello, World!";
+                using (var ws = new ClientWebSocket())
+                {
+                    string socketUrl = _serverFixture.WebSocketsUrl + "/echo/ws";
 
-                await ws.CloseAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None);
+                    logger.LogInformation("Connecting WebSocket to {socketUrl}", socketUrl);
+                    await ws.ConnectAsync(new Uri(socketUrl), CancellationToken.None).OrTimeout();
+
+                    var bytes = Encoding.UTF8.GetBytes(message);
+                    logger.LogInformation("Sending {length} byte frame", bytes.Length);
+                    await ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Binary, true, CancellationToken.None).OrTimeout();
+
+                    logger.LogInformation("Receiving frame");
+                    var buffer = new ArraySegment<byte>(new byte[1024]);
+                    var result = await ws.ReceiveAsync(buffer, CancellationToken.None).OrTimeout();
+                    logger.LogInformation("Received {length} byte frame", result.Count);
+
+                    Assert.Equal(bytes, buffer.Array.AsSpan().Slice(0, result.Count).ToArray());
+
+                    logger.LogInformation("Closing socket");
+                    await ws.CloseAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None).OrTimeout();
+                    logger.LogInformation("Closed socket");
+                }
             }
         }
 
@@ -67,39 +80,57 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(TransportTypes))]
         public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType)
         {
-            const string message = "Major Key";
-            var baseUrl = _serverFixture.BaseUrl;
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddXunit(_output, LogLevel.Trace);
-
-            var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
-            try
+            using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}"))
             {
-                var receiveTcs = new TaskCompletionSource<string>();
-                connection.Received += (data, format) => receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
-                connection.Closed += e =>
+                var logger = loggerFactory.CreateLogger<EndToEndTests>();
+
+                const string message = "Major Key";
+                var baseUrl = _serverFixture.BaseUrl;
+
+                string url = baseUrl + "/echo";
+                var connection = new ClientConnection(new Uri(url), loggerFactory);
+                try
                 {
-                    if (e != null)
+                    var receiveTcs = new TaskCompletionSource<string>();
+                    connection.Received += (data, format) =>
                     {
-                        receiveTcs.TrySetException(e);
-                    }
-                    else
+                        logger.LogInformation("Received {length} byte message", data.Length);
+                        receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
+                    };
+                    connection.Closed += e =>
                     {
-                        receiveTcs.TrySetResult(null);
-                    }
-                };
+                        logger.LogInformation("Connection closed");
+                        if (e != null)
+                        {
+                            receiveTcs.TrySetException(e);
+                        }
+                        else
+                        {
+                            receiveTcs.TrySetResult(null);
+                        }
+                    };
 
-                await connection.StartAsync(transportType);
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync(transportType).OrTimeout();
+                    logger.LogInformation("Started connection to {url}", url);
 
-                await connection.SendAsync(Encoding.UTF8.GetBytes(message), MessageType.Text);
+                    var bytes = Encoding.UTF8.GetBytes(message);
+                    logger.LogInformation("Sending {length} byte message", bytes.Length);
+                    await connection.SendAsync(bytes, MessageType.Text).OrTimeout();
+                    logger.LogInformation("Sent message", bytes.Length);
 
-                var receiveData = new ReceiveData();
+                    var receiveData = new ReceiveData();
 
-                Assert.Equal(message, await receiveTcs.Task.OrTimeout());
-            }
-            finally
-            {
-                await connection.DisposeAsync();
+                    logger.LogInformation("Receiving message");
+                    Assert.Equal(message, await receiveTcs.Task.OrTimeout());
+                    logger.LogInformation("Completed receive");
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
             }
         }
 
@@ -117,28 +148,45 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(MessageSizesData))]
         public async Task ConnectionCanSendAndReceiveDifferentMessageSizesWebSocketsTransport(string message)
         {
-            var baseUrl = _serverFixture.BaseUrl;
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddXunit(_output, LogLevel.Debug);
-
-            var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
-            try
+            using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveDifferentMessageSizesWebSocketsTransport_{message.Length}"))
             {
-                var receiveTcs = new TaskCompletionSource<byte[]>();
-                connection.Received += (data, messageType) => receiveTcs.SetResult(data);
+                var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                await connection.StartAsync(TransportType.WebSockets);
+                var baseUrl = _serverFixture.BaseUrl;
 
-                await connection.SendAsync(Encoding.UTF8.GetBytes(message), MessageType.Text);
+                string url = baseUrl + "/echo";
+                var connection = new ClientConnection(new Uri(url), loggerFactory);
+                try
+                {
+                    var receiveTcs = new TaskCompletionSource<byte[]>();
+                    connection.Received += (data, messageType) =>
+                    {
+                        logger.LogInformation("Received {length} byte message", data.Length);
+                        receiveTcs.TrySetResult(data);
+                    };
 
-                var receiveData = new ReceiveData();
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync(TransportType.WebSockets).OrTimeout();
+                    logger.LogInformation("Started connection to {url}", url);
 
-                var receivedData = await receiveTcs.Task.OrTimeout();
-                Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
-            }
-            finally
-            {
-                await connection.DisposeAsync();
+                    var bytes = Encoding.UTF8.GetBytes(message);
+                    logger.LogInformation("Sending {length} byte message", bytes.Length);
+                    await connection.SendAsync(bytes, MessageType.Text).OrTimeout();
+                    logger.LogInformation("Sent message", bytes.Length);
+
+                    var receiveData = new ReceiveData();
+
+                    logger.LogInformation("Receiving message");
+                    var receivedData = await receiveTcs.Task.OrTimeout();
+                    Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
+                    logger.LogInformation("Completed receive");
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
             }
         }
 
