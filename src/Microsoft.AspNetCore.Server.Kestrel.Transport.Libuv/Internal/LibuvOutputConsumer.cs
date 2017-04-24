@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 var result = await _pipe.ReadAsync();
                 var buffer = result.Buffer;
+                var consumed = buffer.End;
 
                 try
                 {
@@ -53,6 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                             if (writeResult.Error != null)
                             {
+                                consumed = buffer.Start;
                                 throw writeResult.Error;
                             }
                         }
@@ -87,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
                 finally
                 {
-                    _pipe.Advance(result.Buffer.End);
+                    _pipe.Advance(consumed);
                 }
             }
         }

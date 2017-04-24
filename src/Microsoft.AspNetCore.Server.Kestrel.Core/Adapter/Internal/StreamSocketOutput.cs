@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     public class StreamSocketOutput : ISocketOutput
     {
-        private static readonly ArraySegment<byte> _nullBuffer = new ArraySegment<byte>(new byte[0]);
-
         private readonly Stream _outputStream;
         private readonly IPipe _pipe;
         private readonly object _sync = new object();
@@ -57,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     }
                 }
 
-                flushAwaiter = writableBuffer.FlushAsync();
+                flushAwaiter = writableBuffer.FlushAsync(cancellationToken);
             }
 
             await flushAwaiter;
