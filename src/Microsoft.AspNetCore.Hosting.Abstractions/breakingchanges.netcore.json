@@ -1,0 +1,37 @@
+[
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHost : System.IDisposable",
+    "MemberId": "System.Void Start()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureAppConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Configuration.IConfigurationBuilder> configureDelegate)",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureLogging<T0>(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, T0> configureLogging) where T0 : Microsoft.Extensions.Logging.ILoggerFactory",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceCollection> configureServices)",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder UseLoggerFactory(System.Func<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Logging.ILoggerFactory> createLoggerFactory)",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHost : System.IDisposable",
+    "MemberId": "System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken)",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHost : System.IDisposable",
+    "MemberId": "System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken)",
+    "Kind": "Addition"
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.Server.IServer : System.IDisposable",
+    "MemberId": "System.Void Start<T0>(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<T0> application)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
+    "MemberId": "System.Boolean get_PreferHostingUrls()",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
+    "MemberId": "System.Void set_PreferHostingUrls(System.Boolean value)",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.Server.IServer : System.IDisposable",
+    "MemberId": "System.Threading.Tasks.Task StartAsync<T0>(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<T0> application, System.Threading.CancellationToken cancellationToken)",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.Server.IServer : System.IDisposable",
+    "MemberId": "System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken)",
+    "Kind": "Addition"
+  }
+]
