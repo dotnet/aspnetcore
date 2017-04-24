@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             ((LibuvConnection)state).OnRead(handle, status);
         }
 
-        private async void OnRead(UvStreamHandle handle, int status)
+        private void OnRead(UvStreamHandle handle, int status)
         {
             var normalRead = status >= 0;
             var normalDone = status == LibuvConstants.EOF;
@@ -175,26 +175,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _currentWritableBuffer = null;
             _bufferHandle.Free();
 
-            if (flushTask?.IsCompleted == false)
-            {
-                Log.ConnectionPause(ConnectionId);
-                StopReading();
-
-                var result = await flushTask.Value;
-                // If the reader isn't complete then resume
-                if (!result.IsCompleted && !result.IsCancelled)
-                {
-                    Log.ConnectionResume(ConnectionId);
-                    StartReading();
-                }
-            }
-
             if (!normalRead)
             {
                 _connectionContext.Abort(error);
 
                 // Complete after aborting the connection
                 Input.Complete(error);
+            }
+            else if (flushTask?.IsCompleted == false)
+            {
+                // We wrote too many bytes too the reader so pause reading and resume when
+                // we hit the low water mark
+                _ = ApplyBackpressureAsync(flushTask.Value);
+            }
+        }
+
+        private async Task ApplyBackpressureAsync(WritableBufferAwaitable flushTask)
+        {
+            Log.ConnectionPause(ConnectionId);
+            StopReading();
+
+            var result = await flushTask;
+
+            // If the reader isn't complete or cancelled then resume reading
+            if (!result.IsCompleted && !result.IsCancelled)
+            {
+                Log.ConnectionResume(ConnectionId);
+                StartReading();
             }
         }
 
