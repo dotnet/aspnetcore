@@ -429,11 +429,11 @@ namespace Microsoft.AspNetCore.Mvc
                 routeValues["page"] = CalculatePageName(urlHelper.ActionContext, pageName);
             }
 
-            if (!routeValues.ContainsKey("formaction") &&
-                ambientValues.TryGetValue("formaction", out var formaction))
+            if (!routeValues.ContainsKey("handler") &&
+                ambientValues.TryGetValue("handler", out var handler))
             {
-                // Clear out formaction unless it's explicitly specified in the routeValues.
-                routeValues["formaction"] = null;
+                // Clear out handler unless it's explicitly specified in the routeValues.
+                routeValues["handler"] = null;
             }
 
             return urlHelper.RouteUrl(

@@ -136,19 +136,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Select_ReturnsNullWhenNoHandlerMatchesFormAction()
+        public void Select_ReturnsNullWhenNoHandlerMatchesHandler()
         {
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Add",
+                Name = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Delete",
+                Name = "Delete",
             };
 
             var pageContext = new PageContext
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     Values =
                     {
-                        { "formaction", "update" }
+                        { "handler", "update" }
                     }
                 },
                 HttpContext = new DefaultHttpContext
@@ -186,19 +186,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Select_ReturnsHandlerThatMatchesFormAction()
+        public void Select_ReturnsHandlerThatMatchesHandler()
         {
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Add",
+                Name = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Delete",
+                Name = "Delete",
             };
 
             var pageContext = new PageContext
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     Values =
                     {
-                        { "formaction", "Add" }
+                        { "handler", "Add" }
                     }
                 },
                 HttpContext = new DefaultHttpContext
@@ -236,19 +236,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Select_FormActionFromQueryString()
+        public void Select_HandlerFromQueryString()
         {
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Add",
+                Name = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Delete",
+                Name = "Delete",
             };
 
             var pageContext = new PageContext
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Request =
                     {
                         Method = "Post",
-                        QueryString = new QueryString("?formaction=Delete"),
+                        QueryString = new QueryString("?handler=Delete"),
                     },
                 },
             };
@@ -281,19 +281,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Select_FormActionConsidersRouteDataFirst()
+        public void Select_HandlerConsidersRouteDataFirst()
         {
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Add",
+                Name = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Delete",
+                Name = "Delete",
             };
 
             var pageContext = new PageContext
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     Values =
                     {
-                        { "formaction", "Add" }
+                        { "handler", "Add" }
                     }
                 },
                 HttpContext = new DefaultHttpContext
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Request =
                     {
                         Method = "Post",
-                        QueryString = new QueryString("?formaction=Delete"),
+                        QueryString = new QueryString("?handler=Delete"),
                     },
                 },
             };
@@ -332,19 +332,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Select_FormActionMultipleTimesInQueryString_UsesFirst()
+        public void Select_HandlerMultipleTimesInQueryString_UsesFirst()
         {
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Add",
+                Name = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Delete",
+                Name = "Delete",
             };
 
             var pageContext = new PageContext
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Request =
                     {
                         Method = "Post",
-                        QueryString = new QueryString("?formaction=Delete&formaction=Add"),
+                        QueryString = new QueryString("?handler=Delete&handler=Add"),
                     },
                 },
             };
@@ -377,13 +377,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Select_ReturnsHandlerWithMatchingHttpMethodWithoutAFormAction()
+        public void Select_ReturnsHandlerWithMatchingHttpMethodWithoutAHandler()
         {
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
                 HttpMethod = "POST",
-                FormAction = "Subscribe",
+                Name = "Subscribe",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     Values =
                     {
-                        { "formaction", "Add" }
+                        { "handler", "Add" }
                     }
                 },
                 HttpContext = new DefaultHttpContext
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Select_WithoutFormAction_ThrowsIfMoreThanOneHandlerMatches()
+        public void Select_WithoutHandler_ThrowsIfMoreThanOneHandlerMatches()
         {
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
@@ -478,21 +478,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void Select_WithFormAction_ThrowsIfMoreThanOneHandlerMatches()
+        public void Select_WithHandler_ThrowsIfMoreThanOneHandlerMatches()
         {
             // Arrange
             var descriptor1 = new HandlerMethodDescriptor
             {
                 MethodInfo = GetType().GetMethod(nameof(Post)),
                 HttpMethod = "POST",
-                FormAction = "Add",
+                Name = "Add",
             };
 
             var descriptor2 = new HandlerMethodDescriptor
             {
                 MethodInfo = GetType().GetMethod(nameof(PostAsync)),
                 HttpMethod = "POST",
-                FormAction = "Add",
+                Name = "Add",
             };
 
             var descriptor3 = new HandlerMethodDescriptor
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     Values =
                     {
-                        { "formaction", "Add" }
+                        { "handler", "Add" }
                     }
                 },
                 HttpContext = new DefaultHttpContext

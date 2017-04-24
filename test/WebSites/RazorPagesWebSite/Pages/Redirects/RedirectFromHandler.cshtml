@@ -1,4 +1,4 @@
-@page "{formaction?}/{id:int?}"
+@page "{handler?}/{id:int?}"
 @functions
 {
     public IActionResult OnGetRedirectToPage(int id)
@@ -8,6 +8,6 @@
 
     public IActionResult OnGetRedirectToAnotherHandler(int id)
     {
-        return RedirectToPage(new { formaction = "RedirectToPage", id = id });
+        return RedirectToPage(new { handler = "RedirectToPage", id = id });
     }
 }

@@ -1264,7 +1264,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void Page_SetsFormActionToNull_IfValueIsNotSpecifiedInRouteValues()
+        public void Page_SetsHandlerToNull_IfValueIsNotSpecifiedInRouteValues()
         {
             // Arrange
             UrlRouteContext actual = null;
@@ -1273,7 +1273,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 Values =
                 {
                     { "page", "ambient-page" },
-                    { "formaction", "ambient-formaction" },
+                    { "handler", "ambient-handler" },
                 }
             };
             var actionContext = new ActionContext
@@ -1306,13 +1306,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 },
                 value =>
                 {
-                    Assert.Equal("formaction", value.Key);
+                    Assert.Equal("handler", value.Key);
                     Assert.Null(value.Value);
                 });
         }
 
         [Fact]
-        public void Page_UsesExplicitlySpecifiedFormActionValue()
+        public void Page_UsesExplicitlySpecifiedHandlerValue()
         {
             // Arrange
             UrlRouteContext actual = null;
@@ -1321,7 +1321,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 Values =
                 {
                     { "page", "ambient-page" },
-                    { "formaction", "ambient-formaction" },
+                    { "handler", "ambient-handler" },
                 }
             };
             var actionContext = new ActionContext
@@ -1335,7 +1335,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // Act
             string page = null;
-            urlHelper.Object.Page(page, new { formaction = "exact-formaction" }, "https", "mytesthost", "#toc");
+            urlHelper.Object.Page(page, new { handler = "exact-handler" }, "https", "mytesthost", "#toc");
 
             // Assert
             urlHelper.Verify();
@@ -1344,8 +1344,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values),
                 value =>
                 {
-                    Assert.Equal("formaction", value.Key);
-                    Assert.Equal("exact-formaction", value.Value);
+                    Assert.Equal("handler", value.Key);
+                    Assert.Equal("exact-handler", value.Value);
                 },
                 value =>
                 {

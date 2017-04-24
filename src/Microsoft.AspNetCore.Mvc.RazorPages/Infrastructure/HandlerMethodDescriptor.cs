@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         public string HttpMethod { get; set; }
 
-        public string FormAction { get; set; }
+        public string Name { get; set; }
 
         public IList<HandlerParameterDescriptor> Parameters { get; set; }
     }

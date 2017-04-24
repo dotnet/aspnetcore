@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public async Task RedirectToPage_DoesNotUseAmbientFormAction()
+        public async Task RedirectToPage_DoesNotUseAmbientHandler()
         {
             // Arrange
             var expected = "path/to/this-page";
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Values =
                 {
                     ["page"] = expected,
-                    ["formaction"] = "delete",
+                    ["handler"] = "delete",
                 }
             };
 
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc
                },
                value =>
                {
-                   Assert.Equal("formaction", value.Key);
+                   Assert.Equal("handler", value.Key);
                    Assert.Null(value.Value);
                });
         }

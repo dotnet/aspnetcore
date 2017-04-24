@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
-                if (!TryParseHandlerMethod(method.Name, out var httpMethod, out var formAction))
+                if (!TryParseHandlerMethod(method.Name, out var httpMethod, out var handler))
                 {
                     continue;
                 }
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 var handlerMethodDescriptor = new HandlerMethodDescriptor()
                 {
                     MethodInfo = method,
-                    FormAction = formAction,
+                    Name = handler,
                     HttpMethod = httpMethod,
                     Parameters = parameters,
                 };

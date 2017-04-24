@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void CreateHandlerMethods_ParsesMethod()
         {
             // Arrange
-            var type = typeof(PageModelWithFormActions).GetTypeInfo();
+            var type = typeof(PageModelWithHandlerNames).GetTypeInfo();
 
             // Act
             var results = DefaultPageLoader.CreateHandlerMethods(type);
@@ -387,13 +387,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 results.OrderBy(h => h.MethodInfo.Name),
                 handler =>
                 {
-                    Assert.Same(type.GetMethod(nameof(PageModelWithFormActions.OnPutDeleteAsync)), handler.MethodInfo);
+                    Assert.Same(type.GetMethod(nameof(PageModelWithHandlerNames.OnPutDeleteAsync)), handler.MethodInfo);
                     Assert.Equal("Put", handler.HttpMethod);
-                    Assert.Equal("Delete", handler.FormAction.ToString());
+                    Assert.Equal("Delete", handler.Name.ToString());
                 });
         }
 
-        private class PageModelWithFormActions
+        private class PageModelWithHandlerNames
         {
             public void OnPutDeleteAsync()
             {

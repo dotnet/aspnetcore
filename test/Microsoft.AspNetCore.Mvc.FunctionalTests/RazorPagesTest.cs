@@ -21,27 +21,27 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
-        public async Task Page_Handler_FormActionFromQueryString()
+        public async Task Page_Handler_HandlerFromQueryString()
         {
             // Arrange & Act
-            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage?formaction=Customer");
+            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage?handler=Customer");
 
             // Assert
             Assert.StartsWith("Method: OnGetCustomer", content.Trim());
         }
 
         [Fact]
-        public async Task Page_Handler_FormActionRouteDataChosenOverQueryString()
+        public async Task Page_Handler_HandlerRouteDataChosenOverQueryString()
         {
             // Arrange & Act
-            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage/Customer?formaction=ViewCustomer");
+            var content = await Client.GetStringAsync("http://localhost/HandlerTestPage/Customer?handler=ViewCustomer");
 
             // Assert
             Assert.StartsWith("Method: OnGetCustomer", content.Trim());
         }
 
         [Fact]
-        public async Task Page_Handler_FormAction()
+        public async Task Page_Handler_Handler()
         {
             // Arrange & Act
             var content = await Client.GetStringAsync("http://localhost/HandlerTestPage/Customer");
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task Page_Handler_AsyncFormAction()
+        public async Task Page_Handler_AsyncHandler()
         {
             // Arrange & Act
             var content = await Client.GetStringAsync("http://localhost/HandlerTestPage/ViewCustomer");
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task PageModel_Handler_FormAction()
+        public async Task PageModel_Handler_Handler()
         {
             // Arrange & Act
             var content = await Client.GetStringAsync("http://localhost/ModelHandlerTestPage/Customer");
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task PageModel_Handler_AsyncFormAction()
+        public async Task PageModel_Handler_AsyncHandler()
         {
             // Arrange & Act
             var content = await Client.GetStringAsync("http://localhost/ModelHandlerTestPage/ViewCustomer");
@@ -800,13 +800,13 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
         }
 
         [Fact]
-        public async Task RedirectDoesNotIncludeFormActionByDefault()
+        public async Task RedirectDoesNotIncludeHandlerByDefault()
         {
             // Arrange
-            var expected = "/Pages/Redirects/RedirectFromFormActionHandler";
+            var expected = "/Pages/Redirects/RedirectFromHandler";
 
             // Act
-            var response = await Client.GetAsync("/Pages/Redirects/RedirectFromFormActionHandler/RedirectToPage/10");
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectFromHandler/RedirectToPage/10");
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
@@ -817,10 +817,10 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
         public async Task RedirectToOtherHandlersWorks()
         {
             // Arrange
-            var expected = "/Pages/Redirects/RedirectFromFormActionHandler/RedirectToPage/11";
+            var expected = "/Pages/Redirects/RedirectFromHandler/RedirectToPage/11";
 
             // Act
-            var response = await Client.GetAsync("/Pages/Redirects/RedirectFromFormActionHandler/RedirectToAnotherHandler/11");
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectFromHandler/RedirectToAnotherHandler/11");
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
