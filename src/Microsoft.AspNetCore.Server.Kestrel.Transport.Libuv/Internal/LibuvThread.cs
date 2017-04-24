@@ -102,10 +102,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 var stepTimeout = TimeSpan.FromTicks(timeout.Ticks / 3);
 
-                Post(t => t.AllowStop());
-                if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
+                try
                 {
-                    try
+                    Post(t => t.AllowStop());
+                    if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                     {
                         Post(t => t.OnStopRude());
                         if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
@@ -117,12 +117,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                             }
                         }
                     }
-                    catch (ObjectDisposedException)
+                }
+                catch (ObjectDisposedException)
+                {
+                    if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                     {
-                        if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
-                        {
-                            _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
-                        }
+                        _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
                     }
                 }
             }
