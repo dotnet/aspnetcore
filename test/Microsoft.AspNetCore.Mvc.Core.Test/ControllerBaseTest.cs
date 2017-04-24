@@ -1014,7 +1014,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var pageName = "CustomRouteName";
 
             // Act
-            var resultPermanent = pageModel.RedirectToPagePreserveMethod(pageName, routeValues);
+            var resultPermanent = pageModel.RedirectToPagePreserveMethod(pageName, routeValues: routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(resultPermanent);
@@ -1035,7 +1035,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var routeName = "CustomRouteName";
 
             // Act
-            var resultPermanent = pageModel.RedirectToPagePermanentPreserveMethod(routeName, routeValues);
+            var resultPermanent = pageModel.RedirectToPagePermanentPreserveMethod(routeName, routeValues: routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(resultPermanent);

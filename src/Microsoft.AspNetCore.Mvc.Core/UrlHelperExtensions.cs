@@ -351,34 +351,59 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
-        /// <param name="values">An object that contains route values.</param>
+        /// <param name="pageHandler">The handler to generate the url for.</param>
         /// <returns>The generated URL.</returns>
-        public static string Page(
-            this IUrlHelper urlHelper,
-            string pageName,
-            object values)
-            => Page(urlHelper, pageName, values, protocol: null);
+        public static string Page(this IUrlHelper urlHelper, string pageName, string pageHandler)
+            => Page(urlHelper, pageName, pageHandler, values: null);
 
         /// <summary>
         /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
+        /// <param name="values">An object that contains route values.</param>
+        /// <returns>The generated URL.</returns>
+        public static string Page(this IUrlHelper urlHelper, string pageName, object values)
+            => Page(urlHelper, pageName, pageHandler: null, values: values);
+
+        /// <summary>
+        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// </summary>
+        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="pageName">The page name to generate the url for.</param>
+        /// <param name="pageHandler">The handler to generate the url for.</param>
+        /// <param name="values">An object that contains route values.</param>
+        /// <returns>The generated URL.</returns>
+        public static string Page(
+            this IUrlHelper urlHelper,
+            string pageName,
+            string pageHandler,
+            object values)
+            => Page(urlHelper, pageName, pageHandler, values, protocol: null);
+
+        /// <summary>
+        /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
+        /// </summary>
+        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="pageName">The page name to generate the url for.</param>
+        /// <param name="pageHandler">The handler to generate the url for.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <returns>The generated URL.</returns>
         public static string Page(
             this IUrlHelper urlHelper,
             string pageName,
+            string pageHandler,
             object values,
             string protocol)
-            => Page(urlHelper, pageName, values, protocol, host: null, fragment: null);
+            => Page(urlHelper, pageName, pageHandler, values, protocol, host: null, fragment: null);
 
         /// <summary>
         /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
+        /// <param name="pageHandler">The handler to generate the url for.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
@@ -386,16 +411,18 @@ namespace Microsoft.AspNetCore.Mvc
         public static string Page(
             this IUrlHelper urlHelper,
             string pageName,
+            string pageHandler,
             object values,
             string protocol,
             string host)
-            => Page(urlHelper, pageName, values, protocol, host, fragment: null);
+            => Page(urlHelper, pageName, pageHandler, values, protocol, host, fragment: null);
 
         /// <summary>
         /// Generates a URL with an absolute path for the specified <paramref name="pageName"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         /// <param name="pageName">The page name to generate the url for.</param>
+        /// <param name="pageHandler">The handler to generate the url for.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
         /// <param name="host">The host name for the URL.</param>
@@ -404,6 +431,7 @@ namespace Microsoft.AspNetCore.Mvc
         public static string Page(
             this IUrlHelper urlHelper,
             string pageName,
+            string pageHandler,
             object values,
             string protocol,
             string host,
@@ -429,11 +457,18 @@ namespace Microsoft.AspNetCore.Mvc
                 routeValues["page"] = CalculatePageName(urlHelper.ActionContext, pageName);
             }
 
-            if (!routeValues.ContainsKey("handler") &&
-                ambientValues.TryGetValue("handler", out var handler))
+            if (string.IsNullOrEmpty(pageHandler))
             {
-                // Clear out handler unless it's explicitly specified in the routeValues.
-                routeValues["handler"] = null;
+                if (!routeValues.ContainsKey("handler") &&
+                    ambientValues.TryGetValue("handler", out var handler))
+                {
+                    // Clear out formaction unless it's explicitly specified in the routeValues.
+                    routeValues["handler"] = null;
+                }
+            }
+            else
+            {
+                routeValues["handler"] = pageHandler;
             }
 
             return urlHelper.RouteUrl(

@@ -475,7 +475,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var expectedErrorMessage = $"Cannot override the 'formaction' attribute for <{tagName}>. <{tagName}> " +
                 "elements with a specified 'formaction' must not have attributes starting with 'asp-route-' or an " +
-                "'asp-action', 'asp-controller', 'asp-area', 'asp-fragment', or 'asp-route' attribute.";
+                "'asp-action', 'asp-controller', 'asp-area', 'asp-fragment', 'asp-route', 'asp-page' or 'asp-page-handler' attribute.";
 
             var context = new TagHelperContext(
                 tagName: "form-action",
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 $"Cannot determine the 'formaction' attribute for <{tagName}>. The following attributes are mutually exclusive:",
                 "asp-route",
                 "asp-controller, asp-action",
-                "asp-page");
+                "asp-page, asp-page-handler");
 
             var context = new TagHelperContext(
                 tagName: "form-action",
@@ -553,7 +553,45 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 $"Cannot determine the 'formaction' attribute for <{tagName}>. The following attributes are mutually exclusive:",
                 "asp-route",
                 "asp-controller, asp-action",
-                "asp-page");
+                "asp-page, asp-page-handler");
+
+            var context = new TagHelperContext(
+                tagName: "form-action",
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => tagHelper.ProcessAsync(context, output));
+
+            Assert.Equal(expectedErrorMessage, ex.Message);
+        }
+
+        [Theory]
+        [InlineData("button")]
+        [InlineData("submit")]
+        public async Task ProcessAsync_ThrowsIfRouteAndPageHandlerProvided(string tagName)
+        {
+            // Arrange
+            var urlHelperFactory = new Mock<IUrlHelperFactory>().Object;
+
+            var tagHelper = new FormActionTagHelper(urlHelperFactory)
+            {
+                Route = "Default",
+                PageHandler = "PageHandler",
+            };
+
+            var output = new TagHelperOutput(
+                tagName,
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
+            var expectedErrorMessage = string.Join(
+                Environment.NewLine,
+                $"Cannot determine the 'formaction' attribute for <{tagName}>. The following attributes are mutually exclusive:",
+                "asp-route",
+                "asp-controller, asp-action",
+                "asp-page, asp-page-handler");
 
             var context = new TagHelperContext(
                 tagName: "form-action",
@@ -591,7 +629,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 $"Cannot determine the 'formaction' attribute for <{tagName}>. The following attributes are mutually exclusive:",
                 "asp-route",
                 "asp-controller, asp-action",
-                "asp-page");
+                "asp-page, asp-page-handler");
 
             var context = new TagHelperContext(
                 tagName: "form-action",

@@ -1132,7 +1132,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 .Callback((UrlRouteContext context) => actual = context);
 
             // Act
-            urlHelper.Object.Page("/TestPage", new { id = 13 }, "https");
+            urlHelper.Object.Page("/TestPage", pageHandler: null, values: new { id = 13 }, protocol: "https");
 
             // Assert
             urlHelper.Verify();
@@ -1164,7 +1164,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 .Callback((UrlRouteContext context) => actual = context);
 
             // Act
-            urlHelper.Object.Page("/TestPage", new { id = 13 }, "https", "mytesthost");
+            urlHelper.Object.Page("/TestPage", pageHandler: null, values: new { id = 13 }, protocol: "https", host: "mytesthost");
 
             // Assert
             urlHelper.Verify();
@@ -1196,7 +1196,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 .Callback((UrlRouteContext context) => actual = context);
 
             // Act
-            urlHelper.Object.Page("/TestPage", new { id = 13 }, "https", "mytesthost", "#toc");
+            urlHelper.Object.Page("/TestPage", "test-handler", new { id = 13 }, "https", "mytesthost", "#toc");
 
             // Assert
             urlHelper.Verify();
@@ -1212,6 +1212,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     Assert.Equal("page", value.Key);
                     Assert.Equal("/TestPage", value.Value);
+                },
+                value =>
+                {
+                    Assert.Equal("handler", value.Key);
+                    Assert.Equal("test-handler", value.Value);
                 });
             Assert.Equal("https", actual.Protocol);
             Assert.Equal("mytesthost", actual.Host);
@@ -1241,7 +1246,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // Act
             string page = null;
-            urlHelper.Object.Page(page, new { id = 13 }, "https", "mytesthost", "#toc");
+            urlHelper.Object.Page(page, new { id = 13 });
 
             // Assert
             urlHelper.Verify();
@@ -1258,9 +1263,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     Assert.Equal("page", value.Key);
                     Assert.Equal("ambient-page", value.Value);
                 });
-            Assert.Equal("https", actual.Protocol);
-            Assert.Equal("mytesthost", actual.Host);
-            Assert.Equal("#toc", actual.Fragment);
         }
 
         [Fact]
@@ -1287,7 +1289,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // Act
             string page = null;
-            urlHelper.Object.Page(page, new { id = 13 }, "https", "mytesthost", "#toc");
+            urlHelper.Object.Page(page, new { id = 13 });
 
             // Assert
             urlHelper.Verify();
@@ -1335,7 +1337,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // Act
             string page = null;
-            urlHelper.Object.Page(page, new { handler = "exact-handler" }, "https", "mytesthost", "#toc");
+            urlHelper.Object.Page(page, "exact-handler", new { handler = "route-value-handler" });
 
             // Assert
             urlHelper.Verify();
@@ -1346,6 +1348,49 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     Assert.Equal("handler", value.Key);
                     Assert.Equal("exact-handler", value.Value);
+                },
+                value =>
+                {
+                    Assert.Equal("page", value.Key);
+                    Assert.Equal("ambient-page", value.Value);
+                });
+        }
+
+        [Fact]
+        public void Page_UsesValueFromRouteValueIfPageHandlerIsNotExplicitySpecified()
+        {
+            // Arrange
+            UrlRouteContext actual = null;
+            var routeData = new RouteData
+            {
+                Values =
+                {
+                    { "page", "ambient-page" },
+                    { "handler", "ambient-handler" },
+                }
+            };
+            var actionContext = new ActionContext
+            {
+                RouteData = routeData,
+            };
+
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext context) => actual = context);
+
+            // Act
+            string page = null;
+            urlHelper.Object.Page(page, pageHandler: null, values: new { handler = "route-value-handler" });
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Null(actual.RouteName);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values),
+                value =>
+                {
+                    Assert.Equal("handler", value.Key);
+                    Assert.Equal("route-value-handler", value.Value);
                 },
                 value =>
                 {

@@ -147,6 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ViewContext viewContext,
             string linkText,
             string pageName,
+            string pageHandler,
             string protocol,
             string hostname,
             string fragment,
@@ -164,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
-            var url = urlHelper.Page(pageName, routeValues, protocol, hostname, fragment);
+            var url = urlHelper.Page(pageName, pageHandler, routeValues, protocol, hostname, fragment);
             return GenerateLink(linkText, url, htmlAttributes);
         }
 
@@ -311,6 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public virtual TagBuilder GeneratePageForm(
             ViewContext viewContext,
             string pageName,
+            string pageHandler,
             object routeValues,
             string fragment,
             string method,
@@ -347,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             else
             {
                 var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
-                action = urlHelper.Page(pageName, values: routeValues,protocol: null, host: null, fragment: fragment);
+                action = urlHelper.Page(pageName, pageHandler, routeValues, protocol: null, host: null, fragment: fragment);
             }
 
             return GenerateFormCore(viewContext, action, method, htmlAttributes);

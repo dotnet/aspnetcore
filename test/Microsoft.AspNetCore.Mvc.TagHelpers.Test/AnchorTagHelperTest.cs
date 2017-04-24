@@ -393,6 +393,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     It.IsAny<ViewContext>(),
                     string.Empty,
                     "/User/Home/Index",
+                    "page-handler",
                     "http",
                     "contoso.com",
                     "hello=world",
@@ -403,6 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var anchorTagHelper = new AnchorTagHelper(generator.Object)
             {
                 Page = "/User/Home/Index",
+                PageHandler = "page-handler",
                 Fragment = "hello=world",
                 Host = "contoso.com",
                 Protocol = "http",
@@ -424,6 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [InlineData("Fragment")]
         [InlineData("asp-route-")]
         [InlineData("Page")]
+        [InlineData("PageHandler")]
         public async Task ProcessAsync_ThrowsIfHrefConflictsWithBoundAttributes(string propertyName)
         {
             // Arrange
@@ -451,7 +454,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedErrorMessage = "Cannot override the 'href' attribute for <a>. An <a> with a specified " +
                 "'href' must not have attributes starting with 'asp-route-' or an " +
                 "'asp-action', 'asp-controller', 'asp-area', 'asp-route', 'asp-protocol', 'asp-host', " +
-                "'asp-fragment', or 'asp-page' attribute.";
+                "'asp-fragment', 'asp-page' or 'asp-page-handler' attribute.";
 
             var context = new TagHelperContext(
                 tagName: "test",
@@ -491,7 +494,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "Cannot determine the 'href' attribute for <a>. The following attributes are mutually exclusive:",
                 "asp-route",
                 "asp-controller, asp-action",
-                "asp-page");
+                "asp-page, asp-page-handler");
 
             var context = new TagHelperContext(
                 tagName: "test",
@@ -529,7 +532,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "Cannot determine the 'href' attribute for <a>. The following attributes are mutually exclusive:",
                 "asp-route",
                 "asp-controller, asp-action",
-                "asp-page");
+                "asp-page, asp-page-handler");
 
             var context = new TagHelperContext(
                 tagName: "test",
@@ -567,7 +570,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "Cannot determine the 'href' attribute for <a>. The following attributes are mutually exclusive:",
                 "asp-route",
                 "asp-controller, asp-action",
-                "asp-page");
+                "asp-page, asp-page-handler");
 
             var context = new TagHelperContext(
                 tagName: "test",

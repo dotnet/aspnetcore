@@ -1042,7 +1042,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             var pageName = "CustomRouteName";
 
             // Act
-            var resultPermanent = pageModel.RedirectToPagePreserveMethod(pageName, routeValues);
+            var resultPermanent = pageModel.RedirectToPagePreserveMethod(pageName, routeValues: routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(resultPermanent);
@@ -1063,7 +1063,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             var routeName = "CustomRouteName";
 
             // Act
-            var resultPermanent = pageModel.RedirectToPagePermanentPreserveMethod(routeName, routeValues);
+            var resultPermanent = pageModel.RedirectToPagePermanentPreserveMethod(routeName, routeValues: routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(resultPermanent);

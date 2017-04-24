@@ -60,6 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
         /// <param name="linkText">The text to insert inside the element.</param>
         /// <param name="pageName">The page name.</param>
+        /// <param name="pageHandler">The page handler.</param>
         /// <param name="protocol">The protocol (scheme) for the generated link.</param>
         /// <param name="hostname">The hostname for the generated link.</param>
         /// <param name="fragment">The fragment for the genrated link.</param>
@@ -80,6 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ViewContext viewContext,
             string linkText,
             string pageName,
+            string pageHandler,
             string protocol,
             string hostname,
             string fragment,
@@ -161,7 +163,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <paramref name="pageName"/> will process the request.
         /// </summary>
         /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
-        /// <param name="pageName">The name of the action method.</param>
+        /// <param name="pageName">The name of the page.</param>
+        /// <param name="pageHandler">The page handler to generate a form for.</param>
         /// <param name="routeValues">
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
@@ -180,6 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         TagBuilder GeneratePageForm(
             ViewContext viewContext,
             string pageName,
+            string pageHandler,
             object routeValues,
             string fragment,
             string method,

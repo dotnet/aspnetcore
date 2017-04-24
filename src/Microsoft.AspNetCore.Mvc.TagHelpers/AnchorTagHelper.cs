@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("a", Attributes = ControllerAttributeName)]
     [HtmlTargetElement("a", Attributes = AreaAttributeName)]
     [HtmlTargetElement("a", Attributes = PageAttributeName)]
+    [HtmlTargetElement("a", Attributes = PageHandlerAttributeName)]
     [HtmlTargetElement("a", Attributes = FragmentAttributeName)]
     [HtmlTargetElement("a", Attributes = HostAttributeName)]
     [HtmlTargetElement("a", Attributes = ProtocolAttributeName)]
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string ControllerAttributeName = "asp-controller";
         private const string AreaAttributeName = "asp-area";
         private const string PageAttributeName = "asp-page";
+        private const string PageHandlerAttributeName = "asp-page-handler";
         private const string FragmentAttributeName = "asp-fragment";
         private const string HostAttributeName = "asp-host";
         private const string ProtocolAttributeName = "asp-protocol";
@@ -94,6 +96,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </remarks>
         [HtmlAttributeName(PageAttributeName)]
         public string Page { get; set; }
+
+        /// <summary>
+        /// The name of the page handler.
+        /// </summary>
+        /// <remarks>
+        /// Must be <c>null</c> if <see cref="Route"/> or <see cref="Action"/>, or <see cref="Controller"/>
+        /// is non-<c>null</c>.
+        /// </remarks>
+        [HtmlAttributeName(PageHandlerAttributeName)]
+        public string PageHandler { get; set; }
 
         /// <summary>
         /// The protocol for the URL, such as &quot;http&quot; or &quot;https&quot;.
@@ -172,6 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     Controller != null ||
                     Area != null ||
                     Page != null ||
+                    PageHandler != null ||
                     Route != null ||
                     Protocol != null ||
                     Host != null ||
@@ -191,7 +204,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             ProtocolAttributeName,
                             HostAttributeName,
                             FragmentAttributeName,
-                            PageAttributeName));
+                            PageAttributeName,
+                            PageHandlerAttributeName));
                 }
 
                 return;
@@ -199,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var routeLink = Route != null;
             var actionLink = Controller != null || Action != null;
-            var pageLink = Page != null;
+            var pageLink = Page != null || PageHandler != null;
 
             if ((routeLink && actionLink) || (routeLink && pageLink) || (actionLink && pageLink))
             {
@@ -208,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     Resources.FormatCannotDetermineAttributeFor(Href, "<a>"),
                     RouteAttributeName,
                     ControllerAttributeName + ", " + ActionAttributeName,
-                    PageAttributeName);
+                    PageAttributeName + ", " + PageHandlerAttributeName);
 
                 throw new InvalidOperationException(message);
             }
@@ -236,6 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     ViewContext,
                     linkText: string.Empty,
                     pageName: Page,
+                    pageHandler: PageHandler,
                     protocol: Protocol,
                     hostname: Host,
                     fragment: Fragment,

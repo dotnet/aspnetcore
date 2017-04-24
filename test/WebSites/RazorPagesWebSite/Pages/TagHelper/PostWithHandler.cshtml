@@ -1,0 +1,16 @@
+@page "{handler?}/{id?}"
+
+@function
+{
+    public IActionResult OnPostEdit(int id)
+    {
+        return View();
+    }
+
+    public IActionResult OnPostDelete(int id)
+    {
+        return View();
+    }
+}
+
+<form method="post" asp-page-handler="Edit" asp-route-id="10" asp-antiforgery="false"></form>

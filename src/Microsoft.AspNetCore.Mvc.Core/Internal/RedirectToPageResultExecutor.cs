@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
             var destinationUrl = urlHelper.Page(
                 result.PageName,
+                result.PageHandler,
                 result.RouteValues,
                 result.Protocol,
                 result.Host,

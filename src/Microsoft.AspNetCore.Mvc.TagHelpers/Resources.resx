@@ -121,10 +121,10 @@
     <value>Cannot determine the '{0}' attribute for {1}. The following attributes are mutually exclusive:</value>
   </data>
   <data name="AnchorTagHelper_CannotOverrideHref" xml:space="preserve">
-    <value>Cannot override the '{0}' attribute for {1}. An {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', or '{10}' attribute.</value>
+    <value>Cannot override the '{0}' attribute for {1}. An {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}' or '{11}' attribute.</value>
   </data>
   <data name="FormTagHelper_CannotOverrideAction" xml:space="preserve">
-    <value>Cannot override the '{0}' attribute for {1}. A {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}' or '{8}' attribute.</value>
+    <value>Cannot override the '{0}' attribute for {1}. A {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}' or '{9}' attribute.</value>
   </data>
   <data name="InputTagHelper_InvalidExpressionResult" xml:space="preserve">
     <value>Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' or '{4}' that can be parsed as a '{3}' if '{5}' is '{6}'.</value>
@@ -148,6 +148,6 @@
     <value>The '{0}' property of '{1}' must not be null.</value>
   </data>
   <data name="FormActionTagHelper_CannotOverrideFormAction" xml:space="preserve">
-    <value>Cannot override the '{7}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{7}' must not have attributes starting with '{6}' or an '{1}', '{2}', '{3}', '{4}', or '{5}' attribute.</value>
+    <value>Cannot override the '{0}' attribute for &lt;{1}&gt;. &lt;{1}&gt; elements with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}' or '{9}' attribute.</value>
   </data>
 </root>

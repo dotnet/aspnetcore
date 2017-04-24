@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             => string.Format(CultureInfo.CurrentCulture, GetString("CannotDetermineAttributeFor"), p0, p1);
 
         /// <summary>
-        /// Cannot override the '{0}' attribute for {1}. An {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', or '{10}' attribute.
+        /// Cannot override the '{0}' attribute for {1}. An {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}' or '{11}' attribute.
         /// </summary>
         internal static string AnchorTagHelper_CannotOverrideHref
         {
@@ -33,13 +33,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{0}' attribute for {1}. An {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', or '{10}' attribute.
+        /// Cannot override the '{0}' attribute for {1}. An {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}' or '{11}' attribute.
         /// </summary>
-        internal static string FormatAnchorTagHelper_CannotOverrideHref(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8, object p9, object p10)
-            => string.Format(CultureInfo.CurrentCulture, GetString("AnchorTagHelper_CannotOverrideHref"), p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+        internal static string FormatAnchorTagHelper_CannotOverrideHref(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8, object p9, object p10, object p11)
+            => string.Format(CultureInfo.CurrentCulture, GetString("AnchorTagHelper_CannotOverrideHref"), p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);
 
         /// <summary>
-        /// Cannot override the '{0}' attribute for {1}. A {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}' or '{8}' attribute.
+        /// Cannot override the '{0}' attribute for {1}. A {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}' or '{9}' attribute.
         /// </summary>
         internal static string FormTagHelper_CannotOverrideAction
         {
@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{0}' attribute for {1}. A {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}' or '{8}' attribute.
+        /// Cannot override the '{0}' attribute for {1}. A {1} with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}' or '{9}' attribute.
         /// </summary>
-        internal static string FormatFormTagHelper_CannotOverrideAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8)
-            => string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotOverrideAction"), p0, p1, p2, p3, p4, p5, p6, p7, p8);
+        internal static string FormatFormTagHelper_CannotOverrideAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8, object p9)
+            => string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotOverrideAction"), p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
 
         /// <summary>
         /// Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' or '{4}' that can be parsed as a '{3}' if '{5}' is '{6}'.
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             => string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
 
         /// <summary>
-        /// Cannot override the '{7}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{7}' must not have attributes starting with '{6}' or an '{1}', '{2}', '{3}', '{4}', or '{5}' attribute.
+        /// Cannot override the '{0}' attribute for &lt;{1}&gt;. &lt;{1}&gt; elements with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}' or '{9}' attribute.
         /// </summary>
         internal static string FormActionTagHelper_CannotOverrideFormAction
         {
@@ -159,10 +159,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{7}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{7}' must not have attributes starting with '{6}' or an '{1}', '{2}', '{3}', '{4}', or '{5}' attribute.
+        /// Cannot override the '{0}' attribute for &lt;{1}&gt;. &lt;{1}&gt; elements with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}' or '{9}' attribute.
         /// </summary>
-        internal static string FormatFormActionTagHelper_CannotOverrideFormAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7)
-            => string.Format(CultureInfo.CurrentCulture, GetString("FormActionTagHelper_CannotOverrideFormAction"), p0, p1, p2, p3, p4, p5, p6, p7);
+        internal static string FormatFormActionTagHelper_CannotOverrideFormAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8, object p9)
+            => string.Format(CultureInfo.CurrentCulture, GetString("FormActionTagHelper_CannotOverrideFormAction"), p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
 
         private static string GetString(string name, params string[] formatterNames)
         {
