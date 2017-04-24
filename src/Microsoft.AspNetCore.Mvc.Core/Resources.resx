@@ -404,6 +404,6 @@
     <value>No page named '{0}' matches the supplied values.</value>
   </data>
   <data name="UrlHelper_RelativePagePathIsNotSupported" xml:space="preserve">
-    <value>The relative page path '{0}' can only can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.</value>
+    <value>The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.</value>
   </data>
 </root>

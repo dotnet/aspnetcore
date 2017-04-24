@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
 {
     public static class ViewEnginePath
     {
+        private const string CurrentDirectoryToken = ".";
         private const string ParentDirectoryToken = "..";
         private static readonly char[] _pathSeparators = new[] { '/', '\\' };
 
@@ -70,6 +71,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
                     }
                     pathSegments.RemoveAt(pathSegments.Count - 1);
                 }
+                else if (segment.Equals(CurrentDirectoryToken, StringComparison.Ordinal))
+                {
+                    // We already have the current directory
+                    continue;
+                }
                 else
                 {
                     pathSegments.Add(segment);
@@ -89,7 +95,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
 
         private static bool RequiresPathResolution(string path)
         {
-            return path.IndexOf(ParentDirectoryToken, StringComparison.Ordinal) != -1;
+            return path.IndexOf(ParentDirectoryToken, StringComparison.Ordinal) != -1 ||
+                path.IndexOf(CurrentDirectoryToken, StringComparison.Ordinal) != -1;
         }
     }
 }

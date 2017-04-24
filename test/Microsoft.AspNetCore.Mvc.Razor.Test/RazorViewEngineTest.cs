@@ -1472,6 +1472,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
         [InlineData("/Views/Home/Index.cshtml", "..\\Shared\\_Partial.cshtml")]
         [InlineData("/Areas/MyArea/Views/Home/Index.cshtml", "../../../../Views/Shared/_Partial.cshtml")]
         [InlineData("/Views/Accounts/Users.cshtml", "../Test/../Shared/_Partial.cshtml")]
+        [InlineData("Views/Accounts/Users.cshtml", "./../Shared/./_Partial.cshtml")]
         public void GetAbsolutePath_ResolvesPathTraversals(string executingFilePath, string pagePath)
         {
             // Arrange

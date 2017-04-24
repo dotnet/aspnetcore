@@ -925,6 +925,20 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
         }
 
         [Fact]
+        public async Task RedirectToSibling_RedirectsToDotSlash()
+        {
+            // Arrange
+            var expected = "/Pages/Redirects/SubDir/SubDirPage";
+
+            // Act
+            var response = await Client.GetAsync("/Pages/Redirects/RedirectToSibling/RedirectToDotSlash");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location.ToString());
+        }
+
+        [Fact]
         public async Task RedirectToSibling_RedirectsToParentDirectory()
         {
             // Arrange
@@ -940,8 +954,8 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
         public async Task TagHelpers_SupportSiblingRoutes()
         {
             // Arrange
-var expected = 
-@"<form method=""post"" action=""/Pages/TagHelper/CrossPost""></form>
+            var expected =
+            @"<form method=""post"" action=""/Pages/TagHelper/CrossPost""></form>
 <a href=""/Pages/TagHelper/SelfPost/12"" />
 <input type=""image"" formaction=""/Pages/TagHelper/CrossPost#my-fragment"" />";
 
@@ -956,8 +970,8 @@ var expected =
         public async Task TagHelpers_SupportSubDirectoryRoutes()
         {
             // Arrange
-var expected = 
-@"<form method=""post"" action=""/Pages/TagHelper/SubDir/SubDirPage""></form>
+            var expected =
+            @"<form method=""post"" action=""/Pages/TagHelper/SubDir/SubDirPage""></form>
 <a href=""/Pages/TagHelper/SubDir/SubDirPage/12"" />
 <input type=""image"" formaction=""/Pages/TagHelper/SubDir/SubDirPage#my-fragment"" />";
 
@@ -972,8 +986,8 @@ var expected =
         public async Task TagHelpers_SupportsPathNavigation()
         {
             // Arrange
-var expected = 
-@"<form method=""post"" action=""/HelloWorld""></form>
+            var expected =
+            @"<form method=""post"" action=""/HelloWorld""></form>
 <a href=""/Pages/Redirects/RedirectToIndex"" />
 <input type=""image"" formaction=""/Pages/Admin#my-fragment"" />";
 
@@ -981,7 +995,20 @@ var expected =
             var response = await Client.GetStringAsync("/Pages/TagHelper/PathTraversalLinks");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.EndsWith(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task TagHelpers_SupportsRelativeNavigation()
+        {
+            // Arrange
+            var expected = @"<form method=""post"" action=""/Pages/TagHelper/SubDirectoryLinks""></form>";
+
+            // Act
+            var response = await Client.GetStringAsync("/Pages/TagHelper/PathTraversalLinks");
+
+            // Assert
+            Assert.StartsWith(expected, response.Trim());
         }
 
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
