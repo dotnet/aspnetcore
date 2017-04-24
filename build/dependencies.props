@@ -1,8 +1,11 @@
 <Project>
   <PropertyGroup>
+    <AspNetCoreIntegrationTestingVersion>0.4.0-*</AspNetCoreIntegrationTestingVersion>
     <AspNetCoreVersion>2.0.0-preview1-*</AspNetCoreVersion>
     <AspNetCoreIdentityServiceVersion>1.0.0-*</AspNetCoreIdentityServiceVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <TestSdkVersion>15.0.0</TestSdkVersion>
+    <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>
 </Project>
