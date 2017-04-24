@@ -9,8 +9,9 @@
     <MoqVersion>4.7.1</MoqVersion>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <RoslynVersion>2.0.0</RoslynVersion>
-    <RoslynDevVersion>2.0.0-rc5-61501-05</RoslynDevVersion>
+    <RoslynDevVersion>2.3.0-beta1-61624-03</RoslynDevVersion>
     <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
+    <StreamJsonRpcVersion>1.0.2-rc</StreamJsonRpcVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
     <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>
