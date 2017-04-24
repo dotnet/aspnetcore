@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedInputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedInputPipeOptions.MaximumSizeHigh);
-            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedInputPipeOptions.ReaderScheduler);
+            Assert.Same(serviceContext.ThreadPool, connectionLifetime.AdaptedInputPipeOptions.ReaderScheduler);
             Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedInputPipeOptions.WriterScheduler);
         }
 

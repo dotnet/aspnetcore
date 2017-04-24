@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         // Internal for testing
         internal PipeOptions AdaptedInputPipeOptions => new PipeOptions
         {
-            ReaderScheduler = InlineScheduler.Default,
+            ReaderScheduler = _context.ServiceContext.ThreadPool,
             WriterScheduler = InlineScheduler.Default,
             MaximumSizeHigh = _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             MaximumSizeLow = _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
