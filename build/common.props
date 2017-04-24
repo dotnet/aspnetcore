@@ -69,7 +69,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Version="$(AspNetCoreIdentityServiceVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
