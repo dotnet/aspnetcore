@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
@@ -49,10 +49,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public void OnCompleted(Action continuation)
         {
+            // There should never be a race between IsCompleted and OnCompleted since both operations
+            // should always be on the libuv thread
+
             if (_callback == _callbackCompleted ||
                 Interlocked.CompareExchange(ref _callback, continuation, null) == _callbackCompleted)
             {
-                Task.Run(continuation);
+                Debug.Fail($"{typeof(LibuvAwaitable<TRequest>)}.{nameof(OnCompleted)} raced with {nameof(IsCompleted)}, running callback inline.");
+
+                // Just run it inline
+                continuation();
             }
         }
 

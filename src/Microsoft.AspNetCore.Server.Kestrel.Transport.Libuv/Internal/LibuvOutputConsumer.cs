@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly UvStreamHandle _socket;
         private readonly string _connectionId;
         private readonly ILibuvTrace _log;
-
-        private readonly WriteReqPool _writeReqPool;
         private readonly IPipeReader _pipe;
 
         public LibuvOutputConsumer(
@@ -26,17 +24,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             ILibuvTrace log)
         {
             _pipe = pipe;
-            // We need to have empty pipe at this moment so callback
-            // get's scheduled
             _thread = thread;
             _socket = socket;
             _connectionId = connectionId;
             _log = log;
-            _writeReqPool = thread.WriteReqPool;
         }
 
         public async Task WriteOutputAsync()
         {
+            var pool = _thread.WriteReqPool;
+
             while (true)
             {
                 var result = await _pipe.ReadAsync();
@@ -46,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 {
                     if (!buffer.IsEmpty)
                     {
-                        var writeReq = _writeReqPool.Allocate();
+                        var writeReq = pool.Allocate();
 
                         try
                         {
@@ -62,14 +59,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                         finally
                         {
                             // Make sure we return the writeReq to the pool
-                            _writeReqPool.Return(writeReq);
+                            pool.Return(writeReq);
                         }
                     }
 
                     if (result.IsCancelled)
                     {
                         // Send a FIN
-                        await ShutdownAsync();
+                        _log.ConnectionWriteFin(_connectionId);
+
+                        using (var shutdownReq = new UvShutdownReq(_log))
+                        {
+                            shutdownReq.Init(_thread);
+                            var shutdownResult = await shutdownReq.ShutdownAsync(_socket);
+
+                            _log.ConnectionWroteFin(_connectionId, shutdownResult.Status);
+                        }
+
                         // Ensure no data is written after uv_shutdown
                         break;
                     }
@@ -104,33 +110,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     _log.ConnectionError(_connectionId, error);
                 }
             }
-        }
-
-        private Task ShutdownAsync()
-        {
-            var tcs = new TaskCompletionSource<object>();
-            _log.ConnectionWriteFin(_connectionId);
-
-            var shutdownReq = new UvShutdownReq(_log);
-            try
-            {
-                shutdownReq.Init(_thread);
-                shutdownReq.Shutdown(_socket, (req, status, state) =>
-                {
-                    req.Dispose();
-                    _log.ConnectionWroteFin(_connectionId, status);
-
-                    tcs.TrySetResult(null);
-                },
-                this);
-            }
-            catch (Exception)
-            {
-                shutdownReq.Dispose();
-                throw;
-            }
-
-            return tcs.Task;
         }
     }
 }

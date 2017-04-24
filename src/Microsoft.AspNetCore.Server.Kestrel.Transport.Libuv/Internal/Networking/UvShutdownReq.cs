@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
@@ -12,10 +13,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
     {
         private readonly static LibuvFunctions.uv_shutdown_cb _uv_shutdown_cb = UvShutdownCb;
 
-        private Action<UvShutdownReq, int, object> _callback;
+        private Action<UvShutdownReq, int, Exception, object> _callback;
         private object _state;
+        private LibuvAwaitable<UvShutdownReq> _awaitable = new LibuvAwaitable<UvShutdownReq>();
 
-        public UvShutdownReq(ILibuvTrace logger) : base (logger)
+        public UvShutdownReq(ILibuvTrace logger) : base(logger)
         {
         }
 
@@ -24,14 +26,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             var loop = thread.Loop;
 
             CreateMemory(
-                loop.Libuv, 
+                loop.Libuv,
                 loop.ThreadId,
                 loop.Libuv.req_size(LibuvFunctions.RequestType.SHUTDOWN));
 
             base.Init(thread);
         }
 
-        public void Shutdown(UvStreamHandle handle, Action<UvShutdownReq, int, object> callback, object state)
+        public LibuvAwaitable<UvShutdownReq> ShutdownAsync(UvStreamHandle handle)
+        {
+            Shutdown(handle, LibuvAwaitable<UvShutdownReq>.Callback, _awaitable);
+            return _awaitable;
+        }
+
+        public void Shutdown(UvStreamHandle handle, Action<UvShutdownReq, int, Exception, object> callback, object state)
         {
             _callback = callback;
             _state = state;
@@ -41,9 +49,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private static void UvShutdownCb(IntPtr ptr, int status)
         {
             var req = FromIntPtr<UvShutdownReq>(ptr);
-            req._callback(req, status, req._state);
+
+            var callback = req._callback;
             req._callback = null;
+
+            var state = req._state;
             req._state = null;
+
+            Exception error = null;
+            if (status < 0)
+            {
+                req.Libuv.Check(status, out error);
+            }
+
+            try
+            {
+                callback(req, status, error, state);
+            }
+            catch (Exception ex)
+            {
+                req._log.LogError(0, ex, "UvShutdownCb");
+                throw;
+            }
         }
     }
 }
