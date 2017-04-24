@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -12,10 +11,10 @@ namespace Microsoft.VisualStudio.RazorExtension
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [Guid(RazorPackage.PackageGuidString)]
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
 #if RAZOR_EXTENSION_DEVELOPER_MODE
     [ProvideToolWindow(typeof(Microsoft.VisualStudio.RazorExtension.RazorInfo.RazorInfoToolWindow))]
+    [ProvideToolWindow(typeof(Microsoft.VisualStudio.RazorExtension.DocumentInfo.RazorDocumentInfoWindow))]
 #endif
     public sealed class RazorPackage : Package
     {
@@ -41,6 +40,7 @@ namespace Microsoft.VisualStudio.RazorExtension
 
 #if RAZOR_EXTENSION_DEVELOPER_MODE
             RazorInfo.RazorInfoToolWindowCommand.Initialize(this);
+            DocumentInfo.RazorDocumentInfoWindowCommand.Initialize(this);
 #endif
         }
     }

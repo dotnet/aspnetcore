@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DependencyModelVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
+    <PackageReference Include="Moq" Version="$(MoqVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
   </ItemGroup>

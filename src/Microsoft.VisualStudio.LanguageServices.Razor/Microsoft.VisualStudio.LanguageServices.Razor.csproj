@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Editor" Version="15.0.26201" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6070" />
@@ -38,6 +39,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
     <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="15.0.26201" />
     <!-- We need to use this version of Json.Net to maintain consistency with Visual Studio. -->
     <PackageReference Include="Newtonsoft.Json" Version="8.0.3" />
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />

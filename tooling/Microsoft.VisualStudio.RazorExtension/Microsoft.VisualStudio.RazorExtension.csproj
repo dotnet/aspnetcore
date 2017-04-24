@@ -63,6 +63,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DocumentInfo\RazorDocumentInfoViewModel.cs" />
+    <Compile Include="DocumentInfo\RazorDocumentInfoWindow.cs" />
+    <Compile Include="DocumentInfo\RazorDocumentInfoWindowCommand.cs" />
+    <Compile Include="DocumentInfo\RazorDocumentInfoWindowControl.xaml.cs">
+      <DependentUpon>RazorDocumentInfoWindowControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RazorInfo\AssemblyViewModel.cs" />
     <Compile Include="Behaviors\ItemSelectedBehavior.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -116,14 +122,29 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.CSharp.2.3.0-beta1-61624-03\lib\netstandard1.3\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.EditorFeatures, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeAnalysis.EditorFeatures.2.3.0-beta1-61624-03\lib\net46\Microsoft.CodeAnalysis.CSharp.EditorFeatures.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.CSharp.Workspaces.2.3.0-beta1-61624-03\lib\netstandard1.3\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.EditorFeatures, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeAnalysis.EditorFeatures.2.3.0-beta1-61624-03\lib\net46\Microsoft.CodeAnalysis.EditorFeatures.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.EditorFeatures.Text, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeAnalysis.EditorFeatures.Text.2.3.0-beta1-61624-03\lib\net46\Microsoft.CodeAnalysis.EditorFeatures.Text.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.Elfie, Version=0.10.6.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.Elfie.0.10.6-rc2\lib\net46\Microsoft.CodeAnalysis.Elfie.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Features, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeAnalysis.Features.2.3.0-beta1-61624-03\lib\netstandard1.3\Microsoft.CodeAnalysis.Features.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeAnalysis.VisualBasic, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.VisualBasic.2.3.0-beta1-61624-03\lib\netstandard1.3\Microsoft.CodeAnalysis.VisualBasic.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.VisualBasic.EditorFeatures, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeAnalysis.EditorFeatures.2.3.0-beta1-61624-03\lib\net46\Microsoft.CodeAnalysis.VisualBasic.EditorFeatures.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces, Version=2.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.VisualBasic.Workspaces.2.3.0-beta1-61624-03\lib\netstandard1.3\Microsoft.CodeAnalysis.VisualBasic.Workspaces.dll</HintPath>
@@ -144,6 +165,10 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.VisualStudio.CoreUtility.15.0.26201\lib\net45\Microsoft.VisualStudio.CoreUtility.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Editor, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.VisualStudio.Editor.15.0.26201\lib\net45\Microsoft.VisualStudio.Editor.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Imaging, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -194,6 +219,18 @@
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Text.Data, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.VisualStudio.Text.Data.15.0.26201\lib\net45\Microsoft.VisualStudio.Text.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.Logic, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.VisualStudio.Text.Logic.15.0.26201\lib\net45\Microsoft.VisualStudio.Text.Logic.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.UI, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.VisualStudio.Text.UI.15.0.26201\lib\net45\Microsoft.VisualStudio.Text.UI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.UI.Wpf, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.VisualStudio.Text.UI.Wpf.15.0.26201\lib\net45\Microsoft.VisualStudio.Text.UI.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.TextManager.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -328,6 +365,10 @@
     <Content Include="Resources\RazorInfoToolWindowCommand.png" />
     <Content Include="Resources\RazorPackage.ico" />
     <Page Include="RazorInfo\RazorInfoToolWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DocumentInfo\RazorDocumentInfoWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
