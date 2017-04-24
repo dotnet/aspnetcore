@@ -93,7 +93,7 @@
 
     <Copy SourceFiles="@(MetaPackageNupkg)" DestinationFolder="$(ArtifactsDir)" />
     <UnzipArchive File="$(ArtifactsDir)%(MetaPackageNupkg.FileName)%(MetaPackageNupkg.Extension)" Destination="@(MetaPackageNupkg->'$(TempDir)%(Filename)')" />
-    <Copy SourceFiles="@(ManifestFiles)" DestinationFolder="@(MetaPackageNupkg->'$(TempDir)%(Filename)\content\build\')" />
+    <Copy SourceFiles="@(ManifestFiles)" DestinationFolder="@(MetaPackageNupkg->'$(TempDir)%(Filename)\build\')" />
 
     <ItemGroup>
       <ArchiveFiles Include="$(TempDir)%(MetaPackageNupkg.Filename)\**\*" />

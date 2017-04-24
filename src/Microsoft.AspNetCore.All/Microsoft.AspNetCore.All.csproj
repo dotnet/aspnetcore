@@ -14,8 +14,8 @@
    <PackageReference Include="@(FullMetaPackagePackageReference)" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="build\**\*.xml" Package="true" />
-    <Content Include="build\**\*.targets" Package="true" />
+    <Content Include="build\**\*.xml" PackagePath="%(Identity)" />
+    <Content Include="build\**\*.targets" PackagePath="%(Identity)" />
   </ItemGroup>
 
 </Project>
