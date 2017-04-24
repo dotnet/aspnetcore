@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -88,6 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("http://contoso.com:80")]
         public async Task FallbackToIPv4WhenIPv6AnyBindFails(string address)
         {
+            var logger = new MockLogger();
             var addresses = new ServerAddressesFeature();
             addresses.Addresses.Add(address);
             var options = new List<ListenOptions>();
@@ -97,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await AddressBinder.BindAsync(addresses,
                 options,
-                NullLogger.Instance,
+                logger,
                 endpoint =>
                 {
                     if (endpoint.IPEndPoint.Address == IPAddress.IPv6Any)
@@ -116,6 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.True(ipV4Attempt, "Should have attempted to bind to IPAddress.Any");
             Assert.True(ipV6Attempt, "Should have attempted to bind to IPAddress.IPv6Any");
+            Assert.Contains(logger.Messages, f => f.Equals(CoreStrings.FormatFallbackToIPv4Any(80)));
         }
     }
 }

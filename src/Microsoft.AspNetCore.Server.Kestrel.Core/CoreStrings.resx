@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="FallbackToIPv4Any" xml:space="preserve">
+    <value>Failed to bind to http://[::]:{port} (IPv6Any). Attempting to bind to http://0.0.0.0:{port} instead.</value>
+  </data>
   <data name="ResponseStreamWasUpgraded" xml:space="preserve">
     <value>Cannot write to response body after connection has been upgraded.</value>
   </data>

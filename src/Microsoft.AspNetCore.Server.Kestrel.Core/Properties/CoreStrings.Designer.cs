@@ -11,6 +11,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             = new ResourceManager("Microsoft.AspNetCore.Server.Kestrel.Core.CoreStrings", typeof(CoreStrings).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Failed to bind to http://[::]:{port} (IPv6Any). Attempting to bind to http://0.0.0.0:{port} instead.
+        /// </summary>
+        internal static string FallbackToIPv4Any
+        {
+            get => GetString("FallbackToIPv4Any");
+        }
+
+        /// <summary>
+        /// Failed to bind to http://[::]:{port} (IPv6Any). Attempting to bind to http://0.0.0.0:{port} instead.
+        /// </summary>
+        internal static string FormatFallbackToIPv4Any(object port)
+            => string.Format(CultureInfo.CurrentCulture, GetString("FallbackToIPv4Any", "port"), port);
+
+        /// <summary>
         /// Cannot write to response body after connection has been upgraded.
         /// </summary>
         internal static string ResponseStreamWasUpgraded

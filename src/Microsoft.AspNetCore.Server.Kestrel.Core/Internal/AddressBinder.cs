@@ -206,6 +206,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     }
                     catch (Exception ex) when (!(ex is IOException))
                     {
+                        context.Logger.LogDebug(CoreStrings.FormatFallbackToIPv4Any(parsedAddress.Port));
+
                         // for machines that do not support IPv6
                         options = new ListenOptions(new IPEndPoint(IPAddress.Any, parsedAddress.Port));
                         await BindEndpointAsync(options, context).ConfigureAwait(false);
