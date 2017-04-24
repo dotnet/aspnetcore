@@ -23,13 +23,32 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class AddressRegistrationTests
     {
-        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv4))]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Causing test failures")]
+        private readonly ILoggerFactory _logger;
+
+        public AddressRegistrationTests(ITestOutputHelper output) => _logger = new LoggerFactory().AddXunit(output);
+
+        [ConditionalFact]
+        [DnsHostNameIsResolvable]
+        public async Task RegisterAddresses_HostName_Success()
+        {
+            var hostName = Dns.GetHostName();
+            string FixUrl(string url)
+            {
+                return url
+                    .Replace("0.0.0.0", hostName)
+                    .Replace("[::]", hostName);
+            }
+
+            await RegisterAddresses_Success($"http://{hostName}:0", a => a.Addresses.Select(FixUrl).ToArray());
+        }
+
+        [Theory, MemberData(nameof(AddressRegistrationDataIPv4))]
         public async Task RegisterAddresses_IPv4_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
@@ -101,6 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel()
+                .UseLoggerFactory(_logger)
                 .UseUrls(addressInput)
                 .Configure(ConfigureEchoAddress);
 
@@ -122,6 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private async Task RegisterIPEndPoint_Success(IPEndPoint endPoint, Func<IPEndPoint, string> testUrl)
         {
             var hostBuilder = new WebHostBuilder()
+                .UseLoggerFactory(_logger)
                 .UseKestrel(options =>
                 {
                     options.Listen(endPoint, listenOptions =>
@@ -170,9 +191,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var testLogger = new TestApplicationErrorLogger();
 
             var hostBuilder = new WebHostBuilder()
-               .UseKestrel()
-               .UseLoggerFactory(_ => new KestrelTestLoggerFactory(testLogger))
-               .Configure(ConfigureEchoAddress);
+                .UseLoggerFactory(_logger)
+                .UseKestrel()
+                .UseLoggerFactory(_ => new KestrelTestLoggerFactory(testLogger))
+                .Configure(ConfigureEchoAddress);
 
             using (var host = hostBuilder.Build())
             {
@@ -199,6 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 socket.Bind(new IPEndPoint(IPAddress.Loopback, port));
 
                 var hostBuilder = new WebHostBuilder()
+                    .UseLoggerFactory(_logger)
                     .UseKestrel()
                     .UseUrls($"http://127.0.0.1:{port}")
                     .Configure(ConfigureEchoAddress);
@@ -221,6 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 socket.Bind(new IPEndPoint(IPAddress.IPv6Loopback, port));
 
                 var hostBuilder = new WebHostBuilder()
+                    .UseLoggerFactory(_logger)
                     .UseKestrel()
                     .UseUrls($"http://[::1]:{port}")
                     .Configure(ConfigureEchoAddress);
@@ -271,10 +295,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var endPointAddress = $"http://localhost:{endPointPort}";
 
             var hostBuilder = new WebHostBuilder()
-               .UseKestrel(options => options.Listen(IPAddress.Loopback, endPointPort))
-               .UseUrls($"http://localhost:{useUrlsPort}")
-               .PreferHostingUrls(false)
-               .Configure(ConfigureEchoAddress);
+                .UseLoggerFactory(_logger)
+                .UseKestrel(options => options.Listen(IPAddress.Loopback, endPointPort))
+                .UseUrls($"http://localhost:{useUrlsPort}")
+                .PreferHostingUrls(false)
+                .Configure(ConfigureEchoAddress);
 
             using (var host = hostBuilder.Build())
             {
@@ -292,9 +317,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var endPointAddress = $"http://localhost:{endPointPort}";
 
             var hostBuilder = new WebHostBuilder()
-               .UseKestrel(options => options.Listen(IPAddress.Loopback, endPointPort))
-               .PreferHostingUrls(true)
-               .Configure(ConfigureEchoAddress);
+                .UseLoggerFactory(_logger)
+                .UseKestrel(options => options.Listen(IPAddress.Loopback, endPointPort))
+                .PreferHostingUrls(true)
+                .Configure(ConfigureEchoAddress);
 
             using (var host = hostBuilder.Build())
             {
@@ -356,6 +382,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 socket.Bind(new IPEndPoint(address, port));
 
                 var hostBuilder = new WebHostBuilder()
+                    .UseLoggerFactory(_logger)
                     .UseKestrel()
                     .UseUrls($"http://localhost:{port}")
                     .Configure(ConfigureEchoAddress);
@@ -389,15 +416,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 dataset.Add($"http://*:{port}/", _ => new[] { $"http://127.0.0.1:{port}/" });
                 dataset.Add($"http://+:{port}/", _ => new[] { $"http://127.0.0.1:{port}/" });
 
-                // Dynamic port and non-loopback addresses
-                dataset.Add("http://127.0.0.1:0/", GetTestUrls);
-                dataset.Add($"http://{Dns.GetHostName()}:0/", GetTestUrls);
+                // Dynamic port addresses
+                dataset.Add("http://127.0.0.1:0/", f => f.Addresses.ToArray());
 
                 var ipv4Addresses = GetIPAddresses()
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork);
                 foreach (var ip in ipv4Addresses)
                 {
-                    dataset.Add($"http://{ip}:0/", GetTestUrls);
+                    dataset.Add($"http://{ip}:0/", f => f.Addresses.ToArray());
                 }
 
                 return dataset;
@@ -425,8 +451,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 dataset.Add(new IPEndPoint(IPAddress.Loopback, port), _ => $"https://127.0.0.1:{port}/");
 
                 // IPv6 loopback
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, port), _ => FixTestUrl($"http://[::1]:{port}/"));
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, port), _ => FixTestUrl($"https://[::1]:{port}/"));
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, port), _ => $"http://[::1]:{port}/");
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, port), _ => $"https://[::1]:{port}/");
 
                 // Any
                 dataset.Add(new IPEndPoint(IPAddress.Any, port), _ => $"http://127.0.0.1:{port}/");
@@ -434,9 +460,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // IPv6 Any
                 dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => $"http://127.0.0.1:{port}/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => FixTestUrl($"http://[::1]:{port}/"));
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => $"http://[::1]:{port}/");
                 dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => $"https://127.0.0.1:{port}/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => FixTestUrl($"https://[::1]:{port}/"));
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => $"https://[::1]:{port}/");
 
                 // Dynamic port
                 dataset.Add(new IPEndPoint(IPAddress.Loopback, 0), endPoint => $"http://127.0.0.1:{endPoint.Port}/");
@@ -446,8 +472,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork);
                 foreach (var ip in ipv4Addresses)
                 {
-                    dataset.Add(new IPEndPoint(ip, 0), endPoint => FixTestUrl($"http://{endPoint}/"));
-                    dataset.Add(new IPEndPoint(ip, 0), endPoint => FixTestUrl($"https://{endPoint}/"));
+                    dataset.Add(new IPEndPoint(ip, 0), endPoint => $"http://{endPoint}/");
+                    dataset.Add(new IPEndPoint(ip, 0), endPoint => $"https://{endPoint}/");
                 }
 
                 return dataset;
@@ -476,9 +502,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var dataset = new TheoryData<IPEndPoint, Func<IPEndPoint, string>>();
 
                 dataset.Add(new IPEndPoint(IPAddress.Loopback, 443), _ => "https://127.0.0.1/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, 443), _ => FixTestUrl("https://[::1]/"));
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, 443), _ => "https://[::1]/");
                 dataset.Add(new IPEndPoint(IPAddress.Any, 443), _ => "https://127.0.0.1/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, 443), _ => FixTestUrl("https://[::1]/"));
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, 443), _ => "https://[::1]/");
 
                 return dataset;
             }
@@ -515,9 +541,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var ipv6Addresses = GetIPAddresses()
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
                     .Where(ip => ip.ScopeId == 0);
+
                 foreach (var ip in ipv6Addresses)
                 {
-                    dataset.Add($"http://[{ip}]:0/", GetTestUrls);
+                    dataset.Add($"http://[{ip}]:0/", f => f.Addresses.ToArray());
                 }
 
                 return dataset;
@@ -560,12 +587,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 foreach (var ip in ipv6Addresses)
                 {
-                    dataset.Add($"http://[{ip}]:0/", GetTestUrls);
+                    dataset.Add($"http://[{ip}]:0/", f => f.Addresses.ToArray());
                 }
 
                 // There may be no addresses with scope IDs and we need at least one data item in the
                 // collection, otherwise xUnit fails the test run because a theory has no data.
-                dataset.Add("http://[::1]:0", GetTestUrls);
+                dataset.Add("http://[::1]:0", f => f.Addresses.ToArray());
 
                 return dataset;
             }
@@ -577,27 +604,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Where(i => i.OperationalStatus == OperationalStatus.Up)
                 .SelectMany(i => i.GetIPProperties().UnicastAddresses)
                 .Select(a => a.Address);
-        }
-
-        private static string[] GetTestUrls(IServerAddressesFeature addressesFeature)
-        {
-            return addressesFeature.Addresses
-                .Select(FixTestUrl)
-                .ToArray();
-        }
-
-        private static string FixTestUrl(string url)
-        {
-            var fixedUrl = url.Replace("://+", "://localhost")
-                .Replace("0.0.0.0", Dns.GetHostName())
-                .Replace("[::]", Dns.GetHostName());
-
-            if (!fixedUrl.EndsWith("/"))
-            {
-                fixedUrl = fixedUrl + "/";
-            }
-
-            return fixedUrl;
         }
 
         private void ConfigureEchoAddress(IApplicationBuilder app)
