@@ -70,7 +70,7 @@ If you want to build a helper library for some other SPA framework, you can do s
 
 Inside this repo, [the `templates` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/templates) contains the application starting points that the `aspnetcore-spa` generator emits. You can clone this repo and run those applications directly. But it's easier to [use the Yeoman tool to run the generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
 
-The [ `samples` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/samples) contains examples of:
+The [`samples` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/samples) contains examples of:
 
 - Using the JavaScript services family of packages with Angular 2 and React.
 - A standalone `NodeServices` usage for runtime code transpilation and image processing.
