@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
@@ -298,21 +297,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(expectedLength, memoryStream.Length);
         }
 
-        public static TheoryData<int> WriteLengthData
-        {
-            get
-            {
-                return new TheoryData<int>
-                {
-                    MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize - 1,
-                    MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize + 1,
-                    2 * MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize + 4,
-                };
-            }
-        }
-
         [Theory]
-        [MemberData(nameof(WriteLengthData))]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize - 1)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
+        [InlineData(2 * HttpResponseStreamWriter.DefaultBufferSize + 4)]
         public async Task ExecuteAsync_AsynchronouslyFlushesToTheResponseStream_PriorToDispose(int writeLength)
         {
             // Arrange
@@ -322,8 +310,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 await v.Writer.WriteAsync(text);
             });
 
-            var expectedWriteCallCount =
-                Math.Ceiling((double)writeLength / MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize);
+            var expectedWriteCallCount = Math.Ceiling((double)writeLength / HttpResponseStreamWriter.DefaultBufferSize);
 
             var context = new DefaultHttpContext();
             var stream = new Mock<Stream>();
