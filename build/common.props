@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <FullMetaPackagePackageReference Include="@(MetaPackagePackageReference)" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
