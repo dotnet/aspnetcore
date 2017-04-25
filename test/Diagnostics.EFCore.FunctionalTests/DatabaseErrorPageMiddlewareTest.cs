@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         .UseLoggerFactory(context.RequestServices.GetService<ILoggerFactory>());
                     if (!PlatformHelper.IsMono)
                     {
-                        optionsBuilder.UseSqlServer(database.ConnectionString);
+                        optionsBuilder.UseSqlServer(database.ConnectionString, b => b.CommandTimeout(600));
                     }
                     else
                     {

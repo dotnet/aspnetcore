@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 DataSource = @"(localdb)\MSSQLLocalDB",
                 InitialCatalog = name,
                 IntegratedSecurity = true,
-                ConnectTimeout = 30
+                ConnectTimeout = 600
             }.ConnectionString;
         }
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             if (!PlatformHelper.IsMono)
             {
                 var optionsBuilder = new DbContextOptionsBuilder();
-                optionsBuilder.UseSqlServer(_connectionString);
+                optionsBuilder.UseSqlServer(_connectionString, b => b.CommandTimeout(600));
 
                 using (var db = new DbContext(optionsBuilder.Options))
                 {
