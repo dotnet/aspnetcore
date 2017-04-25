@@ -157,10 +157,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 output.CopyHtmlAttribute(nameof(Method), context);
             }
-            else
-            {
-                Method = "get";
-            }
 
             var antiforgeryDefault = true;
 
@@ -205,9 +201,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 if (string.IsNullOrEmpty(attributeValue))
                 {
                     // User is using the FormTagHelper like a normal <form> tag that has an empty or complex IHtmlContent action attribute.
-                    // e.g. <form action="" method="post"> or <form action="@CustomUrlIHtmlContent" method="post">
+                    // e.g. <form action="" method="..."> or <form action="@CustomUrlIHtmlContent" method="...">
 
-                    // Antiforgery default is already set to true
+                    if (string.Equals(Method ?? "get", "get", StringComparison.OrdinalIgnoreCase))
+                    {
+                        antiforgeryDefault = false;
+                    }
+                    else
+                    {
+                        // Antiforgery default is already set to true
+                    }
                 }
                 else
                 {
@@ -251,17 +254,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
 
                 TagBuilder tagBuilder = null;
-                if (Action == null && 
-                    Controller == null && 
-                    Route == null && 
-                    _routeValues == null && 
-                    Fragment == null && 
-                    Area == null && 
+                if (Action == null &&
+                    Controller == null &&
+                    Route == null &&
+                    _routeValues == null &&
+                    Fragment == null &&
+                    Area == null &&
                     Page == null &&
                     // Antiforgery will sometime be set globally via TagHelper Initializers, verify it was provided in the cshtml. 
                     !context.AllAttributes.ContainsName(AntiforgeryAttributeName))
                 {
-                    // Empty form tag such as <form></form>. Let it flow to the output as-is and only handle anti-forgery.
+                    // A <form> tag that doesn't utilize asp-* attributes. Let it flow to the output.
+                    Method = Method ?? "get";
                 }
                 else if (pageLink)
                 {
@@ -304,11 +308,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         output.PostContent.AppendHtml(tagBuilder.InnerHtml);
                     }
                 }
-            }
 
-            if (string.Equals(Method, "get", StringComparison.OrdinalIgnoreCase))
-            {
-                antiforgeryDefault = false;
+                if (string.Equals(Method, "get", StringComparison.OrdinalIgnoreCase))
+                {
+                    antiforgeryDefault = false;
+                }
             }
 
             if (Antiforgery ?? antiforgeryDefault)

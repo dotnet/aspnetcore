@@ -26,6 +26,63 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     public class FormTagHelperTest
     {
         [Fact]
+        public async Task ProcessAsync_ActionAndControllerGenerateAntiforgery()
+        {
+            // Arrange
+            var expectedTagName = "form";
+            var metadataProvider = new TestModelMetadataProvider();
+            var tagHelperContext = new TagHelperContext(
+                tagName: "form",
+                allAttributes: new TagHelperAttributeList()
+                {
+                    { "asp-action", "index" },
+                    { "asp-controller", "home" }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                expectedTagName,
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(mock => mock.Action(It.IsAny<UrlActionContext>())).Returns("home/index");
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider, urlHelper.Object);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
+            var expectedPostContent = HtmlContentUtilities.HtmlContentToString(
+                htmlGenerator.GenerateAntiforgery(viewContext),
+                HtmlEncoder.Default);
+            var formTagHelper = new FormTagHelper(htmlGenerator)
+            {
+                ViewContext = viewContext,
+                Action = "index",
+                Controller = "home",
+            };
+
+            // Act
+            await formTagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            Assert.Equal(2, output.Attributes.Count);
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("method"));
+            Assert.Equal("post", attribute.Value);
+            attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("action"));
+            Assert.Equal("home/index", attribute.Value);
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.True(output.Content.GetContent().Length == 0);
+            Assert.Equal(expectedPostContent, output.PostContent.GetContent());
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Fact]
         public async Task ProcessAsync_AspAntiforgeryAloneGeneratesProperFormTag()
         {
             // Arrange
