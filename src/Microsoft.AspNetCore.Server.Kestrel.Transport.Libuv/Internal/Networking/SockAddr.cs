@@ -93,7 +93,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
                     *((long*)(b + 8)) = _field2;
                 }
 
-                return new IPEndPoint(new IPAddress(bytes, scopeid: _field3 & 0xFFFFFFFF), port);
+                return new IPEndPoint(new IPAddress(bytes, ScopeId), port);
+            }
+        }
+
+        public uint ScopeId
+        {
+            get
+            {
+                return (uint)_field3;
+            }
+            set
+            {
+                _field3 &= unchecked ((long)0xFFFFFFFF00000000);
+                _field3 |= value;
             }
         }
 

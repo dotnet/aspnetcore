@@ -44,6 +44,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
                 {
                     throw error1;
                 }
+
+                if (endPoint.Address.ScopeId != addr.ScopeId)
+                {
+                    // IPAddress.ScopeId cannot be less than 0 or greater than 0xFFFFFFFF
+                    // https://msdn.microsoft.com/en-us/library/system.net.ipaddress.scopeid(v=vs.110).aspx
+                    addr.ScopeId = (uint)endPoint.Address.ScopeId;
+                }
             }
 
             _uv.tcp_bind(this, ref addr, 0);
