@@ -10,39 +10,26 @@ namespace ChatSample
 {
     public class HubWithPresence : HubWithPresence<IClientProxy>
     {
-        public HubWithPresence(IPresenceManager presenceManager)
-            : base(presenceManager)
-        {
-        }
+        public HubWithPresence(IUserTracker<HubWithPresence> userTracker)
+            : base(userTracker)
+        { }
     }
 
     public class HubWithPresence<TClient> : Hub<TClient>
     {
-        private IPresenceManager _presenceManager;
+        private IUserTracker<HubWithPresence<TClient>> _userTracker;
 
-        public HubWithPresence(IPresenceManager presenceManager)
+        public HubWithPresence(IUserTracker<HubWithPresence<TClient>> userTracker)
         {
-            _presenceManager = presenceManager;
+            _userTracker = userTracker;
         }
 
         public Task<IEnumerable<UserDetails>> UsersOnline
         {
             get
             {
-                return _presenceManager.UsersOnline();
+                return _userTracker.UsersOnline();
             }
-        }
-
-        public override Task OnConnectedAsync()
-        {
-            _presenceManager.UserJoined(Context.Connection);
-            return base.OnConnectedAsync();
-        }
-
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            _presenceManager.UserLeft(Context.Connection);
-            return base.OnDisconnectedAsync(exception);
         }
 
         public virtual Task OnUserJoined(UserDetails user)

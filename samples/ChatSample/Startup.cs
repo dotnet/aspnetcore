@@ -54,15 +54,14 @@ namespace ChatSample
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
-            // To use Redis scaleout uncomment .AddRedis and register RedisPresenceManager
-            // instead of DefaultPresenceManager
+            // To use Redis scaleout uncomment .AddRedis
             services.AddSignalR()
                 // .AddRedis()
                 ;
             services.AddAuthentication();
 
-            services.AddSingleton<IPresenceManager, DefaultPresenceManager<Chat>>();
-            // services.AddSingleton<IPresenceManager, RedisPresenceManager<Chat>>();
+            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(PresenceHubLifetimeManager<>));
+            services.AddSingleton(typeof(IUserTracker<>), typeof(InMemoryUserTracker<>));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

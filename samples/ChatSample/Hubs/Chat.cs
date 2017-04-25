@@ -10,8 +10,8 @@ namespace ChatSample.Hubs
     [Authorize]
     public class Chat : HubWithPresence
     {
-        public Chat(IPresenceManager presenceManager)
-            : base(presenceManager)
+        public Chat(IUserTracker<Chat> userTracker)
+            : base(userTracker)
         {
         }
 

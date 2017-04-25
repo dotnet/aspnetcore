@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+/*
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ using StackExchange.Redis;
 
 namespace ChatSample
 {
-    public class RedisPresenceManager<THub> : IDisposable, IPresenceManager where THub : HubWithPresence
+    public class RedisPresenceManager<THub> : IDisposable, IUserTracker<THub> where THub : HubWithPresence
     {
         private readonly RedisKey UsersOnlineRedisKey = "UsersOnline";
         private readonly RedisChannel _redisChannel;
@@ -32,7 +33,7 @@ namespace ChatSample
         private readonly ISubscriber _redisSubscriber;
         private readonly ILogger _logger;
 
-        private readonly ConcurrentDictionary<Connection, object> connections
+        private readonly ConcurrentDictionary<Connection, object> _connections
             = new ConcurrentDictionary<Connection, object>();
 
         // TODO: subscribe and handle lifecycle events/disconnects
@@ -92,7 +93,7 @@ namespace ChatSample
 
         public Task UserJoined(Connection connection)
         {
-            connections.TryAdd(connection, null);
+            _connections.TryAdd(connection, null);
 
             var database = _redisConnection.GetDatabase(_redisDatabase);
             var user = $"{connection.ConnectionId}|{connection.User.Identity.Name}";
@@ -105,7 +106,7 @@ namespace ChatSample
 
         public Task UserLeft(Connection connection)
         {
-            connections.TryRemove(connection, out object _);
+            _connections.TryRemove(connection, out object _);
 
             var database = _redisConnection.GetDatabase(_redisDatabase);
             var user = $"{connection.ConnectionId}|{connection.User.Identity.Name}";
@@ -118,7 +119,7 @@ namespace ChatSample
 
         private async Task Notify(Func<THub, Task> invocation)
         {
-            foreach (var connection in connections.Keys)
+            foreach (var connection in _connections.Keys)
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
@@ -174,3 +175,4 @@ namespace ChatSample
         }
     }
 }
+*/
