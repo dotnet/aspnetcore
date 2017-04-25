@@ -7,9 +7,7 @@
     <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
     <MoqVersion>4.7.1</MoqVersion>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <RoslynVersion>2.0.0</RoslynVersion>
-    <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
     <WebApiClientVersion>5.2.2</WebApiClientVersion>
     <XunitVersion>2.2.0</XunitVersion>
