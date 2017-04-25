@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public AddressRegistrationTests(ITestOutputHelper output) => _logger = new LoggerFactory().AddXunit(output);
 
         [ConditionalFact]
-        [DnsHostNameIsResolvable]
+        [NetworkIsReachable]
         public async Task RegisterAddresses_HostName_Success()
         {
             var hostName = Dns.GetHostName();
