@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -32,6 +33,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Gets or sets a value that determines if Kestrel should use the transport thread thread when executing user code.
         /// </summary>
         public bool UseTransportThread { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines how Kestrel should schedule user callbacks.
+        /// </summary>
+        /// <remarks>The default mode is <see cref="SchedulingMode.Default"/></remarks>
+        public SchedulingMode ApplicationSchedulingMode { get; set; } = SchedulingMode.Default;
 
         /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.

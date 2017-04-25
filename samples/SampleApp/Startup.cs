@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace SampleApp
@@ -45,7 +45,7 @@ namespace SampleApp
                 .UseKestrel(options =>
                 {
                     // Run callbacks on the transport thread
-                    options.UseTransportThread = true;
+                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
 
                     options.Listen(IPAddress.Loopback, 5000, listenOptions =>
                     {

@@ -72,14 +72,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var systemClock = new SystemClock();
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
 
-            IThreadPool threadPool;
-            if (serverOptions.UseTransportThread)
+            // TODO: This logic will eventually move into the IConnectionHandler<T> and off
+            // the service context once we get to https://github.com/aspnet/KestrelHttpServer/issues/1662
+            IThreadPool threadPool = null;
+            switch (serverOptions.ApplicationSchedulingMode)
             {
-                threadPool = new InlineLoggingThreadPool(trace);
-            }
-            else
-            {
-                threadPool = new LoggingThreadPool(trace);
+                case SchedulingMode.Default:
+                case SchedulingMode.ThreadPool:
+                    threadPool = new LoggingThreadPool(trace);
+                    break;
+                case SchedulingMode.Inline:
+                    threadPool = new InlineLoggingThreadPool(trace);
+                    break;
+                default:
+                    throw new NotSupportedException($"Unknown transport mode {serverOptions.ApplicationSchedulingMode}");
             }
 
             return new ServiceContext
