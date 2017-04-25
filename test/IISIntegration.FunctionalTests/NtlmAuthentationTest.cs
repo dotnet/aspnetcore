@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,13 +7,12 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using Xunit.Sdk;
 using Xunit.Abstractions;
-using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
