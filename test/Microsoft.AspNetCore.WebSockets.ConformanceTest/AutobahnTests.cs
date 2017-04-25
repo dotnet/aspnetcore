@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
