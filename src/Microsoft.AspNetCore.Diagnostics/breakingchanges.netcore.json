@@ -1,0 +1,30 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.Views.CompilationErrorPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.Views.CompilationErrorPageModel",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.Views.ErrorDetails",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.Views.ErrorPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.Views.ErrorPageModel",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.Views.StackFrame",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.Views.StackFrameInfo",
+    "Kind": "Removal"
+  }
+]

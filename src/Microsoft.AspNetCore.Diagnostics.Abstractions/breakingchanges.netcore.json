@@ -1,0 +1,12 @@
+[
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature",
+    "MemberId": "System.String get_OriginalQueryString()",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature",
+    "MemberId": "System.Void set_OriginalQueryString(System.String value)",
+    "Kind": "Addition"
+  }
+]
