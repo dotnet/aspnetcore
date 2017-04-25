@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public IDisposable BeginScope<TState>(TState state) => null;
         public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex) { }
         public void ConnectionDisconnect(string connectionId) { }
-        public void ConnectionDisconnectedWrite(string connectionId, int count, Exception ex) { }
         public void ConnectionError(string connectionId, Exception ex) { }
         public void ConnectionHeadResponseBodyWrite(string connectionId, long count) { }
         public void ConnectionKeepAlive(string connectionId) { }

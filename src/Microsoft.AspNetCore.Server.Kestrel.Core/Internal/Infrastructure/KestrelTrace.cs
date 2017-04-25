@@ -33,9 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private static readonly Action<ILogger, string, string, Exception> _applicationError =
             LoggerMessage.Define<string, string>(LogLevel.Error, 13, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": An unhandled exception was thrown by the application.");
 
-        private static readonly Action<ILogger, string, int, Exception> _connectionDisconnectedWrite =
-            LoggerMessage.Define<string, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
-
         private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully =
             LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
 
@@ -97,11 +94,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void ApplicationError(string connectionId, string traceIdentifier, Exception ex)
         {
             _applicationError(_logger, connectionId, traceIdentifier, ex);
-        }
-
-        public virtual void ConnectionDisconnectedWrite(string connectionId, int count, Exception ex)
-        {
-            _connectionDisconnectedWrite(_logger, connectionId, count, ex);
         }
 
         public virtual void ConnectionHeadResponseBodyWrite(string connectionId, long count)

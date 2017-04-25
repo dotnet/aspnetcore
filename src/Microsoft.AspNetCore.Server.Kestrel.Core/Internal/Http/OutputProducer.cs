@@ -51,9 +51,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_completed)
                 {
-                    // TODO: Get actual notification when the consumer stopped from Pipes,
-                    // so we know if the socket is fully closed and why (for logging exceptions);
-                    _log.ConnectionDisconnectedWrite(_connectionId, buffer.Count, ex: null);
                     return TaskCache.CompletedTask;
                 }
 

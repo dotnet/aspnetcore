@@ -22,8 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void RequestProcessingError(string connectionId, Exception ex);
 
-        void ConnectionDisconnectedWrite(string connectionId, int count, Exception ex);
-
         void ConnectionHeadResponseBodyWrite(string connectionId, long count);
 
         void NotAllConnectionsClosedGracefully();
