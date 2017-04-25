@@ -32,7 +32,9 @@
     <PackageReference Include="System.Xml.XmlDocument" Version="$(CoreFxVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="$(AspNetCoreVersion)" />
+    <!--
+      TODO re-enable. See https://github.com/aspnet/Universe/issues/506
+      <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="$(AspNetCoreVersion)" /> -->
   </ItemGroup>
 
   <ItemGroup>
