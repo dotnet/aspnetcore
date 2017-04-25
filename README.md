@@ -21,7 +21,6 @@ This repo contains:
    * Hot module replacement (HMR) ([docs](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#webpack-hot-module-replacement))
    * Server-side and client-side routing integration ([docs](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#routing-helper-mapspafallbackroute))
    * Server-side and client-side validation integration
-   * "Cache priming" for Angular 2 apps
    * "Lazy loading" for Knockout apps
  * A Yeoman generator that creates preconfigured app starting points ([guide](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/))
  * Samples and docs
@@ -59,8 +58,8 @@ If you have an existing ASP.NET Core application, or if you just want to use the
    * This provides infrastructure that's generally useful when building Single Page Applications (SPAs) with technologies such as Angular 2 or React (for example, server-side prerendering and webpack middleware). Internally, it uses the `NodeServices` package to implement its features.
    * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#microsoftaspnetcorespaservices).
  * `Microsoft.AspNetCore.AngularServices`
-   * This builds on the `SpaServices` package and includes features specific to Angular 2. Currently, this includes validation helpers and a "cache priming" feature, which let you pre-evaluate ajax requests on the server so that client-side code doesn't need to make network calls once it's loaded.
-   * The code is [here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.AngularServices), and you'll find a usage example for [the validation helper here](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/angular/MusicStore/wwwroot/ng-app/components/admin/album-edit/album-edit.ts), and for the [cache priming here](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/angular/MusicStore/Views/Home/Index.cshtml#L7-8). Complete documentation is planned. <!-- can we link to an issue? -->
+   * This builds on the `SpaServices` package and includes features specific to Angular 2. Currently, this includes validation helpers.
+   * The code is [here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.AngularServices). You'll find a usage example for [the validation helper here](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/angular/MusicStore/wwwroot/ng-app/components/admin/album-edit/album-edit.ts).
 
 There was previously a `Microsoft.AspNetCore.ReactServices` but this is not currently needed - all applicable functionality is in `Microsoft.AspNetCore.SpaServices`, because it's sufficiently general. We might add a new `Microsoft.AspNetCore.ReactServices` package in the future if new React-specific requirements emerge.
 
