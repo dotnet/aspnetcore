@@ -14,7 +14,7 @@
 
     <!-- Pin versions to work around CLI bug -->
     <AspNetCoreVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">2.0.0-$(VersionSuffix)</AspNetCoreVersion>
-    <AspNetCoreSignalRVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">1.0.0-$(VersionSuffix)</AspNetCoreSignalRVersion>
+    <AspNetCoreIdentityServiceVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">1.0.0-$(VersionSuffix)</AspNetCoreIdentityServiceVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -119,13 +119,6 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Session" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="$(AspNetCoreSignalRVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="$(AspNetCoreSignalRVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.SignalR.Redis" Version="$(AspNetCoreSignalRVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.SignalR" Version="$(AspNetCoreSignalRVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Sockets" Version="$(AspNetCoreSignalRVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Sockets.Client" Version="$(AspNetCoreSignalRVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Sockets.Common" Version="$(AspNetCoreSignalRVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
