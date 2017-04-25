@@ -123,7 +123,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "",
                     "1");
 
-                await connection.Receive("HTTP/1.1 400 Bad Request");
+                await connection.ReceiveForcedEnd(
+                    "HTTP/1.1 400 Bad Request",
+                    "Connection: close",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "Content-Length: 0",
+                    "",
+                    "");
             }
         }
 
@@ -167,7 +173,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "Connection: Upgrade",
                     "",
                     "");
-                await connection.Receive("HTTP/1.1 400 Bad Request");
+                await connection.ReceiveForcedEnd(
+                    "HTTP/1.1 400 Bad Request",
+                    "Connection: close",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "Content-Length: 0",
+                    "",
+                    "");
             }
         }
     }
