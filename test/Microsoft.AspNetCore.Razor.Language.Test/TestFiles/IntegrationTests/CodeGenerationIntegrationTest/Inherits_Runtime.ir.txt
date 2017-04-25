@@ -9,5 +9,3 @@ Document -
                     RazorIRToken - (1:0,1 [5] Inherits.cshtml) - CSharp - foo()
                 HtmlContent - (6:0,6 [4] Inherits.cshtml)
                     RazorIRToken - (6:0,6 [4] Inherits.cshtml) - Html - \n\n
-                HtmlContent - (42:2,32 [5] Inherits.cshtml)
-                    RazorIRToken - (42:2,32 [5] Inherits.cshtml) - Html - bar\n

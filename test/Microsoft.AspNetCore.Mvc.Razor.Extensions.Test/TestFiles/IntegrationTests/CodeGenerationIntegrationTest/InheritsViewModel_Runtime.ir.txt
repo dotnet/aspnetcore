@@ -1,0 +1,36 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - AspNetCore
+        UsingStatement -  - TModel = global::System.Object
+        UsingStatement - (1:0,1 [12] ) - System
+        UsingStatement -  - System.Threading.Tasks
+        UsingStatement - (16:1,1 [17] ) - System.Linq
+        UsingStatement - (36:2,1 [32] ) - System.Collections.Generic
+        UsingStatement - (71:3,1 [30] ) - Microsoft.AspNetCore.Mvc
+        UsingStatement - (104:4,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingStatement - (147:5,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsViewModel_cshtml - MyBasePageForViews<MyModel> - 
+            DesignTimeDirective - 
+                DirectiveToken - (200:6,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
+                DirectiveToken - (263:6,71 [4] ) - Html
+                DirectiveToken - (277:7,8 [54] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
+                DirectiveToken - (332:7,63 [4] ) - Json
+                DirectiveToken - (346:8,8 [53] ) - global::Microsoft.AspNetCore.Mvc.IViewComponentHelper
+                DirectiveToken - (400:8,62 [9] ) - Component
+                DirectiveToken - (419:9,8 [43] ) - global::Microsoft.AspNetCore.Mvc.IUrlHelper
+                DirectiveToken - (463:9,52 [3] ) - Url
+                DirectiveToken - (476:10,8 [70] ) - global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider
+                DirectiveToken - (547:10,79 [23] ) - ModelExpressionProvider
+                DirectiveToken - (586:11,14 [96] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor
+                DirectiveToken - (698:12,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
+                DirectiveToken - (801:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
+                DirectiveToken - (10:0,10 [26] InheritsViewModel.cshtml) - MyBasePageForViews<TModel>
+                DirectiveToken - (45:1,7 [7] InheritsViewModel.cshtml) - MyModel
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 

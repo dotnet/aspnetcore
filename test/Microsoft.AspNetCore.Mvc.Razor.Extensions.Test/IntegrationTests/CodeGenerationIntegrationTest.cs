@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
@@ -24,6 +23,35 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         private static readonly RazorSourceDocument DefaultImports = MvcRazorTemplateEngine.GetDefaultImports();
 
         #region Runtime
+        [Fact]
+        public void InheritsViewModel_Runtime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void InheritsWithViewImports_Runtime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
 
         [Fact]
         public void MalformedPageDirective_Runtime()
@@ -207,6 +235,36 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         #endregion
 
         #region DesignTime
+
+        [Fact]
+        public void InheritsViewModel_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void InheritsWithViewImports_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
 
         [Fact]
         public void MalformedPageDirective_DesignTime()

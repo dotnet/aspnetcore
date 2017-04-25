@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "72d6e21c6366f99a17c63abebb46db3470f4d1da"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "081d0c0715ffeacf3f97a2f3a8443e1e47346419"
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
@@ -15,7 +15,6 @@ Write(foo());
 #line default
 #line hidden
             WriteLiteral("\r\n\r\n");
-            WriteLiteral("bar\r\n");
         }
         #pragma warning restore 1998
     }
