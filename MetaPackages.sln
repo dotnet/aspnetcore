@@ -1,12 +1,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26412.1
+VisualStudioVersion = 15.0.26419.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore", "src\Microsoft.AspNetCore\Microsoft.AspNetCore.csproj", "{6F3D43F7-9546-4B41-AF04-CF4708B62051}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.All", "src\Microsoft.AspNetCore.All\Microsoft.AspNetCore.All.csproj", "{CC8F551E-213A-45E8-AECA-507C4DB4F164}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.All", "src\Microsoft.AspNetCore.All\Microsoft.AspNetCore.All.csproj", "{CC8F551E-213A-45E8-AECA-507C4DB4F164}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{97D53BEB-A511-4FBE-B784-AB407D9A219F}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,9 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F92CB7A1
 		build\dependencies.props = build\dependencies.props
 		build\repo.targets = build\repo.targets
 	EndProjectSection
-EndProject
-
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RuntimeStore", "src\Microsoft.AspNetCore.RuntimeStore\Microsoft.AspNetCore.RuntimeStore.csproj", "{A4585E19-FC49-43B4-9416-0BD3120EAD32}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{192F583C-C4CA-43E5-B31C-D21B7806E274}"
 EndProject
@@ -45,10 +42,6 @@ Global
 		{AF5BB04E-92F7-4737-8B98-F86F6244FAB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF5BB04E-92F7-4737-8B98-F86F6244FAB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF5BB04E-92F7-4737-8B98-F86F6244FAB2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4585E19-FC49-43B4-9416-0BD3120EAD32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4585E19-FC49-43B4-9416-0BD3120EAD32}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4585E19-FC49-43B4-9416-0BD3120EAD32}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4585E19-FC49-43B4-9416-0BD3120EAD32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +51,5 @@ Global
 		{CC8F551E-213A-45E8-AECA-507C4DB4F164} = {ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}
 		{F92CB7A1-C38E-408C-A7EC-A5C040D041E1} = {97D53BEB-A511-4FBE-B784-AB407D9A219F}
 		{AF5BB04E-92F7-4737-8B98-F86F6244FAB2} = {192F583C-C4CA-43E5-B31C-D21B7806E274}
-		{A4585E19-FC49-43B4-9416-0BD3120EAD32} = {ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}
 	EndGlobalSection
 EndGlobal

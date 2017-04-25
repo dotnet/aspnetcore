@@ -179,13 +179,10 @@
 
   <ItemGroup>
     <RuntimeStorePackageReference Include="@(FullMetaPackagePackageReference)" />
+    <RuntimeStorePackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <RuntimeStorePackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <RuntimeStorePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <RuntimeStorePackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <RuntimeStorePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <RuntimeStoreProjectReference Include="@(FullMetaPackageProjectReference)" />
   </ItemGroup>
 </Project>

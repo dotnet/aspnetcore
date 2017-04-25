@@ -8,7 +8,6 @@
 
   <ItemGroup>
    <PackageReference Include="@(RuntimeStorePackageReference)" />
-   <ProjectReference Include="@(RuntimeStoreProjectReference)" />
   </ItemGroup>
 
   <Target Name="CollectDeps" DependsOnTargets="Restore;RunResolvePackageDependencies">
