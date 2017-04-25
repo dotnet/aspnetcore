@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     var urls = _config[WebHostDefaults.ServerUrlsKey] ?? _config[DeprecatedServerUrlsKey];
                     if (!string.IsNullOrEmpty(urls))
                     {
-                        serverAddressesFeature.PreferHostingUrls = _options.PreferHostingUrls;
+                        serverAddressesFeature.PreferHostingUrls = WebHostUtilities.ParseBool(_config, WebHostDefaults.PreferHostingUrlsKey);
 
                         foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                         {

@@ -21,16 +21,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             ApplicationName = configuration[WebHostDefaults.ApplicationKey];
             StartupAssembly = configuration[WebHostDefaults.StartupAssemblyKey];
-            DetailedErrors = ParseBool(configuration, WebHostDefaults.DetailedErrorsKey);
-            CaptureStartupErrors = ParseBool(configuration, WebHostDefaults.CaptureStartupErrorsKey);
+            DetailedErrors = WebHostUtilities.ParseBool(configuration, WebHostDefaults.DetailedErrorsKey);
+            CaptureStartupErrors = WebHostUtilities.ParseBool(configuration, WebHostDefaults.CaptureStartupErrorsKey);
             Environment = configuration[WebHostDefaults.EnvironmentKey];
             WebRoot = configuration[WebHostDefaults.WebRootKey];
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
-            PreventHostingStartup = ParseBool(configuration, WebHostDefaults.PreventHostingStartupKey);
+            PreventHostingStartup = WebHostUtilities.ParseBool(configuration, WebHostDefaults.PreventHostingStartupKey);
             // Search the primary assembly and configured assemblies.
             HostingStartupAssemblies = $"{ApplicationName};{configuration[WebHostDefaults.HostingStartupAssembliesKey]}"
                 .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
-            PreferHostingUrls = ParseBool(configuration, WebHostDefaults.PreferHostingUrlsKey);
 
             var timeout = configuration[WebHostDefaults.ShutdownTimeoutKey];
             if (!string.IsNullOrEmpty(timeout)
@@ -58,14 +57,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public string ContentRootPath { get; set; }
 
-        public bool PreferHostingUrls { get; set; }
-
         public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
-        private static bool ParseBool(IConfiguration configuration, string key)
-        {
-            return string.Equals("true", configuration[key], StringComparison.OrdinalIgnoreCase)
-                || string.Equals("1", configuration[key], StringComparison.OrdinalIgnoreCase);
-        }
     }
 }

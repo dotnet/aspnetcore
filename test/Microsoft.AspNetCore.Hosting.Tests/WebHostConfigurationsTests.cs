@@ -20,8 +20,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 { "startupAssembly", "MyProjectReference" },
                 { "environment", "Development"},
                 { "detailederrors", "true"},
-                { "captureStartupErrors", "true" },
-                { "preferHostingUrls", "true" }
+                { "captureStartupErrors", "true" }
             };
 
             var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
@@ -32,7 +31,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Equal("Development", config.Environment);
             Assert.True(config.CaptureStartupErrors);
             Assert.True(config.DetailedErrors);
-            Assert.True(config.PreferHostingUrls);
         }
 
         [Fact]
