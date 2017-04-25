@@ -242,7 +242,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
 
                 TagBuilder tagBuilder = null;
-                if (Action == null && Controller == null && Route == null && _routeValues == null && Fragment == null && Area == null && Page == null)
+                if (Action == null && 
+                    Controller == null && 
+                    Route == null && 
+                    _routeValues == null && 
+                    Fragment == null && 
+                    Area == null && 
+                    Page == null &&
+                    // Antiforgery will sometime be set globally via TagHelper Initializers, verify it was provided in the cshtml. 
+                    !context.AllAttributes.ContainsName(AntiforgeryAttributeName))
                 {
                     // Empty form tag such as <form></form>. Let it flow to the output as-is and only handle anti-forgery.
                 }
