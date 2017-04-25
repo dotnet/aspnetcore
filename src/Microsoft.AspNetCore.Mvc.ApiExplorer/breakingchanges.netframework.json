@@ -1,0 +1,34 @@
+﻿[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider",
+    "Kind": "Removal"
+  }
+]

@@ -1,0 +1,7 @@
+[
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IModelBindingMessageProvider",
+    "MemberId": "System.Func<System.String> get_MissingRequestBodyRequiredValueAccessor()",
+    "Kind": "Addition"
+  }
+]

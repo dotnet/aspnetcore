@@ -1,8 +1,0 @@
-[
-    {
-        "OldTypeId": "public interface Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IModelBindingMessageProvider",
-        "NewTypeId": "public interface Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IModelBindingMessageProvider",
-        "NewMemberId": "System.Func<System.String> get_MissingRequestBodyRequiredValueAccessor()",
-        "Kind": "Addition"
-    }
-]
