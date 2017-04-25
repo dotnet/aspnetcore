@@ -88,10 +88,21 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder UseDefaultServiceProvider(this IWebHostBuilder hostBuilder, Action<ServiceProviderOptions> configure)
         {
-            return hostBuilder.ConfigureServices(services =>
+            return hostBuilder.UseDefaultServiceProvider((context, options) => configure(options));
+        }
+
+        /// <summary>
+        /// Configures the default service provider
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="configure">A callback used to configure the <see cref="ServiceProviderOptions"/> for the default <see cref="IServiceProvider"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseDefaultServiceProvider(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, ServiceProviderOptions> configure)
+        {
+            return hostBuilder.ConfigureServices((context, services) =>
             {
                 var options = new ServiceProviderOptions();
-                configure(options);
+                configure(context, options);
                 services.Replace(ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(new DefaultServiceProviderFactory(options)));
             });
         }
