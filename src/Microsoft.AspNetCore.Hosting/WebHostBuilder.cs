@@ -302,36 +302,39 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton(loggerFactory);
             _context.LoggerFactory = loggerFactory;
 
-            var exceptions = new List<Exception>();
-
-            // Execute the hosting startup assemblies
-            foreach (var assemblyName in _options.HostingStartupAssemblies)
+            if (!_options.PreventHostingStartup)
             {
-                try
-                {
-                    var assembly = Assembly.Load(new AssemblyName(assemblyName));
+                var exceptions = new List<Exception>();
 
-                    foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
+                // Execute the hosting startup assemblies
+                foreach (var assemblyName in _options.HostingStartupAssemblies)
+                {
+                    try
                     {
-                        var hostingStartup = (IHostingStartup)Activator.CreateInstance(attribute.HostingStartupType);
-                        hostingStartup.Configure(this);
+                        var assembly = Assembly.Load(new AssemblyName(assemblyName));
+
+                        foreach (var attribute in assembly.GetCustomAttributes<HostingStartupAttribute>())
+                        {
+                            var hostingStartup = (IHostingStartup)Activator.CreateInstance(attribute.HostingStartupType);
+                            hostingStartup.Configure(this);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Capture any errors that happen during startup
+                        exceptions.Add(new InvalidOperationException($"Startup assembly {assemblyName} failed to execute. See the inner exception for more details.", ex));
                     }
                 }
-                catch (Exception ex)
-                {
-                    // Capture any errors that happen during startup
-                    exceptions.Add(new InvalidOperationException($"Startup assembly {assemblyName} failed to execute. See the inner exception for more details.", ex));
-                }
-            }
 
-            if (exceptions.Count > 0)
-            {
-                hostingStartupErrors = new AggregateException(exceptions);
-
-                // Throw directly if we're not capturing startup errors
-                if (!_options.CaptureStartupErrors)
+                if (exceptions.Count > 0)
                 {
-                    throw hostingStartupErrors;
+                    hostingStartupErrors = new AggregateException(exceptions);
+
+                    // Throw directly if we're not capturing startup errors
+                    if (!_options.CaptureStartupErrors)
+                    {
+                        throw hostingStartupErrors;
+                    }
                 }
             }
 

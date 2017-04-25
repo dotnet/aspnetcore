@@ -833,13 +833,30 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var builder = CreateWebHostBuilder()
                 .CaptureStartupErrors(false)
-                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(WebHostBuilderTests).GetTypeInfo().Assembly.FullName)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(TestStartupAssembly1.TestHostingStartup1).GetTypeInfo().Assembly.FullName)
                 .Configure(app => { })
                 .UseServer(new TestServer());
 
             using (var host = builder.Build())
             {
-                Assert.Equal("1", builder.GetSetting("testhostingstartup"));
+                Assert.Equal("1", builder.GetSetting("testhostingstartup1"));
+            }
+        }
+
+        [Fact]
+        public void Build_RunsHostingStartupRunsPrimaryAssemblyFirst()
+        {
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(false)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(TestStartupAssembly1.TestHostingStartup1).GetTypeInfo().Assembly.FullName)
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            using (var host = builder.Build())
+            {
+                Assert.Equal("0", builder.GetSetting("testhostingstartup"));
+                Assert.Equal("1", builder.GetSetting("testhostingstartup1"));
+                Assert.Equal("01", builder.GetSetting("testhostingstartup_chain"));
             }
         }
 
@@ -871,7 +888,6 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var builder = CreateWebHostBuilder()
                 .CaptureStartupErrors(false)
-                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(WebHostBuilderTests).GetTypeInfo().Assembly.FullName)
                 .Configure(app =>
                 {
                     var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
@@ -888,9 +904,23 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void Build_DoesNotRunHostingStartupAssembliesDoNotRunIfNotSpecified()
+        public void Build_DoesRunHostingStartupFromPrimaryAssemblyEvenIfNotSpecified()
         {
             var builder = CreateWebHostBuilder()
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            using (builder.Build())
+            {
+                Assert.Equal("0", builder.GetSetting("testhostingstartup"));
+            }
+        }
+
+        [Fact]
+        public void Build_HostingStartupFromPrimaryAssemblyCanBeDisabled()
+        {
+            var builder = CreateWebHostBuilder()
+                .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
                 .Configure(app => { })
                 .UseServer(new TestServer());
 
@@ -1027,7 +1057,8 @@ namespace Microsoft.AspNetCore.Hosting
             public void Configure(IWebHostBuilder builder)
             {
                 var loggerProvider = new TestLoggerProvider();
-                builder.UseSetting("testhostingstartup", "1")
+                builder.UseSetting("testhostingstartup", "0")
+                       .UseSetting("testhostingstartup_chain", builder.GetSetting("testhostingstartup_chain") + "0")
                        .ConfigureServices(services => services.AddSingleton<ServiceA>())
                        .ConfigureServices(services => services.AddSingleton<ITestSink>(loggerProvider.Sink))
                        .ConfigureLogging(lf => lf.AddProvider(loggerProvider));

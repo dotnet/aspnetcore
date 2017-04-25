@@ -21,7 +21,8 @@ namespace SampleStartups
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-              //.UseKestrel()
+                //.UseKestrel()
+                .UseFakeServer()
                 .UseStartup<StartupHelloWorld>()
                 .Build();
 

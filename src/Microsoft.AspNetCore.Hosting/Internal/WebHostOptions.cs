@@ -26,7 +26,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             Environment = configuration[WebHostDefaults.EnvironmentKey];
             WebRoot = configuration[WebHostDefaults.WebRootKey];
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
-            HostingStartupAssemblies = configuration[WebHostDefaults.HostingStartupAssembliesKey]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+            PreventHostingStartup = ParseBool(configuration, WebHostDefaults.PreventHostingStartupKey);
+            // Search the primary assembly and configured assemblies.
+            HostingStartupAssemblies = $"{ApplicationName};{configuration[WebHostDefaults.HostingStartupAssembliesKey]}"
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
             PreferHostingUrls = ParseBool(configuration, WebHostDefaults.PreferHostingUrlsKey);
 
             var timeout = configuration[WebHostDefaults.ShutdownTimeoutKey];
@@ -38,6 +41,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         public string ApplicationName { get; set; }
+
+        public bool PreventHostingStartup { get; set; }
 
         public IReadOnlyList<string> HostingStartupAssemblies { get; set; }
 

@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string ServerUrlsKey = "urls";
         public static readonly string ContentRootKey = "contentRoot";
         public static readonly string PreferHostingUrlsKey = "preferHostingUrls";
+        public static readonly string PreventHostingStartupKey = "preventHostingStartup";
 
         public static readonly string ShutdownTimeoutKey = "shutdownTimeoutSeconds";
     }

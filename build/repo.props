@@ -1,5 +1,6 @@
 <Project>
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Hosting.TestSites\Microsoft.AspNetCore.Hosting.TestSites.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\TestStartupAssembly1\TestStartupAssembly1.csproj" />
   </ItemGroup>
 </Project>

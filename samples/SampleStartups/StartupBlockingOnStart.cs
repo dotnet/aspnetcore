@@ -34,6 +34,7 @@ namespace SampleStartups
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
+                .UseFakeServer()
                 .UseStartup<StartupBlockingOnStart>()
                 .Build();
 

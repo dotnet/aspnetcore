@@ -32,6 +32,7 @@ namespace SampleStartups
         {
             _host = new WebHostBuilder()
                 //.UseKestrel()
+                .UseFakeServer()
                 .UseStartup<StartupExternallyControlled>()
                 .Start(_urls.ToArray());
         }
