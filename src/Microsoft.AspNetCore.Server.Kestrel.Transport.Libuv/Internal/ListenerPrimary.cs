@@ -33,6 +33,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
         }
 
+        /// <summary>
+        /// For testing purposes.
+        /// </summary>
+        public int UvPipeCount => _dispatchPipes.Count;
+
         private UvPipeHandle ListenPipe { get; set; }
 
         public async Task StartAsync(
