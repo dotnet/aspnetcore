@@ -200,6 +200,47 @@ namespace Microsoft.AspNetCore.Tests
             }
         }
 
+        [Fact]
+        public void LoggingConfigurationSectionPassedToLoggerByDefault()
+        {
+            try
+            {
+                File.WriteAllText("appsettings.json", @"
+{
+    ""Logging"": {
+        ""LogLevel"": {
+            ""Default"": ""Warning""
+        }
+    }
+}
+");
+                using (var webHost = WebHost.Start(context => context.Response.WriteAsync("Hello, World!")))
+                {
+                    var factory = (ILoggerFactory)webHost.Services.GetService(typeof(ILoggerFactory));
+                    var logger = factory.CreateLogger("Test");
+
+                    logger.Log(LogLevel.Information, 0, "Message", null, (s, e) =>
+                    {
+                        Assert.True(false);
+                        return string.Empty;
+                    });
+
+                    var logWritten = false;
+                    logger.Log(LogLevel.Warning, 0, "Message", null, (s, e) =>
+                    {
+                        logWritten = true;
+                        return string.Empty;
+                    });
+
+                    Assert.True(logWritten);
+                }
+            }
+            finally
+            {
+                File.Delete("appsettings.json");
+            }
+        }
+
         private async Task ExecuteStartOrStartWithTest(Func<DeploymentResult, Task<HttpResponseMessage>> getResponse, string applicationName)
         {
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
