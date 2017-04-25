@@ -16,9 +16,10 @@
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.ApplicationInsights.HostingStartup;Microsoft.AspNetCore.Server.IISIntegration"
       }
     },
-    "AzureAppServicesHostingStartupSample": {
+    "ApplicationInsightsHostingStartupSample": {
       "commandName": "project",
       "launchBrowser": true,
+      "launchUrl": "http://localhost:5000/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.ApplicationInsights.HostingStartup"

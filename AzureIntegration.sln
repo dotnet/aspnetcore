@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26406.2
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServicesIntegration", "src\Microsoft.AspNetCore.AzureAppServicesIntegration\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj", "{5916BEB5-0969-469B-976C-A392E015DFAC}"
 EndProject
@@ -32,6 +32,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extensions", "src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj", "{9B22E525-FEC9-4C7C-9F9C-598C15BD0250}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.SiteExtension", "src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj", "{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsightsJavaScriptSnippetTest", "test\ApplicationInsightsJavaScriptSnippetTest\ApplicationInsightsJavaScriptSnippetTest.csproj", "{0899A101-E451-40A4-81B0-7AA18202C25D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0899A101-E451-40A4-81B0-7AA18202C25D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0899A101-E451-40A4-81B0-7AA18202C25D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0899A101-E451-40A4-81B0-7AA18202C25D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0899A101-E451-40A4-81B0-7AA18202C25D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,5 +95,6 @@ Global
 		{33E245F0-2566-4B5B-BA7C-8895B7A697AE} = {37237C93-6855-40D9-9E60-418B093EF49A}
 		{9B22E525-FEC9-4C7C-9F9C-598C15BD0250} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
 		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
+		{0899A101-E451-40A4-81B0-7AA18202C25D} = {CD650B4B-81C2-4A44-AEF2-A251A877C1F0}
 	EndGlobalSection
 EndGlobal

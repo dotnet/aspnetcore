@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Hosting;
 using Moq;
 using Xunit;
 
