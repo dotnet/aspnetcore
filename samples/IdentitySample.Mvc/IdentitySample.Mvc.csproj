@@ -36,6 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="$(AspNetCoreVersion)" />
+    <!--
+    TODO re-enable. See https://github.com/aspnet/Universe/issues/506
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="$(AspNetCoreVersion)" /> -->
   </ItemGroup>
 </Project>
