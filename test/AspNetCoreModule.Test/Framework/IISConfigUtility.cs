@@ -22,9 +22,10 @@ namespace AspNetCoreModule.Test.Framework
             public static string DefaultAppPool = "DefaultAppPool";
         }
 
+        public static string ApppHostTemporaryBackupFileExtention = null;
         private ServerType _serverType = ServerType.IIS;
         private string _iisExpressConfigPath = null;
-
+        
         public enum AppPoolBitness
         {
             enable32Bit,
@@ -53,63 +54,167 @@ namespace AspNetCoreModule.Test.Framework
             }
         }
 
-        public IISConfigUtility(ServerType type, string iisExpressConfigPath = null)
+        public IISConfigUtility(ServerType type, string iisExpressConfigPath)
         {
             _serverType = type;
             _iisExpressConfigPath = iisExpressConfigPath;
         }
 
-        public static void BackupAppHostConfig()
+        public static bool BackupAppHostConfig(string fileExtenstion, bool overWriteMode)
         {
+            bool result = true;
             string fromfile = Strings.AppHostConfigPath;
-            string tofile = Strings.AppHostConfigPath + ".ancmtest.bak";
+            string tofile = Strings.AppHostConfigPath + fileExtenstion;
             if (File.Exists(fromfile))
             {
-                TestUtility.FileCopy(fromfile, tofile, overWrite: false);
+                try
+                {
+                    TestUtility.FileCopy(fromfile, tofile, overWrite: overWriteMode);
+                }
+                catch
+                {
+                    result = false;
+                }
+            }
+            return result;
+        }
+
+        public static void RestoreAppHostConfig(bool restoreFromMasterBackupFile = true)
+        {
+            string masterBackupFileExtension = ".ancmtest.mastebackup";
+            string masterBackupFilePath = Strings.AppHostConfigPath + masterBackupFileExtension;
+            string temporaryBackupFileExtenstion = null;
+            string temporaryBackupFilePath = null;
+            string tofile = Strings.AppHostConfigPath;
+
+            string backupFileExentsionForDebug = ".ancmtest.debug";
+            string backupFilePathForDebug = Strings.AppHostConfigPath + backupFileExentsionForDebug;
+            TestUtility.DeleteFile(backupFilePathForDebug);
+
+            // Create a master backup file
+            if (restoreFromMasterBackupFile)
+            {
+                // Create a master backup file if it does not exist
+                if (!File.Exists(masterBackupFilePath))
+                {
+                    if (!File.Exists(tofile))
+                    {
+                        throw new ApplicationException("Can't find " + tofile);
+                    }
+                    BackupAppHostConfig(masterBackupFileExtension, overWriteMode: false);
+                }
+
+                if (!File.Exists(masterBackupFilePath))
+                {
+                    throw new ApplicationException("Not found master backup file " + masterBackupFilePath);
+                }
+            }
+
+            // if applicationhost.config does not exist but master backup file is available, create a new applicationhost.config from the master backup file first
+            if (!File.Exists(tofile))
+            {
+                CopyAppHostConfig(masterBackupFilePath, tofile);
+            }
+
+            // Create a temporary backup file with the current applicationhost.config to rollback after test is completed.
+            if (ApppHostTemporaryBackupFileExtention == null)
+            {
+                // retry 10 times until it really creates the temporary backup file
+                for (int i = 0; i < 10; i++)
+                {
+                    temporaryBackupFileExtenstion = "." + TestUtility.RandomString(5);
+                    string tempFile = Strings.AppHostConfigPath + temporaryBackupFileExtenstion;
+                    if (File.Exists(tempFile))
+                    {
+                        // file already exists, try with a different file name
+                        continue;
+                    }
+
+                    bool backupSuccess = BackupAppHostConfig(temporaryBackupFileExtenstion, overWriteMode: false);
+                    if (backupSuccess && File.Exists(tempFile))
+                    {
+                        if (File.Exists(tempFile))
+                        {
+                            ApppHostTemporaryBackupFileExtention = temporaryBackupFileExtenstion;
+                            break;
+                        }                        
+                    }
+                }
+
+                if (ApppHostTemporaryBackupFileExtention == null)
+                {
+                    throw new ApplicationException("Can't make a temporary backup file");
+                }
+            }
+
+            if (restoreFromMasterBackupFile)
+            {
+                // restoring applicationhost.config from the master backup file
+                CopyAppHostConfig(masterBackupFilePath, tofile);
+            }
+            else
+            {
+                // Create a temporary backup file to preserve the last state for debugging purpose before rolling back from the temporary backup file
+                try
+                {
+                    BackupAppHostConfig(backupFileExentsionForDebug, overWriteMode: true);
+                }
+                catch
+                {
+                    TestUtility.LogInformation("Failed to create a backup file for debugging");
+                }
+
+                // restoring applicationhost.config from the temporary backup file
+                temporaryBackupFilePath = Strings.AppHostConfigPath + ApppHostTemporaryBackupFileExtention;
+                CopyAppHostConfig(temporaryBackupFilePath, tofile);
+
+                // delete the temporary backup file because it is not used anymore
+                try
+                {
+                    TestUtility.DeleteFile(temporaryBackupFilePath);
+                }
+                catch
+                {
+                    TestUtility.LogInformation("Failed to cleanup temporary backup file : " + temporaryBackupFilePath);
+                }
             }
         }
 
-        public static void RestoreAppHostConfig()
+        private static void CopyAppHostConfig(string fromfile, string tofile)
         {
-            string fromfile = Strings.AppHostConfigPath + ".ancmtest.bak";
-            string tofile = Strings.AppHostConfigPath;
-
             if (!File.Exists(fromfile) && !File.Exists(tofile))
             {
                 // IIS is not installed, don't do anything here
                 return;
             }
 
-            // backup first if the backup file is not available
             if (!File.Exists(fromfile))
             {
-                BackupAppHostConfig();
+                throw new System.ApplicationException("Failed to backup " + tofile);
             }
 
-            // try again after the ininial clean up 
-            if (File.Exists(fromfile))
+            // try restoring applicationhost.config again after the ininial clean up for better reliability
+            try
             {
-                try
-                {
-                    TestUtility.FileCopy(fromfile, tofile, true, true);
-                }
-                catch
-                {
-                    // ignore
-                }
+                TestUtility.FileCopy(fromfile, tofile, true, true);
+            }
+            catch
+            {
+                // ignore
+            }
 
-                // try again 
-                if (!File.Exists(tofile) || File.ReadAllBytes(fromfile).Length != File.ReadAllBytes(tofile).Length)
-                {
-                    // try again
-                    TestUtility.ResetHelper(ResetHelperMode.KillWorkerProcess);
-                    TestUtility.FileCopy(fromfile, tofile, true, true);
-                }
+            // try again 
+            if (!File.Exists(tofile) || File.ReadAllBytes(fromfile).Length != File.ReadAllBytes(tofile).Length)
+            {
+                // try again
+                TestUtility.ResetHelper(ResetHelperMode.KillWorkerProcess);
+                TestUtility.FileCopy(fromfile, tofile, true, true);
+            }
 
-                if (File.ReadAllBytes(fromfile).Length != File.ReadAllBytes(tofile).Length)
-                {
-                    throw new System.ApplicationException("Failed to restore applicationhost.config");
-                }
+            // verify restoration is done successfully
+            if (File.ReadAllBytes(fromfile).Length != File.ReadAllBytes(tofile).Length)
+            {
+                throw new System.ApplicationException("Failed to restore applicationhost.config from " + fromfile + " to " + tofile);
             }
         }
 
@@ -243,7 +348,7 @@ namespace AspNetCoreModule.Test.Framework
             }
         }
 
-        public void EnableWindowsAuthentication(string siteName)
+        public void EnableIISAuthentication(string siteName, bool windows, bool basic, bool anonymous)
         {
             TestUtility.LogInformation("Enable Windows authentication : " + siteName);
             using (ServerManager serverManager = GetServerManager())
@@ -251,9 +356,11 @@ namespace AspNetCoreModule.Test.Framework
                 Configuration config = serverManager.GetApplicationHostConfiguration();
 
                 ConfigurationSection anonymousAuthenticationSection = config.GetSection("system.webServer/security/authentication/anonymousAuthentication", siteName);
-                anonymousAuthenticationSection["enabled"] = false;
+                anonymousAuthenticationSection["enabled"] = anonymous;
+                ConfigurationSection basicAuthenticationSection = config.GetSection("system.webServer/security/authentication/basicAuthentication", siteName);
+                basicAuthenticationSection["enabled"] = basic;
                 ConfigurationSection windowsAuthenticationSection = config.GetSection("system.webServer/security/authentication/windowsAuthentication", siteName);
-                windowsAuthenticationSection["enabled"] = true;
+                windowsAuthenticationSection["enabled"] = windows;
 
                 serverManager.CommitChanges();
             }
@@ -265,7 +372,7 @@ namespace AspNetCoreModule.Test.Framework
             using (ServerManager serverManager = GetServerManager())
             {
                 Configuration config = serverManager.GetApplicationHostConfiguration();
-                
+
                 ConfigurationSection iisClientCertificateMappingAuthenticationSection = config.GetSection("system.webServer/security/authentication/iisClientCertificateMappingAuthentication", siteName);
 
                 // enable iisClientCertificateMappingAuthentication 
@@ -275,7 +382,10 @@ namespace AspNetCoreModule.Test.Framework
                 // add a new oneToOne mapping collection item
                 ConfigurationElement addElement = oneToOneMappingsCollection.CreateElement("add");
                 addElement["userName"] = userName;
-                addElement["password"] = password;
+                if (password != null)
+                {
+                    addElement["password"] = password;
+                }
                 addElement["certificate"] = publicKey;
                 oneToOneMappingsCollection.Add(addElement);
 
@@ -326,32 +436,39 @@ namespace AspNetCoreModule.Test.Framework
 
         public void SetANCMConfig(string siteName, string appName, string attributeName, object attributeValue)
         {
-            using (ServerManager serverManager = GetServerManager())
+            try
             {
-                Configuration config = serverManager.GetWebConfiguration(siteName, appName);
-                ConfigurationSection aspNetCoreSection = config.GetSection("system.webServer/aspNetCore");
-                if (attributeName == "environmentVariable")
+                using (ServerManager serverManager = GetServerManager())
                 {
-                    string name = ((string[])attributeValue)[0];
-                    string value = ((string[])attributeValue)[1];
-                    ConfigurationElementCollection environmentVariablesCollection = aspNetCoreSection.GetCollection("environmentVariables");
-                    ConfigurationElement environmentVariableElement = environmentVariablesCollection.CreateElement("environmentVariable");
-                    environmentVariableElement["name"] = name;
-                    environmentVariableElement["value"] = value;
-                    var element = FindElement(environmentVariablesCollection, "add", "name", value);
-                    if (element != null)
+                    Configuration config = serverManager.GetWebConfiguration(siteName, appName);
+                    ConfigurationSection aspNetCoreSection = config.GetSection("system.webServer/aspNetCore");
+                    if (attributeName == "environmentVariable")
                     {
-                        throw new System.ApplicationException("duplicated collection item");
+                        string name = ((string[])attributeValue)[0];
+                        string value = ((string[])attributeValue)[1];
+                        ConfigurationElementCollection environmentVariablesCollection = aspNetCoreSection.GetCollection("environmentVariables");
+                        ConfigurationElement environmentVariableElement = environmentVariablesCollection.CreateElement("environmentVariable");
+                        environmentVariableElement["name"] = name;
+                        environmentVariableElement["value"] = value;
+                        var element = FindElement(environmentVariablesCollection, "add", "name", value);
+                        if (element != null)
+                        {
+                            throw new System.ApplicationException("duplicated collection item");
+                        }
+                        environmentVariablesCollection.Add(environmentVariableElement);
                     }
-                    environmentVariablesCollection.Add(environmentVariableElement);
-                }
-                else
-                {
-                    aspNetCoreSection[attributeName] = attributeValue;
-                }
+                    else
+                    {
+                        aspNetCoreSection[attributeName] = attributeValue;
+                    }
 
-                serverManager.CommitChanges();
-            }            
+                    serverManager.CommitChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public void ConfigureCustomLogging(string siteName, string appName, int statusCode, int subStatusCode, string path)
@@ -387,21 +504,29 @@ namespace AspNetCoreModule.Test.Framework
             {
                 if (_isIISInstalled == null)
                 {
-                    bool result = true;
-                    if (!File.Exists(Path.Combine(Strings.IIS64BitPath, "iiscore.dll")))
+                    _isIISInstalled = true;
+                    if (_isIISInstalled == true && !File.Exists(Path.Combine(Strings.IIS64BitPath, "iiscore.dll")))
                     {
-                        result = false;
+                        _isIISInstalled = false;
                     }
-                    if (!File.Exists(Path.Combine(Strings.IIS64BitPath, "config", "applicationhost.config")))
+                    if (_isIISInstalled == true && !File.Exists(Path.Combine(Strings.IIS64BitPath, "config", "applicationhost.config")))
                     {
-                        result = false;
+                        _isIISInstalled = false;
                     }
-                    _isIISInstalled = result;
                 }
                 return _isIISInstalled;
             }
+            set
+            {
+                _isIISInstalled = value;
+            }
         }
 
+        public static bool IsIISReady {
+            get;
+            set;
+        }
+        
         public bool IsAncmInstalled(ServerType servertype)
         {
             bool result = true;
@@ -422,7 +547,7 @@ namespace AspNetCoreModule.Test.Framework
             return result;
         }
 
-        public string GetServiceStatus(string serviceName)
+        public static string GetServiceStatus(string serviceName)
         {
             ServiceController sc = new ServiceController(serviceName);
 
@@ -959,26 +1084,8 @@ namespace AspNetCoreModule.Test.Framework
 
         public string CreateSelfSignedCertificateWithMakeCert(string subjectName, string issuerName = null, string extendedKeyUsage = null)
         {
-            string makecertExeFilePath = "makecert.exe";
-            var makecertExeFilePaths = new string[]
-            {
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits", "8.1", "bin", "x64", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits", "8.1", "bin", "x86", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits", "8.0", "bin", "x64", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits", "8.0", "bin", "x86", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows SKDs", "Windows", "v7.1A", "bin", "x64", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows SKDs", "Windows", "v7.1A", "bin", "makecert.exe")
-            };
+            string makecertExeFilePath = TestUtility.GetMakeCertPath();
 
-            foreach (string item in makecertExeFilePaths)
-            {
-                if (File.Exists(item))
-                {
-                    makecertExeFilePath = item;
-                    break;
-                }
-            }
-            
             string parameter;
             string targetSSLStore = string.Empty;
             if (issuerName == null)

@@ -3,6 +3,7 @@
 
 using AspNetCoreModule.Test.Framework;
 using Microsoft.AspNetCore.Testing.xunit;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -10,30 +11,19 @@ namespace AspNetCoreModule.Test
 {
     public class FunctionalTest : FunctionalTestHelper, IClassFixture<InitializeTestMachine>
     {
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, IISConfigUtility.AppPoolBitness.noChange)]
-        [InlineData(ServerType.IISExpress, IISConfigUtility.AppPoolBitness.enable32Bit)]
-        public Task BasicTestOnIISExpress(ServerType serverType, IISConfigUtility.AppPoolBitness appPoolBitness)
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
+        public async void BasicTest(IISConfigUtility.AppPoolBitness appPoolBitness)
         {
-            return DoBasicTest(serverType, appPoolBitness);
+            await DoBasicTest(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IIS, IISConfigUtility.AppPoolBitness.noChange)]
-        [InlineData(ServerType.IIS, IISConfigUtility.AppPoolBitness.enable32Bit)]
-        public Task BasicTestOnIIS(ServerType serverType, IISConfigUtility.AppPoolBitness appPoolBitness)
-        {
-            return DoBasicTest(serverType, appPoolBitness);
-        }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
-        [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.noChange, 5)]
@@ -44,9 +34,9 @@ namespace AspNetCoreModule.Test
         {
             return DoRapidFailsPerMinuteTest(appPoolBitness, valueOfRapidFailsPerMinute);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 25, 19)]
@@ -59,9 +49,9 @@ namespace AspNetCoreModule.Test
         {
             return DoShutdownTimeLimitTest(appPoolBitness, valueOfshutdownTimeLimit, expectedClosingTime);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 10)]
@@ -72,20 +62,9 @@ namespace AspNetCoreModule.Test
         {
             return DoStartupTimeLimitTest(appPoolBitness, starupTimeLimit);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789")]
-        [InlineData(IISConfigUtility.AppPoolBitness.noChange, "a")]
-        public Task WebSocketTest(IISConfigUtility.AppPoolBitness appPoolBitness, string testData)
-        {
-            return DoWebSocketTest(appPoolBitness, testData);
-        }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
-        [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -94,9 +73,9 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleApplicationAfterBackendProcessBeingKilled(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -105,9 +84,9 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleApplicationAfterW3WPProcessBeingKilled(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -117,8 +96,8 @@ namespace AspNetCoreModule.Test
             return DoRecycleApplicationAfterWebConfigUpdated(appPoolBitness);
         }
         
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -127,9 +106,9 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleApplicationWithURLRewrite(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -138,20 +117,26 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleParentApplicationWithURLRewrite(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
-        [InlineData(IISConfigUtility.AppPoolBitness.noChange)]
-        public Task EnvironmentVariablesTest(IISConfigUtility.AppPoolBitness appPoolBitness)
+        [InlineData("ANCMTestBar", "bar", "bar", IISConfigUtility.AppPoolBitness.enable32Bit)]
+        [InlineData("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "NA", "Microsoft.AspNetCore.Server.IISIntegration", IISConfigUtility.AppPoolBitness.noChange)]
+        [InlineData("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "newValue", "newValue", IISConfigUtility.AppPoolBitness.enable32Bit)]
+        [InlineData("ASPNETCORE_IIS_HTTPAUTH", "anonymous;", "anonymous;", IISConfigUtility.AppPoolBitness.noChange)]
+        [InlineData("ASPNETCORE_IIS_HTTPAUTH", "basic;anonymous;", "basic;anonymous;", IISConfigUtility.AppPoolBitness.enable32Bit)]
+        [InlineData("ASPNETCORE_IIS_HTTPAUTH", "windows;anonymous;", "windows;anonymous;", IISConfigUtility.AppPoolBitness.noChange)]
+        [InlineData("ASPNETCORE_IIS_HTTPAUTH", "windows;basic;anonymous;", "windows;basic;anonymous;", IISConfigUtility.AppPoolBitness.enable32Bit)]
+        [InlineData("ASPNETCORE_IIS_HTTPAUTH", "ignoredValue", "anonymous;", IISConfigUtility.AppPoolBitness.noChange)]
+        public Task EnvironmentVariablesTest(string environmentVariableName, string environmentVariableValue, string expectedEnvironmentVariableValue, IISConfigUtility.AppPoolBitness appPoolBitness)
         {
-            return DoEnvironmentVariablesTest(appPoolBitness);
+            return DoEnvironmentVariablesTest(environmentVariableName, environmentVariableValue, expectedEnvironmentVariableValue, appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -160,9 +145,9 @@ namespace AspNetCoreModule.Test
         {
             return DoAppOfflineTestWithRenaming(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -171,9 +156,9 @@ namespace AspNetCoreModule.Test
         {
             return DoAppOfflineTestWithUrlRewriteAndDeleting(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789")]
@@ -182,9 +167,9 @@ namespace AspNetCoreModule.Test
         {
             return DoPostMethodTest(appPoolBitness, testData);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -194,8 +179,8 @@ namespace AspNetCoreModule.Test
             return DoDisableStartUpErrorPageTest(appPoolBitness);
         }
 
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 10)]
@@ -205,8 +190,8 @@ namespace AspNetCoreModule.Test
             return DoProcessesPerApplicationTest(appPoolBitness, valueOfProcessesPerApplication);
         }
         
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "00:02:00")]
@@ -218,8 +203,8 @@ namespace AspNetCoreModule.Test
             return DoRequestTimeoutTest(appPoolBitness, requestTimeout);
         }
         
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -229,8 +214,8 @@ namespace AspNetCoreModule.Test
             return DoStdoutLogEnabledTest(appPoolBitness);
         }
         
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "dotnet.exe", "./")]
@@ -241,9 +226,9 @@ namespace AspNetCoreModule.Test
         {
             return DoProcessPathAndArgumentsTest(appPoolBitness, processPath, argumentsPrefix);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, true)]
@@ -255,19 +240,8 @@ namespace AspNetCoreModule.Test
             return DoForwardWindowsAuthTokenTest(appPoolBitness, enabledForwardWindowsAuthToken);
         }
 
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
-        [InlineData(IISConfigUtility.AppPoolBitness.noChange)]
-        public Task RecylingAppPoolTest(IISConfigUtility.AppPoolBitness appPoolBitness)
-        {
-            return DoRecylingAppPoolTest(appPoolBitness);
-        }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
-        [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, true, true)]
@@ -278,9 +252,9 @@ namespace AspNetCoreModule.Test
         {
             return DoCompressionTest(appPoolBitness, useCompressionMiddleWare, enableIISCompression);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -289,9 +263,9 @@ namespace AspNetCoreModule.Test
         {
             return DoCachingTest(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -300,9 +274,9 @@ namespace AspNetCoreModule.Test
         {
             return DoSendHTTPSRequestTest(appPoolBitness);
         }
-
-        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        
         [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, true)]
@@ -311,6 +285,33 @@ namespace AspNetCoreModule.Test
         public Task ClientCertificateMappingTest(IISConfigUtility.AppPoolBitness appPoolBitness, bool useHTTPSMiddleWare)
         {
             return DoClientCertificateMappingTest(appPoolBitness, useHTTPSMiddleWare);
+        }
+
+        //////////////////////////////////////////////////////////
+        // NOTE: below test scenarios are not valid for Win7 OS
+        //////////////////////////////////////////////////////////
+        [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "IIS does not support Websocket on Win7")]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789")]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, "a")]
+        public Task WebSocketTest(IISConfigUtility.AppPoolBitness appPoolBitness, string testData)
+        {
+            return DoWebSocketTest(appPoolBitness, testData);
+        }
+
+        [ConditionalTheory]
+        [ANCMTestSkipCondition("RunAsAdministratorAndX64Bitness")]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "WAS does not handle private memory limitation with Job object on Win7")]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange)]
+        public Task RecylingAppPoolTest(IISConfigUtility.AppPoolBitness appPoolBitness)
+        {
+            return DoRecylingAppPoolTest(appPoolBitness);
         }
     }
 }

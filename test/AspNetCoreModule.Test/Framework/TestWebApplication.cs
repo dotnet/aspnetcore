@@ -175,7 +175,7 @@ namespace AspNetCoreModule.Test.Framework
             // read web.config
             string fileContent = TestUtility.FileReadAllText(filePath);
 
-            // get the value of processPath attribute of aspNetCore element
+            // get the value of arguments attribute of aspNetCore element
             if (fileContent != null)
             {
                 result = TestUtility.XmlParser(fileContent, "aspNetCore", "arguments", null);
@@ -197,7 +197,7 @@ namespace AspNetCoreModule.Test.Framework
         {
             string fromfile = Path.Combine(_physicalPath, from + ".bak");
             string tofile = Path.Combine(_physicalPath, from);
-            if (!File.Exists(tofile))
+            if (!File.Exists(fromfile))
             {
                 BackupFile(from);
             }

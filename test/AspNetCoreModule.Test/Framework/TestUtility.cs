@@ -215,6 +215,7 @@ namespace AspNetCoreModule.Test.Framework
                 {
                     exceptionBlock?.Invoke(exception);
                 }
+                LogInformation("ANCMTEST::RetryHelper Retrying " + retry);
                 Thread.Sleep(retryDelayMilliseconds);
             }
             return false;
@@ -248,21 +249,21 @@ namespace AspNetCoreModule.Test.Framework
         {
             if (format != null)
             {
-                Logger.LogTrace(format);
+                Logger.LogTrace(format, parameters);
             }
         }
         public static void LogError(string format, params object[] parameters)
         {
             if (format != null)
             {
-                Logger.LogError(format);
+                Logger.LogError(format, parameters);
             }
         }
         public static void LogInformation(string format, params object[] parameters)
         {
             if (format != null)
             {
-                Logger.LogInformation(format);                
+                Logger.LogInformation(format, parameters);
             }
         }
 
@@ -431,6 +432,31 @@ namespace AspNetCoreModule.Test.Framework
             {
                 TestUtility.LogInformation("Failed to kill process " + processFileName);
             }            
+        }
+
+        public static string GetMakeCertPath()
+        {
+            string makecertExeFilePath = "makecert.exe";
+            var makecertExeFilePaths = new string[]
+            {
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits", "8.1", "bin", "x64", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits", "8.1", "bin", "x86", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits", "8.0", "bin", "x64", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits", "8.0", "bin", "x86", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows SKDs", "Windows", "v7.1A", "bin", "x64", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows SKDs", "Windows", "v7.1A", "bin", "makecert.exe")
+            };
+
+            foreach (string item in makecertExeFilePaths)
+            {
+                if (File.Exists(item))
+                {
+                    makecertExeFilePath = item;
+                    break;
+                }
+            }
+
+            return makecertExeFilePath;
         }
 
         public static int GetNumberOfProcess(string processFileName, int expectedNumber = 1, int retry = 0)
@@ -704,7 +730,16 @@ namespace AspNetCoreModule.Test.Framework
             IPEndPoint a = new IPEndPoint(0, 443);
 
             // create Powershell runspace
-            Runspace runspace = RunspaceFactory.CreateRunspace();
+            Runspace runspace = null;
+            try
+            {
+                runspace = RunspaceFactory.CreateRunspace();
+            }
+            catch
+            {
+                LogInformation("Failed to instantiate powershell Runspace; if this is Win7, install Powershell 4.0 to fix this problem");
+                throw new ApplicationException("Failed to instantiate powershell Runspace");
+            }
             
             // open it
             runspace.Open();
@@ -759,7 +794,7 @@ namespace AspNetCoreModule.Test.Framework
             
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.CreateNoWindow = true;            
-            p.Start();            
+            p.Start(); 
             pid = p.Id;
             string standardOutput = string.Empty;
             string standardError = string.Empty;

@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <MicrosoftCommonTargetsImported>true</MicrosoftCommonTargetsImported>
+    <VerifyDependsOn>$(VerifyDependsOn);PublishPackage</VerifyDependsOn>
+    <PublishFeed>https://dotnet.myget.org/F/aspnetcoremodule/api/v2/package</PublishFeed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PackagePublisher" Version="1.0.1-*" />
+  </ItemGroup>
+
+  <Target Name="_LocateMSBuildExe">
+    <ItemGroup>
+      <MSBuild15ExePaths Include="$(MSBuildProgramFiles32)\Microsoft Visual Studio\**\MSBuild\15.0\Bin\MSBuild.exe" />
+    </ItemGroup>
+
+    <Error
+      Text="Unable to locate MSBuild 15.0 under $(MSBuildProgramFiles32)\Microsoft Visual Studio"
+      Condition="'@(MSBuild15ExePaths)'==''"/>
+
+    <PropertyGroup Condition="'@(MSBuild15ExePaths)'!=''">
+      <MSBuildExePath>%(MSBuild15ExePaths.FullPath)</MSBuildExePath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="BuildNativeAssets" DependsOnTargets="_LocateMSBuildExe" BeforeTargets="Compile">
+    <ItemGroup>
+      <BuildConfigurations Include="/p:Configuration=Release /p:platform=Win32" />
+      <BuildConfigurations Include="/p:Configuration=Release /p:platform=x64" />
+    </ItemGroup>
+    <Exec Command="&quot;$(MSBuildExePath)&quot; &quot;$(RepositoryRoot)src\AspNetCore\AspNetCore.vcxproj&quot; %(BuildConfigurations.Identity)" />
+  </Target>
+
+  <Target Name="PackageProjects">
+    <PropertyGroup>
+      <NuGetExePath>$(RepositoryRoot).build\nuget.exe</NuGetExePath>
+      <NuspecPath>$(RepositoryRoot)nuget\AspNetCore.nuspec</NuspecPath>
+    </PropertyGroup>
+
+    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;$(NuspecPath)&quot; -OutputDirectory &quot;$(ArtifactsDir) &quot; -prop Version=1.0.0-$(BuildNumber)" />
+  </Target>
+
+    <Target Name="_ResolvePackagePublisherPath" DependsOnTargets="RunResolvePackageDependencies">
+    <ItemGroup>
+      <PackagePublisherPath Include="%(PackageDefinitions.ResolvedPath)" Condition="'%(PackageDefinitions.Name)'=='PackagePublisher'" />
+    </ItemGroup>
+ 
+   <PropertyGroup>
+      <_PackagePublisherPath>@(PackagePublisherPath)\PackagePublisher.exe</_PackagePublisherPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PublishPackage" 
+    DependsOnTargets="_ResolvePackagePublisherPath"
+    Condition="'$(PublishPackage)'=='true'">
+    
+    <Exec Command="&quot;$(PackagePublisherPath)&quot; -d &quot;$(ArtifactsDir) &quot; -f $(PublishFeed)" />
+  </Target>
+</Project>

@@ -26,7 +26,7 @@
  ("Result: $thumbPrint2")
  .\certificate.ps1 -Command Export-CertificateTo -TargetThumbPrint $thumbPrint2 -TargetSSLStore "Cert:\LocalMachine\My" -ExportToSSLStore "Cert:\CurrentUser\My"
 
- .\certificate.ps1 -Command Export-CertificateTo -TargetThumbPrint F97AB75DCF1C62547E4B5E7025D60001892A6A60 -ExportToSSLStore C:\gitroot\AspNetCoreModule\tools\test.pfx -PfxPassword test
+ .\certificate.ps1 -Command Export-CertificateTo -TargetThumbPrint $thumbPrint2 -TargetSSLStore "Cert:\LocalMachine\My" -ExportToSSLStore C:\gitroot\AspNetCoreModule\tools\test.pfx -PfxPassword test
 
 
  # Clean up
@@ -238,6 +238,17 @@ function Export-CertificateTo($_targetThumbPrint, $_exportToSSLStore, $_password
         Remove-Item $tempExportFile -Force -Confirm:$false
     }
     
+    $isThisWin7 = $false
+    $exportToSSLStoreName = $null
+    $exportToSSLStoreLocation = $null
+    $targetSSLStoreName = $null
+    $targetSSLStoreLocation = $null
+    
+    if ((Get-Command Export-Certificate 2> out-null) -eq $null)
+    {
+        $isThisWin7 = $true
+    }
+    
     # if _exportToSSLStore points to a .pfx file
     if ($exportToSSLStore.ToLower().EndsWith(".pfx"))
     {
@@ -246,33 +257,123 @@ function Export-CertificateTo($_targetThumbPrint, $_exportToSSLStore, $_password
             return ("Error!!! _password is required")
         }
 
-        $securedPassword = ConvertTo-SecureString -String $_password -Force –AsPlainText 
-        $exportedPfxFile = Export-PfxCertificate -FilePath $_exportToSSLStore -Cert $TargetSSLStore\$_targetThumbPrint -Password $securedPassword
-        if ( ($exportedPfxFile -ne $null) -and (Test-Path $exportedPfxFile.FullName) )
-        {
-            # Succeeded to export to .pfx file
-            return 
+        if ($isThisWin7)
+        {  
+            if ($TargetSSLStore.ToLower().Contains("my"))
+            {
+                $targetSSLStoreName = "My"
+            }
+            elseif ($_exportToSSLStore.ToLower().Contains("root"))
+            {
+                $targetSSLStoreName = "Root"
+            }
+            else
+            {
+                throw ("Unsupported store name " + $TargetSSLStore)
+            }
+            if ($TargetSSLStore.ToLower().Contains("localmachine"))
+            {
+                $targetSSLStoreLocation = "LocalMachine"
+            }
+            else
+            {
+                throw ("Unsupported store location name " + $TargetSSLStore)
+            }
+
+            &certutil.exe @('-exportpfx', '-p', $_password, $targetSSLStoreName, $_targetThumbPrint, $_exportToSSLStore) | out-null
+            
+            if ( Test-Path $_exportToSSLStore )
+            {
+                # Succeeded to export to .pfx file
+                return 
+            }
+            else
+            {
+                return ("Error!!! Can't export $TargetSSLStore\$_targetThumbPrint to $tempExportFile")
+            }
         }
         else
+        {
+            $securedPassword = ConvertTo-SecureString -String $_password -Force –AsPlainText 
+            $exportedPfxFile = Export-PfxCertificate -FilePath $_exportToSSLStore -Cert $TargetSSLStore\$_targetThumbPrint -Password $securedPassword
+            if ( ($exportedPfxFile -ne $null) -and (Test-Path $exportedPfxFile.FullName) )
+            {
+                # Succeeded to export to .pfx file
+                return 
+            }
+            else
+            {
+                return ("Error!!! Can't export $TargetSSLStore\$_targetThumbPrint to $tempExportFile")
+            }
+        }
+    }
+
+    if ($isThisWin7)
+    {
+        # Initialize variables for Win7
+        if ($_exportToSSLStore.ToLower().Contains("my"))
+        {
+            $exportToSSLStoreName = [System.Security.Cryptography.X509Certificates.StoreName]::My
+        }
+        elseif ($_exportToSSLStore.ToLower().Contains("root"))
+        {
+            $exportToSSLStoreName = [System.Security.Cryptography.X509Certificates.StoreName]::Root
+        }
+        else
+        {
+            throw ("Unsupported store name " + $_exportToSSLStore)
+        }
+        if ($_exportToSSLStore.ToLower().Contains("localmachine"))
+        {
+            $exportToSSLStoreLocation = [System.Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine
+        }
+        elseif ($_exportToSSLStore.ToLower().Contains("currentuser"))
+        {
+            $exportToSSLStoreLocation = [System.Security.Cryptography.X509Certificates.StoreLocation]::CurrentUser
+        }
+        else
+        {
+            throw ("Unsupported store location name " + $_exportToSSLStore)
+        }
+
+        # Export-Certificate is not available. 
+        $isThisWin7 = $true
+        $certificate = Get-Item "$TargetSSLStore\$_targetThumbPrint"
+        $base64certificate = @"
+-----BEGIN CERTIFICATE-----
+$([Convert]::ToBase64String($certificate.Export('Cert'), [System.Base64FormattingOptions]::InsertLineBreaks)))
+-----END CERTIFICATE-----
+"@
+        Set-Content -Path $tempExportFile -Value $base64certificate | Out-Null
+    }
+    else 
+    {
+        Export-Certificate -Cert $cert -FilePath $tempExportFile | Out-Null
+        if (-not (Test-Path $tempExportFile))
         {
             return ("Error!!! Can't export $TargetSSLStore\$_targetThumbPrint to $tempExportFile")
         }
     }
-                
-    Export-Certificate -Cert $cert -FilePath $tempExportFile | Out-Null
-    if (-not (Test-Path $tempExportFile))
+
+    if ($isThisWin7)
     {
-        return ("Error!!! Can't export $TargetSSLStore\$_targetThumbPrint to $tempExportFile")
+        [Reflection.Assembly]::Load("System.Security, Version=2.0.0.0, Culture=Neutral, PublicKeyToken=b03f5f7f11d50a3a") | Out-Null
+        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($tempExportFile)
+        $store = New-Object System.Security.Cryptography.X509Certificates.X509Store($exportToSSLStoreName,$exportToSSLStoreLocation)
+        $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite) | Out-Null
+        $store.Add($cert) | Out-Null
+    }
+    else
+    {
+        # clean up destination SSL store
+        Delete-Certificate $_targetThumbPrint $_exportToSSLStore
+        if (Test-Path "$_exportToSSLStore\$_targetThumbPrint")
+        {
+            return ("Error!!! Can't delete already existing one $_exportToSSLStore\$_targetThumbPrint")
+        }
+        Import-Certificate -CertStoreLocation $_exportToSSLStore -FilePath $tempExportFile | Out-Null
     }
 
-    # clean up destination SSL store
-    Delete-Certificate $_targetThumbPrint $_exportToSSLStore
-    if (Test-Path "$_exportToSSLStore\$_targetThumbPrint")
-    {
-        return ("Error!!! Can't delete already existing one $_exportToSSLStore\$_targetThumbPrint")
-    }
-
-    Import-Certificate -CertStoreLocation $_exportToSSLStore -FilePath $tempExportFile | Out-Null
     if (-not (Test-Path "$_exportToSSLStore\$_targetThumbPrint"))
     {
         return ("Error!!! Can't copy $TargetSSLStore\$_targetThumbPrint to $_exportToSSLStore")

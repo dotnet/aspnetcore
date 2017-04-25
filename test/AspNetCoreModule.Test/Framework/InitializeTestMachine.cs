@@ -11,14 +11,18 @@ namespace AspNetCoreModule.Test.Framework
     public class InitializeTestMachine : IDisposable
     {
         // 
-        // By default, we don't use the private AspNetCoreFile
+        // By default, we use the private AspNetCoreFile which were created from this solution
         // 
-        public static bool UsePrivateAspNetCoreFile = false;
+        public static bool UsePrivateAspNetCoreFile = true;
 
         public static int SiteId = 40000;
-        public static string Aspnetcore_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", "aspnetcore_private.dll");
+        public const string PrivateFileName = "aspnetcore_private.dll";
+        public static string Aspnetcore_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", PrivateFileName);
         public static string Aspnetcore_path_original = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", "aspnetcore.dll");
-        public static string Aspnetcore_X86_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "syswow64", "inetsrv", "aspnetcore_private.dll");
+        public static string Aspnetcore_X86_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "syswow64", "inetsrv", PrivateFileName);
+        public static string IISExpressAspnetcore_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "IIS Express", PrivateFileName);
+        public static string IISExpressAspnetcore_X86_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "IIS Express", PrivateFileName);
+
         public static string IISExpressAspnetcoreSchema_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "IIS Express", "config", "schema", "aspnetcore_schema.xml");
         public static string IISAspnetcoreSchema_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", "config", "schema", "aspnetcore_schema.xml");
         public static int _referenceCount = 0;
@@ -27,11 +31,6 @@ namespace AspNetCoreModule.Test.Framework
         
         public InitializeTestMachine()
         {
-            if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
-            {
-                TestUtility.LogInformation("Error!!! Skipping to run InitializeTestMachine::InitializeTestMachine() because the test process is started on syswow mode");
-                return;
-            }
             _referenceCount++;
 
             if (_referenceCount == 1)
@@ -41,27 +40,87 @@ namespace AspNetCoreModule.Test.Framework
                 _InitializeTestMachineCompleted = false;
 
                 TestUtility.LogInformation("InitializeTestMachine::Start");
-                if (Environment.ExpandEnvironmentVariables("%ANCMDebug%").ToLower() == "true")
+                if (Environment.ExpandEnvironmentVariables("%ANCMTEST_DEBUG%").ToLower() == "true")
                 {
                     System.Diagnostics.Debugger.Launch();                    
                 }
 
-                TestUtility.ResetHelper(ResetHelperMode.KillIISExpress);
-                TestUtility.ResetHelper(ResetHelperMode.KillWorkerProcess);
-                // cleanup before starting
-                string siteRootPath = Path.Combine(Environment.ExpandEnvironmentVariables("%SystemDrive%") + @"\", "inetpub", "ANCMTest");
+                // check Makecert.exe exists
                 try
                 {
-                    if (IISConfigUtility.IsIISInstalled == true)
-                    {
-                        IISConfigUtility.RestoreAppHostConfig();                        
-                    }
+                    string makecertExeFilePath = TestUtility.GetMakeCertPath();
+                    TestUtility.RunCommand(makecertExeFilePath, null, true, true);
+                    TestUtility.LogInformation("Verified makecert.exe is available : " + makecertExeFilePath);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    TestUtility.LogInformation("Failed to restore applicationhost.config");
+                    throw new System.ApplicationException("makecert.exe is not available : " + ex.Message);
                 }
 
+                TestUtility.ResetHelper(ResetHelperMode.KillIISExpress);
+
+                // check if we can use IIS server instead of IISExpress
+                try
+                {
+                    IISConfigUtility.IsIISReady = false;
+                    if (IISConfigUtility.IsIISInstalled == true)
+                    {
+                        if (Environment.GetEnvironmentVariable("ANCMTEST_USE_IISEXPRESS") != null && Environment.GetEnvironmentVariable("ANCMTEST_USE_IISEXPRESS").Equals("true", StringComparison.InvariantCultureIgnoreCase))
+                        {   
+                            throw new System.ApplicationException("'ANCMTestServerType' environment variable is set to 'true'");
+                        }
+
+                        // check websocket is installed
+                        if (File.Exists(Path.Combine(IISConfigUtility.Strings.IIS64BitPath, "iiswsock.dll")))
+                        {
+                            TestUtility.LogInformation("Websocket is installed");
+                        }
+                        else
+                        {
+                            throw new System.ApplicationException("websocket module is not installed");
+                        }
+
+                        TestUtility.ResetHelper(ResetHelperMode.KillWorkerProcess);
+
+                        // Reset applicationhost.config
+                        TestUtility.LogInformation("Restoring applicationhost.config");                        
+                        IISConfigUtility.RestoreAppHostConfig(restoreFromMasterBackupFile:true);
+                        TestUtility.StartW3svc();
+
+                        // check w3svc is running after resetting applicationhost.config
+                        if (IISConfigUtility.GetServiceStatus("w3svc") == "Running")
+                        {
+                            TestUtility.LogInformation("W3SVC service is restarted after restoring applicationhost.config");
+                        }
+                        else
+                        {
+                            throw new System.ApplicationException("WWW service can't start");
+                        }
+
+                        // check URLRewrite module exists
+                        if (File.Exists(Path.Combine(IISConfigUtility.Strings.IIS64BitPath, "rewrite.dll")))
+                        {
+                            TestUtility.LogInformation("Verified URL Rewrite module installed for IIS server");
+                        }
+                        else
+                        {
+                            throw new System.ApplicationException("URL Rewrite module is not installed");
+                        }
+
+                        if (IISConfigUtility.ApppHostTemporaryBackupFileExtention == null)
+                        {
+                            throw new System.ApplicationException("Failed to backup applicationhost.config");
+                        }
+                        IISConfigUtility.IsIISReady = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    RollbackIISApplicationhostConfigFile();
+                    TestUtility.LogInformation("We will use IISExpress instead of IIS: " + ex.Message);
+                }
+
+                string siteRootPath = Path.Combine(Environment.ExpandEnvironmentVariables("%SystemDrive%") + @"\", "inetpub", "ANCMTest");
                 if (!Directory.Exists(siteRootPath))
                 {
                     Directory.CreateDirectory(siteRootPath);
@@ -97,18 +156,16 @@ namespace AspNetCoreModule.Test.Framework
                     PreparePrivateANCMFiles();
 
                     // update applicationhost.config for IIS server
-                    if (IISConfigUtility.IsIISInstalled == true)
+                    if (IISConfigUtility.IsIISReady)
                     {
-
-                        using (var iisConfig = new IISConfigUtility(ServerType.IIS))
+                        using (var iisConfig = new IISConfigUtility(ServerType.IIS, null))
                         {
                             iisConfig.AddModule("AspNetCoreModule", Aspnetcore_path, null);
                         }
                     }
                 }
-                
-                _InitializeTestMachineCompleted = true;
 
+                _InitializeTestMachineCompleted = true;
                 TestUtility.LogInformation("InitializeTestMachine::InitializeTestMachine() End");
             }
 
@@ -122,7 +179,7 @@ namespace AspNetCoreModule.Test.Framework
                 {
                     TestUtility.LogInformation("InitializeTestMachine::InitializeTestMachine() Waiting...");
                     Thread.Sleep(500);
-                }                 
+                }
             }
             if (!_InitializeTestMachineCompleted)
             {
@@ -138,60 +195,68 @@ namespace AspNetCoreModule.Test.Framework
             {
                 TestUtility.LogInformation("InitializeTestMachine::Dispose() Start");
                 TestUtility.ResetHelper(ResetHelperMode.KillIISExpress);
-
-                if (InitializeTestMachine.UsePrivateAspNetCoreFile)
-                {
-                    if (IISConfigUtility.IsIISInstalled == true)
-                    {
-                        using (var iisConfig = new IISConfigUtility(ServerType.IIS))
-                        {
-                            try
-                            {
-                                iisConfig.AddModule("AspNetCoreModule", Aspnetcore_path_original, null);
-                            }
-                            catch
-                            {
-                                TestUtility.LogInformation("Failed to restore aspnetcore.dll path!!!");
-                            }
-                        }
-                    }
-                }
+                RollbackIISApplicationhostConfigFile();
                 TestUtility.LogInformation("InitializeTestMachine::Dispose() End");
             }
         }
-        
+
+        private void RollbackIISApplicationhostConfigFile()
+        {
+            if (IISConfigUtility.ApppHostTemporaryBackupFileExtention != null)
+            {
+                try
+                {
+                    TestUtility.ResetHelper(ResetHelperMode.KillWorkerProcess);
+                }
+                catch
+                {
+                    TestUtility.LogInformation("Failed to stop IIS worker processes");
+                }
+                try
+                {
+                    IISConfigUtility.RestoreAppHostConfig(restoreFromMasterBackupFile: false);
+                }
+                catch
+                {
+                    TestUtility.LogInformation("Failed to rollback applicationhost.config");
+                }
+                try
+                {
+                    TestUtility.StartW3svc();
+                }
+                catch
+                {
+                    TestUtility.LogInformation("Failed to start w3svc");
+                }
+                IISConfigUtility.ApppHostTemporaryBackupFileExtention = null;
+            }
+        }
+
         private void PreparePrivateANCMFiles()
         {
             var solutionRoot = GetSolutionDirectory();
             string outputPath = string.Empty;
             _setupScriptPath = Path.Combine(solutionRoot, "tools");
 
-            // First try with debug build
-            outputPath = Path.Combine(solutionRoot, "artifacts", "build", "AspNetCore", "bin", "Debug");
+            // First try with release build
+            outputPath = Path.Combine(solutionRoot, "artifacts", "build", "AspNetCore", "bin", "Release");
 
-            // If debug build does is not available, try with release build
+            // If release build is not available, try with debug build
             if (!File.Exists(Path.Combine(outputPath, "Win32", "aspnetcore.dll"))
                 || !File.Exists(Path.Combine(outputPath, "x64", "aspnetcore.dll"))
                 || !File.Exists(Path.Combine(outputPath, "x64", "aspnetcore_schema.xml")))
             {
-                outputPath = Path.Combine(solutionRoot, "artifacts", "build", "AspNetCore", "bin", "Release");
-            }
-
-            if (!File.Exists(Path.Combine(outputPath, "Win32", "aspnetcore.dll"))
-                || !File.Exists(Path.Combine(outputPath, "x64", "aspnetcore.dll"))
-                || !File.Exists(Path.Combine(outputPath, "x64", "aspnetcore_schema.xml")))
-            {
-                outputPath = Path.Combine(solutionRoot, "src", "AspNetCore", "bin", "Debug");
-            }
-
-            if (!File.Exists(Path.Combine(outputPath, "Win32", "aspnetcore.dll"))
-                || !File.Exists(Path.Combine(outputPath, "x64", "aspnetcore.dll"))
-                || !File.Exists(Path.Combine(outputPath, "x64", "aspnetcore_schema.xml")))
-            {
-                throw new ApplicationException("aspnetcore.dll is not available; build aspnetcore.dll for both x86 and x64 and then try again!!!");
+                outputPath = Path.Combine(solutionRoot, "artifacts", "build", "AspNetCore", "bin", "Debug");
             }
             
-            // create an extra private copy of the private file on IISExpress directory
+            if (!File.Exists(Path.Combine(outputPath, "Win32", "aspnetcore.dll"))
+                || !File.Exists(Path.Combine(outputPath, "x64", "aspnetcore.dll"))
+                || !File.Exists(Path.Combine(outputPath, "x64", "aspnetcore_schema.xml")))
+            {
+                throw new ApplicationException("aspnetcore.dll is not available; check if there is any build issue!!!");
+            }
+            
+            // create an extra private copy of the private file on IIS directory
             if (InitializeTestMachine.UsePrivateAspNetCoreFile)
             {
                 bool updateSuccess = false;
@@ -204,10 +269,15 @@ namespace AspNetCoreModule.Test.Framework
                         TestUtility.ResetHelper(ResetHelperMode.KillWorkerProcess);
                         TestUtility.ResetHelper(ResetHelperMode.StopW3svcStartW3svc);
                         Thread.Sleep(1000);
-                        TestUtility.FileCopy(Path.Combine(outputPath, "x64", "aspnetcore.dll"), Aspnetcore_path);
+                        string from = Path.Combine(outputPath, "x64", "aspnetcore.dll");
+                        TestUtility.FileCopy(from, Aspnetcore_path, overWrite:true, ignoreExceptionWhileDeletingExistingFile:false);
+                        TestUtility.FileCopy(from, IISExpressAspnetcore_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
+
                         if (TestUtility.IsOSAmd64)
                         {
-                            TestUtility.FileCopy(Path.Combine(outputPath, "Win32", "aspnetcore.dll"), Aspnetcore_X86_path);
+                            from = Path.Combine(outputPath, "Win32", "aspnetcore.dll");
+                            TestUtility.FileCopy(from, Aspnetcore_X86_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
+                            TestUtility.FileCopy(from, IISExpressAspnetcore_X86_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
                         }
                         updateSuccess = true;
                     }
