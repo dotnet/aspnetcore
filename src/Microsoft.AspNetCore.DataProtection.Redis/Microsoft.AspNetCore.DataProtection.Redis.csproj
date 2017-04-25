@@ -3,8 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <Description>Redis storrage support as key store.</Description>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <Description>Redis storage support as key store.</Description>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <TargetFrameworks>net46;netstandard1.5</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
