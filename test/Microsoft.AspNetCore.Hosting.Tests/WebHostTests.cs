@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        [Fact]
+        [Fact (Skip="https://github.com/aspnet/Hosting/issues/1024")]
         public void WebHostShutsDownWhenTokenTriggers()
         {
             using (var host = CreateBuilder()
