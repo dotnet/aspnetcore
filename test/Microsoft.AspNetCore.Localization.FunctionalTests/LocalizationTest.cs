@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5070",
                 "CustomCulturePreserved",
                 "en-US",
                 "kr10.00");
@@ -37,7 +36,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5071",
                 "CustomCulturePreserved",
                 "en-US",
                 "kr10.00");
@@ -51,7 +49,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5072",
                 "ResourcesInClassLibrary",
                 "fr-FR",
                 "Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryWithAttribute Bonjour from ResourcesClassLibraryWithAttribute");
@@ -67,7 +64,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5073",
                 "ResourcesInClassLibrary",
                 "fr-FR",
                 "Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryWithAttribute Bonjour from ResourcesClassLibraryWithAttribute");
@@ -81,7 +77,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5074",
                 "ResourcesInFolder",
                 "fr-FR",
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
@@ -97,7 +92,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5075/",
                 "ResourcesInFolder",
                 "fr-FR",
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
@@ -111,7 +105,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5076",
                 "ResourcesInFolder",
                 "fr-FR-test",
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
@@ -127,7 +120,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5077",
                 "ResourcesInFolder",
                 "fr-FR-test",
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
@@ -141,7 +133,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5078/",
                 "ResourcesInFolder",
                 "fr-FR-test-again-too-deep-to-work",
                 "Hello Hello Hello Hello");
@@ -157,7 +148,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5079/",
                 "ResourcesInFolder",
                 "fr-FR-test-again-too-deep-to-work",
                 "Hello Hello Hello Hello");
@@ -171,7 +161,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5070",
                 "ResourcesAtRootFolder",
                 "fr-FR",
                 "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in Models folder");
@@ -187,7 +176,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5071",
                 "ResourcesAtRootFolder",
                 "fr-FR",
                 "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in Models folder");

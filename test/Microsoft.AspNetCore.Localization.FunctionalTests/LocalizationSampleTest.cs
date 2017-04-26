@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponseHeading(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5080",
                 "My/Resources",
                 "fr-FR",
                 "<h1>Bonjour</h1>");
@@ -37,7 +36,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             return testRunner.RunTestAndVerifyResponseHeading(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
-                "http://localhost:5081/",
                 "My/Resources",
                 "fr-FR",
                 "<h1>Bonjour</h1>");

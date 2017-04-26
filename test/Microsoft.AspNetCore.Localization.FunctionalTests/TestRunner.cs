@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 {
     public class TestRunner
     {
+        private const string ApplicationBasePath = "http://localhost:0";
+
         private string _applicationPath;
 
         public TestRunner(string applicationPath)
@@ -44,7 +46,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         private async Task<string> RunTestAndGetResponse(
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
-            string applicationBaseUrl,
             string environmentName,
             string locale)
         {
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
             var deploymentParameters = new DeploymentParameters(_applicationPath, ServerType.Kestrel, runtimeFlavor, runtimeArchitecture)
             {
-                ApplicationBaseUriHint = applicationBaseUrl,
+                ApplicationBaseUriHint = ApplicationBasePath,
                 EnvironmentName = environmentName,
                 TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0"
             };
@@ -86,12 +87,11 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public async Task RunTestAndVerifyResponse(
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
-            string applicationBaseUrl,
             string environmentName,
             string locale,
             string expectedText)
         {
-            var responseText = await RunTestAndGetResponse(runtimeFlavor, runtimeArchitecture, applicationBaseUrl, environmentName, locale);
+            var responseText = await RunTestAndGetResponse(runtimeFlavor, runtimeArchitecture, environmentName, locale);
             Console.WriteLine("Response Text " + responseText);
             Assert.Equal(expectedText, responseText);
         }
@@ -99,12 +99,11 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public async Task RunTestAndVerifyResponseHeading(
             RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
-            string applicationBaseUrl,
             string environmentName,
             string locale,
             string expectedHeadingText)
         {
-            var responseText = await RunTestAndGetResponse(runtimeFlavor, runtimeArchitecture, applicationBaseUrl, environmentName, locale);
+            var responseText = await RunTestAndGetResponse(runtimeFlavor, runtimeArchitecture, environmentName, locale);
             var headingIndex = responseText.IndexOf(expectedHeadingText);
             Console.WriteLine("Response Header " + responseText);
             Assert.True(headingIndex >= 0);
