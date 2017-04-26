@@ -297,6 +297,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <c>RenderSection</c> or <c>RenderSectionAsync</c>
         /// </summary>
         /// <param name="name">The name of the section to create.</param>
+        /// <param name="section">The delegate to execute when rendering the section.</param>
+        /// <remarks>This is a temporary placeholder method to support ASP.NET Core 2.0.0 editor code generation.</remarks>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        protected void DefineSection(string name, Func<object, Task> section)
+            => DefineSection(name, () => section(null /* writer */));
+
+        /// <summary>
+        /// Creates a named content section in the page that can be invoked in a Layout page using
+        /// <c>RenderSection</c> or <c>RenderSectionAsync</c>
+        /// </summary>
+        /// <param name="name">The name of the section to create.</param>
         /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
         public virtual void DefineSection(string name, RenderAsyncDelegate section)
         {
