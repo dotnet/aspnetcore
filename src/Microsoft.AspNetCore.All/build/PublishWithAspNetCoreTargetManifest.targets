@@ -1,44 +1,26 @@
 <Project>
   <PropertyGroup>
-    <PublishWithAspNetCoreTargetManifest Condition="'$(PublishWithAspNetCoreTargetManifest)'==''">true</PublishWithAspNetCoreTargetManifest>
-    <ManifestRuntimeIdentifier Condition="'$(PublishWithAspNetCoreTargetManifest)'=='true' and '$(PublishableProject)'=='true'" >$(AspNetCoreTargetManifestRuntimeIdentifier)</ManifestRuntimeIdentifier>
+    <PublishWithAspNetCoreTargetManifest Condition="'$(PublishWithAspNetCoreTargetManifest)'=='' and '$(RuntimeIdentifier)'=='' and '$(RuntimeIdentifiers)'=='' and '$(PublishableProject)'=='true'">true</PublishWithAspNetCoreTargetManifest>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(PublishWithAspNetCoreTargetManifest)'=='true' and '$(PublishableProject)'=='true' and '$(ManifestRuntimeIdentifier)'==''">
-    <ManifestRuntimeIdentifier
-      Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'
-        and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)'=='X64'">win7-x64</ManifestRuntimeIdentifier>
-    <ManifestRuntimeIdentifier
-      Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))'
-        and '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)'=='X86'">win7-x86</ManifestRuntimeIdentifier>
-    <ManifestRuntimeIdentifier
-      Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))'">osx.10.12-x64</ManifestRuntimeIdentifier>
-    <ManifestRuntimeIdentifier
-      Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">linux-x64</ManifestRuntimeIdentifier>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(PublishWithAspNetCoreTargetManifest)'=='true' and '$(PublishableProject)'=='true'">
-    <TargetManifestFiles>$(TargetManifestFiles);$(MSBuildThisFileDirectory)manifest.$(ManifestRuntimeIdentifier).xml</TargetManifestFiles>
+  <PropertyGroup Condition="'$(PublishWithAspNetCoreTargetManifest)'=='true'">
+    <TargetManifestFiles>$(TargetManifestFiles);$(MSBuildThisFileDirectory)manifest.win7-x64.xml;$(MSBuildThisFileDirectory)manifest.win7-x86.xml;$(MSBuildThisFileDirectory)manifest.osx.10.12-x64.xml;$(MSBuildThisFileDirectory)manifest.linux-x64.xml</TargetManifestFiles>
   </PropertyGroup>
 
 <!--
-*******************************************************
+******************************************************************************
 Target: PublishWithAspNetCoreTargetManifest
-Error if manifest runtime identifier cannot be resolved
-*******************************************************
+Error if PublishWithAspNetCoreTargetManifest is set to true for standalone app
+******************************************************************************
 -->
   <Target
     Name="PublishWithAspNetCoreTargetManifest"
     BeforeTargets="Publish"
     DependsOnTargets="PrepareForPublish"
-    Condition="'$(PublishWithAspNetCoreTargetManifest)'=='true' and '$(PublishableProject)'=='true'" >
+    Condition="'$(PublishWithAspNetCoreTargetManifest)'=='true'" >
 
     <Error
-      Text="Could not resolve manifest runtime identifier. Please specify the the runtime identifier via the AspNetCoreTargetManifestRuntimeIdentifier property."
-      Condition="'$(ManifestRuntimeIdentifier)'==''" />
-
-    <Message
-      Text="Appending default ASP.NET Core runtime package store manifest for use during publish based for the runtime $(ManifestRuntimeIdentifier)."
-      Importance="low" />
+      Text="PublishWithAspNetCoreTargetManifest cannot be set to true for standalone apps."
+      Condition="'$(RuntimeIdentifier)'!='' or '$(RuntimeIdentifiers)'!=''" />
   </Target>
 </Project>
