@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
-    <RuntimeIdentifier Condition="'$(TargetFramework)'!='netcoreapp2.0'">win7-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(TargetFramework)'!='netcoreapp2.0'">win-x64</RuntimeIdentifier>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
