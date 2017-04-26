@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace ServerComparison.TestSites
 {
@@ -18,6 +19,11 @@ namespace ServerComparison.TestSites
 
             var builder = new WebHostBuilder()
                 .UseConfiguration(config)
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Warning);
+                })
                 .UseIISIntegration()
                 .UseStartup("ServerComparison.TestSites");
 

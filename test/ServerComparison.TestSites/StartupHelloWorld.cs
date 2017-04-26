@@ -11,8 +11,6 @@ namespace ServerComparison.TestSites
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(minLevel: LogLevel.Warning);
-
             app.Run(ctx =>
             {
                 return ctx.Response.WriteAsync("Hello World");
