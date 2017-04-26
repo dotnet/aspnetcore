@@ -17,7 +17,6 @@ namespace SampleApp
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(LogLevel.Trace);
             var logger = loggerFactory.CreateLogger("Default");
 
             app.Run(async context =>
@@ -42,6 +41,10 @@ namespace SampleApp
             };
 
             var host = new WebHostBuilder()
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.AddConsole();
+                })
                 .UseKestrel(options =>
                 {
                     // Run callbacks on the transport thread
