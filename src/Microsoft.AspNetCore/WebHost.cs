@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore
                         var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
                         if (appAssembly != null)
                         {
-                            config.AddUserSecrets(appAssembly);
+                            config.AddUserSecrets(appAssembly, optional: true);
                         }
                     }
 
