@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace ServerComparison.TestSites
 {
@@ -21,6 +22,11 @@ namespace ServerComparison.TestSites
             var builder = new WebHostBuilder()
                 .UseServer(new NoopServer())
                 .UseConfiguration(config)
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Warning);
+                })
                 .UseStartup("Microsoft.AspNetCore.Hosting.TestSites");
 
             var host = builder.Build();

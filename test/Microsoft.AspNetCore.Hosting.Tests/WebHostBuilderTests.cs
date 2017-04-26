@@ -992,7 +992,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var provider = new TestLoggerProvider();
             var builder = CreateWebHostBuilder()
-                .ConfigureLogging(factory =>
+                .ConfigureLogging((_, factory) =>
                 {
                     factory.AddProvider(provider);
                 })
@@ -1104,7 +1104,7 @@ namespace Microsoft.AspNetCore.Hosting
                        .UseSetting("testhostingstartup_chain", builder.GetSetting("testhostingstartup_chain") + "0")
                        .ConfigureServices(services => services.AddSingleton<ServiceA>())
                        .ConfigureServices(services => services.AddSingleton<ITestSink>(loggerProvider.Sink))
-                       .ConfigureLogging(lf => lf.AddProvider(loggerProvider))
+                       .ConfigureLogging((_, lf) => lf.AddProvider(loggerProvider))
                        .ConfigureAppConfiguration((context, configurationBuilder) => configurationBuilder.AddInMemoryCollection(
                            new []
                            {

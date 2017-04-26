@@ -815,10 +815,13 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var builder = CreateBuilder()
                 .UseFakeServer()
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.AddProvider(new AllMessagesAreNeeded());
+                })
                 .Configure(
                     appBuilder =>
                     {
-                        appBuilder.ApplicationServices.GetRequiredService<ILoggerFactory>().AddProvider(new AllMessagesAreNeeded());
                         appBuilder.Run(requestDelegate);
                     });
             return builder.Build();
