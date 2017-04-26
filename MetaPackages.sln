@@ -28,7 +28,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppSettings", "samples\AppS
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{9E49B5B9-9E72-42FB-B684-90CA1B1BCF9C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.FunctionalTests", "test\Microsoft.AspNetCore.Tests\Microsoft.AspNetCore.FunctionalTests.csproj", "{C72A756A-D29D-44C7-83D4-821DBE82DBCA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.FunctionalTests", "test\Microsoft.AspNetCore.FunctionalTests\Microsoft.AspNetCore.FunctionalTests.csproj", "{C72A756A-D29D-44C7-83D4-821DBE82DBCA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSites", "TestSites", "{EC22261D-0DE1-47DE-8F7C-072675D6F5B4}"
 EndProject
