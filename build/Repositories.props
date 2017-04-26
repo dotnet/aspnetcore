@@ -1,7 +1,7 @@
 <Project>
   <ItemDefinitionGroup>
     <Repository>
-      <Branch>dev</Branch>
+      <Branch>rel/2.0.0-preview1</Branch>
       <CloneUrl>git@github.com:aspnet/%(Identity)</CloneUrl>
     </Repository>
   </ItemDefinitionGroup>
