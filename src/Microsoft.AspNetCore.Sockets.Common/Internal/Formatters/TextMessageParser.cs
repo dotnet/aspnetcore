@@ -155,7 +155,10 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
             if (_state.Read == _state.Length)
             {
-                _state.Payload = DecodePayload(_state.Payload);
+                if (_state.MessageType == MessageType.Binary)
+                {
+                    _state.Payload = MessageFormatUtils.DecodePayload(_state.Payload);
+                }
 
                 _state.Phase = ParsePhase.PayloadComplete;
             }
@@ -167,36 +170,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 _state.Read += toCopy;
                 buffer.Advance(toCopy);
             }
-        }
-
-        private byte[] DecodePayload(byte[] inputPayload)
-        {
-            if (_state.MessageType == MessageType.Binary && inputPayload.Length > 0)
-            {
-                // Determine the output size
-                // Every 4 Base64 characters represents 3 bytes
-                var decodedLength = (inputPayload.Length / 4) * 3;
-
-                // Subtract padding bytes
-                if (inputPayload[inputPayload.Length - 1] == '=')
-                {
-                    decodedLength -= 1;
-                }
-                if (inputPayload.Length > 1 && inputPayload[inputPayload.Length - 2] == '=')
-                {
-                    decodedLength -= 1;
-                }
-
-                // Allocate a new buffer to decode to
-                var decodeBuffer = new byte[decodedLength];
-                if (Base64.Decode(inputPayload, decodeBuffer) != decodedLength)
-                {
-                    throw new FormatException("Invalid Base64 payload");
-                }
-                return decodeBuffer;
-            }
-
-            return inputPayload;
         }
 
         private static bool TryParseType(byte type, out MessageType messageType)

@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             examined = buffer.End;
             message = new Message();
             var reader = new ReadableBufferReader(buffer);
-            _messageType = MessageType.Text;
 
             var start = consumed;
             var end = examined;
@@ -83,6 +82,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     EnsureStartsWithDataPrefix(line);
                 }
 
+                var payload = Array.Empty<byte>();
                 switch (_internalParserState)
                 {
                     case InternalParseState.ReadMessageType:
@@ -94,7 +94,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                         consumed = lineEnd;
                         break;
                     case InternalParseState.ReadMessagePayload:
-
                         // Slice away the 'data: '
                         var payloadLength = line.Length - (_dataPrefix.Length + _sseLineEnding.Length);
                         var newData = line.Slice(_dataPrefix.Length, payloadLength).ToArray();
@@ -104,42 +103,56 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                         consumed = lineEnd;
                         break;
                     case InternalParseState.ReadEndOfMessage:
-                        if (_data.Count > 0)
+                        if (_data.Count == 1)
+                        {
+                            payload = _data[0];
+                        }
+                        else if (_data.Count > 1)
                         {
                             // Find the final size of the payload
                             var payloadSize = 0;
                             foreach (var dataLine in _data)
                             {
-                                payloadSize += dataLine.Length + _newLine.Length;
+                                payloadSize += dataLine.Length;
                             }
 
-                            // Allocate space in the paylod buffer for the data and the new lines. 
-                            // Subtract newLine length because we don't want a trailing newline. 
-                            var payload = new byte[payloadSize - _newLine.Length];
+                            if (_messageType != MessageType.Binary)
+                            {
+                                payloadSize += _newLine.Length*_data.Count;
+
+                                // Allocate space in the paylod buffer for the data and the new lines.
+                                // Subtract newLine length because we don't want a trailing newline.
+                                payload = new byte[payloadSize - _newLine.Length];
+                            }
+                            else
+                            {
+                                payload = new byte[payloadSize];
+                            }
 
                             var offset = 0;
                             foreach (var dataLine in _data)
                             {
                                 dataLine.CopyTo(payload, offset);
                                 offset += dataLine.Length;
-                                if (offset < payload.Length)
+                                if (offset < payload.Length && _messageType != MessageType.Binary)
                                 {
                                     _newLine.CopyTo(payload, offset);
                                     offset += _newLine.Length;
                                 }
                             }
-                            message = new Message(payload, _messageType);
-                        }
-                        else
-                        {
-                            // Empty message
-                            message = new Message(Array.Empty<byte>(), _messageType);
                         }
 
+                        if (_messageType == MessageType.Binary)
+                        {
+                            payload = MessageFormatUtils.DecodePayload(payload);
+                        }
+
+                        message = new Message(payload, _messageType);
                         consumed = lineEnd;
                         examined = consumed;
                         return ParseResult.Completed;
                 }
+
                 if (reader.Peek() == ByteCR)
                 {
                     _internalParserState = InternalParseState.ReadEndOfMessage;
@@ -188,7 +201,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 case ByteT:
                     return MessageType.Text;
                 case ByteB:
-                    throw new NotSupportedException("Support for binary messages has not been implemented yet");
+                    return MessageType.Binary;
                 case ByteC:
                     return MessageType.Close;
                 case ByteE:
