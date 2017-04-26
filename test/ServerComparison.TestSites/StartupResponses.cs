@@ -12,8 +12,6 @@ namespace ServerComparison.TestSites
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(minLevel: LogLevel.Warning);
-
             app.Map("/contentlength", subApp =>
             {
                 subApp.Run(context =>

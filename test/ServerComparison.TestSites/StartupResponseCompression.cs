@@ -18,8 +18,6 @@ namespace ServerComparison.TestSites
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(minLevel: LogLevel.Warning);
-            
             // NGinx's default min size is 20 bytes
             var helloWorldBody = "Hello World;" + new string('a', 20);
 
