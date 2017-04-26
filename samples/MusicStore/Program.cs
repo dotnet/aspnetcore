@@ -19,7 +19,10 @@ namespace MusicStore
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseConfiguration(config)
                 .UseIISIntegration()
-                .UseStartup("MusicStore");
+                .UseStartup("MusicStore")
+                .UseDefaultServiceProvider((context, options) => {
+                    options.ValidateScopes = true;
+                });
 
             if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
             {
