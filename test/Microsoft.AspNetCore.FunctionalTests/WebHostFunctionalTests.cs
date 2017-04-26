@@ -4,9 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -74,6 +77,129 @@ namespace Microsoft.AspNetCore.Tests
             }, setTestEnvVars: true);
         }
 
+        [Theory]
+        [InlineData("127.0.0.1", "127.0.0.1")]
+        [InlineData("::1", "[::1]")]
+        public async Task BindsKestrelHttpEndPointFromConfiguration(string endPointAddress, string requestAddress)
+        {
+            try
+            {
+                File.WriteAllText("appsettings.json", @"
+{
+    ""Kestrel"": {
+        ""EndPoints"": {
+            ""EndPoint"": {
+                ""Address"": """ + endPointAddress + @""",
+                ""Port"": 0
+            }
+        }
+    }
+}
+");
+                using (var webHost = WebHost.Start(context => context.Response.WriteAsync("Hello, World!")))
+                {
+                    var port = GetWebHostPort(webHost);
+
+                    Assert.NotEqual(0, port);
+
+                    using (var client = new HttpClient())
+                    {
+                        var response = await client.GetAsync($"http://{requestAddress}:{port}");
+                        response.EnsureSuccessStatusCode();
+                    }
+                }
+            }
+            finally
+            {
+                File.Delete("appsettings.json");
+            }
+        }
+
+        [Fact]
+        public async Task BindsKestrelHttpsEndPointFromConfiguration_ReferencedCertificateFile()
+        {
+            try
+            {
+                File.WriteAllText("appsettings.json", @"
+{
+    ""Kestrel"": {
+        ""EndPoints"": {
+            ""EndPoint"": {
+                ""Address"": ""127.0.0.1"",
+                ""Port"": 0,
+                ""Certificate"": ""TestCert""
+            }
+        }
+    },
+    ""Certificates"": {
+        ""TestCert"": {
+            ""Source"": ""File"",
+            ""Path"": ""testCert.pfx"",
+            ""Password"": ""testPassword""
+        }
+    }
+}
+");
+                using (var webHost = WebHost.Start(context => context.Response.WriteAsync("Hello, World!")))
+                {
+                    var port = GetWebHostPort(webHost);
+
+                    Assert.NotEqual(0, port);
+
+                    using (var client = new HttpClient(new HttpClientHandler { ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true }))
+                    {
+                        var response = await client.GetAsync($"https://127.0.0.1:{port}");
+                        response.EnsureSuccessStatusCode();
+                    }
+                }
+            }
+            finally
+            {
+                File.Delete("appsettings.json");
+            }
+        }
+
+        [Fact]
+        public async Task BindsKestrelHttpsEndPointFromConfiguration_InlineCertificateFile()
+        {
+            try
+            {
+                File.WriteAllText("appsettings.json", @"
+{
+    ""Kestrel"": {
+        ""EndPoints"": {
+            ""EndPoint"": {
+                ""Address"": ""127.0.0.1"",
+                ""Port"": 0,
+                ""Certificate"": {
+                    ""Source"": ""File"",
+                    ""Path"": ""testCert.pfx"",
+                    ""Password"": ""testPassword""
+                }
+            }
+        }
+    }
+}
+");
+                using (var webHost = WebHost.Start(context => context.Response.WriteAsync("Hello, World!")))
+                {
+                    var port = GetWebHostPort(webHost);
+
+                    Assert.NotEqual(0, port);
+
+                    using (var client = new HttpClient(new HttpClientHandler { ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true }))
+                    {
+                        var response = await client.GetAsync($"https://127.0.0.1:{port}");
+                        response.EnsureSuccessStatusCode();
+                    }
+                }
+            }
+            finally
+            {
+                File.Delete("appsettings.json");
+            }
+        }
+
         private async Task ExecuteStartOrStartWithTest(Func<DeploymentResult, Task<HttpResponseMessage>> getResponse, string applicationName)
         {
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
@@ -135,5 +261,10 @@ namespace Microsoft.AspNetCore.Tests
 
             throw new Exception($"Solution root could not be found using {applicationBasePath}");
         }
+
+        private static int GetWebHostPort(IWebHost webHost)
+            => webHost.ServerFeatures.Get<IServerAddressesFeature>().Addresses
+                .Select(serverAddress => new Uri(serverAddress).Port)
+                .FirstOrDefault();
     }
 }

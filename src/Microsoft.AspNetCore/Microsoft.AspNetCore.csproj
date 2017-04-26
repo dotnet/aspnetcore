@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-   <PackageReference Include="@(MetaPackagePackageReference)" />
+    <PackageReference Include="@(MetaPackagePackageReference)" />
   </ItemGroup>
 
 </Project>
