@@ -632,6 +632,10 @@
 
     <ItemGroup>
       <FileExclusions
+        Include="$(PoliCheckPath)**\*.deps.json">
+        <Justification>Deps files are auto-generated</Justification>
+      </FileExclusions>
+      <FileExclusions
           Include="$(PoliCheckPath)**\net46\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
                     $(PoliCheckPath)**\netstandard1.3\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\Northwind\NorthwindData.Objects.cs;
