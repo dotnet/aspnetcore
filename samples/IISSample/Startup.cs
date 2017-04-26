@@ -23,10 +23,8 @@ namespace IISSample
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
-            loggerfactory.AddConsole(LogLevel.Debug);
-
             var logger = loggerfactory.CreateLogger("Requests");
-            
+
             app.Run(async (context) =>
             {
                 logger.LogDebug("Received request: " + context.Request.Method + " " + context.Request.Path);
@@ -75,6 +73,11 @@ namespace IISSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                })
                 .UseKestrel()
                 .UseStartup<Startup>()
                 .Build();
