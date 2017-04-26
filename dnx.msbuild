@@ -8,6 +8,7 @@
   <Import Project="tools\QERM.targets" />
 
   <PropertyGroup>
+    <PublishFeed>https://dotnet.myget.org/F/aspnetcore-release/</PublishFeed>
     <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
     <BuildToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</BuildToolsFeed>
     <CoherenceDestinationDir>$(ArtifactsPath)coherence\</CoherenceDestinationDir>
@@ -449,10 +450,10 @@
       <PackagePublisherBinary>$(CommandsPath)\PackagePublisher\PackagePublisher.dll</PackagePublisherBinary>
     </PropertyGroup>
 
-    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(NUGET_FEED)" />
-    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackageCache -f $(NUGET_FEED)" />
-    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(NUGET_FEED)" />
-    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(NUGET_FEED)" />
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(PublishFeed)" />
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackageCache -f $(PublishFeed)" />
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(PublishFeed)" />
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(PublishFeed)" />
   </Target>
 
   <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
