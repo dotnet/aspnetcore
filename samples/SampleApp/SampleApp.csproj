@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="wwwroot\htmlpage.html" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
