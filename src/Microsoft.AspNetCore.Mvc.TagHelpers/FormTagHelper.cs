@@ -159,18 +159,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             var antiforgeryDefault = true;
+            var routeableParametersProvided = Action != null ||
+                Controller != null ||
+                Area != null ||
+                Page != null ||
+                PageHandler != null ||
+                Fragment != null ||
+                Route != null ||
+                (_routeValues != null && _routeValues.Count > 0);
 
             // If "action" is already set, it means the user is attempting to use a normal <form>.
             if (output.Attributes.TryGetAttribute(HtmlActionAttributeName, out var actionAttribute))
             {
-                if (Action != null ||
-                    Controller != null ||
-                    Area != null ||
-                    Page != null ||
-                    PageHandler != null ||
-                    Fragment != null ||
-                    Route != null ||
-                    (_routeValues != null && _routeValues.Count > 0))
+                if (routeableParametersProvided)
                 {
                     // User also specified bound attributes we cannot use.
                     throw new InvalidOperationException(
@@ -254,13 +255,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
 
                 TagBuilder tagBuilder = null;
-                if (Action == null &&
-                    Controller == null &&
-                    Route == null &&
+                if (!routeableParametersProvided &&
                     _routeValues == null &&
-                    Fragment == null &&
-                    Area == null &&
-                    Page == null &&
                     // Antiforgery will sometime be set globally via TagHelper Initializers, verify it was provided in the cshtml. 
                     !context.AllAttributes.ContainsName(AntiforgeryAttributeName))
                 {

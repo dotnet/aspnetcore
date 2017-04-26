@@ -1,6 +1,6 @@
 @page "{handler?}/{id?}"
 
-@function
+@functions
 {
     public IActionResult OnPostEdit(int id)
     {
@@ -13,4 +13,6 @@
     }
 }
 
+<form asp-page-handler="Edit"></form>
+<form method="post" asp-page-handler="Edit"></form>
 <form method="post" asp-page-handler="Edit" asp-route-id="10" asp-antiforgery="false"></form>

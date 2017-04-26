@@ -26,6 +26,53 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     public class FormTagHelperTest
     {
         [Fact]
+        public async Task ProcessAsync_InvokesGeneratePageForm_WithOnlyPageHandler()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var context = new TagHelperContext(
+                tagName: "form",
+                allAttributes: new TagHelperAttributeList()
+                {
+                    { "asp-handler", "page-handler" },
+                    { "method", "get" }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "form",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            generator
+                .Setup(mock => mock.GeneratePageForm(
+                    viewContext,
+                    null,
+                    "page-handler",
+                    null,
+                    null,
+                    null,
+                    null))
+                .Returns(new TagBuilder("form"))
+                .Verifiable();
+            var formTagHelper = new FormTagHelper(generator.Object)
+            {
+                ViewContext = viewContext,
+                PageHandler = "page-handler",
+                Method = "get"
+            };
+
+            // Act & Assert
+            await formTagHelper.ProcessAsync(context, output);
+            generator.Verify();
+        }
+
+        [Fact]
         public async Task ProcessAsync_ActionAndControllerGenerateAntiforgery()
         {
             // Arrange
