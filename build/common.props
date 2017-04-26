@@ -153,6 +153,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
