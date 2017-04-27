@@ -24,4 +24,10 @@
     <PackageReference Include="System.Net.Security" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="HttpsStrings.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

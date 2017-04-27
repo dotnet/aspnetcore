@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestBadRequest(
                 $"GET / {httpVersion}\r\n",
                 "505 HTTP Version Not Supported",
-                $"Unrecognized HTTP version: '{httpVersion}'");
+                CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion));
         }
 
         [Theory]
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestBadRequest(
                 $"{method} / HTTP/1.1\r\nHost:\r\n\r\n",
                 "411 Length Required",
-                $"{method} request contains no Content-Length or Transfer-Encoding header");
+                CoreStrings.FormatBadRequest_LengthRequired(method));
         }
 
         [Theory]
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestBadRequest(
                 $"{method} / HTTP/1.0\r\n\r\n",
                 "400 Bad Request",
-                $"{method} request contains no Content-Length header");
+                CoreStrings.FormatBadRequest_LengthRequiredHttp10(method));
         }
 
         [Theory]
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestBadRequest(
                 $"POST / HTTP/1.1\r\nHost:\r\nContent-Length: {contentLength}\r\n\r\n",
                 "400 Bad Request",
-                $"Invalid content length: {contentLength}");
+                CoreStrings.FormatBadRequest_InvalidContentLength_Detail(contentLength));
         }
 
         [Theory]
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestBadRequest(
                 $"{request} HTTP/1.1\r\n",
                 "405 Method Not Allowed",
-                "Method not allowed.",
+                CoreStrings.BadRequest_MethodNotAllowed,
                 $"Allow: {allowedMethod}");
         }
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestBadRequest(
                 "GET / HTTP/1.1\r\n\r\n",
                 "400 Bad Request",
-                "Request is missing Host header.");
+                CoreStrings.BadRequest_MissingHostHeader);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             return TestBadRequest("GET / HTTP/1.1\r\nHost: localhost\r\nHost: localhost\r\n\r\n",
                 "400 Bad Request",
-                "Multiple Host headers.");
+                CoreStrings.BadRequest_MultipleHostHeaders);
         }
 
         [Theory]
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return TestBadRequest(
                 $"{requestTarget} HTTP/1.1\r\nHost: {host}\r\n\r\n",
                 "400 Bad Request",
-                $"Invalid Host header: '{host.Trim()}'");
+                CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(host.Trim()));
         }
 
         [Fact]
@@ -218,17 +218,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 foreach (var requestLine in HttpParsingData.RequestLineInvalidData)
                 {
-                    data.Add(requestLine, $"Invalid request line: '{requestLine.EscapeNonPrintable()}'");
+                    data.Add(requestLine, CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()));
                 }
 
                 foreach (var target in HttpParsingData.TargetWithEncodedNullCharData)
                 {
-                    data.Add($"GET {target} HTTP/1.1\r\n", $"Invalid request target: '{target.EscapeNonPrintable()}'");
+                    data.Add($"GET {target} HTTP/1.1\r\n", CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()));
                 }
 
                 foreach (var target in HttpParsingData.TargetWithNullCharData)
                 {
-                    data.Add($"GET {target} HTTP/1.1\r\n", $"Invalid request target: '{target.EscapeNonPrintable()}'");
+                    data.Add($"GET {target} HTTP/1.1\r\n", CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()));
                 }
 
                 return data;
@@ -239,6 +239,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         public static IEnumerable<object[]> InvalidRequestHeaderData => HttpParsingData.RequestHeaderInvalidData;
 
-        public static TheoryData<string,string> InvalidHostHeaderData => HttpParsingData.HostHeaderInvalidData;
+        public static TheoryData<string, string> InvalidHostHeaderData => HttpParsingData.HostHeaderInvalidData;
     }
 }

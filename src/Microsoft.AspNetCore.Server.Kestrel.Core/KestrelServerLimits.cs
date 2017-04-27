@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 if (value.HasValue && value.Value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), "Value must be null or a non-negative integer.");
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNullableIntRequired);
                 }
                 _maxResponseBufferSize = value;
             }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 if (value.HasValue && value.Value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), "Value must be null or a positive integer.");
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveNullableIntRequired);
                 }
                 _maxRequestBufferSize = value;
             }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), "Value must be a positive integer.");
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveIntRequired);
                 }
                 _maxRequestLineSize = value;
             }
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), "Value must a positive integer.");
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveIntRequired);
                 }
                 _maxRequestHeadersTotalSize = value;
             }
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), "Value must a positive integer.");
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveIntRequired);
                 }
                 _maxRequestHeaderCount = value;
             }

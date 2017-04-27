@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             int schemeDelimiterStart = url.IndexOf("://", StringComparison.Ordinal);
             if (schemeDelimiterStart < 0)
             {
-                throw new FormatException($"Invalid URL: {url}");
+                throw new FormatException(CoreStrings.FormatInvalidUrl(url));
             }
             int schemeDelimiterEnd = schemeDelimiterStart + "://".Length;
 
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             if (string.IsNullOrEmpty(serverAddress.Host))
             {
-                throw new FormatException($"Invalid URL: {url}");
+                throw new FormatException(CoreStrings.FormatInvalidUrl(url));
             }
 
             if (url[url.Length - 1] == '/')

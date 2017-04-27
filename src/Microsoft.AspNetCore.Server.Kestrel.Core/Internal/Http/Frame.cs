@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _keepAlive = false;
                 throw new InvalidOperationException(
-                    $"Response Content-Length mismatch: too many bytes written ({_responseBytesWritten + count} of {responseHeaders.ContentLength.Value}).");
+                    CoreStrings.FormatTooManyBytesWritten(_responseBytesWritten + count, responseHeaders.ContentLength.Value));
             }
 
             _responseBytesWritten += count;
@@ -702,7 +702,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 ReportApplicationError(new InvalidOperationException(
-                    $"Response Content-Length mismatch: too few bytes written ({_responseBytesWritten} of {responseHeaders.ContentLength.Value})."));
+                    CoreStrings.FormatTooFewBytesWritten(_responseBytesWritten, responseHeaders.ContentLength.Value)));
             }
         }
 
@@ -1081,12 +1081,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void ThrowResponseAlreadyStartedException(string value)
         {
-            throw new InvalidOperationException($"{value} cannot be set, response has already started.");
+            throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(value));
         }
 
         private void RejectNonBodyTransferEncodingResponse(bool appCompleted)
         {
-            var ex = new InvalidOperationException($"Transfer-Encoding set on a {StatusCode} non-body request.");
+            var ex = new InvalidOperationException(CoreStrings.FormatHeaderNotAllowedOnResponse("Transfer-Encoding", StatusCode));
             if (!appCompleted)
             {
                 // Back out of header creation surface exeception in user code
@@ -1143,15 +1143,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (Method != "HEAD")
             {
                 // Throw Exception for 204, 205, 304 responses.
-                throw new InvalidOperationException($"Write to non-body {StatusCode} response.");
+                throw new InvalidOperationException(CoreStrings.FormatWritingToResponseBodyNotSupported(StatusCode));
             }
         }
 
         private void ThrowResponseAbortedException()
         {
-            throw new ObjectDisposedException(
-                    "The response has been aborted due to an unhandled application exception.",
-                    _applicationException);
+            throw new ObjectDisposedException(CoreStrings.UnhandledApplicationException, _applicationException);
         }
 
         public void RejectRequest(RequestRejectionReason reason)

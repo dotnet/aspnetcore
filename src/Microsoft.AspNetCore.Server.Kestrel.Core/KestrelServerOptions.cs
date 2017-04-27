@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
             if (socketPath.Length == 0 || socketPath[0] != '/')
             {
-                throw new ArgumentException("Unix socket path must be absolute.", nameof(socketPath));
+                throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
             }
             if (configure == null)
             {

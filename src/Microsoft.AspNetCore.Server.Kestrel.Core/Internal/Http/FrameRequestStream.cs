@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             if (bufferSize <= 0)
             {
-                throw new ArgumentException($"{nameof(bufferSize)} must be positive.", nameof(bufferSize));
+                throw new ArgumentException(CoreStrings.PositiveIntRequired, nameof(bufferSize));
             }
 
             var task = ValidateState(cancellationToken);

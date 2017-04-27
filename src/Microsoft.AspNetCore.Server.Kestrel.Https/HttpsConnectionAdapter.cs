@@ -31,9 +31,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             {
                 throw new ArgumentNullException(nameof(options));
             }
+
             if (options.ServerCertificate == null)
             {
-                throw new ArgumentException("The server certificate parameter is required.");
+                throw new ArgumentException(HttpsStrings.ServiceCertificateRequired, nameof(options));
             }
 
             _options = options;
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             }
             catch (IOException ex)
             {
-                _logger?.LogInformation(1, ex, "Failed to authenticate HTTPS connection.");
+                _logger?.LogInformation(1, ex, HttpsStrings.AuthenticationFailed);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }

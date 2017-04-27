@@ -117,10 +117,193 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BadRequest" xml:space="preserve">
+    <value>Bad request.</value>
+  </data>
+  <data name="BadRequest_BadChunkSizeData" xml:space="preserve">
+    <value>Bad chunk size data.</value>
+  </data>
+  <data name="BadRequest_BadChunkSuffix" xml:space="preserve">
+    <value>Bad chunk suffix.</value>
+  </data>
+  <data name="BadRequest_ChunkedRequestIncomplete" xml:space="preserve">
+    <value>Chunked request incomplete.</value>
+  </data>
+  <data name="BadRequest_FinalTransferCodingNotChunked" xml:space="preserve">
+    <value>The message body length cannot be determined because the final transfer coding was set to '{detail}' instead of 'chunked'.</value>
+  </data>
+  <data name="BadRequest_HeadersExceedMaxTotalSize" xml:space="preserve">
+    <value>Request headers too long.</value>
+  </data>
+  <data name="BadRequest_InvalidCharactersInHeaderName" xml:space="preserve">
+    <value>Invalid characters in header name.</value>
+  </data>
+  <data name="BadRequest_InvalidContentLength_Detail" xml:space="preserve">
+    <value>Invalid content length: {detail}</value>
+  </data>
+  <data name="BadRequest_InvalidHostHeader" xml:space="preserve">
+    <value>Invalid Host header.</value>
+  </data>
+  <data name="BadRequest_InvalidHostHeader_Detail" xml:space="preserve">
+    <value>Invalid Host header: '{detail}'</value>
+  </data>
+  <data name="BadRequest_InvalidRequestHeadersNoCRLF" xml:space="preserve">
+    <value>Invalid request headers: missing final CRLF in header fields.</value>
+  </data>
+  <data name="BadRequest_InvalidRequestHeader_Detail" xml:space="preserve">
+    <value>Invalid request header: '{detail}'</value>
+  </data>
+  <data name="BadRequest_InvalidRequestLine" xml:space="preserve">
+    <value>Invalid request line.</value>
+  </data>
+  <data name="BadRequest_InvalidRequestLine_Detail" xml:space="preserve">
+    <value>Invalid request line: '{detail}'</value>
+  </data>
+  <data name="BadRequest_InvalidRequestTarget_Detail" xml:space="preserve">
+    <value>Invalid request target: '{detail}'</value>
+  </data>
+  <data name="BadRequest_LengthRequired" xml:space="preserve">
+    <value>{detail} request contains no Content-Length or Transfer-Encoding header.</value>
+  </data>
+  <data name="BadRequest_LengthRequiredHttp10" xml:space="preserve">
+    <value>{detail} request contains no Content-Length header.</value>
+  </data>
+  <data name="BadRequest_MalformedRequestInvalidHeaders" xml:space="preserve">
+    <value>Malformed request: invalid headers.</value>
+  </data>
+  <data name="BadRequest_MethodNotAllowed" xml:space="preserve">
+    <value>Method not allowed.</value>
+  </data>
+  <data name="BadRequest_MissingHostHeader" xml:space="preserve">
+    <value>Request is missing Host header.</value>
+  </data>
+  <data name="BadRequest_MultipleContentLengths" xml:space="preserve">
+    <value>Multiple Content-Length headers.</value>
+  </data>
+  <data name="BadRequest_MultipleHostHeaders" xml:space="preserve">
+    <value>Multiple Host headers.</value>
+  </data>
+  <data name="BadRequest_RequestLineTooLong" xml:space="preserve">
+    <value>Request line too long.</value>
+  </data>
+  <data name="BadRequest_RequestTimeout" xml:space="preserve">
+    <value>Request timed out.</value>
+  </data>
+  <data name="BadRequest_TooManyHeaders" xml:space="preserve">
+    <value>Request contains too many headers.</value>
+  </data>
+  <data name="BadRequest_UnexpectedEndOfRequestContent" xml:space="preserve">
+    <value>Unexpected end of request content.</value>
+  </data>
+  <data name="BadRequest_UnrecognizedHTTPVersion" xml:space="preserve">
+    <value>Unrecognized HTTP version: '{detail}'</value>
+  </data>
+  <data name="BadRequest_UpgradeRequestCannotHavePayload" xml:space="preserve">
+    <value>Requests with 'Connection: Upgrade' cannot have content in the request body.</value>
+  </data>
   <data name="FallbackToIPv4Any" xml:space="preserve">
     <value>Failed to bind to http://[::]:{port} (IPv6Any). Attempting to bind to http://0.0.0.0:{port} instead.</value>
   </data>
   <data name="ResponseStreamWasUpgraded" xml:space="preserve">
     <value>Cannot write to response body after connection has been upgraded.</value>
+  </data>
+  <data name="BigEndianNotSupported" xml:space="preserve">
+    <value>Kestrel does not support big-endian architectures.</value>
+  </data>
+  <data name="MaxRequestBufferSmallerThanRequestHeaderBuffer" xml:space="preserve">
+    <value>Maximum request buffer size ({requestBufferSize}) must be greater than or equal to maximum request header size ({requestHeaderSize}).</value>
+  </data>
+  <data name="MaxRequestBufferSmallerThanRequestLineBuffer" xml:space="preserve">
+    <value>Maximum request buffer size ({requestBufferSize}) must be greater than or equal to maximum request line size ({requestLineSize}).</value>
+  </data>
+  <data name="ServerAlreadyStarted" xml:space="preserve">
+    <value>Server has already started.</value>
+  </data>
+  <data name="UnknownTransportMode" xml:space="preserve">
+    <value>Unknown transport mode: '{mode}'.</value>
+  </data>
+  <data name="InvalidAsciiOrControlChar" xml:space="preserve">
+    <value>Invalid non-ASCII or control character in header: {character}</value>
+  </data>
+  <data name="InvalidContentLength_InvalidNumber" xml:space="preserve">
+    <value>Invalid Content-Length: "{value}". Value must be a positive integral number.</value>
+  </data>
+  <data name="NonNegativeNullableIntRequired" xml:space="preserve">
+    <value>Value must be null or a non-negative integer.</value>
+  </data>
+  <data name="PositiveIntRequired" xml:space="preserve">
+    <value>Value must be a positive integer.</value>
+  </data>
+  <data name="PositiveNullableIntRequired" xml:space="preserve">
+    <value>Value must be null or a positive integer.</value>
+  </data>
+  <data name="UnixSocketPathMustBeAbsolute" xml:space="preserve">
+    <value>Unix socket path must be absolute.</value>
+  </data>
+  <data name="AddressBindingFailed" xml:space="preserve">
+    <value>Failed to bind to address {address}.</value>
+  </data>
+  <data name="BindingToDefaultAddress" xml:space="preserve">
+    <value>No listening endpoints were configured. Binding to {address} by default.</value>
+  </data>
+  <data name="ConfigureHttpsFromMethodCall" xml:space="preserve">
+    <value>HTTPS endpoints can only be configured using {methodName}.</value>
+  </data>
+  <data name="ConfigurePathBaseFromMethodCall" xml:space="preserve">
+    <value>A path base can only be configured using {methodName}.</value>
+  </data>
+  <data name="DynamicPortOnLocalhostNotSupported" xml:space="preserve">
+    <value>Dynamic port binding is not supported when binding to localhost. You must either bind to 127.0.0.1:0 or [::1]:0, or both.</value>
+  </data>
+  <data name="EndpointAlreadyInUse" xml:space="preserve">
+    <value>Failed to bind to address {endpoint}: address already in use.</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>Invalid URL: '{url}'.</value>
+  </data>
+  <data name="NetworkInterfaceBindingFailed" xml:space="preserve">
+    <value>Unable to bind to {address} on the {interfaceName} interface: '{error}'.</value>
+  </data>
+  <data name="OverridingWithKestrelOptions" xml:space="preserve">
+    <value>Overriding address(es) '{addresses}'. Binding to endpoints defined in {methodName} instead.</value>
+  </data>
+  <data name="OverridingWithPreferHostingUrls" xml:space="preserve">
+    <value>Overriding endpoints defined in UseKestrel() because {settingName} is set to true. Binding to address(es) '{addresses}' instead.</value>
+  </data>
+  <data name="UnsupportedAddressScheme" xml:space="preserve">
+    <value>Unrecognized scheme in server address '{address}'. Only 'http://' is supported.</value>
+  </data>
+  <data name="HeadersAreReadOnly" xml:space="preserve">
+    <value>Headers are read-only, response has already started.</value>
+  </data>
+  <data name="KeyAlreadyExists" xml:space="preserve">
+    <value>An item with the same key has already been added.</value>
+  </data>
+  <data name="HeaderNotAllowedOnResponse" xml:space="preserve">
+    <value>Setting the header {name} is not allowed on responses with status code {statusCode}.</value>
+  </data>
+  <data name="ParameterReadOnlyAfterResponseStarted" xml:space="preserve">
+    <value>{name} cannot be set because the response has already started.</value>
+  </data>
+  <data name="RequestProcessingAborted" xml:space="preserve">
+    <value>Request processing didn't complete within the shutdown timeout.</value>
+  </data>
+  <data name="TooFewBytesWritten" xml:space="preserve">
+    <value>Response Content-Length mismatch: too few bytes written ({written} of {expected}).</value>
+  </data>
+  <data name="TooManyBytesWritten" xml:space="preserve">
+    <value>Response Content-Length mismatch: too many bytes written ({written} of {expected}).</value>
+  </data>
+  <data name="UnhandledApplicationException" xml:space="preserve">
+    <value>The response has been aborted due to an unhandled application exception.</value>
+  </data>
+  <data name="WritingToResponseBodyNotSupported" xml:space="preserve">
+    <value>Writing to the response body is invalid for responses with status code {statusCode}.</value>
+  </data>
+  <data name="ConnectionShutdownError" xml:space="preserve">
+    <value>Connection shutdown abnormally.</value>
+  </data>
+  <data name="RequestProcessingEndError" xml:space="preserve">
+    <value>Connection processing ended abnormally.</value>
   </data>
 </root>

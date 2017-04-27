@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private static void ThrowInvalidContentLengthException(string value)
         {
-            throw new InvalidOperationException($"Invalid Content-Length: \"{value}\". Value must be a positive integral number.");
+            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     threadPool = new InlineLoggingThreadPool(trace);
                     break;
                 default:
-                    throw new NotSupportedException($"Unknown transport mode {serverOptions.ApplicationSchedulingMode}");
+                    throw new NotSupportedException(CoreStrings.FormatUnknownTransportMode(serverOptions.ApplicationSchedulingMode));
             }
 
             return new ServiceContext
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 if (!BitConverter.IsLittleEndian)
                 {
-                    throw new PlatformNotSupportedException("Kestrel does not support big-endian architectures.");
+                    throw new PlatformNotSupportedException(CoreStrings.BigEndianNotSupported);
                 }
 
                 ValidateOptions();
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 if (_hasStarted)
                 {
                     // The server has already started and/or has not been cleaned up yet
-                    throw new InvalidOperationException("Server has already started.");
+                    throw new InvalidOperationException(CoreStrings.ServerAlreadyStarted);
                 }
                 _hasStarted = true;
                 _heartbeat.Start();
@@ -196,14 +196,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Options.Limits.MaxRequestBufferSize < Options.Limits.MaxRequestLineSize)
             {
                 throw new InvalidOperationException(
-                    $"Maximum request buffer size ({Options.Limits.MaxRequestBufferSize.Value}) must be greater than or equal to maximum request line size ({Options.Limits.MaxRequestLineSize}).");
+                    CoreStrings.FormatMaxRequestBufferSmallerThanRequestLineBuffer(Options.Limits.MaxRequestBufferSize.Value, Options.Limits.MaxRequestLineSize));
             }
 
             if (Options.Limits.MaxRequestBufferSize.HasValue &&
                 Options.Limits.MaxRequestBufferSize < Options.Limits.MaxRequestHeadersTotalSize)
             {
                 throw new InvalidOperationException(
-                    $"Maximum request buffer size ({Options.Limits.MaxRequestBufferSize.Value}) must be greater than or equal to maximum request headers size ({Options.Limits.MaxRequestHeadersTotalSize}).");
+                    CoreStrings.FormatMaxRequestBufferSmallerThanRequestHeaderBuffer(Options.Limits.MaxRequestBufferSize.Value, Options.Limits.MaxRequestHeadersTotalSize));
             }
         }
     }

@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
-            Assert.Equal($"Invalid request line: '{requestLine.EscapeNonPrintable()}'", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
         }
 
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
-            Assert.Equal($"Invalid request line: '{method.EscapeNonPrintable()} / HTTP/1.1\\x0D\\x0A'", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(method.EscapeNonPrintable() + @" / HTTP/1.1\x0D\x0A"), exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
         }
 
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
-            Assert.Equal($"Unrecognized HTTP version: '{httpVersion}'", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion), exception.Message);
             Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
         }
 
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
-            Assert.Equal("Unrecognized HTTP version: ''", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(string.Empty), exception.Message);
             Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
 
             // Invalid request header
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseHeaders(requestHandler, buffer, out var consumed, out var examined, out var consumedBytes));
 
-            Assert.Equal("Invalid request header: ''", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(string.Empty), exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 

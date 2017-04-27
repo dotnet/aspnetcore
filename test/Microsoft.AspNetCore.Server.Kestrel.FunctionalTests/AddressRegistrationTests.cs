@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 Assert.Equal(5000, host.GetPort());
                 Assert.Single(testLogger.Messages, log => log.LogLevel == LogLevel.Debug &&
-                    string.Equals($"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.",
+                    string.Equals(CoreStrings.FormatBindingToDefaultAddress(Constants.DefaultServerAddress),
                     log.Message, StringComparison.Ordinal));
 
                 foreach (var address in addresses)
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var host = hostBuilder.Build())
                 {
                     var exception = Assert.Throws<IOException>(() => host.Start());
-                    Assert.Equal($"Failed to bind to address http://127.0.0.1:{port}: address already in use.", exception.Message);
+                    Assert.Equal(CoreStrings.FormatEndpointAlreadyInUse($"http://127.0.0.1:{port}"), exception.Message);
                 }
             }
         }
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var host = hostBuilder.Build())
                 {
                     var exception = Assert.Throws<IOException>(() => host.Start());
-                    Assert.Equal($"Failed to bind to address http://[::1]:{port}: address already in use.", exception.Message);
+                    Assert.Equal(CoreStrings.FormatEndpointAlreadyInUse($"http://[::1]:{port}"), exception.Message);
                 }
             }
         }
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 Assert.Equal(overrideAddressPort, host.GetPort());
                 Assert.Single(testLogger.Messages, log => log.LogLevel == LogLevel.Information &&
-                    string.Equals($"Overriding endpoints defined in UseKestrel() since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true. Binding to address(es) '{overrideAddress}' instead.",
+                    string.Equals(CoreStrings.FormatOverridingWithPreferHostingUrls(nameof(IServerAddressesFeature.PreferHostingUrls), overrideAddress),
                     log.Message, StringComparison.Ordinal));
 
                 Assert.Equal(new Uri(overrideAddress).ToString(), await HttpClientSlim.GetStringAsync(overrideAddress));
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     var exception = Assert.Throws<IOException>(() => host.Start());
                     Assert.Equal(
-                        $"Failed to bind to address http://{(addressFamily == AddressFamily.InterNetwork ? "127.0.0.1" : "[::1]")}:{port}: address already in use.",
+                        CoreStrings.FormatEndpointAlreadyInUse($"http://{(addressFamily == AddressFamily.InterNetwork ? "127.0.0.1" : "[::1]")}:{port}"),
                         exception.Message);
                 }
             }
@@ -677,21 +677,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 _portSupported = new Lazy<bool>(CanBindToPort);
             }
 
-            public bool IsMet
-            {
-                get
-                {
-                    return _portSupported.Value;
-                }
-            }
+            public bool IsMet => _portSupported.Value;
 
-            public string SkipReason
-            {
-                get
-                {
-                    return $"Cannot bind to port {_port} on the host.";
-                }
-            }
+            public string SkipReason => $"Cannot bind to port {_port} on the host.";
 
             private bool CanBindToPort()
             {

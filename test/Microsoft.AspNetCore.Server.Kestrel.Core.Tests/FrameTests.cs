@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal("Request headers too long.", exception.Message);
+            Assert.Equal(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, exception.Message);
             Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal("Request contains too many headers.", exception.Message);
+            Assert.Equal(CoreStrings.BadRequest_TooManyHeaders, exception.Message);
             Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
         }
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal("Request line too long.", exception.Message);
+            Assert.Equal(CoreStrings.BadRequest_RequestLineTooLong, exception.Message);
             Assert.Equal(StatusCodes.Status414UriTooLong, exception.StatusCode);
         }
 
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal($"Invalid request target: '{target}'", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target), exception.Message);
         }
 
         [Theory]
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal($"Invalid request target: '{target.EscapeNonPrintable()}'", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
         }
 
         [Theory]
@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal($"Invalid request line: '{requestLine.EscapeNonPrintable()}'", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
         }
 
         [Theory]
@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal($"Invalid request target: '{target.EscapeNonPrintable()}'", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
         }
 
         [Theory]
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal($"Invalid request target: '{target.EscapeNonPrintable()}'", exception.Message);
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
         }
 
         [Theory]
@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _input.Reader.Advance(_consumed, _examined);
 
             Assert.Equal(405, exception.StatusCode);
-            Assert.Equal("Method not allowed.", exception.Message);
+            Assert.Equal(CoreStrings.BadRequest_MethodNotAllowed, exception.Message);
             Assert.Equal(HttpUtilities.MethodToString(allowedMethod), exception.AllowedHeader);
         }
 
@@ -629,7 +629,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
                 _input.Reader.Advance(_consumed, _examined);
 
-                Assert.Equal("Invalid request target: ''", exception.Message);
+                Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(string.Empty), exception.Message);
                 Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
             }
             finally

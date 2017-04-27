@@ -8,7 +8,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
@@ -110,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
 
                 Assert.Equal(
-                    $"Maximum request buffer size ({maxRequestBufferSize}) must be greater than or equal to maximum request line size ({maxRequestLineSize}).",
+                    CoreStrings.FormatMaxRequestBufferSmallerThanRequestLineBuffer(maxRequestBufferSize, maxRequestLineSize),
                     exception.Message);
                 Assert.Equal(1, testLogger.CriticalErrorsLogged);
             }
@@ -132,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
 
                 Assert.Equal(
-                    $"Maximum request buffer size ({maxRequestBufferSize}) must be greater than or equal to maximum request headers size ({maxRequestHeadersTotalSize}).",
+                    CoreStrings.FormatMaxRequestBufferSmallerThanRequestHeaderBuffer(maxRequestBufferSize, maxRequestHeadersTotalSize),
                     exception.Message);
                 Assert.Equal(1, testLogger.CriticalErrorsLogged);
             }

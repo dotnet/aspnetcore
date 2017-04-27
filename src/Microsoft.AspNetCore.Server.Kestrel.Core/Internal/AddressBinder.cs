@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             catch (AddressInUseException ex)
             {
-                throw new IOException($"Failed to bind to address {endpoint}: address already in use.", ex);
+                throw new IOException(CoreStrings.FormatEndpointAlreadyInUse(endpoint), ex);
             }
 
             context.ListenOptions.Add(endpoint);
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             if (address.Port == 0)
             {
-                throw new InvalidOperationException("Dynamic port binding is not supported when binding to localhost. You must either bind to 127.0.0.1:0 or [::1]:0, or both.");
+                throw new InvalidOperationException(CoreStrings.DynamicPortOnLocalhostNotSupported);
             }
 
             var exceptions = new List<Exception>();
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             catch (Exception ex) when (!(ex is IOException))
             {
-                context.Logger.LogWarning(0, $"Unable to bind to {address} on the IPv4 loopback interface: ({ex.Message})");
+                context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, address, "IPv4 loopback", ex.Message);
                 exceptions.Add(ex);
             }
 
@@ -145,13 +145,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             catch (Exception ex) when (!(ex is IOException))
             {
-                context.Logger.LogWarning(0, $"Unable to bind to {address} on the IPv6 loopback interface: ({ex.Message})");
+                context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, address, "IPv6 loopback", ex.Message);
                 exceptions.Add(ex);
             }
 
             if (exceptions.Count == 2)
             {
-                throw new IOException($"Failed to bind to address {address}.", new AggregateException(exceptions));
+                throw new IOException(CoreStrings.FormatAddressBindingFailed(address), new AggregateException(exceptions));
             }
 
             // If StartLocalhost doesn't throw, there is at least one listener.
@@ -165,16 +165,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             if (parsedAddress.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"HTTPS endpoints can only be configured using {nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.Listen)}().");
+                throw new InvalidOperationException(CoreStrings.FormatConfigureHttpsFromMethodCall($"{nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.Listen)}()"));
             }
             else if (!parsedAddress.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"Unrecognized scheme in server address '{address}'. Only 'http://' is supported.");
+                throw new InvalidOperationException(CoreStrings.FormatUnsupportedAddressScheme(address));
             }
 
             if (!string.IsNullOrEmpty(parsedAddress.PathBase))
             {
-                throw new InvalidOperationException($"A path base can only be configured using {nameof(IApplicationBuilder)}.UsePathBase().");
+                throw new InvalidOperationException(CoreStrings.FormatConfigurePathBaseFromMethodCall($"{nameof(IApplicationBuilder)}.UsePathBase()"));
             }
 
             if (parsedAddress.IsUnixPipe)
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             public async Task BindAsync(AddressBindContext context)
             {
-                context.Logger.LogDebug($"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
+                context.Logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
 
                 await BindLocalhostAsync(ServerAddress.FromUrl(Constants.DefaultServerAddress), context).ConfigureAwait(false);
             }
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             public override Task BindAsync(AddressBindContext context)
             {
                 var joined = string.Join(", ", _addresses);
-                context.Logger.LogInformation($"Overriding endpoints defined in UseKestrel() since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true. Binding to address(es) '{joined}' instead.");
+                context.Logger.LogInformation(CoreStrings.OverridingWithPreferHostingUrls, nameof(IServerAddressesFeature.PreferHostingUrls), joined);
 
                 return base.BindAsync(context);
             }
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             public override Task BindAsync(AddressBindContext context)
             {
                 var joined = string.Join(", ", _originalAddresses);
-                context.Logger.LogWarning($"Overriding address(es) {joined}. Binding to endpoints defined in UseKestrel() instead.");
+                context.Logger.LogWarning(CoreStrings.OverridingWithKestrelOptions, joined, "UseKestrel()");
 
                 return base.BindAsync(context);
             }

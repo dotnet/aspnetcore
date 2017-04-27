@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void ThrowHeadersReadOnlyException()
         {
-            throw new InvalidOperationException("Headers are read-only, response has already started.");
+            throw new InvalidOperationException(CoreStrings.HeadersAreReadOnly);
         }
 
         protected void ThrowArgumentException()
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void ThrowDuplicateKeyException()
         {
-            throw new ArgumentException("An item with the same key has already been added.");
+            throw new ArgumentException(CoreStrings.KeyAlreadyExists);
         }
 
         int ICollection<KeyValuePair<string, StringValues>>.Count => GetCountFast();
@@ -426,12 +426,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private static void ThrowInvalidContentLengthException(long value)
         {
-            throw new ArgumentOutOfRangeException($"Invalid Content-Length: \"{value}\". Value must be a positive integral number.");
+            throw new ArgumentOutOfRangeException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
         }
 
         private static void ThrowInvalidHeaderCharacter(char ch)
         {
-            throw new InvalidOperationException(string.Format("Invalid non-ASCII or control character in header: 0x{0:X4}", (ushort)ch));
+            throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(string.Format("0x{0:X4}", (ushort)ch)));
         }
     }
 }

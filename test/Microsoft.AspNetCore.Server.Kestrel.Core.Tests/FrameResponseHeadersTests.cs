@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -149,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dictionary = (IDictionary<string, StringValues>)headers;
 
             var exception = Assert.Throws<InvalidOperationException>(() => dictionary.Add("Content-Length", new[] { contentLength }));
-            Assert.Equal($"Invalid Content-Length: \"{contentLength}\". Value must be a positive integral number.", exception.Message);
+            Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
         }
 
         [Theory]
@@ -160,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dictionary = (IDictionary<string, StringValues>)headers;
 
             var exception = Assert.Throws<InvalidOperationException>(() => ((IHeaderDictionary)headers)["Content-Length"] = contentLength);
-            Assert.Equal($"Invalid Content-Length: \"{contentLength}\". Value must be a positive integral number.", exception.Message);
+            Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
         }
 
         [Theory]
@@ -170,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headers = new FrameResponseHeaders();
 
             var exception = Assert.Throws<InvalidOperationException>(() => headers.HeaderContentLength = contentLength);
-            Assert.Equal($"Invalid Content-Length: \"{contentLength}\". Value must be a positive integral number.", exception.Message);
+            Assert.Equal(CoreStrings.FormatInvalidContentLength_InvalidNumber(contentLength), exception.Message);
         }
 
         [Theory]

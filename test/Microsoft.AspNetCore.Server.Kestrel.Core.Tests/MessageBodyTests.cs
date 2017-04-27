@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked, not-chunked" }, input.FrameContext));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
-                Assert.Equal("Final transfer coding is not \"chunked\": \"chunked, not-chunked\"", ex.Message);
+                Assert.Equal(CoreStrings.FormatBadRequest_FinalTransferCodingNotChunked("chunked, not-chunked"), ex.Message);
             }
         }
 
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders(), input.FrameContext));
 
                 Assert.Equal(StatusCodes.Status411LengthRequired, ex.StatusCode);
-                Assert.Equal($"{method} request contains no Content-Length or Transfer-Encoding header", ex.Message);
+                Assert.Equal(CoreStrings.FormatBadRequest_LengthRequired(method), ex.Message);
             }
         }
 
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
-                Assert.Equal($"{method} request contains no Content-Length header", ex.Message);
+                Assert.Equal(CoreStrings.FormatBadRequest_LengthRequiredHttp10(method), ex.Message);
             }
         }
 
