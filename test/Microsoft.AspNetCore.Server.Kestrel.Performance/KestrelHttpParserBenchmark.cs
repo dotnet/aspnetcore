@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
     public class KestrelHttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {
-        private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>(log: null);
+        private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
         private ReadableBuffer _buffer;
 

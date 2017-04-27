@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Testing
             DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
             ConnectionManager = new FrameConnectionManager(Log);
             DateHeaderValue = DateHeaderValueManager.GetDateHeaderValues().String;
-            HttpParserFactory = frameAdapter => new HttpParser<FrameAdapter>(frameAdapter.Frame.ServiceContext.Log);
+            HttpParserFactory = frameAdapter => new HttpParser<FrameAdapter>(frameAdapter.Frame.ServiceContext.Log.IsEnabled(LogLevel.Information));
             ServerOptions = new KestrelServerOptions
             {
                 AddServerHeader = false
