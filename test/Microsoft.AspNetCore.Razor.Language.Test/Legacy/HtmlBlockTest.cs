@@ -9,6 +9,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class HtmlBlockTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
+        public void ParseBlockHandlesUnbalancedTripleDashHTMLComments()
+        {
+            ParseDocumentTest(
+@"@{
+    <!-- Hello, I'm a comment that shouldn't break razor --->
+}",
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new StatementBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.Code(Environment.NewLine).AsStatement().AutoCompleteWith(null),
+                        new MarkupBlock(
+                            Factory.Markup("    "),
+                            Factory.Markup("<!-- Hello, I'm a comment that shouldn't break razor --->").Accepts(AcceptedCharacters.None),
+                            Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
+                        Factory.EmptyCSharp().AsStatement(),
+                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    Factory.EmptyHtml()),
+                new RazorError[0]);
+        }
+
+        [Fact]
         public void ParseBlockHandlesOpenAngleAtEof()
         {
             ParseDocumentTest("@{" + Environment.NewLine
