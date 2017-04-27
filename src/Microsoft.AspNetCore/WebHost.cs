@@ -181,6 +181,10 @@ namespace Microsoft.AspNetCore
                     logging.AddDebug();
                 })
                 .UseIISIntegration()
+                .UseDefaultServiceProvider((context, options) =>
+                {
+                    options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton<IStartupFilter, WebHostStartupFilter>();
