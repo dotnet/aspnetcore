@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
   <Import Project="common.props" />
 
   <PropertyGroup>
