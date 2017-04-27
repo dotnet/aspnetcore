@@ -157,6 +157,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task FormTagHelper_WithPageHandler_AllowsPostingToSelf()
+        {
+            //Arrange
+            var expected =
+@"<form action=""/TagHelper/PostWithHandler/Edit"" method=""post""><input name=""__RequestVerificationToken"" type=""hidden"" value=""{0}"" /></form>
+<form method=""post"" action=""/TagHelper/PostWithHandler/Edit""><input name=""__RequestVerificationToken"" type=""hidden"" value=""{0}"" /></form>
+<form method=""post"" action=""/TagHelper/PostWithHandler/Edit/10""></form>";
+
+            // Act
+            var response = await Client.GetStringAsync("/TagHelper/PostWithHandler");
+
+            // Assert
+            var responseContent = response.Trim();
+            var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "/TagHelper/PostWithHandler");
+            var expectedContent = string.Format(expected, forgeryToken);
+
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
         public async Task FormTagHelper_WithPage_AllowsPostingToAnotherPage()
         {
             //Arrange
