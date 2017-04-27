@@ -121,9 +121,12 @@
       SourceName="Dependencies"
       SourceUri="$(PackageSource)" />
 
+    <!-- Restore the target project -->
+    <MSBuild Projects="$(FallbackArchiveProj)" Targets="Restore" Properties="RestorePackagesPath=$(FallbackStagingDir);AspNetPackageVersion=$(AspNetPackageVersion);RestoreConfigFile=$(FallbackRestoreConfigFile)" />
+
     <!-- Create the archive -->
     <Message Text="Producing LZMA Archive, this may take a while..." Importance="high" />
-    <Exec Command="dotnet $(ArchiverPath) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
+    <Exec Command="$(ArchiverPath) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
   </Target>
 
   <Target Name="BuildFallbackArchive">
