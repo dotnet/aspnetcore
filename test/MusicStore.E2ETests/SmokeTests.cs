@@ -9,7 +9,6 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    // Uses ports ranging 5001 - 5025.
     // TODO: temporarily disabling these tests as dotnet xunit runner does not support 32-bit yet.
     internal class SmokeTests_X86
     {
