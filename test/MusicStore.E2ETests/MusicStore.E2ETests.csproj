@@ -28,7 +28,14 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
-    <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
+
+    <!--
+      * Use 4.4.0-* instead of $(CoreFxVersion) to address "SqlClient fails with netcoreapp2.0 on Win7/Server2008"
+        * https://github.com/dotnet/corefx/issues/18406
+      * Revert if and when $(CoreFxVersion) is upgraded to 4.4.0-*
+    -->
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0-*" />
+
     <PackageReference Include="System.Xml.XmlDocument" Version="$(CoreFxVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
