@@ -2,5 +2,7 @@
   <PropertyGroup>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
+    <!-- can be removed once global.json and KoreBuild update to SDK 1.0.4 -->
+    <RuntimeFrameworkVersion>1.0.5</RuntimeFrameworkVersion>
   </PropertyGroup>
 </Project>
