@@ -932,6 +932,21 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void Build_ConfigureAppConfigurationInHostingStartupWorks()
+        {
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(false)
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            using (var host = (WebHost)builder.Build())
+            {
+                var configuration = host.Services.GetRequiredService<IConfiguration>();
+                Assert.Equal("value", configuration["testhostingstartup:config"]);
+            }
+        }
+
+        [Fact]
         public void Build_DoesRunHostingStartupFromPrimaryAssemblyEvenIfNotSpecified()
         {
             var builder = CreateWebHostBuilder()
@@ -1089,7 +1104,12 @@ namespace Microsoft.AspNetCore.Hosting
                        .UseSetting("testhostingstartup_chain", builder.GetSetting("testhostingstartup_chain") + "0")
                        .ConfigureServices(services => services.AddSingleton<ServiceA>())
                        .ConfigureServices(services => services.AddSingleton<ITestSink>(loggerProvider.Sink))
-                       .ConfigureLogging(lf => lf.AddProvider(loggerProvider));
+                       .ConfigureLogging(lf => lf.AddProvider(loggerProvider))
+                       .ConfigureAppConfiguration((context, configurationBuilder) => configurationBuilder.AddInMemoryCollection(
+                           new []
+                           {
+                               new KeyValuePair<string,string>("testhostingstartup:config", "value")
+                           }));
             }
         }
 
