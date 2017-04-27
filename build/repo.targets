@@ -183,6 +183,6 @@
       <ArchiveFiles Include="$(TempDir)%(MetaPackageNupkg.Filename)\**\*" />
     </ItemGroup>
 
-    <ZipArchive File="%(MetaPackageNupkg.FullPath)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="@(MetaPackageNupkg->'$(TempDir)%(Filename)')" />
+    <ZipArchive File="%(MetaPackageNupkg.FullPath)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="@(MetaPackageNupkg->'$(TempDir)%(Filename)')" Overwrite="true" />
   </Target>
 </Project>
