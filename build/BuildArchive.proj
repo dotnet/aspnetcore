@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+  </PropertyGroup>
+
+  <ItemGroup>
+   <PackageReference Include="@(FullMetaPackagePackageReference)" />
+   <ProjectReference Include="@(FullMetaPackageProjectReference)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*.xml" PackagePath="%(Identity)" />
+    <Content Include="build\**\*.targets" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+</Project>
