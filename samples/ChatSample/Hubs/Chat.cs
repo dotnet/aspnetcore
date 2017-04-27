@@ -28,7 +28,12 @@ namespace ChatSample.Hubs
 
         public override Task OnUserJoined(UserDetails user)
         {
-            return Clients.Client(Context.ConnectionId).InvokeAsync("UserJoined", user);
+            if (user.ConnectionId != Context.ConnectionId)
+            {
+                return Clients.Client(Context.ConnectionId).InvokeAsync("UserJoined", user);
+            }
+
+            return Task.CompletedTask;
         }
 
         public override Task OnUserLeft(UserDetails user)

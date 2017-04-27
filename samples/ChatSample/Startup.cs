@@ -60,7 +60,8 @@ namespace ChatSample
                 ;
             services.AddAuthentication();
 
-            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(PresenceHubLifetimeManager<>));
+            services.AddSingleton(typeof(DefaultHubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
+            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultPresenceHublifetimeMenager<>));
             services.AddSingleton(typeof(IUserTracker<>), typeof(InMemoryUserTracker<>));
         }
 

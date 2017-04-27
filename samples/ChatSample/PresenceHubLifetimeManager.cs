@@ -8,7 +8,18 @@ using Microsoft.Extensions.Logging;
 
 namespace ChatSample
 {
-    public class PresenceHubLifetimeManager<THub> : DefaultHubLifetimeManager<THub>, IDisposable
+    public class DefaultPresenceHublifetimeMenager<THub> : PresenceHubLifetimeManager<THub, DefaultHubLifetimeManager<THub>>
+        where THub : HubWithPresence
+    {
+        public DefaultPresenceHublifetimeMenager(IUserTracker<THub> userTracker, IServiceScopeFactory serviceScopeFactory,
+            ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
+            : base(userTracker, serviceScopeFactory, loggerFactory, serviceProvider)
+        {
+        }
+    }
+
+    public class PresenceHubLifetimeManager<THub, THubLifetimeManager> : HubLifetimeManager<THub>, IDisposable
+        where THubLifetimeManager : HubLifetimeManager<THub>
         where THub : HubWithPresence
     {
         private readonly ConnectionList _connections = new ConnectionList();
@@ -16,11 +27,11 @@ namespace ChatSample
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly HubLifetimeManager<THub> _wrappedHubLifetimeManager;
         private IHubContext<THub> _hubContext;
 
-        public PresenceHubLifetimeManager(InvocationAdapterRegistry registry, IUserTracker<THub> userTracker,
-            IServiceScopeFactory serviceScopeFactory, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
-            : base(registry)
+        public PresenceHubLifetimeManager(IUserTracker<THub> userTracker, IServiceScopeFactory serviceScopeFactory,
+            ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
             _userTracker = userTracker;
             _userTracker.UserJoined += OnUserJoined;
@@ -28,19 +39,20 @@ namespace ChatSample
 
             _serviceScopeFactory = serviceScopeFactory;
             _serviceProvider = serviceProvider;
-            _logger = loggerFactory.CreateLogger<PresenceHubLifetimeManager<THub>>();
+            _logger = loggerFactory.CreateLogger<PresenceHubLifetimeManager<THub, THubLifetimeManager>>();
+            _wrappedHubLifetimeManager = serviceProvider.GetRequiredService<THubLifetimeManager>();
         }
 
         public override async Task OnConnectedAsync(Connection connection)
         {
-            await base.OnConnectedAsync(connection);
+            await _wrappedHubLifetimeManager.OnConnectedAsync(connection);
             _connections.Add(connection);
             await _userTracker.AddUser(connection, new UserDetails(connection.ConnectionId, connection.User.Identity.Name));
         }
 
         public override async Task OnDisconnectedAsync(Connection connection)
         {
-            await base.OnDisconnectedAsync(connection);
+            await _wrappedHubLifetimeManager.OnDisconnectedAsync(connection);
             _connections.Remove(connection);
             await _userTracker.RemoveUser(connection);
         }
@@ -94,6 +106,36 @@ namespace ChatSample
         {
             _userTracker.UserJoined -= OnUserJoined;
             _userTracker.UserLeft -= OnUserLeft;
+        }
+
+        public override Task InvokeAllAsync(string methodName, object[] args)
+        {
+            return _wrappedHubLifetimeManager.InvokeAllAsync(methodName, args);
+        }
+
+        public override Task InvokeConnectionAsync(string connectionId, string methodName, object[] args)
+        {
+            return _wrappedHubLifetimeManager.InvokeConnectionAsync(connectionId, methodName, args);
+        }
+
+        public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
+        {
+            return _wrappedHubLifetimeManager.InvokeGroupAsync(groupName, methodName, args);
+        }
+
+        public override Task InvokeUserAsync(string userId, string methodName, object[] args)
+        {
+            return _wrappedHubLifetimeManager.InvokeUserAsync(userId, methodName, args);
+        }
+
+        public override Task AddGroupAsync(Connection connection, string groupName)
+        {
+            return _wrappedHubLifetimeManager.AddGroupAsync(connection, groupName);
+        }
+
+        public override Task RemoveGroupAsync(Connection connection, string groupName)
+        {
+            return _wrappedHubLifetimeManager.RemoveGroupAsync(connection, groupName);
         }
     }
 }
