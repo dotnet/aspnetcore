@@ -11,8 +11,8 @@ namespace ChatSample
     public interface IUserTracker<out THub>
     {
         Task<IEnumerable<UserDetails>> UsersOnline();
-        Task AddUser(Connection connection, UserDetails user);
-        Task<UserDetails> RemoveUser(Connection connection);
+        Task AddUser(Connection connection, UserDetails userDetails);
+        Task RemoveUser(Connection connection);
 
         event Action<UserDetails> UserJoined;
         event Action<UserDetails> UserLeft;

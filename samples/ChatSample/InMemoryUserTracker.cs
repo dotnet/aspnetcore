@@ -18,22 +18,22 @@ namespace ChatSample
         public Task<IEnumerable<UserDetails>> UsersOnline()
             => Task.FromResult(_usersOnline.Values.AsEnumerable());
 
-        public Task AddUser(Connection connection, UserDetails user)
+        public Task AddUser(Connection connection, UserDetails userDetails)
         {
-            _usersOnline.TryAdd(connection, user);
-            UserJoined(user);
+            _usersOnline.TryAdd(connection, userDetails);
+            UserJoined(userDetails);
 
             return Task.CompletedTask;
         }
 
-        public Task<UserDetails> RemoveUser(Connection connection)
+        public Task RemoveUser(Connection connection)
         {
             if (_usersOnline.TryRemove(connection, out var userDetails))
             {
                 UserLeft(userDetails);
             }
 
-            return Task.FromResult(userDetails);
+            return Task.CompletedTask;
         }
     }
 }

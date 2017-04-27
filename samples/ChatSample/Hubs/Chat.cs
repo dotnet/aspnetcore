@@ -20,9 +20,10 @@ namespace ChatSample.Hubs
             if (!Context.User.Identity.IsAuthenticated)
             {
                 Context.Connection.Dispose();
+                return;
             }
 
-            await Clients.Client(Context.ConnectionId).InvokeAsync("SetUsersOnline", await UsersOnline);
+            await Clients.Client(Context.ConnectionId).InvokeAsync("SetUsersOnline", await GetUsersOnline());
             await base.OnConnectedAsync();
         }
 

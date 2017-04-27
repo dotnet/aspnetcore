@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -24,12 +23,9 @@ namespace ChatSample
             _userTracker = userTracker;
         }
 
-        public Task<IEnumerable<UserDetails>> UsersOnline
+        public Task<IEnumerable<UserDetails>> GetUsersOnline()
         {
-            get
-            {
-                return _userTracker.UsersOnline();
-            }
+            return _userTracker.UsersOnline();
         }
 
         public virtual Task OnUserJoined(UserDetails user)

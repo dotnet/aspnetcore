@@ -1,10 +1,13 @@
-﻿
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SignalR.Redis;
 
 namespace ChatSample
 {
@@ -12,6 +15,16 @@ namespace ChatSample
         where THub : HubWithPresence
     {
         public DefaultPresenceHublifetimeMenager(IUserTracker<THub> userTracker, IServiceScopeFactory serviceScopeFactory,
+            ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
+            : base(userTracker, serviceScopeFactory, loggerFactory, serviceProvider)
+        {
+        }
+    }
+
+    public class RedisPresenceHublifetimeMenager<THub> : PresenceHubLifetimeManager<THub, RedisHubLifetimeManager<THub>>
+    where THub : HubWithPresence
+    {
+        public RedisPresenceHublifetimeMenager(IUserTracker<THub> userTracker, IServiceScopeFactory serviceScopeFactory,
             ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
             : base(userTracker, serviceScopeFactory, loggerFactory, serviceProvider)
         {
