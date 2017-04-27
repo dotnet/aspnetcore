@@ -10,7 +10,7 @@ namespace RazorPagesApp
         public IActionResult OnGet(string person)
         {
             Name = person;
-            return View();
+            return Page();
         }
     }
 }
