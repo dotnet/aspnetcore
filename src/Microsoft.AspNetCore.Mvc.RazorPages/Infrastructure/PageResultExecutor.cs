@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// <summary>
         /// Executes a Razor Page asynchronously.
         /// </summary>
-        public virtual Task ExecuteAsync(PageContext pageContext, PageViewResult result)
+        public virtual Task ExecuteAsync(PageContext pageContext, PageResult result)
         {
             if (result.Model != null)
             {

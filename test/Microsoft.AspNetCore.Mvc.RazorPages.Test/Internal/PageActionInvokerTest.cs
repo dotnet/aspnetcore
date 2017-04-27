@@ -674,7 +674,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 _executeAction = executeAction;
             }
 
-            public override Task ExecuteAsync(PageContext pageContext, PageViewResult result)
+            public override Task ExecuteAsync(PageContext pageContext, PageResult result)
                 => _executeAction(pageContext);
         }
 

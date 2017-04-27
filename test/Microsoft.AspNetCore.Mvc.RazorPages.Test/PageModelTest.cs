@@ -1422,7 +1422,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             };
 
             // Act & Assert
-            Assert.Same(page, pageModel.Page);
             Assert.Same(pageContext, pageModel.PageContext);
             Assert.Same(pageContext, pageModel.ViewContext);
             Assert.Same(httpContext, pageModel.HttpContext);
@@ -1491,10 +1490,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             };
 
             // Act
-            var result = pageModel.View();
+            var result = pageModel.Page();
 
             // Assert
-            var pageResult = Assert.IsType<PageViewResult>(result);
+            var pageResult = Assert.IsType<PageResult>(result);
             Assert.Same(page, pageResult.Page);
         }
 

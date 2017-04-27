@@ -11,23 +11,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     /// <summary>
     /// An <see cref="ActionResult"/> that renders a Razor Page.
     /// </summary>
-    public class PageViewResult : ActionResult
+    public class PageResult : ActionResult
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="PageViewResult"/>.
+        /// Initializes a new instance of <see cref="PageResult"/>.
         /// </summary>
-        /// <param name="page">The <see cref="RazorPages.Page"/> to render.</param>
-        public PageViewResult(Page page)
+        /// <param name="page">The <see cref="RazorPages.PageBase"/> to render.</param>
+        public PageResult(PageBase page)
         {
             Page = page;
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="PageViewResult"/> with the specified <paramref name="model"/>.
+        /// Initializes a new instance of <see cref="PageResult"/> with the specified <paramref name="model"/>.
         /// </summary>
-        /// <param name="page">The <see cref="RazorPages.Page"/> to render.</param>
+        /// <param name="page">The <see cref="RazorPages.PageBase"/> to render.</param>
         /// <param name="model">The page model.</param>
-        public PageViewResult(Page page, object model)
+        public PageResult(PageBase page, object model)
         {
             Page = page;
             Model = model;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <summary>
         /// Gets the <see cref="RazorPages.Page"/> to execute.
         /// </summary>
-        public Page Page { get; }
+        public PageBase Page { get; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.

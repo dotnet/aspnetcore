@@ -14,13 +14,13 @@ namespace RazorPagesWebSite.TempData
 
         public IActionResult OnGet()
         {
-            return View();
+            return Page();
         }
 
         public IActionResult OnPost()
         {
             Message = "Secret post";
-            return View();
+            return Page();
         }
     }
 }

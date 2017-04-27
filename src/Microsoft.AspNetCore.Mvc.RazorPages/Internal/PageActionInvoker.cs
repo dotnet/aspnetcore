@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             if (result == null)
             {
-                result = new PageViewResult(_page);
+                result = new PageResult(_page);
             }
 
             await result.ExecuteResultAsync(_pageContext);

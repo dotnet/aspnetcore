@@ -13,7 +13,7 @@ namespace MvcSandbox
         public IActionResult OnPost(string name)
         {
             Name = name;
-            return View();
+            return Page();
         }
     }
 }

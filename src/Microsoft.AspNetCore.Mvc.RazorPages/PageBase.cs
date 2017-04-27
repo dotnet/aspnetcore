@@ -12,60 +12,39 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
+    /// <summary>
+    /// A base class for a Razor page.
+    /// </summary>
     [PagesBaseClass]
-    public abstract class PageModel
+    public abstract class PageBase : RazorPageBase, IRazorPage
     {
         private IObjectModelValidator _objectValidator;
         private IModelMetadataProvider _metadataProvider;
         private IModelBinderFactory _modelBinderFactory;
-        private IUrlHelper _urlHelper;
 
         /// <summary>
-        /// Gets or sets the <see cref="IUrlHelper"/>.
+        /// The <see cref="RazorPages.PageContext"/>.
         /// </summary>
-        public IUrlHelper Url
-        {
-            get
-            {
-                if (_urlHelper == null)
-                {
-                    var factory = HttpContext?.RequestServices?.GetRequiredService<IUrlHelperFactory>();
-                    _urlHelper = factory?.GetUrlHelper(PageContext);
-                }
-
-                return _urlHelper;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _urlHelper = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="RazorPages.PageContext"/>.
-        /// </summary>
-        [PageContext]
         public PageContext PageContext { get; set; }
 
-        /// <summary>
-        /// Gets the <see cref="ViewContext"/>.
-        /// </summary>
-        public ViewContext ViewContext => PageContext;
+        /// <inheritdoc />
+        public override ViewContext ViewContext
+        {
+            get => PageContext;
+            set
+            {
+                PageContext = (PageContext)value;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/>.
@@ -85,23 +64,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <summary>
         /// Gets the <see cref="AspNetCore.Routing.RouteData"/> for the executing action.
         /// </summary>
-        public RouteData RouteData => PageContext.RouteData;
+        public RouteData RouteData
+        {
+            get
+            {
+                return PageContext.RouteData;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/>.
         /// </summary>
-        public ModelStateDictionary ModelState => PageContext.ModelState;
-
-        /// <summary>
-        /// Gets the <see cref="ClaimsPrincipal"/> for user associated with the executing action.
-        /// </summary>
-        public ClaimsPrincipal User => HttpContext?.User;
-
-        /// <summary>
-        /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="PageContext"/>.
-        /// </summary>
-        /// <remarks>Returns null if <see cref="PageContext"/> is null.</remarks>
-        public ITempDataDictionary TempData => PageContext?.TempData;
+        public ModelStateDictionary ModelState => PageContext?.ModelState;
 
         private IObjectModelValidator ObjectValidator
         {
@@ -142,345 +116,47 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        /// <summary>
-        /// Gets the <see cref="ViewDataDictionary"/>.
-        /// </summary>
-        public ViewDataDictionary ViewData => PageContext?.ViewData;
-
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
-        /// <see cref="IValueProvider"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The type of the model object.</typeparam>
-        /// <param name="model">The model instance to update.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal Task<bool> TryUpdateModelAsync<TModel>(TModel model)
-            where TModel : class
+        /// <inheritdoc />
+        public override void EnsureRenderedBodyOrSections()
         {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
-            return TryUpdateModelAsync(model, name: string.Empty);
+            throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
-        /// <see cref="IValueProvider"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The type of the model object.</typeparam>
-        /// <param name="model">The model instance to update.</param>
-        /// <param name="name">The model name.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal async Task<bool> TryUpdateModelAsync<TModel>(TModel model, string name)
-            where TModel : class
+        /// <inheritdoc />
+        public override void BeginContext(int position, int length, bool isLiteral)
         {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
+            const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
 
-            if (name == null)
+            if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
             {
-                throw new ArgumentNullException(nameof(name));
+                DiagnosticSource.Write(
+                    BeginContextEvent,
+                    new
+                    {
+                        httpContext = ViewContext,
+                        path = Path,
+                        position = position,
+                        length = length,
+                        isLiteral = isLiteral,
+                    });
             }
-
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
-            return await TryUpdateModelAsync(model, name, valueProvider);
         }
 
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
-        /// <paramref name="name"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The type of the model object.</typeparam>
-        /// <param name="model">The model instance to update.</param>
-        /// <param name="name">The name to use when looking up values in the <paramref name="valueProvider"/>.
-        /// </param>
-        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal Task<bool> TryUpdateModelAsync<TModel>(
-            TModel model,
-            string name,
-            IValueProvider valueProvider)
-            where TModel : class
+        /// <inheritdoc />
+        public override void EndContext()
         {
-            if (model == null)
+            const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
+
+            if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
             {
-                throw new ArgumentNullException(nameof(model));
+                DiagnosticSource.Write(
+                    EndContextEvent,
+                    new
+                    {
+                        httpContext = ViewContext,
+                        path = Path,
+                    });
             }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (valueProvider == null)
-            {
-                throw new ArgumentNullException(nameof(valueProvider));
-            }
-
-            return ModelBindingHelper.TryUpdateModelAsync(
-                model,
-                name,
-                PageContext,
-                MetadataProvider,
-                ModelBinderFactory,
-                valueProvider,
-                ObjectValidator);
-        }
-
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
-        /// <see cref="IValueProvider"/> and a <paramref name="name"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The type of the model object.</typeparam>
-        /// <param name="model">The model instance to update.</param>
-        /// <param name="name">The name to use when looking up values in the current <see cref="IValueProvider"/>.
-        /// </param>
-        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
-        /// which need to be included for the current model.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal async Task<bool> TryUpdateModelAsync<TModel>(
-            TModel model,
-            string name,
-            params Expression<Func<TModel, object>>[] includeExpressions)
-           where TModel : class
-        {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
-            if (includeExpressions == null)
-            {
-                throw new ArgumentNullException(nameof(includeExpressions));
-            }
-
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
-            return await ModelBindingHelper.TryUpdateModelAsync(
-                model,
-                name,
-                PageContext,
-                MetadataProvider,
-                ModelBinderFactory,
-                valueProvider,
-                ObjectValidator,
-                includeExpressions);
-        }
-
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
-        /// <see cref="IValueProvider"/> and a <paramref name="name"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The type of the model object.</typeparam>
-        /// <param name="model">The model instance to update.</param>
-        /// <param name="name">The name to use when looking up values in the current <see cref="IValueProvider"/>.
-        /// </param>
-        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal async Task<bool> TryUpdateModelAsync<TModel>(
-            TModel model,
-            string name,
-            Func<ModelMetadata, bool> propertyFilter)
-            where TModel : class
-        {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
-            if (propertyFilter == null)
-            {
-                throw new ArgumentNullException(nameof(propertyFilter));
-            }
-
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
-            return await ModelBindingHelper.TryUpdateModelAsync(
-                model,
-                name,
-                PageContext,
-                MetadataProvider,
-                ModelBinderFactory,
-                valueProvider,
-                ObjectValidator,
-                propertyFilter);
-        }
-
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
-        /// <paramref name="name"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The type of the model object.</typeparam>
-        /// <param name="model">The model instance to update.</param>
-        /// <param name="name">The name to use when looking up values in the <paramref name="valueProvider"/>.
-        /// </param>
-        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
-        /// which need to be included for the current model.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal Task<bool> TryUpdateModelAsync<TModel>(
-            TModel model,
-            string name,
-            IValueProvider valueProvider,
-            params Expression<Func<TModel, object>>[] includeExpressions)
-           where TModel : class
-        {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
-            if (valueProvider == null)
-            {
-                throw new ArgumentNullException(nameof(valueProvider));
-            }
-
-            if (includeExpressions == null)
-            {
-                throw new ArgumentNullException(nameof(includeExpressions));
-            }
-
-            return ModelBindingHelper.TryUpdateModelAsync(
-                model,
-                name,
-                PageContext,
-                MetadataProvider,
-                ModelBinderFactory,
-                valueProvider,
-                ObjectValidator,
-                includeExpressions);
-        }
-
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
-        /// <paramref name="name"/>.
-        /// </summary>
-        /// <typeparam name="TModel">The type of the model object.</typeparam>
-        /// <param name="model">The model instance to update.</param>
-        /// <param name="name">The name to use when looking up values in the <paramref name="valueProvider"/>.
-        /// </param>
-        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal Task<bool> TryUpdateModelAsync<TModel>(
-            TModel model,
-            string name,
-            IValueProvider valueProvider,
-            Func<ModelMetadata, bool> propertyFilter)
-            where TModel : class
-        {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
-            if (valueProvider == null)
-            {
-                throw new ArgumentNullException(nameof(valueProvider));
-            }
-
-            if (propertyFilter == null)
-            {
-                throw new ArgumentNullException(nameof(propertyFilter));
-            }
-
-            return ModelBindingHelper.TryUpdateModelAsync(
-                model,
-                name,
-                PageContext,
-                MetadataProvider,
-                ModelBinderFactory,
-                valueProvider,
-                ObjectValidator,
-                propertyFilter);
-        }
-
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
-        /// <see cref="IValueProvider"/> and a <paramref name="name"/>.
-        /// </summary>
-        /// <param name="model">The model instance to update.</param>
-        /// <param name="modelType">The type of model instance to update.</param>
-        /// <param name="name">The name to use when looking up values in the current <see cref="IValueProvider"/>.
-        /// </param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal async Task<bool> TryUpdateModelAsync(
-            object model,
-            Type modelType,
-            string name)
-        {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
-            if (modelType == null)
-            {
-                throw new ArgumentNullException(nameof(modelType));
-            }
-
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
-            return await ModelBindingHelper.TryUpdateModelAsync(
-                model,
-                modelType,
-                name,
-                PageContext,
-                MetadataProvider,
-                ModelBinderFactory,
-                valueProvider,
-                ObjectValidator);
-        }
-
-        /// <summary>
-        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
-        /// <paramref name="name"/>.
-        /// </summary>
-        /// <param name="model">The model instance to update.</param>
-        /// <param name="modelType">The type of model instance to update.</param>
-        /// <param name="name">The name to use when looking up values in the <paramref name="valueProvider"/>.
-        /// </param>
-        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
-        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
-        protected internal Task<bool> TryUpdateModelAsync(
-            object model,
-            Type modelType,
-            string name,
-            IValueProvider valueProvider,
-            Func<ModelMetadata, bool> propertyFilter)
-        {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
-            if (modelType == null)
-            {
-                throw new ArgumentNullException(nameof(modelType));
-            }
-
-            if (valueProvider == null)
-            {
-                throw new ArgumentNullException(nameof(valueProvider));
-            }
-
-            if (propertyFilter == null)
-            {
-                throw new ArgumentNullException(nameof(propertyFilter));
-            }
-
-            return ModelBindingHelper.TryUpdateModelAsync(
-                model,
-                modelType,
-                name,
-                PageContext,
-                MetadataProvider,
-                ModelBinderFactory,
-                valueProvider,
-                ObjectValidator,
-                propertyFilter);
         }
 
         /// <summary>
@@ -515,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// challenge.</param>
         /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
         /// <remarks>
-        /// The behavior of this method depends on the <see cref="IAuthenticationService"/> in use.
+        /// The behavior of this method depends on the <see cref="AuthenticationService"/> in use.
         /// <see cref="StatusCodes.Status401Unauthorized"/> and <see cref="StatusCodes.Status403Forbidden"/>
         /// are among likely status results.
         /// </remarks>
@@ -714,6 +390,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new VirtualFileResult(virtualPath, contentType) { FileDownloadName = fileDownloadName };
 
         /// <summary>
+        /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>) with the
+        /// specified <paramref name="contentType" /> as the Content-Type.
+        /// </summary>
+        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
+        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType)
+            => PhysicalFile(physicalPath, contentType, fileDownloadName: null);
+
+        /// <summary>
+        /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>) with the
+        /// specified <paramref name="contentType" /> as the Content-Type and the
+        /// specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// </summary>
+        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
+        public virtual PhysicalFileResult PhysicalFile(
+            string physicalPath,
+            string contentType,
+            string fileDownloadName)
+            => new PhysicalFileResult(physicalPath, contentType) { FileDownloadName = fileDownloadName };
+
+        /// <summary>
         /// Creates a <see cref="LocalRedirectResult"/> object that redirects 
         /// (<see cref="StatusCodes.Status302Found"/>) to the specified local <paramref name="localUrl"/>.
         /// </summary>
@@ -794,43 +495,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new NotFoundObjectResult(value);
 
         /// <summary>
-        /// Creates a <see cref="PageResult"/> object that renders the page.
+        /// Creates a <see cref="PageResult"/> object that renders this page as a view to the response.
         /// </summary>
-        /// <returns>The <see cref="PageResult"/>.</returns>
-        public virtual PageResult Page() => new PageResult(PageContext.Page, this);
+        /// <returns>The created <see cref="PageResult"/> object for the response.</returns>
+        /// <remarks>
+        /// Returning a <see cref="PageResult"/> from a page handler method is equivalent to returning void.
+        /// The view associated with the page will be executed.
+        /// </remarks>
+        public virtual PageResult Page() => new PageResult(this);
 
         /// <summary>
-        /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>) with the
-        /// specified <paramref name="contentType" /> as the Content-Type.
-        /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
-        /// <param name="contentType">The Content-Type of the file.</param>
-        /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
-        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType)
-            => PhysicalFile(physicalPath, contentType, fileDownloadName: null);
-
-        /// <summary>
-        /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>) with the
-        /// specified <paramref name="contentType" /> as the Content-Type and the
-        /// specified <paramref name="fileDownloadName" /> as the suggested file name.
-        /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
-        /// <param name="contentType">The Content-Type of the file.</param>
-        /// <param name="fileDownloadName">The suggested file name.</param>
-        /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
-        public virtual PhysicalFileResult PhysicalFile(
-            string physicalPath,
-            string contentType,
-            string fileDownloadName)
-            => new PhysicalFileResult(physicalPath, contentType) { FileDownloadName = fileDownloadName };
-
-        /// <summary>
-        /// Creates a <see cref="RedirectResult"/> object that redirects (<see cref="StatusCodes.Status302Found"/>)
-        /// to the specified <paramref name="url"/>.
+        /// Creates a <see cref="RedirectResult"/> object that redirects to the specified <paramref name="url"/>.
         /// </summary>
         /// <param name="url">The URL to redirect to.</param>
         /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
-        protected internal RedirectResult Redirect(string url)
+        public virtual RedirectResult Redirect(string url)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -913,7 +592,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="actionName"/> and the <paramref name="controllerName"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToAction(string actionName, string controllerName)
             => RedirectToAction(actionName, controllerName, routeValues: null);
@@ -923,7 +602,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="actionName"/>, <paramref name="controllerName"/>, and <paramref name="routeValues"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToAction(
@@ -937,7 +616,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="actionName"/>, <paramref name="controllerName"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToAction(
@@ -951,7 +630,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="controllerName"/>, <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <param name="routeValues">The parameters for a route.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
@@ -960,12 +639,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             string controllerName,
             object routeValues,
             string fragment)
-        {
-            return new RedirectToActionResult(actionName, controllerName, routeValues, fragment)
-            {
-                UrlHelper = Url,
-            };
-        }
+            => new RedirectToActionResult(actionName, controllerName, routeValues, fragment);
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified action with 
@@ -974,7 +648,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>       
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
@@ -990,10 +664,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 routeValues: routeValues,
                 permanent: false,
                 preserveMethod: true,
-                fragment: fragment)
-            {
-                UrlHelper = Url,
-            };
+                fragment: fragment);
         }
 
         /// <summary>
@@ -1003,7 +674,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="actionName">The name of the action.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToActionPermanent(string actionName)
-            => RedirectToActionPermanent(actionName, routeValues: null);
+        {
+            return RedirectToActionPermanent(actionName, routeValues: null);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
@@ -1014,7 +687,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToActionPermanent(string actionName, object routeValues)
-            => RedirectToActionPermanent(actionName, controllerName: null, routeValues: routeValues);
+        {
+            return RedirectToActionPermanent(actionName, controllerName: null, routeValues: routeValues);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
@@ -1022,10 +697,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// and <paramref name="controllerName"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName)
-            => RedirectToActionPermanent(actionName, controllerName, routeValues: null);
+        {
+            return RedirectToActionPermanent(actionName, controllerName, routeValues: null);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
@@ -1033,14 +710,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="controllerName"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToActionPermanent(
             string actionName,
             string controllerName,
             string fragment)
-            => RedirectToActionPermanent(actionName, controllerName, routeValues: null, fragment: fragment);
+        {
+            return RedirectToActionPermanent(actionName, controllerName, routeValues: null, fragment: fragment);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
@@ -1048,14 +727,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="controllerName"/>, and <paramref name="routeValues"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
         public virtual RedirectToActionResult RedirectToActionPermanent(
             string actionName,
             string controllerName,
             object routeValues)
-            => RedirectToActionPermanent(actionName, controllerName, routeValues, fragment: null);
+        {
+            return RedirectToActionPermanent(actionName, controllerName, routeValues, fragment: null);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified action with 
@@ -1063,7 +744,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="controllerName"/>, <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <param name="routeValues">The parameters for a route.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
@@ -1078,10 +759,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 controllerName,
                 routeValues,
                 permanent: true,
-                fragment: fragment)
-            {
-                UrlHelper = Url,
-            };
+                fragment: fragment);
         }
 
         /// <summary>
@@ -1091,7 +769,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <paramref name="routeValues"/>, and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="actionName">The name of the action.</param>
-        /// <param name="controllerName">The name of the pageModel.</param>
+        /// <param name="controllerName">The name of the controller.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>        
@@ -1107,10 +785,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 routeValues: routeValues,
                 permanent: true,
                 preserveMethod: true,
-                fragment: fragment)
-            {
-                UrlHelper = Url,
-            };
+                fragment: fragment);
         }
 
         /// <summary>
@@ -1119,7 +794,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeName">The name of the route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoute(string routeName)
-            => RedirectToRoute(routeName, routeValues: null);
+        {
+            return RedirectToRoute(routeName, routeValues: null);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified route using the specified <paramref name="routeValues"/>.
@@ -1127,7 +804,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoute(object routeValues)
-            => RedirectToRoute(routeName: null, routeValues: routeValues);
+        {
+            return RedirectToRoute(routeName: null, routeValues: routeValues);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified route using the specified
@@ -1137,7 +816,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoute(string routeName, object routeValues)
-            => RedirectToRoute(routeName, routeValues, fragment: null);
+        {
+            return RedirectToRoute(routeName, routeValues, fragment: null);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified route using the specified
@@ -1147,7 +828,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoute(string routeName, string fragment)
-            => RedirectToRoute(routeName, routeValues: null, fragment: fragment);
+        {
+            return RedirectToRoute(routeName, routeValues: null, fragment: fragment);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified route using the specified
@@ -1162,10 +845,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             object routeValues,
             string fragment)
         {
-            return new RedirectToRouteResult(routeName, routeValues, fragment)
-            {
-                UrlHelper = Url,
-            };
+            return new RedirectToRouteResult(routeName, routeValues, fragment);
         }
 
         /// <summary>
@@ -1187,10 +867,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 routeValues: routeValues,
                 permanent: false,
                 preserveMethod: true,
-                fragment: fragment)
-            {
-                UrlHelper = Url,
-            };
+                fragment: fragment);
         }
 
         /// <summary>
@@ -1200,7 +877,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeName">The name of the route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName)
-            => RedirectToRoutePermanent(routeName, routeValues: null);
+        {
+            return RedirectToRoutePermanent(routeName, routeValues: null);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with 
@@ -1209,7 +888,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoutePermanent(object routeValues)
-            => RedirectToRoutePermanent(routeName: null, routeValues: routeValues);
+        {
+            return RedirectToRoutePermanent(routeName: null, routeValues: routeValues);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with
@@ -1220,7 +901,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeValues">The parameters for a route.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues)
-            => RedirectToRoutePermanent(routeName, routeValues, fragment: null);
+        {
+            return RedirectToRoutePermanent(routeName, routeValues, fragment: null);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with 
@@ -1231,7 +914,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The created <see cref="RedirectToRouteResult"/> for the response.</returns>
         public virtual RedirectToRouteResult RedirectToRoutePermanent(string routeName, string fragment)
-            => RedirectToRoutePermanent(routeName, routeValues: null, fragment: fragment);
+        {
+            return RedirectToRoutePermanent(routeName, routeValues: null, fragment: fragment);
+        }
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified route with
@@ -1246,12 +931,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             string routeName,
             object routeValues,
             string fragment)
-        {
-            return new RedirectToRouteResult(routeName, routeValues, permanent: true, fragment: fragment)
-            {
-                UrlHelper = Url,
-            };
-        }
+            => new RedirectToRouteResult(routeName, routeValues, permanent: true, fragment: fragment);
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status308PermanentRedirect"/>) to the specified route with
@@ -1272,10 +952,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 routeValues: routeValues,
                 permanent: true,
                 preserveMethod: true,
-                fragment: fragment)
-            {
-                UrlHelper = Url,
-            };
+                fragment: fragment);
         }
 
         /// <summary>
@@ -1309,18 +986,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="pageHandler">The page handler to redirect to.</param>
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
         public virtual RedirectToPageResult RedirectToPage(string pageName, string pageHandler)
-            => RedirectToPage(pageName, pageHandler, routeValues: null);
-
-        /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
-        /// using the specified <paramref name="pageHandler"/> and <paramref name="routeValues"/>.
-        /// </summary>
-        /// <param name="pageName">The name of the page.</param>
-        /// <param name="pageHandler">The page handler to redirect to.</param>
-        /// <param name="routeValues">The parameters for a route.</param>
-        /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
-        public virtual RedirectToPageResult RedirectToPage(string pageName, string pageHandler, object routeValues)
-            => RedirectToPage(pageName, pageHandler, routeValues, fragment: null);
+            => RedirectToPage(pageName, routeValues: null);
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
@@ -1374,7 +1040,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => RedirectToPagePermanent(pageName, pageHandler: null, routeValues: routeValues, fragment: null);
 
         /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>.
+        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
+        /// using the specified <paramref name="pageHandler"/>.
         /// </summary>
         /// <param name="pageName">The name of the page.</param>
         /// <param name="pageHandler">The page handler to redirect to.</param>
@@ -1406,17 +1073,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
-        /// using the specified <paramref name="fragment"/>.
-        /// </summary>
-        /// <param name="pageName">The name of the page.</param>
-        /// <param name="routeValues">The parameters for a route.</param>
-        /// <param name="fragment">The fragment to add to the URL.</param>
-        /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
-        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues, string fragment)
-            => RedirectToPagePermanent(pageName, pageHandler: null, routeValues: routeValues, fragment: fragment);
-
-        /// <summary>
-        /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
         /// using the specified <paramref name="routeValues"/> and <paramref name="fragment"/>.
         /// </summary>
         /// <param name="pageName">The name of the page.</param>
@@ -1424,7 +1080,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="routeValues">The parameters for a route.</param>
         /// <param name="fragment">The fragment to add to the URL.</param>
         /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
-        public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, string pageHandler, object routeValues, string fragment)
+        protected RedirectToPageResult RedirectToPagePermanent(string pageName, string pageHandler, object routeValues, string fragment)
             => new RedirectToPageResult(pageName, pageHandler, routeValues, permanent: true, fragment: fragment);
 
         /// <summary>
@@ -1533,12 +1189,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="value">The value to set on the <see cref="ObjectResult"/>.</param>
         /// <returns>The created <see cref="ObjectResult"/> object for the response.</returns>
         public virtual ObjectResult StatusCode(int statusCode, object value)
-        {
-            return new ObjectResult(value)
-            {
-                StatusCode = statusCode
-            };
-        }
+            => new ObjectResult(value) { StatusCode = statusCode };
 
         /// <summary>
         /// Creates an <see cref="UnauthorizedResult"/> that produces an <see cref="StatusCodes.Status401Unauthorized"/> response.
@@ -1546,6 +1197,345 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <returns>The created <see cref="UnauthorizedResult"/> for the response.</returns>
         public virtual UnauthorizedResult Unauthorized()
             => new UnauthorizedResult();
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="RazorPages.Page"/>'s current
+        /// <see cref="IValueProvider"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public virtual Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model)
+            where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            return TryUpdateModelAsync(model, prefix: string.Empty);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="RazorPages.Page"/>'s current
+        /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public virtual async Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string prefix)
+            where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            return await TryUpdateModelAsync(model, prefix, valueProvider);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
+        /// <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public virtual Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string prefix,
+            IValueProvider valueProvider)
+            where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="RazorPages.Page"/>'s current
+        /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
+        /// which need to be included for the current model.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public async Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string prefix,
+            params Expression<Func<TModel, object>>[] includeExpressions)
+           where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (includeExpressions == null)
+            {
+                throw new ArgumentNullException(nameof(includeExpressions));
+            }
+
+            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                includeExpressions);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="RazorPages.Page"/>'s current
+        /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public async Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string prefix,
+            Func<ModelMetadata, bool> propertyFilter)
+            where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (propertyFilter == null)
+            {
+                throw new ArgumentNullException(nameof(propertyFilter));
+            }
+
+            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                propertyFilter);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
+        /// <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="includeExpressions"> <see cref="Expression"/>(s) which represent top-level properties
+        /// which need to be included for the current model.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string prefix,
+            IValueProvider valueProvider,
+            params Expression<Func<TModel, object>>[] includeExpressions)
+           where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (includeExpressions == null)
+            {
+                throw new ArgumentNullException(nameof(includeExpressions));
+            }
+
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                includeExpressions);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
+        /// <paramref name="prefix"/>.
+        /// </summary>
+        /// <typeparam name="TModel">The type of the model object.</typeparam>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public Task<bool> TryUpdateModelAsync<TModel>(
+            TModel model,
+            string prefix,
+            IValueProvider valueProvider,
+            Func<ModelMetadata, bool> propertyFilter)
+            where TModel : class
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (propertyFilter == null)
+            {
+                throw new ArgumentNullException(nameof(propertyFilter));
+            }
+
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                prefix,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                propertyFilter);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using values from the <see cref="RazorPages.Page"/>'s current
+        /// <see cref="IValueProvider"/> and a <paramref name="prefix"/>.
+        /// </summary>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="modelType">The type of model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the current <see cref="IValueProvider"/>.
+        /// </param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public virtual async Task<bool> TryUpdateModelAsync(
+            object model,
+            Type modelType,
+            string prefix)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            return await ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                modelType,
+                prefix,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator);
+        }
+
+        /// <summary>
+        /// Updates the specified <paramref name="model"/> instance using the <paramref name="valueProvider"/> and a
+        /// <paramref name="prefix"/>.
+        /// </summary>
+        /// <param name="model">The model instance to update.</param>
+        /// <param name="modelType">The type of model instance to update.</param>
+        /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
+        /// </param>
+        /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
+        /// <param name="propertyFilter">A predicate which can be used to filter properties at runtime.</param>
+        /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful.</returns>
+        public Task<bool> TryUpdateModelAsync(
+            object model,
+            Type modelType,
+            string prefix,
+            IValueProvider valueProvider,
+            Func<ModelMetadata, bool> propertyFilter)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            if (valueProvider == null)
+            {
+                throw new ArgumentNullException(nameof(valueProvider));
+            }
+
+            if (propertyFilter == null)
+            {
+                throw new ArgumentNullException(nameof(propertyFilter));
+            }
+
+            return ModelBindingHelper.TryUpdateModelAsync(
+                model,
+                modelType,
+                prefix,
+                PageContext,
+                MetadataProvider,
+                ModelBinderFactory,
+                valueProvider,
+                ObjectValidator,
+                propertyFilter);
+        }
 
         /// <summary>
         /// Validates the specified <paramref name="model"/> instance.
@@ -1560,19 +1550,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(model));
             }
 
-            return TryValidateModel(model, name: null);
+            return TryValidateModel(model, prefix: null);
         }
 
         /// <summary>
         /// Validates the specified <paramref name="model"/> instance.
         /// </summary>
         /// <param name="model">The model to validate.</param>
-        /// <param name="name">The key to use when looking up information in <see cref="ModelState"/>.
+        /// <param name="prefix">The key to use when looking up information in <see cref="ModelState"/>.
         /// </param>
         /// <returns><c>true</c> if the <see cref="ModelState"/> is valid;<c>false</c> otherwise.</returns>
         public virtual bool TryValidateModel(
             object model,
-            string name)
+            string prefix)
         {
             if (model == null)
             {
@@ -1582,7 +1572,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             ObjectValidator.Validate(
                 PageContext,
                 validationState: null,
-                prefix: name ?? string.Empty,
+                prefix: prefix ?? string.Empty,
                 model: model);
             return ModelState.IsValid;
         }
