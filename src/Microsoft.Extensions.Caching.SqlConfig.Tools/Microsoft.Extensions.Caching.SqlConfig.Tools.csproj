@@ -19,7 +19,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
+
+    <!--
+      * Use 4.4.0-* instead of $(CoreFxVersion) to address "SqlClient fails with netcoreapp2.0 on Win7/Server2008"
+        * https://github.com/dotnet/corefx/issues/18406
+      * Revert if and when $(CoreFxVersion) is upgraded to 4.4.0-*
+    -->
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0-*" />
   </ItemGroup>
 
 </Project>
