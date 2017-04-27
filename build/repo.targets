@@ -162,7 +162,7 @@
     <PropertyGroup>
         <PublishDir Condition="'$(PublishShare)' != ''">$(PublishShare)\fallbackArchives</PublishDir>
     </PropertyGroup>
-    <Copy SourceFiles="artifacts\nuGetPackagesArchive.$(BuildNumber).timestamped;artifacts\nuGetPackagesArchive.$(BuildNumber).notimestamp" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
+    <Copy SourceFiles="$(RepositoryRoot)artifacts\nuGetPackagesArchive.$(BuildNumber).timestamped.lzma;$(RepositoryRoot)artifacts\nuGetPackagesArchive.$(BuildNumber).notimestamp.lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
   </Target>
 
   <Target Name="AddManifestsToNupkg">
