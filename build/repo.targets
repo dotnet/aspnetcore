@@ -9,8 +9,6 @@
     <!-- Project for building the NuGet Fallback Archive (LZMA for CLI) -->
     <FallbackArchiveDir>$(RepositoryRoot)src\Archive.AspNetCore.All\</FallbackArchiveDir>
     <FallbackArchiveProj>$(FallbackArchiveDir)Archive.AspNetCore.All.csproj</FallbackArchiveProj>
-    <ArchiverProject>$(RepositoryRoot)src\dotnet-archive\dotnet-archive.csproj</ArchiverProject>
-    <ArchiverBinary>$(RepositoryRoot)src\dotnet-archive\bin\$(Configuration)\netcoreapp2.0\dotnet-archive.dll</ArchiverBinary>
 
     <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
     <PackageCacheOutputPath>$(MetaPackagePath)bin\packageCache\</PackageCacheOutputPath>
@@ -100,6 +98,8 @@
     <Error Text="AspNetPackageVersion must be specified" Condition=" '$(AspNetPackageVersion)' == '' " />
     <Error Text="PackageSource must be specified" Condition=" '$(PackageSource)' == '' " />
     <Error Text="OutputPackageName must be specified" Condition=" '$(OutputPackageName)' == '' " />
+    <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
+    <Error Text="Archiver not found at $(ArchiverPath)" Condition="!Exists('$(ArchiverPath)')" />
 
     <!-- Clear the directories -->
     <RemoveDir Directories="$(FallbackArchiveDir)bin" />
@@ -121,13 +121,10 @@
       SourceName="Dependencies"
       SourceUri="$(PackageSource)" />
 
-    <!-- Restore the target project -->
-    <MSBuild Projects="$(FallbackArchiveProj)" Targets="Restore" Properties="RestorePackagesPath=$(FallbackStagingDir);AspNetPackageVersion=$(AspNetPackageVersion);RestoreConfigFile=$(FallbackRestoreConfigFile)" />
-
     <!-- Create the archive -->
     <Error Text="Archiver failed to build? Could not find it at $(ArchiverBinary)" Condition="!Exists('$(ArchiverBinary)')" />
     <Message Text="Producing LZMA Archive, this may take a while..." Importance="high" />
-    <Exec Command="dotnet $(ArchiverBinary) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
+    <Exec Command="dotnet $(ArchiverPath) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
   </Target>
 
   <Target Name="BuildFallbackArchive">
@@ -148,15 +145,11 @@
         <TimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages</TimestampSource>
     </PropertyGroup>
 
-    <!-- Build the dotnet-archiver project -->
-    <MSBuild Projects="$(ArchiverProject)" Targets="Restore" Properties="Configuration=$(Configuration)" />
-    <MSBuild Projects="$(ArchiverProject)" Targets="Build" Properties="Configuration=$(Configuration)" />
-
     <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
     <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
     <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
-    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.timestamped" />
-    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.notimestamp" />
+    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.timestamped;ArchiverPath=$(ArchiverPath)" />
+    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.notimestamp;ArchiverPath=$(ArchiverPath)" />
 
     <!-- Copy LZMA archives to Coherence-Signed drop location -->
     <PropertyGroup>
