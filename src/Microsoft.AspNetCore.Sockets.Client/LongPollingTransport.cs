@@ -4,14 +4,9 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
-using System.IO.Pipelines.Text.Primitives;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
@@ -56,7 +51,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // Start sending and polling (ask for binary if the server supports it)
             var pollUrl = Utils.AppendQueryString(Utils.AppendPath(url, "poll"), "supportsBinary=true");
             _poller = Poll(pollUrl, _transportCts.Token);
-            _sender = SendMessages(Utils.AppendPath(url, "send"), _transportCts.Token);
+            _sender = SendUtils.SendMessages(Utils.AppendPath(url, "send"), _application, _httpClient, _transportCts, _logger);
 
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
             {
@@ -176,112 +171,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 throw new FormatException("Incomplete message");
             }
             return messages;
-        }
-
-        private async Task SendMessages(Uri sendUrl, CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("Starting the send loop");
-            IList<SendMessage> messages = null;
-            try
-            {
-                while (await _application.Input.WaitToReadAsync(cancellationToken))
-                {
-                    // Grab as many messages as we can from the channel
-                    messages = new List<SendMessage>();
-                    while (!cancellationToken.IsCancellationRequested && _application.Input.TryRead(out SendMessage message))
-                    {
-                        messages.Add(message);
-                    }
-
-                    if (messages.Count > 0)
-                    {
-                        _logger.LogDebug("Sending {0} message(s) to the server using url: {1}", messages.Count, sendUrl);
-
-                        // Send them in a single post
-                        var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
-                        request.Headers.UserAgent.Add(DefaultUserAgentHeader);
-
-                        // TODO: We can probably use a pipeline here or some kind of pooled memory.
-                        // But where do we get the pool from? ArrayBufferPool.Instance?
-                        var memoryStream = new MemoryStream();
-
-                        // Write the messages to the stream
-                        var pipe = memoryStream.AsPipelineWriter();
-                        var output = new PipelineTextOutput(pipe, TextEncoder.Utf8); // We don't need the Encoder, but it's harmless to set.
-                        await WriteMessagesAsync(messages, output, MessageFormat.Binary);
-
-                        // Seek back to the start
-                        memoryStream.Seek(0, SeekOrigin.Begin);
-
-                        // Set the, now filled, stream as the content
-                        request.Content = new StreamContent(memoryStream);
-                        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(MessageFormatter.GetContentType(MessageFormat.Binary));
-
-                        var response = await _httpClient.SendAsync(request);
-                        response.EnsureSuccessStatusCode();
-
-                        _logger.LogDebug("Message(s) sent successfully");
-                        foreach (var message in messages)
-                        {
-                            message.SendResult?.TrySetResult(null);
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogDebug("No messages in batch to send");
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // transport is being closed
-                if (messages != null)
-                {
-                    foreach (var message in messages)
-                    {
-                        // This will no-op for any messages that were already marked as completed.
-                        message.SendResult?.TrySetCanceled();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error while sending to '{0}': {1}", sendUrl, ex);
-                if (messages != null)
-                {
-                    foreach (var message in messages)
-                    {
-                        // This will no-op for any messages that were already marked as completed.
-                        message.SendResult?.TrySetException(ex);
-                    }
-                }
-                throw;
-            }
-            finally
-            {
-                // Make sure the poll loop is terminated
-                _transportCts.Cancel();
-            }
-
-            _logger.LogInformation("Send loop stopped");
-        }
-
-        private async Task WriteMessagesAsync(IList<SendMessage> messages, PipelineTextOutput output, MessageFormat format)
-        {
-            output.Append(MessageFormatter.GetFormatIndicator(format), TextEncoder.Utf8);
-
-            foreach (var message in messages)
-            {
-                _logger.LogDebug("Writing '{0}' message to the server", message.Type);
-
-                var payload = message.Payload ?? Array.Empty<byte>();
-                if (!MessageFormatter.TryWriteMessage(new Message(payload, message.Type, endOfMessage: true), output, format))
-                {
-                    // We didn't get any more memory!
-                    throw new InvalidOperationException("Unable to write message to pipeline");
-                }
-                await output.FlushAsync();
-            }
         }
     }
 }
