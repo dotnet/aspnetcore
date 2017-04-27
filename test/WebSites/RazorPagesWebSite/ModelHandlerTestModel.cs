@@ -14,14 +14,14 @@ namespace RazorPagesWebSite
 
         public IActionResult OnGet()
         {
-            return View();
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             await TaskCache.CompletedTask;
             MethodName = nameof(OnPostAsync);
-            return View();
+            return Page();
         }
 
         public async Task OnGetCustomer()
