@@ -142,6 +142,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void TraceIdentifierCountsRequestsPerFrame()
+        {
+            var connectionId = _frameContext.ConnectionId;
+            var feature = ((IFeatureCollection)_frame).Get<IHttpRequestIdentifierFeature>();
+            // Reset() is called once in the test ctor
+            var count = 1;
+            void Reset()
+            {
+                _frame.Reset();
+                count++;
+            }
+
+            var nextId = feature.TraceIdentifier;
+            Assert.Equal($"{connectionId}:00000001", nextId);
+
+            Reset();
+            var secondId = feature.TraceIdentifier;
+            Assert.Equal($"{connectionId}:00000002", secondId);
+
+            var big = 1_000_000;
+            while (big-- > 0) Reset();
+            Assert.Equal($"{connectionId}:{count:X8}", feature.TraceIdentifier);
+        }
+
+        [Fact]
         public void TraceIdentifierGeneratesWhenNull()
         {
             _frame.TraceIdentifier = null;
@@ -149,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.NotNull(id);
             Assert.Equal(id, _frame.TraceIdentifier);
 
-            _frame.TraceIdentifier = null;
+            _frame.Reset();
             Assert.NotEqual(id, _frame.TraceIdentifier);
         }
 

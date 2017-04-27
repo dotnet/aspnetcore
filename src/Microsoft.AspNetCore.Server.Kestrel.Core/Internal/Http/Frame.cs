@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private string _requestId;
         private int _remainingRequestHeadersBytesAllowed;
         private int _requestHeadersParsed;
+        private uint _requestCount;
 
         protected readonly long _keepAliveTicks;
         private readonly long _requestHeadersTimeoutTicks;
@@ -128,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // don't generate an ID until it is requested
                 if (_requestId == null)
                 {
-                    _requestId = CorrelationIdGenerator.GetNextId();
+                    _requestId = StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', _requestCount);
                 }
                 return _requestId;
             }
@@ -388,6 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
+            _requestCount++;
         }
 
         /// <summary>

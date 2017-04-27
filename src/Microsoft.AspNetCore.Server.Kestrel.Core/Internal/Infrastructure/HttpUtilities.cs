@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 // This version if AsciiUtilities returns null if there are any null (0 byte) characters
                 // in the string
-                if (!AsciiUtilities.TryGetAsciiString(buffer, output, span.Length))
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
                 {
                     throw new InvalidOperationException();
                 }

@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             string key = new string('\0', keyLength);
             fixed (char* keyBuffer = key)
             {
-                if (!AsciiUtilities.TryGetAsciiString(pKeyBytes, keyBuffer, keyLength))
+                if (!StringUtilities.TryGetAsciiString(pKeyBytes, keyBuffer, keyLength))
                 {
                     throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidCharactersInHeaderName);
                 }

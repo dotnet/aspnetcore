@@ -611,13 +611,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task TraceIdentifierIsUnique()
         {
-            const int IdentifierLength = 13;
+            const int identifierLength = 22;
             const int iterations = 10;
 
             using (var server = new TestServer(async context =>
             {
-                Assert.Equal(IdentifierLength, Encoding.ASCII.GetByteCount(context.TraceIdentifier));
-                context.Response.ContentLength = IdentifierLength;
+                Assert.Equal(identifierLength, Encoding.ASCII.GetByteCount(context.TraceIdentifier));
+                context.Response.ContentLength = identifierLength;
                 await context.Response.WriteAsync(context.TraceIdentifier);
             }))
             {
@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // requests on same connection
                 using (var connection = server.CreateConnection())
                 {
-                    var buffer = new char[IdentifierLength];
+                    var buffer = new char[identifierLength];
                     for (var i = 0; i < iterations; i++)
                     {
                         await connection.Send("GET / HTTP/1.1",
@@ -645,12 +645,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                         await connection.Receive($"HTTP/1.1 200 OK",
                            $"Date: {server.Context.DateHeaderValue}",
-                           $"Content-Length: {IdentifierLength}",
+                           $"Content-Length: {identifierLength}",
                            "",
                            "").TimeoutAfter(TimeSpan.FromSeconds(10));
 
-                        var read = await connection.Reader.ReadAsync(buffer, 0, IdentifierLength);
-                        Assert.Equal(IdentifierLength, read);
+                        var read = await connection.Reader.ReadAsync(buffer, 0, identifierLength);
+                        Assert.Equal(identifierLength, read);
                         var id = new string(buffer, 0, read);
                         Assert.DoesNotContain(id, usedIds.ToArray());
                         usedIds.Add(id);

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class AsciiUtilities
+    internal class StringUtilities
     {
         public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
         {
@@ -74,6 +74,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
 
             return isValid;
+        }
+
+        private static readonly string _encode16Chars = "0123456789ABCDEF";
+
+        /// <summary>
+        /// A faster version of String.Concat(<paramref name="str"/>, <paramref name="separator"/>, <paramref name="number"/>.ToString("X8"))
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="separator"></param>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        public static unsafe string ConcatAsHexSuffix(string str, char separator, uint number)
+        {
+            var length = 1 + 8;
+            if (str != null)
+            {
+                length += str.Length;
+            }
+
+            // stackalloc to allocate array on stack rather than heap
+            char* charBuffer = stackalloc char[length];
+
+            var i = 0;
+            if (str != null)
+            {
+                for (i = 0; i < str.Length; i++)
+                {
+                    charBuffer[i] = str[i];
+                }
+            }
+
+            charBuffer[i] = separator;
+
+            charBuffer[i + 1] = _encode16Chars[(int)(number >> 28) & 0xF];
+            charBuffer[i + 2] = _encode16Chars[(int)(number >> 24) & 0xF];
+            charBuffer[i + 3] = _encode16Chars[(int)(number >> 20) & 0xF];
+            charBuffer[i + 4] = _encode16Chars[(int)(number >> 16) & 0xF];
+            charBuffer[i + 5] = _encode16Chars[(int)(number >> 12) & 0xF];
+            charBuffer[i + 6] = _encode16Chars[(int)(number >> 8) & 0xF];
+            charBuffer[i + 7] = _encode16Chars[(int)(number >> 4) & 0xF];
+            charBuffer[i + 8] = _encode16Chars[(int)number & 0xF];
+
+            // string ctor overload that takes char*
+            return new string(charBuffer, 0, length);
         }
     }
 }
