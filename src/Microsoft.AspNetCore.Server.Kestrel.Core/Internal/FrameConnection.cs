@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 Log.LogError(0, ex, $"Uncaught exception from the {nameof(IConnectionAdapter.OnConnectionAsync)} method of an {nameof(IConnectionAdapter)}.");
                 _frameStartedTcs.SetResult(false);
-                CloseRawPipes();
+                _ = CloseRawPipesAsync();
             }
         }
 
@@ -181,15 +181,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                CloseRawPipes();
+                // Don't allow _adaptedPipelineTask to be held up by StopAsync() or else StopAsync() will never complete.
+                _ = CloseRawPipesAsync();
             }
         }
 
-        private void CloseRawPipes()
+        private async Task CloseRawPipesAsync()
         {
-            _filteredStream?.Dispose();
             _context.OutputProducer.Dispose();
             _context.Input.Reader.Complete();
+
+            // Wait until request processing is complete before disposing the Stream.
+            await StopAsync();
+
+            _filteredStream?.Dispose();
         }
 
         private void StartFrame()
