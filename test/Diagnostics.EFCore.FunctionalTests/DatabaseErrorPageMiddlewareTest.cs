@@ -322,7 +322,16 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var server = new TestServer(builder);
 
             var ex = await Assert.ThrowsAsync<SqlException>(async () =>
-                await server.CreateClient().GetAsync("http://localhost/"));
+            {
+                try
+                {
+                    await server.CreateClient().GetAsync("http://localhost/");
+                }
+                catch (InvalidOperationException exception) when (exception.InnerException != null)
+                {
+                    throw exception.InnerException;
+                }
+            });
 
             Assert.True(logProvider.Logger.Messages.Any(m =>
                 m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext)))));
@@ -368,7 +377,16 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 var server = SetupTestServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(database, logProvider);
 
                 var ex = await Assert.ThrowsAsync<SqlException>(async () =>
-                    await server.CreateClient().GetAsync("http://localhost/"));
+                {
+                    try
+                    {
+                        await server.CreateClient().GetAsync("http://localhost/");
+                    }
+                    catch (InvalidOperationException exception) when (exception.InnerException != null)
+                    {
+                        throw exception.InnerException;
+                    }
+                });
 
                 Assert.True(logProvider.Logger.Messages.ToList().Any(m =>
                     m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_Exception"))));
@@ -448,7 +466,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     {
                         if (!PlatformHelper.IsMono)
                         {
-                            optionsBuilder.UseSqlServer(database.ConnectionString);
+                            optionsBuilder.UseSqlServer(database.ConnectionString, b => b.CommandTimeout(600));
                         }
                         else
                         {
