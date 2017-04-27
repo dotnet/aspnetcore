@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,11 +10,10 @@ namespace CodeGenerator.HttpUtilities
     // C code for Algorithm L (Lexicographic combinations) in Section 7.2.1.3 of The Art of Computer Programming, Volume 4A: Combinatorial Algorithms, Part 1 :
     internal class CombinationsWithoutRepetition<T> : IEnumerator<T[]>
     {
+        private bool _firstElement;
         private int[] _pointers;
         private T[] _nElements;
         private readonly int _p;
-        public T[] Current { get; private set; }
-        object IEnumerator.Current => Current;
 
         public CombinationsWithoutRepetition(T[] nElements, int p)
         {
@@ -26,7 +25,8 @@ namespace CodeGenerator.HttpUtilities
             ResetCurrent();
         }
 
-        private bool _firstElement;
+        public T[] Current { get; private set; }
+        object IEnumerator.Current => Current;
 
         public bool MoveNext()
         {

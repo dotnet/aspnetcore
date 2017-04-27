@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System;
 
@@ -20,10 +19,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public const string HttpsUriScheme = "https://";
 
         // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
-        private readonly static ulong _httpSchemeLong = GetAsciiStringAsLong(HttpUriScheme + "\0");
-        private readonly static ulong _httpsSchemeLong = GetAsciiStringAsLong(HttpsUriScheme);
+        private static readonly ulong _httpSchemeLong = GetAsciiStringAsLong(HttpUriScheme + "\0");
+        private static readonly ulong _httpsSchemeLong = GetAsciiStringAsLong(HttpsUriScheme);
 
-        private const uint _httpGetMethodInt = 542393671; // retun of GetAsciiStringAsInt("GET "); const results in better codegen
+        private const uint _httpGetMethodInt = 542393671; // GetAsciiStringAsInt("GET "); const results in better codegen
 
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
@@ -33,18 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             _knownMethods[GetKnownMethodIndex(knownMethodUlong)] = new Tuple<ulong, ulong, HttpMethod, int>(mask, knownMethodUlong, knownMethod, length);
         }
-
-        private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
-        {
-            Tuple.Create(_mask4Chars, _httpPutMethodLong, HttpMethod.Put, 3),
-            Tuple.Create(_mask5Chars, _httpPostMethodLong, HttpMethod.Post, 4),
-            Tuple.Create(_mask5Chars, _httpHeadMethodLong, HttpMethod.Head, 4),
-            Tuple.Create(_mask6Chars, _httpTraceMethodLong, HttpMethod.Trace, 5),
-            Tuple.Create(_mask6Chars, _httpPatchMethodLong, HttpMethod.Patch, 5),
-            Tuple.Create(_mask7Chars, _httpDeleteMethodLong, HttpMethod.Delete, 6),
-            Tuple.Create(_mask8Chars, _httpConnectMethodLong, HttpMethod.Connect, 7),
-            Tuple.Create(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7),
-        };
 
         private static void FillKnownMethodsGaps()
         {
@@ -60,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private unsafe static ulong GetAsciiStringAsLong(string str)
+        private static unsafe ulong GetAsciiStringAsLong(string str)
         {
             Debug.Assert(str.Length == 8, "String must be exactly 8 (ASCII) characters long.");
 
@@ -72,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private unsafe static uint GetAsciiStringAsInt(string str)
+        private static unsafe uint GetAsciiStringAsInt(string str)
         {
             Debug.Assert(str.Length == 4, "String must be exactly 4 (ASCII) characters long.");
 
@@ -84,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private unsafe static ulong GetMaskAsLong(byte[] bytes)
+        private static unsafe ulong GetMaskAsLong(byte[] bytes)
         {
             Debug.Assert(bytes.Length == 8, "Mask must be exactly 8 bytes long.");
 
@@ -94,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public unsafe static string GetAsciiStringNonNullCharacters(this Span<byte> span)
+        public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -157,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal unsafe static HttpMethod GetKnownMethod(byte* data, int length, out int methodLength)
+        internal static unsafe HttpMethod GetKnownMethod(byte* data, int length, out int methodLength)
         {
             methodLength = 0;
             if (length < sizeof(uint))
@@ -229,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal unsafe static HttpVersion GetKnownVersion(byte* location, int length)
+        internal static unsafe HttpVersion GetKnownVersion(byte* location, int length)
         {
             HttpVersion knownVersion;
             var version = *(ulong*)location;

@@ -1,44 +1,44 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     public static partial class HttpUtilities
     {
         // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
-        private readonly static ulong _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");
-        private readonly static ulong _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE \0");
-        private readonly static ulong _httpHeadMethodLong = GetAsciiStringAsLong("HEAD \0\0\0");
-        private readonly static ulong _httpPatchMethodLong = GetAsciiStringAsLong("PATCH \0\0");
-        private readonly static ulong _httpPostMethodLong = GetAsciiStringAsLong("POST \0\0\0");
-        private readonly static ulong _httpPutMethodLong = GetAsciiStringAsLong("PUT \0\0\0\0");
-        private readonly static ulong _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS ");
-        private readonly static ulong _httpTraceMethodLong = GetAsciiStringAsLong("TRACE \0\0");
+        private static readonly ulong _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");
+        private static readonly ulong _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE \0");
+        private static readonly ulong _httpHeadMethodLong = GetAsciiStringAsLong("HEAD \0\0\0");
+        private static readonly ulong _httpPatchMethodLong = GetAsciiStringAsLong("PATCH \0\0");
+        private static readonly ulong _httpPostMethodLong = GetAsciiStringAsLong("POST \0\0\0");
+        private static readonly ulong _httpPutMethodLong = GetAsciiStringAsLong("PUT \0\0\0\0");
+        private static readonly ulong _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS ");
+        private static readonly ulong _httpTraceMethodLong = GetAsciiStringAsLong("TRACE \0\0");
 
-        private readonly static ulong _mask8Chars = GetMaskAsLong(new byte[]
+        private static readonly ulong _mask8Chars = GetMaskAsLong(new byte[]
             {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff});
 
-        private readonly static ulong _mask7Chars = GetMaskAsLong(new byte[]
+        private static readonly ulong _mask7Chars = GetMaskAsLong(new byte[]
             {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00});
 
-        private readonly static ulong _mask6Chars = GetMaskAsLong(new byte[]
+        private static readonly ulong _mask6Chars = GetMaskAsLong(new byte[]
             {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00});
 
-        private readonly static ulong _mask5Chars = GetMaskAsLong(new byte[]
+        private static readonly ulong _mask5Chars = GetMaskAsLong(new byte[]
             {0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00});
 
-        private readonly static ulong _mask4Chars = GetMaskAsLong(new byte[]
+        private static readonly ulong _mask4Chars = GetMaskAsLong(new byte[]
             {0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00});
 
-        private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
+        private static readonly Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
             new Tuple<ulong, ulong, HttpMethod, int>[17];
 
-        private readonly static string[] _methodNames = new string[9];
+        private static readonly string[] _methodNames = new string[9];
 
         static HttpUtilities()
         {

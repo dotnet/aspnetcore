@@ -15,10 +15,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             const string frameHeadersGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel.Core/Internal/Http/FrameHeaders.Generated.cs";
             const string frameGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel.Core/Internal/Http/Frame.Generated.cs";
-            const string httpUtilitiesGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel/Internal/Infrastructure/HttpUtilities.Generated.cs";
+            const string httpUtilitiesGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel.Core/Internal/Infrastructure/HttpUtilities.Generated.cs";
+
             var testFrameHeadersGeneratedPath = Path.GetTempFileName();
             var testFrameGeneratedPath = Path.GetTempFileName();
             var testHttpUtilitiesGeneratedPath = Path.GetTempFileName();
+
             try
             {
                 var currentFrameHeadersGenerated = File.ReadAllText(frameHeadersGeneratedPath);

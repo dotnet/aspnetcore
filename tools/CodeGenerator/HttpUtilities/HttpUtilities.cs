@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace CodeGenerator.HttpUtilities
 {
@@ -66,9 +66,9 @@ namespace CodeGenerator.HttpUtilities
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {{
     public static partial class HttpUtilities
     {{
@@ -76,10 +76,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {0}
 
 {1}
-        private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
+        private static readonly Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
             new Tuple<ulong, ulong, HttpMethod, int>[{2}];
 
-        private readonly static string[] _methodNames = new string[{3}];
+        private static readonly string[] _methodNames = new string[{3}];
 
         static HttpUtilities()
         {{
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 var methodInfo = methodsInfo[index];
 
                 var httpMethodFieldName = GetHttpMethodFieldName(methodInfo);
-                result.AppendFormat("        private readonly static ulong {0} = GetAsciiStringAsLong(\"{1}\");", httpMethodFieldName, methodInfo.MethodAsciiString.Replace("\0", "\\0"));
+                result.AppendFormat("        private static readonly ulong {0} = GetAsciiStringAsLong(\"{1}\");", httpMethodFieldName, methodInfo.MethodAsciiString.Replace("\0", "\\0"));
 
                 if (index < methodsInfo.Count - 1)
                 {
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 var hexMaskString = HttpUtilitiesGeneratorHelpers.GeHexString(maskArray, "0x", ", ");
                 var maskFieldName = GetMaskFieldName(maskBytesLength);
 
-                result.AppendFormat("        private readonly static ulong {0} = GetMaskAsLong(new byte[]\r\n            {{{1}}});", maskFieldName, hexMaskString);
+                result.AppendFormat("        private static readonly ulong {0} = GetMaskAsLong(new byte[]\r\n            {{{1}}});", maskFieldName, hexMaskString);
                 result.AppendLine();
                 if (index < distinctLengths.Count - 1)
                 {
