@@ -1,12 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
@@ -295,7 +293,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             {
                 b.Features.Add(new MvcViewDocumentClassifierPass());
 
-                b.Features.Add(new TagHelperFeature(tagHelpers));
+                b.Features.Add(new TestTagHelperFeature(tagHelpers));
             });
         }
 
@@ -361,31 +359,6 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             public override void VisitTagHelper(TagHelperIRNode node)
             {
                 Node = node;
-            }
-        }
-
-        private class TagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
-        {
-            public TagHelperFeature(TagHelperDescriptor[] tagHelpers)
-            {
-                Resolver = new TagHelperDescriptorResolver(tagHelpers);
-            }
-
-            public ITagHelperDescriptorResolver Resolver { get; }
-        }
-
-        private class TagHelperDescriptorResolver : ITagHelperDescriptorResolver
-        {
-            public TagHelperDescriptorResolver(TagHelperDescriptor[] tagHelpers)
-            {
-                TagHelpers = tagHelpers;
-            }
-
-            public TagHelperDescriptor[] TagHelpers { get; }
-
-            public IEnumerable<TagHelperDescriptor> Resolve(IList<RazorDiagnostic> errors)
-            {
-                return TagHelpers;
             }
         }
     }

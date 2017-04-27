@@ -21,6 +21,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public const string Task = "System.Threading.Tasks.Task";
 
+        public const string IDictionary = "System.Collections.Generic.IDictionary`2";
+
         public const string ViewComponentNameKey = "ViewComponentName";
 
         public const string AsyncMethodName = "InvokeAsync";

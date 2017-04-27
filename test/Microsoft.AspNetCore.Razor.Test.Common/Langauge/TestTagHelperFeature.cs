@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -10,16 +9,19 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public TestTagHelperFeature()
         {
-            Resolver = new TestTagHelperDescriptorResolver();
+            TagHelpers = new List<TagHelperDescriptor>();
         }
 
         public TestTagHelperFeature(IEnumerable<TagHelperDescriptor> tagHelpers)
         {
-            Resolver = new TestTagHelperDescriptorResolver(tagHelpers);
+            TagHelpers = new List<TagHelperDescriptor>(tagHelpers);
         }
 
-        public List<TagHelperDescriptor> TagHelpers => ((TestTagHelperDescriptorResolver)Resolver).TagHelpers;
+        public List<TagHelperDescriptor> TagHelpers { get; }
 
-        public ITagHelperDescriptorResolver Resolver { get; }
+        public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
+        {
+            return TagHelpers.ToArray();
+        }
     }
 }

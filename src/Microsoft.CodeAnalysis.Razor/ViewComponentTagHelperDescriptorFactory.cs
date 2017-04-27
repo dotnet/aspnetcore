@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor
@@ -26,29 +25,108 @@ namespace Microsoft.CodeAnalysis.Razor
             _viewComponentAttributeSymbol = compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute);
             _genericTaskSymbol = compilation.GetTypeByMetadataName(ViewComponentTypes.GenericTask);
             _taskSymbol = compilation.GetTypeByMetadataName(ViewComponentTypes.Task);
-            _iDictionarySymbol = compilation.GetTypeByMetadataName(TagHelperTypes.IDictionary);
+            _iDictionarySymbol = compilation.GetTypeByMetadataName(ViewComponentTypes.IDictionary);
         }
 
         public virtual TagHelperDescriptor CreateDescriptor(INamedTypeSymbol type)
         {
             var assemblyName = type.ContainingAssembly.Name;
             var shortName = GetShortName(type);
-            var tagName = $"vc:{DefaultTagHelperDescriptorFactory.ToHtmlCase(shortName)}";
+            var tagName = $"vc:{HtmlCase.ToHtmlCase(shortName)}";
             var typeName = $"__Generated__{shortName}ViewComponentTagHelper";
             var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
-            var methodParameters = GetInvokeMethodParameters(type);
-            descriptorBuilder.TagMatchingRule(ruleBuilder =>
-            {
-                ruleBuilder.RequireTagName(tagName);
-                AddRequiredAttributes(methodParameters, ruleBuilder);
-            });
 
-            AddBoundAttributes(methodParameters, descriptorBuilder);
+            if (TryFindInvokeMethod(type, out var method, out var diagnostic))
+            {
+                var methodParameters = method.Parameters;
+                descriptorBuilder.TagMatchingRule(ruleBuilder =>
+                {
+                    ruleBuilder.RequireTagName(tagName);
+                    AddRequiredAttributes(methodParameters, ruleBuilder);
+                });
+
+                AddBoundAttributes(methodParameters, descriptorBuilder);
+            }
+            else
+            {
+                descriptorBuilder.AddDiagnostic(diagnostic);
+            }
 
             descriptorBuilder.AddMetadata(ViewComponentTypes.ViewComponentNameKey, shortName);
 
             var descriptor = descriptorBuilder.Build();
             return descriptor;
+        }
+
+        private bool TryFindInvokeMethod(INamedTypeSymbol type, out IMethodSymbol method, out RazorDiagnostic diagnostic)
+        {
+            var methods = type.GetMembers()
+                .OfType<IMethodSymbol>()
+                .Where(m =>
+                    m.DeclaredAccessibility == Accessibility.Public &&
+                    (string.Equals(m.Name, ViewComponentTypes.AsyncMethodName, StringComparison.Ordinal) ||
+                    string.Equals(m.Name, ViewComponentTypes.SyncMethodName, StringComparison.Ordinal)))
+                .ToArray();
+
+            if (methods.Length == 0)
+            {
+                diagnostic =  ViewComponentDiagnosticFactory.CreateViewComponent_CannotFindMethod(type.ToDisplayString(FullNameTypeDisplayFormat));
+                method = null;
+                return false;
+            }
+            else if (methods.Length > 1)
+            {
+                diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_AmbiguousMethods(type.ToDisplayString(FullNameTypeDisplayFormat));
+                method = null;
+                return false;
+            }
+
+            var selectedMethod = methods[0];
+            var returnType = selectedMethod.ReturnType as INamedTypeSymbol;
+            if (string.Equals(selectedMethod.Name, ViewComponentTypes.AsyncMethodName, StringComparison.Ordinal))
+            {
+                // Will invoke asynchronously. Method must not return Task or Task<T>.
+                if (returnType == _taskSymbol)
+                {
+                    // This is ok.
+                }
+                else if (returnType.IsGenericType && returnType.ConstructedFrom == _genericTaskSymbol)
+                {
+                    // This is ok.
+                }
+                else
+                {
+                    diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_AsyncMethod_ShouldReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
+                    method = null;
+                    return false;
+                }
+            }
+            else
+            {
+                // Will invoke synchronously. Method must not return void, Task or Task<T>.
+                if (returnType.SpecialType == SpecialType.System_Void)
+                {
+                    diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_SyncMethod_ShouldReturnValue(type.ToDisplayString(FullNameTypeDisplayFormat));
+                    method = null;
+                    return false;
+                }
+                else if (returnType == _taskSymbol)
+                {
+                    diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_SyncMethod_CannotReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
+                    method = null;
+                    return false;
+                }
+                else if (returnType.IsGenericType && returnType.ConstructedFrom == _genericTaskSymbol)
+                {
+                    diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_SyncMethod_CannotReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
+                    method = null;
+                    return false;
+                }
+            }
+
+            method = selectedMethod;
+            diagnostic = null;
+            return true;
         }
 
         private void AddRequiredAttributes(ImmutableArray<IParameterSymbol> methodParameters, TagMatchingRuleBuilder builder)
@@ -61,7 +139,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     // because there are two ways of setting values for the attribute.
                     builder.RequireAttribute(attributeBuilder =>
                     {
-                        var lowerKebabName = DefaultTagHelperDescriptorFactory.ToHtmlCase(parameter.Name);
+                        var lowerKebabName = HtmlCase.ToHtmlCase(parameter.Name);
                         attributeBuilder.Name(lowerKebabName);
                     });
                 }
@@ -72,7 +150,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             foreach (var parameter in methodParameters)
             {
-                var lowerKebabName = DefaultTagHelperDescriptorFactory.ToHtmlCase(parameter.Name);
+                var lowerKebabName = HtmlCase.ToHtmlCase(parameter.Name);
                 var typeName = parameter.Type.ToDisplayString(FullNameTypeDisplayFormat);
                 builder.BindAttribute(attributeBuilder =>
                 {
@@ -122,77 +200,6 @@ namespace Microsoft.CodeAnalysis.Razor
             var typeName = type.ToDisplayString(FullNameTypeDisplayFormat);
 
             return typeName;
-        }
-
-        private ImmutableArray<IParameterSymbol> GetInvokeMethodParameters(INamedTypeSymbol componentType)
-        {
-            var methods = componentType.GetMembers()
-                .OfType<IMethodSymbol>()
-                .Where(method =>
-                    method.DeclaredAccessibility == Accessibility.Public &&
-                    (string.Equals(method.Name, ViewComponentTypes.AsyncMethodName, StringComparison.Ordinal) ||
-                    string.Equals(method.Name, ViewComponentTypes.SyncMethodName, StringComparison.Ordinal)))
-                .ToArray();
-
-            if (methods.Length == 0)
-            {
-                throw new InvalidOperationException(
-                    ViewComponentResources.FormatViewComponent_CannotFindMethod(ViewComponentTypes.SyncMethodName, ViewComponentTypes.AsyncMethodName, componentType.ToDisplayString(FullNameTypeDisplayFormat)));
-            }
-            else if (methods.Length > 1)
-            {
-                throw new InvalidOperationException(
-                    ViewComponentResources.FormatViewComponent_AmbiguousMethods(componentType.ToDisplayString(FullNameTypeDisplayFormat), ViewComponentTypes.AsyncMethodName, ViewComponentTypes.SyncMethodName));
-            }
-
-            var selectedMethod = methods[0];
-            var returnType = selectedMethod.ReturnType as INamedTypeSymbol;
-            if (string.Equals(selectedMethod.Name, ViewComponentTypes.AsyncMethodName, StringComparison.Ordinal) && returnType != null)
-            {
-                if (!returnType.IsGenericType == true ||
-                    returnType.ConstructedFrom == _genericTaskSymbol)
-                {
-                    throw new InvalidOperationException(ViewComponentResources.FormatViewComponent_AsyncMethod_ShouldReturnTask(
-                        ViewComponentTypes.AsyncMethodName,
-                        componentType.ToDisplayString(FullNameTypeDisplayFormat),
-                        nameof(Task)));
-                }
-            }
-            else if (returnType != null)
-            {
-                // Will invoke synchronously. Method must not return void, Task or Task<T>.
-                if (returnType.SpecialType == SpecialType.System_Void)
-                {
-                    throw new InvalidOperationException(ViewComponentResources.FormatViewComponent_SyncMethod_ShouldReturnValue(
-                        ViewComponentTypes.SyncMethodName,
-                        componentType.ToDisplayString(FullNameTypeDisplayFormat)));
-                }
-
-                var inheritsFromTask = false;
-                var currentType = returnType;
-                while (currentType != null)
-                {
-                    if (currentType == _taskSymbol)
-                    {
-                        inheritsFromTask = true;
-                        break;
-                    }
-
-                    currentType = currentType.BaseType;
-                }
-
-                if (inheritsFromTask)
-                {
-                    throw new InvalidOperationException(ViewComponentResources.FormatViewComponent_SyncMethod_CannotReturnTask(
-                        ViewComponentTypes.SyncMethodName,
-                        componentType.ToDisplayString(FullNameTypeDisplayFormat),
-                        nameof(Task)));
-                }
-            }
-
-            var methodParameters = selectedMethod.Parameters;
-
-            return methodParameters;
         }
 
         private string GetShortName(INamedTypeSymbol componentType)

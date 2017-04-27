@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using System.Threading.Tasks;
 
 namespace Microsoft.CodeAnalysis.Razor.Workspaces
 {
@@ -122,6 +123,140 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             // Assert
             Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.CaseSensitive);
         }
+
+        [Fact]
+        public void CreateDescriptor_AddsDiagnostic_ForViewComponentWithNoInvokeMethod()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create();
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(ViewComponentWithoutInvokeMethod).FullName);
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
+            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_CannotFindMethod.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CreateDescriptor_ForViewComponentWithInvokeAsync_UnderstandsGenericTask()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create();
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(AsyncViewComponentWithGenericTask).FullName);
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            Assert.Empty(descriptor.GetAllDiagnostics());
+        }
+
+        [Fact]
+        public void CreateDescriptor_ForViewComponentWithInvokeAsync_UnderstandsNonGenericTask()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create();
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(AsyncViewComponentWithNonGenericTask).FullName);
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            Assert.Empty(descriptor.GetAllDiagnostics());
+        }
+
+        [Fact]
+        public void CreateDescriptor_ForViewComponentWithInvokeAsync_DoesNotUnderstandVoid()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create();
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(AsyncViewComponentWithString).FullName);
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
+            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_AsyncMethod_ShouldReturnTask.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CreateDescriptor_ForViewComponentWithInvokeAsync_DoesNotUnderstandString()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create();
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(AsyncViewComponentWithString).FullName);
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
+            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_AsyncMethod_ShouldReturnTask.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CreateDescriptor_ForViewComponentWithInvoke_DoesNotUnderstandVoid()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create();
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(SyncViewComponentWithVoid).FullName);
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
+            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_SyncMethod_ShouldReturnValue.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CreateDescriptor_ForViewComponentWithInvoke_DoesNotUnderstandNonGenericTask()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create();
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(SyncViewComponentWithNonGenericTask).FullName);
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
+            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_SyncMethod_CannotReturnTask.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void CreateDescriptor_ForViewComponentWithInvoke_DoesNotUnderstandGenericTask()
+        {
+            // Arrange
+            var testCompilation = TestCompilation.Create();
+            var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
+            var viewComponent = testCompilation.GetTypeByMetadataName(typeof(SyncViewComponentWithGenericTask).FullName);
+
+            // Act
+            var descriptor = factory.CreateDescriptor(viewComponent);
+
+            // Assert
+            var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
+            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_SyncMethod_CannotReturnTask.Id, diagnostic.Id);
+        }
     }
 
     public class StringParameterViewComponent
@@ -144,5 +279,44 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
     public class GenericParameterViewComponent
     {
         public string Invoke(List<string> Foo, Dictionary<string, int> Bar) => null;
+    }
+
+    public class ViewComponentWithoutInvokeMethod
+    {
+    }
+
+    public class AsyncViewComponentWithGenericTask
+    {
+        public Task<string> InvokeAsync() => null;
+    }
+
+    public class AsyncViewComponentWithNonGenericTask
+    {
+        public Task InvokeAsync() => null;
+    }
+
+    public class AsyncViewComponentWithVoid
+    {
+        public void InvokeAsync() { }
+    }
+
+    public class AsyncViewComponentWithString
+    {
+        public string InvokeAsync() => null;
+    }
+
+    public class SyncViewComponentWithVoid
+    {
+        public void Invoke() { }
+    }
+
+    public class SyncViewComponentWithNonGenericTask
+    {
+        public Task Invoke() => null;
+    }
+
+    public class SyncViewComponentWithGenericTask
+    {
+        public Task<string> Invoke() => null;
     }
 }

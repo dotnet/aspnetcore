@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.CodeAnalysis.Razor
@@ -16,17 +14,6 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         private const string DataDashPrefix = "data-";
         private const string TagHelperNameEnding = "TagHelper";
-        private const string HtmlCaseRegexReplacement = "-$1$2";
-
-        // This matches the following AFTER the start of the input string (MATCH).
-        // Any letter/number followed by an uppercase letter then lowercase letter: 1(Aa), a(Aa), A(Aa)
-        // Any lowercase letter followed by an uppercase letter: a(A)
-        // Each match is then prefixed by a "-" via the ToHtmlCase method.
-        private static readonly Regex HtmlCaseRegex =
-            new Regex(
-                "(?<!^)((?<=[a-zA-Z0-9])[A-Z][a-z])|((?<=[a-z])[A-Z])",
-                RegexOptions.None,
-                TimeSpan.FromMilliseconds(500));
 
         private readonly INamedTypeSymbol _htmlAttributeNameAttributeSymbol;
         private readonly INamedTypeSymbol _htmlAttributeNotBoundAttributeSymbol;
@@ -35,9 +22,6 @@ namespace Microsoft.CodeAnalysis.Razor
         private readonly INamedTypeSymbol _iDictionarySymbol;
         private readonly INamedTypeSymbol _restrictChildrenAttributeSymbol;
         private readonly INamedTypeSymbol _editorBrowsableAttributeSymbol;
-
-        public static ICollection<char> InvalidNonWhitespaceNameCharacters { get; } = new HashSet<char>(
-            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
 
         private static readonly SymbolDisplayFormat FullNameTypeDisplayFormat =
             SymbolDisplayFormat.FullyQualifiedFormat
@@ -104,7 +88,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 descriptorBuilder.TagMatchingRule(ruleBuilder =>
                 {
-                    var htmlCasedName = ToHtmlCase(name);
+                    var htmlCasedName = HtmlCase.ToHtmlCase(name);
                     ruleBuilder.RequireTagName(htmlCasedName);
                 });
 
@@ -213,7 +197,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 string.IsNullOrEmpty((string)attributeNameAttribute.ConstructorArguments[0].Value))
             {
                 hasExplicitName = false;
-                attributeName = ToHtmlCase(property.Name);
+                attributeName = HtmlCase.ToHtmlCase(property.Name);
             }
             else
             {
@@ -447,23 +431,6 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Converts from pascal/camel case to lower kebab-case.
-        /// </summary>
-        /// <example>
-        /// SomeThing => some-thing
-        /// capsONInside => caps-on-inside
-        /// CAPSOnOUTSIDE => caps-on-outside
-        /// ALLCAPS => allcaps
-        /// One1Two2Three3 => one1-two2-three3
-        /// ONE1TWO2THREE3 => one1two2three3
-        /// First_Second_ThirdHi => first_second_third-hi
-        /// </example>
-        internal static string ToHtmlCase(string name)
-        {
-            return HtmlCaseRegex.Replace(name, HtmlCaseRegexReplacement).ToLowerInvariant();
         }
 
         private static string GetFullName(ITypeSymbol type) => type.ToDisplayString(FullNameTypeDisplayFormat);

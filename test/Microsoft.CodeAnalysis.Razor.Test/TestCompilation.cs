@@ -14,6 +14,29 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     public static class TestCompilation
     {
+        private static IEnumerable<MetadataReference> _metadataReferences;
+
+        public static IEnumerable<MetadataReference> MetadataReferences
+        {
+            get
+            {
+                if (_metadataReferences == null)
+                {
+                    var currentAssembly = typeof(TestCompilation).GetTypeInfo().Assembly;
+                    var dependencyContext = DependencyContext.Load(currentAssembly);
+
+                    _metadataReferences = dependencyContext.CompileLibraries
+                        .SelectMany(l => l.ResolveReferencePaths())
+                        .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
+                        .ToArray();
+                }
+
+                return _metadataReferences;
+            }
+        }
+
+        public static string AssemblyName => "TestAssembly";
+
         public static Compilation Create(SyntaxTree syntaxTree = null)
         {
             IEnumerable<SyntaxTree> syntaxTrees = null;
@@ -23,12 +46,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 syntaxTrees = new[] { syntaxTree };
             }
 
-            var currentAssembly = typeof(TestCompilation).GetTypeInfo().Assembly;
-            var dependencyContext = DependencyContext.Load(currentAssembly);
-
-            var references = dependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths())
-                .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath));
-            var compilation = CSharpCompilation.Create("TestAssembly", syntaxTrees, references);
+            var compilation = CSharpCompilation.Create(AssemblyName, syntaxTrees, MetadataReferences);
 
             EnsureValidCompilation(compilation);
 

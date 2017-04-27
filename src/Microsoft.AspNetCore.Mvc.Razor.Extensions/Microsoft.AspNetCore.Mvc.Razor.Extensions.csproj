@@ -11,7 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Microsoft.CodeAnalysis.Razor\ViewComponentTagHelperDescriptorConventions.cs">
+      <Link>ViewComponentTagHelperDescriptorConventions.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../Microsoft.AspNetCore.Razor.Language/Microsoft.AspNetCore.Razor.Language.csproj" />
+    <ProjectReference Include="../Microsoft.CodeAnalysis.Razor/Microsoft.CodeAnalysis.Razor.csproj" />
   </ItemGroup>
 
 </Project>

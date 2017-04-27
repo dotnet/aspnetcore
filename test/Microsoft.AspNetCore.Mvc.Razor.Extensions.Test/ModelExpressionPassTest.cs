@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             return RazorEngine.Create(b =>
             {
-                b.Features.Add(new TagHelperFeature(tagHelpers));
+                b.Features.Add(new TestTagHelperFeature(tagHelpers));
             });
         }
 
@@ -203,31 +203,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             public override void VisitTagHelper(TagHelperIRNode node)
             {
                 Node = node;
-            }
-        }
-
-        private class TagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
-        {
-            public TagHelperFeature(TagHelperDescriptor[] tagHelpers)
-            {
-                Resolver = new TagHelperDescriptorResolver(tagHelpers);
-            }
-
-            public ITagHelperDescriptorResolver Resolver { get; }
-        }
-
-        private class TagHelperDescriptorResolver : ITagHelperDescriptorResolver
-        {
-            public TagHelperDescriptorResolver(TagHelperDescriptor[] tagHelpers)
-            {
-                TagHelpers = tagHelpers;
-            }
-
-            public TagHelperDescriptor[] TagHelpers { get; }
-
-            public IEnumerable<TagHelperDescriptor> Resolve(IList<RazorDiagnostic> errors)
-            {
-                return TagHelpers;
             }
         }
     }

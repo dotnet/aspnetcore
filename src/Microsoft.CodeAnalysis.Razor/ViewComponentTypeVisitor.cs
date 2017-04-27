@@ -11,9 +11,9 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         private static readonly Version SupportedVCTHMvcVersion = new Version(1, 1);
 
-        private INamedTypeSymbol _viewComponentAttribute;
-        private INamedTypeSymbol _nonViewComponentAttribute;
-        private List<INamedTypeSymbol> _results;
+        private readonly INamedTypeSymbol _viewComponentAttribute;
+        private readonly INamedTypeSymbol _nonViewComponentAttribute;
+        private readonly List<INamedTypeSymbol> _results;
 
         public static ViewComponentTypeVisitor Create(Compilation compilation, List<INamedTypeSymbol> results)
         {
@@ -45,7 +45,11 @@ namespace Microsoft.CodeAnalysis.Razor
             _viewComponentAttribute = viewComponentAttribute;
             _nonViewComponentAttribute = nonViewComponentAttribute;
             _results = results;
+
+            Enabled = _viewComponentAttribute != null;
         }
+
+        public bool Enabled { get; set; }
 
         public override void VisitNamedType(INamedTypeSymbol symbol)
         {
@@ -75,7 +79,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         internal bool IsViewComponent(INamedTypeSymbol symbol)
         {
-            if (_viewComponentAttribute == null)
+            if (!Enabled)
             {
                 return false;
             }
@@ -94,7 +98,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private static bool AttributeIsDefined(INamedTypeSymbol type, INamedTypeSymbol queryAttribute)
         {
-            if (type == null)
+            if (type == null || queryAttribute == null)
             {
                 return false;
             }
