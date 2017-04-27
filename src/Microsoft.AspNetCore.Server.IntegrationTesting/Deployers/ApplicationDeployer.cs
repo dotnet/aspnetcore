@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var architecture = GetArchitecture();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return "win-" + architecture;
+                return "win7-" + architecture;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
