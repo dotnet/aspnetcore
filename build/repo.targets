@@ -136,21 +136,20 @@
 
   <Target Name="BuildFallbackArchive">
     <!-- Validate Arguments -->
+    <Error Text="COHERENCE_SIGNED_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence-Signed\{branch}\{build-number}"
+        Condition=" '$(COHERENCE_SIGNED_DROP_LOCATION)' == '' " />
     <Error Text="Required Property 'BuildNumber' not provided" Condition="'$(BuildNumber)' == ''" />
 
     <!-- Determine ASP.NET Package Version -->
     <PropertyGroup>
-        <CoherenceSignedRoot Condition="'$(COHERENCE_SIGNED_DROP_ROOT)' != ''">$(COHERENCE_SIGNED_DROP_ROOT)</CoherenceSignedRoot>
-        <CoherenceSignedRoot Condition="'$(CoherenceSignedRoot)' == ''">\\aspnetci\Drops\Coherence-Signed\dev</CoherenceSignedRoot>
-
         <NoTimestampSuffix Condition="'$(TIMESTAMP_FREE_VERSION)' != ''">$(TIMESTAMP_FREE_VERSION)</NoTimestampSuffix>
         <NoTimestampSuffix Condition="'$(NoTimestampSuffix)' == ''">final</NoTimestampSuffix>
 
         <NoTimestampVersion>$(VersionPrefix)-$(VersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
         <TimestampVersion>$(VersionPrefix)-$(VersionSuffix)-$(BuildNumber)</TimestampVersion>
 
-        <NoTimestampSource>$(CoherenceSignedRoot)\$(BuildNumber)\Signed\Packages-NoTimeStamp</NoTimestampSource>
-        <TimestampSource>$(CoherenceSignedRoot)\$(BuildNumber)\Signed\Packages</TimestampSource>
+        <NoTimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages-NoTimeStamp</NoTimestampSource>
+        <TimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages</TimestampSource>
     </PropertyGroup>
 
     <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
@@ -164,11 +163,10 @@
         <PublishDir Condition="'$(PublishShare)' != ''">$(PublishShare)\fallbackArchives</PublishDir>
     </PropertyGroup>
     <Copy SourceFiles="artifacts\nuGetPackagesArchive.$(BuildNumber).timestamped;artifacts\nuGetPackagesArchive.$(BuildNumber).notimestamp" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
-
   </Target>
 
   <Target Name="AddManifestsToNupkg">
-    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{build-number}"
+    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{branch}\{build-number}"
         Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
 
     <ItemGroup>
