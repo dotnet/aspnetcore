@@ -18,9 +18,6 @@ namespace MiddlewareAnaysisSample
 
         public void Configure(IApplicationBuilder app, ILoggerFactory factory, DiagnosticListener diagnosticListener)
         {
-            // Displays all log levels
-            factory.AddConsole(LogLevel.Debug);
-
             // Listen for middleware events and log them to the console.
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);
@@ -53,7 +50,7 @@ namespace MiddlewareAnaysisSample
                     return next(context);
                 };
             });
-            
+
             app.Map("/throw", throwApp =>
             {
                 throwApp.Run(context => { throw new Exception("Application Exception"); });
@@ -85,6 +82,11 @@ namespace MiddlewareAnaysisSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                })
                 .UseKestrel()
                 .UseIISIntegration()
                 .UseStartup<Startup>()

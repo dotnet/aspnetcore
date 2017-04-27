@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Diagnostics.Elm;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -22,9 +21,12 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // add the elm provider to the factory here so the logger can start capturing logs immediately
-            var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            var provider = app.ApplicationServices.GetRequiredService<ElmLoggerProvider>();
-            factory.AddProvider(provider);
+            var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>() as LoggerFactory;
+            if (factory != null)
+            {
+                var provider = app.ApplicationServices.GetRequiredService<ElmLoggerProvider>();
+                factory.AddProvider(provider);
+            }
 
             return app.UseMiddleware<ElmCaptureMiddleware>();
         }
