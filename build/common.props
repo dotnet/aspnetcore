@@ -118,6 +118,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Session" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
@@ -135,6 +136,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Redis" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
@@ -165,6 +167,17 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
