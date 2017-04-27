@@ -155,14 +155,14 @@
     <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
     <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
     <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
-    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.$(BuildNumber).timestamped" />
-    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.$(BuildNumber).notimestamp" />
+    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.timestamped" />
+    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.notimestamp" />
 
     <!-- Copy LZMA archives to Coherence-Signed drop location -->
     <PropertyGroup>
         <PublishDir Condition="'$(PublishShare)' != ''">$(PublishShare)\fallbackArchives</PublishDir>
     </PropertyGroup>
-    <Copy SourceFiles="$(RepositoryRoot)artifacts\nuGetPackagesArchive.$(BuildNumber).timestamped.lzma;$(RepositoryRoot)artifacts\nuGetPackagesArchive.$(BuildNumber).notimestamp.lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
+    <Copy SourceFiles="$(RepositoryRoot)artifacts\nuGetPackagesArchive.timestamped.lzma;$(RepositoryRoot)artifacts\nuGetPackagesArchive..notimestamp.lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
   </Target>
 
   <Target Name="AddManifestsToNupkg">
