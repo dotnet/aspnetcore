@@ -273,35 +273,6 @@ namespace Microsoft.AspNetCore.Hosting
 
             _options = new WebHostOptions(_config);
 
-            var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, AppContext.BaseDirectory);
-            var applicationName = _options.ApplicationName;
-
-            // Initialize the hosting environment
-            _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
-            _context.HostingEnvironment = _hostingEnvironment;
-
-            var services = new ServiceCollection();
-            services.AddSingleton(_hostingEnvironment);
-            services.AddSingleton(_context);
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(_hostingEnvironment.ContentRootPath)
-                .AddInMemoryCollection(_config.AsEnumerable());
-
-            foreach (var configureAppConfiguration in _configureAppConfigurationBuilderDelegates)
-            {
-                configureAppConfiguration(_context, builder);
-            }
-
-            var configuration = builder.Build();
-            services.AddSingleton<IConfiguration>(configuration);
-            _context.Configuration = configuration;
-
-            // The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
-            var loggerFactory = _createLoggerFactoryDelegate?.Invoke(_context) ?? new LoggerFactory(configuration.GetSection("Logging"));
-            services.AddSingleton(loggerFactory);
-            _context.LoggerFactory = loggerFactory;
-
             if (!_options.PreventHostingStartup)
             {
                 var exceptions = new List<Exception>();
@@ -337,6 +308,35 @@ namespace Microsoft.AspNetCore.Hosting
                     }
                 }
             }
+
+            var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, AppContext.BaseDirectory);
+            var applicationName = _options.ApplicationName;
+
+            // Initialize the hosting environment
+            _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
+            _context.HostingEnvironment = _hostingEnvironment;
+
+            var services = new ServiceCollection();
+            services.AddSingleton(_hostingEnvironment);
+            services.AddSingleton(_context);
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(_hostingEnvironment.ContentRootPath)
+                .AddInMemoryCollection(_config.AsEnumerable());
+
+            foreach (var configureAppConfiguration in _configureAppConfigurationBuilderDelegates)
+            {
+                configureAppConfiguration(_context, builder);
+            }
+
+            var configuration = builder.Build();
+            services.AddSingleton<IConfiguration>(configuration);
+            _context.Configuration = configuration;
+
+            // The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
+            var loggerFactory = _createLoggerFactoryDelegate?.Invoke(_context) ?? new LoggerFactory(configuration.GetSection("Logging"));
+            services.AddSingleton(loggerFactory);
+            _context.LoggerFactory = loggerFactory;
 
             foreach (var configureLogging in _configureLoggingDelegates)
             {
