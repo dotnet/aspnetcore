@@ -141,8 +141,8 @@
         <NoTimestampSuffix Condition="'$(TIMESTAMP_FREE_VERSION)' != ''">$(TIMESTAMP_FREE_VERSION)</NoTimestampSuffix>
         <NoTimestampSuffix Condition="'$(NoTimestampSuffix)' == ''">final</NoTimestampSuffix>
 
-        <NoTimestampVersion>$(VersionPrefix)-$(VersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
-        <TimestampVersion>$(VersionPrefix)-$(VersionSuffix)-$(BuildNumber)</TimestampVersion>
+        <NoTimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
+        <TimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(BuildNumber)</TimestampVersion>
 
         <NoTimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages-NoTimeStamp</NoTimestampSource>
         <TimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages</TimestampSource>
