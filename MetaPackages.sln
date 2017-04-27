@@ -45,6 +45,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestArtifacts", "TestArtifa
 		test\TestArtifacts\testCert.pfx = test\TestArtifacts\testCert.pfx
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-archive", "src\dotnet-archive\dotnet-archive.csproj", "{AE4216BF-D471-471B-82F3-6B6D004F7D17}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Archive", "src\Microsoft.DotNet.Archive\Microsoft.DotNet.Archive.csproj", "{302400A0-98BB-4C04-88D4-C32DC2D4B945}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +91,14 @@ Global
 		{79CF58CE-B020-45D8-BDB5-2D8036BEAD14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79CF58CE-B020-45D8-BDB5-2D8036BEAD14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79CF58CE-B020-45D8-BDB5-2D8036BEAD14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE4216BF-D471-471B-82F3-6B6D004F7D17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE4216BF-D471-471B-82F3-6B6D004F7D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE4216BF-D471-471B-82F3-6B6D004F7D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE4216BF-D471-471B-82F3-6B6D004F7D17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{302400A0-98BB-4C04-88D4-C32DC2D4B945}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{302400A0-98BB-4C04-88D4-C32DC2D4B945}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{302400A0-98BB-4C04-88D4-C32DC2D4B945}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{302400A0-98BB-4C04-88D4-C32DC2D4B945}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,5 +116,7 @@ Global
 		{401C741B-6C7C-4E08-9F09-C3D43D22C0DE} = {EC22261D-0DE1-47DE-8F7C-072675D6F5B4}
 		{79CF58CE-B020-45D8-BDB5-2D8036BEAD14} = {EC22261D-0DE1-47DE-8F7C-072675D6F5B4}
 		{9BBA7A0A-109A-4AC8-B6EF-A52EA7CF1D90} = {9E49B5B9-9E72-42FB-B684-90CA1B1BCF9C}
+		{AE4216BF-D471-471B-82F3-6B6D004F7D17} = {ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}
+		{302400A0-98BB-4C04-88D4-C32DC2D4B945} = {ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}
 	EndGlobalSection
 EndGlobal

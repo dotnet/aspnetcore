@@ -29,3 +29,6 @@ project.lock.json
 .build/
 .testPublish/
 global.json
+
+# Dependencies from pre-requisite builds
+.deps/

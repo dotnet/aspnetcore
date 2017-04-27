@@ -1,9 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
   <Import Project="common.props" />
 
   <PropertyGroup>
+    <!-- Project for building the Runtime Store -->
     <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\</MetaPackagePath>
     <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.RuntimeStore.csproj</MetaPackageFile>
+
+    <!-- Project for building the NuGet Fallback Archive (LZMA for CLI) -->
+    <FallbackArchiveDir>$(RepositoryRoot)src\Archive.AspNetCore.All\</FallbackArchiveDir>
+    <FallbackArchiveProj>$(FallbackArchiveDir)Archive.AspNetCore.All.csproj</FallbackArchiveProj>
+    <ArchiverProj>$(RepositoryRoot)src\dotnet-archive\dotnet-archive.csproj</ArchiverProj>
+    <ArchiverBinary>$(RepositoryRoot)src\dotnet-archive\bin\$(Configuration)\netcoreapp2.0\dotnet-archive.dll</ArchiverBinary>
+
     <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
     <PackageCacheOutputPath>$(MetaPackagePath)bin\packageCache\</PackageCacheOutputPath>
     <DepsOutputPath>$(MetaPackagePath)bin\deps\</DepsOutputPath>
@@ -19,6 +27,10 @@
     <CompileDependsOn Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">
       $(CompileDependsOn);
       BuildPackageCache
+    </CompileDependsOn>
+    <CompileDependsOn Condition="'$(BUILD_FALLBACK_ARCHIVE)' == 'true'">
+      $(CompileDependsOn);
+      BuildFallbackArchive
     </CompileDependsOn>
   </PropertyGroup>
 
@@ -86,6 +98,73 @@
     <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
     <Copy SourceFiles="$(RepositoryRoot)build\Build.RuntimeStore.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Windows'" />
     <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)'=='Windows'" />
+  </Target>
+
+  <Target Name="_BuildFallbackArchive">
+    <Error Text="AspNetPackageVersion must be specified" Condition=" '$(AspNetPackageVersion)' == '' " />
+    <Error Text="PackageSource must be specified" Condition=" '$(PackageSource)' == '' " />
+    <Error Text="OutputPackageName must be specified" Condition=" '$(OutputPackageName)' == '' " />
+
+    <!-- Clear the directories -->
+    <RemoveDir Directories="$(FallbackArchiveDir)bin" />
+    <RemoveDir Directories="$(FallbackArchiveDir)obj" />
+
+    <PropertyGroup>
+      <FallbackStagingDir>$(FallbackArchiveDir)obj/$(OutputPackageName)</FallbackStagingDir>
+      <FallbackOutputArchive>$(RepositoryRoot)artifacts\$(OutputPackageName).lzma</FallbackOutputArchive>
+      <FallbackRestoreConfigFile>$(FallbackArchiveDir)\obj\$(OutputPackageName).NuGet.config</FallbackRestoreConfigFile>
+    </PropertyGroup>
+
+    <!-- Create the Staging Dir -->
+    <MakeDir Directories="$(FallbackStagingDir)" />
+
+    <!-- Copy the NuGet.config from this repo and update it with the Package Source -->
+    <Copy SourceFiles="$(RepositoryRoot)NuGet.config" DestinationFiles="$(FallbackRestoreConfigFile)" />
+    <UpdatePackageSource
+      NuGetConfigPath="$(FallbackRestoreConfigFile)"
+      SourceName="Dependencies"
+      SourceUri="$(PackageSource)" />
+
+    <!-- Restore the target project -->
+    <MSBuild Projects="$(FallbackArchiveProj)" Targets="Restore" Properties="RestorePackagesPath=$(FallbackStagingDir);AspNetPackageVersion=$(AspNetPackageVersion);RestoreConfigFile=$(FallbackRestoreConfigFile)" />
+
+    <!-- Create the archive -->
+    <Error Text="Archiver failed to build? Could not find it at $(ArchiverBinary)" Condition="!Exists('$(ArchiverBinary)')" />
+    <Message Text="Producing LZMA Archive, this may take a while..." Importance="high" />
+    <Exec Command="dotnet $(ArchiverBinary) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
+  </Target>
+
+  <Target Name="BuildFallbackArchive">
+    <!-- Validate Arguments -->
+    <Error Text="Required Property 'BuildNumber' not provided" Condition="'$(BuildNumber)' == ''" />
+
+    <!-- Determine ASP.NET Package Version -->
+    <PropertyGroup>
+        <CoherenceSignedRoot Condition="'$(COHERENCE_SIGNED_DROP_ROOT)' != ''">$(COHERENCE_SIGNED_DROP_ROOT)</CoherenceSignedRoot>
+        <CoherenceSignedRoot Condition="'$(CoherenceSignedRoot)' == ''">\\aspnetci\Drops\Coherence-Signed\dev</CoherenceSignedRoot>
+
+        <NoTimestampSuffix Condition="'$(TIMESTAMP_FREE_VERSION)' != ''">$(TIMESTAMP_FREE_VERSION)</NoTimestampSuffix>
+        <NoTimestampSuffix Condition="'$(NoTimestampSuffix)' == ''">final</NoTimestampSuffix>
+
+        <NoTimestampVersion>$(VersionPrefix)-$(VersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
+        <TimestampVersion>$(VersionPrefix)-$(VersionSuffix)-$(BuildNumber)</TimestampVersion>
+
+        <NoTimestampSource>$(CoherenceSignedRoot)\$(BuildNumber)\Signed\Packages-NoTimeStamp</NoTimestampSource>
+        <TimestampSource>$(CoherenceSignedRoot)\$(BuildNumber)\Signed\Packages</TimestampSource>
+    </PropertyGroup>
+
+    <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
+    <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
+    <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
+    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.$(BuildNumber).timestamped" />
+    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.$(BuildNumber).notimestamp" />
+
+    <!-- Copy LZMA archives to Coherence-Signed drop location -->
+    <PropertyGroup>
+        <PublishDir Condition="'$(PublishShare)' != ''">$(PublishShare)\fallbackArchives</PublishDir>
+    </PropertyGroup>
+    <Copy SourceFiles="artifacts\nuGetPackagesArchive.$(BuildNumber).timestamped;artifacts\nuGetPackagesArchive.$(BuildNumber).notimestamp" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
+
   </Target>
 
   <Target Name="AddManifestsToNupkg">
