@@ -4,28 +4,22 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
     <EnableApiCheck>false</EnableApiCheck>
+    <DotnetCliToolTargetFramework>netcoreapp2.0</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Something simple to get it working right now -->
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="$(AspNetPackageVersion)" />
-
-    <!-- Our packages are broken right now :(
     <PackageReference Include="Microsoft.AspNetCore.All" Version="$(AspNetPackageVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(AspNetPackageVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="$(AspNetPackageVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="$(AspNetPackageVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(AspNetPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="$(AspNetPackageVersion)" />
--->
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Tools don't work right now
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="$(AspNetPackageVersion)" />
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="$(AspNetPackageVersion)" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="$(AspNetPackageVersion)" />
--->
   </ItemGroup>
 
 </Project>

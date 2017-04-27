@@ -175,8 +175,9 @@ namespace Microsoft.AspNetCore
                         config.AddCommandLine(args);
                     }
                 })
-                .ConfigureLogging(logging =>
+                .ConfigureLogging((hostingContext, logging) =>
                 {
+                    logging.UseConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
                     logging.AddDebug();
                 })

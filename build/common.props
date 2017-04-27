@@ -11,14 +11,11 @@
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <OriginalVersionSuffix>$(VersionSuffix)</OriginalVersionSuffix>
-
-    <!-- Don't mess with VersionSuffix, we need to use it unmodified in other targets -->
-    <BuildVersionSuffix>$(VersionSuffix)</BuildVersionSuffix>
-    <BuildVersionSuffix Condition="'$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</BuildVersionSuffix>
+    <VersionSuffix Condition="'$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
 
     <!-- Pin versions to work around CLI bug -->
-    <AspNetCoreVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">2.0.0-$(BuildVersionSuffix)</AspNetCoreVersion>
-    <AspNetCoreIdentityServiceVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">1.0.0-$(BuildVersionSuffix)</AspNetCoreIdentityServiceVersion>
+    <AspNetCoreVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">2.0.0-$(VersionSuffix)</AspNetCoreVersion>
+    <AspNetCoreIdentityServiceVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">1.0.0-$(VersionSuffix)</AspNetCoreIdentityServiceVersion>
   </PropertyGroup>
 
   <ItemGroup>

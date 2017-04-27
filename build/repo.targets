@@ -100,6 +100,8 @@
     <Error Text="AspNetPackageVersion must be specified" Condition=" '$(AspNetPackageVersion)' == '' " />
     <Error Text="PackageSource must be specified" Condition=" '$(PackageSource)' == '' " />
     <Error Text="OutputPackageName must be specified" Condition=" '$(OutputPackageName)' == '' " />
+    <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
+    <Error Text="Archiver not found at $(ArchiverPath)" Condition="!Exists('$(ArchiverPath)')" />
 
     <!-- Clear the directories -->
     <RemoveDir Directories="$(FallbackArchiveDir)bin" />
@@ -125,9 +127,8 @@
     <MSBuild Projects="$(FallbackArchiveProj)" Targets="Restore" Properties="RestorePackagesPath=$(FallbackStagingDir);AspNetPackageVersion=$(AspNetPackageVersion);RestoreConfigFile=$(FallbackRestoreConfigFile)" />
 
     <!-- Create the archive -->
-    <Error Text="Archiver failed to build? Could not find it at $(ArchiverBinary)" Condition="!Exists('$(ArchiverBinary)')" />
     <Message Text="Producing LZMA Archive, this may take a while..." Importance="high" />
-    <Exec Command="dotnet $(ArchiverBinary) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
+    <Exec Command="$(ArchiverPath) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
   </Target>
 
   <Target Name="BuildFallbackArchive">
@@ -141,8 +142,8 @@
         <NoTimestampSuffix Condition="'$(TIMESTAMP_FREE_VERSION)' != ''">$(TIMESTAMP_FREE_VERSION)</NoTimestampSuffix>
         <NoTimestampSuffix Condition="'$(NoTimestampSuffix)' == ''">final</NoTimestampSuffix>
 
-        <NoTimestampVersion>$(VersionPrefix)-$(VersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
-        <TimestampVersion>$(VersionPrefix)-$(VersionSuffix)-$(BuildNumber)</TimestampVersion>
+        <NoTimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
+        <TimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(BuildNumber)</TimestampVersion>
 
         <NoTimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages-NoTimeStamp</NoTimestampSource>
         <TimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages</TimestampSource>
@@ -155,14 +156,14 @@
     <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
     <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
     <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
-    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.timestamped" />
-    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.notimestamp" />
+    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.timestamped;ArchiverPath=$(ArchiverPath)" />
+    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.notimestamp;ArchiverPath=$(ArchiverPath)" />
 
     <!-- Copy LZMA archives to Coherence-Signed drop location -->
     <PropertyGroup>
         <PublishDir Condition="'$(PublishShare)' != ''">$(PublishShare)\fallbackArchives</PublishDir>
     </PropertyGroup>
-    <Copy SourceFiles="$(RepositoryRoot)artifacts\nuGetPackagesArchive.timestamped.lzma;$(RepositoryRoot)artifacts\nuGetPackagesArchive..notimestamp.lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
+    <Copy SourceFiles="$(RepositoryRoot)artifacts\nuGetPackagesArchive.timestamped.lzma;$(RepositoryRoot)artifacts\nuGetPackagesArchive.notimestamp.lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
   </Target>
 
   <Target Name="AddManifestsToNupkg">

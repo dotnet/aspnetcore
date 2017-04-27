@@ -24,7 +24,6 @@ namespace CreateDefaultBuilderApp
             string responseMessage = string.Empty;
 
             WebHost.CreateDefaultBuilder(new[] { "--cliKey", "cliValue" })
-                .UseLoggerFactory(new TestLoggerFactory())
                 .ConfigureServices((context, services) =>
                 {
                     responseMessage = GetResponseMessage(context, services);
@@ -77,34 +76,11 @@ namespace CreateDefaultBuilderApp
                 return $"Command line arguments not loaded into Configuration.";
             }
 
-            var testLoggerFactory = (TestLoggerFactory)context.LoggerFactory;
-
-            // Verify AddConsole called
-            if (!testLoggerFactory.Providers.Any(provider => provider is ConsoleLoggerProvider))
-            {
-                return $"Console logger not added to ILoggerFactory.";
-            }
-
-            // Verify AddDebug called
-            if (!testLoggerFactory.Providers.Any(provider => provider is DebugLoggerProvider))
-            {
-                return $"Debug logger not added to ILoggerFactory.";
-            }
-
+            // TODO: Verify AddConsole called
+            // TODO: Verify AddDebug called
             // TODO: Verify UseIISIntegration called
 
             return context.HostingEnvironment.ApplicationName;
-        }
-
-        private class TestLoggerFactory : ILoggerFactory
-        {
-            public IList<ILoggerProvider> Providers { get; } = new List<ILoggerProvider>();
-
-            public void AddProvider(ILoggerProvider provider) => Providers.Add(provider);
-
-            public ILogger CreateLogger(string categoryName) => NullLogger.Instance;
-
-            public void Dispose() { }
         }
     }
 }
