@@ -53,7 +53,7 @@
       <OutputZipSufix Condition="'$(OSPlatform)' == 'Linux'">linux</OutputZipSufix>
       <OutputZipSufix Condition="'$(OSPlatform)' == 'macOS'">osx</OutputZipSufix>
 
-      <OutputZip>$(ArtifactsDir)Build.RS.$(OutputZipSufix)-$(VersionSuffix).zip</OutputZip>
+      <OutputZip>$(ArtifactsDir)Build.RS.$(OutputZipSufix).zip</OutputZip>
     </PropertyGroup>
 
     <ItemGroup>
