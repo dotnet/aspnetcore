@@ -53,7 +53,7 @@
       <OutputZipSufix Condition="'$(OSPlatform)' == 'Linux'">linux</OutputZipSufix>
       <OutputZipSufix Condition="'$(OSPlatform)' == 'macOS'">osx</OutputZipSufix>
 
-      <OutputZip>$(ArtifactsDir)Build.RuntimeStore.$(OutputZipSufix)-$(VersionSuffix).zip</OutputZip>
+      <OutputZip>$(ArtifactsDir)Build.RS.$(OutputZipSufix)-$(VersionSuffix).zip</OutputZip>
     </PropertyGroup>
 
     <ItemGroup>
@@ -96,7 +96,7 @@
     <ZipArchive File="$(OutputZip)" SourceFiles="@(OutputZipFiles)" WorkingDirectory="$(ArtifactsZipDir)" />
 
     <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
-    <Copy SourceFiles="$(RepositoryRoot)build\Build.RuntimeStore.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Windows'" />
+    <Copy SourceFiles="$(RepositoryRoot)build\Build.RS.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Windows'" />
     <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)'=='Windows'" />
   </Target>
 

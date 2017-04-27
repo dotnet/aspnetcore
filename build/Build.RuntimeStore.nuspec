@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>Build.RuntimeStore</id>
+    <id>Build.RS</id>
     <version>$version$</version>
     <authors>Microsoft</authors>
     <description>Runtime Package Store for ASP.NET Core, for internal builds</description>
