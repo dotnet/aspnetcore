@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             var walker = new Walker(baseline);
             walker.Visit(node);
+            walker.AssertReachedEndOfBaseline();
         }
 
         private class Walker : RazorIRNodeWalker
@@ -51,6 +52,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 _visitor.Depth++;
                 base.VisitDefault(node);
                 _visitor.Depth--;
+            }
+
+            public void AssertReachedEndOfBaseline()
+            {
+                // Since we're walking the nodes of our generated code there's the chance that our baseline is longer.
+                Assert.True(_baseline.Length == _index, "Not all lines of the baseline were visited!");
             }
 
             private void AssertNodeEquals(RazorIRNode node, string expected, string actual)
