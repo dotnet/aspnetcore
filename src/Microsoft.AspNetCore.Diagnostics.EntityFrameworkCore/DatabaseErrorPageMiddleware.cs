@@ -53,7 +53,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             _logger = loggerFactory.CreateLogger<DatabaseErrorPageMiddleware>();
 
             _loggerProvider = new DataStoreErrorLoggerProvider();
+#pragma warning disable CS0618 // Type or member is obsolete
             loggerFactory.AddProvider(_loggerProvider);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
