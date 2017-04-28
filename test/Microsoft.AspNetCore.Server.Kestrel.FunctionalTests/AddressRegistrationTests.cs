@@ -24,101 +24,145 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class AddressRegistrationTests
     {
-        private readonly ILoggerFactory _logger;
+        private const int MaxRetries = 10;
 
-        public AddressRegistrationTests(ITestOutputHelper output) => _logger = new LoggerFactory().AddXunit(output);
+        private readonly ILoggerFactory _loggerFactory;
+
+        public AddressRegistrationTests(ITestOutputHelper output) => _loggerFactory = new LoggerFactory().AddXunit(output);
 
         [ConditionalFact]
         [NetworkIsReachable]
         public async Task RegisterAddresses_HostName_Success()
         {
             var hostName = Dns.GetHostName();
-            string FixUrl(string url)
-            {
-                return url
-                    .Replace("0.0.0.0", hostName)
-                    .Replace("[::]", hostName);
-            }
-
-            await RegisterAddresses_Success($"http://{hostName}:0", a => a.Addresses.Select(FixUrl).ToArray());
+            await RegisterAddresses_Success($"http://{hostName}:0", $"http://{hostName}");
         }
 
-        [Theory, MemberData(nameof(AddressRegistrationDataIPv4))]
-        public async Task RegisterAddresses_IPv4_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        [Theory]
+        [MemberData(nameof(AddressRegistrationDataIPv4))]
+        public async Task RegisterAddresses_IPv4_Success(string addressInput, string testUrl)
         {
-            await RegisterAddresses_Success(addressInput, testUrls);
+            await RegisterAddresses_Success(addressInput, testUrl);
         }
 
-        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv4Port5000Default))]
+        [ConditionalTheory]
+        [MemberData(nameof(AddressRegistrationDataIPv4Port5000Default))]
         [PortSupportedCondition(5000)]
-        public async Task RegisterAddresses_IPv4Port5000Default_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        public async Task RegisterAddresses_IPv4Port5000Default_Success(string addressInput, string testUrl)
         {
-            await RegisterAddresses_Success(addressInput, testUrls);
+            await RegisterAddresses_Success(addressInput, testUrl, 5000);
         }
 
-        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv4Port80))]
+        [ConditionalTheory]
+        [MemberData(nameof(AddressRegistrationDataIPv4Port80))]
         [PortSupportedCondition(80)]
-        public async Task RegisterAddresses_IPv4Port80_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        public async Task RegisterAddresses_IPv4Port80_Success(string addressInput, string testUrl)
         {
-            await RegisterAddresses_Success(addressInput, testUrls);
+            await RegisterAddresses_Success(addressInput, testUrl, 80);
         }
 
-        [ConditionalTheory, MemberData(nameof(IPEndPointRegistrationDataRandomPort))]
+        [Fact]
+        public async Task RegisterAddresses_IPv4StaticPort_Success()
+        {
+            await RegisterAddresses_StaticPort_Success("http://127.0.0.1", "http://127.0.0.1");
+        }
+
+        [Fact]
+        public async Task RegisterAddresses_IPv4LocalhostStaticPort_Success()
+        {
+            await RegisterAddresses_StaticPort_Success("http://localhost", "http://127.0.0.1");
+        }
+
+        [Fact]
+        public async Task RegisterIPEndPoint_IPv4StaticPort_Success()
+        {
+            await RegisterIPEndPoint_StaticPort_Success(IPAddress.Loopback, $"http://127.0.0.1");
+        }
+
+        [ConditionalFact]
         [IPv6SupportedCondition]
-        public async Task RegisterIPEndPoint_RandomPort_Success(IPEndPoint endPoint, Func<IPEndPoint, string> testUrl)
+        public async Task RegisterIPEndPoint_IPv6StaticPort_Success()
+        {
+            await RegisterIPEndPoint_StaticPort_Success(IPAddress.IPv6Loopback, $"http://[::1]");
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IPEndPointRegistrationDataDynamicPort))]
+        [IPv6SupportedCondition]
+        public async Task RegisterIPEndPoint_DynamicPort_Success(IPEndPoint endPoint, string testUrl)
         {
             await RegisterIPEndPoint_Success(endPoint, testUrl);
         }
 
-        [ConditionalTheory, MemberData(nameof(IPEndPointRegistrationDataPort443))]
+        [ConditionalTheory]
+        [MemberData(nameof(IPEndPointRegistrationDataPort443))]
         [IPv6SupportedCondition]
         [PortSupportedCondition(443)]
-        public async Task RegisterIPEndPoint_Port443_Success(IPEndPoint endpoint, Func<IPEndPoint, string> testUrl)
+        public async Task RegisterIPEndPoint_Port443_Success(IPEndPoint endpoint, string testUrl)
         {
-            await RegisterIPEndPoint_Success(endpoint, testUrl);
+            await RegisterIPEndPoint_Success(endpoint, testUrl, 443);
         }
 
-        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv6))]
+        [ConditionalTheory]
+        [MemberData(nameof(AddressRegistrationDataIPv6))]
         [IPv6SupportedCondition]
-        public async Task RegisterAddresses_IPv6_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        public async Task RegisterAddresses_IPv6_Success(string addressInput, string[] testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
-        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
+        [ConditionalTheory]
+        [MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
         [IPv6SupportedCondition]
         [PortSupportedCondition(5000)]
-        public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, string[] testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
-        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv6Port80))]
+        [ConditionalTheory]
+        [MemberData(nameof(AddressRegistrationDataIPv6Port80))]
         [IPv6SupportedCondition]
         [PortSupportedCondition(80)]
-        public async Task RegisterAddresses_IPv6Port80_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        public async Task RegisterAddresses_IPv6Port80_Success(string addressInput, string[] testUrls)
         {
             await RegisterAddresses_Success(addressInput, testUrls);
         }
 
-        [ConditionalTheory, MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
+        [ConditionalTheory]
+        [MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
         [IPv6SupportedCondition]
         [IPv6ScopeIdPresentCondition]
-        public async Task RegisterAddresses_IPv6ScopeId_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        public async Task RegisterAddresses_IPv6ScopeId_Success(string addressInput, string testUrl)
         {
-            await RegisterAddresses_Success(addressInput, testUrls);
+            await RegisterAddresses_Success(addressInput, testUrl);
         }
 
-        private async Task RegisterAddresses_Success(string addressInput, Func<IServerAddressesFeature, string[]> testUrls)
+        [ConditionalFact]
+        [IPv6SupportedCondition]
+        public async Task RegisterAddresses_IPv6StaticPort_Success()
+        {
+            await RegisterAddresses_StaticPort_Success("http://[::1]", "http://[::1]");
+        }
+
+        [ConditionalFact]
+        [IPv6SupportedCondition]
+        public async Task RegisterAddresses_IPv6LocalhostStaticPort_Success()
+        {
+            await RegisterAddresses_StaticPort_Success("http://localhost", new[] { "http://localhost", "http://127.0.0.1", "http://[::1]" });
+        }
+
+        private async Task RegisterAddresses_Success(string addressInput, string[] testUrls, int testPort = 0)
         {
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel()
-                .UseLoggerFactory(_logger)
+                .UseLoggerFactory(_loggerFactory)
                 .UseUrls(addressInput)
                 .Configure(ConfigureEchoAddress);
 
@@ -126,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                foreach (var testUrl in testUrls(host.ServerFeatures.Get<IServerAddressesFeature>()))
+                foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
                 {
                     var response = await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false);
 
@@ -137,15 +181,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private async Task RegisterIPEndPoint_Success(IPEndPoint endPoint, Func<IPEndPoint, string> testUrl)
+        private Task RegisterAddresses_Success(string addressInput, string testUrl, int testPort = 0)
+            => RegisterAddresses_Success(addressInput, new[] { testUrl }, testPort);
+
+        private async Task RegisterAddresses_StaticPort_Success(string addressInput, string[] testUrls)
+        {
+            var retryCount = 0;
+            var errors = new List<Exception>();
+
+            while (retryCount < MaxRetries)
+            {
+                try
+                {
+                    var port = GetNextPort();
+                    await RegisterAddresses_Success($"{addressInput}:{port}", testUrls, port);
+                    return;
+                }
+                catch (XunitException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(ex);
+                }
+
+                retryCount++;
+            }
+
+            if (errors.Any())
+            {
+                throw new AggregateException(errors);
+            }
+        }
+
+        private Task RegisterAddresses_StaticPort_Success(string addressInput, string testUrl)
+            => RegisterAddresses_StaticPort_Success(addressInput, new[] { testUrl });
+
+        private async Task RegisterIPEndPoint_Success(IPEndPoint endPoint, string testUrl, int testPort = 0)
         {
             var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_logger)
+                .UseLoggerFactory(_loggerFactory)
                 .UseKestrel(options =>
                 {
                     options.Listen(endPoint, listenOptions =>
                     {
-                        if (testUrl(listenOptions.IPEndPoint).StartsWith("https"))
+                        if (testUrl.StartsWith("https"))
                         {
                             listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                         }
@@ -157,15 +238,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
+                var testUrlWithPort = $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}";
+
                 var options = ((IOptions<KestrelServerOptions>)host.Services.GetService(typeof(IOptions<KestrelServerOptions>))).Value;
                 Assert.Single(options.ListenOptions);
-                var listenOptions = options.ListenOptions[0];
 
-                var response = await HttpClientSlim.GetStringAsync(testUrl(listenOptions.IPEndPoint), validateCertificate: false);
+                var response = await HttpClientSlim.GetStringAsync(testUrlWithPort, validateCertificate: false);
 
                 // Compare the response with Uri.ToString(), rather than testUrl directly.
                 // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
-                Assert.Equal(new Uri(testUrl(listenOptions.IPEndPoint)).ToString(), response);
+                Assert.Equal(new Uri(testUrlWithPort).ToString(), response);
+            }
+        }
+
+        private async Task RegisterIPEndPoint_StaticPort_Success(IPAddress address, string testUrl)
+        {
+            var retryCount = 0;
+            var errors = new List<Exception>();
+
+            while (retryCount < MaxRetries)
+            {
+                try
+                {
+                    var port = GetNextPort();
+                    await RegisterIPEndPoint_Success(new IPEndPoint(address, port), testUrl, port);
+                    return;
+                }
+                catch (XunitException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(ex);
+                }
+
+                retryCount++;
+            }
+
+            if (errors.Any())
+            {
+                throw new AggregateException(errors);
             }
         }
 
@@ -189,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var testLogger = new TestApplicationErrorLogger();
 
             var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_logger)
+                .UseLoggerFactory(_loggerFactory)
                 .UseKestrel()
                 .UseLoggerFactory(_ => new KestrelTestLoggerFactory(testLogger))
                 .Configure(ConfigureEchoAddress);
@@ -215,11 +328,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {
-                var port = GetNextPort();
-                socket.Bind(new IPEndPoint(IPAddress.Loopback, port));
+                socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+                var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
                 var hostBuilder = new WebHostBuilder()
-                    .UseLoggerFactory(_logger)
+                    .UseLoggerFactory(_loggerFactory)
                     .UseKestrel()
                     .UseUrls($"http://127.0.0.1:{port}")
                     .Configure(ConfigureEchoAddress);
@@ -238,11 +351,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
             {
-                var port = GetNextPort();
-                socket.Bind(new IPEndPoint(IPAddress.IPv6Loopback, port));
+                socket.Bind(new IPEndPoint(IPAddress.IPv6Loopback, 0));
+                var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
                 var hostBuilder = new WebHostBuilder()
-                    .UseLoggerFactory(_logger)
+                    .UseLoggerFactory(_loggerFactory)
                     .UseKestrel()
                     .UseUrls($"http://[::1]:{port}")
                     .Configure(ConfigureEchoAddress);
@@ -258,15 +371,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task OverrideDirectConfigurationWithIServerAddressesFeature_Succeeds()
         {
-            var overrideAddressPort = GetNextPort();
-            var listenOptionsPort = GetNextPort();
-
-            var overrideAddress = $"http://localhost:{overrideAddressPort}";
+            var useUrlsAddress = $"http://127.0.0.1:0";
             var testLogger = new TestApplicationErrorLogger();
-
             var hostBuilder = new WebHostBuilder()
-               .UseKestrel(options => options.Listen(IPAddress.Loopback, listenOptionsPort))
-               .UseUrls(overrideAddress)
+                .UseKestrel(options =>
+                {
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                    });
+                })
+               .UseUrls(useUrlsAddress)
                .PreferHostingUrls(true)
                .UseLoggerFactory(_ => new KestrelTestLoggerFactory(testLogger))
                .Configure(ConfigureEchoAddress);
@@ -275,48 +390,75 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                Assert.Equal(overrideAddressPort, host.GetPort());
+                var port = host.GetPort();
+
+                // If this isn't working properly, we'll get the HTTPS endpoint defined in UseKestrel
+                // instead of the HTTP endpoint defined in UseUrls.
+                var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+                Assert.Equal(1, serverAddresses.Count);
+                var useUrlsAddressWithPort = $"http://127.0.0.1:{port}";
+                Assert.Equal(serverAddresses.First(), useUrlsAddressWithPort);
+
                 Assert.Single(testLogger.Messages, log => log.LogLevel == LogLevel.Information &&
-                    string.Equals($"Overriding endpoints defined in UseKestrel() since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true. Binding to address(es) '{overrideAddress}' instead.",
+                    string.Equals($"Overriding endpoints defined in UseKestrel() since {nameof(IServerAddressesFeature.PreferHostingUrls)} is set to true. Binding to address(es) '{useUrlsAddress}' instead.",
                     log.Message, StringComparison.Ordinal));
 
-                Assert.Equal(new Uri(overrideAddress).ToString(), await HttpClientSlim.GetStringAsync(overrideAddress));
+                Assert.Equal(new Uri(useUrlsAddressWithPort).ToString(), await HttpClientSlim.GetStringAsync(useUrlsAddressWithPort));
             }
         }
 
         [Fact]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfPreferHostingUrlsFalse()
         {
-            var endPointPort = GetNextPort();
-            var useUrlsPort = GetNextPort();
-
-            var endPointAddress = $"http://localhost:{endPointPort}";
-
+            var useUrlsAddress = $"http://127.0.0.1:0";
+            var testLogger = new TestApplicationErrorLogger();
             var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_logger)
-                .UseKestrel(options => options.Listen(IPAddress.Loopback, endPointPort))
-                .UseUrls($"http://localhost:{useUrlsPort}")
+                .UseLoggerFactory(_loggerFactory)
+                .UseKestrel(options =>
+                {
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                    });
+                })
+                .UseUrls($"http://127.0.0.1:0")
                 .PreferHostingUrls(false)
+                .UseLoggerFactory(_ => new KestrelTestLoggerFactory(testLogger))
                 .Configure(ConfigureEchoAddress);
 
             using (var host = hostBuilder.Build())
             {
                 host.Start();
 
-                Assert.Equal(endPointPort, host.GetPort());
-                Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress));
+                var port = host.GetPort();
+
+                // If this isn't working properly, we'll get the HTTP endpoint defined in UseUrls
+                // instead of the HTTPS endpoint defined in UseKestrel.
+                var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+                Assert.Equal(1, serverAddresses.Count);
+                var endPointAddress = $"https://127.0.0.1:{port}";
+                Assert.Equal(serverAddresses.First(), endPointAddress);
+
+                Assert.Single(testLogger.Messages, log => log.LogLevel == LogLevel.Warning &&
+                    string.Equals($"Overriding address(es) {useUrlsAddress}. Binding to endpoints defined in UseKestrel() instead.",
+                    log.Message, StringComparison.Ordinal));
+
+                Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));
             }
         }
 
         [Fact]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfAddressesEmpty()
         {
-            var endPointPort = GetNextPort();
-            var endPointAddress = $"http://localhost:{endPointPort}";
-
             var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_logger)
-                .UseKestrel(options => options.Listen(IPAddress.Loopback, endPointPort))
+                .UseLoggerFactory(_loggerFactory)
+                .UseKestrel(options =>
+                {
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                    });
+                })
                 .PreferHostingUrls(true)
                 .Configure(ConfigureEchoAddress);
 
@@ -324,8 +466,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                Assert.Equal(endPointPort, host.GetPort());
-                Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress));
+                var port = host.GetPort();
+
+                // If this isn't working properly, we'll not get the HTTPS endpoint defined in UseKestrel.
+                var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+                Assert.Equal(1, serverAddresses.Count);
+                var endPointAddress = $"https://127.0.0.1:{port}";
+                Assert.Equal(serverAddresses.First(), endPointAddress);
+
+                Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));
             }
         }
 
@@ -346,9 +495,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public void ThrowsWhenBindingLocalhostToDynamicPort()
         {
             var hostBuilder = new WebHostBuilder()
-                    .UseKestrel()
-                    .UseUrls("http://localhost:0")
-                    .Configure(ConfigureEchoAddress);
+                .UseKestrel()
+                .UseUrls("http://localhost:0")
+                .Configure(ConfigureEchoAddress);
 
             using (var host = hostBuilder.Build())
             {
@@ -362,9 +511,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public void ThrowsForUnsupportedAddressFromHosting(string addr)
         {
             var hostBuilder = new WebHostBuilder()
-                    .UseKestrel()
-                    .UseUrls(addr)
-                    .Configure(ConfigureEchoAddress);
+                .UseKestrel()
+                .UseUrls(addr)
+                .Configure(ConfigureEchoAddress);
 
             using (var host = hostBuilder.Build())
             {
@@ -376,11 +525,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             using (var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp))
             {
-                var port = GetNextPort();
-                socket.Bind(new IPEndPoint(address, port));
+                socket.Bind(new IPEndPoint(address, 0));
+                var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
                 var hostBuilder = new WebHostBuilder()
-                    .UseLoggerFactory(_logger)
+                    .UseLoggerFactory(_loggerFactory)
                     .UseKestrel()
                     .UseUrls($"http://localhost:{port}")
                     .Configure(ConfigureEchoAddress);
@@ -395,202 +544,162 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv4
+        public static TheoryData<string, string> AddressRegistrationDataIPv4
         {
             get
             {
-                var dataset = new TheoryData<string, Func<IServerAddressesFeature, string[]>>();
-
-                // Static ports
-                var port = GetNextPort();
+                var dataset = new TheoryData<string, string>();
 
                 // Loopback
-                dataset.Add($"http://127.0.0.1:{port}", _ => new[] { $"http://127.0.0.1:{port}/" });
-
-                // Localhost
-                dataset.Add($"http://localhost:{port}", _ => new[] { $"http://localhost:{port}/", $"http://127.0.0.1:{port}/" });
+                dataset.Add("http://127.0.0.1:0", "http://127.0.0.1");
 
                 // Any
-                dataset.Add($"http://*:{port}/", _ => new[] { $"http://127.0.0.1:{port}/" });
-                dataset.Add($"http://+:{port}/", _ => new[] { $"http://127.0.0.1:{port}/" });
+                dataset.Add("http://*:0/", "http://127.0.0.1");
+                dataset.Add("http://+:0/", "http://127.0.0.1");
 
-                // Dynamic port addresses
-                dataset.Add("http://127.0.0.1:0/", f => f.Addresses.ToArray());
-
+                // Non-loopback addresses
                 var ipv4Addresses = GetIPAddresses()
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork);
                 foreach (var ip in ipv4Addresses)
                 {
-                    dataset.Add($"http://{ip}:0/", f => f.Addresses.ToArray());
+                    dataset.Add($"http://{ip}:0/", $"http://{ip}");
                 }
 
                 return dataset;
             }
         }
 
-        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv4Port5000Default =>
-            new TheoryData<string, Func<IServerAddressesFeature, string[]>>
+        public static TheoryData<string, string> AddressRegistrationDataIPv4Port5000Default =>
+            new TheoryData<string, string>
             {
-                { null, _ => new[] { "http://127.0.0.1:5000/" } },
-                { string.Empty, _ => new[] { "http://127.0.0.1:5000/" } }
+                { null, "http://127.0.0.1:5000/" },
+                { string.Empty, "http://127.0.0.1:5000/" }
             };
 
-        public static TheoryData<IPEndPoint, Func<IPEndPoint, string>> IPEndPointRegistrationDataRandomPort
+        public static TheoryData<IPEndPoint, string> IPEndPointRegistrationDataDynamicPort
         {
             get
             {
-                var dataset = new TheoryData<IPEndPoint, Func<IPEndPoint, string>>();
-
-                // Static port
-                var port = GetNextPort();
+                var dataset = new TheoryData<IPEndPoint, string>();
 
                 // Loopback
-                dataset.Add(new IPEndPoint(IPAddress.Loopback, port), _ => $"http://127.0.0.1:{port}/");
-                dataset.Add(new IPEndPoint(IPAddress.Loopback, port), _ => $"https://127.0.0.1:{port}/");
+                dataset.Add(new IPEndPoint(IPAddress.Loopback, 0), "http://127.0.0.1");
+                dataset.Add(new IPEndPoint(IPAddress.Loopback, 0), "https://127.0.0.1");
 
                 // IPv6 loopback
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, port), _ => $"http://[::1]:{port}/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, port), _ => $"https://[::1]:{port}/");
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, 0), "http://[::1]");
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, 0), "https://[::1]");
 
                 // Any
-                dataset.Add(new IPEndPoint(IPAddress.Any, port), _ => $"http://127.0.0.1:{port}/");
-                dataset.Add(new IPEndPoint(IPAddress.Any, port), _ => $"https://127.0.0.1:{port}/");
+                dataset.Add(new IPEndPoint(IPAddress.Any, 0), "http://127.0.0.1");
+                dataset.Add(new IPEndPoint(IPAddress.Any, 0), "https://127.0.0.1");
 
                 // IPv6 Any
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => $"http://127.0.0.1:{port}/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => $"http://[::1]:{port}/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => $"https://127.0.0.1:{port}/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, port), _ => $"https://[::1]:{port}/");
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, 0), "http://127.0.0.1");
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, 0), "http://[::1]");
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, 0), "https://127.0.0.1");
+                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, 0), "https://[::1]");
 
-                // Dynamic port
-                dataset.Add(new IPEndPoint(IPAddress.Loopback, 0), endPoint => $"http://127.0.0.1:{endPoint.Port}/");
-                dataset.Add(new IPEndPoint(IPAddress.Loopback, 0), endPoint => $"https://127.0.0.1:{endPoint.Port}/");
-
+                // Non-loopback addresses
                 var ipv4Addresses = GetIPAddresses()
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork);
                 foreach (var ip in ipv4Addresses)
                 {
-                    dataset.Add(new IPEndPoint(ip, 0), endPoint => $"http://{endPoint}/");
-                    dataset.Add(new IPEndPoint(ip, 0), endPoint => $"https://{endPoint}/");
+                    dataset.Add(new IPEndPoint(ip, 0), $"http://{ip}");
+                    dataset.Add(new IPEndPoint(ip, 0), $"https://{ip}");
                 }
 
-                return dataset;
-            }
-        }
-
-        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv4Port80
-        {
-            get
-            {
-                var dataset = new TheoryData<string, Func<IServerAddressesFeature, string[]>>();
-
-                // Default port for HTTP (80)
-                dataset.Add("http://127.0.0.1", _ => new[] { "http://127.0.0.1/" });
-                dataset.Add("http://localhost", _ => new[] { "http://127.0.0.1/" });
-                dataset.Add("http://*", _ => new[] { "http://127.0.0.1/" });
-
-                return dataset;
-            }
-        }
-
-        public static TheoryData<IPEndPoint, Func<IPEndPoint, string>> IPEndPointRegistrationDataPort443
-        {
-            get
-            {
-                var dataset = new TheoryData<IPEndPoint, Func<IPEndPoint, string>>();
-
-                dataset.Add(new IPEndPoint(IPAddress.Loopback, 443), _ => "https://127.0.0.1/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Loopback, 443), _ => "https://[::1]/");
-                dataset.Add(new IPEndPoint(IPAddress.Any, 443), _ => "https://127.0.0.1/");
-                dataset.Add(new IPEndPoint(IPAddress.IPv6Any, 443), _ => "https://[::1]/");
-
-                return dataset;
-            }
-        }
-
-        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv6
-        {
-            get
-            {
-                var dataset = new TheoryData<string, Func<IServerAddressesFeature, string[]>>();
-
-                // Static ports
-                var port = GetNextPort();
-
-                // Loopback
-                dataset.Add($"http://[::1]:{port}/",
-                    _ => new[] { $"http://[::1]:{port}/" });
-
-                // Localhost
-                dataset.Add($"http://localhost:{port}",
-                    _ => new[] { $"http://localhost:{port}/", $"http://127.0.0.1:{port}/", $"http://[::1]:{port}/" });
-
-                // Any
-                dataset.Add($"http://*:{port}/",
-                    _ => new[] { $"http://127.0.0.1:{port}/", $"http://[::1]:{port}/" });
-                dataset.Add($"http://+:{port}/",
-                    _ => new[] { $"http://127.0.0.1:{port}/", $"http://[::1]:{port}/" });
-
-                // Explicit IPv4 and IPv6 on same port
-                dataset.Add($"http://127.0.0.1:{port}/;http://[::1]:{port}/",
-                    _ => new[] { $"http://127.0.0.1:{port}/", $"http://[::1]:{port}/" });
-
-                // Dynamic port and non-loopback addresses
                 var ipv6Addresses = GetIPAddresses()
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
                     .Where(ip => ip.ScopeId == 0);
-
                 foreach (var ip in ipv6Addresses)
                 {
-                    dataset.Add($"http://[{ip}]:0/", f => f.Addresses.ToArray());
+                    dataset.Add(new IPEndPoint(ip, 0), $"http://[{ip}]");
                 }
 
                 return dataset;
             }
         }
 
-        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv6Port5000Default =>
-            new TheoryData<string, Func<IServerAddressesFeature, string[]>>
+        public static TheoryData<string, string> AddressRegistrationDataIPv4Port80 =>
+            new TheoryData<string, string>
             {
-                { null, _ => new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } },
-                { string.Empty, _ => new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } }
+                // Default port for HTTP (80)
+                {  "http://127.0.0.1", "http://127.0.0.1" },
+                { "http://localhost", "http://127.0.0.1" },
+                { "http://*", "http://127.0.0.1" }
             };
 
-        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv6Port80
+        public static TheoryData<IPEndPoint, string> IPEndPointRegistrationDataPort443 =>
+            new TheoryData<IPEndPoint, string>
+            {
+
+                { new IPEndPoint(IPAddress.Loopback, 443), "https://127.0.0.1" },
+                { new IPEndPoint(IPAddress.IPv6Loopback, 443), "https://[::1]" },
+                { new IPEndPoint(IPAddress.Any, 443), "https://127.0.0.1" },
+                { new IPEndPoint(IPAddress.IPv6Any, 443), "https://[::1]" }
+            };
+
+        public static TheoryData<string, string[]> AddressRegistrationDataIPv6
         {
             get
             {
-                var dataset = new TheoryData<string, Func<IServerAddressesFeature, string[]>>();
+                var dataset = new TheoryData<string, string[]>();
 
-                // Default port for HTTP (80)
-                dataset.Add("http://[::1]", _ => new[] { "http://[::1]/" });
-                dataset.Add("http://localhost", _ => new[] { "http://127.0.0.1/", "http://[::1]/" });
-                dataset.Add("http://*", _ => new[] { "http://[::1]/" });
+                // Loopback
+                dataset.Add($"http://[::1]:0/", new[] { $"http://[::1]" });
+
+                // Any
+                dataset.Add($"http://*:0/", new[] { $"http://127.0.0.1", $"http://[::1]" });
+                dataset.Add($"http://+:0/", new[] { $"http://127.0.0.1", $"http://[::1]" });
+
+                // Non-loopback addresses
+                var ipv6Addresses = GetIPAddresses()
+                    .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
+                    .Where(ip => ip.ScopeId == 0);
+                foreach (var ip in ipv6Addresses)
+                {
+                    dataset.Add($"http://[{ip}]:0/", new[] { $"http://[{ip}]" });
+                }
 
                 return dataset;
             }
         }
 
-        public static TheoryData<string, Func<IServerAddressesFeature, string[]>> AddressRegistrationDataIPv6ScopeId
+        public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port5000Default =>
+            new TheoryData<string, string[]>
+            {
+                { null, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } },
+                { string.Empty, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } }
+            };
+
+        public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port80 =>
+            new TheoryData<string, string[]>
+            {
+                // Default port for HTTP (80)
+                { "http://[::1]", new[] { "http://[::1]/" } },
+                { "http://localhost", new[] { "http://127.0.0.1/", "http://[::1]/" } },
+                { "http://*", new[] { "http://[::1]/" } }
+            };
+
+        public static TheoryData<string, string> AddressRegistrationDataIPv6ScopeId
         {
             get
             {
-                var dataset = new TheoryData<string, Func<IServerAddressesFeature, string[]>>();
+                var dataset = new TheoryData<string, string>();
 
-                // Dynamic port
                 var ipv6Addresses = GetIPAddresses()
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
                     .Where(ip => ip.ScopeId != 0)
                     .Where(ip => CanBindAndConnectToEndpoint(new IPEndPoint(ip, 0)));
-
                 foreach (var ip in ipv6Addresses)
                 {
-                    dataset.Add($"http://[{ip}]:0/", f => f.Addresses.ToArray());
+                    dataset.Add($"http://[{ip}]:0/", $"http://[{ip}]");
                 }
 
                 // There may be no addresses with scope IDs and we need at least one data item in the
                 // collection, otherwise xUnit fails the test run because a theory has no data.
-                dataset.Add("http://[::1]:0", f => f.Addresses.ToArray());
+                dataset.Add("http://[::1]:0", "http://[::1]");
 
                 return dataset;
             }
