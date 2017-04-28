@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 
@@ -19,6 +20,109 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public DefaultTagHelperCompletionService(TagHelperFactsService tagHelperFactsService)
         {
             _tagHelperFactsService = tagHelperFactsService;
+        }
+
+        /*
+         * This API attempts to understand a users context as they're typing in a Razor file to provide TagHelper based attribute IntelliSense.
+         * 
+         * Scenarios for TagHelper attribute IntelliSense follows:
+         * 1. TagHelperDescriptor's have matching required attribute names
+         *  -> Provide IntelliSense for the required attributes of those descriptors to lead users towards a TagHelperified element.
+         * 2. TagHelperDescriptor entirely applies to current element. Tag name, attributes, everything is fulfilled.
+         *  -> Provide IntelliSense for the bound attributes for the applied descriptors.
+         *  
+         *  Within each of the above scenarios if an attribute completion has a corresponding bound attribute we associate it with the corresponding
+         *  BoundAttributeDescriptor. By doing this a user can see what C# type a TagHelper expects for the attribute.
+         */
+        public override AttributeCompletionResult GetAttributeCompletions(AttributeCompletionContext completionContext)
+        {
+            if (completionContext == null)
+            {
+                throw new ArgumentNullException(nameof(completionContext));
+            }
+
+            var attributeCompletions = completionContext.ExistingCompletions.ToDictionary(
+                completion => completion,
+                _ => new HashSet<BoundAttributeDescriptor>(),
+                StringComparer.OrdinalIgnoreCase);
+
+            var documentContext = completionContext.DocumentContext;
+            var descriptorsForTag = _tagHelperFactsService.GetTagHelpersGivenTag(documentContext, completionContext.CurrentTagName, completionContext.CurrentParentTagName);
+            if (descriptorsForTag.Count == 0)
+            {
+                // If the current tag has no possible descriptors then we can't have any additional attributes.
+                var defaultResult = AttributeCompletionResult.Create(attributeCompletions);
+                return defaultResult;
+            }
+
+            var prefix = documentContext.Prefix ?? string.Empty;
+            Debug.Assert(completionContext.CurrentTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+            var applicableTagHelperBinding = _tagHelperFactsService.GetTagHelperBinding(documentContext, completionContext.CurrentTagName, completionContext.Attributes, completionContext.CurrentParentTagName);
+            var applicableDescriptors = applicableTagHelperBinding?.Descriptors ?? Enumerable.Empty<TagHelperDescriptor>();
+            var unprefixedTagName = completionContext.CurrentTagName.Substring(prefix.Length);
+
+            if (!completionContext.InHTMLSchema(unprefixedTagName) &&
+                applicableDescriptors.All(descriptor => descriptor.TagOutputHint == null))
+            {
+                // This isn't a known HTML tag and no descriptor has an output element hint. Remove all previous completions.
+                attributeCompletions.Clear();
+            }
+
+            for (var i = 0; i < descriptorsForTag.Count; i++)
+            {
+                var descriptor = descriptorsForTag[i];
+
+                if (applicableDescriptors.Contains(descriptor))
+                {
+                    foreach (var attributeDescriptor in descriptor.BoundAttributes)
+                    {
+                        UpdateCompletions(attributeDescriptor.Name, attributeDescriptor);
+                    }
+                }
+                else
+                {
+                    var htmlNameToBoundAttribute = descriptor.BoundAttributes.ToDictionary(attribute => attribute.Name, StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var rule in descriptor.TagMatchingRules)
+                    {
+                        foreach (var requiredAttribute in rule.Attributes)
+                        {
+                            if (htmlNameToBoundAttribute.TryGetValue(requiredAttribute.Name, out var attributeDescriptor))
+                            {
+                                UpdateCompletions(requiredAttribute.Name, attributeDescriptor);
+                            }
+                            else
+                            {
+                                UpdateCompletions(requiredAttribute.Name, possibleDescriptor: null);
+                            }
+                        }
+                    }
+                }
+            }
+
+            var completionResult = AttributeCompletionResult.Create(attributeCompletions);
+            return completionResult;
+
+            void UpdateCompletions(string attributeName, BoundAttributeDescriptor possibleDescriptor)
+            {
+                if (completionContext.Attributes.Any(attribute => string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Attribute is already present on this element it shouldn't exist in the completion list.
+                    return;
+                }
+
+                if (!attributeCompletions.TryGetValue(attributeName, out var rules))
+                {
+                    rules = new HashSet<BoundAttributeDescriptor>();
+                    attributeCompletions[attributeName] = rules;
+                }
+
+                if (possibleDescriptor != null)
+                {
+                    rules.Add(possibleDescriptor);
+                }
+            }
         }
 
         public override ElementCompletionResult GetElementCompletions(ElementCompletionContext completionContext)

@@ -5,6 +5,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     public abstract class TagHelperCompletionService
     {
+        public abstract AttributeCompletionResult GetAttributeCompletions(AttributeCompletionContext completionContext);
+
         public abstract ElementCompletionResult GetElementCompletions(ElementCompletionContext completionContext);
     }
 }

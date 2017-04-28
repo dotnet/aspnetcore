@@ -11,6 +11,399 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     public class DefaultTagHelperCompletionServiceTest
     {
         [Fact]
+        public void GetAttributeCompletions_DoesNotReturnCompletionsForAlreadySuppliedAttributes()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("div")
+                        .RequireAttribute(attribute => attribute.Name("repeat")))
+                    .BindAttribute(attribute => attribute
+                        .Name("visible")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Visible"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .BindAttribute(attribute => attribute
+                        .Name("class")
+                        .TypeName(typeof(string).FullName)
+                        .PropertyName("Class"))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["onclick"] = new HashSet<BoundAttributeDescriptor>(),
+                ["visible"] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.Last()
+                }
+            });
+
+            var existingCompletions = new[] { "onclick" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                attributes: new Dictionary<string, string>()
+                {
+                    ["class"] = "something",
+                    ["repeat"] = "4"
+                },
+                currentTagName: "div");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_PossibleDescriptorsReturnUnboundRequiredAttributesWithExistingCompletions()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("div")
+                        .RequireAttribute(attribute => attribute.Name("repeat")))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("*")
+                        .RequireAttribute(attribute => attribute.Name("class")))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["class"] = new HashSet<BoundAttributeDescriptor>(),
+                ["onclick"] = new HashSet<BoundAttributeDescriptor>(),
+                ["repeat"] = new HashSet<BoundAttributeDescriptor>()
+            });
+
+            var existingCompletions = new[] { "onclick", "class" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                currentTagName: "div");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_PossibleDescriptorsReturnBoundRequiredAttributesWithExistingCompletions()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("div")
+                        .RequireAttribute(attribute => attribute.Name("repeat")))
+                    .BindAttribute(attribute => attribute
+                        .Name("repeat")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Repeat"))
+                    .BindAttribute(attribute => attribute
+                        .Name("visible")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Visible"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("*")
+                        .RequireAttribute(attribute => attribute.Name("class")))
+                    .BindAttribute(attribute => attribute
+                        .Name("class")
+                        .TypeName(typeof(string).FullName)
+                        .PropertyName("Class"))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["class"] = new HashSet<BoundAttributeDescriptor>(documentDescriptors[1].BoundAttributes),
+                ["onclick"] = new HashSet<BoundAttributeDescriptor>(),
+                ["repeat"] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.First()
+                }
+            });
+
+            var existingCompletions = new[] { "onclick" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                currentTagName: "div");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_AppliedDescriptorsReturnAllBoundAttributesWithExistingCompletionsForSchemaTags()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .BindAttribute(attribute => attribute
+                        .Name("repeat")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Repeat"))
+                    .BindAttribute(attribute => attribute
+                        .Name("visible")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Visible"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("*")
+                        .RequireAttribute(attribute => attribute.Name("class")))
+                    .BindAttribute(attribute => attribute
+                        .Name("class")
+                        .TypeName(typeof(string).FullName)
+                        .PropertyName("Class"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .BindAttribute(attribute => attribute
+                        .Name("visible")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Visible"))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["onclick"] = new HashSet<BoundAttributeDescriptor>(),
+                ["class"] = new HashSet<BoundAttributeDescriptor>(documentDescriptors[1].BoundAttributes),
+                ["repeat"] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.First()
+                },
+                ["visible"] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.Last(),
+                    documentDescriptors[2].BoundAttributes.First(),
+                }
+            });
+
+            var existingCompletions = new[] { "class", "onclick" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                currentTagName: "div");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_AppliedTagOutputHintDescriptorsReturnBoundAttributesWithExistingCompletionsForNonSchemaTags()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("CustomTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("custom"))
+                    .BindAttribute(attribute => attribute
+                        .Name("repeat")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Repeat"))
+                    .TagOutputHint("div")
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["class"] = new HashSet<BoundAttributeDescriptor>(),
+                ["repeat"] = new HashSet<BoundAttributeDescriptor>(documentDescriptors[0].BoundAttributes)
+            });
+
+            var existingCompletions = new[] { "class" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                currentTagName: "custom");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_AppliedDescriptorsReturnBoundAttributesCompletionsForNonSchemaTags()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("CustomTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("custom"))
+                    .BindAttribute(attribute => attribute
+                        .Name("repeat")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Repeat"))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["repeat"] = new HashSet<BoundAttributeDescriptor>(documentDescriptors[0].BoundAttributes)
+            });
+
+            var existingCompletions = new[] { "class" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                currentTagName: "custom");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_AppliedDescriptorsReturnBoundAttributesWithExistingCompletionsForSchemaTags()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .BindAttribute(attribute => attribute
+                        .Name("repeat")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Repeat"))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["class"] = new HashSet<BoundAttributeDescriptor>(),
+                ["repeat"] = new HashSet<BoundAttributeDescriptor>(documentDescriptors[0].BoundAttributes)
+            });
+
+            var existingCompletions = new[] { "class" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                currentTagName: "div");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_NoDescriptorsReturnsExistingCompletions()
+        {
+            // Arrange
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["class"] = new HashSet<BoundAttributeDescriptor>(),
+            });
+
+            var existingCompletions = new[] { "class" };
+            var completionContext = BuildAttributeCompletionContext(
+                Enumerable.Empty<TagHelperDescriptor>(),
+                existingCompletions,
+                currentTagName: "div");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_NoDescriptorsForUnprefixedTagReturnsExistingCompletions()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("div")
+                        .RequireAttribute(attribute => attribute.Name("special")))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["class"] = new HashSet<BoundAttributeDescriptor>(),
+            });
+
+            var existingCompletions = new[] { "class" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                currentTagName: "div",
+                tagHelperPrefix: "th:");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_NoDescriptorsForTagReturnsExistingCompletions()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("MyTableTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("table")
+                        .RequireAttribute(attribute => attribute.Name("special")))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["class"] = new HashSet<BoundAttributeDescriptor>(),
+            });
+
+            var existingCompletions = new[] { "class" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                currentTagName: "div");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
         public void GetElementCompletions_TagOutputHintDoesNotFallThroughToSchemaCheck()
         {
             // Arrange
@@ -32,7 +425,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "table" };
-            var completionContext = BuildCompletionContext(
+            var completionContext = BuildElementCompletionContext(
                 documentDescriptors,
                 existingCompletions,
                 containingTagName: "body",
@@ -66,7 +459,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "li" };
-            var completionContext = BuildCompletionContext(
+            var completionContext = BuildElementCompletionContext(
                 documentDescriptors,
                 existingCompletions,
                 containingTagName: "ul",
@@ -101,7 +494,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "li" };
-            var completionContext = BuildCompletionContext(
+            var completionContext = BuildElementCompletionContext(
                 documentDescriptors,
                 existingCompletions,
                 containingTagName: "ul",
@@ -135,7 +528,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "li" };
-            var completionContext = BuildCompletionContext(
+            var completionContext = BuildElementCompletionContext(
                 documentDescriptors,
                 existingCompletions,
                 containingTagName: "ul");
@@ -171,7 +564,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "strong", "b", "bold" };
-            var completionContext = BuildCompletionContext(
+            var completionContext = BuildElementCompletionContext(
                 documentDescriptors,
                 existingCompletions,
                 containingTagName: "ul");
@@ -203,7 +596,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "li" };
-            var completionContext = BuildCompletionContext(documentDescriptors, existingCompletions, containingTagName: "ul");
+            var completionContext = BuildElementCompletionContext(documentDescriptors, existingCompletions, containingTagName: "ul");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
@@ -237,7 +630,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "li" };
-            var completionContext = BuildCompletionContext(documentDescriptors, existingCompletions, containingTagName: "ul");
+            var completionContext = BuildElementCompletionContext(documentDescriptors, existingCompletions, containingTagName: "ul");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
@@ -269,7 +662,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "li" };
-            var completionContext = BuildCompletionContext(documentDescriptors, existingCompletions, containingTagName: "ul");
+            var completionContext = BuildElementCompletionContext(documentDescriptors, existingCompletions, containingTagName: "ul");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
@@ -298,7 +691,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "li" };
-            var completionContext = BuildCompletionContext(documentDescriptors, existingCompletions, containingTagName: "ul");
+            var completionContext = BuildElementCompletionContext(documentDescriptors, existingCompletions, containingTagName: "ul");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
@@ -324,7 +717,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>());
 
             var existingCompletions = Enumerable.Empty<string>();
-            var completionContext = BuildCompletionContext(
+            var completionContext = BuildElementCompletionContext(
                 documentDescriptors,
                 existingCompletions,
                 containingTagName: null,
@@ -359,7 +752,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             });
 
             var existingCompletions = new[] { "p", "em" };
-            var completionContext = BuildCompletionContext(documentDescriptors, existingCompletions, containingTagName: "div");
+            var completionContext = BuildElementCompletionContext(documentDescriptors, existingCompletions, containingTagName: "div");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
@@ -387,7 +780,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 ["bold"] = new HashSet<TagHelperDescriptor>(),
             });
 
-            var completionContext = BuildCompletionContext(documentDescriptors, Enumerable.Empty<string>(), containingTagName: "div");
+            var completionContext = BuildElementCompletionContext(documentDescriptors, Enumerable.Empty<string>(), containingTagName: "div");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
@@ -417,7 +810,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 ["div"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0] }
             });
 
-            var completionContext = BuildCompletionContext(documentDescriptors, Enumerable.Empty<string>(), containingTagName: "div");
+            var completionContext = BuildElementCompletionContext(documentDescriptors, Enumerable.Empty<string>(), containingTagName: "div");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
@@ -453,7 +846,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 ["div"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0], documentDescriptors[1] },
             });
 
-            var completionContext = BuildCompletionContext(documentDescriptors, Enumerable.Empty<string>(), containingTagName: "div");
+            var completionContext = BuildElementCompletionContext(documentDescriptors, Enumerable.Empty<string>(), containingTagName: "div");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
@@ -483,7 +876,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
         }
 
-        private static ElementCompletionContext BuildCompletionContext(
+        private static void AssertCompletionsAreEquivalent(AttributeCompletionResult expected, AttributeCompletionResult actual)
+        {
+            Assert.Equal(expected.Completions.Count, actual.Completions.Count);
+
+            foreach (var expectedCompletion in expected.Completions)
+            {
+                var actualValue = actual.Completions[expectedCompletion.Key];
+                Assert.NotNull(actualValue);
+                Assert.Equal(expectedCompletion.Value, actualValue, BoundAttributeDescriptorComparer.CaseSensitive);
+            }
+        }
+
+        private static ElementCompletionContext BuildElementCompletionContext(
             IEnumerable<TagHelperDescriptor> descriptors,
             IEnumerable<string> existingCompletions,
             string containingTagName,
@@ -497,6 +902,26 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 containingTagName,
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 containingParentTagName: containingParentTagName,
+                inHTMLSchema: (tag) => tag == "strong" || tag == "b" || tag == "bold" || tag == "li" || tag == "div");
+
+            return completionContext;
+        }
+
+        private static AttributeCompletionContext BuildAttributeCompletionContext(
+            IEnumerable<TagHelperDescriptor> descriptors,
+            IEnumerable<string> existingCompletions,
+            string currentTagName,
+            IEnumerable<KeyValuePair<string, string>> attributes = null,
+            string tagHelperPrefix = "")
+        {
+            attributes = attributes ?? Enumerable.Empty<KeyValuePair<string, string>>();
+            var documentContext = TagHelperDocumentContext.Create(tagHelperPrefix, descriptors);
+            var completionContext = new AttributeCompletionContext(
+                documentContext,
+                existingCompletions,
+                currentTagName,
+                attributes,
+                currentParentTagName: "body",
                 inHTMLSchema: (tag) => tag == "strong" || tag == "b" || tag == "bold" || tag == "li" || tag == "div");
 
             return completionContext;
