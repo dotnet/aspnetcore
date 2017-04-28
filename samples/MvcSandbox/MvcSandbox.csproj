@@ -20,9 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--
-      TODO re-enable. See https://github.com/aspnet/Universe/issues/506
-      <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="$(AspNetCoreVersion)" /> -->
+    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
