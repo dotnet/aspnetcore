@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PublishWithAspNetCoreTargetManifest)'=='true'">
-    <TargetManifestFiles>$(TargetManifestFiles);$(MSBuildThisFileDirectory)manifest.win7-x64.xml;$(MSBuildThisFileDirectory)manifest.win7-x86.xml;$(MSBuildThisFileDirectory)manifest.osx.10.12-x64.xml;$(MSBuildThisFileDirectory)manifest.linux-x64.xml</TargetManifestFiles>
+    <TargetManifestFiles>$(TargetManifestFiles);$(MSBuildThisFileDirectory)manifest.win-x64.xml;$(MSBuildThisFileDirectory)manifest.win-x86.xml;$(MSBuildThisFileDirectory)manifest.osx-x64.xml;$(MSBuildThisFileDirectory)manifest.linux-x64.xml</TargetManifestFiles>
   </PropertyGroup>
 
 <!--
