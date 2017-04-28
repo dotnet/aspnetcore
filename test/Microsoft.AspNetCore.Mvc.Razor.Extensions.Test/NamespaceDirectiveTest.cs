@@ -9,6 +9,48 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class NamespaceDirectiveTest
     {
+        [Fact]
+        public void TryComputeNamespace_IncompleteDirective_UsesEmptyNamespace()
+        {
+            // Arrange
+            var source = "c:\\foo\\bar\\bleh.cshtml";
+            var imports = "c:\\foo\\baz\\bleh.cshtml";
+            var node = new DirectiveIRNode()
+            {
+                Descriptor = NamespaceDirective.Directive,
+                Source = new SourceSpan(imports, 0, 0, 0, 0),
+            };
+
+            // Act
+            var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);
+
+            // Assert
+            Assert.False(computed);
+            Assert.Equal(string.Empty, @namespace);
+        }
+
+        [Fact]
+        public void TryComputeNamespace_EmptyDirective_UsesEmptyNamespace()
+        {
+            // Arrange
+            var source = "c:\\foo\\bar\\bleh.cshtml";
+            var imports = "c:\\foo\\baz\\bleh.cshtml";
+            var node = new DirectiveIRNode()
+            {
+                Descriptor = NamespaceDirective.Directive,
+                Source = new SourceSpan(imports, 0, 0, 0, 0),
+            };
+            node.Children.Add(new DirectiveTokenIRNode() { Content = string.Empty });
+            node.Children[0].Parent = node;
+
+            // Act
+            var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);
+
+            // Assert
+            Assert.False(computed);
+            Assert.Equal(string.Empty, @namespace);
+        }
+
         // When we don't have a relationship between the source file and the imports file
         // we will just use the namespace on the node directly.
         [Theory]

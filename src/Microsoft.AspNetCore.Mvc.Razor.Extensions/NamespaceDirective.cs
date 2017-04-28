@@ -85,7 +85,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             var directiveSource = NormalizeDirectory(directive.Source?.FilePath);
 
-            var baseNamespace = directive.Tokens.First().Content;
+            var baseNamespace = directive.Tokens.FirstOrDefault()?.Content;
+            if (string.IsNullOrEmpty(baseNamespace))
+            {
+                // The namespace directive was incomplete.
+                @namespace = string.Empty;
+                return false;
+            }
+
             if (string.IsNullOrEmpty(source) || directiveSource == null)
             {
                 // No sources, can't compute a suffix.
