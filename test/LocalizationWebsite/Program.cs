@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace LocalizationWebsite
 {
@@ -15,6 +16,11 @@ namespace LocalizationWebsite
                 .Build();
 
             var host = new WebHostBuilder()
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Warning);
+                })
                 .UseKestrel()
                 .UseConfiguration(config)
                 .UseStartup("LocalizationWebsite")
