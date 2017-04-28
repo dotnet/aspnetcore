@@ -30,11 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool AddServerHeader { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value that determines if Kestrel should use the transport thread thread when executing user code.
-        /// </summary>
-        public bool UseTransportThread { get; set; }
-
-        /// <summary>
         /// Gets or sets a value that determines how Kestrel should schedule user callbacks.
         /// </summary>
         /// <remarks>The default mode is <see cref="SchedulingMode.Default"/></remarks>
