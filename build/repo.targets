@@ -112,7 +112,8 @@
 
   <Target Name="_RemoveTimestampFromDepsFile">
     <Exec Command="powershell.exe -command &quot;(Get-Content $(DepsFile)).replace('-$(BuildNumber)','-final') | Set-Content $(DepsFile)&quot;" Condition="'$(OSPlatform)'=='Windows'"/>
-    <Exec Command="sed -i -e &quot;s/-$(BuildNumber)/-final/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'!='Windows'"/>
+    <Exec Command="sed -i '' -e &quot;s/\-$(BuildNumber)/\-final/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='macOS'"/>
+    <Exec Command="sed -i -e &quot;s/\-$(BuildNumber)/\-final/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='Linux'"/>
   </Target>
 
   <Target Name="_BuildFallbackArchive">
