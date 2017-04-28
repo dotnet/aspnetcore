@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return "osx.10.12-" + architecture;
+                return "osx-" + architecture;
             }
             else
             {
