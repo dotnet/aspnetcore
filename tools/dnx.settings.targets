@@ -30,6 +30,7 @@
         <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
         <UnsignedVSIXPath>$(IntermediateOutputPath)UnsignedVSIX\</UnsignedVSIXPath>
         <UnsignedPackageCachePath>$(IntermediateOutputPath)UPC\</UnsignedPackageCachePath>
+        <SignedAllMetapackagePath>$(IntermediateOutputPath)SignedAllMetapackage\</SignedAllMetapackagePath>
         <UnsignedVSIXWithSignedBinariesPath>$(IntermediateOutputPath)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
         <UnsignedBinariesPath>$(DNXBinPath)FilesToSign\</UnsignedBinariesPath>
         <BinScopePackagesPath>$(IntermediateOutputPath)\BinScopePackages\</BinScopePackagesPath>
