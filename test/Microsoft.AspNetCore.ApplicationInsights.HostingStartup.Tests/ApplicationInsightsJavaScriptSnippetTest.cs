@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace ApplicationInsightsJavaScriptSnippetTest
 {
-    public class ApplicationInsightsJavaScriptSnippetTest : LoggedTest
+    public class ApplicationInsightsJavaScriptSnippetTest : ApplicationInsightsFunctionalTest
     {
         public ApplicationInsightsJavaScriptSnippetTest(ITestOutputHelper output) : base(output)
         {
@@ -34,7 +34,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger(nameof(ApplicationInsightsJavaScriptSnippetTest));
-                var deploymentParameters = new DeploymentParameters(GetApplicationPath(applicationType), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+                var deploymentParameters = new DeploymentParameters(GetApplicationPath(), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = PreservePublishedApplicationForDebugging,
@@ -78,55 +78,6 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                     logger.LogInformation("Variation completed successfully.");
                 }
             }
-        }
-
-        private static string GetApplicationPath(ApplicationType applicationType)
-        {
-            var current = new DirectoryInfo(AppContext.BaseDirectory);
-            while (current != null)
-            {
-                if (File.Exists(Path.Combine(current.FullName, "AzureIntegration.sln")))
-                {
-                    break;
-                }
-                current = current.Parent;
-            }
-
-            if (current == null)
-            {
-                throw new InvalidOperationException("Could not find the solution directory");
-            }
-
-            return Path.GetFullPath(Path.Combine(current.FullName, "sample", "ApplicationInsightsHostingStartupSample"));
-        }
-
-        private static bool PreservePublishedApplicationForDebugging
-        {
-            get
-            {
-                var deletePublishedFolder = Environment.GetEnvironmentVariable("ASPNETCORE_DELETEPUBLISHEDFOLDER");
-
-                if (string.Equals("false", deletePublishedFolder, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals("0", deletePublishedFolder, StringComparison.OrdinalIgnoreCase))
-                {
-                    // preserve the published folder and do not delete it
-                    return true;
-                }
-
-                // do not preserve the published folder and delete it
-                return false;
-            }
-        }
-
-        private static string GetCurrentBuildConfiguration()
-        {
-            var configuration = "Debug";
-            if (string.Equals(Environment.GetEnvironmentVariable("Configuration"), "Release", StringComparison.OrdinalIgnoreCase))
-            {
-                configuration = "Release";
-            }
-
-            return configuration;
         }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -20,13 +21,39 @@ namespace IISSample
             services.AddMvc();
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
-            loggerfactory.AddConsole(LogLevel.Debug);
+            loggerFactory.AddConsole(LogLevel.Debug);
 
-            var logger = loggerfactory.CreateLogger("Requests");
+            var logger = loggerFactory.CreateLogger("Requests");
 
             app.UseMvcWithDefaultRoute();
+            app.Map("/log", logApp => logApp.Run(async (context) =>
+            {
+                TelemetryConfiguration.Active.TelemetryChannel = new CurrentResponseTelemetryChannel(context.Response);
+
+                var systemLogger = loggerFactory.CreateLogger("System.Namespace");
+                systemLogger.LogTrace("System trace log");
+                systemLogger.LogInformation("System information log");
+                systemLogger.LogWarning("System warning log");
+
+                var microsoftLogger = loggerFactory.CreateLogger("Microsoft.Namespace");
+                microsoftLogger.LogTrace("Microsoft trace log");
+                microsoftLogger.LogInformation("Microsoft information log");
+                microsoftLogger.LogWarning("Microsoft warning log");
+
+                var customLogger = loggerFactory.CreateLogger("Custom.Namespace");
+                customLogger.LogTrace("Custom trace log");
+                customLogger.LogInformation("Custom information log");
+                customLogger.LogWarning("Custom warning log");
+
+                var specificLogger = loggerFactory.CreateLogger("Specific.Namespace");
+                specificLogger.LogTrace("Specific trace log");
+                specificLogger.LogInformation("Specific information log");
+                specificLogger.LogWarning("Specific warning log");
+
+                TelemetryConfiguration.Active.TelemetryChannel = null;
+            }));
             app.Run(async (context) =>
             {
                 logger.LogDebug("Received request: " + context.Request.Method + " " + context.Request.Path);
