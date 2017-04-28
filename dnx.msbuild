@@ -400,9 +400,18 @@
     <PropertyGroup>
       <WorkingDir>$(PackageCacheFile)</WorkingDir>
       <PackageCacheName>$([System.IO.Path]::GetFileName($(PackageCacheFile)))</PackageCacheName>
+      <CreateTarGzip Condition="$(PackageCacheName.Contains('osx')) or $(PackageCacheName.Contains('linux'))">true</CreateTarGzip>
     </PropertyGroup>
     <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-    <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageCacheName).zip * > nul" WorkingDirectory="$(WorkingDir)" />
+
+    <!-- see https://sevenzip.osdn.jp/chm/cmdline/ -->
+    <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageCacheName).zip * > nul"
+      WorkingDirectory="$(WorkingDir)"
+      Condition="'$(CreateTarGzip)' != 'true'" />
+
+    <Exec Command="$(DNXToolsPath)7za.exe a -ttar -r -y -so tmp.tar * | $(DNXToolsPath)7za.exe a -si $(OutDir)$(PackageCacheName).tar.gz"
+       WorkingDirectory="$(WorkingDir)"
+       Condition="'$(CreateTarGzip)' == 'true'" />
   </Target>
 
   <Target Name="RunVSDrop">
