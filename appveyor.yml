@@ -7,6 +7,7 @@ branches:
     - dev
     - feature/dev-si
     - /^(.*\/)?ci-.*$/
+    - /^rel\/.*/
 build_script:
   - ps: .\build.ps1
 clone_depth: 1
