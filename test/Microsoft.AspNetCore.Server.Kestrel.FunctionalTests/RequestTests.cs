@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -462,9 +463,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         await context.Request.Body.ReadAsync(new byte[1], 0, 1);
                     }
-                    catch (IOException ex)
+                    catch (ConnectionResetException)
                     {
-                        expectedExceptionThrown = ex.InnerException is UvException && ex.InnerException.Message.Contains("ECONNRESET");
+                        expectedExceptionThrown = true;
                     }
 
                     appDone.Release();
