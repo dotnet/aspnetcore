@@ -18,9 +18,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public class LongPollingTransport : ITransport
     {
-        private static readonly string DefaultUserAgent = "Microsoft.AspNetCore.SignalR.Client/0.0.0";
-        private static readonly ProductInfoHeaderValue DefaultUserAgentHeader = ProductInfoHeaderValue.Parse(DefaultUserAgent);
-
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private IChannelConnection<SendMessage, Message> _application;
@@ -90,7 +87,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
-                    request.Headers.UserAgent.Add(DefaultUserAgentHeader);
+                    request.Headers.UserAgent.Add(SendUtils.DefaultUserAgentHeader);
 
                     var response = await _httpClient.SendAsync(request, cancellationToken);
                     response.EnsureSuccessStatusCode();

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     internal static class SendUtils
     {
         private static readonly string DefaultUserAgent = "Microsoft.AspNetCore.SignalR.Client/0.0.0";
-        private static readonly ProductInfoHeaderValue DefaultUserAgentHeader = ProductInfoHeaderValue.Parse(DefaultUserAgent);
+        public static readonly ProductInfoHeaderValue DefaultUserAgentHeader = ProductInfoHeaderValue.Parse(DefaultUserAgent);
 
         public static async Task SendMessages(Uri sendUrl, IChannelConnection<SendMessage, Message> application, HttpClient httpClient, CancellationTokenSource transportCts, ILogger logger)
         {

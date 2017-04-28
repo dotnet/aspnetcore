@@ -16,9 +16,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public class ServerSentEventsTransport : ITransport
     {
-        private static readonly string DefaultUserAgent = "Microsoft.AspNetCore.SignalR.Client/0.0.0";
-        private static readonly ProductInfoHeaderValue DefaultUserAgentHeader = ProductInfoHeaderValue.Parse(DefaultUserAgent);
-
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
