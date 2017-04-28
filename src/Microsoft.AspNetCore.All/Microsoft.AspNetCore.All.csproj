@@ -12,6 +12,7 @@
 
   <ItemGroup>
    <PackageReference Include="@(FullMetaPackagePackageReference)" />
+   <PackageReference Include="@(FullMetaPackagePackageNoRuntimeStoreReference)" />
    <ProjectReference Include="@(FullMetaPackageProjectReference)" />
   </ItemGroup>
 
