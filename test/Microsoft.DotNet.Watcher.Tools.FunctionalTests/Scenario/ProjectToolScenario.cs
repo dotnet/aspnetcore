@@ -1,13 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Tools.Internal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Tools.Internal;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -55,50 +57,84 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             }
         }
 
-        public void Restore(string project)
+        public Task RestoreAsync(string project)
         {
             _logger?.WriteLine($"Restoring msbuild project in {project}");
-            ExecuteCommand(project, "restore");
+            return ExecuteCommandAsync(project, TimeSpan.FromSeconds(120), "restore");
         }
 
-        public void Build(string project)
+        public Task BuildAsync(string project)
         {
             _logger?.WriteLine($"Building {project}");
-            ExecuteCommand(project, "build");
+            return ExecuteCommandAsync(project, TimeSpan.FromSeconds(60), "build");
         }
 
-        private void ExecuteCommand(string project, params string[] arguments)
+        private async Task ExecuteCommandAsync(string project, TimeSpan timeout, params string[] arguments)
         {
+            var tcs = new TaskCompletionSource<object>();
             project = Path.Combine(WorkFolder, project);
-            var psi = new ProcessStartInfo
+            _logger?.WriteLine($"Project directory: '{project}'");
+
+            var process = new Process
             {
-                FileName = DotNetMuxer.MuxerPathOrDefault(),
-                Arguments = ArgumentEscaper.EscapeAndConcatenate(arguments),
-                WorkingDirectory = project,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
+                EnableRaisingEvents = true,
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = DotNetMuxer.MuxerPathOrDefault(),
+                    Arguments = ArgumentEscaper.EscapeAndConcatenate(arguments),
+                    WorkingDirectory = project,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    Environment =
+                    {
+                        ["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "true"
+                    }
+                },
             };
 
-            var process = new Process()
+            void OnData(object sender, DataReceivedEventArgs args)
+              => _logger?.WriteLine(args.Data ?? string.Empty);
+
+            void OnExit(object sender, EventArgs args)
             {
-                StartInfo = psi,
-                EnableRaisingEvents = true
-            };
+                _logger?.WriteLine($"Process exited {process.Id}");
+                tcs.TrySetResult(null);
+            }
 
-            void WriteLine(object sender, DataReceivedEventArgs args)
-              => _logger.WriteLine(args.Data);
-
-            process.ErrorDataReceived += WriteLine;
-            process.OutputDataReceived += WriteLine;
+            process.ErrorDataReceived += OnData;
+            process.OutputDataReceived += OnData;
+            process.Exited += OnExit;
 
             process.Start();
-            process.WaitForExit();
 
-            process.ErrorDataReceived -= WriteLine;
-            process.OutputDataReceived -= WriteLine;
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
 
+            _logger?.WriteLine($"Started process {process.Id}: {process.StartInfo.FileName} {process.StartInfo.Arguments}");
+
+            var done = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
+            process.CancelErrorRead();
+            process.CancelOutputRead();
+
+            process.ErrorDataReceived -= OnData;
+            process.OutputDataReceived -= OnData;
+            process.Exited -= OnExit;
+
+            if (!ReferenceEquals(done, tcs.Task))
+            {
+                if (!process.HasExited)
+                {
+                    _logger?.WriteLine($"Killing process {process.Id}");
+                    process.KillTree();
+                }
+
+                throw new TimeoutException($"Process timed out after {timeout.TotalSeconds} seconds");
+            }
+
+            _logger?.WriteLine($"Process exited {process.Id} with code {process.ExitCode}");
             if (process.ExitCode != 0)
             {
+
                 throw new InvalidOperationException($"Exit code {process.ExitCode}");
             }
         }

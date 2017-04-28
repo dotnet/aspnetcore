@@ -17,7 +17,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public NoDepsAppTests(ITestOutputHelper logger)
         {
             _app = new WatchableApp("NoDepsApp", logger);
-            _app.Prepare();
         }
 
         [Fact]

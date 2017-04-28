@@ -1,5 +1,0 @@
-<Project>
-  <ItemGroup>
-  	<ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.DotNet.Watcher.Tools.FunctionalTests\*.csproj" />
-  </ItemGroup>
-</Project>

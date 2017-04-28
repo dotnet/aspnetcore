@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         {
             Func<string, string> normalize = p => p.Replace('\\', '/');
             var expected = new HashSet<string>(expectedFiles.Select(normalize));
-            Assert.True(expected.SetEquals(actualFiles.Select(normalize)), "File sets should be equal");
+            Assert.True(expected.SetEquals(actualFiles.Where(p => !string.IsNullOrEmpty(p)).Select(normalize)), "File sets should be equal");
         }
     }
 }
