@@ -12,6 +12,53 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class RazorTemplateEngineTest
     {
         [Fact]
+        public void GetImports_CanQueryInformationOnNonExistentFileWithoutImports()
+        {
+            // Arrange
+            var project = new TestRazorProject();
+            var razorEngine = RazorEngine.Create();
+            var templateEngine = new RazorTemplateEngine(razorEngine, project)
+            {
+                Options =
+                {
+                    ImportsFileName = "MyImport.cshtml"
+                }
+            };
+            var projectItemToQuery = project.GetItem("/Views/Home/Index.cshtml");
+
+            // Act
+            var imports = templateEngine.GetImports(projectItemToQuery);
+
+            // Assert
+            Assert.Empty(imports);
+        }
+
+        [Fact]
+        public void GetImports_CanQueryInformationOnNonExistentFileWithImports()
+        {
+            // Arrange
+            var path = "/Views/Home/MyImport.cshtml";
+            var projectItem = new TestRazorProjectItem(path);
+            var project = new TestRazorProject(new[] { projectItem });
+            var razorEngine = RazorEngine.Create();
+            var templateEngine = new RazorTemplateEngine(razorEngine, project)
+            {
+                Options =
+                {
+                    ImportsFileName = "MyImport.cshtml"
+                }
+            };
+            var projectItemToQuery = project.GetItem("/Views/Home/Index.cshtml");
+
+            // Act
+            var imports = templateEngine.GetImports(projectItemToQuery);
+
+            // Assert
+            var import = Assert.Single(imports);
+            Assert.Equal(projectItem.Path, import.FileName);
+        }
+
+        [Fact]
         public void GenerateCode_ThrowsIfItemCannotBeFound()
         {
             // Arrange

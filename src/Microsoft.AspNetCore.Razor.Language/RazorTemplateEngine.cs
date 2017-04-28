@@ -182,12 +182,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentNullException(nameof(projectItem));
             }
-
-            if (!projectItem.Exists)
-            {
-                throw new InvalidOperationException(Resources.FormatRazorTemplateEngine_ItemCouldNotBeFound(projectItem.Path));
-            }
-
             var result = new List<RazorSourceDocument>();
 
 
