@@ -422,7 +422,7 @@
   </Target>
 
   <Target Name="InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
-    <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
+    <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -Version 1.0.2-rc2-15240 -pre NuGetPackageVerifier -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
   </Target>
 
   <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="Sign;InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
@@ -436,7 +436,23 @@
     <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT)" />
   </Target>
 
-  <Target Name="NuGetVerifyTimestampFreePackages" DependsOnTargets="CreateTimestampFreePackages" Condition="'$(VerifySignatures)' != 'false'">
+  <Target Name="CreateTimestampFreeAllMetaPackage" DependsOnTargets="CreateTimestampFreePackages">
+    <ItemGroup>
+      <TimeStampFreeMetaPackage Include="$(TimestampFreePackagesOutputPath)Microsoft.AspNetCore.All.*.nupkg" />
+    </ItemGroup>
+
+    <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(TimeStampFreeMetaPackage->'$(SignedAllMetapackagePath)%(Filename)') %(TimeStampFreeMetaPackage.Identity) > nul" />
+
+    <ItemGroup>
+      <TimeStampedManifestFiles Include="$(SignedAllMetapackagePath)**\manifest.*.xml" />
+    </ItemGroup>
+
+    <Exec Command="powershell.exe -command &quot;(Get-Content %(TimeStampedManifestFiles.FullPath)).replace('-$(BuildNumber)','-final') | Set-Content %(TimeStampedManifestFiles.FullPath)&quot;"/>
+
+    <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(TimestampFreePackagesOutputPath)%(TimeStampFreeMetaPackage.FileName).nupkg * > nul" WorkingDirectory="$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)" />
+  </Target>
+
+  <Target Name="NuGetVerifyTimestampFreePackages" DependsOnTargets="CreateTimestampFreeAllMetaPackage" Condition="'$(VerifySignatures)' != 'false'">
     <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(TimestampFreePackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
     <RemoveDir Directories="$(CommandsPath)"/>
   </Target>
