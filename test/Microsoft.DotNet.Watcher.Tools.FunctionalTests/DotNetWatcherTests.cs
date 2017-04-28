@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");
 
-            await _app.StartWatcherAsync().OrTimeout();
+            await _app.StartWatcherAsync();
             const string messagePrefix = "DOTNET_WATCH = ";
             var message = await _app.Process.GetOutputLineAsync(m => m.StartsWith(messagePrefix));
             var envValue = message.Substring(messagePrefix.Length);

@@ -12,10 +12,12 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
-    public class Program
+    public class Program : IDisposable
     {
         private readonly IConsole _console;
         private readonly string _workingDir;
+        private readonly CancellationTokenSource _cts;
+        private IReporter _reporter;
 
         public Program(IConsole console, string workingDir)
         {
@@ -24,15 +26,21 @@ namespace Microsoft.DotNet.Watcher
 
             _console = console;
             _workingDir = workingDir;
+            _cts = new CancellationTokenSource();
+            _console.CancelKeyPress += OnCancelKeyPress;
+            _reporter = CreateReporter(verbose: true, quiet: false, console: _console);
         }
 
         public static int Main(string[] args)
         {
             DebugHelper.HandleDebugSwitch(ref args);
-            return new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory())
-                .RunAsync(args)
-                .GetAwaiter()
-                .GetResult();
+            using (var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()))
+            {
+                return program
+                    .RunAsync(args)
+                    .GetAwaiter()
+                    .GetResult();
+            }
         }
 
         public async Task<int> RunAsync(string[] args)
@@ -44,8 +52,7 @@ namespace Microsoft.DotNet.Watcher
             }
             catch (CommandParsingException ex)
             {
-                CreateReporter(verbose: true, quiet: false, console: _console)
-                    .Error(ex.Message);
+                _reporter.Error(ex.Message);
                 return 1;
             }
 
@@ -60,54 +67,55 @@ namespace Microsoft.DotNet.Watcher
                 return 2;
             }
 
-            var reporter = CreateReporter(options.IsVerbose, options.IsQuiet, _console);
+            // update reporter as configured by options
+            _reporter = CreateReporter(options.IsVerbose, options.IsQuiet, _console);
 
-            using (CancellationTokenSource ctrlCTokenSource = new CancellationTokenSource())
+            try
             {
-                _console.CancelKeyPress += (sender, ev) =>
+                if (_cts.IsCancellationRequested)
                 {
-                    if (!ctrlCTokenSource.IsCancellationRequested)
-                    {
-                        reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.");
-                        ev.Cancel = true;
-                    }
-                    else
-                    {
-                        ev.Cancel = false;
-                    }
-                    ctrlCTokenSource.Cancel();
-                };
-
-                try
-                {
-                    if (options.ListFiles)
-                    {
-                        return await ListFilesAsync(reporter,
-                            options.Project,
-                            ctrlCTokenSource.Token);
-                    }
-                    else
-                    {
-
-                        return await MainInternalAsync(reporter,
-                            options.Project,
-                            options.RemainingArguments,
-                            ctrlCTokenSource.Token);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (ex is TaskCanceledException || ex is OperationCanceledException)
-                    {
-                        // swallow when only exception is the CTRL+C forced an exit
-                        return 0;
-                    }
-
-                    reporter.Error(ex.ToString());
-                    reporter.Error("An unexpected error occurred");
                     return 1;
                 }
+
+                if (options.ListFiles)
+                {
+                    return await ListFilesAsync(_reporter,
+                        options.Project,
+                        _cts.Token);
+                }
+                else
+                {
+                    return await MainInternalAsync(_reporter,
+                        options.Project,
+                        options.RemainingArguments,
+                        _cts.Token);
+                }
             }
+            catch (Exception ex)
+            {
+                if (ex is TaskCanceledException || ex is OperationCanceledException)
+                {
+                    // swallow when only exception is the CTRL+C forced an exit
+                    return 0;
+                }
+
+                _reporter.Error(ex.ToString());
+                _reporter.Error("An unexpected error occurred");
+                return 1;
+            }
+        }
+
+        private void OnCancelKeyPress(object sender, ConsoleCancelEventArgs args)
+        {
+            // suppress CTRL+C on the first press
+            args.Cancel = !_cts.IsCancellationRequested;
+
+            if (args.Cancel)
+            {
+                _reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.");
+            }
+
+            _cts.Cancel();
         }
 
         private async Task<int> MainInternalAsync(
@@ -181,5 +189,11 @@ namespace Microsoft.DotNet.Watcher
 
         private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
             => new PrefixConsoleReporter(console, verbose || CliContext.IsGlobalVerbose(), quiet);
+
+        public void Dispose()
+        {
+            _console.CancelKeyPress -= OnCancelKeyPress;
+            _cts.Dispose();
+        }
     }
 }

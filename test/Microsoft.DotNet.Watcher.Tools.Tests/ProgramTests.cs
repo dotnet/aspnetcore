@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Tools.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -35,15 +36,17 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
             var stdout = new StringBuilder();
             _console.Out = new StringWriter(stdout);
             var program = new Program(_console, _tempDir.Root)
-                .RunAsync(new [] { "run" });
+                .RunAsync(new[] { "run" });
 
+            await _console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
             _console.ConsoleCancelKey();
 
-            var exitCode = await program.OrTimeout();
+            var exitCode = await program.TimeoutAfter(TimeSpan.FromSeconds(30));
 
             Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", stdout.ToString());
             Assert.Equal(0, exitCode);
         }
+
         public void Dispose()
         {
             _tempDir.Dispose();

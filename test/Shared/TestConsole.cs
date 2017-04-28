@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Text;
 using Xunit.Abstractions;
 
@@ -12,6 +13,9 @@ namespace Microsoft.Extensions.Tools.Internal
 {
     public class TestConsole : IConsole
     {
+        private event ConsoleCancelEventHandler _cancelKeyPress;
+        private readonly TaskCompletionSource<bool> _cancelKeySubscribed = new TaskCompletionSource<bool>();
+
         public TestConsole(ITestOutputHelper output)
         {
             var writer = new TestOutputWriter(output);
@@ -19,7 +23,17 @@ namespace Microsoft.Extensions.Tools.Internal
             Out = writer;
         }
 
-        public event ConsoleCancelEventHandler CancelKeyPress;
+        public event ConsoleCancelEventHandler CancelKeyPress
+        {
+            add
+            {
+                _cancelKeyPress += value;
+                _cancelKeySubscribed.TrySetResult(true);
+            }
+            remove => _cancelKeyPress -= value;
+        }
+
+        public Task CancelKeyPressSubscribed => _cancelKeySubscribed.Task;
 
         public TextWriter Error { get; set; }
         public TextWriter Out { get; set; }
@@ -36,7 +50,7 @@ namespace Microsoft.Extensions.Tools.Internal
                 .DeclaredConstructors
                 .Single(c => c.GetParameters().First().ParameterType == typeof(ConsoleSpecialKey));
             var args = (ConsoleCancelEventArgs)ctor.Invoke(new object[] { ConsoleSpecialKey.ControlC });
-            CancelKeyPress?.Invoke(this, args);
+            _cancelKeyPress.Invoke(this, args);
             return args;
         }
 

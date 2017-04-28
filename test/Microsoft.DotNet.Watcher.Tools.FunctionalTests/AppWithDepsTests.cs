@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,13 +23,13 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Fact]
         public async Task ChangeFileInDependency()
         {
-            await _app.StartWatcherAsync().OrTimeout();
+            await _app.StartWatcherAsync();
 
             var fileToChange = Path.Combine(_app.DependencyFolder, "Foo.cs");
             var programCs = File.ReadAllText(fileToChange);
             File.WriteAllText(fileToChange, programCs);
 
-            await _app.HasRestarted().OrTimeout();
+            await _app.HasRestarted();
         }
 
         public void Dispose()

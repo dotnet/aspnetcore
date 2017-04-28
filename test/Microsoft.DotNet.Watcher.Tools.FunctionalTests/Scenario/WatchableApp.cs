@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit.Abstractions;
 
@@ -38,7 +39,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public string SourceDirectory { get; }
 
         public Task HasRestarted()
-            => Process.GetOutputLineAsync(StartedMessage);
+            => Process.GetOutputLineAsync(StartedMessage).TimeoutAfter(TimeSpan.FromMinutes(2));
 
         public Task HasExited()
             => Process.GetOutputLineAsync(ExitingMessage);
@@ -74,7 +75,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             {
                 Executable = DotNetMuxer.MuxerPathOrDefault(),
                 Arguments = args,
-                WorkingDirectory = SourceDirectory
+                WorkingDirectory = SourceDirectory,
+                EnvironmentVariables =
+                {
+                    ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString
+                },
             };
 
             Process = new AwaitableProcess(spec, _logger);
@@ -88,11 +93,15 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             var args = new[] { "run", "--" }.Concat(arguments);
             Start(args, name);
-            await Process.GetOutputLineAsync(StartedMessage);
+
+            // Make this timeout long because it depends much on the MSBuild compilation speed.
+            // Slow machines may take a bit to compile and boot test apps
+            await Process.GetOutputLineAsync(StartedMessage).TimeoutAfter(TimeSpan.FromMinutes(2));
         }
 
         public virtual void Dispose()
         {
+            _logger?.WriteLine("Disposing WatchableApp");
             Process?.Dispose();
             Scenario.Dispose();
         }

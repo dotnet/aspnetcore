@@ -38,6 +38,9 @@ Environment variables:
   changes. This is required for some file systems, such as network shares,
   Docker mounted volumes, and other virtual file systems.
 
+  DOTNET_WATCH
+  dotnet-watch sets this variable to '1' on all child processes launched.
+
 Remarks:
   The special option '--' is used to delimit the end of the options and
   the beginning of arguments that will be passed to the child dotnet process.
