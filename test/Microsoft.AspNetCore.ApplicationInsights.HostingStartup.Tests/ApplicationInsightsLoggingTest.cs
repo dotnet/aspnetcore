@@ -1,0 +1,95 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.Extensions.Logging;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace ApplicationInsightsJavaScriptSnippetTest
+{
+    public class ApplicationInsightsLoggingTest : ApplicationInsightsFunctionalTest
+    {
+        public ApplicationInsightsLoggingTest(ITestOutputHelper output) : base(output)
+        {
+        }
+
+        [Theory]
+        [InlineData(ApplicationType.Portable)]
+        [InlineData(ApplicationType.Standalone)]
+        public async Task ScriptInjected(ApplicationType applicationType)
+        {
+            var testName = $"ApplicationInsightsLoggingTest_{applicationType}";
+            using (StartLog(out var loggerFactory, testName))
+            {
+                var logger = loggerFactory.CreateLogger(nameof(ApplicationInsightsJavaScriptSnippetTest));
+                var deploymentParameters = new DeploymentParameters(GetApplicationPath(), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+                {
+                    PublishApplicationBeforeDeployment = true,
+                    PreservePublishedApplicationForDebugging = PreservePublishedApplicationForDebugging,
+                    TargetFramework = "netcoreapp2.0",
+                    Configuration = GetCurrentBuildConfiguration(),
+                    ApplicationType = applicationType,
+                    EnvironmentVariables =
+                    {
+                        new KeyValuePair<string, string>(
+                            "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+                            "Microsoft.AspNetCore.ApplicationInsights.HostingStartup"),
+                        new KeyValuePair<string, string>(
+                            "HOME",
+                            Path.Combine(GetApplicationPath(), "home")),
+                    },
+                };
+
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                {
+                    var deploymentResult = await deployer.DeployAsync();
+                    var httpClientHandler = new HttpClientHandler();
+                    var httpClient = deploymentResult.CreateHttpClient(httpClientHandler);
+
+                    // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
+                    var response = await RetryHelper.RetryRequest(
+                        async () => await httpClient.GetAsync("/log"),
+                        logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+
+                    Assert.False(response == null, "Response object is null because the client could not " +
+                        "connect to the server after multiple retries");
+
+                    var responseText = await response.Content.ReadAsStringAsync();
+
+                    // Enabled by default
+                    Assert.Contains("System warning log", responseText);
+                    // Disabled by default
+                    Assert.DoesNotContain("System information log", responseText);
+                    // Disabled by default
+                    Assert.DoesNotContain("System trace log", responseText);
+
+                    // Enabled by default
+                    Assert.Contains("Microsoft warning log", responseText);
+                    // Disabled by default but overridden by ApplicationInsights.settings.json
+                    Assert.Contains("Microsoft information log", responseText);
+                    // Disabled by default
+                    Assert.DoesNotContain("Microsoft trace log", responseText);
+
+                    // Enabled by default
+                    Assert.Contains("Custom warning log", responseText);
+                    // Enabled by default
+                    Assert.Contains("Custom information log", responseText);
+                    // Disabled by default
+                    Assert.DoesNotContain("Custom trace log", responseText);
+
+                    // Enabled by default
+                    Assert.Contains("Specific warning log", responseText);
+                    // Enabled by default
+                    Assert.Contains("Specific information log", responseText);
+                    // Disabled by default but overridden by ApplicationInsights.settings.json
+                    Assert.Contains("Specific trace log", responseText);
+                }
+            }
+        }
+    }
+}
