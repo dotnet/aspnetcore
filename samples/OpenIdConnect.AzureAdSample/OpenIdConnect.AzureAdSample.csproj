@@ -20,8 +20,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="$(IdentityModelActiveDirectoryVersion)" />
-    <!--
-      TODO re-enable. See https://github.com/aspnet/Universe/issues/506<DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="$(AspNetCoreVersion)" /> -->
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
