@@ -98,39 +98,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
             }
 
-            if (!_threadTcs.Task.IsCompleted)
-            {
-                var stepTimeout = TimeSpan.FromTicks(timeout.Ticks / 3);
+            Debug.Assert(!_threadTcs.Task.IsCompleted, "The loop thread was completed before calling uv_unref on the post handle.");
 
-                try
+            var stepTimeout = TimeSpan.FromTicks(timeout.Ticks / 3);
+
+            try
+            {
+                Post(t => t.AllowStop());
+                if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                 {
-                    Post(t => t.AllowStop());
+                    Post(t => t.OnStopRude());
                     if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                     {
-                        Post(t => t.OnStopRude());
+                        Post(t => t.OnStopImmediate());
                         if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                         {
-                            Post(t => t.OnStopImmediate());
-                            if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
-                            {
-                                _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
-                            }
+                            _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
                         }
                     }
                 }
-                catch (ObjectDisposedException)
+            }
+            catch (ObjectDisposedException)
+            {
+                if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                 {
-                    if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
-                    {
-                        _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
-                    }
+                    _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
                 }
             }
 
-            if (_closeError != null)
-            {
-                _closeError.Throw();
-            }
+            _closeError?.Throw();
         }
 
 #if DEBUG
