@@ -1318,6 +1318,27 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Fact]
+        public void TreeRouter_GenerateLink_Match_HasTwoOptionalParametersWithoutValues()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+            MapOutboundEntry(builder, "Customers/SeparatePageModels/{handler?}/{id?}", new { page = "/Customers/SeparatePageModels/Index" });
+            var route = builder.Build();
+
+            var context = CreateVirtualPathContext(new { page = "/Customers/SeparatePageModels/Index" }, new { page = "/Customers/SeparatePageModels/Edit", id = "17" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/Customers/SeparatePageModels", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+
+        [Fact]
         public void TreeRouter_GenerateLink_Match_WithParameters()
         {
             // Arrange

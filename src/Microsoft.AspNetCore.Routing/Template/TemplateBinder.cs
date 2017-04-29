@@ -64,6 +64,9 @@ namespace Microsoft.AspNetCore.Routing.Template
             // If the URI had ordered parameters a="1", b="2", c="3" and the new values
             // specified that b="9", then we need to invalidate everything after it. The new
             // values should then be a="1", b="9", c=<no value>.
+            //
+            // We also handle the case where a parameter is optional but has no value - we shouldn't
+            // accept additional parameters that appear *after* that parameter.
             for (var i = 0; i < _template.Parameters.Count; i++)
             {
                 var parameter = _template.Parameters[i];
@@ -85,6 +88,25 @@ namespace Microsoft.AspNetCore.Routing.Template
                         // Stop copying current values when we find one that doesn't match
                         break;
                     }
+                }
+
+                if (!hasNewParameterValue && 
+                    !hasCurrentParameterValue && 
+                    _defaults?.ContainsKey(parameter.Name) != true)
+                {
+                    // This is an unsatisfied parameter value and there are no defaults. We might still
+                    // be able to generate a URL but we should stop 'accepting' ambient values.
+                    //
+                    // This might be a case like:
+                    //  template: a/{b?}/{c?}
+                    //  ambient: { c = 17 }
+                    //  values: { }
+                    //
+                    // We can still generate a URL from this ("/a") but we shouldn't accept 'c' because
+                    // we can't use it.
+                    // 
+                    // In the example above we should fall into this block for 'b'.
+                    break;
                 }
 
                 // If the parameter is a match, add it to the list of values we will use for URI generation

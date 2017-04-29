@@ -1372,6 +1372,103 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Empty(pathData.DataTokens);
         }
 
+        [Fact]
+        public void GetVirtualPath_TwoOptionalParameters_OneValueFromAmbientValues()
+        {
+            // Arrange
+            var route = CreateRoute(
+                template: "a/{b=15}/{c?}/{d?}",
+                defaults: null,
+                handleRequest: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { },
+                ambientValues: new { c = "17" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/a/15/17", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameterAfterDefault_OneValueFromAmbientValues()
+        {
+            // Arrange
+            var route = CreateRoute(
+                template: "a/{b=15}/{c?}",
+                defaults: null,
+                handleRequest: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { },
+                ambientValues: new { c = "17" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/a/15/17", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void GetVirtualPath_TwoOptionalParametersAfterDefault_OneValueFromAmbientValues()
+        {
+            // Arrange
+            var route = CreateRoute(
+                template: "a/{b=15}/{c?}/{d?}",
+                defaults: null,
+                handleRequest: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { },
+                ambientValues: new { c = "17" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/a/15/17", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void GetVirtualPath_TwoOptionalParametersAfterDefault_LastValueFromAmbientValues()
+        {
+            // Arrange
+            var route = CreateRoute(
+                template: "a/{b=15}/{c?}/{d?}",
+                defaults: null,
+                handleRequest: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { },
+                ambientValues: new { d = "17" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Equal("/a", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
         private static VirtualPathContext CreateVirtualPathContext(object values)
         {
             return CreateVirtualPathContext(new RouteValueDictionary(values), null);
