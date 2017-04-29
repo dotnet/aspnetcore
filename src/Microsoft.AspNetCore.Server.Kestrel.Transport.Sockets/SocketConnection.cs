@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.Buffers;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
@@ -72,15 +71,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 // TODO: Log
             }
-            finally
-            {
-                // Mark the connection as closed after disposal
-                _connectionContext.OnConnectionClosed();
-            }
         }
 
         private async Task DoReceive()
         {
+            Exception error = null;
+
             try
             {
                 while (true)
@@ -112,40 +108,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         break;
                     }
                 }
-
-                _connectionContext.Abort(ex: null);
-                _input.Complete();
+            }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+            {
+                error = new ConnectionResetException(ex.Message, ex);
+            }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
+            {
+                error = new TaskCanceledException("The request was aborted");
+            }
+            catch (ObjectDisposedException)
+            {
+                error = new TaskCanceledException("The request was aborted");
+            }
+            catch (IOException ex)
+            {
+                error = ex;
             }
             catch (Exception ex)
             {
-                Exception error = null;
-
-                if (ex is SocketException se)
-                {
-                    if (se.SocketErrorCode == SocketError.ConnectionReset)
-                    {
-                        // Connection reset
-                        error = new ConnectionResetException(ex.Message, ex);
-                    }
-                    else if (se.SocketErrorCode == SocketError.OperationAborted)
-                    {
-                        error = new TaskCanceledException("The request was aborted");
-                    }
-                }
-
-                if (ex is ObjectDisposedException)
-                {
-                    error = new TaskCanceledException("The request was aborted");
-                }
-                else if (ex is IOException ioe)
-                {
-                    error = ioe;
-                }
-                else if (error == null)
-                {
-                    error = new IOException(ex.Message, ex);
-                }
-
+                error = new IOException(ex.Message, ex);
+            }
+            finally
+            {
                 _connectionContext.Abort(error);
                 _input.Complete(error);
             }
@@ -172,6 +157,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         private async Task DoSend()
         {
+            Exception error = null;
+
             try
             {
                 while (true)
@@ -220,13 +207,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         _output.Advance(buffer.End);
                     }
                 }
-
-                // We're done reading
-                _output.Complete();
+            }
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
+            {
+                error = null;
+            }
+            catch (ObjectDisposedException)
+            {
+                error = null;
+            }
+            catch (IOException ex)
+            {
+                error = ex;
             }
             catch (Exception ex)
             {
-                _output.Complete(ex);
+                error = new IOException(ex.Message, ex);
+            }
+            finally
+            {
+                _connectionContext.OnConnectionClosed(error);
+                _output.Complete(error);
             }
         }
 

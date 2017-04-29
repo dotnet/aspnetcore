@@ -87,8 +87,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        public async void OnConnectionClosed()
+        public async void OnConnectionClosed(Exception ex)
         {
+            // Abort the connection (if it isn't already aborted)
+            _frame.Abort(ex);
+
             Log.ConnectionStop(ConnectionId);
             KestrelEventSource.Log.ConnectionStop(this);
             _socketClosedTcs.SetResult(null);

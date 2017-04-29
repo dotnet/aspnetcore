@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
         IPipeWriter Input { get; }
         IPipeReader Output { get; }
 
-        // TODO: Remove these (Use Pipes Tasks instead?)
-        void OnConnectionClosed();
+        // TODO: Remove these (https://github.com/aspnet/KestrelHttpServer/issues/1772)
+        void OnConnectionClosed(Exception ex);
         void Abort(Exception ex);
     }
 }

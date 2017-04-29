@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // this is temporary until it does
         private TaskCompletionSource<object> _flushTcs;
         private readonly object _flushLock = new object();
+        private Action _flushCompleted;
 
         public OutputProducer(IPipeWriter pipe, Frame frame, string connectionId, IKestrelTrace log)
         {
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _frame = frame;
             _connectionId = connectionId;
             _log = log;
+            _flushCompleted = OnFlushCompleted;
         }
 
         public Task WriteAsync(
@@ -83,8 +85,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var awaitable = writableBuffer.FlushAsync(cancellationToken);
             if (awaitable.IsCompleted)
             {
-                AbortIfNeeded(awaitable);
-
                 // The flush task can't fail today
                 return TaskCache.CompletedTask;
             }
@@ -103,27 +103,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _flushTcs = new TaskCompletionSource<object>();
 
-                    awaitable.OnCompleted(() =>
-                    {
-                        AbortIfNeeded(awaitable);
-                        _flushTcs.TrySetResult(null);
-                    });
+                    awaitable.OnCompleted(_flushCompleted);
                 }
             }
             await _flushTcs.Task;
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                _frame.Abort(error: null);
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
         }
 
-        private void AbortIfNeeded(WritableBufferAwaitable awaitable)
+        private void OnFlushCompleted()
         {
-            try
-            {
-                awaitable.GetResult();
-            }
-            catch (Exception ex)
-            {
-                _frame.Abort(ex);
-            }
+            _flushTcs.TrySetResult(null);
         }
 
         void ISocketOutput.Write(ArraySegment<byte> buffer, bool chunk)

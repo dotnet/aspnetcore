@@ -35,12 +35,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
             public IPipeWriter Input { get; set; }
             public IPipeReader Output { get; set; }
 
-            public void OnConnectionClosed()
+            public void Abort(Exception ex)
             {
-
             }
 
-            public void Abort(Exception ex)
+            public void OnConnectionClosed(Exception ex)
             {
             }
         }

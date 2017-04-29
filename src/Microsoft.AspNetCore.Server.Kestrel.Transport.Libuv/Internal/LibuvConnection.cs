@@ -66,17 +66,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 // Start socket prior to applying the ConnectionAdapter
                 StartReading();
 
+                Exception error = null;
+
                 try
                 {
                     // This *must* happen after socket.ReadStart
                     // The socket output consumer is the only thing that can close the connection. If the
                     // output pipe is already closed by the time we start then it's fine since, it'll close gracefully afterwards.
                     await Output.WriteOutputAsync();
-                    _connectionContext.Output.Complete();
                 }
                 catch (UvException ex)
                 {
-                    _connectionContext.Output.Complete(ex);
+                    error = new IOException(ex.Message, ex);
                 }
                 finally
                 {
@@ -91,7 +92,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     _socket.Dispose();
 
                     // Tell the kestrel we're done with this connection
-                    _connectionContext.OnConnectionClosed();
+                    _connectionContext.OnConnectionClosed(error);
+                    _connectionContext.Output.Complete(error);
                 }
             }
             catch (Exception e)
@@ -221,7 +223,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 // ReadStart() can throw a UvException in some cases (e.g. socket is no longer connected).
                 // This should be treated the same as OnRead() seeing a "normalDone" condition.
                 Log.ConnectionReadFin(ConnectionId);
-                Input.Complete(new IOException(ex.Message, ex));
+                var error = new IOException(ex.Message, ex);
+
+                _connectionContext.Abort(error);
+                Input.Complete(error);
             }
         }
     }
