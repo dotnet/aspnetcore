@@ -21,8 +21,7 @@ namespace ServerComparison.FunctionalTests
         {
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/ServerTests/issues/70")]
-        [Trait("ServerComparison.FunctionalTests", "ServerComparison.FunctionalTests")]
+        [ConditionalTheory, Trait("ServerComparison.FunctionalTests", "ServerComparison.FunctionalTests")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         // TODO: https://github.com/aspnet/IISIntegration/issues/1
