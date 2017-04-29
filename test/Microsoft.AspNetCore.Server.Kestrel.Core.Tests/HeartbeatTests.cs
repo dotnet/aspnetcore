@@ -19,39 +19,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void BlockedHeartbeatDoesntCauseOverlapsAndIsLoggedAsError()
         {
             var systemClock = new MockSystemClock();
-            var heartbeatInterval = TimeSpan.FromMilliseconds(10);
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
             var traceMre = new ManualResetEventSlim();
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() => handlerMre.Wait());
-            kestrelTrace.Setup(t => t.TimerSlow(heartbeatInterval, systemClock.UtcNow)).Callback(() => traceMre.Set());
+            kestrelTrace.Setup(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow)).Callback(() => traceMre.Set());
 
-            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace.Object, heartbeatInterval))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace.Object))
             {
-                heartbeat.Start();
+                Task.Run(() => heartbeat.OnHeartbeat());
+                Task.Run(() => heartbeat.OnHeartbeat());
                 Assert.True(traceMre.Wait(TimeSpan.FromSeconds(10)));
             }
 
             handlerMre.Set();
 
             heartbeatHandler.Verify(h => h.OnHeartbeat(systemClock.UtcNow), Times.Once());
-            kestrelTrace.Verify(t => t.TimerSlow(heartbeatInterval, systemClock.UtcNow), Times.AtLeastOnce());
+            kestrelTrace.Verify(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow), Times.Once());
         }
 
         [Fact]
         public void ExceptionFromHeartbeatHandlerIsLoggedAsError()
         {
             var systemClock = new MockSystemClock();
-            var heartbeatInterval = TimeSpan.FromMilliseconds(10);
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var kestrelTrace = new TestKestrelTrace();
             var ex = new Exception();
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Throws(ex);
 
-            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace, heartbeatInterval))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace))
             {
                 heartbeat.OnHeartbeat();
             }

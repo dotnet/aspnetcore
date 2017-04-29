@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private static readonly Action<ILogger, Exception> _notAllConnectionsAborted =
             LoggerMessage.Define(LogLevel.Debug, 21, "Some connections failed to abort during server shutdown.");
 
-        private static readonly Action<ILogger, TimeSpan, DateTimeOffset, Exception> _timerSlow =
+        private static readonly Action<ILogger, TimeSpan, DateTimeOffset, Exception> _heartbeatSlow =
             LoggerMessage.Define<TimeSpan, DateTimeOffset>(LogLevel.Warning, 22, @"Heartbeat took longer than ""{interval}"" at ""{now}"".");
 
         private static readonly Action<ILogger, string, Exception> _applicationNeverCompleted =
@@ -121,9 +121,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _notAllConnectionsAborted(_logger, null);
         }
 
-        public virtual void TimerSlow(TimeSpan interval, DateTimeOffset now)
+        public virtual void HeartbeatSlow(TimeSpan interval, DateTimeOffset now)
         {
-            _timerSlow(_logger, interval, now, null);
+            _heartbeatSlow(_logger, interval, now, null);
         }
 
         public virtual void ApplicationNeverCompleted(string connectionId)
