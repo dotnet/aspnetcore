@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,9 +17,11 @@ using StackExchange.Redis;
 
 namespace ChatSample
 {
-    public class RedisUserTracker<THub> : IUserTracker<THub>
+    public class RedisUserTracker<THub> : IUserTracker<THub>, IDisposable
     {
-        private readonly RedisKey UserIndexRedisKey = "UserIndex";
+        private readonly string ServerId = $"server:{Guid.NewGuid().ToString("D")}";
+        private readonly RedisKey ServerIndexRedisKey = "ServerIndex";
+        private readonly RedisKey UserIndexRedisKey;
         private readonly int _redisDatabase;
         private readonly ConnectionMultiplexer _redisConnection;
         private readonly ISubscriber _redisSubscriber;
@@ -36,15 +37,29 @@ namespace ChatSample
 
         public RedisUserTracker(IOptions<RedisOptions> options, ILoggerFactory loggerFactory)
         {
+            UserIndexRedisKey = $"{ServerId}:users";
+
             _logger = loggerFactory.CreateLogger<RedisUserTracker<THub>>();
             _redisDatabase = options.Value.Options.DefaultDatabase.GetValueOrDefault();
-            _redisConnection = ConnectToRedis(options.Value, _logger);
-            _redisSubscriber = _redisConnection.GetSubscriber();
+            _redisConnection = StartRedisConnection(options.Value);
 
+            _redisSubscriber = _redisConnection.GetSubscriber();
             _userAddedChannel = new RedisChannel(UserAddedChannelName, RedisChannel.PatternMode.Literal);
             _userRemovedChannel = new RedisChannel(UserRemovedChannelName, RedisChannel.PatternMode.Literal);
             _redisSubscriber.Subscribe(_userAddedChannel, (channel, value) => UserJoined(DeserializerUser(value)));
             _redisSubscriber.Subscribe(_userRemovedChannel, (channel, value) => UserLeft(DeserializerUser(value)));
+        }
+
+        private ConnectionMultiplexer StartRedisConnection(RedisOptions options)
+        {
+            // TODO: handle connection failures
+            var redisConnection = ConnectToRedis(options, _logger);
+
+            // Register connection
+            var database = redisConnection.GetDatabase(_redisDatabase);
+            database.SetAdd(ServerIndexRedisKey, ServerId);
+
+            return redisConnection;
         }
 
         private static ConnectionMultiplexer ConnectToRedis(RedisOptions options, ILogger logger)
@@ -63,6 +78,7 @@ namespace ChatSample
             var configurationOptions = new ConfigurationOptions();
             configurationOptions.EndPoints.Add(IPAddress.Loopback, 0);
             configurationOptions.SetDefaultPorts();
+
             return ConnectionMultiplexer.Connect(configurationOptions, loggerTextWriter);
         }
 
@@ -90,24 +106,34 @@ namespace ChatSample
         public async Task<IEnumerable<UserDetails>> UsersOnline()
         {
             var database = _redisConnection.GetDatabase(_redisDatabase);
-            var userIds = await database.SetMembersAsync(UserIndexRedisKey);
-            var users = await database.StringGetAsync(userIds.Select(id => (RedisKey)(string)id).ToArray());
-            return users.Select(user => DeserializerUser(user));
+
+            var userIds = await database.ScriptEvaluateAsync(
+                @"local keys = { }
+                for i, key in pairs(redis.call('smembers', KEYS[1])) do
+                        table.insert(keys, key.. ':users')
+                end
+                return redis.call('sunion', unpack(keys))", new[] { ServerIndexRedisKey });
+
+            if (!userIds.IsNull)
+            {
+                var users = await database.StringGetAsync(((RedisValue[])userIds).Select(id => (RedisKey)(string)id).ToArray());
+                return users.Where(user => !user.IsNull).Select(user => DeserializerUser(user));
+            }
+
+            return Enumerable.Empty<UserDetails>();
         }
 
-        private static string GetUserRedisKey(Connection connection)
-        {
-            return $"user:{connection.ConnectionId}";
-        }
+        private static string GetUserRedisKey(Connection connection) => $"user:{connection.ConnectionId}";
 
-        private static string SerializeUser(Connection connection)
-        {
-            return $"{{ \"ConnectionID\": \"{connection.ConnectionId}\", \"Name\": \"{connection.User.Identity.Name}\" }}";
-        }
+        private static string SerializeUser(Connection connection) =>
+            $"{{ \"ConnectionID\": \"{connection.ConnectionId}\", \"Name\": \"{connection.User.Identity.Name}\" }}";
 
-        private static UserDetails DeserializerUser(string userJson)
+        private static UserDetails DeserializerUser(string userJson) =>
+            JsonConvert.DeserializeObject<UserDetails>(userJson);
+
+        public void Dispose()
         {
-            return JsonConvert.DeserializeObject<UserDetails>(userJson);
+            _redisSubscriber.UnsubscribeAll();
         }
 
         private class LoggerTextWriter : TextWriter
