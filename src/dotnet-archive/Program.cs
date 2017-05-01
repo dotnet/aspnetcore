@@ -29,9 +29,10 @@ namespace Microsoft.DotNet.Tools.Archive
             var extract = app.Option("-x|--extract <outputDirectory>", "Directory to extract to", CommandOptionType.SingleValue);
             var archiveFile = app.Option("-a|--archive <file>", "Archive to operate on", CommandOptionType.SingleValue);
             var externals = app.Option("--external <external>...", "External files and directories to consider for extraction", CommandOptionType.MultipleValue);
-            var sources = app.Argument("<sources>...", "Files & directory to include in the archive", multipleValues:true);
+            var sources = app.Argument("<sources>...", "Files & directory to include in the archive", multipleValues: true);
 
-            app.OnExecute(() => {
+            app.OnExecute(() =>
+            {
 
                 if (extract.HasValue() && sources.Values.Any())
                 {
@@ -67,7 +68,7 @@ namespace Microsoft.DotNet.Tools.Archive
 
                 if (sources.Values.Any())
                 {
-                    foreach(var source in sources.Values)
+                    foreach (var source in sources.Values)
                     {
                         if (Directory.Exists(source))
                         {
@@ -91,6 +92,6 @@ namespace Microsoft.DotNet.Tools.Archive
             });
 
             return app.Execute(args);
-        }        
+        }
     }
 }
