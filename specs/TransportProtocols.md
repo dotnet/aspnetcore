@@ -141,7 +141,7 @@ T([Length]:[Type]:[Body];)([Length]:[Type]:[Body];)... continues until end of th
 The following values are valid for `[Type]`:
 
 * `T` - Indicates a text frame, the `[Body]` contains UTF-8 encoded text data.
-* `B` - Indicates a text frame, the `[Body]` contains Base64 encoded binary data.
+* `B` - Indicates a binary frame, the `[Body]` contains Base64 encoded binary data.
 * `E` - Indicates an error frame, the `[Body]` contains an optional UTF-8 encoded error description. The connection is immediately closed after processing this frame.
 * `C` - Indicates a close frame, the `[Body]` contains an optional UTF-8 encoded description of the reason for closing. The connection is immediately closed after processing this frame.
 
