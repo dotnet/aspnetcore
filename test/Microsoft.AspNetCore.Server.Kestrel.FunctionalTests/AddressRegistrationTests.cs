@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -559,7 +558,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // Non-loopback addresses
                 var ipv4Addresses = GetIPAddresses()
-                    .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+                    .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                    .Where(ip => CanBindAndConnectToEndpoint(new IPEndPoint(ip, 0)));
+
                 foreach (var ip in ipv4Addresses)
                 {
                     dataset.Add($"http://{ip}:0/", $"http://{ip}");
@@ -602,7 +603,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // Non-loopback addresses
                 var ipv4Addresses = GetIPAddresses()
-                    .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+                    .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                    .Where(ip => CanBindAndConnectToEndpoint(new IPEndPoint(ip, 0)));
+
                 foreach (var ip in ipv4Addresses)
                 {
                     dataset.Add(new IPEndPoint(ip, 0), $"http://{ip}");
@@ -611,7 +614,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 var ipv6Addresses = GetIPAddresses()
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
-                    .Where(ip => ip.ScopeId == 0);
+                    .Where(ip => ip.ScopeId == 0)
+                    .Where(ip => CanBindAndConnectToEndpoint(new IPEndPoint(ip, 0)));
+
                 foreach (var ip in ipv6Addresses)
                 {
                     dataset.Add(new IPEndPoint(ip, 0), $"http://[{ip}]");
@@ -656,7 +661,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // Non-loopback addresses
                 var ipv6Addresses = GetIPAddresses()
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
-                    .Where(ip => ip.ScopeId == 0);
+                    .Where(ip => ip.ScopeId == 0)
+                    .Where(ip => CanBindAndConnectToEndpoint(new IPEndPoint(ip, 0)));
+
                 foreach (var ip in ipv6Addresses)
                 {
                     dataset.Add($"http://[{ip}]:0/", new[] { $"http://[{ip}]" });
@@ -692,6 +699,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
                     .Where(ip => ip.ScopeId != 0)
                     .Where(ip => CanBindAndConnectToEndpoint(new IPEndPoint(ip, 0)));
+
                 foreach (var ip in ipv6Addresses)
                 {
                     dataset.Add($"http://[{ip}]:0/", $"http://[{ip}]");
