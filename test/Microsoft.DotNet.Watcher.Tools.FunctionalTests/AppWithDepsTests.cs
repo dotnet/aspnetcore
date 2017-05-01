@@ -17,7 +17,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public AppWithDepsTests(ITestOutputHelper logger)
         {
             _app = new AppWithDeps(logger);
-            _app.Prepare();
         }
 
         [Fact]

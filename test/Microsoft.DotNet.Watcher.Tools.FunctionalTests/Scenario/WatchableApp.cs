@@ -53,10 +53,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             return int.Parse(pid);
         }
 
-        public void Prepare()
+        public async Task PrepareAsync()
         {
-            Scenario.Restore(_appName);
-            Scenario.Build(_appName);
+            await Scenario.RestoreAsync(_appName);
+            await Scenario.BuildAsync(_appName);
             _prepared = true;
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             if (!_prepared)
             {
-                throw new InvalidOperationException("Call .Prepare() first");
+                throw new InvalidOperationException($"Call {nameof(PrepareAsync)} first");
             }
 
             var args = Scenario
@@ -91,6 +91,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public async Task StartWatcherAsync(string[] arguments, [CallerMemberName] string name = null)
         {
+            if (!_prepared)
+            {
+                await PrepareAsync();
+            }
+
             var args = new[] { "run", "--" }.Concat(arguments);
             Start(args, name);
 
@@ -103,7 +108,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             _logger?.WriteLine("Disposing WatchableApp");
             Process?.Dispose();
-            Scenario.Dispose();
+            Scenario?.Dispose();
         }
     }
 }

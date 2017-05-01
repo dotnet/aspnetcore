@@ -4,9 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Internal;
@@ -21,12 +18,12 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private readonly ProcessSpec _spec;
         private BufferBlock<string> _source;
         private ITestOutputHelper _logger;
-        private int _reading;
 
         public AwaitableProcess(ProcessSpec spec, ITestOutputHelper logger)
         {
             _spec = spec;
             _logger = logger;
+            _source = new BufferBlock<string>();
         }
 
         public void Start()
@@ -36,19 +33,32 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 throw new InvalidOperationException("Already started");
             }
 
-            var psi = new ProcessStartInfo
+            _process = new Process
             {
-                UseShellExecute = false,
-                FileName = _spec.Executable,
-                WorkingDirectory = _spec.WorkingDirectory,
-                Arguments = ArgumentEscaper.EscapeAndConcatenate(_spec.Arguments),
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
+                EnableRaisingEvents = true,
+                StartInfo = new ProcessStartInfo
+                {
+                    UseShellExecute = false,
+                    FileName = _spec.Executable,
+                    WorkingDirectory = _spec.WorkingDirectory,
+                    Arguments = ArgumentEscaper.EscapeAndConcatenate(_spec.Arguments),
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    Environment =
+                    {
+                        ["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "true"
+                    }
+                }
             };
-            _process = Process.Start(psi);
-            _logger.WriteLine($"{DateTime.Now}: process start: '{psi.FileName} {psi.Arguments}'");
-            StartProcessingOutput(_process.StandardOutput);
-            StartProcessingOutput(_process.StandardError);;
+
+            _process.OutputDataReceived += OnData;
+            _process.ErrorDataReceived += OnData;
+            _process.Exited += OnExit;
+
+            _process.Start();
+            _process.BeginErrorReadLine();
+            _process.BeginOutputReadLine();
+            _logger.WriteLine($"{DateTime.Now}: process start: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
         }
 
         public Task<string> GetOutputLineAsync(string message)
@@ -87,31 +97,32 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             return lines;
         }
 
-        private void StartProcessingOutput(StreamReader streamReader)
+        private void OnData(object sender, DataReceivedEventArgs args)
         {
-            _source = _source ?? new BufferBlock<string>();
-            Interlocked.Increment(ref _reading);
-            Task.Run(() =>
-            {
-                string line;
-                while ((line = streamReader.ReadLine()) != null)
-                {
-                    _logger.WriteLine($"{DateTime.Now}: post: '{line}'");
-                    _source.Post(line);
-                }
+            var line = args.Data ?? string.Empty;
+            _logger.WriteLine($"{DateTime.Now}: post: '{line}'");
+            _source.Post(line);
+        }
 
-                if (Interlocked.Decrement(ref _reading) <= 0)
-                {
-                    _source.Complete();
-                }
-            }).ConfigureAwait(false);
+        private void OnExit(object sender, EventArgs args)
+        {
+            _source.Complete();
         }
 
         public void Dispose()
         {
-            if (_process != null && !_process.HasExited)
+            _source.Complete();
+
+            if (_process != null)
             {
-                _process.KillTree();
+                if (!_process.HasExited)
+                {
+                    _process.KillTree();
+                }
+
+                _process.ErrorDataReceived -= OnData;
+                _process.OutputDataReceived -= OnData;
+                _process.Exited -= OnExit;
             }
         }
     }

@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public GlobbingAppTests(ITestOutputHelper logger)
         {
             _app = new GlobbingApp(logger);
-            _app.Prepare();
         }
 
         [Theory]
@@ -118,6 +117,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Fact]
         public async Task ListsFiles()
         {
+            await _app.PrepareAsync();
             _app.Start(new [] { "--list" });
             var lines = await _app.Process.GetAllOutputLines();
 

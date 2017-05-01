@@ -15,7 +15,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public DotNetWatcherTests(ITestOutputHelper logger)
         {
             _app = new KitchenSinkApp(logger);
-            _app.Prepare();
         }
 
         [Fact]
