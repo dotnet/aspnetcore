@@ -8,5 +8,6 @@
   </metadata>
   <files>
     <file src="*.zip" target="" />
+    <file src="*.tar.gz" target="" />
   </files>
 </package>
