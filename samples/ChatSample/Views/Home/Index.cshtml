@@ -19,7 +19,6 @@
 let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 let connection = new signalR.HubConnection(`http://${document.location.host}/chat`, 'formatType=json&format=text');
 
-// connection.on('Send', message => appendLine(message));
 connection.onClosed = e => {
     if (e) {
         appendLine('Connection closed with error: ' + e, 'red');
