@@ -95,7 +95,8 @@
 
       <_UnsignedPackageCacheBinaries
           Include="$(UnsignedPackageCachePath)**\netcoreapp2.0\microsoft.*\**\*.dll;
-                    $(UnsignedPackageCachePath)**\netcoreapp2.0\system.*\**\*.dll" />
+                    $(UnsignedPackageCachePath)**\netcoreapp2.0\system.*\**\*.dll;
+                    $(UnsignedPackageCachePath)**\netcoreapp2.0\windowsazure.*\**\*.dll" />
       <_UnsignedPackageCacheThirdPartyBinaries
           Include="$(UnsignedPackageCachePath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
                     $(UnsignedPackageCachePath)**\netcoreapp2.0\remotion*\**\*.dll;
