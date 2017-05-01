@@ -13,6 +13,7 @@
 
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
+    <NuGetPackagesVersion>4.0.0</NuGetPackagesVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
     <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>
