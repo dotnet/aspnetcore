@@ -96,12 +96,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 throw new ArgumentNullException(nameof(plaintext));
             }
 
-            // argument & state checking
-            if (plaintext == null)
-            {
-                throw new ArgumentNullException(nameof(plaintext));
-            }
-
             try
             {
                 // Perform the encryption operation using the current default encryptor.
