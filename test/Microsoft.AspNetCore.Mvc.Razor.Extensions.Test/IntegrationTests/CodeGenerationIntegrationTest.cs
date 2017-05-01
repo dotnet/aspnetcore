@@ -24,6 +24,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 
         #region Runtime
         [Fact]
+        public void IncompleteDirectives_Runtime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
         public void InheritsViewModel_Runtime()
         {
             // Arrange
@@ -235,6 +250,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         #endregion
 
         #region DesignTime
+        [Fact]
+        public void IncompleteDirectives_DesignTime()
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine();
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
 
         [Fact]
         public void InheritsViewModel_DesignTime()

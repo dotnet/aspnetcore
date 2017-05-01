@@ -1,0 +1,61 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_DesignTime -  - 
+            DesignTimeDirective - 
+                DirectiveToken - (100:2,13 [0] IncompleteDirectives.cshtml) - 
+                DirectiveToken - (116:3,14 [0] IncompleteDirectives.cshtml) - 
+                DirectiveToken - (132:4,14 [1] IncompleteDirectives.cshtml) - "
+                DirectiveToken - (153:6,16 [0] IncompleteDirectives.cshtml) - 
+                DirectiveToken - (172:7,17 [0] IncompleteDirectives.cshtml) - 
+                DirectiveToken - (191:8,17 [1] IncompleteDirectives.cshtml) - "
+                DirectiveToken - (212:10,16 [0] IncompleteDirectives.cshtml) - 
+                DirectiveToken - (231:11,17 [0] IncompleteDirectives.cshtml) - 
+                DirectiveToken - (250:12,17 [1] IncompleteDirectives.cshtml) - "
+            CSharpStatement - 
+                RazorIRToken -  - CSharp - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
+                    RazorIRToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                HtmlContent - (100:2,13 [2] IncompleteDirectives.cshtml)
+                    RazorIRToken - (100:2,13 [2] IncompleteDirectives.cshtml) - Html - \n
+                HtmlContent - (116:3,14 [2] IncompleteDirectives.cshtml)
+                    RazorIRToken - (116:3,14 [2] IncompleteDirectives.cshtml) - Html - \n
+                HtmlContent - (133:4,15 [4] IncompleteDirectives.cshtml)
+                    RazorIRToken - (133:4,15 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                HtmlContent - (153:6,16 [2] IncompleteDirectives.cshtml)
+                    RazorIRToken - (153:6,16 [2] IncompleteDirectives.cshtml) - Html - \n
+                HtmlContent - (172:7,17 [2] IncompleteDirectives.cshtml)
+                    RazorIRToken - (172:7,17 [2] IncompleteDirectives.cshtml) - Html - \n
+                HtmlContent - (192:8,18 [4] IncompleteDirectives.cshtml)
+                    RazorIRToken - (192:8,18 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                HtmlContent - (212:10,16 [2] IncompleteDirectives.cshtml)
+                    RazorIRToken - (212:10,16 [2] IncompleteDirectives.cshtml) - Html - \n
+                HtmlContent - (231:11,17 [2] IncompleteDirectives.cshtml)
+                    RazorIRToken - (231:11,17 [2] IncompleteDirectives.cshtml) - Html - \n
+                HtmlContent - (251:12,18 [4] IncompleteDirectives.cshtml)
+                    RazorIRToken - (251:12,18 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                HtmlContent - (264:14,9 [2] IncompleteDirectives.cshtml)
+                    RazorIRToken - (264:14,9 [2] IncompleteDirectives.cshtml) - Html - \n
+                HtmlContent - (276:15,10 [4] IncompleteDirectives.cshtml)
+                    RazorIRToken - (276:15,10 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - DefineSection("", async (__razor_section_writer) => {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - });
+                HtmlContent - (315:20,8 [2] IncompleteDirectives.cshtml)
+                    RazorIRToken - (315:20,8 [2] IncompleteDirectives.cshtml) - Html - \n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - DefineSection("", async (__razor_section_writer) => {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - });
+                HtmlContent - (326:21,9 [4] IncompleteDirectives.cshtml)
+                    RazorIRToken - (326:21,9 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - DefineSection("", async (__razor_section_writer) => {
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - });
+                HtmlContent - (339:23,9 [3] IncompleteDirectives.cshtml)
+                    RazorIRToken - (339:23,9 [3] IncompleteDirectives.cshtml) - Html - {\n
