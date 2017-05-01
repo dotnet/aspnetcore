@@ -5,6 +5,7 @@
     <AspNetCoreIdentityServiceVersion>1.0.0-*</AspNetCoreIdentityServiceVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <NewtonsoftJsonVersion>10.0.1</NewtonsoftJsonVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
     <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>

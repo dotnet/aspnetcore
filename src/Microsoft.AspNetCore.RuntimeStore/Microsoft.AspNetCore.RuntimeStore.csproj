@@ -9,14 +9,4 @@
   <ItemGroup>
    <PackageReference Include="@(RuntimeStorePackageReference)" />
   </ItemGroup>
-
-  <Target Name="CollectDeps" DependsOnTargets="Restore;RunResolvePackageDependencies">
-      <ItemGroup>
-        <DepsFiles Include="%(FileDefinitions.ResolvedPath)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(Identity)', '.*?\.HostingStartup\.deps\.json')) " >
-          <PackageName>$([System.String]::Copy('%(Filename)').Replace('.deps',''))</PackageName>
-        </DepsFiles>
-      </ItemGroup>
-
-      <Copy SourceFiles="%(DepsFiles.FullPath)" DestinationFiles="$(DepsOutputPath)\%(DepsFiles.PackageName)\Microsoft.NETCore.App\2.0.0\deps.json" />
-  </Target>
 </Project>

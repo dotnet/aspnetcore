@@ -6,15 +6,18 @@
     <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\</MetaPackagePath>
     <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.RuntimeStore.csproj</MetaPackageFile>
 
+    <HostingStartupTemplatePath>$(RepositoryRoot)tools\Microsoft.AspNetCore.HostingStartup.Template\</HostingStartupTemplatePath>
+    <HostingStartupTemplateFile>$(HostingStartupTemplatePath)Microsoft.AspNetCore.HostingStartup.Template.csproj</HostingStartupTemplateFile>
+
     <!-- Project for building the NuGet Fallback Archive (LZMA for CLI) -->
     <FallbackArchiveDir>$(RepositoryRoot)src\Archive.AspNetCore.All\</FallbackArchiveDir>
     <FallbackArchiveProj>$(FallbackArchiveDir)Archive.AspNetCore.All.csproj</FallbackArchiveProj>
 
     <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
     <PackageCacheOutputPath>$(MetaPackagePath)bin\packageCache\</PackageCacheOutputPath>
-    <DepsOutputPath>$(MetaPackagePath)bin\deps\</DepsOutputPath>
     <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
     <ArtifactsZipDir>$(ArtifactsDir)zip\</ArtifactsZipDir>
+    <DepsOutputPath>$(ArtifactsDir)deps\</DepsOutputPath>
     <ArtifactsZipTimestampDir>$(ArtifactsZipDir)ts\</ArtifactsZipTimestampDir>
     <ArtifactsZipNoTimestampDir>$(ArtifactsZipDir)nt\</ArtifactsZipNoTimestampDir>
     <TempDir>$(ArtifactsDir)temp\</TempDir>
@@ -34,7 +37,7 @@
       Condition="Exists('$(DependencyBuildDirectory)')" />
   </Target>
 
-  <Target Name="BuildPackageCache" DependsOnTargets="UpdateNuGetConfig">
+  <Target Name="BuildPackageCache" DependsOnTargets="UpdateNuGetConfig;Restore">
     <GetOSPlatform>
       <!-- Returns {Linux, macOS, Windows} -->
       <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
@@ -55,7 +58,9 @@
     <RemoveDir Directories="$(PackageCacheOutputPath)" />
     <RemoveDir Directories="$(WorkingDirectory)" />
     <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime $(RID) --output $(PackageCacheOutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)" />
-    <MsBuild Projects="$(MetaPackageFile)" Targets="CollectDeps" Properties="DepsOutputPath=$(DepsOutputPath)"/>
+
+    <!--- MSBuild caches things if you run inproc so have to use Exec -->
+    <Exec Command="dotnet msbuild /t:Restore;Rebuild;CollectDeps $(HostingStartupTemplateFile) /p:DepsOutputPath=$(DepsOutputPath);HostingStartupPackageName=%(HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(Version)"/>
 
     <ItemGroup>
       <PackageStoreManifestFiles Include="$(PackageCacheOutputPath)**\artifact.xml">
