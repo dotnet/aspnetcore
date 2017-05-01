@@ -25,9 +25,6 @@ namespace Microsoft.AspNetCore.Hosting.TestSites
                 Console.WriteLine("Stopped end");
             });
 
-
-            loggerFactory.AddConsole(minLevel: LogLevel.Warning);
-
             app.Run(context =>
             {
                 return context.Response.WriteAsync("Hello World");
