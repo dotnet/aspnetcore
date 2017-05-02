@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +29,7 @@ namespace IISSample
             var logger = loggerFactory.CreateLogger("Requests");
 
             app.UseMvcWithDefaultRoute();
-            app.Map("/log", logApp => logApp.Run(async (context) =>
+            app.Map("/log", logApp => logApp.Run((context) =>
             {
                 TelemetryConfiguration.Active.TelemetryChannel = new CurrentResponseTelemetryChannel(context.Response);
 
@@ -53,6 +54,8 @@ namespace IISSample
                 specificLogger.LogWarning("Specific warning log");
 
                 TelemetryConfiguration.Active.TelemetryChannel = null;
+
+                return Task.FromResult(true);
             }));
             app.Run(async (context) =>
             {
