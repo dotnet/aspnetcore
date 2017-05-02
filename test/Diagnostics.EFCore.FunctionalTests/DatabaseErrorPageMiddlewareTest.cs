@@ -317,7 +317,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 {
                     app.UseDatabaseErrorPage();
                     app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
+#pragma warning disable CS0618 // Type or member is obsolete
                     app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+#pragma warning restore CS0618 // Type or member is obsolete
                 });
             var server = new TestServer(builder);
 
@@ -457,7 +459,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
                     if (logProvider != null)
                     {
+#pragma warning disable CS0618 // Type or member is obsolete
                         app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+#pragma warning restore CS0618 // Type or member is obsolete
                     }
                 })
                 .ConfigureServices(services =>
