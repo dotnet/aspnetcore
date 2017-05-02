@@ -161,22 +161,6 @@ namespace Microsoft.AspNetCore.Hosting
         /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
         /// </summary>
         /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder ConfigureLogging(Action<ILoggerFactory> configureLogging)
-        {
-            if (configureLogging == null)
-            {
-                throw new ArgumentNullException(nameof(configureLogging));
-            }
-
-            _configureLoggingDelegates.Add((_, factory) => configureLogging(factory));
-            return this;
-        }
-
-        /// <summary>
-        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
-        /// </summary>
-        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
         /// <typeparam name="T">
         /// The type of <see cref="ILoggerFactory"/> to configure.
         /// The delegate will not execute if the type provided does not match the <see cref="ILoggerFactory"/> used by the <see cref="IWebHostBuilder"/>
