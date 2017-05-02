@@ -108,10 +108,10 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
+        /// Adds a delegate for configuring the provided <see cref="LoggerFactory"/>. This may be called multiple times.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder" /> to configure.</param>
-        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
+        /// <param name="configureLogging">The delegate that configures the <see cref="LoggerFactory"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<LoggerFactory> configureLogging)
         {
@@ -119,10 +119,10 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
+        /// Adds a delegate for configuring the provided <see cref="LoggerFactory"/>. This may be called multiple times.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder" /> to configure.</param>
-        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
+        /// <param name="configureLogging">The delegate that configures the <see cref="LoggerFactory"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, LoggerFactory> configureLogging)
         {
@@ -134,6 +134,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder" /> to configure.</param>
         /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
+        /// <typeparam name="T">
+        /// The type of <see cref="ILoggerFactory"/> to configure.
+        /// The delegate will not execute if the type provided does not match the <see cref="ILoggerFactory"/> used by the <see cref="IWebHostBuilder"/>
+        /// </typeparam>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder ConfigureLogging<T>(this IWebHostBuilder hostBuilder, Action<T> configureLogging) where T : ILoggerFactory
         {
