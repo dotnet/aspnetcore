@@ -2,39 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore
 {
-    /// <summary>
-    /// Binds Kestrel configuration.
-    /// </summary>
-    public class KestrelServerOptionsSetup : IConfigureOptions<KestrelServerOptions>
+    internal class KestrelServerOptionsSetup : IConfigureOptions<KestrelServerOptions>
     {
         private readonly IConfiguration _configurationRoot;
 
-        /// <summary>
-        /// Creates a new instance of <see cref="KestrelServerOptionsSetup"/>.
-        /// </summary>
-        /// <param name="configurationRoot">The root <seealso cref="IConfiguration"/>.</param>
         public KestrelServerOptionsSetup(IConfiguration configurationRoot)
         {
             _configurationRoot = configurationRoot;
         }
 
-        /// <summary>
-        /// Configures a <seealso cref="KestrelServerOptions"/> instance.
-        /// </summary>
-        /// <param name="options">The <seealso cref="KestrelServerOptions"/> to configure.</param>
         public void Configure(KestrelServerOptions options)
         {
             BindConfiguration(options);
@@ -42,60 +27,46 @@ namespace Microsoft.AspNetCore
 
         private void BindConfiguration(KestrelServerOptions options)
         {
-            var certificates = CertificateLoader.LoadAll(_configurationRoot);
-            var endPoints = _configurationRoot.GetSection("Kestrel:EndPoints");
+            var certificateLoader = new CertificateLoader(_configurationRoot.GetSection("Certificates"));
 
-            foreach (var endPoint in endPoints.GetChildren())
+            foreach (var endPoint in _configurationRoot.GetSection("Kestrel:EndPoints").GetChildren())
             {
-                BindEndPoint(options, endPoint, certificates);
+                BindEndPoint(options, endPoint, certificateLoader);
             }
         }
 
         private void BindEndPoint(
             KestrelServerOptions options,
             IConfigurationSection endPoint,
-            Dictionary<string, X509Certificate2> certificates)
+            CertificateLoader certificateLoader)
         {
-            var addressValue = endPoint.GetValue<string>("Address");
-            var portValue = endPoint.GetValue<string>("Port");
+            var configAddress = endPoint.GetValue<string>("Address");
+            var configPort = endPoint.GetValue<string>("Port");
 
-            IPAddress address;
-            if (!IPAddress.TryParse(addressValue, out address))
+            if (!IPAddress.TryParse(configAddress, out var address))
             {
-                throw new InvalidOperationException($"Invalid IP address: {addressValue}");
+                throw new InvalidOperationException($"Invalid IP address in configuration: {configAddress}");
             }
 
-            int port;
-            if (!int.TryParse(portValue, out port))
+            if (!int.TryParse(configPort, out var port))
             {
-                throw new InvalidOperationException($"Invalid port: {portValue}");
+                throw new InvalidOperationException($"Invalid port in configuration: {configPort}");
             }
 
             options.Listen(address, port, listenOptions =>
             {
-                var certificateName = endPoint.GetValue<string>("Certificate");
+                var certificateConfig = endPoint.GetSection("Certificate");
 
-                X509Certificate2 endPointCertificate = null;
-                if (certificateName != null)
+                if (certificateConfig.Exists())
                 {
-                    if (!certificates.TryGetValue(certificateName, out endPointCertificate))
+                    var certificate = certificateLoader.Load(certificateConfig).FirstOrDefault();
+
+                    if (certificate == null)
                     {
-                        throw new InvalidOperationException($"No certificate named {certificateName} found in configuration");
+                        throw new InvalidOperationException($"Unable to load certificate for endpoint '{endPoint.Key}'");
                     }
-                }
-                else
-                {
-                    var certificate = endPoint.GetSection("Certificate");
 
-                    if (certificate.GetChildren().Any())
-                    {
-                        endPointCertificate = CertificateLoader.Load(certificate, certificate["Password"]);
-                    }
-                }
-
-                if (endPointCertificate != null)
-                {
-                    listenOptions.UseHttps(endPointCertificate);
+                    listenOptions.UseHttps(certificate);
                 }
             });
         }

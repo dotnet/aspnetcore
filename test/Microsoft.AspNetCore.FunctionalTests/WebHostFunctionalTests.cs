@@ -134,8 +134,7 @@ namespace Microsoft.AspNetCore.Tests
     ""Certificates"": {
         ""TestCert"": {
             ""Source"": ""File"",
-            ""Path"": ""testCert.pfx"",
-            ""Password"": ""testPassword""
+            ""Path"": ""TestArtifacts/Certificate.pfx""
         }
     }
 }
@@ -173,8 +172,7 @@ namespace Microsoft.AspNetCore.Tests
                 ""Port"": 0,
                 ""Certificate"": {
                     ""Source"": ""File"",
-                    ""Path"": ""testCert.pfx"",
-                    ""Password"": ""testPassword""
+                    ""Path"": ""TestArtifacts/Certificate.pfx"",
                 }
             }
         }
