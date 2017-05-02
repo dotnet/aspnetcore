@@ -12,49 +12,125 @@ namespace Microsoft.AspNetCore
     /// <summary>
     /// A helper class to load certificates from files and certificate stores based on <seealso cref="IConfiguration"/> data.
     /// </summary>
-    public static class CertificateLoader
+    public class CertificateLoader
     {
+        private readonly IConfiguration _certificatesConfiguration;
+        private readonly ICertificateFileLoader _certificateFileLoader;
+        private readonly ICertificateStoreLoader _certificateStoreLoader;
+
         /// <summary>
-        /// Loads one or more certificates from a single source.
+        /// Creates a new instance of <see cref="CertificateLoader"/>.
         /// </summary>
-        /// <param name="certificateConfiguration">An <seealso cref="IConfiguration"/> with information about a certificate source.</param>
-        /// <param name="password">The certificate password, in case it's being loaded from a file.</param>
-        /// <returns>The loaded certificates.</returns>
-        public static X509Certificate2 Load(IConfiguration certificateConfiguration, string password)
+        public CertificateLoader()
+            : this(null)
         {
-            var sourceKind = certificateConfiguration.GetValue<string>("Source");
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="CertificateLoader"/> that can load certificate references from configuration.
+        /// </summary>
+        /// <param name="certificatesConfiguration">An <see cref="IConfiguration"/> with information about certificates.</param>
+        public CertificateLoader(IConfiguration certificatesConfiguration)
+            : this(certificatesConfiguration, new CertificateFileLoader(), new CertificateStoreLoader())
+        {
+            _certificatesConfiguration = certificatesConfiguration;
+        }
+
+        internal CertificateLoader(IConfiguration certificatesConfiguration, ICertificateFileLoader certificateFileLoader, ICertificateStoreLoader certificateStoreLoader)
+        {
+            _certificatesConfiguration = certificatesConfiguration;
+            _certificateFileLoader = certificateFileLoader;
+            _certificateStoreLoader = certificateStoreLoader;
+        }
+
+        /// <summary>
+        /// Loads one or more certificates based on the information found in a configuration section.
+        /// </summary>
+        /// <param name="certificateConfiguration">A configuration section containing either a string value referencing certificates
+        /// by name, or one or more inline certificate specifications.
+        /// </param>
+        /// <returns>One or more loaded certificates.</returns>
+        public IEnumerable<X509Certificate2> Load(IConfigurationSection certificateConfiguration)
+        {
+            var certificateNames = certificateConfiguration.Value;
+            var certificates = new List<X509Certificate2>();
+
+            if (certificateNames != null)
+            {
+                foreach (var certificateName in certificateNames.Split(';'))
+                {
+                    var certificate = LoadSingle(certificateName);
+                    if (certificate != null)
+                    {
+                        certificates.Add(certificate);
+                    }
+                }
+            }
+            else
+            {
+                if (certificateConfiguration["Source"] != null)
+                {
+                    var certificate = LoadSingle(certificateConfiguration);
+                    if (certificate != null)
+                    {
+                        certificates.Add(certificate);
+                    }
+                }
+                else
+                {
+                    certificates.AddRange(LoadMultiple(certificateConfiguration));
+                }
+            }
+
+            return certificates;
+        }
+
+        /// <summary>
+        /// Loads a certificate by name.
+        /// </summary>
+        /// <param name="certificateName">The certificate name.</param>
+        /// <returns>The loaded certificate</returns>
+        /// <remarks>This method only works if the <see cref="CertificateLoader"/> instance was constructed with
+        /// a reference to an <see cref="IConfiguration"/> instance containing named certificates.
+        /// </remarks>
+        private X509Certificate2 LoadSingle(string certificateName)
+        {
+            var certificateConfiguration = _certificatesConfiguration?.GetSection(certificateName);
+
+            if (!certificateConfiguration.Exists())
+            {
+                throw new InvalidOperationException($"No certificate named {certificateName} found in configuration");
+            }
+
+            return LoadSingle(certificateConfiguration);
+        }
+
+        private X509Certificate2 LoadSingle(IConfigurationSection certificateConfiguration)
+        {
+            var sourceKind = certificateConfiguration["Source"];
 
             CertificateSource certificateSource;
             switch (sourceKind.ToLowerInvariant())
             {
                 case "file":
-                    certificateSource = new CertificateFileSource(password);
+                    certificateSource = new CertificateFileSource(_certificateFileLoader);
                     break;
                 case "store":
-                    certificateSource = new CertificateStoreSource();
+                    certificateSource = new CertificateStoreSource(_certificateStoreLoader);
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid certificate source kind: {sourceKind}");
             }
 
             certificateConfiguration.Bind(certificateSource);
+
             return certificateSource.Load();
         }
 
-        /// <summary>
-        /// Loads all certificates specified in an <seealso cref="IConfiguration"/>.
-        /// </summary>
-        /// <param name="configurationRoot">The root <seealso cref="IConfiguration"/>.</param>
-        /// <returns>
-        /// A dictionary mapping certificate names to loaded certificates.
-        /// </returns>
-        public static Dictionary<string, X509Certificate2> LoadAll(IConfiguration configurationRoot)
-        {
-            return configurationRoot.GetSection("Certificates").GetChildren()
-                .ToDictionary(
-                    certificateSource => certificateSource.Key,
-                    certificateSource => Load(certificateSource, certificateSource["Password"]));
-        }
+        private IEnumerable<X509Certificate2> LoadMultiple(IConfigurationSection certificatesConfiguration)
+            => certificatesConfiguration.GetChildren()
+                .Select(LoadSingle)
+                .Where(c => c != null);
 
         private abstract class CertificateSource
         {
@@ -65,22 +141,24 @@ namespace Microsoft.AspNetCore
 
         private class CertificateFileSource : CertificateSource
         {
-            private readonly string _password;
+            private ICertificateFileLoader _certificateFileLoader;
 
-            public CertificateFileSource(string password)
+            public CertificateFileSource(ICertificateFileLoader certificateFileLoader)
             {
-                _password = password;
+                _certificateFileLoader = certificateFileLoader;
             }
 
             public string Path { get; set; }
+
+            public string Password { get; set; }
 
             public override X509Certificate2 Load()
             {
                 var certificate = TryLoad(X509KeyStorageFlags.DefaultKeySet, out var error)
                     ?? TryLoad(X509KeyStorageFlags.UserKeySet, out error)
-    #if NETCOREAPP2_0
+#if NETCOREAPP2_0
                     ?? TryLoad(X509KeyStorageFlags.EphemeralKeySet, out error)
-    #endif
+#endif
                     ;
 
                 if (error != null)
@@ -95,7 +173,7 @@ namespace Microsoft.AspNetCore
             {
                 try
                 {
-                    var loadedCertificate = new X509Certificate2(Path, _password, flags);
+                    var loadedCertificate = _certificateFileLoader.Load(Path, Password, flags);
                     exception = null;
                     return loadedCertificate;
                 }
@@ -109,6 +187,13 @@ namespace Microsoft.AspNetCore
 
         private class CertificateStoreSource : CertificateSource
         {
+            private readonly ICertificateStoreLoader _certificateStoreLoader;
+
+            public CertificateStoreSource(ICertificateStoreLoader certificateStoreLoader)
+            {
+                _certificateStoreLoader = certificateStoreLoader;
+            }
+
             public string Subject { get; set; }
             public string StoreName { get; set; }
             public string StoreLocation { get; set; }
@@ -121,52 +206,7 @@ namespace Microsoft.AspNetCore
                     throw new InvalidOperationException($"Invalid store location: {StoreLocation}");
                 }
 
-                using (var store = new X509Store(StoreName, storeLocation))
-                {
-                    X509Certificate2Collection storeCertificates = null;
-                    X509Certificate2Collection foundCertificates = null;
-                    X509Certificate2 foundCertificate = null;
-
-                    try
-                    {
-                        store.Open(OpenFlags.ReadOnly);
-                        storeCertificates = store.Certificates;
-                        foundCertificates = storeCertificates.Find(X509FindType.FindBySubjectDistinguishedName, Subject, validOnly: !AllowInvalid);
-                        foundCertificate = foundCertificates
-                            .OfType<X509Certificate2>()
-                            .OrderByDescending(certificate => certificate.NotAfter)
-                            .FirstOrDefault();
-
-                        if (foundCertificate == null)
-                        {
-                            throw new InvalidOperationException($"No certificate found for {Subject} in store {StoreName} in {StoreLocation}");
-                        }
-
-                        return foundCertificate;
-                    }
-                    finally
-                    {
-                        if (foundCertificate != null)
-                        {
-                            storeCertificates.Remove(foundCertificate);
-                            foundCertificates.Remove(foundCertificate);
-                        }
-
-                        DisposeCertificates(storeCertificates);
-                        DisposeCertificates(foundCertificates);
-                    }
-                }
-            }
-
-            private void DisposeCertificates(X509Certificate2Collection certificates)
-            {
-                if (certificates != null)
-                {
-                    foreach (var certificate in certificates)
-                    {
-                        certificate.Dispose();
-                    }
-                }
+                return _certificateStoreLoader.Load(Subject, StoreName, storeLocation, !AllowInvalid);
             }
         }
     }
