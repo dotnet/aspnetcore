@@ -23,8 +23,6 @@ namespace IISSample
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
-            loggerfactory.AddConsole(LogLevel.Debug);
-
             var logger = loggerfactory.CreateLogger("Requests");
 
             app.Run(async (context) =>
@@ -75,6 +73,10 @@ namespace IISSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddConsole();
+                })
                 .UseKestrel()
                 .UseAzureAppServices()
                 .UseStartup<Startup>()

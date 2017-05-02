@@ -6,8 +6,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,7 +17,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         {
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AzureIntegration/issues/41")]
+        [Theory]
         [InlineData(ApplicationType.Portable)]
         [InlineData(ApplicationType.Standalone)]
         public async Task ScriptInjected(ApplicationType applicationType)

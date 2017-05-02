@@ -24,12 +24,10 @@ namespace IISSample
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
-            loggerFactory.AddConsole(LogLevel.Debug);
-
             var logger = loggerFactory.CreateLogger("Requests");
 
             app.UseMvcWithDefaultRoute();
-            app.Map("/log", logApp => logApp.Run((context) =>
+            app.Map("/log", logApp => logApp.Run(context =>
             {
                 TelemetryConfiguration.Active.TelemetryChannel = new CurrentResponseTelemetryChannel(context.Response);
 
@@ -55,7 +53,7 @@ namespace IISSample
 
                 TelemetryConfiguration.Active.TelemetryChannel = null;
 
-                return Task.FromResult(true);
+                return Task.CompletedTask;
             }));
             app.Run(async (context) =>
             {
@@ -110,6 +108,11 @@ namespace IISSample
                 .Build();
 
             var host = new WebHostBuilder()
+                .ConfigureLogging((hostingContext, factory) =>
+                {
+                    factory.UseConfiguration(hostingContext.Configuration.GetSection("Logging"))
+                           .AddConsole();
+                })
                 .UseKestrel()
                 .UseStartup<Startup>()
                 .UseContentRoot(Directory.GetCurrentDirectory())
