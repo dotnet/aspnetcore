@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Internal
         /// A helper method to normalize a collection of <see cref="RangeItemHeaderValue"/>s.
         /// </summary>
         /// <param name="ranges">A collection of <see cref="RangeItemHeaderValue"/> to normalize.</param>
-        /// <param name="length">The length of the provided <see cref="RangeItemHeaderValue"/>.</param>
+        /// <param name="length">The total length of the file representation requested.</param>
         /// <returns>A normalized list of <see cref="RangeItemHeaderValue"/>s.</returns>
         // 14.35.1 Byte Ranges - If a syntactically valid byte-range-set includes at least one byte-range-spec whose
         // first-byte-pos is less than the current length of the entity-body, or at least one suffix-byte-range-spec
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Internal
         /// A helper method to normalize a <see cref="RangeItemHeaderValue"/>.
         /// </summary>
         /// <param name="range">The <see cref="RangeItemHeaderValue"/> to normalize.</param>
-        /// <param name="length">The length of the provided <see cref="RangeItemHeaderValue"/>.</param>
+        /// <param name="length">The total length of the file representation requested.</param>
         /// <returns>A normalized <see cref="RangeItemHeaderValue"/>.</returns>
         public static RangeItemHeaderValue NormalizeRange(RangeItemHeaderValue range, long length)
         {
