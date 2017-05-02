@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting.Azure.AppServices.Tests
 
             mock.Object.UseAzureAppServices();
 
-            mock.Verify(builder => builder.ConfigureLogging(It.IsNotNull<Action<LoggerFactory>>()), Times.Once);
+            mock.Verify(builder => builder.ConfigureLogging(It.IsNotNull<Action<WebHostBuilderContext, LoggerFactory>>()), Times.Once);
         }
     }
 }
