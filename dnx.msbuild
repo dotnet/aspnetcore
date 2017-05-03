@@ -21,6 +21,7 @@
 
   <Target Name="Clean">
     <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
+    <RemoveDir Directories="$(KBinPath);$(IntermediateOutputPath);$(UnsignedOobBinariesPath)" />
   </Target>
 
   <Target Name="Rebuild" DependsOnTargets="Clean;Build">
@@ -58,12 +59,14 @@
 
     <ItemGroup>
       <UnsignedPackages Include="$(CoherenceDestinationDir)ship\*.nupkg" />
+      <UnsignedOobPackages Include="$(CoherenceDestinationDir)shipoob\*.nupkg" />
       <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
       <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
       <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)*.zip" />
     </ItemGroup>
 
     <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
+    <Error Text="No OOB packages found for signing." Condition="'@(UnsignedOobPackages)'==''" />
     <Error Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
     <Error Text="No package cache found for signing." Condition="'@(UnsignedPackageCaches)'==''" />
 
@@ -72,12 +75,14 @@
     </PropertyGroup>
 
     <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul" />
+    <Exec Command="$(UnzipCommand) -o@(UnsignedOobPackages->'$(UnsignedOobPackagesPath)%(Filename)') %(UnsignedOobPackages.Identity) > nul" />
     <Exec Command="$(UnzipCommand) -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity) > nul"
         Condition=" '@(UnsignedSymbolPackages)' != '' " />
     <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul" />
     <Exec Command="$(UnzipCommand) -o@(UnsignedPackageCaches->'$(UnsignedPackageCachePath)%(Filename)') %(UnsignedPackageCaches.Identity) > nul" />
 
     <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
+    <RenameEncodedFolders RootDirectory="$(UnsignedOobPackagesPath)" />
   </Target>
 
   <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
@@ -89,6 +94,14 @@
                     $(UnsignedPackagesPath)**\*.psd1;
                     $(UnsignedPackagesPath)**\*.psm1;
                     $(UnsignedPackagesPath)**\*.ps1;"
+            />
+
+      <_UnsignedOobBinaries
+          Include="$(UnsignedOobPackagesPath)**\*.dll;
+                    $(UnsignedOobPackagesPath)**\*.exe;
+                    $(UnsignedOobPackagesPath)**\*.psd1;
+                    $(UnsignedOobPackagesPath)**\*.psm1;
+                    $(UnsignedOobPackagesPath)**\*.ps1;"
             />
 
       <_UnsignedVSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
@@ -112,6 +125,14 @@
         <SymbolsBinaryFullName>$(UnsignedSymbolPackagesPath)$([System.String]::new('%(RecursiveDir)').Substring(0, $([System.String]::new('%(RecursiveDir)').IndexOf('\')))).symbols$([System.String]::new('%(RecursiveDir)').Substring($([System.String]::new('%(RecursiveDir)').IndexOf('\'))))%(Filename)%(Extension)</SymbolsBinaryFullName>
       </UnsignedBinaries>
 
+      <UnsignedOobBinaries Include="@(_UnsignedOobBinaries)">
+        <!-- Flattened file for signing -->
+        <UnsignedFlatFileName>$(UnsignedOobBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
+        <SignedFlatFileName>$(SignedOobBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
+        <!-- Replaces "PackageName\lib\tfm" with "PackageName.symbols\lib\tfm" -->
+        <SymbolsBinaryFullName>$(UnsignedOobSymbolPackagesPath)$([System.String]::new('%(RecursiveDir)').Substring(0, $([System.String]::new('%(RecursiveDir)').IndexOf('\')))).symbols$([System.String]::new('%(RecursiveDir)').Substring($([System.String]::new('%(RecursiveDir)').IndexOf('\'))))%(Filename)%(Extension)</SymbolsBinaryFullName>
+      </UnsignedOobBinaries>
+
       <UnsignedVSIXBinaries Include="@(_UnsignedVSIXBinaries)">
         <!-- Flattened file for signing -->
         <UnsignedFlatFileName>$(UnsignedVSIXPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
@@ -131,12 +152,14 @@
       </UnsignedPackageCacheThirdPartyBinaries>
 
       <PackageBinariesToSign Include="%(UnsignedBinaries.UnsignedFlatFileName)" />
+      <PackageOobBinariesToSign Include="%(UnsignedOobBinaries.UnsignedFlatFileName)" />
       <PackageCacheBinariesToSign Include="%(UnsignedPackageCacheBinaries.UnsignedFlatFileName)" />
       <PackageCacheThirdPartyBinariesToSign Include="%(UnsignedPackageCacheThirdPartyBinaries.UnsignedFlatFileName)" />
       <VSIXBinariesToSign Include="%(UnsignedVSIXBinaries.UnsignedFlatFileName)" />
     </ItemGroup>
 
     <Copy SourceFiles="@(UnsignedBinaries)" DestinationFiles="@(UnsignedBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(UnsignedOobBinaries)" DestinationFiles="@(UnsignedOobBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(UnsignedPackageCacheBinaries)" DestinationFiles="@(UnsignedPackageCacheBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(UnsignedPackageCacheThirdPartyBinaries)" DestinationFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(UnsignedVSIXBinaries)" DestinationFiles="@(UnsignedVSIXBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
@@ -149,6 +172,7 @@
     <ItemGroup>
       <BinariesToSign Include="
                 @(PackageBinariesToSign);
+                @(PackageOobBinariesToSign);
                 @(VSIXBinariesToSign)" />
     </ItemGroup>
 
@@ -223,6 +247,7 @@
 
   <Target Name="ReplaceUnsignedFiles" DependsOnTargets="SignFiles;SignPackageCache">
     <Copy SourceFiles="@(UnsignedBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedBinaries->'%(FullPath)')" />
+    <Copy SourceFiles="@(UnsignedOobBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedOobBinaries->'%(FullPath)')" />
     <Copy SourceFiles="@(UnsignedVSIXBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedVSIXBinaries->'%(FullPath)')" />
     <Copy SourceFiles="@(UnsignedPackageCacheBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageCacheBinaries->'%(FullPath)')" />
     <Copy SourceFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(FullPath)')" />
@@ -238,6 +263,7 @@
       <NuSpecEULA
           Include=
                     "$(UnsignedPackagesPath)**\*.nuspec;
+                    $(UnsignedOobPackagesPath)**\*.nuspec;
                     $(UnsignedSymbolPackagesPath)**\*.nuspec;"
             />
     </ItemGroup>
@@ -286,12 +312,18 @@
 
     <ItemGroup>
       <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
+      <NuSpecOob Include="$(UnsignedOobPackagesPath)**\*.nuspec" />
       <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
     </ItemGroup>
 
     <MSBuild
         Projects="dnx.msbuild"
         Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpec.Identity);OutDir=$(PackagesOutputPath)"
+        Targets="RebuildPackage"/>
+
+    <MSBuild
+        Projects="dnx.msbuild"
+        Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpecOob.Identity);OutDir=$(PackagesOobOutputPath)"
         Targets="RebuildPackage"/>
 
     <MSBuild
@@ -437,13 +469,15 @@
 
   <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="Sign;InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
     <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
+    <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOobOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
   </Target>
 
   <Target Name="CreateTimestampFreePackages" DependsOnTargets="NuGetVerifyTimestampPackages">
     <Error Text="PUSH_NUGET_EXE is not set" Condition="'$(PUSH_NUGET_EXE)' == ''" />
     <Exec Command="$(PUSH_NUGET_EXE) restore CreateTimestampFreePackages.sln" />
     <MSBuild Projects="src\CreateTimestampFreePackages\CreateTimestampFreePackages.csproj" Properties="Configuration=$(Configuration)" />
-    <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT)" />
+    <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT) Packages" />
+    <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT) OobPackages" />
   </Target>
 
   <Target Name="CreateTimestampFreeAllMetaPackage" DependsOnTargets="CreateTimestampFreePackages">

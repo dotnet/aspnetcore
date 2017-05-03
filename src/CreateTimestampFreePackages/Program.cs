@@ -16,9 +16,9 @@ namespace CreateTimestampFreePackages
     {
         public static void Main(string[] args)
         {
-            if (args.Length != 1)
+            if (args.Length != 2)
             {
-                Console.Error.WriteLine("Usage CreateTimestampFreePackages <DROP_ROOT>");
+                Console.Error.WriteLine("Usage CreateTimestampFreePackages <DROP_ROOT> <PackageDir>");
             }
 
             var dropRoot = args[0];
@@ -29,8 +29,8 @@ namespace CreateTimestampFreePackages
             }
 
             var artifactsDir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
-            var packagesDir = Path.Combine(artifactsDir, "Signed", "Packages");            
-            var nonTimeStampedDir = Path.Combine(artifactsDir, "Signed", "Packages-NoTimeStamp");
+            var packagesDir = Path.Combine(artifactsDir, "Signed", args[1]);
+            var nonTimeStampedDir = Path.Combine(artifactsDir, "Signed", args[1] + "-NoTimeStamp");
             Directory.CreateDirectory(nonTimeStampedDir);
             var packages = Directory.GetFiles(packagesDir, "*.nupkg");
             var packageIds = GetPackageIds(packages);

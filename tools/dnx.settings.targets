@@ -19,6 +19,7 @@
         <OutputPath Condition="'$(Sign)' != 'Sign'">$(DNXBinPath)$(Configuration)\</OutputPath>
         <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
         <PackagesOutputPath>$(ArtifactsPath)Signed\Packages\</PackagesOutputPath>
+        <PackagesOobOutputPath>$(ArtifactsPath)Signed\OobPackages\</PackagesOobOutputPath>
         <PackageCacheOutputPath>$(ArtifactsPath)Signed\PackageCache\</PackageCacheOutputPath>
         <TimestampFreePackagesOutputPath>$(ArtifactsPath)Signed\Packages-NoTimeStamp\</TimestampFreePackagesOutputPath>
         <SymbolsOutputPath>$(ArtifactsPath)Signed\Symbols\</SymbolsOutputPath>
@@ -27,17 +28,21 @@
 
     <PropertyGroup>
         <UnsignedPackagesPath>$(IntermediateOutputPath)UnsignedPackages\</UnsignedPackagesPath>
+        <UnsignedOobPackagesPath>$(IntermediateOutputPath)UnsignedOobPackages\</UnsignedOobPackagesPath>
         <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
+        <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedOobPackages\</UnsignedSymbolPackagesPath>
         <UnsignedVSIXPath>$(IntermediateOutputPath)UnsignedVSIX\</UnsignedVSIXPath>
         <UnsignedPackageCachePath>$(IntermediateOutputPath)UPC\</UnsignedPackageCachePath>
         <SignedAllMetapackagePath>$(IntermediateOutputPath)SignedAllMetapackage\</SignedAllMetapackagePath>
         <UnsignedVSIXWithSignedBinariesPath>$(IntermediateOutputPath)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
         <UnsignedBinariesPath>$(DNXBinPath)FilesToSign\</UnsignedBinariesPath>
+        <UnsignedOobBinariesPath>$(DNXBinPath)OobFilesToSign\</UnsignedOobBinariesPath>
         <BinScopePackagesPath>$(IntermediateOutputPath)\BinScopePackages\</BinScopePackagesPath>
 
         <CodeSignScriptsPath>$(SignedOutputPath)Scripts\</CodeSignScriptsPath>
         <CodeSignVerificationPath>$(SignedOutputPath)Verification\</CodeSignVerificationPath>
         <SignedBinariesPath>$(SignedOutputPath)</SignedBinariesPath>
+        <SignedOobBinariesPath>$(SignedOutputPath)</SignedOobBinariesPath>
     </PropertyGroup>
 
     <PropertyGroup>
