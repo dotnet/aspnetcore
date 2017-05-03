@@ -110,10 +110,8 @@ namespace MusicStore
             });
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerFactory.AddConsole(minLevel: LogLevel.Warning);
-
             app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
 
             // Display custom error page in production when error occurs

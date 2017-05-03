@@ -159,10 +159,8 @@ namespace MusicStore
 
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerFactory.AddConsole(minLevel: LogLevel.Warning);
-
             app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
 
             // Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
