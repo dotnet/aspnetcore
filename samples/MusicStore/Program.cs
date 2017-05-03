@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MusicStore
 {
@@ -21,11 +22,11 @@ namespace MusicStore
                 .UseIISIntegration()
                 .UseStartup("MusicStore");
 
-            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
-            {
-                var environment = builder.GetSetting("environment") ??
+            var environment = builder.GetSetting("environment") ??
                     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
+            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
+            {
                 if (string.Equals(environment, "NtlmAuthentication", System.StringComparison.Ordinal))
                 {
                     // Set up NTLM authentication for WebListener like below.
@@ -46,6 +47,15 @@ namespace MusicStore
             {
                 builder.UseKestrel();
             }
+
+            builder.ConfigureLogging(factory =>
+            {
+                factory.AddConsole();
+
+                var logLevel = string.Equals(environment, "Development", StringComparison.Ordinal) ? LogLevel.Information : LogLevel.Warning;
+
+                factory.AddFilter("Console", level => level >= logLevel);
+            });
 
             var host = builder.Build();
 
