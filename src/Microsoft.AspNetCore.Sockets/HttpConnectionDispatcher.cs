@@ -231,17 +231,14 @@ namespace Microsoft.AspNetCore.Sockets
 
         private ConnectionState CreateConnection(HttpContext context)
         {
-            var format =
-                string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
-                    ? MessageType.Binary
-                    : MessageType.Text;
-
             var state = _manager.CreateConnection();
             state.Connection.User = context.User;
 
             // TODO: this is wrong. + how does the user add their own metadata based on HttpContext
             var formatType = (string)context.Request.Query["formatType"];
             state.Connection.Metadata["formatType"] = string.IsNullOrEmpty(formatType) ? "json" : formatType;
+            state.Connection.Metadata[typeof(HttpContext)] = context;
+
             return state;
         }
 

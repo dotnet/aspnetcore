@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Sockets;
 
 namespace SocialWeather
@@ -38,7 +37,14 @@ namespace SocialWeather
                 var formatter = _formatterResolver.GetFormatter<T>(connection.Metadata.Get<string>("formatType"));
                 var ms = new MemoryStream();
                 await formatter.WriteAsync(data, ms);
-                await connection.Transport.Output.WriteAsync(new Message(ms.ToArray(), MessageType.Binary, endOfMessage: true));
+
+                var context = (HttpContext)connection.Metadata[typeof(HttpContext)];
+                var format =
+                    string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
+                        ? MessageType.Binary
+                        : MessageType.Text;
+
+                connection.Transport.Output.TryWrite(new Message(ms.ToArray(), format, endOfMessage: true));
             }
         }
 
