@@ -49,7 +49,7 @@
       <OutputZipSufix Condition="'$(OSPlatform)' == 'Windows'">win$(PACKAGE_CACHE_PLATFORM)</OutputZipSufix>
       <OutputZipSufix Condition="'$(OSPlatform)' == 'Linux'">linux</OutputZipSufix>
       <OutputZipSufix Condition="'$(OSPlatform)' == 'macOS'">osx</OutputZipSufix>
-      <RID Condition="'$(OSPlatform)' == 'Windows'">win-$(PACKAGE_CACHE_PLATFORM)</RID>
+      <RID Condition="'$(OSPlatform)' == 'Windows'">win7-$(PACKAGE_CACHE_PLATFORM)</RID>
       <RID Condition="'$(OSPlatform)' == 'Linux'">linux-$(PACKAGE_CACHE_PLATFORM)</RID>
       <RID Condition="'$(OSPlatform)' == 'macOS'">osx-$(PACKAGE_CACHE_PLATFORM)</RID>
 
