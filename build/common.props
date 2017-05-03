@@ -127,6 +127,8 @@
     <FullMetaPackagePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite.Core" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <!-- workaround for https://github.com/dotnet/sdk/issues/1166 and https://github.com/ericsink/SQLitePCL.raw/issues/157 -->
+    <FullMetaPackagePackageReference Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawVersion)" PrivateAssets="Build" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(AspNetCoreVersion)" PrivateAssets="None" />

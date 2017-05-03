@@ -14,7 +14,7 @@
   <ItemGroup>
    <PackageReference Include="@(FullMetaPackagePackageReference)" />
    <PackageReference Include="@(FullMetaPackagePackageNoRuntimeStoreReference)" />
-   <ProjectReference Include="@(FullMetaPackageProjectReference)" />
+   <ProjectReference Include="@(FullMetaPackageProjectReference)" PrivateAssets="None" />
   </ItemGroup>
 
   <ItemGroup>
