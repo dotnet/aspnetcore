@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5898df8049fc1522f646a774050e93cbf5cafb84"
+#pragma checksum "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "723b7da149db577d0c49cff7c00f2d831e8916e7"
 namespace Razor
 {
     #line hidden
@@ -88,6 +88,24 @@ __InputTagHelper.BarProp = DateTime.Now;
             }
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
+            EndContext();
+            BeginContext(158, 31, true);
+            WriteLiteral("\r\n\r\n<span>Here is some content ");
+            EndContext();
+            BeginContext(207, 9, true);
+            WriteLiteral("</span>\r\n");
+            EndContext();
+            BeginContext(217, 29, false);
+#line 9 "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml"
+Write(Foo(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+    BeginContext(222, 24, true);
+    WriteLiteralTo(__razor_template_writer, "<span>Hello world</span>");
+    EndContext();
+}
+)));
+
+#line default
+#line hidden
             EndContext();
         }
         #pragma warning restore 1998

@@ -66,3 +66,34 @@ Document -
                     ExecuteTagHelpers - 
                     CSharpStatement - 
                         RazorIRToken -  - CSharp - EndContext();
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - BeginContext(158, 31, true);
+                HtmlContent - (158:5,7 [31] BasicTest.cshtml)
+                    RazorIRToken - (158:5,7 [4] BasicTest.cshtml) - Html - \n\n
+                    RazorIRToken - (162:7,0 [6] BasicTest.cshtml) - Html - <span>
+                    RazorIRToken - (168:7,6 [21] BasicTest.cshtml) - Html - Here is some content 
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - EndContext();
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - BeginContext(207, 9, true);
+                HtmlContent - (207:7,45 [9] BasicTest.cshtml)
+                    RazorIRToken - (207:7,45 [7] BasicTest.cshtml) - Html - </span>
+                    RazorIRToken - (214:7,52 [2] BasicTest.cshtml) - Html - \n
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - EndContext();
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - BeginContext(217, 29, false);
+                CSharpExpression - (217:8,1 [29] BasicTest.cshtml)
+                    RazorIRToken - (217:8,1 [4] BasicTest.cshtml) - CSharp - Foo(
+                    Template - (222:8,6 [24] BasicTest.cshtml)
+                        CSharpStatement - 
+                            RazorIRToken -  - CSharp - BeginContext(222, 24, true);
+                        HtmlContent - (222:8,6 [24] BasicTest.cshtml)
+                            RazorIRToken - (222:8,6 [6] BasicTest.cshtml) - Html - <span>
+                            RazorIRToken - (228:8,12 [11] BasicTest.cshtml) - Html - Hello world
+                            RazorIRToken - (239:8,23 [7] BasicTest.cshtml) - Html - </span>
+                        CSharpStatement - 
+                            RazorIRToken -  - CSharp - EndContext();
+                    RazorIRToken - (246:8,30 [1] BasicTest.cshtml) - CSharp - )
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - EndContext();
