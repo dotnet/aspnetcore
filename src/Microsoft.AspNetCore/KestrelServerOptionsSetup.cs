@@ -4,20 +4,29 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore
 {
     internal class KestrelServerOptionsSetup : IConfigureOptions<KestrelServerOptions>
     {
+        private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IConfiguration _configurationRoot;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public KestrelServerOptionsSetup(IConfiguration configurationRoot)
+        public KestrelServerOptionsSetup(
+            IHostingEnvironment hostingEnvironment,
+            IConfiguration configurationRoot,
+            ILoggerFactory loggerFactory)
         {
+            _hostingEnvironment = hostingEnvironment;
             _configurationRoot = configurationRoot;
+            _loggerFactory = loggerFactory;
         }
 
         public void Configure(KestrelServerOptions options)
@@ -27,7 +36,7 @@ namespace Microsoft.AspNetCore
 
         private void BindConfiguration(KestrelServerOptions options)
         {
-            var certificateLoader = new CertificateLoader(_configurationRoot.GetSection("Certificates"));
+            var certificateLoader = new CertificateLoader(_configurationRoot.GetSection("Certificates"), _loggerFactory, _hostingEnvironment.EnvironmentName);
 
             foreach (var endPoint in _configurationRoot.GetSection("Kestrel:EndPoints").GetChildren())
             {
@@ -56,14 +65,22 @@ namespace Microsoft.AspNetCore
             options.Listen(address, port, listenOptions =>
             {
                 var certificateConfig = endPoint.GetSection("Certificate");
+                X509Certificate2 certificate;
 
                 if (certificateConfig.Exists())
                 {
-                    var certificate = certificateLoader.Load(certificateConfig).FirstOrDefault();
-
-                    if (certificate == null)
+                    try
                     {
-                        throw new InvalidOperationException($"Unable to load certificate for endpoint '{endPoint.Key}'");
+                        certificate = certificateLoader.Load(certificateConfig).FirstOrDefault();
+
+                        if (certificate == null)
+                        {
+                            throw new InvalidOperationException($"No certificate found for endpoint '{endPoint.Key}'.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException("Unable to configure HTTPS endpoint. For information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054.", ex);
                     }
 
                     listenOptions.UseHttps(certificate);
