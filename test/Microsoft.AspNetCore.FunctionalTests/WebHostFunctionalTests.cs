@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -134,7 +135,8 @@ namespace Microsoft.AspNetCore.Tests
     ""Certificates"": {
         ""TestCert"": {
             ""Source"": ""File"",
-            ""Path"": ""TestArtifacts/Certificate.pfx""
+            ""Path"": ""testCert.pfx"",
+            ""Password"": ""testPassword""
         }
     }
 }
@@ -143,13 +145,8 @@ namespace Microsoft.AspNetCore.Tests
                 {
                     var port = GetWebHostPort(webHost);
 
-                    Assert.NotEqual(0, port);
-
-                    using (var client = new HttpClient(new HttpClientHandler { ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true }))
-                    {
-                        var response = await client.GetAsync($"https://127.0.0.1:{port}");
-                        response.EnsureSuccessStatusCode();
-                    }
+                    var response = await HttpClientSlim.GetStringAsync($"https://127.0.0.1:{port}", validateCertificate: false);
+                    Assert.Equal("Hello, World!", response);
                 }
             }
             finally
@@ -172,7 +169,8 @@ namespace Microsoft.AspNetCore.Tests
                 ""Port"": 0,
                 ""Certificate"": {
                     ""Source"": ""File"",
-                    ""Path"": ""TestArtifacts/Certificate.pfx"",
+                    ""Path"": ""testCert.pfx"",
+                    ""Password"": ""testPassword""
                 }
             }
         }
@@ -183,13 +181,8 @@ namespace Microsoft.AspNetCore.Tests
                 {
                     var port = GetWebHostPort(webHost);
 
-                    Assert.NotEqual(0, port);
-
-                    using (var client = new HttpClient(new HttpClientHandler { ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true }))
-                    {
-                        var response = await client.GetAsync($"https://127.0.0.1:{port}");
-                        response.EnsureSuccessStatusCode();
-                    }
+                    var response = await HttpClientSlim.GetStringAsync($"https://127.0.0.1:{port}", validateCertificate: false);
+                    Assert.Equal("Hello, World!", response);
                 }
             }
             finally

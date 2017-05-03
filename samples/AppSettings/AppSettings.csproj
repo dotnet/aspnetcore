@@ -16,10 +16,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
-  <!-- TODO: restore reference when tools are working on netcoreapp2.0
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
-  -->
 
 </Project>
