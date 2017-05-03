@@ -26,159 +26,187 @@
     <PackageReference Include="NETStandard.Library" Version="$(BundledNETStandardPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- defines the default values for each item type -->
+  <ItemDefinitionGroup>
     <!-- set PrivateAssets=None to ensure that all assets, including Build and Analyzer, are included in the nuspec -->
-    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Routing" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <MetaPackagePackageReference>
+      <Version>$(AspNetCoreVersion)</Version>
+      <PrivateAssets>None</PrivateAssets>
+    </MetaPackagePackageReference>
+    <FullMetaPackagePackageReference>
+      <Version>$(AspNetCoreVersion)</Version>
+      <PrivateAssets>None</PrivateAssets>
+    </FullMetaPackagePackageReference>
+    <HostingStartupPackageReference>
+      <Version>$(AspNetCoreVersion)</Version>
+      <PrivateAssets>None</PrivateAssets>
+    </HostingStartupPackageReference>
+    <RuntimeStorePackageReference>
+      <Version>$(AspNetCoreVersion)</Version>
+      <PrivateAssets>None</PrivateAssets>
+    </RuntimeStorePackageReference>
+    <FullMetaPackageProjectReference>
+      <PrivateAssets>None</PrivateAssets>
+    </FullMetaPackageProjectReference>
+    <!-- set PrivateAssets=All to ensure items are excluded from the runtime store -->
+    <FullMetaPackagePackageNoRuntimeStoreReference>
+      <Version>$(AspNetCoreVersion)</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </FullMetaPackagePackageNoRuntimeStoreReference>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics" />
+    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting" />
+    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Routing" />
+    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Logging" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
   <ItemGroup>
     <FullMetaPackagePackageReference Include="@(MetaPackagePackageReference)" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authorization" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.CookiePolicy" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cors" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Version="$(AspNetCoreIdentityServiceVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Http" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service" Version="$(AspNetCoreIdentityServiceVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Core" Version="$(AspNetCoreIdentityServiceVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Abstractions" Version="$(AspNetCoreIdentityServiceVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" Version="$(AspNetCoreIdentityServiceVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" Version="$(AspNetCoreIdentityServiceVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Mvc" Version="$(AspNetCoreIdentityServiceVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Localization" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Localization.Routing" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Cors" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Localization" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Owin" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Razor" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.ResponseCaching" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Rewrite" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Session" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite.Core" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Relational.Design" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Redis" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.DockerSecrets" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.TraceSource" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.ObjectPool" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Primitives" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <FullMetaPackagePackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Antiforgery" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authorization" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.CookiePolicy" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cors" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.AzureStorage" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Version="$(AspNetCoreIdentityServiceVersion)" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Http" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Http.Features" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.HttpOverrides" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service" Version="$(AspNetCoreIdentityServiceVersion)" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Core" Version="$(AspNetCoreIdentityServiceVersion)" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Abstractions" Version="$(AspNetCoreIdentityServiceVersion)" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" Version="$(AspNetCoreIdentityServiceVersion)" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" Version="$(AspNetCoreIdentityServiceVersion)" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Mvc" Version="$(AspNetCoreIdentityServiceVersion)" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.JsonPatch" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Localization" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Localization.Routing" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Cors" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Localization" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Owin" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Razor" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Razor.Language" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.ResponseCaching" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Rewrite" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Session" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.StaticFiles" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebSockets" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebUtilities" />
+    <FullMetaPackagePackageReference Include="Microsoft.CodeAnalysis.Razor" />
+    <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite" />
+    <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite.Core" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Relational.Design" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Redis" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.DockerSecrets" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Ini" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Xml" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.DiagnosticAdapter" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.EventSource" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.TraceSource" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.ObjectPool" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Options" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Primitives" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.WebEncoders" />
+    <FullMetaPackagePackageReference Include="Microsoft.Net.Http.Headers" />
+    <FullMetaPackagePackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" />
   </ItemGroup>
 
   <ItemGroup>
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" />
+    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" />
   </ItemGroup>
 
   <ItemGroup>
@@ -186,17 +214,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <HostingStartupPackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" />
+    <HostingStartupPackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" />
   </ItemGroup>
 
   <ItemGroup>
     <RuntimeStorePackageReference Include="@(FullMetaPackagePackageReference)" />
     <RuntimeStorePackageReference Include="@(HostingStartupPackageReference)" />
-    <RuntimeStorePackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
-    <RuntimeStorePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <RuntimeStorePackageReference Include="Microsoft.AspNetCore" />
+    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" />
+    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" />
+    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" />
+    <RuntimeStorePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" />
   </ItemGroup>
 </Project>
