@@ -3,6 +3,14 @@
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <AspNetIntegrationTestingVersion>0.4.0-*</AspNetIntegrationTestingVersion>
     <AspNetCoreModuleVersion>1.0.0-*</AspNetCoreModuleVersion>
+
+    <!--
+      * Use 4.4.0-* instead of $(CoreFxVersion) to address "SqlClient fails with netcoreapp2.0 on Win7/Server2008"
+        * https://github.com/dotnet/corefx/issues/18406
+      * Revert if and when $(CoreFxVersion) is upgraded to 4.4.0-*
+    -->
+    <SqlClientVersion>4.4.0-*</SqlClientVersion>
+
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
