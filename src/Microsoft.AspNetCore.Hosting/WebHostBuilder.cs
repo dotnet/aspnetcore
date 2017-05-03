@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
         /// <typeparam name="T">
         /// The type of <see cref="ILoggerFactory"/> to configure.
-        /// The delegate will not execute if the type provided does not match the <see cref="ILoggerFactory"/> used by the <see cref="IWebHostBuilder"/>
+        /// The delegate will not execute if the type provided does not match the <see cref="ILoggerFactory"/> used by the <see cref="IWebHostBuilder"/>.
         /// </typeparam>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         /// <remarks>
