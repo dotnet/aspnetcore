@@ -54,10 +54,8 @@ namespace Microsoft.AspNetCore.Tests
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
                 var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
-                var errorResponse = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync("/error"), logger, deploymentResult.HostShutdownToken);
 
                 var responseText = await response.Content.ReadAsStringAsync();
-                var errorResponseText = await errorResponse.Content.ReadAsStringAsync();
                 try
                 {
                     // Assert server is Kestrel
@@ -65,9 +63,6 @@ namespace Microsoft.AspNetCore.Tests
 
                     // The application name will be sent in response when all asserts succeed in the test app.
                     Assert.Equal(applicationName, responseText);
-
-                    // Assert UseDeveloperExceptionPage is called in WebHostStartupFilter.
-                    Assert.Contains("An unhandled exception occurred while processing the request.", errorResponseText);
                 }
                 catch (XunitException)
                 {

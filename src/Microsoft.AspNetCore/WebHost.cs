@@ -188,7 +188,6 @@ namespace Microsoft.AspNetCore
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<IStartupFilter, WebHostStartupFilter>();
                     services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
                 });
 

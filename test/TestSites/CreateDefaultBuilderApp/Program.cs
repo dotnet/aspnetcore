@@ -30,10 +30,6 @@ namespace CreateDefaultBuilderApp
                 })
                 .Configure(app =>
                 {
-                    app.Map("/error", subApp =>
-                    {
-                        subApp.Run(context => throw new Exception());
-                    });
                     app.Run(context =>
                     {
                         return context.Response.WriteAsync(responseMessage);
