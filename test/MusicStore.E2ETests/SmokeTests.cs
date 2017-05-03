@@ -22,36 +22,34 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Standalone)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Standalone)]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x86, ApplicationType.Portable)]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x86, ApplicationType.Portable)]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x86, ApplicationType.Standalone)]
         public async Task WindowsOS(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType)
         {
             var smokeTestRunner = new SmokeTests(_output);
-            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType);
+            await smokeTestRunner.SmokeTestSuite(serverType, architecture, applicationType);
         }
 
         [ConditionalTheory(Skip = "Temporarily disabling test"), Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable)]
         public async Task NonWindowsOS(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType)
         {
             var smokeTestRunner = new SmokeTests(_output);
-            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType);
+            await smokeTestRunner.SmokeTestSuite(serverType, architecture, applicationType);
         }
     }
 
@@ -67,37 +65,35 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public async Task WindowsOS(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType)
         {
             var smokeTestRunner = new SmokeTests(_output);
-            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType);
+            await smokeTestRunner.SmokeTestSuite(serverType, architecture, applicationType);
         }
 
         [ConditionalTheory, Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public async Task NonWindowsOS(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType)
         {
             var smokeTestRunner = new SmokeTests(_output);
-            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType);
+            await smokeTestRunner.SmokeTestSuite(serverType, architecture, applicationType);
         }
     }
 
@@ -115,18 +111,16 @@ namespace E2ETests
         [OSSkipCondition(OperatingSystems.Linux)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         [SkipIfEnvironmentVariableNotEnabled("IIS_VARIATIONS_ENABLED")]
-        //[InlineData(ServerType.IIS, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.IIS, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.IIS, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.IIS, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public async Task SmokeTestSuite_On_IIS_X86(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType)
         {
             var smokeTestRunner = new SmokeTests(_output);
             await smokeTestRunner.SmokeTestSuite(
-                serverType, runtimeFlavor, architecture, applicationType, noSource: true);
+                serverType, architecture, applicationType, noSource: true);
         }
     }
 
@@ -138,26 +132,25 @@ namespace E2ETests
 
         public async Task SmokeTestSuite(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType,
             bool noSource = false)
         {
-            var testName = $"SmokeTestSuite_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            var testName = $"SmokeTestSuite_{serverType}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("SmokeTestSuite");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                    Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
                 {
                     EnvironmentName = "SocialTesting",
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "MusicStoreTestSite",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.0",
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
