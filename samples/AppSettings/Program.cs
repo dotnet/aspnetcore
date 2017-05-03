@@ -13,7 +13,7 @@ namespace AppSettings
         {
             using (WebHost.Start(context => context.Response.WriteAsync("Hello, World!")))
             {
-                Console.WriteLine("Running application: Press any key to shutdown...");
+                Console.WriteLine("Running application: Press any key to shutdown.");
                 Console.ReadKey();
             }
         }
