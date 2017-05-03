@@ -4,6 +4,7 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace WebSocketsTestApp
 {
@@ -17,6 +18,11 @@ namespace WebSocketsTestApp
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                })
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
