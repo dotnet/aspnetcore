@@ -1,6 +1,14 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-preview1-*</AspNetCoreVersion>
+
+    <!--
+      * Use 4.4.0-* instead of $(CoreFxVersion) to address "SqlClient fails with netcoreapp2.0 on Win7/Server2008"
+        * https://github.com/dotnet/corefx/issues/18406
+      * Revert if and when $(CoreFxVersion) is upgraded to 4.4.0-*
+    -->
+    <SqlClientVersion>4.4.0-*</SqlClientVersion>
+
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
