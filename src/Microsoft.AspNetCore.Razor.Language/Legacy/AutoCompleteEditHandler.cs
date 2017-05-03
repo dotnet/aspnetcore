@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public string AutoCompleteString { get; set; }
 
-        protected override PartialParseResult CanAcceptChange(Span target, TextChange normalizedChange)
+        protected override PartialParseResult CanAcceptChange(Span target, SourceChange change)
         {
-            if (((AutoCompleteAtEndOfSpan && IsAtEndOfSpan(target, normalizedChange)) || IsAtEndOfFirstLine(target, normalizedChange)) &&
-                normalizedChange.IsInsert &&
-                ParserHelpers.IsNewLine(normalizedChange.NewText) &&
+            if (((AutoCompleteAtEndOfSpan && IsAtEndOfSpan(target, change)) || IsAtEndOfFirstLine(target, change)) &&
+                change.IsInsert &&
+                ParserHelpers.IsNewLine(change.NewText) &&
                 AutoCompleteString != null)
             {
                 return PartialParseResult.Rejected | PartialParseResult.AutoCompleteBlock;

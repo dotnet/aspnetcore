@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return hashCodeCombiner;
         }
 
-        protected override PartialParseResult CanAcceptChange(Span target, TextChange normalizedChange)
+        protected override PartialParseResult CanAcceptChange(Span target, SourceChange change)
         {
             if (AcceptedCharacters == AcceptedCharacters.Any)
             {
@@ -75,21 +75,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             //     1. '@foo.' -> '@foobaz.'.
             //     2. '@foobaz..' -> '@foobaz.bar.'. Includes Sub-cases '@foobaz()..' -> '@foobaz().bar.' etc.
             // The key distinction being the double '.' in the second case.
-            if (IsDotlessCommitInsertion(target, normalizedChange))
+            if (IsDotlessCommitInsertion(target, change))
             {
                 return HandleDotlessCommitInsertion(target);
             }
 
-            if (IsAcceptableIdentifierReplacement(target, normalizedChange))
+            if (IsAcceptableIdentifierReplacement(target, change))
             {
-                return TryAcceptChange(target, normalizedChange);
+                return TryAcceptChange(target, change);
             }
 
-            if (IsAcceptableReplace(target, normalizedChange))
+            if (IsAcceptableReplace(target, change))
             {
-                return HandleReplacement(target, normalizedChange);
+                return HandleReplacement(target, change);
             }
-            var changeRelativePosition = normalizedChange.OldPosition - target.Start.AbsoluteIndex;
+            var changeRelativePosition = change.Span.AbsoluteIndex - target.Start.AbsoluteIndex;
 
             // Get the edit context
             char? lastChar = null;
@@ -105,57 +105,57 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Accepts cases when insertions are made at the end of a span or '.' is inserted within a span.
-            if (IsAcceptableInsertion(target, normalizedChange))
+            if (IsAcceptableInsertion(target, change))
             {
                 // Handle the insertion
-                return HandleInsertion(target, lastChar.Value, normalizedChange);
+                return HandleInsertion(target, lastChar.Value, change);
             }
 
-            if (IsAcceptableDeletion(target, normalizedChange))
+            if (IsAcceptableDeletion(target, change))
             {
-                return HandleDeletion(target, lastChar.Value, normalizedChange);
+                return HandleDeletion(target, lastChar.Value, change);
             }
 
             return PartialParseResult.Rejected;
         }
 
         // A dotless commit is the process of inserting a '.' with an intellisense selection.
-        private static bool IsDotlessCommitInsertion(Span target, TextChange change)
+        private static bool IsDotlessCommitInsertion(Span target, SourceChange change)
         {
             return IsNewDotlessCommitInsertion(target, change) || IsSecondaryDotlessCommitInsertion(target, change);
         }
 
         // Completing 'DateTime' in intellisense with a '.' could result in: '@DateT' -> '@DateT.' -> '@DateTime.' which is accepted.
-        private static bool IsNewDotlessCommitInsertion(Span target, TextChange change)
+        private static bool IsNewDotlessCommitInsertion(Span target, SourceChange change)
         {
             return !IsAtEndOfSpan(target, change) &&
-                   change.NewPosition > 0 &&
-                   change.NewLength > 0 &&
+                   change.Span.AbsoluteIndex > 0 &&
+                   change.NewText.Length > 0 &&
                    target.Content.Last() == '.' &&
                    ParserHelpers.IsIdentifier(change.NewText, requireIdentifierStart: false) &&
-                   (change.OldLength == 0 || ParserHelpers.IsIdentifier(change.OldText, requireIdentifierStart: false));
+                   (change.Span.Length == 0 || ParserHelpers.IsIdentifier(change.GetOriginalText(target), requireIdentifierStart: false));
         }
 
         // Once a dotless commit has been performed you then have something like '@DateTime.'.  This scenario is used to detect the
         // situation when you try to perform another dotless commit resulting in a textchange with '..'.  Completing 'DateTime.Now'
         // in intellisense with a '.' could result in: '@DateTime.' -> '@DateTime..' -> '@DateTime.Now.' which is accepted.
-        private static bool IsSecondaryDotlessCommitInsertion(Span target, TextChange change)
+        private static bool IsSecondaryDotlessCommitInsertion(Span target, SourceChange change)
         {
             // Do not need to worry about other punctuation, just looking for double '.' (after change)
-            return change.NewLength == 1 &&
+            return change.NewText.Length == 1 &&
+                   change.NewText == "." &&
                    !string.IsNullOrEmpty(target.Content) &&
                    target.Content.Last() == '.' &&
-                   change.NewText == "." &&
-                   change.OldLength == 0;
+                   change.Span.Length == 0;
         }
 
-        private static bool IsAcceptableReplace(Span target, TextChange change)
+        private static bool IsAcceptableReplace(Span target, SourceChange change)
         {
             return IsEndReplace(target, change) ||
                    (change.IsReplace && RemainingIsWhitespace(target, change));
         }
 
-        private bool IsAcceptableIdentifierReplacement(Span target, TextChange change)
+        private bool IsAcceptableIdentifierReplacement(Span target, SourceChange change)
         {
             if (!change.IsReplace)
             {
@@ -174,15 +174,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var symbolStartIndex = symbol.Start.AbsoluteIndex;
                 var symbolEndIndex = symbolStartIndex + symbol.Content.Length;
 
-                // We're looking for the first symbol that contains the TextChange.
-                if (symbolEndIndex > change.OldPosition)
+                // We're looking for the first symbol that contains the SourceChange.
+                if (symbolEndIndex > change.Span.AbsoluteIndex)
                 {
-                    if (symbolEndIndex >= change.OldPosition + change.OldLength && symbol.Type == CSharpSymbolType.Identifier)
+                    if (symbolEndIndex >= change.Span.AbsoluteIndex + change.Span.Length && symbol.Type == CSharpSymbolType.Identifier)
                     {
                         // The symbol we're changing happens to be an identifier. Need to check if its transformed state is also one.
                         // We do this transformation logic to capture the case that the new text change happens to not be an identifier;
                         // i.e. "5". Alone, it's numeric, within an identifier it's classified as identifier.
-                        var transformedContent = change.ApplyChange(symbol.Content, symbolStartIndex);
+                        var transformedContent = change.GetEditedContent(symbol.Content, change.Span.AbsoluteIndex - symbolStartIndex);
                         var newSymbols = Tokenizer(transformedContent);
 
                         if (newSymbols.Count() != 1)
@@ -208,14 +208,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        private static bool IsAcceptableDeletion(Span target, TextChange change)
+        private static bool IsAcceptableDeletion(Span target, SourceChange change)
         {
             return IsEndDeletion(target, change) ||
                    (change.IsDelete && RemainingIsWhitespace(target, change));
         }
 
         // Acceptable insertions can occur at the end of a span or when a '.' is inserted within a span.
-        private static bool IsAcceptableInsertion(Span target, TextChange change)
+        private static bool IsAcceptableInsertion(Span target, SourceChange change)
         {
             return change.IsInsert &&
                    (IsAcceptableEndInsertion(target, change) ||
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Accepts character insertions at the end of spans.  AKA: '@foo' -> '@fooo' or '@foo' -> '@foo   ' etc.
-        private static bool IsAcceptableEndInsertion(Span target, TextChange change)
+        private static bool IsAcceptableEndInsertion(Span target, SourceChange change)
         {
             Debug.Assert(change.IsInsert);
 
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         // Accepts '.' insertions in the middle of spans. Ex: '@foo.baz.bar' -> '@foo..baz.bar'
         // This is meant to allow intellisense when editing a span.
-        private static bool IsAcceptableInnerInsertion(Span target, TextChange change)
+        private static bool IsAcceptableInnerInsertion(Span target, SourceChange change)
         {
             Debug.Assert(change.IsInsert);
 
@@ -241,13 +241,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // This case will fail if the IsAcceptableEndInsertion does not capture an end insertion correctly.
             Debug.Assert(!IsAtEndOfSpan(target, change));
 
-            return change.NewPosition > 0 &&
+            return change.Span.AbsoluteIndex > 0 &&
                    change.NewText == ".";
         }
 
-        private static bool RemainingIsWhitespace(Span target, TextChange change)
+        private static bool RemainingIsWhitespace(Span target, SourceChange change)
         {
-            var offset = (change.OldPosition - target.Start.AbsoluteIndex) + change.OldLength;
+            var offset = (change.Span.AbsoluteIndex - target.Start.AbsoluteIndex) + change.Span.Length;
             return string.IsNullOrWhiteSpace(target.Content.Substring(offset));
         }
 
@@ -261,14 +261,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return result;
         }
 
-        private PartialParseResult HandleReplacement(Span target, TextChange change)
+        private PartialParseResult HandleReplacement(Span target, SourceChange change)
         {
             // Special Case for IntelliSense commits.
             //  When IntelliSense commits, we get two changes (for example user typed "Date", then committed "DateTime" by pressing ".")
             //  1. Insert "." at the end of this span
             //  2. Replace the "Date." at the end of the span with "DateTime."
             //  We need partial parsing to accept case #2.
-            var oldText = GetOldText(target, change);
+            var oldText = change.GetOriginalText(target);
 
             var result = PartialParseResult.Rejected;
             if (EndsWithDot(oldText) && EndsWithDot(change.NewText))
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return result;
         }
 
-        private PartialParseResult HandleDeletion(Span target, char previousChar, TextChange change)
+        private PartialParseResult HandleDeletion(Span target, char previousChar, SourceChange change)
         {
             // What's left after deleting?
             if (previousChar == '.')
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private PartialParseResult HandleInsertion(Span target, char previousChar, TextChange change)
+        private PartialParseResult HandleInsertion(Span target, char previousChar, SourceChange change)
         {
             // What are we inserting after?
             if (previousChar == '.')
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private PartialParseResult HandleInsertionAfterIdPart(Span target, TextChange change)
+        private PartialParseResult HandleInsertionAfterIdPart(Span target, SourceChange change)
         {
             // If the insertion is a full identifier part, accept it
             if (ParserHelpers.IsIdentifier(change.NewText, requireIdentifierStart: false))
@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     content.Take(content.Length - 1).All(ParserHelpers.IsIdentifierPart));
         }
 
-        private PartialParseResult HandleInsertionAfterDot(Span target, TextChange change)
+        private PartialParseResult HandleInsertionAfterDot(Span target, SourceChange change)
         {
             // If the insertion is a full identifier or another dot, accept it
             if (ParserHelpers.IsIdentifier(change.NewText) || change.NewText == ".")
@@ -356,9 +356,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return PartialParseResult.Rejected;
         }
 
-        private PartialParseResult TryAcceptChange(Span target, TextChange change, PartialParseResult acceptResult = PartialParseResult.Accepted)
+        private PartialParseResult TryAcceptChange(Span target, SourceChange change, PartialParseResult acceptResult = PartialParseResult.Accepted)
         {
-            var content = change.ApplyChange(target.Content, target.Start.AbsoluteIndex);
+            var content = change.GetEditedContent(target);
             if (StartsWithKeyword(content))
             {
                 return PartialParseResult.Rejected | PartialParseResult.SpanContextChanged;

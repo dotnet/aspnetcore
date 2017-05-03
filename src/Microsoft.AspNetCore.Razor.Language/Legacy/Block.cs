@@ -102,9 +102,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return current as Span;
         }
 
-        public virtual Span LocateOwner(TextChange change) => LocateOwner(change, Children);
+        public virtual Span LocateOwner(SourceChange change) => LocateOwner(change, Children);
 
-        protected static Span LocateOwner(TextChange change, IEnumerable<SyntaxTreeNode> elements)
+        protected static Span LocateOwner(SourceChange change, IEnumerable<SyntaxTreeNode> elements)
         {
             // Ask each child recursively
             Span owner = null;
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
                 else
                 {
-                    if (change.OldPosition < span.Start.AbsoluteIndex)
+                    if (change.Span.AbsoluteIndex < span.Start.AbsoluteIndex)
                     {
                         // Early escape for cases where changes overlap multiple spans
                         // In those cases, the span will return false, and we don't want to search the whole tree
@@ -134,6 +134,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             return owner;
         }
+
         public override string ToString()
         {
             return string.Format(

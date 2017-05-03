@@ -171,8 +171,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var trackingPoint = line.Snapshot.CreateTrackingPoint(line.End, PointTrackingMode.Negative);
             var previousLineEnd = trackingPoint.GetPosition(syntaxTreeSnapshot);
 
-            var razorBuffer = new ShimTextBufferAdapter(syntaxTreeSnapshot);
-            var simulatedChange = new TextChange(previousLineEnd, 0, razorBuffer, previousLineEnd, 0, razorBuffer);
+            var simulatedChange = new SourceChange(previousLineEnd, 0, string.Empty);
             var owningSpan = LocateOwner(syntaxTree.Root, simulatedChange);
 
             int? desiredIndentation = null;
@@ -223,20 +222,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             return desiredIndentation;
         }
 
-        private Span LocateOwner(Block root, TextChange change)
+        private Span LocateOwner(Block root, SourceChange change)
         {
             // Ask each child recursively
             Span owner = null;
             foreach (SyntaxTreeNode element in root.Children)
             {
-                if (element.Start.AbsoluteIndex > change.OldPosition)
+                if (element.Start.AbsoluteIndex > change.Span.AbsoluteIndex)
                 {
                     // too far
                     break;
                 }
 
                 int elementLen = element.Length;
-                if (element.Start.AbsoluteIndex + elementLen < change.OldPosition)
+                if (element.Start.AbsoluteIndex + elementLen < change.Span.AbsoluteIndex)
                 {
                     // not far enough
                     continue;
@@ -246,7 +245,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     Block block = element as Block;
 
-                    if (element.Start.AbsoluteIndex + elementLen == change.OldPosition)
+                    if (element.Start.AbsoluteIndex + elementLen == change.Span.AbsoluteIndex)
                     {
                         Span lastDescendant = block.FindLastDescendentSpan();
                         if ((lastDescendant == null) && (block is TagHelperBlock))
@@ -306,14 +305,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     Block sourceStartTag = tagHelperNode.SourceStartTag;
                     Block sourceEndTag = tagHelperNode.SourceEndTag;
-                    if ((sourceStartTag.Start.AbsoluteIndex <= change.OldPosition) &&
-                        (sourceStartTag.Start.AbsoluteIndex + sourceStartTag.Length >= change.OldPosition))
+                    if ((sourceStartTag.Start.AbsoluteIndex <= change.Span.AbsoluteIndex) &&
+                        (sourceStartTag.Start.AbsoluteIndex + sourceStartTag.Length >= change.Span.AbsoluteIndex))
                     {
                         // intersects the start tag
                         return LocateOwner(sourceStartTag, change);
                     }
-                    else if ((sourceEndTag.Start.AbsoluteIndex <= change.OldPosition) &&
-                                (sourceEndTag.Start.AbsoluteIndex + sourceEndTag.Length >= change.OldPosition))
+                    else if ((sourceEndTag.Start.AbsoluteIndex <= change.Span.AbsoluteIndex) &&
+                                (sourceEndTag.Start.AbsoluteIndex + sourceEndTag.Length >= change.Span.AbsoluteIndex))
                     {
                         // intersects the end tag
                         return LocateOwner(sourceEndTag, change);
@@ -345,89 +344,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
 
             return indentLevel;
-        }
-
-        private class ShimTextBufferAdapter : ITextBuffer
-        {
-            public ITextSnapshot Snapshot { get; private set; }
-            private int _position;
-            private string _cachedText;
-            private int _cachedPos;
-
-            public ShimTextBufferAdapter(ITextSnapshot snapshot)
-            {
-                Snapshot = snapshot;
-                _cachedPos = -1;
-            }
-
-            #region IRazorTextBuffer
-
-            int ITextBuffer.Length
-            {
-                get { return Length; }
-            }
-
-            int ITextBuffer.Position
-            {
-                get { return _position; }
-                set { _position = value; }
-            }
-
-            int ITextBuffer.Read()
-            {
-                return Read();
-            }
-
-            int ITextBuffer.Peek()
-            {
-                return Peek();
-            }
-
-            #endregion
-
-            #region private methods
-
-            private int Length
-            {
-                get { return Snapshot.Length; }
-            }
-
-            private int Read()
-            {
-                if (_position >= Snapshot.Length)
-                {
-                    return -1;
-                }
-
-                int readVal = ReadChar();
-                _position = _position + 1;
-
-                return readVal;
-            }
-
-            private int Peek()
-            {
-                if (_position >= Snapshot.Length)
-                {
-                    return -1;
-                }
-
-                return ReadChar();
-            }
-
-            private int ReadChar()
-            {
-                if ((_cachedPos < 0) || (_position < _cachedPos) || (_position >= _cachedPos + _cachedText.Length))
-                {
-                    _cachedPos = _position;
-                    int cachedLen = Math.Min(1024, Snapshot.Length - _cachedPos);
-                    _cachedText = Snapshot.GetText(_cachedPos, cachedLen);
-                }
-
-                return _cachedText[_position - _cachedPos];
-            }
-
-            #endregion
         }
     }
 }

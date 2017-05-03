@@ -9,6 +9,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
+    [Obsolete] // Superseded by SourceChange
     public struct TextChange
     {
         private string _newText;
@@ -127,6 +128,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get { return OldLength > 0 && NewLength > 0; }
         }
 
+        public SourceChange AsSourceChange()
+        {
+            var normalized = Normalize();
+            return new SourceChange(
+                new SourceSpan(
+                    filePath: null,
+                    absoluteIndex: normalized.OldPosition,
+                    lineIndex: -1,
+                    characterIndex: -1,
+                    length: normalized.OldLength), 
+                normalized.NewText);
+        }
+
         public override bool Equals(object obj)
         {
             if (!(obj is TextChange))
@@ -154,15 +168,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             hashCodeCombiner.Add(NewBuffer);
 
             return hashCodeCombiner;
-        }
-
-        public string ApplyChange(string content, int changeOffset)
-        {
-            var changeRelativePosition = OldPosition - changeOffset;
-
-            Debug.Assert(changeRelativePosition >= 0);
-            return content.Remove(changeRelativePosition, OldLength)
-                .Insert(changeRelativePosition, NewText);
         }
 
         public override string ToString()

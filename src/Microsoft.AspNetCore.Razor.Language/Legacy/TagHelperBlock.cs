@@ -120,9 +120,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        public override Span LocateOwner(TextChange change)
+        public override Span LocateOwner(SourceChange change)
         {
-            var oldPosition = change.OldPosition;
+            var oldPosition = change.Span.AbsoluteIndex;
             if (oldPosition < Start.AbsoluteIndex)
             {
                 // Change occurs prior to the TagHelper.

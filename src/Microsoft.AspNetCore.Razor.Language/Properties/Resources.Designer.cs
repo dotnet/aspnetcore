@@ -374,6 +374,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatInvalidTargetedTagNameNullOrWhitespace()
             => GetString("InvalidTargetedTagNameNullOrWhitespace");
 
+        /// <summary>
+        /// The node '{0}' is not the owner of change '{1}'.
+        /// </summary>
+        internal static string InvalidOperation_SpanIsNotChangeOwner
+        {
+            get => GetString("InvalidOperation_SpanIsNotChangeOwner");
+        }
+
+        /// <summary>
+        /// The node '{0}' is not the owner of change '{1}'.
+        /// </summary>
+        internal static string FormatInvalidOperation_SpanIsNotChangeOwner(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidOperation_SpanIsNotChangeOwner"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

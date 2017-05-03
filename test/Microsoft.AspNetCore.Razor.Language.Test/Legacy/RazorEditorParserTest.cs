@@ -7,6 +7,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class RazorEditorParserTest
@@ -1448,3 +1449,4 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
     }
 }
+#pragma warning restore CS0612 // Type or member is obsolete

@@ -195,4 +195,7 @@
   <data name="InvalidTargetedTagNameNullOrWhitespace" xml:space="preserve">
     <value>Targeted tag name cannot be null or whitespace.</value>
   </data>
+  <data name="InvalidOperation_SpanIsNotChangeOwner" xml:space="preserve">
+    <value>The node '{0}' is not the owner of change '{1}'.</value>
+  </data>
 </root>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -30,49 +31,48 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new SpanEditHandler(tokenizer);
         }
 
-        public virtual EditResult ApplyChange(Span target, TextChange change)
+        public virtual EditResult ApplyChange(Span target, SourceChange change)
         {
             return ApplyChange(target, change, force: false);
         }
 
-        public virtual EditResult ApplyChange(Span target, TextChange change, bool force)
+        public virtual EditResult ApplyChange(Span target, SourceChange change, bool force)
         {
             var result = PartialParseResult.Accepted;
-            var normalized = change.Normalize();
             if (!force)
             {
-                result = CanAcceptChange(target, normalized);
+                result = CanAcceptChange(target, change);
             }
 
             // If the change is accepted then apply the change
             if ((result & PartialParseResult.Accepted) == PartialParseResult.Accepted)
             {
-                return new EditResult(result, UpdateSpan(target, normalized));
+                return new EditResult(result, UpdateSpan(target, change));
             }
             return new EditResult(result, new SpanBuilder(target));
         }
 
-        public virtual bool OwnsChange(Span target, TextChange change)
+        public virtual bool OwnsChange(Span target, SourceChange change)
         {
             var end = target.Start.AbsoluteIndex + target.Length;
-            var changeOldEnd = change.OldPosition + change.OldLength;
-            return change.OldPosition >= target.Start.AbsoluteIndex &&
+            var changeOldEnd = change.Span.AbsoluteIndex + change.Span.Length;
+            return change.Span.AbsoluteIndex >= target.Start.AbsoluteIndex &&
                    (changeOldEnd < end || (changeOldEnd == end && AcceptedCharacters != AcceptedCharacters.None));
         }
 
-        protected virtual PartialParseResult CanAcceptChange(Span target, TextChange normalizedChange)
+        protected virtual PartialParseResult CanAcceptChange(Span target, SourceChange change)
         {
             return PartialParseResult.Rejected;
         }
 
-        protected virtual SpanBuilder UpdateSpan(Span target, TextChange normalizedChange)
+        protected virtual SpanBuilder UpdateSpan(Span target, SourceChange change)
         {
-            var newContent = normalizedChange.ApplyChange(target.Content, target.Start.AbsoluteIndex);
+            var newContent = change.GetEditedContent(target);
             var newSpan = new SpanBuilder(target);
             newSpan.ClearSymbols();
-            foreach (ISymbol sym in Tokenizer(newContent))
+            foreach (var token in Tokenizer(newContent))
             {
-                newSpan.Accept(sym);
+                newSpan.Accept(token);
             }
             if (target.Next != null)
             {
@@ -82,16 +82,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return newSpan;
         }
 
-        protected internal static bool IsAtEndOfFirstLine(Span target, TextChange change)
+        protected internal static bool IsAtEndOfFirstLine(Span target, SourceChange change)
         {
             var endOfFirstLine = target.Content.IndexOfAny(new char[] { (char)0x000d, (char)0x000a, (char)0x2028, (char)0x2029 });
-            return (endOfFirstLine == -1 || (change.OldPosition - target.Start.AbsoluteIndex) <= endOfFirstLine);
+            return (endOfFirstLine == -1 || (change.Span.AbsoluteIndex - target.Start.AbsoluteIndex) <= endOfFirstLine);
         }
 
         /// <summary>
         /// Returns true if the specified change is an insertion of text at the end of this span.
         /// </summary>
-        protected internal static bool IsEndDeletion(Span target, TextChange change)
+        protected internal static bool IsEndDeletion(Span target, SourceChange change)
         {
             return change.IsDelete && IsAtEndOfSpan(target, change);
         }
@@ -99,25 +99,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// <summary>
         /// Returns true if the specified change is a replacement of text at the end of this span.
         /// </summary>
-        protected internal static bool IsEndReplace(Span target, TextChange change)
+        protected internal static bool IsEndReplace(Span target, SourceChange change)
         {
             return change.IsReplace && IsAtEndOfSpan(target, change);
         }
 
-        protected internal static bool IsAtEndOfSpan(Span target, TextChange change)
+        protected internal static bool IsAtEndOfSpan(Span target, SourceChange change)
         {
-            return (change.OldPosition + change.OldLength) == (target.Start.AbsoluteIndex + target.Length);
-        }
-
-        /// <summary>
-        /// Returns the old text referenced by the change.
-        /// </summary>
-        /// <remarks>
-        /// If the content has already been updated by applying the change, this data will be _invalid_
-        /// </remarks>
-        protected internal static string GetOldText(Span target, TextChange change)
-        {
-            return target.Content.Substring(change.OldPosition - target.Start.AbsoluteIndex, change.OldLength);
+            return (change.Span.AbsoluteIndex + change.Span.Length) == (target.Start.AbsoluteIndex + target.Length);
         }
 
         public override string ToString()

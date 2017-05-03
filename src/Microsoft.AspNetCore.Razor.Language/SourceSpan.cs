@@ -9,6 +9,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public struct SourceSpan : IEquatable<SourceSpan>
     {
+        public SourceSpan(int absoluteIndex, int length)
+            : this(null, absoluteIndex, -1, -1, length)
+        {
+        }
+
         public SourceSpan(SourceLocation location, int contentLength)
             : this(location.FilePath, location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, contentLength)
         {

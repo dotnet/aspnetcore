@@ -20,9 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// </summary>
         public RazorCodeDocument GeneratorResults { get; set; }
 
+
         /// <summary>
         /// The TextChange which triggered the re-parse
         /// </summary>
+#pragma warning disable CS0612 // Type or member is obsolete
         public TextChange SourceChange { get; set; }
+#pragma warning restore CS0612 // Type or member is obsolete
     }
 }

@@ -43,7 +43,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             _main.Cancel();
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         public void QueueChange(TextChange change)
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             _main.QueueChange(change);
         }
@@ -67,37 +69,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        internal static bool TreesAreDifferent(RazorSyntaxTree leftTree, RazorSyntaxTree rightTree, IEnumerable<TextChange> changes)
-        {
-            return TreesAreDifferent(leftTree, rightTree, changes, CancellationToken.None);
-        }
-
+#pragma warning disable CS0612 // Type or member is obsolete
         internal static bool TreesAreDifferent(RazorSyntaxTree leftTree, RazorSyntaxTree rightTree, IEnumerable<TextChange> changes, CancellationToken cancelToken)
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             return TreesAreDifferent(leftTree.Root, rightTree.Root, changes, cancelToken);
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         internal static bool TreesAreDifferent(Block leftTree, Block rightTree, IEnumerable<TextChange> changes)
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             return TreesAreDifferent(leftTree, rightTree, changes, CancellationToken.None);
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         internal static bool TreesAreDifferent(Block leftTree, Block rightTree, IEnumerable<TextChange> changes, CancellationToken cancelToken)
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             // Apply all the pending changes to the original tree
             // PERF: If this becomes a bottleneck, we can probably do it the other way around,
             //  i.e. visit the tree and find applicable changes for each node.
-            foreach (TextChange change in changes)
+#pragma warning disable CS0612 // Type or member is obsolete
+            foreach (var change in changes)
+#pragma warning restore CS0612 // Type or member is obsolete
             {
                 cancelToken.ThrowIfCancellationRequested();
-                var changeOwner = leftTree.LocateOwner(change);
+
+                var sourceChange = change.AsSourceChange();
+                var changeOwner = leftTree.LocateOwner(sourceChange);
 
                 // Apply the change to the tree
                 if (changeOwner == null)
                 {
                     return true;
                 }
-                var result = changeOwner.EditHandler.ApplyChange(changeOwner, change, force: true);
+
+                var result = changeOwner.EditHandler.ApplyChange(changeOwner, sourceChange, force: true);
                 changeOwner.ReplaceWith(result.EditedSpan);
             }
 
@@ -150,7 +158,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             private string _fileName;
             private readonly object _stateLock = new object();
+#pragma warning disable CS0612 // Type or member is obsolete
             private IList<TextChange> _changes = new List<TextChange>();
+#pragma warning restore CS0612 // Type or member is obsolete
 
             public MainThreadState(string fileName)
             {
@@ -189,7 +199,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return new DisposableAction(() => Monitor.Exit(_stateLock));
             }
 
+#pragma warning disable CS0612 // Type or member is obsolete
             public void QueueChange(TextChange change)
+#pragma warning restore CS0612 // Type or member is obsolete
             {
                 EnsureOnThread();
                 lock (_stateLock)
@@ -216,7 +228,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     _currentParcelCancelSource = new CancellationTokenSource();
 
                     var changes = _changes;
+#pragma warning disable CS0612 // Type or member is obsolete
                     _changes = new List<TextChange>();
+#pragma warning restore CS0612 // Type or member is obsolete
                     return new WorkParcel(changes, _currentParcelCancelSource.Token);
                 }
             }
@@ -274,7 +288,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             private RazorTemplateEngine _templateEngine;
             private string _fileName;
             private RazorSyntaxTree _currentSyntaxTree;
+#pragma warning disable CS0612 // Type or member is obsolete
             private IList<TextChange> _previouslyDiscarded = new List<TextChange>();
+#pragma warning restore CS0612 // Type or member is obsolete
 
             public BackgroundThread(MainThreadState main, RazorTemplateEngine templateEngine, string fileName)
             {
@@ -321,7 +337,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     if (!linkedCancel.IsCancellationRequested)
                                     {
                                         // Collect ALL changes
+#pragma warning disable CS0612 // Type or member is obsolete
                                         List<TextChange> allChanges;
+#pragma warning restore CS0612 // Type or member is obsolete
 
                                         if (_previouslyDiscarded != null)
                                         {
@@ -411,14 +429,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private class WorkParcel
         {
+#pragma warning disable CS0612 // Type or member is obsolete
             public WorkParcel(IList<TextChange> changes, CancellationToken cancelToken)
+#pragma warning restore CS0612 // Type or member is obsolete
             {
                 Changes = changes;
                 CancelToken = cancelToken;
             }
 
             public CancellationToken CancelToken { get; private set; }
+#pragma warning disable CS0612 // Type or member is obsolete
             public IList<TextChange> Changes { get; private set; }
+#pragma warning restore CS0612 // Type or member is obsolete
         }
     }
 }
+#pragma warning restore CS0618

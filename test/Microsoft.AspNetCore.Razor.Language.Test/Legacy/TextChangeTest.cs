@@ -5,6 +5,7 @@ using System;
 using Moq;
 using Xunit;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class TextChangeTest
@@ -225,51 +226,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void ApplyChangeWithInsertedTextReturnsNewContentWithChangeApplied()
-        {
-            // Arrange
-            var newBuffer = new StringTextBuffer("test");
-            var oldBuffer = new StringTextBuffer("");
-            var textChange = new TextChange(0, 0, oldBuffer, 3, newBuffer);
-
-            // Act
-            var text = textChange.ApplyChange("abcd", 0);
-
-            // Assert
-            Assert.Equal("tesabcd", text);
-        }
-
-        [Fact]
-        public void ApplyChangeWithRemovedTextReturnsNewContentWithChangeApplied()
-        {
-            // Arrange
-            var newBuffer = new StringTextBuffer("abcdefg");
-            var oldBuffer = new StringTextBuffer("");
-            var textChange = new TextChange(1, 1, oldBuffer, 0, newBuffer);
-
-            // Act
-            var text = textChange.ApplyChange("abcdefg", 1);
-
-            // Assert
-            Assert.Equal("bcdefg", text);
-        }
-
-        [Fact]
-        public void ApplyChangeWithReplacedTextReturnsNewContentWithChangeApplied()
-        {
-            // Arrange
-            var newBuffer = new StringTextBuffer("abcdefg");
-            var oldBuffer = new StringTextBuffer("");
-            var textChange = new TextChange(1, 1, oldBuffer, 2, newBuffer);
-
-            // Act
-            var text = textChange.ApplyChange("abcdefg", 1);
-
-            // Assert
-            Assert.Equal("bcbcdefg", text);
-        }
-
-        [Fact]
         public void NormalizeFixesUpIntelliSenseStyleReplacements()
         {
             // Arrange
@@ -315,3 +271,4 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
     }
 }
+#pragma warning restore CS0612 // Type or member is obsolete

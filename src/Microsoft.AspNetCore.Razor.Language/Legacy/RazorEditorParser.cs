@@ -3,8 +3,8 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 
+#pragma warning disable CS0618 // TextChange is Obsolete
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     /// <summary>
@@ -118,6 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return null;
         }
 
+        // Type or member is obsolete
         /// <summary>
         /// Determines if a change will cause a structural change to the document and if not, applies it to the
         /// existing tree. If a structural change would occur, automatically starts a reparse.
@@ -128,7 +129,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// </remarks>
         /// <param name="change">The change to apply to the parse tree.</param>
         /// <returns>A <see cref="PartialParseResult"/> value indicating the result of the incremental parse.</returns>
+#pragma warning disable CS0612
         public virtual PartialParseResult CheckForStructureChanges(TextChange change)
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             var result = PartialParseResult.Rejected;
 
@@ -171,14 +174,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         private PartialParseResult TryPartialParse(TextChange change)
+#pragma warning restore CS0612 // Type or member is obsolete
         {
+            var sourceChange = change.AsSourceChange();
+
             var result = PartialParseResult.Rejected;
 
             // Try the last change owner
-            if (_lastChangeOwner != null && _lastChangeOwner.EditHandler.OwnsChange(_lastChangeOwner, change))
+            if (_lastChangeOwner != null && _lastChangeOwner.EditHandler.OwnsChange(_lastChangeOwner, sourceChange))
             {
-                var editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
+                var editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, sourceChange);
                 result = editResult.Result;
                 if ((editResult.Result & PartialParseResult.Rejected) != PartialParseResult.Rejected)
                 {
@@ -189,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Locate the span responsible for this change
-            _lastChangeOwner = CurrentSyntaxTree.Root.LocateOwner(change);
+            _lastChangeOwner = CurrentSyntaxTree.Root.LocateOwner(sourceChange);
 
             if (LastResultProvisional)
             {
@@ -198,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else if (_lastChangeOwner != null)
             {
-                var editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
+                var editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, sourceChange);
                 result = editResult.Result;
                 if ((editResult.Result & PartialParseResult.Rejected) != PartialParseResult.Rejected)
                 {
@@ -258,3 +265,4 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
     }
 }
+#pragma warning restore CS0618
