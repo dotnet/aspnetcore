@@ -176,8 +176,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         private static LoggerFactory CreateLogger()
         {
             var loggerFactory = new LoggerFactory();
-            loggerFactory.AddConsole(_verbose ? LogLevel.Trace : LogLevel.Error);
-            loggerFactory.AddDebug(LogLevel.Trace);
+            loggerFactory.AddConsole();
+            loggerFactory.AddFilter("Console", level => level >= (_verbose ? LogLevel.Trace : LogLevel.Error));
+            loggerFactory.AddDebug();
 
             return loggerFactory;
         }

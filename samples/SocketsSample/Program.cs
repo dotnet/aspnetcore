@@ -4,6 +4,7 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace SocketsSample
 {
@@ -17,6 +18,10 @@ namespace SocketsSample
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddConsole();
+                })
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
