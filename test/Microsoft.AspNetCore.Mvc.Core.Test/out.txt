@@ -1,0 +1,172 @@
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:18.953, 2296209529728, vstest.console.dll, Using .Net Framework version:.NETCoreApp,Version=v2.0
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:18.998, 2296209653022, vstest.console.dll, TestPluginCache: Discovering the extensions using extension path.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.001, 2296209661337, vstest.console.dll, AssemblyResolver: Microsoft.TestPlatform.TestHostRuntimeProvider: Resolving assembly.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.003, 2296209666162, vstest.console.dll, AssemblyResolver: Microsoft.TestPlatform.TestHostRuntimeProvider: Resolved assembly. 
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.006, 2296209676477, vstest.console.dll, AssemblyResolver: Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger: Resolving assembly.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.008, 2296209680971, vstest.console.dll, AssemblyResolver: Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger: Resolved assembly. 
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.010, 2296209688504, vstest.console.dll, TestPluginCache: Discovered the extensions using extension path ''.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.011, 2296209689400, vstest.console.dll, TestPluginCache: Discoverers are ''.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.011, 2296209689928, vstest.console.dll, TestPluginCache: Executors are ''.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.011, 2296209690442, vstest.console.dll, TestPluginCache: Setting providers are ''.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.011, 2296209690923, vstest.console.dll, TestPluginCache: Loggers are 'logger://Microsoft/TestPlatform/TrxLogger/v2'.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.033, 2296209754849, vstest.console.dll, RunTestsArgumentProcessor:Execute: Test run is starting.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.033, 2296209755453, vstest.console.dll, RunTestsArgumentProcessor:Execute: Queuing Test run.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.033, 2296209756222, vstest.console.dll, TestRequestManager.RunTests: run tests started.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.086, 2296209908971, vstest.console.dll, TestPluginManager.CreateTestExtension: Attempting to load test extension: Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Hosting.DefaultTestHostManager
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.086, 2296209910233, vstest.console.dll, TestPluginManager.CreateTestExtension: Attempting to load test extension: Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Hosting.DotnetTestHostManager
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.087, 2296209912861, vstest.console.dll, TestEngine: Initializing Parallel Execution as MaxCpuCount is set to: 1
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.096, 2296209940729, vstest.console.dll, TestRunRequest.ExecuteAsync: Creating test run request.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.097, 2296209942353, vstest.console.dll, TestRunRequest.ExecuteAsync: Starting.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.097, 2296209943116, vstest.console.dll, TestRunRequest.ExecuteAsync: Starting run with settings:TestRunCriteria:
+   KeepAlive=False,FrequencyOfRunStatsChangeEvent=10,RunStatsChangeEventTimeout=00:00:01.5000000,TestCaseFilter=,TestExecutorLauncher=
+   Settingsxml=<?xml version="1.0" encoding="utf-16"?>
+<RunSettings>
+  <RunConfiguration>
+    <ResultsDirectory>D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\TestResults</ResultsDirectory>
+    <TargetPlatform>X86</TargetPlatform>
+    <TargetFrameworkVersion>.NETCoreApp,Version=v2.0</TargetFrameworkVersion>
+  </RunConfiguration>
+</RunSettings>
+
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.097, 2296209943354, vstest.console.dll, TestRunRequest.ExecuteAsync: Wait for the first run request is over.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:19.099, 2296209948803, vstest.console.dll, TestRunRequest.ExecuteAsync: Started.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:19.099, 2296209949515, vstest.console.dll, TestRunRequest.WaitForCompletion: Waiting with timeout -1.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:19.099, 2296209949680, vstest.console.dll, ProxyParallelExecutionManager: Triggering test run for next source: D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Core.Test.dll
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.100, 2296209951000, vstest.console.dll, ProxyExecutionManager: Test host is non shared. Lazy initialize.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:19.153, 2296210107110, vstest.console.dll, Listening on port : 64746
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.167, 2296210147124, vstest.console.dll, DotnetTestHostmanager: Full path of dotnet.exe is C:\Users\Pranav\.dotnet\x64\dotnet.exe
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.167, 2296210147773, vstest.console.dll, DotnetTestHostmanager: Adding  --runtimeconfig "D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Core.Test.runtimeconfig.json" in args
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.167, 2296210148038, vstest.console.dll, DotnetTestHostmanager: Adding  --depsfile "D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Core.Test.deps.json" in args
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:19.167, 2296210148469, vstest.console.dll, AssemblyResolver: Microsoft.Extensions.DependencyModel: Resolving assembly.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:19.168, 2296210150826, vstest.console.dll, AssemblyResolver: Microsoft.Extensions.DependencyModel: Resolved assembly. 
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.168, 2296210151668, vstest.console.dll, DotnetTestHostmanager: Reading file D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Core.Test.deps.json to get path of testhost.dll
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.220, 2296210304147, vstest.console.dll, DotnetTestHostmanager: Relative path of testhost.dll with respect to package folder is microsoft.testplatform.testhost/15.0.0\lib/netstandard1.5/testhost.dll
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.225, 2296210317542, vstest.console.dll, DotnetTestHostmanager: Looking for path microsoft.testplatform.testhost/15.0.0\lib/netstandard1.5/testhost.dll in folder C:\Users\Pranav\.nuget\packages
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.225, 2296210318273, vstest.console.dll, DotnetTestHostmanager: Full path of testhost.dll is C:\Users\Pranav\.nuget\packages\microsoft.testplatform.testhost/15.0.0\lib/netstandard1.5/testhost.dll
+TpTrace Verbose: 0 : 17636, 5, 2017/05/12, 14:46:19.227, 2296210324293, vstest.console.dll, DotnetTestHostManager: Starting process 'C:\Users\Pranav\.dotnet\x64\dotnet.exe' with command line 'exec --runtimeconfig "D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Core.Test.runtimeconfig.json" --depsfile "D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Core.Test.deps.json" "C:\Users\Pranav\.nuget\packages\microsoft.testplatform.testhost/15.0.0\lib/netstandard1.5/testhost.dll" --port 64746 --parentprocessid 17636 --diag "D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\out.host.17-05-12_14-46-19_16053_4.txt"'
+TpTrace Verbose: 0 : 17636, 5, 2017/05/12, 14:46:19.241, 2296210364355, vstest.console.dll, Test Runtime launched with Pid: 7340
+TpTrace Information: 0 : 17636, 6, 2017/05/12, 14:46:19.619, 2296211472265, vstest.console.dll, Accepted Client request and set the flag
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:19.787, 2296211962805, vstest.console.dll, TestRunRequest:SendTestRunMessage: Starting.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:19.787, 2296211963963, vstest.console.dll, TestRunRequest:SendTestRunMessage: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:21.689, 2296217536188, vstest.console.dll, TestRunRequest:SendTestRunMessage: Starting.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:21.689, 2296217536624, vstest.console.dll, TestRunRequest:SendTestRunMessage: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:24.893, 2296226922082, vstest.console.dll, TestRunRequest:SendTestRunMessage: Starting.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:24.893, 2296226922397, vstest.console.dll, TestRunRequest:SendTestRunMessage: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.011, 2296230198328, vstest.console.dll, TestRunRequest:SendTestRunMessage: Starting.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.011, 2296230198818, vstest.console.dll, TestRunRequest:SendTestRunMessage: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.199, 2296230750425, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.200, 2296230751176, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.DefaultFilterProviderTest.DefaultFilterProvider_UsesFilter_WhenItsNotIFilterFactory
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.200, 2296230751666, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.277, 2296230978862, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.278, 2296230979323, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_SelectDefaultFormatter_OnAllMediaRangeAcceptHeaderMediaType(acceptHeader: "text/html,application/xhtml+xml,application/xml;q="..., expectedContentType: "application/json; charset=utf-8")
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.278, 2296230979464, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.AuthorizationApplicationModelProviderTest.OnProvidersExecuting_DefaultPolicyProvider_NoAuthorizationData_NoFilterCreated
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.278, 2296230979576, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.MiddlewareFilterTest.UnhandledException_InMiddleware_PropagatesBackToInvoker
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.278, 2296230979676, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.DefaultValues
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.278, 2296230979775, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.HttpStatusCodeResultTests.HttpStatusCodeResult_ExecuteResultSetsResponseStatusCode
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.278, 2296230979916, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.DefaultModelMetadataBindingDetailsProviderTest.CreateBindingDetails_BindingBehaviorLeftAlone_ForAttributeOnPropertyType(initialValue: False)
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.278, 2296230980020, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.Constructor_InitializesActionName(actionName: null)
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.278, 2296230980612, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.305, 2296231058735, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.305, 2296231059242, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.ExecuteResultAsync_ThrowsIfActionUrlIsNullOrEmpty(returnValue: "")
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.305, 2296231059476, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.DefaultFilterProviderTest.DefaultFilterProvider_UsesFilterFactory
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.305, 2296231059668, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.DefaultModelMetadataBindingDetailsProviderTest.CreateBindingDetails_FindsBindNever_OnContainerClass
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.305, 2296231060066, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.326, 2296231121258, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.326, 2296231121752, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.DefaultModelMetadataBindingDetailsProviderTest.CreateBindingDetails_FindsBindNever_OnProperty
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.326, 2296231122073, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.348, 2296231186087, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.348, 2296231186655, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.372, 2296231255179, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.372, 2296231255669, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.AuthorizationApplicationModelProviderTest.BuildActionModels_BaseAuthorizeFiltersAreStillValidWhenOverriden
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.372, 2296231255874, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ChallengeResultTest.ChallengeResult_Execute
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.372, 2296231256063, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ReferenceEqualityComparerTest.GetHashCode_DoesNotThrowForNull
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.372, 2296231256253, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.IsRequired_ReturnsFalse_ForNullableTypes(modelType: typeof(int?))
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.372, 2296231256566, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.396, 2296231325482, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.396, 2296231326084, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.AuthorizationApplicationModelProviderTest.CreateControllerModelAndActionModel_AllowAnonymousAttributeAddsAllowAnonymousFilter
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.396, 2296231326311, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.IsReadOnly_ReturnsTrue_ForPrivateSetProperty
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.396, 2296231326430, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ReferenceEqualityComparerTest.Equals_NullEqualsNull
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.396, 2296231326629, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.426, 2296231415383, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.427, 2296231416055, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.AuthorizationApplicationModelProviderTest.OnProvidersExecuting_NonDefaultPolicyProvider_HasNoPolicy_HasPolicyProviderAndAuthorizeData
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.427, 2296231416311, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_SelectDefaultFormatter_OnAllMediaRangeAcceptHeaderMediaType(acceptHeader: "*/*", expectedContentType: "application/json; charset=utf-8")
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.427, 2296231416604, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.463, 2296231521555, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.463, 2296231522109, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.DefaultFilterProviderTest.DefaultFilterProvider_UsesFilterFactory_WithIFilterContainer
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.463, 2296231522335, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.ModelAttributesTest.GetAttributesForBaseProperty_IncludesMetadataAttributes
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.463, 2296231522541, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ObjectResult_PerformsContentNegotiation_OnAllMediaRangeAcceptHeaderMediaType(acceptHeader: "text/html,*/*;q=0.8,application/xml;q=0.9", expectedContentType: "application/xml; charset=utf-8")
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.463, 2296231522866, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.485, 2296231585808, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.492, 2296231607920, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.ModelAttributesTest.GetAttributesForBasePropertyFromDerivedModel_IncludesMetadataAttributes
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.492, 2296231608328, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.527, 2296231711250, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.528, 2296231711766, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.PropertiesProperty_WithDefaultOrder_OrdersPropertyNamesAsProvided
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.528, 2296231711993, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.UnsupportedContentTypeFilterTest.OnActionExecuting_DoesNotChangeActionResult_IfOtherExceptionsAreFoundOnModelState
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.528, 2296231712321, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.564, 2296231817096, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.564, 2296231817584, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_MatchAllContentType_Throws(contentTypes: ["*/*"], invalidContentType: "*/*")
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.564, 2296231817953, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.589, 2296231892418, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.590, 2296231893479, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.DefaultFilterProviderTest.DefaultFilterProvider_UsesFilterFactory_WithOrder
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.590, 2296231893814, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.ExecuteResultAsync_ThrowsIfActionUrlIsNullOrEmpty(returnValue: null)
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.590, 2296231894243, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ChallengeResultTest.ChallengeResult_ExecuteNoSchemes
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.590, 2296231894425, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_MatchAllContentType_Throws(contentTypes: ["*/*", "application/json"], invalidContentType: "*/*")
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.590, 2296231894858, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.630, 2296232012237, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.631, 2296232013343, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.SelectFormatter_WithMultipleProvidedContentTypes_DoesConneg
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.631, 2296232013691, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.UnsupportedContentTypeFilterTest.OnActionExecuting_DoesNotChangeActionResult_IfOtherErrorsAreFoundOnModelState
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.631, 2296232013999, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.656, 2296232088420, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.656, 2296232088979, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.FilterFactoryTest.GetAllFilters_CachesAllFilters
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.656, 2296232089185, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.SelectFormatter_WithAcceptHeaderAndContentTypes_SetsContentTypeIsServerDefinedWhenExpected
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.656, 2296232089350, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.Constructor_InitializesControllerName(controllerName: "")
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.657, 2296232089678, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.682, 2296232163655, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.682, 2296232164239, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_WithOneProvidedContentType_FromResponseContentType_NoFallback
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.682, 2296232164464, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.ExecuteResultAsync_SetsStatusCodeAndLocationHeader
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.682, 2296232164658, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderTests.BindModel
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.682, 2296232165031, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.708, 2296232239915, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.708, 2296232240592, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.FilterFactoryTest.GetAllFilters_DoesNotCacheFiltersWithIsReusableFalse
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.708, 2296232240876, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_FallsBackOnFormattersInOptions
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.708, 2296232241276, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.753, 2296232373613, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.754, 2296232375335, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderTests.BindModelSetsModelToNullOnNullOrEmptyString(value: "")
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.754, 2296232375640, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.FilterFactoryTest.GetAllFilters_CachesFilterFromFactory
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.771, 2296232424687, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.787, 2296232470786, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.787, 2296232471351, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvokerTest.InvokeAction_InvokesAsyncResourceFilter_ThrowsUnhandledException
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.787, 2296232471500, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.PropertiesSetOnce
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.787, 2296232471707, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.805, 2296232525812, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.806, 2296232526306, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderTests.BindModelAddsModelErrorsOnInvalidCharacters
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.806, 2296232526580, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.ElementMetadata_ReturnsExpectedMetadata(modelType: typeof(System.Collections.ObjectModel.Collection<int>), elementType: typeof(int))
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.806, 2296232526774, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.OnFormatting_NullContext_ThrowsArgumentNullException
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.806, 2296232527070, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.828, 2296232592590, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Starting.
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.828, 2296232593107, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatterTests.SelectResponseCharacterEncoding_SelectsEncoding(acceptCharsetHeaders: "utf-16; q=0.5", supportedEncodings: ["utf-8", "utf-16"], expectedEncoding: "utf-16")
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:26.829, 2296232593386, vstest.console.dll, InProgress is Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderTests.BindModel_ReturnsWithIsModelSetFalse_WhenValueNotFound
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:26.829, 2296232593644, vstest.console.dll, TestRunRequest:SendTestRunStatsChange: Completed.
+TpTrace Error: 0 : 17636, 11, 2017/05/12, 14:46:27.899, 2296235728284, vstest.console.dll, SocketCommunicationManager ReceiveMessage: failed to receive message System.IO.IOException: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host. ---> System.Net.Sockets.SocketException: An existing connection was forcibly closed by the remote host
+   at System.Net.Sockets.NetworkStream.Read(Byte[] buffer, Int32 offset, Int32 size)
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.NetworkStream.Read(Byte[] buffer, Int32 offset, Int32 size)
+   at System.IO.BinaryReader.ReadString()
+   at Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.SocketCommunicationManager.TryReceiveRawMessage(CancellationToken cancellationToken)
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:27.900, 2296235731675, vstest.console.dll, AssemblyResolver: Microsoft.TestPlatform.CommunicationUtilities.resources: Resolving assembly.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:27.901, 2296235735262, vstest.console.dll, AssemblyResolver: Microsoft.TestPlatform.CommunicationUtilities.resources: Resolving assembly.
+TpTrace Error: 0 : 17636, 4, 2017/05/12, 14:46:27.902, 2296235737773, vstest.console.dll, Unable to receive message from testhost: Unable to communicate with test host process.
+TpTrace Error: 0 : 17636, 4, 2017/05/12, 14:46:27.902, 2296235739815, vstest.console.dll, Server: TestExecution: Aborting test run because System.IO.IOException: Unable to communicate with test host process.
+   at Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.TestRequestSender.TryReceiveRawMessage()
+   at Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.TestRequestSender.ListenAndReportTestResults(ITestRunEventsHandler testRunEventsHandler)
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:27.905, 2296235748028, vstest.console.dll, TestRunRequest:SendTestRunMessage: Starting.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:27.906, 2296235750849, vstest.console.dll, TestRunRequest:SendTestRunMessage: Completed.
+TpTrace Error: 0 : 17636, 4, 2017/05/12, 14:46:27.953, 2296235886970, vstest.console.dll, Connection has been broken: not sending SessionEnd message
+TpTrace Error: 0 : 17636, 5, 2017/05/12, 14:46:27.955, 2296235892907, vstest.console.dll, Connection has been broken: not sending SessionEnd message
+TpTrace Verbose: 0 : 17636, 4, 2017/05/12, 14:46:27.980, 2296235966449, vstest.console.dll, TestRunRequest:TestRunComplete: Starting. IsAborted:True IsCanceled:False.
+TpTrace Information: 0 : 17636, 4, 2017/05/12, 14:46:28.012, 2296236060503, vstest.console.dll, TestRunRequest:TestRunComplete: Completed.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:28.012, 2296236060856, vstest.console.dll, TestRunRequest.Dispose: Starting.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:28.012, 2296236061195, vstest.console.dll, TestRunRequest.Dispose: Completed.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:28.012, 2296236061382, vstest.console.dll, TestRequestManager.RunTests: run tests completed, sucessful: True.
+TpTrace Information: 0 : 17636, 2, 2017/05/12, 14:46:28.012, 2296236061500, vstest.console.dll, RunTestsArgumentProcessor:Execute: Test run is completed.
+TpTrace Verbose: 0 : 17636, 2, 2017/05/12, 14:46:28.012, 2296236061645, vstest.console.dll, Executor.Execute: Exiting with exit code of 1

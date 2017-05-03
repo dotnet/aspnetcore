@@ -1,0 +1,227 @@
+TpTrace Information: 0 : 7340, 2, 2017/05/12, 14:46:19.552, 2296211289945, testhost.dll, DefaultEngineInvoker: Monitoring parent process with id: '17636'
+TpTrace Information: 0 : 7340, 2, 2017/05/12, 14:46:19.582, 2296211362311, testhost.dll, DefaultEngineInvoker: Initialize communication on port number: '64746'
+TpTrace Information: 0 : 7340, 2, 2017/05/12, 14:46:19.589, 2296211382526, testhost.dll, Trying to connect to server on port : 64746
+TpTrace Information: 0 : 7340, 6, 2017/05/12, 14:46:19.619, 2296211471935, testhost.dll, Connected to the server successfully 
+TpTrace Information: 0 : 7340, 2, 2017/05/12, 14:46:19.770, 2296211912888, testhost.dll, DefaultEngineInvoker: Start Request Processing.
+TpTrace Information: 0 : 7340, 5, 2017/05/12, 14:46:19.786, 2296211961678, testhost.dll, Discovery Session Initialize.
+TpTrace Information: 0 : 7340, 5, 2017/05/12, 14:46:19.791, 2296211974612, testhost.dll, Execution started.
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.800, 2296212001963, testhost.dll, TestPluginCache: Updating loadOnlyWellKnownExtensions from False to False.
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.803, 2296212012328, testhost.dll, TestPluginCache: Using directories for assembly resolution 'D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0'.
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.804, 2296212013228, testhost.dll, TestPluginCache: Updated the available extensions to 'D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\xunit.runner.visualstudio.dotnetcore.testadapter.dll'.
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.806, 2296212018539, testhost.dll, TestExecutorService: Loading the extensions
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.824, 2296212071700, testhost.dll, TestPluginCache: Discovering the extensions using extension path.
+TpTrace Error: 0 : 7340, 8, 2017/05/12, 14:46:19.825, 2296212074849, testhost.dll, Default extensions folder does not exist
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.834, 2296212101249, testhost.dll, AssemblyResolver: xunit.runner.visualstudio.dotnetcore.testadapter: Resolving assembly.
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.836, 2296212108511, testhost.dll, AssemblyResolver: xunit.runner.visualstudio.dotnetcore.testadapter: Resolved assembly. 
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.838, 2296212114315, testhost.dll, AssemblyResolver: xunit.runner.utility.netstandard15: Resolving assembly.
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.839, 2296212117237, testhost.dll, AssemblyResolver: xunit.runner.utility.netstandard15: Resolved assembly. 
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.849, 2296212144749, testhost.dll, TestPluginCache: Discovered the extensions using extension path 'D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\xunit.runner.visualstudio.dotnetcore.testadapter.dll'.
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.851, 2296212152310, testhost.dll, TestPluginCache: Discoverers are 'Xunit.Runner.VisualStudio.TestAdapter.VsTestRunner, xunit.runner.visualstudio.dotnetcore.testadapter, Version=2.2.0.1274, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c'.
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.851, 2296212152804, testhost.dll, TestPluginCache: Executors are 'executor://xunit/VsTestRunner2'.
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.852, 2296212153071, testhost.dll, TestPluginCache: Setting providers are ''.
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.852, 2296212153245, testhost.dll, TestPluginCache: Loggers are ''.
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.863, 2296212185977, testhost.dll, TestPluginManager.CreateTestExtension: Attempting to load test extension: Xunit.Runner.VisualStudio.TestAdapter.VsTestRunner
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.863, 2296212186881, testhost.dll, TestDiscoveryManager: LoadExtensions: Created discoverer Xunit.Runner.VisualStudio.TestAdapter.VsTestRunner
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.863, 2296212187141, testhost.dll, TestExecutorService: Loaded the discoverers
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.873, 2296212215633, testhost.dll, TestPluginManager.CreateTestExtension: Attempting to load test extension: Xunit.Runner.VisualStudio.TestAdapter.VsTestRunner
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.873, 2296212216190, testhost.dll, TestExecutorExtensionManager: Loading executor Xunit.Runner.VisualStudio.TestAdapter.VsTestRunner
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.873, 2296212216371, testhost.dll, TestExecutorService: Loaded the executors
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.878, 2296212230115, testhost.dll, TestExecutorService: Loaded the settings providers
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.878, 2296212230432, testhost.dll, TestExecutorService: Loaded the extensions
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.911, 2296212325983, testhost.dll, AssemblyResolver: Microsoft.VisualStudio.TestPlatform.Common.resources: Resolving assembly.
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.912, 2296212329124, testhost.dll, AssemblyResolver: Microsoft.VisualStudio.TestPlatform.Common.resources: Resolving assembly.
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:19.938, 2296212406954, testhost.dll, TestDiscoveryManager: Discovering tests from sources D:\work\Mvc\test\Microsoft.AspNetCore.Mvc.Core.Test\bin\Debug\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Core.Test.dll
+TpTrace Verbose: 0 : 7340, 8, 2017/05/12, 14:46:19.948, 2296212435838, testhost.dll, BaseRunTests.RunTestInternalWithExecutors: Running tests for executor://xunit/VsTestRunner2
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:21.567, 2296217179825, testhost.dll, AssemblyResolver: xunit.runner.reporters.netstandard15: Resolving assembly.
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:21.568, 2296217181466, testhost.dll, AssemblyResolver: xunit.runner.reporters.netstandard15: Resolved assembly. 
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:21.569, 2296217185540, testhost.dll, AssemblyResolver: xunit.runner.utility.netstandard15: Resolving assembly.
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:21.569, 2296217185750, testhost.dll, AssemblyResolver: xunit.runner.utility.netstandard15: Resolved from cache.
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:21.688, 2296217531986, testhost.dll, [xUnit.net 00:00:01.7330337]   Discovering: Microsoft.AspNetCore.Mvc.Core.Test
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:24.892, 2296226920961, testhost.dll, [xUnit.net 00:00:04.9399399]   Discovered:  Microsoft.AspNetCore.Mvc.Core.Test
+TpTrace Information: 0 : 7340, 8, 2017/05/12, 14:46:26.011, 2296230196922, testhost.dll, [xUnit.net 00:00:06.0581478]   Starting:    Microsoft.AspNetCore.Mvc.Core.Test
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.133, 2296230555033, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.169, 2296230660092, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.235, 2296230853307, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.261, 2296230930194, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.261, 2296230930969, testhost.dll, InProgressTests is null
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.267, 2296230948461, testhost.dll, AssemblyResolver: Microsoft.VisualStudio.TestPlatform.ObjectModel.resources: Resolving assembly.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.268, 2296230950524, testhost.dll, AssemblyResolver: Microsoft.VisualStudio.TestPlatform.ObjectModel.resources: Resolving assembly.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.269, 2296230954276, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.Constructor_InitializesActionName(actionName: null)  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.269, 2296230955003, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.269, 2296230955651, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.DefaultModelMetadataBindingDetailsProviderTest.CreateBindingDetails_BindingBehaviorLeftAlone_ForAttributeOnPropertyType(initialValue: False)  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.270, 2296230956600, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.DefaultFilterProviderTest.DefaultFilterProvider_UsesFilter_WhenItsNotIFilterFactory  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.270, 2296230958000, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.297, 2296231035076, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.297, 2296231036058, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.297, 2296231036327, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.DefaultModelMetadataBindingDetailsProviderTest.CreateBindingDetails_FindsBindNever_OnContainerClass  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.297, 2296231036648, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.297, 2296231037278, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.298, 2296231037803, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.298, 2296231038351, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.298, 2296231038850, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.298, 2296231039367, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.298, 2296231039898, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.298, 2296231040407, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.299, 2296231040941, testhost.dll, InProgressTests is null
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.299, 2296231041249, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.317, 2296231093622, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.317, 2296231094370, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.317, 2296231094684, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.DefaultModelMetadataBindingDetailsProviderTest.CreateBindingDetails_FindsBindNever_OnProperty  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.317, 2296231094970, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.317, 2296231095534, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.317, 2296231096109, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.318, 2296231096590, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.318, 2296231097119, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.318, 2296231097674, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.318, 2296231098292, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.318, 2296231098860, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.319, 2296231099371, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.319, 2296231099693, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.319, 2296231099904, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.HttpStatusCodeResultTests.HttpStatusCodeResult_ExecuteResultSetsResponseStatusCode  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.319, 2296231100078, testhost.dll, Sending test run statistics
+TpTrace Information: 0 : 7340, 15, 2017/05/12, 14:46:26.320, 2296231103948, testhost.dll, AssemblyResolver: Moq.resources: Resolving assembly.
+TpTrace Information: 0 : 7340, 15, 2017/05/12, 14:46:26.321, 2296231105746, testhost.dll, AssemblyResolver: Moq.resources: Resolving assembly.
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.336, 2296231150616, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.336, 2296231151249, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.336, 2296231151627, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.336, 2296231151887, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.AuthorizationApplicationModelProviderTest.OnProvidersExecuting_DefaultPolicyProvider_NoAuthorizationData_NoFilterCreated  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.337, 2296231152151, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.337, 2296231152653, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.337, 2296231153361, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.337, 2296231154267, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.DefaultValues  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.338, 2296231155289, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.364, 2296231232490, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.364, 2296231233502, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.364, 2296231233763, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.AuthorizationApplicationModelProviderTest.BuildActionModels_BaseAuthorizeFiltersAreStillValidWhenOverriden  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.365, 2296231234018, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.365, 2296231234496, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ReferenceEqualityComparerTest.GetHashCode_DoesNotThrowForNull  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.365, 2296231235011, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.IsRequired_ReturnsFalse_ForNullableTypes(modelType: typeof(int?))  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.365, 2296231236582, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.386, 2296231296645, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.386, 2296231297345, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.386, 2296231297586, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ReferenceEqualityComparerTest.Equals_NullEqualsNull  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.386, 2296231298024, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.387, 2296231298477, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.387, 2296231298994, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.AuthorizationApplicationModelProviderTest.CreateControllerModelAndActionModel_AllowAnonymousAttributeAddsAllowAnonymousFilter  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.387, 2296231300245, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_SelectDefaultFormatter_OnAllMediaRangeAcceptHeaderMediaType(acceptHeader: "text/html,application/xhtml+xml,application/xml;q="..., expectedContentType: "application/json; charset=utf-8")  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.387, 2296231300781, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.418, 2296231389989, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.418, 2296231390966, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.418, 2296231391249, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_SelectDefaultFormatter_OnAllMediaRangeAcceptHeaderMediaType(acceptHeader: "*/*", expectedContentType: "application/json; charset=utf-8")  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.418, 2296231391545, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.419, 2296231392686, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.DefaultFilterProviderTest.DefaultFilterProvider_UsesFilterFactory  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.419, 2296231394117, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.IsReadOnly_ReturnsTrue_ForPrivateSetProperty  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.419, 2296231394412, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.452, 2296231489945, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.452, 2296231490714, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.452, 2296231491331, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.453, 2296231491860, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.453, 2296231492380, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.453, 2296231492876, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.453, 2296231493390, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.453, 2296231493846, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.453, 2296231494319, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.454, 2296231494832, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.454, 2296231495078, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.ModelAttributesTest.GetAttributesForBaseProperty_IncludesMetadataAttributes  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.454, 2296231495345, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.454, 2296231495609, testhost.dll, InProgressTests is null
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.454, 2296231495952, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.475, 2296231559042, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.497, 2296231621740, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.497, 2296231622047, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.ModelAttributesTest.GetAttributesForBasePropertyFromDerivedModel_IncludesMetadataAttributes  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.497, 2296231622299, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.497, 2296231622788, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.498, 2296231625320, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ObjectResult_PerformsContentNegotiation_OnAllMediaRangeAcceptHeaderMediaType(acceptHeader: "text/html,*/*;q=0.8,application/xml;q=0.9", expectedContentType: "application/xml; charset=utf-8")  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.498, 2296231625623, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.519, 2296231686784, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.519, 2296231687393, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.519, 2296231687929, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.520, 2296231688432, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.520, 2296231688899, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.520, 2296231689363, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.520, 2296231689933, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.AuthorizationApplicationModelProviderTest.OnProvidersExecuting_NonDefaultPolicyProvider_HasNoPolicy_HasPolicyProviderAndAuthorizeData  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.520, 2296231690529, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.521, 2296231691077, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.521, 2296231691588, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.521, 2296231692105, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.DefaultFilterProviderTest.DefaultFilterProvider_UsesFilterFactory_WithIFilterContainer  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.521, 2296231692338, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.555, 2296231791308, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.555, 2296231792089, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.555, 2296231792544, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.ExecuteResultAsync_ThrowsIfActionUrlIsNullOrEmpty(returnValue: "")  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.555, 2296231792931, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_MatchAllContentType_Throws(contentTypes: ["*/*"], invalidContentType: "*/*")  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.556, 2296231793934, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ChallengeResultTest.ChallengeResult_Execute  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.556, 2296231794560, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.578, 2296231858377, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.578, 2296231859156, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.578, 2296231859463, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_MatchAllContentType_Throws(contentTypes: ["*/*", "application/json"], invalidContentType: "*/*")  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.578, 2296231859840, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.578, 2296231860441, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.578, 2296231860942, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.UnsupportedContentTypeFilterTest.OnActionExecuting_DoesNotChangeActionResult_IfOtherExceptionsAreFoundOnModelState  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.579, 2296231862973, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.621, 2296231986570, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.622, 2296231987651, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.622, 2296231987981, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.UnsupportedContentTypeFilterTest.OnActionExecuting_DoesNotChangeActionResult_IfOtherErrorsAreFoundOnModelState  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.622, 2296231988322, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.622, 2296231988862, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.622, 2296231989078, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.SelectFormatter_WithMultipleProvidedContentTypes_DoesConneg  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.622, 2296231989761, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.SelectFormatter_WithMultipleProvidedContentTypes_DoesConneg  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.623, 2296231990697, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.SelectFormatter_WithMultipleProvidedContentTypes_DoesConneg  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.623, 2296231991261, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.SelectFormatter_WithMultipleProvidedContentTypes_DoesConneg  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.623, 2296231991760, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.SelectFormatter_WithMultipleProvidedContentTypes_DoesConneg  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.623, 2296231992422, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.ExecuteResultAsync_ThrowsIfActionUrlIsNullOrEmpty(returnValue: null)  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.624, 2296231992877, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.643, 2296232050177, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.643, 2296232051058, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.643, 2296232051369, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.SelectFormatter_WithAcceptHeaderAndContentTypes_SetsContentTypeIsServerDefinedWhenExpected  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.644, 2296232051676, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.644, 2296232052232, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ChallengeResultTest.ChallengeResult_ExecuteNoSchemes  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.644, 2296232052867, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.644, 2296232053428, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.Constructor_InitializesControllerName(controllerName: "")  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.645, 2296232054811, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.664, 2296232110598, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.664, 2296232111569, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.664, 2296232111950, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_WithOneProvidedContentType_FromResponseContentType_NoFallback  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.664, 2296232112236, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.664, 2296232112828, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.665, 2296232113829, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.665, 2296232114895, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.665, 2296232115785, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.666, 2296232116417, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.FilterFactoryTest.GetAllFilters_CachesAllFilters  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.666, 2296232117531, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.698, 2296232211061, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.698, 2296232212186, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.699, 2296232212543, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.FilterFactoryTest.GetAllFilters_DoesNotCacheFiltersWithIsReusableFalse  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.699, 2296232212763, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.699, 2296232213589, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutorTest.ExecuteAsync_FallsBackOnFormattersInOptions  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.699, 2296232214235, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.699, 2296232214651, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.699, 2296232215146, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderTests.BindModel  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.700, 2296232215639, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.PropertiesProperty_WithDefaultOrder_OrdersPropertyNamesAsProvided  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.700, 2296232216080, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.PropertiesProperty_WithDefaultOrder_OrdersPropertyNamesAsProvided  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.700, 2296232216586, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.718, 2296232270493, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.719, 2296232271820, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.PropertiesProperty_WithDefaultOrder_OrdersPropertyNamesAsProvided  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.719, 2296232272422, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.FilterFactoryTest.GetAllFilters_CachesFilterFromFactory  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.719, 2296232273038, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.PropertiesProperty_WithDefaultOrder_OrdersPropertyNamesAsProvided  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.720, 2296232274788, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderTests.BindModelSetsModelToNullOnNullOrEmptyString(value: "")  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.720, 2296232275103, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.757, 2296232382729, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.757, 2296232383512, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.757, 2296232384187, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.PropertiesSetOnce  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.758, 2296232385513, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Internal.DefaultFilterProviderTest.DefaultFilterProvider_UsesFilterFactory_WithOrder  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.758, 2296232386667, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.ExecuteResultAsync_SetsStatusCodeAndLocationHeader  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.758, 2296232387109, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.794, 2296232493307, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.795, 2296232494268, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.795, 2296232494585, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataTest.ElementMetadata_ReturnsExpectedMetadata(modelType: typeof(System.Collections.ObjectModel.Collection<int>), elementType: typeof(int))  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.795, 2296232494872, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.795, 2296232495357, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.797, 2296232501211, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.797, 2296232502098, testhost.dll, InProgressTests is null
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.798, 2296232503780, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderTests.BindModelAddsModelErrorsOnInvalidCharacters  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.798, 2296232504488, testhost.dll, Sending test run statistics
+TpTrace Verbose: 0 : 7340, 12, 2017/05/12, 14:46:26.823, 2296232577472, testhost.dll, TestRunCache: OnNewTestResult: Notified the onCacheHit callback.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.831, 2296232600301, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderTests.BindModel_ReturnsWithIsModelSetFalse_WhenValueNotFound  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.831, 2296232601807, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.AcceptedAtActionResultTests.OnFormatting_NullContext_ThrowsArgumentNullException  Passed' in inProgress list.
+TpTrace Warning: 0 : 7340, 12, 2017/05/12, 14:46:26.832, 2296232603080, testhost.dll, TestRunCache: No test found corresponding to testResult 'Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatterTests.SelectResponseCharacterEncoding_SelectsEncoding(acceptCharsetHeaders: "utf-16; q=0.5", supportedEncodings: ["utf-8", "utf-16"], expectedEncoding: "utf-16")  Passed' in inProgress list.
+TpTrace Information: 0 : 7340, 12, 2017/05/12, 14:46:26.832, 2296232603497, testhost.dll, Sending test run statistics

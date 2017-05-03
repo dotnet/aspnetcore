@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.Core.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public static class NormalizedRouteValue
     {

@@ -157,6 +157,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Will be cached by the DefaultControllerFactory
             services.TryAddTransient<IControllerActivator, DefaultControllerActivator>();
+
+            services.TryAddSingleton<IControllerFactoryProvider, ControllerFactoryProvider>();
+            services.TryAddSingleton<IControllerActivatorProvider, ControllerActivatorProvider>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IControllerPropertyActivator, DefaultControllerPropertyActivator>());
 

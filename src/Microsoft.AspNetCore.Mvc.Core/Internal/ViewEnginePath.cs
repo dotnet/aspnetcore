@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Mvc.Core.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public static class ViewEnginePath
     {
