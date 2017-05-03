@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="_RunNanoTests" AfterTargets="Restore" Condition="'$(RUN_TESTS_ON_NANO)' == 'true'">
+  <Target Name="_RunNanoTests" DependsOnTargets="Restore" Condition="'$(RUN_TESTS_ON_NANO)' == 'true'">
     <MSBuild Targets="VSTest"
              Projects="$(MSBuildThisFileDirectory)..\test\MusicStore.E2ETests\MusicStore.E2ETests.csproj"
              Properties="Configuration=$(Configuration);VSTestLogger=trx;VSTestTestCaseFilter=E2ETests=NanoServer" />
