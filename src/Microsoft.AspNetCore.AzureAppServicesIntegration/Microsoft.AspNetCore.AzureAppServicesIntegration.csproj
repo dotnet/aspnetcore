@@ -4,12 +4,12 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core integration with Azure AppServices.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;azure;appservices</PackageTags>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(PackageTargetFallback);portable-net40+sl5+win8+wp8+wpa81;portable-net45+win8+wp8+wpa81</PackageTargetFallback>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net40+sl5+win8+wp8+wpa81;portable-net45+win8+wp8+wpa81</PackageTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
