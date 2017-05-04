@@ -179,7 +179,10 @@ namespace Microsoft.AspNetCore
             {
                 var certificate = TryLoad(X509KeyStorageFlags.DefaultKeySet, out var error)
                     ?? TryLoad(X509KeyStorageFlags.UserKeySet, out error)
-                    ?? TryLoad(X509KeyStorageFlags.EphemeralKeySet, out error);
+#if NETCOREAPP2_0
+                    ?? TryLoad(X509KeyStorageFlags.EphemeralKeySet, out error)
+#endif
+                    ;
 
                 if (error != null)
                 {
