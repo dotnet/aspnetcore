@@ -24,38 +24,34 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        //[InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
-        // [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
         public async Task WindowsOS(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType,
             bool noSource)
         {
             var testRunner = new PublishAndRunTests(_output);
             await testRunner.Publish_And_Run_Tests(
-                serverType, runtimeFlavor, architecture, applicationType, noSource);
+                serverType, architecture, applicationType, noSource);
         }
 
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
         public async Task NonWindowsOS(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType,
             bool noSource)
         {
             var testRunner = new PublishAndRunTests(_output);
             await testRunner.Publish_And_Run_Tests(
-                serverType, runtimeFlavor, architecture, applicationType, noSource);
+                serverType, architecture, applicationType, noSource);
         }
     }
 
@@ -73,37 +69,33 @@ namespace E2ETests
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone, false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone, false)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Standalone, false)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Standalone, false)]
         public async Task WindowsOS(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType,
             bool noSource)
         {
             var testRunner = new PublishAndRunTests(_output);
             await testRunner.Publish_And_Run_Tests(
-                serverType, runtimeFlavor, architecture, applicationType, noSource);
+                serverType, architecture, applicationType, noSource);
         }
 
         [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
         public async Task NonWindowsOS(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType,
             bool noSource)
         {
             var testRunner = new PublishAndRunTests(_output);
             await testRunner.Publish_And_Run_Tests(
-                serverType, runtimeFlavor, architecture, applicationType, noSource);
+                serverType, architecture, applicationType, noSource);
         }
     }
 
@@ -115,24 +107,23 @@ namespace E2ETests
 
         public async Task Publish_And_Run_Tests(
             ServerType serverType,
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
             ApplicationType applicationType,
             bool noSource)
         {
             var noSourceStr = noSource ? "NoSource" : "WithSource";
-            var testName = $"PublishAndRunTests_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}_{noSourceStr}";
+            var testName = $"PublishAndRunTests_{serverType}_{architecture}_{applicationType}_{noSourceStr}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("Publish_And_Run_Tests");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                    Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.0",
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
