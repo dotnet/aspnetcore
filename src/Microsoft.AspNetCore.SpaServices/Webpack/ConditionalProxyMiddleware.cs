@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
     /// </summary>
     internal class ConditionalProxyMiddleware
     {
+        private const int BUFFER_SIZE = 1024;
         private readonly HttpClient _httpClient;
         private readonly RequestDelegate _next;
         private readonly ConditionalProxyMiddlewareOptions _options;
@@ -93,7 +94,12 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
 
                 // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
                 context.Response.Headers.Remove("transfer-encoding");
-                await responseMessage.Content.CopyToAsync(context.Response.Body);
+
+                using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
+                {
+                    await responseStream.CopyToAsync(context.Response.Body, BUFFER_SIZE, context.RequestAborted);
+                }
+
                 return true;
             }
         }
