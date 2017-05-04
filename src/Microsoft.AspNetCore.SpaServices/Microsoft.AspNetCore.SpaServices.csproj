@@ -6,7 +6,7 @@
     <Description>Helpers for building single-page applications on ASP.NET MVC Core.</Description>
     <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
     <VersionPrefix>1.1.1</VersionPrefix>
-    <VersionSuffix>alpha</VersionSuffix>
+    <VersionSuffix>rtm</VersionSuffix>
     <PackageTags>aspnetcore;aspnetcoremvc;nodeservices</PackageTags>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
