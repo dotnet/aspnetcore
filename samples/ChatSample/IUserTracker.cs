@@ -14,7 +14,7 @@ namespace ChatSample
         Task AddUser(Connection connection, UserDetails userDetails);
         Task RemoveUser(Connection connection);
 
-        event Action<UserDetails> UserJoined;
-        event Action<UserDetails> UserLeft;
+        event Action<UserDetails[]> UsersJoined;
+        event Action<UserDetails[]> UsersLeft;
     }
 }

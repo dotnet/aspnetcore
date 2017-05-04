@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR.Redis;
+using System.Linq;
 
 namespace ChatSample
 {
@@ -47,8 +48,8 @@ namespace ChatSample
             ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
             _userTracker = userTracker;
-            _userTracker.UserJoined += OnUserJoined;
-            _userTracker.UserLeft += OnUserLeft;
+            _userTracker.UsersJoined += OnUsersJoined;
+            _userTracker.UsersLeft += OnUsersLeft;
 
             _serviceScopeFactory = serviceScopeFactory;
             _serviceProvider = serviceProvider;
@@ -70,14 +71,29 @@ namespace ChatSample
             await _userTracker.RemoveUser(connection);
         }
 
-        private async void OnUserJoined(UserDetails userDetails)
+        private async void OnUsersJoined(UserDetails[] users)
         {
-            await Notify(hub => hub.OnUserJoined(userDetails));
+            await Notify(hub =>
+            {
+                if (users.Length == 1)
+                {
+                    if (users[0].ConnectionId != hub.Context.ConnectionId)
+                    {
+                        return hub.OnUsersJoined(users);
+                    }
+                }
+                else
+                {
+                    return hub.OnUsersJoined(
+                        users.Where(u => u.ConnectionId != hub.Context.Connection.ConnectionId).ToArray());
+                }
+                return Task.CompletedTask;
+            });
         }
 
-        private async void OnUserLeft(UserDetails userDetails)
+        private async void OnUsersLeft(UserDetails[] users)
         {
-            await Notify(hub => hub.OnUserLeft(userDetails));
+            await Notify(hub => hub.OnUsersLeft(users));
         }
 
         private async Task Notify(Func<THub, Task> invocation)
@@ -117,8 +133,8 @@ namespace ChatSample
 
         public void Dispose()
         {
-            _userTracker.UserJoined -= OnUserJoined;
-            _userTracker.UserLeft -= OnUserLeft;
+            _userTracker.UsersJoined -= OnUsersJoined;
+            _userTracker.UsersLeft -= OnUsersLeft;
         }
 
         public override Task InvokeAllAsync(string methodName, object[] args)

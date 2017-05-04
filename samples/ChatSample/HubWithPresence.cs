@@ -28,12 +28,12 @@ namespace ChatSample
             return _userTracker.UsersOnline();
         }
 
-        public virtual Task OnUserJoined(UserDetails user)
+        public virtual Task OnUsersJoined(UserDetails[] user)
         {
             return Task.CompletedTask;
         }
 
-        public virtual Task OnUserLeft(UserDetails user)
+        public virtual Task OnUsersLeft(UserDetails[] user)
         {
             return Task.CompletedTask;
         }

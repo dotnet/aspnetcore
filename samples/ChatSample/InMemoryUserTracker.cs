@@ -12,8 +12,8 @@ namespace ChatSample
         private readonly ConcurrentDictionary<Connection, UserDetails> _usersOnline
             = new ConcurrentDictionary<Connection, UserDetails>();
 
-        public event Action<UserDetails> UserJoined;
-        public event Action<UserDetails> UserLeft;
+        public event Action<UserDetails[]> UsersJoined;
+        public event Action<UserDetails[]> UsersLeft;
 
         public Task<IEnumerable<UserDetails>> UsersOnline()
             => Task.FromResult(_usersOnline.Values.AsEnumerable());
@@ -21,7 +21,7 @@ namespace ChatSample
         public Task AddUser(Connection connection, UserDetails userDetails)
         {
             _usersOnline.TryAdd(connection, userDetails);
-            UserJoined(userDetails);
+            UsersJoined(new[] { userDetails });
 
             return Task.CompletedTask;
         }
@@ -30,7 +30,7 @@ namespace ChatSample
         {
             if (_usersOnline.TryRemove(connection, out var userDetails))
             {
-                UserLeft(userDetails);
+                UsersLeft(new[] { userDetails });
             }
 
             return Task.CompletedTask;
