@@ -48,14 +48,14 @@ namespace Microsoft.AspNetCore.StaticFiles
             var baseAddress = "http://localhost:12345";
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseWebRoot(TestDirectory.BaseDirectory)
+                .UseWebRoot(AppContext.BaseDirectory)
                 .Configure(app => app.UseStaticFiles());
 
             using (var server = builder.Start(baseAddress))
             {
                 using (var client = new HttpClient() { BaseAddress = new Uri(baseAddress) })
                 {
-                    var last = File.GetLastWriteTimeUtc(Path.Combine(TestDirectory.BaseDirectory, "TestDocument.txt"));
+                    var last = File.GetLastWriteTimeUtc(Path.Combine(AppContext.BaseDirectory, "TestDocument.txt"));
                     var response = await client.GetAsync("TestDocument.txt");
                     
                     var trimed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, TimeSpan.Zero).ToUniversalTime();
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             var baseAddress = "http://localhost:12345";
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseWebRoot(Path.Combine(TestDirectory.BaseDirectory, baseDir))
+                .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
                 .Configure(app => app.UseStaticFiles(new StaticFileOptions()
                 {
                     RequestPath = new PathString(baseUrl),
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             var baseAddress = "http://localhost:12345";
             var builder = new WebHostBuilder()
                 .UseKestrel()
-                .UseWebRoot(Path.Combine(TestDirectory.BaseDirectory, baseDir))
+                .UseWebRoot(Path.Combine(AppContext.BaseDirectory, baseDir))
                 .Configure(app => app.UseStaticFiles(new StaticFileOptions()
                 {
                     RequestPath = new PathString(baseUrl),
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             var responseComplete = new ManualResetEvent(false);
             Exception exception = null;
             var builder = new WebHostBuilder()
-                .UseWebRoot(Path.Combine(TestDirectory.BaseDirectory))
+                .UseWebRoot(Path.Combine(AppContext.BaseDirectory))
                 .Configure(app =>
                 {
                     app.Use(async (context, next) =>

@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         public static TestServer Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices = null)
         {
-            var contentRootNet46 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                "." : "../../../../test/Microsoft.AspNetCore.StaticFiles.Tests";
             Action<IServiceCollection> defaultConfigureServices = services => { };
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new []
@@ -26,12 +24,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                 })
                 .Build();
             var builder = new WebHostBuilder()
-#if NET46
-                .UseContentRoot(contentRootNet46)
-#elif NETCOREAPP2_0
-#else
-#error the target framework needs to be updated.
-#endif
                 .UseConfiguration(configuration)
                 .Configure(configureApp)
                 .ConfigureServices(configureServices ?? defaultConfigureServices);
