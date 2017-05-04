@@ -25,8 +25,7 @@
       </ItemGroup>
       <Copy SourceFiles="@(JasmineFiles)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/jasmine" />
 
-      <Copy SourceFiles="$(MSBuildThisFileDirectory)..\dist\browser\signalr-client.js"
-          DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client"/>
+      <Copy SourceFiles="$(MSBuildThisFileDirectory)..\dist\browser\signalr-client.js" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
   </Target>
 
 </Project>

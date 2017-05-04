@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;signalr</PackageTags>
