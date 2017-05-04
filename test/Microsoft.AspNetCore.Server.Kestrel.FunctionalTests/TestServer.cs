@@ -4,13 +4,16 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -18,12 +21,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     /// <summary>
     /// Summary description for TestServer
     /// </summary>
-    public class TestServer : IDisposable
+    public class TestServer : IDisposable, IStartup
     {
-        private static TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(5);
-
-        private KestrelServer _server;
+        private IWebHost _host;
         private ListenOptions _listenOptions;
+        private readonly RequestDelegate _app;
 
         public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
@@ -47,53 +49,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions, IHttpContextFactory httpContextFactory)
         {
+            _app = app;
             _listenOptions = listenOptions;
-
             Context = context;
-            context.ServerOptions.ListenOptions.Add(_listenOptions);
 
-            // Switch this to test on socket transport
-            var transportFactory = CreateLibuvTransportFactory(context);
-            // var transportFactory = CreateSocketTransportFactory(context);
+            _host = new WebHostBuilder()
+                     .UseKestrel(o =>
+                     {
+                         o.ListenOptions.Add(_listenOptions);
+                     })
+                     .ConfigureServices(services =>
+                     {
+                         if (httpContextFactory != null)
+                         {
+                             services.AddSingleton(httpContextFactory);
+                         }
 
-            _server = new KestrelServer(transportFactory, context);
-            var httpApplication = new DummyApplication(app, httpContextFactory);
+                         services.AddSingleton<IStartup>(this);
+                         services.AddSingleton<ILoggerFactory>(new KestrelTestLoggerFactory(context.ErrorLogger));
+                         services.AddSingleton<IServer>(sp =>
+                         {
+                             // Manually configure options on the TestServiceContext.
+                             // We're doing this so we can use the same instance that was passed in
+                             var configureOptions = sp.GetServices<IConfigureOptions<KestrelServerOptions>>();
+                             foreach (var c in configureOptions)
+                             {
+                                 c.Configure(context.ServerOptions);
+                             }
+                             return new KestrelServer(sp.GetRequiredService<ITransportFactory>(), context);
+                         });
+                     })
+                     .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
+                     .Build();
 
-            try
-            {
-                _server.StartAsync(httpApplication, CancellationToken.None).Wait();
-            }
-            catch
-            {
-                _server.StopAsync(new CancellationTokenSource(_shutdownTimeout).Token).Wait();
-                _server.Dispose();
-                throw;
-            }
+            _host.Start();
         }
 
-        private static ITransportFactory CreateLibuvTransportFactory(TestServiceContext context)
-        {
-            var transportOptions = new LibuvTransportOptions { ThreadCount = 1 };
-
-            var transportFactory = new LibuvTransportFactory(
-                Options.Create(transportOptions),
-                new LifetimeNotImplemented(),
-                new KestrelTestLoggerFactory(new TestApplicationErrorLogger()));
-
-            return transportFactory;
-        }
-
-        private static ITransportFactory CreateSocketTransportFactory(TestServiceContext context)
-        {
-            var options = new SocketTransportOptions();
-            return new SocketTransportFactory(Options.Create(options));
-        }
-        
         public IPEndPoint EndPoint => _listenOptions.IPEndPoint;
         public int Port => _listenOptions.IPEndPoint.Port;
         public AddressFamily AddressFamily => _listenOptions.IPEndPoint.AddressFamily;
 
         public TestServiceContext Context { get; }
+
+        void IStartup.Configure(IApplicationBuilder app)
+        {
+            app.Run(_app);
+        }
+
+        IServiceProvider IStartup.ConfigureServices(IServiceCollection services)
+        {
+            // Unfortunately, this needs to be replaced in IStartup.ConfigureServices
+            services.AddSingleton<IApplicationLifetime, LifetimeNotImplemented>();
+            return services.BuildServiceProvider();
+        }
 
         public TestConnection CreateConnection()
         {
@@ -102,8 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         public void Dispose()
         {
-            _server.StopAsync(new CancellationTokenSource(_shutdownTimeout).Token).Wait();
-            _server.Dispose();
+            _host.Dispose();
         }
     }
 }

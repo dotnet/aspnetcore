@@ -13,9 +13,8 @@ namespace Microsoft.AspNetCore.Testing
     {
         public TestServiceContext()
         {
-            var logger = new TestApplicationErrorLogger();
-
-            Log = new TestKestrelTrace(logger);
+            ErrorLogger = new TestApplicationErrorLogger();
+            Log = new TestKestrelTrace(ErrorLogger);
             ThreadPool = new LoggingThreadPool(Log);
             SystemClock = new MockSystemClock();
             DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
@@ -27,6 +26,8 @@ namespace Microsoft.AspNetCore.Testing
                 AddServerHeader = false
             };
         }
+
+        public TestApplicationErrorLogger ErrorLogger { get; }
 
         public string DateHeaderValue { get; }
     }
