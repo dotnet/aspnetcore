@@ -6,7 +6,8 @@ var extractCSS = new ExtractTextPlugin('vendor.css');
 module.exports = ({ prod } = {}) => {
     const isDevBuild = !prod;
     
-    return {
+    return [{
+        stats: { modules: false },
         resolve: {
             extensions: ['.js']
         },
@@ -51,5 +52,5 @@ module.exports = ({ prod } = {}) => {
         ].concat(isDevBuild ? [] : [
             new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } })
         ])
-    }
+    }]
 };
