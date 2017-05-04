@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             {
                 if (_sha256 == null)
                 {
-                    _sha256 = CryptographyAlgorithms.CreateSHA256();
+                    _sha256 = SHA256.Create();
                 }
 
                 return _sha256;

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         private static string ComputeCookieName(string applicationId)
         {
-            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
+            using (var sha256 = SHA256.Create())
             {
                 var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(applicationId));
                 var subHash = hash.Take(8).ToArray();
