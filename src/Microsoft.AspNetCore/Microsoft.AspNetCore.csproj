@@ -3,7 +3,7 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;netcoreapp2.0</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
