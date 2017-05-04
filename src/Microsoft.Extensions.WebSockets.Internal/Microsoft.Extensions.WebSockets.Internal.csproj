@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Description>Low-allocation Push-oriented WebSockets based on Channels</Description>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

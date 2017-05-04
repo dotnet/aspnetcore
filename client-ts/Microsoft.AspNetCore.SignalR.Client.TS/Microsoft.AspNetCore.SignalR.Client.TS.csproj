@@ -1,9 +1,9 @@
-<Project>
+﻿<Project>
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -41,7 +41,7 @@
       <ModuleVersion>@(ExecOutput)</ModuleVersion>
       <ModuleVersion Condition="'$(VersionSuffix)' != ''">$(ModuleVersion)-$(VersionSuffix)</ModuleVersion>
     </PropertyGroup>
-    <Exec Command="npm version $(ModuleVersion)"  WorkingDirectory="$(MSBuildThisFileDirectory).." Condition="'$(VersionSuffix)' != ''" />
+    <Exec Command="npm version $(ModuleVersion)" WorkingDirectory="$(MSBuildThisFileDirectory).." Condition="'$(VersionSuffix)' != ''" />
     <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
     <Exec Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package.json" Condition="'$(VersionSuffix)' != ''" />
 

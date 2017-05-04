@@ -108,10 +108,6 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
             var result = await deployer.DeployAsync();
             result.HostShutdownToken.ThrowIfCancellationRequested();
 
-#if NET46
-            System.Net.ServicePointManager.ServerCertificateValidationCallback = (_, __, ___, ____) => true;
-            var client = new HttpClient();
-#elif NETCOREAPP2_0
             var handler = new HttpClientHandler();
             if (ssl)
             {
@@ -121,9 +117,6 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
                 handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
             }
             var client = new HttpClient(handler);
-#else
-#error Target framework needs to be updated
-#endif
 
             // Make sure the server works
             var resp = await RetryHelper.RetryRequest(() =>

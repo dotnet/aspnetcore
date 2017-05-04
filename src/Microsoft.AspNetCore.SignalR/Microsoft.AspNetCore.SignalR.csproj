@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Real-time communication framework for ASP.NET Core.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;signalr</PackageTags>
