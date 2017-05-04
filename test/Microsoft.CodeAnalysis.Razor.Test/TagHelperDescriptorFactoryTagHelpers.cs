@@ -26,6 +26,17 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces.Test
     {
     }
 
+    public class NestedEnumTagHelper : EnumTagHelper
+    {
+        public NestedEnum NestedEnumProperty { get; set; }
+
+        public enum NestedEnum
+        {
+            NestedOne,
+            NestedTwo
+        }
+    }
+
     [HtmlTargetElement("input", ParentTag = "div")]
     public class RequiredParentTagHelper : TagHelper
     {

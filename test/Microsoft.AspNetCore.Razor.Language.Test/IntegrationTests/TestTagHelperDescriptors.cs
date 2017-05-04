@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .Name("catch-all")
                                 .PropertyName("CatchAll")
                                 .AsEnum()
-                                .TypeName(typeof(MyEnum).FullName),
+                                .TypeName($"{typeof(TestTagHelperDescriptors).FullName}.{nameof(MyEnum)}"),
                         }),
                     CreateTagHelperDescriptor(
                         tagName: "input",
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .Name("value")
                                 .PropertyName("Value")
                                 .AsEnum()
-                                .TypeName(typeof(MyEnum).FullName),
+                                .TypeName($"{typeof(TestTagHelperDescriptors).FullName}.{nameof(MyEnum)}"),
                         }),
                 };
             }

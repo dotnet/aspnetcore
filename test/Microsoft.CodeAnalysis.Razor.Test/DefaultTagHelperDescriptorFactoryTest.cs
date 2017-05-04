@@ -353,7 +353,30 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                     .TypeName(typeof(CustomEnum).FullName)
                                     .AsEnum())
                             .Build()
-                    }
+                    },
+                    {
+                        typeof(NestedEnumTagHelper),
+                        TagHelperDescriptorBuilder.Create(typeof(NestedEnumTagHelper).FullName, AssemblyName)
+                            .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("nested-enum"))
+                            .BindAttribute(builder =>
+                                builder
+                                    .Name("non-enum-property")
+                                    .PropertyName(nameof(NestedEnumTagHelper.NonEnumProperty))
+                                    .TypeName(typeof(int).FullName))
+                            .BindAttribute(builder =>
+                                builder
+                                    .Name("enum-property")
+                                    .PropertyName(nameof(NestedEnumTagHelper.EnumProperty))
+                                    .TypeName(typeof(CustomEnum).FullName)
+                                    .AsEnum())
+                            .BindAttribute(builder =>
+                                builder
+                                    .Name("nested-enum-property")
+                                    .PropertyName(nameof(NestedEnumTagHelper.NestedEnumProperty))
+                                    .TypeName($"{typeof(NestedEnumTagHelper).FullName}.{nameof(NestedEnumTagHelper.NestedEnum)}")
+                                    .AsEnum())
+                            .Build()
+                    },
                 };
             }
         }
