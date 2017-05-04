@@ -13,28 +13,12 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
     {
         private static readonly string _applicationPath = Path.Combine("samples", "LocalizationSample");
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public Task RunSite_WindowsOnly()
-        {
-            var testRunner = new TestRunner(_applicationPath);
-
-            return testRunner.RunTestAndVerifyResponseHeading(
-                RuntimeFlavor.Clr,
-                RuntimeArchitecture.x64,
-                "My/Resources",
-                "fr-FR",
-                "<h1>Bonjour</h1>");
-        }
-
         [Fact]
-        public Task RunSite_AnyOS()
+        public Task RunSite()
         {
             var testRunner = new TestRunner(_applicationPath);
 
             return testRunner.RunTestAndVerifyResponseHeading(
-                RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
                 "My/Resources",
                 "fr-FR",
