@@ -16,10 +16,8 @@ namespace SampleDestination
             services.AddCors();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggerFactory.AddConsole();
-
             app.UseCors(policy => policy
                 .WithOrigins("http://origin.example.com:5001")
                 .WithMethods("PUT")
