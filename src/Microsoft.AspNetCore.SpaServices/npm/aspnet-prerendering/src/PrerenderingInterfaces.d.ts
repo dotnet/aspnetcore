@@ -8,7 +8,7 @@ interface RenderToStringCallback {
 
 interface RenderToStringResult {
     html: string;
-    statusCode: number;
+    statusCode?: number;
     globals?: { [key: string]: any };
 }
 
