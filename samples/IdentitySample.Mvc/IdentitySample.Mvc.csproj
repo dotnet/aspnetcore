@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Identity sample MVC application on ASP.NET Core</Description>
-    <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <UserSecretsId>aspnetcore-b3d20cbe-418e-4bf2-a0f4-57f91d067e07</UserSecretsId>
   </PropertyGroup>
 
