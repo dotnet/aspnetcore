@@ -13,9 +13,21 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.Kestrel\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\src\Microsoft.AspNetCore.Server.Kestrel.Core\Internal\Http</StartWorkingDirectory>
     <StartArguments>FrameHeaders.Generated.cs Frame.Generated.cs</StartArguments>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
 </Project>

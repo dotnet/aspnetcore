@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public static class HttpUtilities
+    public static partial class HttpUtilities
     {
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
@@ -20,27 +20,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public const string HttpsUriScheme = "https://";
 
         // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
-
         private readonly static ulong _httpSchemeLong = GetAsciiStringAsLong(HttpUriScheme + "\0");
         private readonly static ulong _httpsSchemeLong = GetAsciiStringAsLong(HttpsUriScheme);
-        private readonly static ulong _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");
-        private readonly static ulong _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE \0");
+
         private const uint _httpGetMethodInt = 542393671; // retun of GetAsciiStringAsInt("GET "); const results in better codegen
-        private readonly static ulong _httpHeadMethodLong = GetAsciiStringAsLong("HEAD \0\0\0");
-        private readonly static ulong _httpPatchMethodLong = GetAsciiStringAsLong("PATCH \0\0");
-        private readonly static ulong _httpPostMethodLong = GetAsciiStringAsLong("POST \0\0\0");
-        private readonly static ulong _httpPutMethodLong = GetAsciiStringAsLong("PUT \0\0\0\0");
-        private readonly static ulong _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS ");
-        private readonly static ulong _httpTraceMethodLong = GetAsciiStringAsLong("TRACE \0\0");
 
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
-        private readonly static ulong _mask8Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff });
-        private readonly static ulong _mask7Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 });
-        private readonly static ulong _mask6Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00 });
-        private readonly static ulong _mask5Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00 });
-        private readonly static ulong _mask4Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 });
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
+        {
+            _knownMethods[GetKnownMethodIndex(knownMethodUlong)] = new Tuple<ulong, ulong, HttpMethod, int>(mask, knownMethodUlong, knownMethod, length);
+        }
 
         private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
         {
@@ -54,21 +46,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Tuple.Create(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7),
         };
 
-        private readonly static string[] _methodNames = CreateMethodNames();
-
-        private static string[] CreateMethodNames()
+        private static void FillKnownMethodsGaps()
         {
-            var methodNames = new string[9];
-            methodNames[(byte)HttpMethod.Get] = HttpMethods.Get;
-            methodNames[(byte)HttpMethod.Put] = HttpMethods.Put;
-            methodNames[(byte)HttpMethod.Delete] = HttpMethods.Delete;
-            methodNames[(byte)HttpMethod.Post] = HttpMethods.Post;
-            methodNames[(byte)HttpMethod.Head] = HttpMethods.Head;
-            methodNames[(byte)HttpMethod.Trace] = HttpMethods.Trace;
-            methodNames[(byte)HttpMethod.Patch] = HttpMethods.Patch;
-            methodNames[(byte)HttpMethod.Connect] = HttpMethods.Connect;
-            methodNames[(byte)HttpMethod.Options] = HttpMethods.Options;
-            return methodNames;
+            var knownMethods = _knownMethods;
+            var length = knownMethods.Length;
+            var invalidHttpMethod = new Tuple<ulong, ulong, HttpMethod, int>(_mask8Chars, 0ul, HttpMethod.Custom, 0);
+            for (int i = 0; i < length; i++)
+            {
+                if (knownMethods[i] == null)
+                {
+                    knownMethods[i] = invalidHttpMethod;
+                }
+            }
         }
 
         private unsafe static ulong GetAsciiStringAsLong(string str)
@@ -187,13 +176,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             else
             {
                 var value = *(ulong*)data;
-                foreach (var x in _knownMethods)
+                var key = GetKnownMethodIndex(value);
+                var x = _knownMethods[key];
+
+                if (x != null && (value & x.Item1) == x.Item2)
                 {
-                    if ((value & x.Item1) == x.Item2)
-                    {
-                        methodLength = x.Item4;
-                        return x.Item3;
-                    }
+                    methodLength = x.Item4;
+                    return x.Item3;
                 }
             }
 
