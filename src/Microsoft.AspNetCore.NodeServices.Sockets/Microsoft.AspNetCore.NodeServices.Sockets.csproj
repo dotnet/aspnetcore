@@ -5,8 +5,6 @@
   <PropertyGroup>
     <Description>Socket-based RPC for Microsoft.AspNetCore.NodeServices.</Description>
     <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
-    <VersionPrefix>1.1.0</VersionPrefix>
-    <VersionSuffix>beta2</VersionSuffix>
     <PackageTags>aspnetcore;aspnetcoremvc;nodeservices</PackageTags>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>

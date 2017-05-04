@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>1.1.1</VersionPrefix>
+    <VersionSuffix>rtm</VersionSuffix>
+  </PropertyGroup>
+</Project>

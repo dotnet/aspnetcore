@@ -5,8 +5,6 @@
   <PropertyGroup>
     <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
     <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
-    <VersionPrefix>1.1.1</VersionPrefix>
-    <VersionSuffix>rtm</VersionSuffix>
     <PackageTags>aspnetcore;aspnetcoremvc;nodeservices</PackageTags>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
