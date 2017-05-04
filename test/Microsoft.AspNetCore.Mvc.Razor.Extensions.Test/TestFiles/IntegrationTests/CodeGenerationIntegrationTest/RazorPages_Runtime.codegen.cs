@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "1b3a99159b0df739708e9384e871a4983f59c1e4"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "608b3f7b9b29c66ee25bde2d20324b4bef1aa070"
 namespace AspNetCore
 {
     #line hidden
@@ -45,10 +45,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             BeginContext(7, 2, true);
             WriteLiteral("\r\n");
             EndContext();
-            BeginContext(103, 2, true);
+            BeginContext(98, 2, true);
             WriteLiteral("\r\n");
             EndContext();
-            BeginContext(480, 76, true);
+            BeginContext(475, 76, true);
             WriteLiteral("\r\n<h1>New Customer</h1>\r\n<form method=\"post\" class=\"form-horizontal\" >\r\n    ");
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
@@ -57,7 +57,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __tagHelperExecutionContext.Add(__DivTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
-            BeginContext(556, 31, false);
+            BeginContext(551, 31, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
@@ -66,25 +66,25 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             EndContext();
-            BeginContext(587, 6, true);
+            BeginContext(582, 6, true);
             WriteLiteral("\r\n    ");
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                BeginContext(617, 48, true);
+                BeginContext(612, 48, true);
                 WriteLiteral("\r\n        <label class=\"col-md-2 control-label\">");
                 EndContext();
-                BeginContext(666, 4, false);
+                BeginContext(661, 10, false);
 #line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
-                                         Write(Name);
+                                         Write(Model.Name);
 
 #line default
 #line hidden
                 EndContext();
-                BeginContext(670, 18, true);
+                BeginContext(671, 18, true);
                 WriteLiteral("</label>\r\n        ");
                 EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                    BeginContext(711, 101, true);
+                    BeginContext(712, 101, true);
                     WriteLiteral("\r\n            <input class=\"form-control\" />\r\n            <span class=\"text-danger\"></span>\r\n        ");
                     EndContext();
                 }
@@ -92,7 +92,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
                 __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
                 __tagHelperExecutionContext.Add(__DivTagHelper);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
-                BeginContext(688, 130, false);
+                BeginContext(689, 130, false);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
@@ -101,7 +101,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
                 Write(__tagHelperExecutionContext.Output);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 EndContext();
-                BeginContext(818, 6, true);
+                BeginContext(819, 6, true);
                 WriteLiteral("\r\n    ");
                 EndContext();
             }
@@ -109,7 +109,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __tagHelperExecutionContext.Add(__DivTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
-            BeginContext(593, 237, false);
+            BeginContext(588, 243, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
@@ -118,15 +118,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             EndContext();
-            BeginContext(830, 6, true);
+            BeginContext(831, 6, true);
             WriteLiteral("\r\n    ");
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                BeginContext(860, 10, true);
+                BeginContext(861, 10, true);
                 WriteLiteral("\r\n        ");
                 EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                    BeginContext(909, 83, true);
+                    BeginContext(910, 83, true);
                     WriteLiteral("\r\n            <button type=\"submit\" class=\"btn btn-primary\">Save</button>\r\n        ");
                     EndContext();
                 }
@@ -134,7 +134,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
                 __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
                 __tagHelperExecutionContext.Add(__DivTagHelper);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_3);
-                BeginContext(870, 128, false);
+                BeginContext(871, 128, false);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
@@ -143,7 +143,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
                 Write(__tagHelperExecutionContext.Output);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 EndContext();
-                BeginContext(998, 6, true);
+                BeginContext(999, 6, true);
                 WriteLiteral("\r\n    ");
                 EndContext();
             }
@@ -151,7 +151,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __tagHelperExecutionContext.Add(__DivTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
-            BeginContext(836, 174, false);
+            BeginContext(837, 174, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
@@ -160,7 +160,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             EndContext();
-            BeginContext(1010, 11, true);
+            BeginContext(1011, 11, true);
             WriteLiteral("\r\n</form>\r\n");
             EndContext();
         }

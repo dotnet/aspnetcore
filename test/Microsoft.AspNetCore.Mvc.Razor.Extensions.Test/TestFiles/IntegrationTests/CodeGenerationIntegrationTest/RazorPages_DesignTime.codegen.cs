@@ -23,7 +23,7 @@ NewModel __typeHelper = null;
         }
         ))();
         ((System.Action)(() => {
-global::System.Object __typeHelper = "*, TestAssembly";
+global::System.Object __typeHelper = "*, AppCode";
         }
         ))();
         }
@@ -35,7 +35,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         {
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
 #line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
-                                         __o = Name;
+                                         __o = Model.Name;
 
 #line default
 #line hidden

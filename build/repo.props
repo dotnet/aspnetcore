@@ -3,5 +3,6 @@
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.VisualStudio.LanguageServices.Razor.Test\Microsoft.VisualStudio.LanguageServices.Razor.Test.csproj" Condition="'$(OS)'!='Windows_NT'" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Performance\Microsoft.AspNetCore.Razor.Performance.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj" />
   </ItemGroup>
 </Project>

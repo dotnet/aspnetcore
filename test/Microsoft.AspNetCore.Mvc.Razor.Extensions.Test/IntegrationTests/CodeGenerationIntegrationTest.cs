@@ -15,237 +15,222 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.DependencyModel;
 using Xunit;
+#if !NET46
+using System.Runtime.Loader;
+#endif
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 {
     public class CodeGenerationIntegrationTest : IntegrationTestBase
     {
+        private const string CurrentMvcShim = "Microsoft.AspNetCore.Razor.Test.MvcShim.dll";
         private static readonly RazorSourceDocument DefaultImports = MvcRazorTemplateEngine.GetDefaultImports();
 
         #region Runtime
         [Fact]
         public void IncompleteDirectives_Runtime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+public class MyService<TModel>
+{
+    public string Html { get; set; }
+}";
+            var compilationReferences = CreateCompilationReferences(CurrentMvcShim, appCode);
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunRuntimeTest(compilationReferences, expectedErrors: new[]
+            {
+                "Identifier expected"
+            });
         }
 
         [Fact]
         public void InheritsViewModel_Runtime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Razor;
 
-            // Act
-            engine.Process(document);
+public class MyBasePageForViews<TModel> : RazorPage
+{
+    public override Task ExecuteAsync()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+public class MyModel
+{
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+}
+";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void InheritsWithViewImports_Runtime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
-            // Act
-            engine.Process(document);
+public abstract class MyPageModel<T> : Page
+{
+    public override Task ExecuteAsync()
+    {
+        throw new System.NotImplementedException();
+    }
+}
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+public class MyModel
+{
+
+}";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void MalformedPageDirective_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void Basic_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void _ViewImports_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void Inject_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+public class MyApp
+{
+    public string MyProperty { get; set; }
+}
+";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void InjectWithModel_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+public class MyModel
+{
 
-            // Act
-            engine.Process(document);
+}
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+public class MyService<TModel>
+{
+    public string Html { get; set; }
+}
+
+public class MyApp
+{
+    public string MyProperty { get; set; }
+}";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void InjectWithSemicolon_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+public class MyModel
+{
 
-            // Act
-            engine.Process(document);
+}
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+public class MyApp
+{
+    public string MyProperty { get; set; }
+}
+
+public class MyService<TModel>
+{
+    public string Html { get; set; }
+}
+";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void Model_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
+            var references = CreateCompilationReferences(CurrentMvcShim);
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunRuntimeTest(references);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Razor/issues/1348")]
         public void ModelExpressionTagHelper_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+public class InputTestTagHelper : {typeof(TagHelper).FullName}
+{{
+    public ModelExpression For {{ get; set; }}
+}}
+");
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void RazorPages_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine(BuildDivDescriptors());
-            var document = CreateCodeDocument();
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+public class DivTagHelper : {typeof(TagHelper).FullName}
+{{
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+}}
+");
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void RazorPagesWithoutModel_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine(BuildDivDescriptors());
-            var document = CreateCodeDocument();
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+public class DivTagHelper : {typeof(TagHelper).FullName}
+{{
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+}}
+");
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void PageWithNamespace_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunRuntimeTest(references);
         }
 
         [Fact]
         public void ViewWithNamespace_Runtime()
         {
-            // Arrange
-            var engine = CreateRuntimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunRuntimeTest(references);
         }
         #endregion
 
@@ -253,233 +238,230 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         [Fact]
         public void IncompleteDirectives_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+public class MyService<TModel>
+{
+    public string Html { get; set; }
+}
+";
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            RunDesignTimeTest(
+                references,
+                expectedErrors: new[]
+                {
+                    "Identifier expected"
+                });
         }
 
         [Fact]
         public void InheritsViewModel_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Razor;
 
-            // Act
-            engine.Process(document);
+public class MyBasePageForViews<TModel> : RazorPage
+{
+    public override Task ExecuteAsync()
+    {
+        throw new System.NotImplementedException();
+    }
+}
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+public class MyModel
+{
+
+}
+";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void InheritsWithViewImports_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
-            // Act
-            engine.Process(document);
+public class MyModel
+{
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+}
+
+public abstract class MyPageModel<T> : Page
+{
+    public override Task ExecuteAsync()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+";
+
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void MalformedPageDirective_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void Basic_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void _ViewImports_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void Inject_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var appCode = @"
+public class MyApp
+{
+    public string MyProperty { get; set; }
+}
+";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void InjectWithModel_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+public class MyModel
+{
 
-            // Act
-            engine.Process(document);
+}
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+public class MyService<TModel>
+{
+    public string Html { get; set; }
+}
+
+public class MyApp
+{
+    public string MyProperty { get; set; }
+}
+";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void InjectWithSemicolon_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+public class MyModel
+{
 
-            // Act
-            engine.Process(document);
+}
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+public class MyService<TModel>
+{
+    public string Html { get; set; }
+}
+
+public class MyApp
+{
+    public string MyProperty { get; set; }
+}
+";
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void Model_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void MultipleModels_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var appCode = @"
+public class ThisShouldBeGenerated
+{
 
-            // Act
-            engine.Process(document);
+}";
 
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            RunDesignTimeTest(references);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Razor/issues/1348")]
         public void ModelExpressionTagHelper_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+public class InputTestTagHelper : {typeof(TagHelper).FullName}
+{{
+    public ModelExpression For {{ get; set; }}
+}}
+");
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void RazorPages_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine(BuildDivDescriptors());
-            var document = CreateCodeDocument();
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+public class DivTagHelper : {typeof(TagHelper).FullName}
+{{
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+}}
+");
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void RazorPagesWithoutModel_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine(BuildDivDescriptors());
-            var document = CreateCodeDocument();
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+public class DivTagHelper : {typeof(TagHelper).FullName}
+{{
 
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+}}
+");
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void PageWithNamespace_DesignTime()
         {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunDesignTimeTest(references);
         }
 
         [Fact]
         public void ViewWithNamespace_DesignTime()
         {
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunDesignTimeTest(references);
+        }
+        #endregion
+
+        private void RunRuntimeTest(
+            IEnumerable<MetadataReference> compilationReferences,
+            IEnumerable<string> expectedErrors = null)
+        {
             // Arrange
-            var engine = CreateDesignTimeEngine();
+            var engine = CreateRuntimeEngine(compilationReferences);
             var document = CreateCodeDocument();
 
             // Act
@@ -488,44 +470,83 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             // Assert
             AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            AssertDocumentCompiles(document, compilationReferences, expectedErrors);
         }
-        #endregion
 
-        protected RazorEngine CreateDesignTimeEngine(IEnumerable<TagHelperDescriptor> descriptors = null)
+        private void RunDesignTimeTest(
+            IEnumerable<MetadataReference> compilationReferences,
+            IEnumerable<string> expectedErrors = null)
+        {
+            // Arrange
+            var engine = CreateDesignTimeEngine(compilationReferences);
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            AssertDocumentCompiles(document, compilationReferences, expectedErrors);
+        }
+
+        private static IEnumerable<MetadataReference> CreateCompilationReferences(string mvcShimName, string appCode = null)
+        {
+            var shimReferences = CreateMvcShimReferences(mvcShimName);
+            return CreateAppCodeReferences(appCode, shimReferences);
+        }
+
+        private void AssertDocumentCompiles(
+            RazorCodeDocument document,
+            IEnumerable<MetadataReference> compilationReferences,
+            IEnumerable<string> expectedErrors = null)
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(document.GetCSharpDocument().GeneratedCode);
+            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+
+            var compilation = CSharpCompilation.Create("CodeGenerationTestAssembly", new[] { syntaxTree }, compilationReferences, options);
+
+            var diagnostics = compilation.GetDiagnostics();
+
+            var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error);
+
+            if (expectedErrors == null)
+            {
+                Assert.Equal(0, errors.Count());
+            }
+            else
+            {
+                Assert.Equal(expectedErrors.Count(), errors.Count());
+
+                var expectedArray = expectedErrors.ToArray();
+                var actualArray = errors.ToArray();
+
+                for (var i = 0; i < expectedErrors.Count(); i++)
+                {
+                    Assert.Equal(expectedArray[i], actualArray[i].GetMessage());
+                }
+            }
+        }
+
+        protected RazorEngine CreateDesignTimeEngine(IEnumerable<MetadataReference> references)
         {
             return RazorEngine.CreateDesignTime(b =>
             {
                 RazorExtensions.Register(b);
 
-                b.Features.Add(GetMetadataReferenceFeature());
-
-                if (descriptors != null)
-                {
-                    b.AddTagHelpers(descriptors);
-                }
-                else
-                {
-                    b.Features.Add(new DefaultTagHelperFeature());
-                }
+                b.Features.Add(GetMetadataReferenceFeature(references));
+                b.Features.Add(new DefaultTagHelperFeature());
             });
         }
 
-        protected RazorEngine CreateRuntimeEngine(IEnumerable<TagHelperDescriptor> descriptors = null)
+        protected RazorEngine CreateRuntimeEngine(IEnumerable<MetadataReference> references)
         {
             return RazorEngine.Create(b =>
             {
                 RazorExtensions.Register(b);
 
-                b.Features.Add(GetMetadataReferenceFeature());
-
-                if (descriptors != null)
-                {
-                    b.AddTagHelpers(descriptors);
-                }
-                else
-                {
-                    b.Features.Add(new DefaultTagHelperFeature());
-                }
+                b.Features.Add(GetMetadataReferenceFeature(references));
+                b.Features.Add(new DefaultTagHelperFeature());
             });
         }
 
@@ -543,37 +564,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             imports.Add(RazorSourceDocument.Create(text, DefaultImports.FileName, DefaultImports.Encoding));
         }
 
-        private static IEnumerable<TagHelperDescriptor> BuildDivDescriptors()
-        {
-            return new List<TagHelperDescriptor>
-            {
-                BuildDescriptor("div", "DivTagHelper", "TestAssembly"),
-                BuildDescriptor("a", "UrlResolutionTagHelper", "Microsoft.AspNetCore.Mvc.Razor")
-            };
-        }
-
-        private static TagHelperDescriptor BuildDescriptor(
-            string tagName,
-            string typeName,
+        private static MetadataReference BuildDynamicAssembly(
+            string text,
+            IEnumerable<MetadataReference> references,
             string assemblyName)
         {
-            return TagHelperDescriptorBuilder.Create(typeName, assemblyName)
-                .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName))
-                .Build();
-        }
+            var syntaxTree = new SyntaxTree[] { CSharpSyntaxTree.ParseText(text) };
 
-        private static IMetadataReferenceFeature GetMetadataReferenceFeature()
-        {
-            var currentAssembly = typeof(CodeGenerationIntegrationTest).GetTypeInfo().Assembly;
-            var dependencyContext = DependencyContext.Load(currentAssembly);
-
-            var references = dependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths())
-                .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
-                .ToList<MetadataReference>();
-
-            var syntaxTree = CreateTagHelperSyntaxTree();
             var compilation = CSharpCompilation.Create(
-                "Microsoft.AspNetCore.Mvc.Razor",
+                assemblyName,
                 syntaxTree,
                 references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -584,25 +583,63 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 
             Assert.True(compilationResult.Success);
 
-            references.Add(MetadataReference.CreateFromStream(stream));
-
-            var feature = new DefaultMetadataReferenceFeature()
-            {
-                References = references,
-            };
-
-            return feature;
+            return MetadataReference.CreateFromStream(stream);
         }
 
-        private static IEnumerable<SyntaxTree> CreateTagHelperSyntaxTree()
+        private static IRazorEngineFeature GetMetadataReferenceFeature(IEnumerable<MetadataReference> references)
         {
-            var text = $@"
-            public class UrlResolutionTagHelper : {typeof(TagHelper).FullName}
-            {{
+            return new DefaultMetadataReferenceFeature()
+            {
+                References = references.ToList()
+            };
+        }
 
-            }}";
+        private static IEnumerable<MetadataReference> CreateAppCodeReferences(string appCode, IEnumerable<MetadataReference> shimReferences)
+        {
+            var references = new List<MetadataReference>(shimReferences);
 
-            return new SyntaxTree[] { CSharpSyntaxTree.ParseText(text) };
+            if (appCode != null)
+            {
+                var appCodeSyntaxTrees = new List<SyntaxTree> { CSharpSyntaxTree.ParseText(appCode) };
+
+                var compilation = CSharpCompilation.Create(
+                    "AppCode",
+                    appCodeSyntaxTrees,
+                    shimReferences,
+                    options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                var stream = new MemoryStream();
+                var compilationResult = compilation.Emit(stream, options: new EmitOptions());
+                stream.Position = 0;
+
+                var diagString = string.Join(";", compilationResult.Diagnostics.Where(s => s.Severity == DiagnosticSeverity.Error).Select(s => s.ToString()));
+                Assert.True(compilationResult.Success, string.Format("Application code needed for tests didn't compile!: {0}", diagString));
+
+                references.Add(MetadataReference.CreateFromStream(stream));
+            }
+
+            return references;
+        }
+
+        private static IEnumerable<MetadataReference> CreateMvcShimReferences(string mvcShimName)
+        {
+            var dllPath = Path.Combine(Directory.GetCurrentDirectory(), mvcShimName);
+            Assembly assembly;
+#if NET46
+            assembly = Assembly.LoadFile(dllPath);
+#else
+            assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
+#endif
+            var assemblyDependencyContext = DependencyContext.Load(assembly);
+
+            var assemblyReferencePaths = assemblyDependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths());
+
+            var references = assemblyReferencePaths
+                .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
+                .ToList<MetadataReference>();
+
+            Assert.NotEmpty(references);
+
+            return references;
         }
     }
 }

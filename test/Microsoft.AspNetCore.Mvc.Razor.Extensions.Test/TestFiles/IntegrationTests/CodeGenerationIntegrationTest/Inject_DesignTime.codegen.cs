@@ -9,11 +9,6 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml"
-using MyNamespace;
-
-#line default
-#line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inject_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219

@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "54a70ff4c6d27ac6cdc6725cb6bab12012015729"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "fd421120502bfd80d21169d04fd6ba54b5cc7f12"
 namespace AspNetCore
 {
     #line hidden
@@ -17,25 +17,25 @@ namespace AspNetCore
             BeginContext(0, 4, true);
             WriteLiteral("<div");
             EndContext();
-            BeginWriteAttribute("class", " class=\"", 4, "\"", 17, 1);
+            BeginWriteAttribute("class", " class=\"", 4, "\"", 28, 1);
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
-WriteAttributeValue("", 12, logo, 12, 5, false);
+WriteAttributeValue("", 12, this.ToString(), 12, 16, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginContext(18, 24, true);
+            BeginContext(29, 24, true);
             WriteLiteral(">\r\n    Hello world\r\n    ");
             EndContext();
-            BeginContext(43, 21, false);
+            BeginContext(54, 29, false);
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
-Write(Html.Input("SomeKey"));
+Write(string.Format("{0}", "Hello"));
 
 #line default
 #line hidden
             EndContext();
-            BeginContext(64, 8, true);
-            WriteLiteral("\r\n</div>");
+            BeginContext(83, 10, true);
+            WriteLiteral("\r\n</div>\r\n");
             EndContext();
         }
         #pragma warning restore 1998

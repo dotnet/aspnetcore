@@ -9,7 +9,6 @@ Document -
         UsingStatement - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
         UsingStatement - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingStatement - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        UsingStatement - (1:0,1 [17] Inject.cshtml) - MyNamespace
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inject_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
@@ -25,13 +24,11 @@ Document -
                 DirectiveToken - (617:12,14 [96] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (729:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
-                DirectiveToken - (28:1,8 [5] Inject.cshtml) - MyApp
-                DirectiveToken - (34:1,14 [14] Inject.cshtml) - MyPropertyName
+                DirectiveToken - (8:0,8 [5] Inject.cshtml) - MyApp
+                DirectiveToken - (14:0,14 [14] Inject.cshtml) - MyPropertyName
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (18:0,18 [2] Inject.cshtml)
-                    RazorIRToken - (18:0,18 [2] Inject.cshtml) - Html - \n
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 

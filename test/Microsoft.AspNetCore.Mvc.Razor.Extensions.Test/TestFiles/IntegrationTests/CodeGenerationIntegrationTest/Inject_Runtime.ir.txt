@@ -8,7 +8,6 @@ Document -
         UsingStatement - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
         UsingStatement - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        UsingStatement - (1:0,1 [19] Inject.cshtml) - MyNamespace
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inject_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
             InjectDirective - 

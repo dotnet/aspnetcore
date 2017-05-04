@@ -30,6 +30,30 @@
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.0.0-*" />
+
+    <!-- We need this to compile but don't want it referenced by the project.
+      It is included dynamically in CodeGeneration tests. -->
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Targets>Build</Targets>
+    </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <MvcShim
+      Condition="$(TargetFramework) != ''" 
+      Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim\bin\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.deps.json" />
+  </ItemGroup>
+
+  <Target Name="CopyDepsFromShims" AfterTargets="Build">
+    <Copy SourceFiles="@(MvcShim)" DestinationFolder="$(OutputPath)" />
+  </Target>
+  
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
 </Project>

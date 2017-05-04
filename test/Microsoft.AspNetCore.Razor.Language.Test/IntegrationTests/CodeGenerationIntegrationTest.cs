@@ -12,616 +12,247 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         [Fact]
         public void IncompleteDirectives_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void CSharp7_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void BasicImports_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void UnfinishedExpressionInCode_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void Templates_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void StringLiterals_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void SimpleUnspacedIf_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void Sections_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void RazorComments_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void ParserError_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void OpenedIf_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void NullConditionalExpressions_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void NoLinePragmas_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void NestedCSharp_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void NestedCodeBlocks_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void MarkupInCodeBlock_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void Instrumented_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void InlineBlocks_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void Inherits_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void Usings_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void ImplicitExpressionAtEOF_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void ImplicitExpression_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void HtmlCommentWithQuote_Double_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void HtmlCommentWithQuote_Single_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void HiddenSpansInCode_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void FunctionsBlock_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void FunctionsBlockMinimal_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void ExpressionsInCode_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void ExplicitExpressionWithMarkup_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void ExplicitExpressionAtEOF_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void ExplicitExpression_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void EmptyImplicitExpressionInCode_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void EmptyImplicitExpression_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void EmptyExplicitExpression_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void EmptyCodeBlock_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void ConditionalAttributes_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void CodeBlockWithTextElement_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void CodeBlockAtEOF_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void CodeBlock_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void Blocks_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
         public void Await_Runtime()
         {
-            // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            RunTimeTest();
         }
 
         [Fact]
@@ -811,661 +442,265 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         [Fact]
         public void IncompleteDirectives_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void CSharp7_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void BasicImports_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void UnfinishedExpressionInCode_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void Templates_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void StringLiterals_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void SimpleUnspacedIf_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void Sections_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void RazorComments_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void ParserError_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void OpenedIf_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void NullConditionalExpressions_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void NoLinePragmas_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void NestedCSharp_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void NestedCodeBlocks_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void MarkupInCodeBlock_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void Instrumented_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void InlineBlocks_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void Inherits_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void Usings_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void ImplicitExpressionAtEOF_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void ImplicitExpression_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void HtmlCommentWithQuote_Double_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void HtmlCommentWithQuote_Single_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void HiddenSpansInCode_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void FunctionsBlock_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void FunctionsBlockMinimal_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void ExpressionsInCode_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void ExplicitExpressionWithMarkup_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void ExplicitExpressionAtEOF_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void ExplicitExpression_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void EmptyImplicitExpressionInCode_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void EmptyImplicitExpression_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void EmptyExplicitExpression_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void EmptyCodeBlock_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void DesignTime_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void ConditionalAttributes_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void CodeBlockWithTextElement_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void CodeBlockAtEOF_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void CodeBlock_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void Blocks_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void Await_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void AddTagHelperDirective_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
         public void RemoveTagHelperDirective_DesignTime()
         {
-            // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
-            var document = CreateCodeDocument();
-
-            // Act
-            engine.Process(document);
-
-            // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            DesignTimeTest();
         }
 
         [Fact]
@@ -1629,6 +864,34 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
         #endregion
+
+        private void DesignTimeTest()
+        {
+            // Arrange
+            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDesignTimeDocumentMatchBaseline(document);
+        }
+
+        private void RunTimeTest()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
 
         private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
         {

@@ -25,38 +25,38 @@ Document -
                 DirectiveToken - (729:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (7:0,7 [8] ModelExpressionTagHelper.cshtml) - DateTime
-                DirectiveToken - (33:2,14 [108] ModelExpressionTagHelper.cshtml) - Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Extensions.Test
+                DirectiveToken - (33:2,14 [29] ModelExpressionTagHelper.cshtml) - "InputTestTagHelper, AppCode"
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            DeclareTagHelperFields -  - Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper
+            DeclareTagHelperFields -  - InputTestTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (17:1,0 [2] ModelExpressionTagHelper.cshtml)
                     RazorIRToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                HtmlContent - (141:2,122 [4] ModelExpressionTagHelper.cshtml)
-                    RazorIRToken - (141:2,122 [4] ModelExpressionTagHelper.cshtml) - Html - \n\n
-                TagHelper - (145:4,0 [24] ModelExpressionTagHelper.cshtml)
+                HtmlContent - (62:2,43 [4] ModelExpressionTagHelper.cshtml)
+                    RazorIRToken - (62:2,43 [4] ModelExpressionTagHelper.cshtml) - Html - \n\n
+                TagHelper - (66:4,0 [25] ModelExpressionTagHelper.cshtml)
                     InitializeTagHelperStructure -  - input-test - TagMode.SelfClosing
-                    CreateTagHelper -  - Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper
-                    SetTagHelperProperty - (162:4,17 [3] ModelExpressionTagHelper.cshtml) - for - For - HtmlAttributeValueStyle.DoubleQuotes
+                    CreateTagHelper -  - InputTestTagHelper
+                    SetTagHelperProperty - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - for - For - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - 
                             RazorIRToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
                             RazorIRToken -  - CSharp - __model.
-                            RazorIRToken - (162:4,17 [3] ModelExpressionTagHelper.cshtml) - CSharp - Now
+                            RazorIRToken - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - CSharp - Date
                             RazorIRToken -  - CSharp - )
                     ExecuteTagHelpers - 
-                HtmlContent - (169:4,24 [2] ModelExpressionTagHelper.cshtml)
-                    RazorIRToken - (169:4,24 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                TagHelper - (171:5,0 [27] ModelExpressionTagHelper.cshtml)
+                HtmlContent - (91:4,25 [2] ModelExpressionTagHelper.cshtml)
+                    RazorIRToken - (91:4,25 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                TagHelper - (93:5,0 [27] ModelExpressionTagHelper.cshtml)
                     InitializeTagHelperStructure -  - input-test - TagMode.SelfClosing
-                    CreateTagHelper -  - Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper
-                    SetTagHelperProperty - (188:5,17 [6] ModelExpressionTagHelper.cshtml) - for - For - HtmlAttributeValueStyle.DoubleQuotes
+                    CreateTagHelper -  - InputTestTagHelper
+                    SetTagHelperProperty - (110:5,17 [6] ModelExpressionTagHelper.cshtml) - for - For - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - 
                             RazorIRToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
-                            RazorIRToken - (189:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
+                            RazorIRToken - (111:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
                             RazorIRToken -  - CSharp - )
                     ExecuteTagHelpers - 
-                HtmlContent - (198:5,27 [2] ModelExpressionTagHelper.cshtml)
-                    RazorIRToken - (198:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                HtmlContent - (120:5,27 [2] ModelExpressionTagHelper.cshtml)
+                    RazorIRToken - (120:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 

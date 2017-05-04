@@ -14,7 +14,7 @@ namespace
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-TypeName __typeHelper = null;
+MyService<TModel> __typeHelper = null;
         }
         ))();
         }
