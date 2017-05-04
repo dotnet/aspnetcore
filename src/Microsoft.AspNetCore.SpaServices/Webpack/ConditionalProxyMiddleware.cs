@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
     /// </summary>
     internal class ConditionalProxyMiddleware
     {
-        private const int BUFFER_SIZE = 1024;
+        private const int DefaultHttpBufferSize = 4096;
+
         private readonly HttpClient _httpClient;
         private readonly RequestDelegate _next;
         private readonly ConditionalProxyMiddlewareOptions _options;
