@@ -1,7 +1,15 @@
 <Project>
-  <Target Name="_RunNanoTests" DependsOnTargets="Restore" Condition="'$(RUN_TESTS_ON_NANO)' == 'true'">
-    <MSBuild Targets="VSTest"
-             Projects="$(MSBuildThisFileDirectory)..\test\MusicStore.E2ETests\MusicStore.E2ETests.csproj"
-             Properties="Configuration=$(Configuration);VSTestLogger=trx;VSTestTestCaseFilter=E2ETests=NanoServer" />
+
+  <PropertyGroup>
+    <MusicStoreE2ETestProject>$(RepositoryRoot)test\MusicStore.E2ETests\MusicStore.E2ETests.csproj</MusicStoreE2ETestProject>
+  </PropertyGroup>
+
+  <Target Name="_FilterTestProjects" BeforeTargets="TestProjects" Condition="'$(VSTestTestCaseFilter)'=='E2Etests=NanoServer'">
+    <ItemGroup>
+      <ProjectsToTest Remove="@(ProjectsToTest)" />
+      <ProjectsToTest Include="$(MusicStoreE2ETestProject)" />
+    </ItemGroup>
+
+    <Error Text="Could not find test projects to run" Condition="@(ProjectsToTest->Count()) == 0" />
   </Target>
 </Project>
