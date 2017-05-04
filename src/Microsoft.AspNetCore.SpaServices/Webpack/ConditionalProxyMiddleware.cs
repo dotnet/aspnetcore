@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
 
                 using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
                 {
-                    await responseStream.CopyToAsync(context.Response.Body, BUFFER_SIZE, context.RequestAborted);
+                    await responseStream.CopyToAsync(context.Response.Body, DefaultHttpBufferSize, context.RequestAborted);
                 }
 
                 return true;
