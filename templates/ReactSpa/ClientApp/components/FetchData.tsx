@@ -6,7 +6,7 @@ interface FetchDataExampleState {
     loading: boolean;
 }
 
-export class FetchData extends React.Component<any, FetchDataExampleState> {
+export class FetchData extends React.Component<{}, FetchDataExampleState> {
     constructor() {
         super();
         this.state = { forecasts: [], loading: true };

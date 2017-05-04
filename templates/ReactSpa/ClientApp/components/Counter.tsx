@@ -4,7 +4,7 @@ interface CounterState {
     currentCount: number;
 }
 
-export class Counter extends React.Component<any, CounterState> {
+export class Counter extends React.Component<{}, CounterState> {
     constructor() {
         super();
         this.state = { currentCount: 0 };

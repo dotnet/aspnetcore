@@ -7,7 +7,7 @@ import * as WeatherForecasts from '../store/WeatherForecasts';
 
 type CounterProps = CounterStore.CounterState & typeof CounterStore.actionCreators;
 
-class Counter extends React.Component<CounterProps, void> {
+class Counter extends React.Component<CounterProps, {}> {
     public render() {
         return <div>
             <h1>Counter</h1>

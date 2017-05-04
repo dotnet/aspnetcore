@@ -5,7 +5,7 @@ export interface LayoutProps {
     body: React.ReactElement<any>;
 }
 
-export class Layout extends React.Component<LayoutProps, void> {
+export class Layout extends React.Component<LayoutProps, {}> {
     public render() {
         return <div className='container-fluid'>
             <div className='row'>
