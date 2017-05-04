@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     Input.CancelPendingFlush();
 
                     // Now, complete the input so that no more reads can happen
-                    Input.Complete(new TaskCanceledException("The request was aborted"));
+                    Input.Complete(new ConnectionAbortedException());
 
                     // We're done with the socket now
                     _socket.Dispose();

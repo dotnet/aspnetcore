@@ -115,11 +115,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
             {
-                error = new TaskCanceledException("The request was aborted");
+                error = new ConnectionAbortedException();
             }
             catch (ObjectDisposedException)
             {
-                error = new TaskCanceledException("The request was aborted");
+                error = new ConnectionAbortedException();
             }
             catch (IOException ex)
             {

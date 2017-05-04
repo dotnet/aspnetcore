@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static async Task<bool> AbortAllConnectionsAsync(this FrameConnectionManager connectionManager)
         {
             var abortTasks = new List<Task>();
-            var canceledException = new TaskCanceledException(CoreStrings.RequestProcessingAborted);
+            var canceledException = new ConnectionAbortedException();
 
             connectionManager.Walk(connection =>
             {
