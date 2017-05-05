@@ -194,8 +194,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 foreach (var completionTagName in elementCompletions.Keys)
                 {
-                    if (completionTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    if (elementCompletions[completionTagName].Count > 0 || 
+                        !string.IsNullOrEmpty(prefix) && completionTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
+                        // The current completion either has other TagHelper's associated with it or is prefixed with a non-empty
+                        // TagHelper prefix.
                         UpdateCompletions(completionTagName, catchAllDescriptor);
                     }
                 }

@@ -509,7 +509,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         [Fact]
-        public void GetElementCompletions_CatchAllsApplyToAllCompletions()
+        public void GetElementCompletions_CatchAllsApplyToOnlyTagHelperCompletions()
         {
             // Arrange
             var documentDescriptors = new[]
@@ -523,8 +523,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
             {
-                ["superli"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0], documentDescriptors[1] },
-                ["li"] = new HashSet<TagHelperDescriptor> { documentDescriptors[1] },
+                ["superli"] = new HashSet<TagHelperDescriptor>() { documentDescriptors[0], documentDescriptors[1] },
+                ["li"] = new HashSet<TagHelperDescriptor>(),
             });
 
             var existingCompletions = new[] { "li" };
@@ -532,6 +532,40 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 documentDescriptors,
                 existingCompletions,
                 containingTagName: "ul");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetElementCompletions_CatchAllsApplyToNonTagHelperCompletionsIfStartsWithTagHelperPrefix()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("SuperLiTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("superli"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("CatchAll", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["th:superli"] = new HashSet<TagHelperDescriptor>() { documentDescriptors[0], documentDescriptors[1] },
+                ["th:li"] = new HashSet<TagHelperDescriptor>() { documentDescriptors[1] },
+            });
+
+            var existingCompletions = new[] { "th:li" };
+            var completionContext = BuildElementCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                containingTagName: "ul",
+                tagHelperPrefix: "th:");
             var service = CreateTagHelperCompletionFactsService();
 
             // Act
