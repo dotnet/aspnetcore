@@ -4,7 +4,6 @@
   "devDependencies": {
     "@types/requirejs": "^2.1.28",
     "aspnet-webpack": "^1.0.27",
-    "av-ts": "^0.7.1",
     "awesome-typescript-loader": "^3.0.0",
     "bootstrap": "^3.3.6",
     "css-loader": "^0.25.0",
@@ -17,7 +16,9 @@
     "typescript": "^2.2.1",
     "url-loader": "^0.5.7",
     "vue": "^2.2.2",
+    "vue-class-component": "^5.0.1",
     "vue-loader": "^11.1.4",
+    "vue-property-decorator": "^5.0.1",
     "vue-router": "^2.3.0",
     "vue-template-compiler": "^2.2.2",
     "webpack": "^2.2.0",

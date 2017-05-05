@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { Component } from 'av-ts';
+import { Component } from 'vue-property-decorator';
 
 @Component({
     components: {
