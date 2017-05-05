@@ -19,19 +19,30 @@ namespace E2ETests
             _output = output;
         }
 
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         [EnvironmentVariableSkipCondition(Store.MusicStoreAspNetCoreStoreFeed, null, SkipOnMatch = false)]
-        [ConditionalTheory]
+        [ConditionalFact]
         [Trait("smoketests", "usestore")]
         [Trait("smoketests", "usestore-defaultlocation")]
-        [InlineData(ServerType.Kestrel)]
-        [InlineData(ServerType.WebListener)]
-        public async Task DefaultLocation(ServerType serverType)
+        public async Task DefaultLocation_Kestrel()
         {
             var tests = new SmokeTestsUsingStoreHelper(_output);
             await tests.SmokeTestSuite(
-                serverType,
+                ServerType.Kestrel,
+                _testFixture.CreateStoreInDefaultLocation,
+                _testFixture.StoreDirectory);
+        }
+
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [EnvironmentVariableSkipCondition(Store.MusicStoreAspNetCoreStoreFeed, null, SkipOnMatch = false)]
+        [ConditionalFact]
+        [Trait("smoketests", "usestore")]
+        [Trait("smoketests", "usestore-defaultlocation")]
+        public async Task DefaultLocation_WebListener()
+        {
+            var tests = new SmokeTestsUsingStoreHelper(_output);
+            await tests.SmokeTestSuite(
+                ServerType.WebListener,
                 _testFixture.CreateStoreInDefaultLocation,
                 _testFixture.StoreDirectory);
         }
@@ -50,19 +61,30 @@ namespace E2ETests
             _output = output;
         }
 
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         [EnvironmentVariableSkipCondition(Store.MusicStoreAspNetCoreStoreFeed, null, SkipOnMatch = false)]
-        [ConditionalTheory]
+        [ConditionalFact]
         [Trait("smoketests", "usestore")]
         [Trait("smoketests", "usestore-customlocation")]
-        [InlineData(ServerType.Kestrel)]
-        [InlineData(ServerType.WebListener)]
-        public async Task CustomLocation(ServerType serverType)
+        public async Task CustomLocation_Kestrel()
         {
             var tests = new SmokeTestsUsingStoreHelper(_output);
             await tests.SmokeTestSuite(
-                serverType,
+                ServerType.Kestrel,
+                _testFixture.CreateStoreInDefaultLocation,
+                _testFixture.StoreDirectory);
+        }
+
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [EnvironmentVariableSkipCondition(Store.MusicStoreAspNetCoreStoreFeed, null, SkipOnMatch = false)]
+        [ConditionalFact]
+        [Trait("smoketests", "usestore")]
+        [Trait("smoketests", "usestore-customlocation")]
+        public async Task CustomLocation_WebListener()
+        {
+            var tests = new SmokeTestsUsingStoreHelper(_output);
+            await tests.SmokeTestSuite(
+                ServerType.WebListener,
                 _testFixture.CreateStoreInDefaultLocation,
                 _testFixture.StoreDirectory);
         }

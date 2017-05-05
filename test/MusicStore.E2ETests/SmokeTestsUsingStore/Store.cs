@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Linq;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -12,7 +14,6 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System.Threading;
 
 namespace E2ETests
 {
@@ -54,11 +55,11 @@ namespace E2ETests
             {
                 _logger.LogInformation("Deleting the store...");
 
-                RetryHelper.RetryOperation(
-                        () => Directory.Delete(_storeDir, recursive: true),
-                        e => _logger.LogError($"Failed to delete directory : {e.Message}"),
-                        retryCount: 3,
-                        retryDelayMilliseconds: 100);
+                //RetryHelper.RetryOperation(
+                //        () => Directory.Delete(_storeDir, recursive: true),
+                //        e => _logger.LogError($"Failed to delete directory : {e.Message}"),
+                //        retryCount: 3,
+                //        retryDelayMilliseconds: 100);
 
                 RetryHelper.RetryOperation(
                         () => Directory.Delete(_tempDir, recursive: true),
@@ -173,7 +174,56 @@ namespace E2ETests
             }
             else
             {
-                throw new NotImplementedException();
+                string packageIdPrefix;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    packageIdPrefix = $"{packageId}.linux";
+                }
+                else
+                {
+                    packageIdPrefix = $"{packageId}.osx";
+                }
+
+                string fileNameWithExtension = null;
+                foreach (var file in new DirectoryInfo(zipFileExtracted).GetFiles())
+                {
+                    if (file.Name.StartsWith(packageIdPrefix)
+                        && !string.Equals($"{packageIdPrefix}.tar.gz", file.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        fileNameWithExtension = file.FullName;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(fileNameWithExtension))
+                {
+                    throw new InvalidOperationException(
+                        $"Could not find a store zip file with version {assemblyInformationVersionAttribute.InformationalVersion}");
+                }
+
+                Directory.CreateDirectory(storeParentDir);
+
+                var startInfo = new ProcessStartInfo()
+                {
+                    FileName = "tar",
+                    Arguments = $"xvzf {fileNameWithExtension}",
+                    WorkingDirectory = storeParentDir,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true
+                };
+                var tarProcess = new Process() { StartInfo = startInfo };
+                tarProcess.EnableRaisingEvents = true;
+                tarProcess.StartAndCaptureOutAndErrToLogger("tar", _logger);
+
+                if (tarProcess.HasExited && tarProcess.ExitCode != 0)
+                {
+                    var message = $"Error occurred while extracting the file '{fileNameWithExtension}' in working directory '{storeParentDir}'";
+                    _logger.LogError(message);
+                    throw new InvalidOperationException(message);
+                }
             }
         }
 
@@ -185,15 +235,7 @@ namespace E2ETests
                 // On Windows: ..\.dotnet\x64\dotnet.exe
                 // On Linux  : ../.dotnet/dotnet
                 var dotnetDir = new FileInfo(DotNetMuxer.MuxerPath).Directory.FullName;
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    storeParentDir = dotnetDir;
-                }
-                else
-                {
-                    storeParentDir = Path.Combine(dotnetDir, "x64");
-                }
+                storeParentDir = dotnetDir;
             }
             else
             {
