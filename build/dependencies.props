@@ -4,7 +4,7 @@
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <AspNetCoreIdentityServiceVersion>1.0.0-*</AspNetCoreIdentityServiceVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
-    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <NewtonsoftJsonVersion>10.0.1</NewtonsoftJsonVersion>
