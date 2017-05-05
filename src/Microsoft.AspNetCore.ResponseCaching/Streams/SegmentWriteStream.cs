@@ -190,20 +190,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _length++;
         }
 
-#if NETSTANDARD1_3
-        public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-#else
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-#endif
         {
             return StreamUtilities.ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
         }
 
-#if NETSTANDARD1_3
-        public void EndWrite(IAsyncResult asyncResult)
-#else
         public override void EndWrite(IAsyncResult asyncResult)
-#endif
         {
             if (asyncResult == null)
             {

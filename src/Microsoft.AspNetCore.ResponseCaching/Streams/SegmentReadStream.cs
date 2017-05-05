@@ -140,11 +140,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             return byteRead;
         }
 
-#if NETSTANDARD1_3
-        public IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-#else
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-#endif
         {
             var tcs = new TaskCompletionSource<int>(state);
 
@@ -176,11 +172,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             return tcs.Task;
         }
 
-#if NETSTANDARD1_3
-        public int EndRead(IAsyncResult asyncResult)
-#else
         public override int EndRead(IAsyncResult asyncResult)
-#endif
         {
             if (asyncResult == null)
             {
