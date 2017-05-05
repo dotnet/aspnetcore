@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,50 +22,26 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        //[InlineData(RuntimeArchitecture.x86, ApplicationType.Portable)]
+        [InlineData(RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task HelloWorld_IISExpress(RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(ServerType.IISExpress, architecture, applicationType);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task HelloWorld_IISExpress_CoreClr(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        public async Task HelloWorld(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
-        }
-
-        [ConditionalTheory]
-        [SkipIfEnvironmentVariableNotEnabled("IIS_VARIATIONS_ENABLED")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone)]
-        public Task HelloWorld_IIS(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
-        {
-            return HelloWorld(ServerType.IIS, runtimeFlavor, architecture, applicationType);
-        }
-
-        public async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
-        {
-            var testName = $"HelloWorld_{serverType}_{runtimeFlavor}_{architecture}";
+            var testName = $"HelloWorld_{serverType}_{architecture}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, RuntimeFlavor.CoreClr, architecture)
                 {
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 

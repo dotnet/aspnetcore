@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-preview1-*</AspNetCoreVersion>
     <AspNetCoreLabsVersion>0.3.0-*</AspNetCoreLabsVersion>
