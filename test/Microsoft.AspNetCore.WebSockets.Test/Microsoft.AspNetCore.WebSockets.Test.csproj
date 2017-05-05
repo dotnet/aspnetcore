@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <PlatformTarget Condition="'$(TargetFramework)' == 'net46'">x64</PlatformTarget>
 
     <!--
       Workaround for "Explicit RID still required for .NET Framework test projects" (https://github.com/dotnet/sdk/issues/909).
