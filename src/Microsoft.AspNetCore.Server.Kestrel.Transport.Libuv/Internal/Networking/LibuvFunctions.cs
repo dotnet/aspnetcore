@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
                 _uv_write = NativeMethods.uv_write;
                 _uv_write2 = NativeMethods.uv_write2;
             }
-            _uv_shutdown = NativeMethods.uv_shutdown;
             _uv_err_name = NativeMethods.uv_err_name;
             _uv_strerror = NativeMethods.uv_strerror;
             _uv_loop_size = NativeMethods.uv_loop_size;
@@ -312,16 +311,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             ThrowIfErrored(_uv_write2(req, handle, bufs, nbufs, sendHandle, cb));
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void uv_shutdown_cb(IntPtr req, int status);
-        protected Func<UvShutdownReq, UvStreamHandle, uv_shutdown_cb, int> _uv_shutdown;
-        public void shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb)
-        {
-            req.Validate();
-            handle.Validate();
-            ThrowIfErrored(_uv_shutdown(req, handle, cb));
-        }
-
         protected Func<int, IntPtr> _uv_err_name;
         public string err_name(int err)
         {
@@ -571,9 +560,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             unsafe public static extern int uv_write2(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, UvStreamHandle sendHandle, uv_write_cb cb);
-
-            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_shutdown(UvShutdownReq req, UvStreamHandle handle, uv_shutdown_cb cb);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             public extern static IntPtr uv_err_name(int err);

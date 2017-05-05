@@ -88,6 +88,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // Now, complete the input so that no more reads can happen
                     Input.Complete(new ConnectionAbortedException());
 
+                    // Send a FIN
+                    Log.ConnectionWriteFin(ConnectionId);
+
                     // We're done with the socket now
                     _socket.Dispose();
 

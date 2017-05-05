@@ -522,6 +522,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Fact]
+        public void AbortingTheConnectionSendsFIN()
+        {
+            var builder = new WebHostBuilder()
+                .UseKestrel()
+                .UseUrls("http://127.0.0.1:0")
+                .Configure(app => app.Run(context =>
+                {
+                    context.Abort();
+                    return Task.CompletedTask;
+                }));
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
+                    int result = socket.Receive(new byte[32]);
+                    Assert.Equal(0, result);
+                }
+            }
+        }
+
         [Theory]
         [InlineData("http://localhost/abs/path", "/abs/path", null)]
         [InlineData("https://localhost/abs/path", "/abs/path", null)] // handles mismatch scheme

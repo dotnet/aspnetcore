@@ -67,18 +67,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     if (result.IsCancelled)
                     {
-                        // Send a FIN
-                        _log.ConnectionWriteFin(_connectionId);
-
-                        using (var shutdownReq = new UvShutdownReq(_log))
-                        {
-                            shutdownReq.Init(_thread);
-                            var shutdownResult = await shutdownReq.ShutdownAsync(_socket);
-
-                            _log.ConnectionWroteFin(_connectionId, shutdownResult.Status);
-                        }
-
-                        // Ensure no data is written after uv_shutdown
                         break;
                     }
 
