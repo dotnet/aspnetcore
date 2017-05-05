@@ -33,110 +33,110 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task ResponseCompression_Windows_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task ResponseCompression_Windows_NoCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
+            return ResponseCompression(serverType, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Kestrel_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseCompression_Kestrel_NoCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
+            return ResponseCompression(serverType, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Nginx_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseCompression_Nginx_NoCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
+            return ResponseCompression(serverType, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Windows_HostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseCompression_Windows_HostCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckHostCompressionAsync, applicationType, hostCompression: true);
+            return ResponseCompression(serverType, architecture, CheckHostCompressionAsync, applicationType, hostCompression: true);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Nginx_HostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseCompression_Nginx_HostCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckHostCompressionAsync, applicationType, hostCompression: true);
+            return ResponseCompression(serverType, architecture, CheckHostCompressionAsync, applicationType, hostCompression: true);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task ResponseCompression_Windows_AppCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task ResponseCompression_Windows_AppCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckAppCompressionAsync, applicationType, hostCompression: false);
+            return ResponseCompression(serverType, architecture, CheckAppCompressionAsync, applicationType, hostCompression: false);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Kestrel_AppCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseCompression_Kestrel_AppCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckAppCompressionAsync, applicationType, hostCompression: false);
+            return ResponseCompression(serverType, architecture, CheckAppCompressionAsync, applicationType, hostCompression: false);
         }
 
         [ConditionalTheory(Skip = "No pass-through compression https://github.com/aspnet/BasicMiddleware/issues/123")]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Nginx_AppCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseCompression_Nginx_AppCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckHostCompressionAsync, applicationType, hostCompression: false);
+            return ResponseCompression(serverType, architecture, CheckHostCompressionAsync, applicationType, hostCompression: false);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task ResponseCompression_Windows_AppAndHostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task ResponseCompression_Windows_AppAndHostCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckAppCompressionAsync, applicationType, hostCompression: true);
+            return ResponseCompression(serverType, architecture, CheckAppCompressionAsync, applicationType, hostCompression: true);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseCompression_Nginx_AppAndHostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseCompression_Nginx_AppAndHostCompression(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseCompression(serverType, runtimeFlavor, architecture, CheckAppCompressionAsync, applicationType, hostCompression: true);
+            return ResponseCompression(serverType, architecture, CheckAppCompressionAsync, applicationType, hostCompression: true);
         }
 
-        public async Task ResponseCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, bool hostCompression, [CallerMemberName] string testName = null)
+        public async Task ResponseCompression(ServerType serverType, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, bool hostCompression, [CallerMemberName] string testName = null)
         {
-            testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            testName = $"{testName}_{serverType}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("ResponseCompression");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
                 {
                     EnvironmentName = "ResponseCompression",
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType,
                         hostCompression ? "http.config" : "NoCompression.config",
                         hostCompression ? "nginx.conf" : "NoCompression.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 
