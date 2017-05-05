@@ -52,7 +52,7 @@ namespace MusicStore
             {
                 var logLevel = string.Equals(environment, "Development", StringComparison.Ordinal) ? LogLevel.Information : LogLevel.Warning;
 
-                factory.AddConsole((name, level) => level >= logLevel);
+                factory.AddConsole();
             });
 
             var host = builder.Build();
