@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal static unsafe class UnsafeNclNativeMethods
     {
-#if NETSTANDARD1_3
         private const string sspicli_LIB = "sspicli.dll";
         private const string api_ms_win_core_processthreads_LIB = "api-ms-win-core-processthreads-l1-1-1.dll";
         private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-0.dll";
@@ -18,10 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private const string api_ms_win_core_heap_LIB = "api-ms-win-core-heap-L1-2-0.dll";
         private const string api_ms_win_core_heap_obsolete_LIB = "api-ms-win-core-heap-obsolete-L1-1-0.dll";
         private const string api_ms_win_core_kernel32_legacy_LIB = "api-ms-win-core-kernel32-legacy-l1-1-0.dll";
-#else
-        private const string KERNEL32 = "kernel32.dll";
-        private const string SECUR32 = "secur32.dll";
-#endif
+
         private const string TOKENBINDING = "tokenbinding.dll";
 
         // CONSIDER: Make this an enum, requires changing a lot of types from uint to ErrorCodes.
@@ -39,18 +35,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             internal const uint ERROR_CONNECTION_INVALID = 1229;
         }
 
-#if NETSTANDARD1_3
         [DllImport(api_ms_win_core_io_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-#else
-        [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-#endif
         internal static unsafe extern uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
-#if NETSTANDARD1_3
         [DllImport(api_ms_win_core_kernel32_legacy_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-#else
-        [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-#endif
         internal static unsafe extern bool SetFileCompletionNotificationModes(SafeHandle handle, FileCompletionNotificationModes modes);
 
         [Flags]
@@ -71,19 +59,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             [Out] out HeapAllocHandle resultList);
 
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366569(v=vs.85).aspx
-#if NETSTANDARD1_3
         [DllImport(api_ms_win_core_heap_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#else
-        [DllImport(KERNEL32, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#endif
         internal static extern IntPtr GetProcessHeap();
 
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366701(v=vs.85).aspx
-#if NETSTANDARD1_3
         [DllImport(api_ms_win_core_heap_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#else
-        [DllImport(KERNEL32, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#endif
         internal static extern bool HeapFree(
             [In] IntPtr hHeap,
             [In] uint dwFlags,
@@ -91,34 +71,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal static class SafeNetHandles
         {
-#if NETSTANDARD1_3
             [DllImport(sspicli_LIB, ExactSpelling = true, SetLastError = true)]
-#else
-            [DllImport(SECUR32, ExactSpelling = true, SetLastError = true)]
-#endif        
             internal static extern int FreeContextBuffer(
                 [In] IntPtr contextBuffer);
 
-#if NETSTANDARD1_3
             [DllImport(api_ms_win_core_handle_LIB, ExactSpelling = true, SetLastError = true)]
-#else
-            [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
-#endif
             internal static extern bool CloseHandle(IntPtr handle);
 
-#if NETSTANDARD1_3
             [DllImport(api_ms_win_core_heap_obsolete_LIB, EntryPoint = "LocalAlloc", SetLastError = true)]
-#else
-            [DllImport(KERNEL32, EntryPoint = "LocalAlloc", SetLastError = true)]
-#endif
-
             internal static extern SafeLocalFreeChannelBinding LocalAllocChannelBinding(int uFlags, UIntPtr sizetdwBytes);
 
-#if NETSTANDARD1_3
             [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
-#else
-            [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
-#endif
             internal static extern IntPtr LocalFree(IntPtr handle);
         }
 

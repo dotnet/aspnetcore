@@ -374,7 +374,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
         }
 
-#if !NETSTANDARD1_3
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
@@ -384,7 +383,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             throw new InvalidOperationException(Resources.Exception_WriteOnlyStream);
         }
-#endif
 
         #endregion
 
@@ -477,19 +475,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-#if NETSTANDARD1_3
-        public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-#else
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-#endif
         {
             return WriteAsync(buffer, offset, count).ToIAsyncResult(callback, state);
         }
-#if NETSTANDARD1_3
-        public void EndWrite(IAsyncResult asyncResult)
-#else
+
         public override void EndWrite(IAsyncResult asyncResult)
-#endif
         {
             if (asyncResult == null)
             {

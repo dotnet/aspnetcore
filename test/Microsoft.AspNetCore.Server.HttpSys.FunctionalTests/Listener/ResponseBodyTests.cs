@@ -98,13 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 30 ";
                 var stream = context.Response.Body;
-#if NET46
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
-#elif NETCOREAPP2_0
-                await stream.WriteAsync(new byte[10], 0, 10);
-#else
-#error Target framework needs to be updated
-#endif
                 stream.Write(new byte[10], 0, 10);
                 await stream.WriteAsync(new byte[10], 0, 10);
                 context.Dispose();
@@ -131,15 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
-#if NET46
-                // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = " 20 ";
-                context.Dispose();
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
+
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -287,19 +273,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET46
-                // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                cts = new CancellationTokenSource();
-                cts.Cancel();
-                // First write sends headers
-                writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
-                Assert.True(writeTask.IsCanceled);
-                context.Dispose();
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
+
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -319,19 +293,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET46
-                // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                cts = new CancellationTokenSource();
-                cts.Cancel();
-                // First write sends headers
-                writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
-                Assert.True(writeTask.IsCanceled);
-                context.Dispose();
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
+
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }

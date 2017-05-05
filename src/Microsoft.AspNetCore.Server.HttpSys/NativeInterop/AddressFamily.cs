@@ -3,20 +3,11 @@
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-#if NET46
-    /// <devdoc>
-    ///    <para>
-    ///       Specifies the address families that an instance of the <see cref="System.Net.Sockets.Socket"/>
-    ///       class can use.
-    ///    </para>
-    /// </devdoc>
-#else
     /// <devdoc>
     ///    <para>
     ///       Specifies the address families.
     ///    </para>
     /// </devdoc>
-#endif
     internal enum AddressFamily
     {
         /// <devdoc>

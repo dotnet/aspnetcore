@@ -24,13 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         static Utilities()
         {
             var win8Version = new Version(6, 2);
-#if NET46
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
-#elif NETCOREAPP2_0
-            IsWin8orLater = (new Version(RuntimeEnvironment.OperatingSystemVersion) >= win8Version);
-#else
-#error Target framework needs to be updated
-#endif
         }
 
         internal static HttpSysListener CreateHttpAuthServer(AuthenticationSchemes authScheme, bool allowAnonymos, out string baseAddress)

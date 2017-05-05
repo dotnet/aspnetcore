@@ -20,10 +20,8 @@ namespace SelfHostServer
             });
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerfactory.AddConsole(LogLevel.Debug);
-
             app.Run(async context =>
             {
                 context.Response.ContentType = "text/plain";
@@ -34,6 +32,7 @@ namespace SelfHostServer
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory => factory.AddConsole())
                 .UseStartup<Startup>()
                 .UseHttpSys(options =>
                 {

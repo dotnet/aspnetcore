@@ -23,10 +23,8 @@ namespace HotAddSample
 
         public HttpSysOptions ServerOptions { get; set; }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerfactory.AddConsole(LogLevel.Information);
-
             var addresses = ServerOptions.UrlPrefixes;
             addresses.Add("http://localhost:12346/pathBase/");
 
@@ -101,6 +99,7 @@ namespace HotAddSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory => factory.AddConsole())
                 .UseStartup<Startup>()
                 .UseHttpSys()
                 .Build();

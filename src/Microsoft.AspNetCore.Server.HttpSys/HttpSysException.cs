@@ -25,13 +25,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             : base(errorCode, message)
         {
         }
-#if NETSTANDARD1_3
-        public int ErrorCode
-#else
+
         // the base class returns the HResult with this property
         // we need the Win32 Error Code, hence the override.
         public override int ErrorCode
-#endif
         {
             get
             {

@@ -6,17 +6,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Security;
-#if !NETSTANDARD1_3
 using Microsoft.Win32;
-#endif
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal static class HttpSysSettings
     {
-#if !NETSTANDARD1_3
         private const string HttpSysParametersKey = @"System\CurrentControlSet\Services\HTTP\Parameters";
-#endif
         private const bool EnableNonUtf8Default = true;
         private const bool FavorUtf8Default = true;
         private const string EnableNonUtf8Name = "EnableNonUtf8";
@@ -41,10 +37,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         private static void ReadHttpSysRegistrySettings()
-#if NETSTANDARD1_3
-        {
-        }
-#else
         {
             try
             {
@@ -117,6 +109,5 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // TODO: log
             // Logging.PrintWarning(Logging.HttpListener, typeof(HttpSysSettings), methodName, SR.GetString(message, args));
         }
-#endif
     }
 }
