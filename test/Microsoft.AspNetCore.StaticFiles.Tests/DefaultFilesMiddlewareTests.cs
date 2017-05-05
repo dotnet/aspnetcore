@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app =>
                 {
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task FoundDirectoryWithDefaultFile_PathModified(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app =>
                 {
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions
                 {
@@ -168,7 +169,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvder = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
+            using (var fileProvder = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions
                 {
