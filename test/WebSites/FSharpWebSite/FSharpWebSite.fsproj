@@ -1,0 +1,37 @@
+﻿<Project Sdk="FSharp.NET.Sdk; Microsoft.NET.Sdk.Web">
+  <Import Project="..\..\..\build\dependencies.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Signing is normally configured in common.props, but we can't import that into an F# project
+      because Internal.AspNetCore.Sdk doesn't support it.
+    -->
+    <AssemblyOriginatorKeyFile>..\..\..\build\Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Controllers\*.fs" />
+    <Compile Include="Startup.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
+
+    <PackageReference Include="FSharp.Core" Version="$(FSharpCoreVersion)" />
+    <PackageReference Include="FSharp.NET.Sdk" Version="$(FSharpNetSdkVersion)" PrivateAssets="All" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+</Project>

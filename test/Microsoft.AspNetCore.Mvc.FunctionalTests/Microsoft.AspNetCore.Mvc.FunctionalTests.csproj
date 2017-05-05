@@ -31,6 +31,7 @@
     <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FiltersWebSite\FiltersWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\FSharpWebSite\FSharpWebSite.fsproj" />
     <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
     <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
@@ -45,6 +46,7 @@
     <ProjectReference Include="..\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.csproj" />
     <ProjectReference Include="..\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
 
+    <PackageReference Include="FSharp.Core" Version="$(FSharpCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" />
