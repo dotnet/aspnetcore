@@ -57,13 +57,14 @@ AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 13, false);
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 95, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+                PushWriter(__razor_attribute_value_writer);
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 
 #line default
 #line hidden
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-WriteTo(__razor_attribute_value_writer, string.Empty);
+                        Write(string.Empty);
 
 #line default
 #line hidden
@@ -73,7 +74,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line default
 #line hidden
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-             WriteTo(__razor_attribute_value_writer, false);
+                                               Write(false);
 
 #line default
 #line hidden
@@ -82,6 +83,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 
 #line default
 #line hidden
+                PopWriter();
             }
             ), 95, 44, false);
             AddHtmlAttributeValue(" ", 139, "suffix", 140, 7, true);
@@ -180,13 +182,14 @@ AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 #line default
 #line hidden
             AddHtmlAttributeValue(" ", 361, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+                PushWriter(__razor_attribute_value_writer);
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                 if (true) { 
 
 #line default
 #line hidden
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-     WriteTo(__razor_attribute_value_writer, string.Empty);
+                                       Write(string.Empty);
 
 #line default
 #line hidden
@@ -196,7 +199,7 @@ AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 #line default
 #line hidden
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                            WriteTo(__razor_attribute_value_writer, false);
+                                                              Write(false);
 
 #line default
 #line hidden
@@ -205,6 +208,7 @@ AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 
 #line default
 #line hidden
+                PopWriter();
             }
             ), 362, 44, false);
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
@@ -260,13 +264,14 @@ AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 13, false);
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 1, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 528, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+                PushWriter(__razor_attribute_value_writer);
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 
 #line default
 #line hidden
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-WriteTo(__razor_attribute_value_writer, string.Empty);
+                        Write(string.Empty);
 
 #line default
 #line hidden
@@ -276,7 +281,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line default
 #line hidden
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-             WriteTo(__razor_attribute_value_writer, false);
+                                               Write(false);
 
 #line default
 #line hidden
@@ -285,6 +290,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 
 #line default
 #line hidden
+                PopWriter();
             }
             ), 528, 44, false);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);

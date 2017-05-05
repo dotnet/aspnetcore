@@ -14,13 +14,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             WriteLiteral("(string link) {\r\n    <a");
             BeginWriteAttribute("href", " href=\"", 36, "\"", 93, 1);
             WriteAttributeValue("", 43, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+                PushWriter(__razor_attribute_value_writer);
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml"
               if(link != null) { 
 
 #line default
 #line hidden
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml"
-WriteTo(__razor_attribute_value_writer, link);
+                            Write(link);
 
 #line default
 #line hidden
@@ -29,12 +30,13 @@ WriteTo(__razor_attribute_value_writer, link);
 
 #line default
 #line hidden
-                WriteLiteralTo(__razor_attribute_value_writer, "#");
+                WriteLiteral("#");
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml"
                                                                }
 
 #line default
 #line hidden
+                PopWriter();
             }
             ), 43, 50, false);
             EndWriteAttribute();

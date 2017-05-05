@@ -17,7 +17,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #line default
 #line hidden
             item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
-                WriteLiteralTo(__razor_template_writer, "<p>Bar</p>");
+                PushWriter(__razor_template_writer);
+                WriteLiteral("<p>Bar</p>");
+                PopWriter();
             }
             )
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"

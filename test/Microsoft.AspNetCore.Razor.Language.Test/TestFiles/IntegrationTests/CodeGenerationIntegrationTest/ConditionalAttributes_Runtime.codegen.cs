@@ -62,13 +62,14 @@ WriteAttributeValue(" ", 232, ch, 233, 3, false);
             WriteLiteral(" />\r\n    <p");
             BeginWriteAttribute("class", " class=\"", 248, "\"", 281, 1);
             WriteAttributeValue("", 256, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+                PushWriter(__razor_attribute_value_writer);
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                if(cls != null) { 
 
 #line default
 #line hidden
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
-WriteTo(__razor_attribute_value_writer, cls);
+                            Write(cls);
 
 #line default
 #line hidden
@@ -77,6 +78,7 @@ WriteTo(__razor_attribute_value_writer, cls);
 
 #line default
 #line hidden
+                PopWriter();
             }
             ), 256, 25, false);
             EndWriteAttribute();

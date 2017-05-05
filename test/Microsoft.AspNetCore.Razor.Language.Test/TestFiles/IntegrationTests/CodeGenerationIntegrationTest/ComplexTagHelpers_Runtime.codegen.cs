@@ -408,6 +408,7 @@ __TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
             WriteLiteral("\r\n        ");
 #line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
    Write(someMethod(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+    PushWriter(__razor_template_writer);
     __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
         __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
         }
@@ -445,8 +446,9 @@ __TestNamespace_PTagHelper.Age = 123;
     {
         await __tagHelperExecutionContext.SetOutputContentAsync();
     }
-    WriteTo(__razor_template_writer, __tagHelperExecutionContext.Output);
+    Write(__tagHelperExecutionContext.Output);
     __tagHelperExecutionContext = __tagHelperScopeManager.End();
+    PopWriter();
 }
 )));
 

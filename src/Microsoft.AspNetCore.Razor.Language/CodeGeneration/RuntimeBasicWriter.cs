@@ -22,6 +22,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public virtual string WriteAttributeValueMethod { get; set; } = "WriteAttributeValue";
 
+        public virtual string PushWriterMethod { get; set; } = "PushWriter";
+
+        public virtual string PopWriterMethod { get; set; } = "PopWriter";
+
         public string TemplateTypeName { get; set; } = "Microsoft.AspNetCore.Mvc.Razor.HelperResult";
 
         public override void WriteChecksum(CSharpRenderingContext context, ChecksumIRNode node)
@@ -216,10 +220,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 // Not an expression; need to buffer the result.
                 context.Writer.WriteStartNewObject(TemplateTypeName);
 
-                using (context.Push(new RedirectedRuntimeBasicWriter(ValueWriterName)))
                 using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: ValueWriterName))
                 {
+                    context.Writer.WriteMethodInvocation(PushWriterMethod, ValueWriterName);
+
                     context.RenderChildren(node);
+
+                    context.Writer.WriteMethodInvocation(PopWriterMethod);
                 }
 
                 context.Writer.WriteEndMethodInvocation(false);

@@ -17,13 +17,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #line default
 #line hidden
             item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
-                WriteLiteralTo(__razor_template_writer, "This works ");
+                PushWriter(__razor_template_writer);
+                WriteLiteral("This works ");
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-                  WriteTo(__razor_template_writer, item);
+                                             Write(item);
 
 #line default
 #line hidden
-                WriteLiteralTo(__razor_template_writer, "!");
+                WriteLiteral("!");
+                PopWriter();
             }
             )
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
@@ -45,15 +47,17 @@ Write(foo(""));
 #line default
 #line hidden
             item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
-                WriteLiteralTo(__razor_template_writer, "<p");
-                BeginWriteAttributeTo(__razor_template_writer, "class", " class=\"", 411, "\"", 424, 1);
+                PushWriter(__razor_template_writer);
+                WriteLiteral("<p");
+                BeginWriteAttribute("class", " class=\"", 411, "\"", 424, 1);
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-WriteAttributeValueTo(__razor_template_writer, "", 419, item, 419, 5, false);
+WriteAttributeValue("", 419, item, 419, 5, false);
 
 #line default
 #line hidden
-                EndWriteAttributeTo(__razor_template_writer);
-                WriteLiteralTo(__razor_template_writer, ">Hello</p>");
+                EndWriteAttribute();
+                WriteLiteral(">Hello</p>");
+                PopWriter();
             }
             )
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
@@ -70,13 +74,15 @@ Write(bar("myclass"));
             WriteLiteral("\r\n<ul>\r\n");
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 Write(Repeat(10, item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
-    WriteLiteralTo(__razor_template_writer, "<li>Item #");
+    PushWriter(__razor_template_writer);
+    WriteLiteral("<li>Item #");
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-WriteTo(__razor_template_writer, item);
+                   Write(item);
 
 #line default
 #line hidden
-    WriteLiteralTo(__razor_template_writer, "</li>");
+    WriteLiteral("</li>");
+    PopWriter();
 }
 )));
 
@@ -86,13 +92,15 @@ WriteTo(__razor_template_writer, item);
 #line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 Write(Repeat(10,
     item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
-    WriteLiteralTo(__razor_template_writer, " This is line#");
+    PushWriter(__razor_template_writer);
+    WriteLiteral(" This is line#");
 #line 27 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-WriteTo(__razor_template_writer, item);
+               Write(item);
 
 #line default
 #line hidden
-    WriteLiteralTo(__razor_template_writer, " of markup<br/>\r\n");
+    WriteLiteral(" of markup<br/>\r\n");
+    PopWriter();
 }
 )));
 
@@ -102,13 +110,15 @@ WriteTo(__razor_template_writer, item);
 #line 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 Write(Repeat(10,
     item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
-    WriteLiteralTo(__razor_template_writer, ": This is line#");
+    PushWriter(__razor_template_writer);
+    WriteLiteral(": This is line#");
 #line 33 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-WriteTo(__razor_template_writer, item);
+                Write(item);
 
 #line default
 #line hidden
-    WriteLiteralTo(__razor_template_writer, " of markup<br />\r\n");
+    WriteLiteral(" of markup<br />\r\n");
+    PopWriter();
 }
 )));
 
@@ -118,13 +128,15 @@ WriteTo(__razor_template_writer, item);
 #line 38 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 Write(Repeat(10,
     item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
-    WriteLiteralTo(__razor_template_writer, ":: This is line#");
+    PushWriter(__razor_template_writer);
+    WriteLiteral(":: This is line#");
 #line 39 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-WriteTo(__razor_template_writer, item);
+                 Write(item);
 
 #line default
 #line hidden
-    WriteLiteralTo(__razor_template_writer, " of markup<br />\r\n");
+    WriteLiteral(" of markup<br />\r\n");
+    PopWriter();
 }
 )));
 
@@ -133,20 +145,22 @@ WriteTo(__razor_template_writer, item);
             WriteLiteral("\r\n</p>\r\n\r\n\r\n<ul>\r\n    ");
 #line 45 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 Write(Repeat(10, item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
-    WriteLiteralTo(__razor_template_writer, "<li>\r\n        Item #");
+    PushWriter(__razor_template_writer);
+    WriteLiteral("<li>\r\n        Item #");
 #line 46 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-WriteTo(__razor_template_writer, item);
+         Write(item);
 
 #line default
 #line hidden
-    WriteLiteralTo(__razor_template_writer, "\r\n");
+    WriteLiteral("\r\n");
 #line 47 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
           var parent = item;
 
 #line default
 #line hidden
-    WriteLiteralTo(__razor_template_writer, "        <ul>\r\n            <li>Child Items... ?</li>\r\n");
-    WriteLiteralTo(__razor_template_writer, "        </ul>\r\n    </li>");
+    WriteLiteral("        <ul>\r\n            <li>Child Items... ?</li>\r\n");
+    WriteLiteral("        </ul>\r\n    </li>");
+    PopWriter();
 }
 )));
 

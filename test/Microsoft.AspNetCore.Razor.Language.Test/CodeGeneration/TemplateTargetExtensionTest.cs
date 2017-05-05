@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var extension = new TemplateTargetExtension()
             {
                 TemplateTypeName = "global::TestTemplate",
+                PushWriterMethod = "TestPushWriter",
+                PopWriterMethod = "TestPopWriter"
             };
 
             var context = new CSharpRenderingContext()
@@ -31,10 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             context.RenderChildren = (n) =>
             {
                 Assert.Same(node, n);
-
-                Assert.IsType<RedirectedRuntimeBasicWriter>(context.BasicWriter);
-
-                context.Writer.Write(" var s = \"Inside\"");
+                context.Writer.WriteLine(" var s = \"Inside\"");
             };
 
             // Act
@@ -42,7 +41,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             // Assert
             var expected = @"item => new global::TestTemplate(async(__razor_template_writer) => {
+    TestPushWriter(__razor_template_writer);
      var s = ""Inside""
+    TestPopWriter();
 }
 )";
 

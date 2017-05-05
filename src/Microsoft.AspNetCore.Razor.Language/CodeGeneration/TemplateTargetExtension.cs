@@ -9,8 +9,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     internal class TemplateTargetExtension : ITemplateTargetExtension
     {
         public static readonly string DefaultTemplateTypeName = "Microsoft.AspNetCore.Mvc.Razor.HelperResult";
+        public static readonly string DefaultPushWriterMethod = "PushWriter";
+        public static readonly string DefaultPopWriterMethod = "PopWriter";
 
         public string TemplateTypeName { get; set; } = DefaultTemplateTypeName;
+
+        public string PushWriterMethod { get; set; } = DefaultPushWriterMethod;
+
+        public string PopWriterMethod { get; set; } = DefaultPopWriterMethod;
 
         public void WriteTemplate(CSharpRenderingContext context, TemplateIRNode node)
         {
@@ -21,21 +27,20 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .Write(ItemParameterName).Write(" => ")
                 .WriteStartNewObject(TemplateTypeName);
 
-            IDisposable basicWriterScope = null;
-            IDisposable tagHelperWriterScope = null;
-            if (!context.Options.DesignTimeMode)
-            {
-                basicWriterScope = context.Push(new RedirectedRuntimeBasicWriter(TemplateWriterName));
-                tagHelperWriterScope = context.Push(new RedirectedRuntimeTagHelperWriter(TemplateWriterName));
-            }
-
             using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
             {
-                context.RenderChildren(node);
-            }
+                if (!context.Options.DesignTimeMode)
+                {
+                    context.Writer.WriteMethodInvocation(PushWriterMethod, TemplateWriterName);
+                }
 
-            basicWriterScope?.Dispose();
-            tagHelperWriterScope?.Dispose();
+                context.RenderChildren(node);
+
+                if (!context.Options.DesignTimeMode)
+                {
+                    context.Writer.WriteMethodInvocation(PopWriterMethod);
+                }
+            }
 
             context.Writer.WriteEndMethodInvocation(endLine: false);
         }

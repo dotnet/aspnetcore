@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #line default
 #line hidden
                 item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+                    PushWriter(__razor_template_writer);
                     __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                         WriteLiteral("<h3>");
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml"
@@ -77,8 +78,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
                     {
                         await __tagHelperExecutionContext.SetOutputContentAsync();
                     }
-                    WriteTo(__razor_template_writer, __tagHelperExecutionContext.Output);
+                    Write(__tagHelperExecutionContext.Output);
                     __tagHelperExecutionContext = __tagHelperScopeManager.End();
+                    PopWriter();
                 }
                 )
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml"

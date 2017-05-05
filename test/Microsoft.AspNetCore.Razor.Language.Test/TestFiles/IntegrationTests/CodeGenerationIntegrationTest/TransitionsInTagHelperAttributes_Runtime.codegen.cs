@@ -45,6 +45,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 109, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+                PushWriter(__razor_attribute_value_writer);
+                PopWriter();
             }
             ), 109, 6, false);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);

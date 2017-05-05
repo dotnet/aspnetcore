@@ -80,7 +80,9 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
 @"AddHtmlAttributeValue("" "", 27, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+    PushWriter(__razor_attribute_value_writer);
     Render Children
+    PopWriter();
 }
 ), 28, 13, false);
 ",
