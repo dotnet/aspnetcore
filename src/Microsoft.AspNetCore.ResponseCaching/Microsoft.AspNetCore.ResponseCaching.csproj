@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for caching HTTP responses on the server.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
