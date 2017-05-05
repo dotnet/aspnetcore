@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.DataProtection.AzureStorage
             _random = new Random();
         }
 
+        /// <inheritdoc />
         public IReadOnlyCollection<XElement> GetAllElements()
         {
             var blobRef = CreateFreshBlobRef();
@@ -62,6 +63,7 @@ namespace Microsoft.AspNetCore.DataProtection.AzureStorage
             return new ReadOnlyCollection<XElement>(elements);
         }
 
+        /// <inheritdoc />
         public void StoreElement(XElement element, string friendlyName)
         {
             if (element == null)

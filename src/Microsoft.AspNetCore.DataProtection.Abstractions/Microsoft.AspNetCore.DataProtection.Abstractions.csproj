@@ -7,8 +7,7 @@
 Commonly used types:
 Microsoft.AspNetCore.DataProtection.IDataProtectionProvider
 Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection</PackageTags>
   </PropertyGroup>
@@ -19,10 +18,6 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.WebEncoders.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

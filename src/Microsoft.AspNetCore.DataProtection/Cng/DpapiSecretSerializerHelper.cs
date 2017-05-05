@@ -78,12 +78,8 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             };
             var dataOut = default(DATA_BLOB);
 
-#if NET46
             RuntimeHelpers.PrepareConstrainedRegions();
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
+
             try
             {
                 var success = UnsafeNativeMethods.CryptProtectData(
@@ -171,12 +167,9 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                     fixed (byte* pbRetVal = retVal)
                     {
                         var handleAcquired = false;
-#if NET46
+
                         RuntimeHelpers.PrepareConstrainedRegions();
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
+
                         try
                         {
                             protectedData.DangerousAddRef(ref handleAcquired);
@@ -224,12 +217,8 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             };
             var dataOut = default(DATA_BLOB);
 
-#if NET46
             RuntimeHelpers.PrepareConstrainedRegions();
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
+
             try
             {
                 var success = UnsafeNativeMethods.CryptUnprotectData(
@@ -300,12 +289,9 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
             using (unencryptedPayloadHandle)
             {
                 var handleAcquired = false;
-#if NET46
+
                 RuntimeHelpers.PrepareConstrainedRegions();
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
+
                 try
                 {
                     unencryptedPayloadHandle.DangerousAddRef(ref handleAcquired);

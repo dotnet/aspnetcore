@@ -21,11 +21,11 @@ namespace CustomEncryptorSample
                 .UseXmlEncryptor(s => new CustomXmlEncryptor(s));
 
             var services = serviceCollection.BuildServiceProvider();
-            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+            var loggerFactory = services.GetRequiredService<LoggerFactory>();
             loggerFactory.AddConsole();
 
             var protector = services.GetDataProtector("SamplePurpose");
-            
+
             // protect the payload
             var protectedPayload = protector.Protect("Hello World!");
             Console.WriteLine($"Protect returned: {protectedPayload}");

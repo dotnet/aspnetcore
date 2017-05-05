@@ -1,9 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
-
 using System;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
@@ -40,9 +39,19 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             var store = new X509Store(location);
             try
             {
-                store.Open(OpenFlags.ReadOnly);
+                store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
                 var matchingCerts = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: true);
-                return (matchingCerts != null && matchingCerts.Count > 0) ? matchingCerts[0] : null;
+                return (matchingCerts != null && matchingCerts.Count > 0)
+                    ? matchingCerts[0]
+                    : null;
+            }
+            catch (CryptographicException)
+            {
+                // Suppress first-chance exceptions when opening the store.
+                // For example, LocalMachine\My is not supported on Linux yet and will throw on Open(),
+                // but there isn't a good way to detect this without attempting to open the store.
+                // See https://github.com/dotnet/corefx/issues/3690.
+                return null;
             }
             finally
             {
@@ -51,7 +60,4 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         }
     }
 }
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
+

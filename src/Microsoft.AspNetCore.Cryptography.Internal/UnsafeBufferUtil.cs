@@ -3,30 +3,23 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
-
-#if !NETSTANDARD1_3
-using System.Runtime.ConstrainedExecution;
-#endif
 
 namespace Microsoft.AspNetCore.Cryptography
 {
     internal unsafe static class UnsafeBufferUtil
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
         public static void BlockCopy(void* from, void* to, int byteCount)
         {
             BlockCopy(from, to, checked((uint)byteCount)); // will be checked before invoking the delegate
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
         public static void BlockCopy(void* from, void* to, uint byteCount)
         {
             if (byteCount != 0)
@@ -35,9 +28,7 @@ namespace Microsoft.AspNetCore.Cryptography
             }
         }
 
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-#endif
         public static void BlockCopy(LocalAllocHandle from, void* to, uint byteCount)
         {
             bool refAdded = false;
@@ -55,9 +46,7 @@ namespace Microsoft.AspNetCore.Cryptography
             }
         }
 
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-#endif
         public static void BlockCopy(void* from, LocalAllocHandle to, uint byteCount)
         {
             bool refAdded = false;
@@ -75,9 +64,7 @@ namespace Microsoft.AspNetCore.Cryptography
             }
         }
 
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-#endif
         public static void BlockCopy(LocalAllocHandle from, LocalAllocHandle to, IntPtr length)
         {
             if (length == IntPtr.Zero)
@@ -116,36 +103,20 @@ namespace Microsoft.AspNetCore.Cryptography
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BlockCopyCore(byte* from, byte* to, uint byteCount)
         {
-#if NETSTANDARD1_3
             Buffer.MemoryCopy(from, to, (ulong)byteCount, (ulong)byteCount);
-#else
-            while (byteCount-- != 0)
-            {
-                to[byteCount] = from[byteCount];
-            }
-#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BlockCopyCore(byte* from, byte* to, ulong byteCount)
         {
-#if NETSTANDARD1_3
             Buffer.MemoryCopy(from, to, byteCount, byteCount);
-#else
-            while (byteCount-- != 0)
-            {
-                to[byteCount] = from[byteCount];
-            }
-#endif
         }
 
         /// <summary>
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
         public static void SecureZeroMemory(byte* buffer, int byteCount)
         {
             SecureZeroMemory(buffer, checked((uint)byteCount));
@@ -155,9 +126,7 @@ namespace Microsoft.AspNetCore.Cryptography
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
         public static void SecureZeroMemory(byte* buffer, uint byteCount)
         {
             if (byteCount != 0)
@@ -176,9 +145,7 @@ namespace Microsoft.AspNetCore.Cryptography
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
         public static void SecureZeroMemory(byte* buffer, ulong byteCount)
         {
             if (byteCount != 0)
@@ -196,9 +163,7 @@ namespace Microsoft.AspNetCore.Cryptography
         /// <summary>
         /// Securely clears a memory buffer.
         /// </summary>
-#if !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#endif
         public static void SecureZeroMemory(byte* buffer, IntPtr length)
         {
             if (sizeof(IntPtr) == 4)

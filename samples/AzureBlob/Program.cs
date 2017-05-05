@@ -31,8 +31,8 @@ namespace AzureBlob
                 .PersistKeysToAzureBlobStorage(container, "keys.xml");
 
             var services = serviceCollection.BuildServiceProvider();
-            var loggerFactory = services.GetService<ILoggerFactory>();
-            loggerFactory.AddConsole(Microsoft.Extensions.Logging.LogLevel.Trace);
+            var loggerFactory = services.GetService<LoggerFactory>();
+            loggerFactory.AddConsole();
 
             // Run a sample payload
 

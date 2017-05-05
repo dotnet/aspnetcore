@@ -4,14 +4,11 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.Internal;
-
-#if !NETSTANDARD1_3
-using System.Runtime.ConstrainedExecution;
-#endif
 
 namespace Microsoft.AspNetCore.Cryptography
 {
@@ -73,12 +70,7 @@ namespace Microsoft.AspNetCore.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-#if NET46
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
         public static bool TimeConstantBuffersAreEqual(byte* bufA, byte* bufB, uint count)
         {
             bool areEqual = true;

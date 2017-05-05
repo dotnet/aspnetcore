@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 using Microsoft.Win32.SafeHandles;
-
-#if !NETSTANDARD1_3
-using System.Runtime.ConstrainedExecution;
-#endif
 
 namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
@@ -127,31 +124,11 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             return UnsafeNativeMethods.FreeLibrary(handle);
         }
 
-#if NET46
         [SuppressUnmanagedCodeSecurity]
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
         private static class UnsafeNativeMethods
         {
-#if NETSTANDARD1_3
-            private const string CORE_LIBRARY_LOADER_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
-            private const string CORE_LOCALIZATION_LIB = "api-ms-win-core-localization-l1-2-0.dll";
-#elif NET46
-            private const string KERNEL32_LIB = "kernel32.dll";
-#else
-#error target frameworks need to be updated.
-#endif
-
             // http://msdn.microsoft.com/en-us/library/windows/desktop/ms679351(v=vs.85).aspx
-#if NETSTANDARD1_3
-            [DllImport(CORE_LOCALIZATION_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
-#elif NET46
-            [DllImport(KERNEL32_LIB, EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
-#else
-#error target frameworks need to be updated.
-#endif
+            [DllImport("kernel32.dll", EntryPoint = "FormatMessageW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode, SetLastError = true)]
             public static extern int FormatMessage(
                 [In] uint dwFlags,
                 [In] SafeLibraryHandle lpSource,
@@ -164,50 +141,26 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 
             // http://msdn.microsoft.com/en-us/library/ms683152(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
-#if NETSTANDARD1_3
-            [DllImport(CORE_LIBRARY_LOADER_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-#elif NET46
             [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
-#else
-#error target frameworks need to be updated.
-#endif
+            [DllImport("kernel32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
             internal static extern bool FreeLibrary(IntPtr hModule);
 
             // http://msdn.microsoft.com/en-us/library/ms683200(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
-#if NETSTANDARD1_3
-            [DllImport(CORE_LIBRARY_LOADER_LIB, EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#elif NET46
-            [DllImport(KERNEL32_LIB, EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#else
-#error target frameworks need to be updated.
-#endif
+            [DllImport("kernel32.dll", EntryPoint = "GetModuleHandleExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
             internal static extern bool GetModuleHandleEx(
                 [In] uint dwFlags,
                 [In] SafeLibraryHandle lpModuleName, // can point to a location within the module if GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS is set
                 [Out] out IntPtr phModule);
 
             // http://msdn.microsoft.com/en-us/library/ms683212(v=vs.85).aspx
-#if NETSTANDARD1_3
-            [DllImport(CORE_LIBRARY_LOADER_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#elif NET46
-            [DllImport(KERNEL32_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#else
-#error target frameworks need to be updated.
-#endif
+            [DllImport("kernel32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
             internal static extern IntPtr GetProcAddress(
                 [In] SafeLibraryHandle hModule,
                 [In, MarshalAs(UnmanagedType.LPStr)] string lpProcName);
 
             // http://msdn.microsoft.com/en-us/library/windows/desktop/ms684179(v=vs.85).aspx
-#if NETSTANDARD1_3
-            [DllImport(CORE_LIBRARY_LOADER_LIB, EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#elif NET46
-            [DllImport(KERNEL32_LIB, EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
-#else
-#error target frameworks need to be updated.
-#endif
+            [DllImport("kernel32.dll", EntryPoint = "LoadLibraryExW", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
             internal static extern SafeLibraryHandle LoadLibraryEx(
                 [In, MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
                 [In] IntPtr hFile,

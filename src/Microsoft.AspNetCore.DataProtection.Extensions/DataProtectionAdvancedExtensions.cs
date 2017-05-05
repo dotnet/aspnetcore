@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
+    /// <summary>
+    /// Helpful extension methods for data protection APIs.
+    /// </summary>
     public static class DataProtectionAdvancedExtensions
     {
         /// <summary>

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -37,8 +38,9 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
         }
 
         /// <summary>
-        /// The default key storage directory, which currently corresponds to
-        /// "%LOCALAPPDATA%\ASP.NET\DataProtection-Keys".
+        /// The default key storage directory.
+        /// On Windows, this currently corresponds to "Environment.SpecialFolder.LocalApplication/ASP.NET/DataProtection-Keys".
+        /// On Linux and macOS, this currently corresponds to "$HOME/.aspnet/DataProtection-Keys".
         /// </summary>
         /// <remarks>
         /// This property can return null if no suitable default key storage directory can
@@ -82,28 +84,23 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
         private static DirectoryInfo GetDefaultKeyStorageDirectory()
         {
-#if NET46
-            // Environment.GetFolderPath returns null if the user profile isn't loaded.
-            var folderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            if (!String.IsNullOrEmpty(folderPath))
-            {
-                return GetKeyStorageDirectoryFromBaseAppDataPath(folderPath);
-            }
-            else
-            {
-                return null;
-            }
-#elif NETSTANDARD1_3
-            // On core CLR, we need to fall back to environment variables.
             DirectoryInfo retVal;
 
-            var localAppDataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+            // Environment.GetFolderPath returns null if the user profile isn't loaded.
+            var localAppDataFromSystemPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var localAppDataFromEnvPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
             var userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
             var homePath = Environment.GetEnvironmentVariable("HOME");
 
-            if (localAppDataPath != null)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !string.IsNullOrEmpty(localAppDataFromSystemPath))
             {
-                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataPath);
+                // To preserve backwards-compatibility with 1.x, Environment.SpecialFolder.LocalApplicationData
+                // cannot take precedence over $LOCALAPPDATA and $HOME/.aspnet on non-Windows platforms
+                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataFromSystemPath);
+            }
+            else if (localAppDataFromEnvPath != null)
+            {
+                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataFromEnvPath);
             }
             else if (userProfilePath != null)
             {
@@ -114,6 +111,12 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 // If LOCALAPPDATA and USERPROFILE are not present but HOME is,
                 // it's a good guess that this is a *NIX machine.  Use *NIX conventions for a folder name.
                 retVal = new DirectoryInfo(Path.Combine(homePath, ".aspnet", DataProtectionKeysFolderName));
+            }
+            else if (!string.IsNullOrEmpty(localAppDataFromSystemPath))
+            {
+                // Starting in 2.x, non-Windows platforms may use Environment.SpecialFolder.LocalApplicationData
+                // but only after checking for $LOCALAPPDATA, $USERPROFILE, and $HOME.
+                retVal = GetKeyStorageDirectoryFromBaseAppDataPath(localAppDataFromSystemPath);
             }
             else
             {
@@ -131,9 +134,6 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
             {
                 return null;
             }
-#else
-#error target frameworks need to be updated.
-#endif
         }
 
         internal static DirectoryInfo GetKeyStorageDirectoryForAzureWebSites()

@@ -79,8 +79,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed
             });
         }
 
-        [ConditionalFact]
-        [ConditionalRunTestOnlyOnWindows]
+        [Fact]
         public void Encrypt_KnownKey()
         {
             // Arrange

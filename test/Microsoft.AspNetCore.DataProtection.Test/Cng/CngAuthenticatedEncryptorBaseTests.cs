@@ -11,8 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
 {
     public unsafe class CngAuthenticatedEncryptorBaseTests
     {
-        [ConditionalFact]
-        [ConditionalRunTestOnlyOnWindows]
+        [Fact]
         public void Decrypt_ForwardsArraySegment()
         {
             // Arrange
@@ -37,8 +36,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
             Assert.Equal(new byte[] { 0x20, 0x21, 0x22 }, retVal);
         }
 
-        [ConditionalFact]
-        [ConditionalRunTestOnlyOnWindows]
+        [Fact]
         public void Decrypt_HandlesEmptyAADPointerFixup()
         {
             // Arrange
@@ -63,8 +61,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
             Assert.Equal(new byte[] { 0x20, 0x21, 0x22 }, retVal);
         }
 
-        [ConditionalFact]
-        [ConditionalRunTestOnlyOnWindows]
+        [Fact]
         public void Decrypt_HandlesEmptyCiphertextPointerFixup()
         {
             // Arrange

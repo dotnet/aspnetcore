@@ -3,10 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-
-#if !NETSTANDARD1_3
 using System.Runtime.ConstrainedExecution;
-#endif
 
 namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
@@ -41,12 +38,7 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             return newHandle;
         }
 
-#if NET46
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
         private void AllocateImpl(IntPtr cb)
         {
             handle = Marshal.AllocHGlobal(cb); // actually calls LocalAlloc

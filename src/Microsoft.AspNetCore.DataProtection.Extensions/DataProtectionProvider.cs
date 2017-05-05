@@ -73,7 +73,6 @@ namespace Microsoft.AspNetCore.DataProtection
             return CreateProvider(keyDirectory, setupAction, certificate: null);
         }
 
-#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
         /// <summary>
         /// Creates a <see cref="DataProtectionProvider"/> that store keys in a location based on
         /// the platform and operating system and uses the given <see cref="X509Certificate2"/> to encrypt the keys.
@@ -150,10 +149,6 @@ namespace Microsoft.AspNetCore.DataProtection
 
             return CreateProvider(keyDirectory, setupAction, certificate);
         }
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
 
         private static IDataProtectionProvider CreateProvider(
             DirectoryInfo keyDirectory,
@@ -169,15 +164,10 @@ namespace Microsoft.AspNetCore.DataProtection
                 builder.PersistKeysToFileSystem(keyDirectory);
             }
 
-#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
             if (certificate != null)
             {
                 builder.ProtectKeysWithCertificate(certificate);
             }
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
 
             setupAction(builder);
 

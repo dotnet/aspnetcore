@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>A component to allow the ASP.NET Core data protection stack to work with the ASP.NET 4.x &lt;machineKey&gt; element.</Description>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnet;aspnetcore;dataprotection</PackageTags>
@@ -16,9 +16,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.DataProtection\Microsoft.AspNetCore.DataProtection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCoreVersion)" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Security" />
     <Reference Include="System.Web" />
   </ItemGroup>
 

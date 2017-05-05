@@ -4,8 +4,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -13,16 +13,19 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 {
     public class FileSystemXmlRepositoryTests
     {
-        [ConditionalFact]
-        [ConditionalRunTestOnlyIfLocalAppDataAvailable]
+        [Fact]
         public void DefaultKeyStorageDirectory_Property()
         {
+            var baseDir = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ASP.NET")
+                : Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".aspnet");
+            var expectedDir = new DirectoryInfo(Path.Combine(baseDir, "DataProtection-Keys")).FullName;
+
             // Act
             var defaultDirInfo = FileSystemXmlRepository.DefaultKeyStorageDirectory;
 
             // Assert
-            Assert.Equal(defaultDirInfo.FullName,
-                new DirectoryInfo(Path.Combine(GetLocalApplicationData(), "ASP.NET", "DataProtection-Keys")).FullName);
+            Assert.Equal(expectedDir, defaultDirInfo.FullName);
         }
 
         [Fact]
@@ -155,24 +158,6 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                     dirInfo.Delete(recursive: true);
                 }
             }
-        }
-
-        private static string GetLocalApplicationData()
-        {
-#if NETCOREAPP2_0
-            return Environment.GetEnvironmentVariable("LOCALAPPDATA");
-#elif NET46
-            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-#else
-#error Target framework needs to be updated
-#endif
-        }
-
-        private class ConditionalRunTestOnlyIfLocalAppDataAvailable : Attribute, ITestCondition
-        {
-            public bool IsMet => GetLocalApplicationData() != null;
-
-            public string SkipReason { get; } = "%LOCALAPPDATA% couldn't be located.";
         }
     }
 }

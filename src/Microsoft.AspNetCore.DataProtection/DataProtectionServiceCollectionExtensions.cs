@@ -98,12 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return dataProtectionProvider;
             });
 
-#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
             services.TryAddSingleton<ICertificateResolver, CertificateResolver>();
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
         }
     }
 }

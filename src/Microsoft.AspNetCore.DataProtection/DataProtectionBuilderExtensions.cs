@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -15,10 +16,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
-
-#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
-using System.Security.Cryptography.X509Certificates;
-#endif
 
 namespace Microsoft.AspNetCore.DataProtection
 {
@@ -249,8 +246,6 @@ namespace Microsoft.AspNetCore.DataProtection
             return builder;
         }
 
-#if NET46 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
-
         /// <summary>
         /// Configures keys to be encrypted to a given certificate before being persisted to storage.
         /// </summary>
@@ -321,10 +316,6 @@ namespace Microsoft.AspNetCore.DataProtection
 
             return builder;
         }
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
 
         /// <summary>
         /// Configures keys to be encrypted with Windows DPAPI before being persisted to

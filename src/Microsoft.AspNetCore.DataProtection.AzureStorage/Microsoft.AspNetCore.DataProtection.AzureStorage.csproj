@@ -4,9 +4,7 @@
 
   <PropertyGroup>
     <Description>Microsoft Azure Blob storrage support as key store.</Description>
-    <VersionPrefix>2.0.0</VersionPrefix>
-    <TargetFrameworks>net46;netstandard1.5</TargetFrameworks>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection;azure;blob</PackageTags>
@@ -14,6 +12,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.DataProtection\Microsoft.AspNetCore.DataProtection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="WindowsAzure.Storage" Version="$(WindowsAzureStorageVersion)" />
   </ItemGroup>
 

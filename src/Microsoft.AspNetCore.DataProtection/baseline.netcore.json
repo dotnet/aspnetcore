@@ -232,6 +232,44 @@
         },
         {
           "Kind": "Method",
+          "Name": "ProtectKeysWithCertificate",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ProtectKeysWithCertificate",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "ProtectKeysWithDpapi",
           "Parameters": [
             {
@@ -746,6 +784,132 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateResolver",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ResolveCertificate",
+          "Parameters": [
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Security.Cryptography.X509Certificates.X509Certificate2",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateXmlEncryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IInternalCertificateXmlEncryptor",
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Encrypt",
+          "Parameters": [
+            {
+              "Name": "plaintextElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            },
+            {
+              "Name": "certificateResolver",
+              "Type": "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            },
+            {
+              "Name": "certificateResolver",
+              "Type": "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver"
+            },
+            {
+              "Name": "services",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            },
+            {
+              "Name": "services",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags",
       "Visibility": "Public",
       "Kind": "Enumeration",
@@ -991,6 +1155,54 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlDecryptor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IInternalEncryptedXmlDecryptor",
+        "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Decrypt",
+          "Parameters": [
+            {
+              "Name": "encryptedElement",
+              "Type": "System.Xml.Linq.XElement"
+            }
+          ],
+          "ReturnType": "System.Xml.Linq.XElement",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo",
       "Visibility": "Public",
       "Kind": "Class",
@@ -1027,6 +1239,28 @@
             }
           ],
           "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ResolveCertificate",
+          "Parameters": [
+            {
+              "Name": "thumbprint",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Security.Cryptography.X509Certificates.X509Certificate2",
           "GenericParameter": []
         }
       ],
