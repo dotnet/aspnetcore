@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core hosting infrastructure and startup logic for web applications.</Description>
-    <TargetFrameworks>netstandard1.3;netstandard1.5</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
@@ -33,10 +33,6 @@
     <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourceVersion)" />
     <PackageReference Include="System.Diagnostics.StackTrace" Version="$(CoreFxVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
-    <PackageReference Include="System.Runtime.Loader" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup>

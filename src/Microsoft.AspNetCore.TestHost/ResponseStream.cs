@@ -254,7 +254,6 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-#if NET46
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             Write(buffer, offset, count);
@@ -271,10 +270,6 @@ namespace Microsoft.AspNetCore.TestHost
         public override void EndWrite(IAsyncResult asyncResult)
         {
         }
-#elif NETSTANDARD1_3
-#else
-#error Target frameworks need to be updated.
-#endif
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

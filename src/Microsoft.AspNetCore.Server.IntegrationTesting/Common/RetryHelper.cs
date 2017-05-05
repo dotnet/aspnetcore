@@ -56,14 +56,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     }
                     else
                     {
-                        if (exception is HttpRequestException
-#if NET46
-                        || exception is System.Net.WebException
-#elif NETSTANDARD1_5
-#else
-#error Target frameworks need to be updated.
-#endif
-                        )
+                        if (exception is HttpRequestException)
                         {
                             logger.LogWarning("Failed to complete the request : {0}.", exception.Message);
                             await Task.Delay(1 * 1000); //Wait for a while before retry.

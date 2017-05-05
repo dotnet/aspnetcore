@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core web server for writing and running tests.</Description>
-    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting;testing</PackageTags>
@@ -12,10 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Hosting\Microsoft.AspNetCore.Hosting.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Diagnostics.Contracts" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

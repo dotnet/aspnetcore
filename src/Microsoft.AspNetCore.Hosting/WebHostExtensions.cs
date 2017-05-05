@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-#if NETSTANDARD1_5
 using System.Reflection;
 using System.Runtime.Loader;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -92,13 +90,8 @@ namespace Microsoft.AspNetCore.Hosting
                     done.Wait();
                 };
 
-#if NETSTANDARD1_5
                 var assemblyLoadContext = AssemblyLoadContext.GetLoadContext(typeof(WebHostExtensions).GetTypeInfo().Assembly);
                 assemblyLoadContext.Unloading += context => shutdown();
-#elif NETSTANDARD1_3
-#else
-#error Target frameworks need to be updated.                
-#endif
                 Console.CancelKeyPress += (sender, eventArgs) =>
                 {
                     shutdown();
