@@ -3,6 +3,7 @@
 
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace SampleDestination
 {
@@ -14,6 +15,7 @@ namespace SampleDestination
                 .UseKestrel()
                 .UseUrls("http://*:5000")
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureLogging(factory => factory.AddConsole())
                 .UseStartup<Startup>()
                 .Build();
 
