@@ -152,73 +152,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-#if !NETCOREAPP1_1
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            // TODO: This option doesn't preserve the state object.
-            // return ReadAsync(buffer, offset, count);
-            return base.BeginRead(buffer, offset, count, callback, state);
-        }
-
-        public override int EndRead(IAsyncResult asyncResult)
-        {
-            // return ((Task<int>)asyncResult).Result;
-            return base.EndRead(asyncResult);
-        }
-
-        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            if(_terminated)
-            {
-                return 0;
-            }
-
-            VerifyBuffer(buffer, offset, count, allowEmpty: false);
-            CancellationTokenRegistration registration = cancellationToken.Register(Abort);
-            await _readLock.WaitAsync(cancellationToken);
-            try
-            {
-                int totalRead = 0;
-                do
-                {
-                    // Don't drained buffered data on abort.
-                    CheckAborted();
-                    if (_topBuffer.Count <= 0)
-                    {
-                        byte[] topBuffer = null;
-                        while (!_bufferedData.TryDequeue(out topBuffer))
-                        {
-                            if (_disposed)
-                            {
-                                CheckAborted();
-                                // Graceful close
-                                return totalRead;
-                            }
-                            await WaitForDataAsync();
-                        }
-                        _topBuffer = new ArraySegment<byte>(topBuffer);
-                    }
-                    int actualCount = Math.Min(count, _topBuffer.Count);
-                    Buffer.BlockCopy(_topBuffer.Array, _topBuffer.Offset, buffer, offset, actualCount);
-                    _topBuffer = new ArraySegment<byte>(_topBuffer.Array,
-                        _topBuffer.Offset + actualCount,
-                        _topBuffer.Count - actualCount);
-                    totalRead += actualCount;
-                    offset += actualCount;
-                    count -= actualCount;
-                }
-                while (count > 0 && (_topBuffer.Count > 0 || _bufferedData.Count > 0));
-                // Keep reading while there is more data available and we have more space to put it in.
-                return totalRead;
-            }
-            finally
-            {
-                registration.Dispose();
-                _readLock.Release();
-            }
-        }
-#endif
-
         // Write with count 0 will still trigger OnFirstWrite
         public override void Write(byte[] buffer, int offset, int count)
         {
@@ -244,39 +177,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                 _writeLock.Release();
             }
         }
-
-#if !NETCOREAPP1_1
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            Write(buffer, offset, count);
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>(state);
-            tcs.TrySetResult(null);
-            IAsyncResult result = tcs.Task;
-            if (callback != null)
-            {
-                callback(result);
-            }
-            return result;
-        }
-
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-        }
-
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            VerifyBuffer(buffer, offset, count, allowEmpty: true);
-            if (cancellationToken.IsCancellationRequested)
-            {
-                TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-                tcs.TrySetCanceled();
-                return tcs.Task;
-            }
-
-            Write(buffer, offset, count);
-            return Task.FromResult<object>(null);
-        }
-#endif
 
         private static void VerifyBuffer(byte[] buffer, int offset, int count, bool allowEmpty)
         {
