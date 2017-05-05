@@ -15,9 +15,8 @@ namespace SampleOrigin
         {
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggerFactory.AddConsole();
             app.Run(context =>
             {
                 var fileInfoProvider = env.WebRootFileProvider;
