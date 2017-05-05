@@ -5,7 +5,7 @@
     <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <GoogleProtobufVersion>3.1.0</GoogleProtobufVersion>
-    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
