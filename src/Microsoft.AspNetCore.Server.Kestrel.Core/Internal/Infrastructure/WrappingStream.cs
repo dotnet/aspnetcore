@@ -3,9 +3,6 @@
 
 using System;
 using System.IO;
-#if NET46
-using System.Runtime.Remoting;
-#endif
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -92,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
             => _inner.CopyToAsync(destination, bufferSize, cancellationToken);
 
-#if NET46
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
             => _inner.BeginRead(buffer, offset, count, callback, state);
 
@@ -105,19 +101,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public override void EndWrite(IAsyncResult asyncResult)
             => _inner.EndWrite(asyncResult);
 
-        public override ObjRef CreateObjRef(Type requestedType)
-            => _inner.CreateObjRef(requestedType);
-
         public override object InitializeLifetimeService()
             => _inner.InitializeLifetimeService();
 
         public override void Close()
             => _inner.Close();
-
-#elif NETSTANDARD1_3
-#else
-#error Target framework should be updated
-#endif
 
         public override bool Equals(object obj)
             => _inner.Equals(obj);
