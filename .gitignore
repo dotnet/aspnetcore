@@ -25,6 +25,7 @@ nuget.exe
 *.*sdf
 *.ipch
 .vs/
+.vscode/
 project.lock.json
 .build/
 .testPublish/

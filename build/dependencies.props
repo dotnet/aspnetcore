@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-preview1-*</AspNetCoreVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
-    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
     <XunitVersion>2.2.0</XunitVersion>
