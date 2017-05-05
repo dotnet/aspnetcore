@@ -3,7 +3,7 @@
     <AspNetCoreVersion>2.0.0-preview1-*</AspNetCoreVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <DotNetPlatformAbstractionsVersion>1.1.0</DotNetPlatformAbstractionsVersion>
-    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <SystemReflectionMetadataVersion>1.4.2</SystemReflectionMetadataVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>4.4.0-*</SystemDiagnosticsDiagnosticSourceVersion>
