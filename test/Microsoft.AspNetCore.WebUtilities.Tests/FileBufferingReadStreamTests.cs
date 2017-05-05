@@ -293,13 +293,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private static string GetCurrentDirectory()
         {
-#if NET46
-            return AppDomain.CurrentDomain.BaseDirectory;
-#elif NETCOREAPP2_0
             return AppContext.BaseDirectory;
-#else
-#error Target framework needs to be updated
-#endif
         }
     }
 }

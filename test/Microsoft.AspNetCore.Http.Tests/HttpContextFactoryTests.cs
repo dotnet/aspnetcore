@@ -36,40 +36,5 @@ namespace Microsoft.AspNetCore.Http
             var context = contextFactory.Create(new FeatureCollection());
             contextFactory.Dispose(context);
         }
-
-#if NET46
-        private static void DomainFunc()
-        {
-            var accessor = new HttpContextAccessor();
-            Assert.Equal(null, accessor.HttpContext);
-            accessor.HttpContext = new DefaultHttpContext();
-        }
-
-        [Fact]
-        public void ChangingAppDomainsDoesNotBreak()
-        {
-            // Arrange
-            var accessor = new HttpContextAccessor();
-            var contextFactory = new HttpContextFactory(new DefaultObjectPoolProvider(), Options.Create(new FormOptions()), accessor);
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var setupInfo = new AppDomainSetup
-            {
-                ApplicationBase = baseDirectory,
-                ConfigurationFile = Path.Combine(baseDirectory, Path.GetFileNameWithoutExtension(GetType().Assembly.Location) + ".dll.config"),
-            };
-            var domain = AppDomain.CreateDomain("newDomain", null, setupInfo);
-
-            // Act
-            var context = contextFactory.Create(new FeatureCollection());
-            domain.DoCallBack(DomainFunc);
-            AppDomain.Unload(domain);
-
-            // Assert
-            Assert.True(ReferenceEquals(context, accessor.HttpContext));
-        }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
     }
 }
