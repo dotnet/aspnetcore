@@ -101,6 +101,11 @@
   </Target>
 
   <Target Name="_RemoveTimestampFromDepsFile">
+    <GetOSPlatform>
+      <!-- Returns {Linux, macOS, Windows} -->
+      <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
+    </GetOSPlatform>
+
     <Exec Command="powershell.exe -command &quot;(Get-Content $(DepsFile)).replace('-$(BuildNumber)','-final') | Set-Content $(DepsFile)&quot;" Condition="'$(OSPlatform)'=='Windows'"/>
     <Exec Command="sed -i '' -e &quot;s/\-$(BuildNumber)/\-final/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='macOS'"/>
     <Exec Command="sed -i -e &quot;s/\-$(BuildNumber)/\-final/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='Linux'"/>
