@@ -8,7 +8,7 @@
 * Support for custom URL rewrite rules
 * Support for running IIS URL Rewrite module rules
 * Support for running Apache mod_rewrite rules.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;urlrewrite;mod_rewrite</PackageTags>

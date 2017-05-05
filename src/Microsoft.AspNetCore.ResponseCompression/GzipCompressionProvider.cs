@@ -37,13 +37,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             get
             {
-#if NET46
-                return false;
-#elif NETSTANDARD1_3
                 return true;
-#else
-#error target frameworks need to be updated
-#endif
             }
         }
 
