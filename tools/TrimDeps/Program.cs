@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -10,6 +11,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        Console.WriteLine("Trimming main library from " +args[0]);
         ChangeEntryPointLibraryName(args[0]);
     }
 
@@ -22,7 +24,6 @@ public class Program
             deps = JObject.ReadFrom(reader);
         }
 
-        string version = null;
         foreach (JProperty target in deps["targets"])
         {
             var targetLibrary = target.Value.Children<JProperty>().FirstOrDefault();
@@ -33,16 +34,14 @@ public class Program
 
             targetLibrary.Remove();
         }
-        if (version != null)
-        {
-            var library = deps["libraries"].Children<JProperty>().First();
-            library.Remove();
 
-            using (var file = File.CreateText(depsFile))
-            using (var writer = new JsonTextWriter(file) { Formatting = Formatting.Indented })
-            {
-                deps.WriteTo(writer);
-            }
+        var library = deps["libraries"].Children<JProperty>().First();
+        library.Remove();
+
+        using (var file = File.CreateText(depsFile))
+        using (var writer = new JsonTextWriter(file) { Formatting = Formatting.Indented })
+        {
+            deps.WriteTo(writer);
         }
     }
 }
