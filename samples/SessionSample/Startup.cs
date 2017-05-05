@@ -12,11 +12,6 @@ namespace SessionSample
 {
     public class Startup
     {
-        public Startup(ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddConsole(LogLevel.Debug);
-        }
-
         public void ConfigureServices(IServiceCollection services)
         {
             // Adds a default in-memory implementation of IDistributedCache
@@ -83,6 +78,7 @@ namespace SessionSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory => factory.AddConsole())
                 .UseKestrel()
                 .UseIISIntegration()
                 .UseStartup<Startup>()
