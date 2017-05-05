@@ -4,7 +4,6 @@
 using System;
 using System.ComponentModel;
 using Microsoft.AspNetCore.DataProtection.Infrastructure;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection
@@ -37,10 +36,6 @@ namespace Microsoft.AspNetCore.DataProtection
             if (services != null)
             {
                 discriminator = services.GetService<IApplicationDiscriminator>()?.Discriminator;
-                if (discriminator == null)
-                {
-                    discriminator = services.GetService<IHostingEnvironment>()?.ContentRootPath;
-                }
             }
 
             // Remove whitespace and homogenize empty -> null
