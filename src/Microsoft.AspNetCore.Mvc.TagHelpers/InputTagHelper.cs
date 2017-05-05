@@ -194,8 +194,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     break;
 
                 case "checkbox":
-                    GenerateCheckBox(modelExplorer, output);
-                    return;
+                    tagBuilder = GenerateCheckBox(modelExplorer, output);
+                    break;
 
                 case "password":
                     tagBuilder = Generator.GeneratePassword(
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return inputTypeHint;
         }
 
-        private void GenerateCheckBox(ModelExplorer modelExplorer, TagHelperOutput output)
+        private TagBuilder GenerateCheckBox(ModelExplorer modelExplorer, TagHelperOutput output)
         {
             if (modelExplorer.ModelType == typeof(string))
             {
@@ -280,53 +280,30 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                        "checkbox"));
             }
 
-            // Prepare to move attributes from current element to <input type="checkbox"/> generated just below.
-            var htmlAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-            // Perf: Avoid allocating enumerator
-            // Construct attributes correctly (first attribute wins).
-            for (var i = 0; i < output.Attributes.Count; i++)
+            // hiddenForCheckboxTag always rendered after the returned element
+            var hiddenForCheckboxTag = Generator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, For.Name);
+            if (hiddenForCheckboxTag != null)
             {
-                var attribute = output.Attributes[i];
-                if (!htmlAttributes.ContainsKey(attribute.Name))
+                var renderingMode =
+                    output.TagMode == TagMode.SelfClosing ? TagRenderMode.SelfClosing : TagRenderMode.StartTag;
+                hiddenForCheckboxTag.TagRenderMode = renderingMode;
+
+                if (ViewContext.FormContext.CanRenderAtEndOfForm)
                 {
-                    htmlAttributes.Add(attribute.Name, attribute.Value);
+                    ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckboxTag);
+                }
+                else
+                {
+                    output.PostElement.AppendHtml(hiddenForCheckboxTag);
                 }
             }
 
-            var checkBoxTag = Generator.GenerateCheckBox(
+            return Generator.GenerateCheckBox(
                 ViewContext,
                 modelExplorer,
                 For.Name,
                 isChecked: null,
-                htmlAttributes: htmlAttributes);
-            if (checkBoxTag != null)
-            {
-                // Do not generate current element's attributes or tags. Instead put both <input type="checkbox"/> and
-                // <input type="hidden"/> into the output's Content.
-                output.Attributes.Clear();
-                output.TagName = null;
-
-                var renderingMode =
-                    output.TagMode == TagMode.SelfClosing ? TagRenderMode.SelfClosing : TagRenderMode.StartTag;
-                checkBoxTag.TagRenderMode = renderingMode;
-                output.Content.AppendHtml(checkBoxTag);
-
-                var hiddenForCheckboxTag = Generator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, For.Name);
-                if (hiddenForCheckboxTag != null)
-                {
-                    hiddenForCheckboxTag.TagRenderMode = renderingMode;
-
-                    if (ViewContext.FormContext.CanRenderAtEndOfForm)
-                    {
-                        ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckboxTag);
-                    }
-                    else
-                    {
-                        output.Content.AppendHtml(hiddenForCheckboxTag);
-                    }
-                }
-            }
+                htmlAttributes: null);
         }
 
         private TagBuilder GenerateRadio(ModelExplorer modelExplorer)
