@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -184,14 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         public static Assembly LoadAssembly(MemoryStream assemblyStream, MemoryStream pdbStream)
         {
-            var assembly =
-#if NET46
-                Assembly.Load(assemblyStream.ToArray(), pdbStream.ToArray());
-#elif NETSTANDARD1_6
-                System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromStream(assemblyStream, pdbStream);
-#else
-#error target frameworks need to be updated
-#endif
+            var assembly = AssemblyLoadContext.Default.LoadFromStream(assemblyStream, pdbStream);
             return assembly;
         }
 

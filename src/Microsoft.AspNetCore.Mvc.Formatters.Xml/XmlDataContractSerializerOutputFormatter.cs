@@ -132,13 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             try
             {
-#if NET46
-                // Verify that type is a valid data contract by forcing the serializer to try to create a data contract
-                FormattingUtilities.XsdDataContractExporter.GetRootElementName(type);
-#elif NETSTANDARD1_6
-#else
-#error target frameworks need to be updated.
-#endif
+                // Use FormattingUtilities here when https://github.com/aspnet/Mvc/issues/6235 is resolved.
                 // If the serializer does not support this type it will throw an exception.
                 return new DataContractSerializer(type, _serializerSettings);
             }

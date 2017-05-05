@@ -1,9 +1,6 @@
 @inject FrameworkSpecificHelper MyHelper
 @{
     string value =
-#if NET46_CUSTOM_DEFINE
-    MyHelper.ExecuteNET46Operation();
-#endif
 #if NETCOREAPP2_0_CUSTOM_DEFINE
     MyHelper.ExecuteNetCoreApp2_0Operation();
 #endif

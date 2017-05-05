@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.ObjectModel;
-#if NETSTANDARD1_6
 using System.Reflection;
-#endif
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Filters

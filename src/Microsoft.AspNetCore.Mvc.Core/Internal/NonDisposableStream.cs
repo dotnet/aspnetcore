@@ -108,7 +108,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NET46
         /// <inheritdoc />
         public override IAsyncResult BeginRead(
             byte[] buffer,
@@ -147,10 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public override void Close()
         {
         }
-#elif NETSTANDARD1_6
-#else
-#error target frameworks need to be updated.
-#endif
+
         /// <inheritdoc />
         public override int ReadByte()
         {

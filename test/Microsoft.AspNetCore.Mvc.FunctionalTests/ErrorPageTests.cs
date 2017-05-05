@@ -94,16 +94,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact(Skip = "https://github.com/aspnet/Mvc/issues/6120")]
         public async Task RuntimeErrorAreListedByErrorPageMiddleware()
         {
-            // The desktop CLR does not correctly read the stack trace from portable PDBs. However generating full pdbs
-            // is only supported on machines with CLSID_CorSymWriter available. On desktop, we'll skip this test on 
-            // machines without this component.
-#if NET46
-            if (!SymbolsUtility.SupportsFullPdbGeneration())
-            {
-                return;
-            }
-#endif
-
             // Arrange
             var expectedMessage = HtmlEncoder.Default.Encode("throw new Exception(\"Error from view\");");
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");

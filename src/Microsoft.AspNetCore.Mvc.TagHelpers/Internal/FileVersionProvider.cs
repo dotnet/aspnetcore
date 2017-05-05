@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 
         private static string GetHashForFile(IFileInfo fileInfo)
         {
-            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
+            using (var sha256 = SHA256.Create())
             {
                 using (var readStream = fileInfo.CreateReadStream())
                 {

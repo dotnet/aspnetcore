@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class NonDisposableStreamTest
     {
-#if NET46
         [Fact]
         public void InnerStreamIsOpenOnClose()
         {
@@ -35,10 +34,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Act & Assert
             nonDisposableStream.Close();
         }
-#elif NETCOREAPP2_0
-#else
-#error The target frameworks need to be updated
-#endif
 
         [Fact]
         public void InnerStreamIsOpenOnDispose()

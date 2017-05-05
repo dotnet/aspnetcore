@@ -62,12 +62,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 typeof(JsonMediaTypeFormatter).FullName,
                 typeof(XmlMediaTypeFormatter).FullName,
-#if NET46
-                typeof(FormUrlEncodedMediaTypeFormatter).FullName,
-#elif NETCOREAPP2_0
-#else
-#error the target framework needs to be updated.       
-#endif
             };
 
             // Act
