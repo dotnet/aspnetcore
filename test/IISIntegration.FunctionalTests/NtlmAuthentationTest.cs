@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,27 +24,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(RuntimeArchitecture.x64, ApplicationType.Portable, Skip = "https://github.com/aspnet/ServerTests/issues/82")]
+        public Task NtlmAuthentication(RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
+            return NtlmAuthentication(ServerType.IISExpress, architecture, applicationType);
         }
 
-        [ConditionalTheory(Skip = "No test configuration enabled")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone)]
-        // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task NtlmAuthentication_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        public async Task NtlmAuthentication(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
-        }
-
-        public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
-        {
-            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}";
+            var testName = $"NtlmAuthentication_{serverType}_{architecture}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
@@ -53,14 +41,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     ? "win7-x64"
                     : "win7-x86";
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, RuntimeFlavor.CoreClr, architecture)
                 {
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.0",
                     ApplicationType = applicationType,
-                    AdditionalPublishParameters = ApplicationType.Standalone == applicationType && RuntimeFlavor.CoreClr == runtimeFlavor
+                    AdditionalPublishParameters = ApplicationType.Standalone == applicationType
                         ? "-r " + windowsRid
                         : null
                 };
