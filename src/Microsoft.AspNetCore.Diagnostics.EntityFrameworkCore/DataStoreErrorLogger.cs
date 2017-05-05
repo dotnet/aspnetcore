@@ -6,34 +6,19 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using System;
-#if NETSTANDARD1_3
 using System.Threading;
-#else
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Messaging;
-#endif
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     public class DataStoreErrorLogger : ILogger
     {
-#if NETSTANDARD1_3
         private static readonly AsyncLocal<DataStoreErrorLog> _log = new AsyncLocal<DataStoreErrorLog>();
-#else
-        private static readonly string ContextName = "__DataStoreErrorLog" + AppDomain.CurrentDomain.Id;
-#endif
 
         public virtual DataStoreErrorLog LastError
         {
             get
             {
-#if NETSTANDARD1_3
                 return _log.Value; 
-#else
-                var handle = CallContext.LogicalGetData(ContextName) as ObjectHandle;
-
-                return handle?.Unwrap() as DataStoreErrorLog;
-#endif
             }
         }
 
@@ -44,11 +29,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             // it will not be available to code outside of the current async context. 
             // We create it ahead of time so that any cloning just clones the reference
             // to the object that will hold any errors.
-#if NETSTANDARD1_3
             _log.Value = new DataStoreErrorLog();
-#else
-            CallContext.LogicalSetData(ContextName, new ObjectHandle(new DataStoreErrorLog()));
-#endif
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, [CanBeNull] TState state, [CanBeNull] Exception exception, [CanBeNull] Func<TState, Exception, string> formatter)

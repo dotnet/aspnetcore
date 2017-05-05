@@ -305,45 +305,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             Assert.Empty(store.GetActivities());
         }
 
-#if NET46
-        private static void DomainFunc()
-        {
-            var t = SetUp();
-            var logger = t.Item1;
-            using (logger.BeginScope("newDomain scope"))
-            {
-                logger.LogInformation("Test");
-            }
-        }
-
-        [Fact]
-        public void ScopeWithChangingAppDomains_DoesNotAccessUnloadedAppDomain()
-        {
-            // Arrange
-            var t = SetUp();
-            var logger = t.Item1;
-            var store = t.Item2;
-            var setupInfo = new AppDomainSetup
-            {
-                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
-            };
-            var domain = AppDomain.CreateDomain("newDomain", null, setupInfo);
-
-            // Act
-            domain.DoCallBack(DomainFunc);
-            AppDomain.Unload(domain);
-            using (logger.BeginScope("Scope1"))
-            {
-                logger.LogInformation("Testing");
-            }
-
-            Assert.Equal(1, store.Count());
-        }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
-
         private List<LogInfo> NodeLogs(ScopeNode node, List<LogInfo> logs)
         {
             if (node != null)

@@ -21,9 +21,7 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-#if NETCOREAPP2_0
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
-#endif
         public async Task DatabaseErrorPage_ShowsError()
         {
             // Arrange
