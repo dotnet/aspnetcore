@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal(exception.ParamName, "httpClient");
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(TransportType.WebSockets, typeof(WebSocketsTransport))]
         [InlineData(TransportType.ServerSentEvents, typeof(ServerSentEventsTransport))]
         [InlineData(TransportType.LongPolling, typeof(LongPollingTransport))]
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal("No requested transports available on the server.", ex.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public void DefaultTransportFactoryCreatesWebSocketsTransportIfAvailable()
         {
@@ -68,7 +68,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(TransportType.WebSockets, typeof(ServerSentEventsTransport))]
+        [InlineData(TransportType.All, typeof(ServerSentEventsTransport))]
+        [InlineData(TransportType.ServerSentEvents, typeof(ServerSentEventsTransport))]
         [InlineData(TransportType.LongPolling, typeof(LongPollingTransport))]
         public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable_Win7(TransportType requestedTransport, Type expectedTransportType)
         {
@@ -77,6 +78,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
                 Assert.IsType(expectedTransportType,
                     transportFactory.CreateTransport(TransportType.All));
+            }
+        }
+
+        [Theory]
+        [InlineData(TransportType.WebSockets)]
+        public void DefaultTransportFactoryThrowsIfItCannotCreateRequestedTransport_Win7(TransportType requestedTransport)
+        {
+            if (!WebsocketsSupported())
+            {
+                var transportFactory =
+                    new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
+                var ex = Assert.Throws<InvalidOperationException>(
+                    () => transportFactory.CreateTransport(TransportType.All));
+
+                Assert.Equal("No requested transports available on the server.", ex.Message);
             }
         }
 
