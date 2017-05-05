@@ -94,33 +94,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             return ReadStream.Read(buffer, offset, count);
         }
 
-#if !NETCOREAPP1_1
-        public override int ReadByte()
-        {
-            return ReadStream.ReadByte();
-        }
-
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return ReadStream.BeginRead(buffer, offset, count, callback, state);
-        }
-
-        public override int EndRead(IAsyncResult asyncResult)
-        {
-            return ReadStream.EndRead(asyncResult);
-        }
-
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return ReadStream.ReadAsync(buffer, offset, count, cancellationToken);
-        }
-
-        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-        {
-            return ReadStream.CopyToAsync(destination, bufferSize, cancellationToken);
-        }
-#endif
-
 #endregion Read
 
 #region Write
@@ -129,33 +102,6 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         {
             WriteStream.Write(buffer, offset, count);
         }
-
-#if !NETCOREAPP1_1
-        public override void WriteByte(byte value)
-        {
-            WriteStream.WriteByte(value);
-        }
-
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return WriteStream.BeginWrite(buffer, offset, count, callback, state);
-        }
-
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            WriteStream.EndWrite(asyncResult);
-        }
-
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return WriteStream.WriteAsync(buffer, offset, count, cancellationToken);
-        }
-
-        public override Task FlushAsync(CancellationToken cancellationToken)
-        {
-            return WriteStream.FlushAsync(cancellationToken);
-        }
-#endif
 
         public override void Flush()
         {
