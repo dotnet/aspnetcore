@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC Razor view engine for CSHTML files.</Description>
-    <TargetFrameworks>net46;netstandard1.6</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;cshtml;razor</PackageTags>
@@ -24,10 +24,6 @@
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.PropertyActivator.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Runtime.Loader" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

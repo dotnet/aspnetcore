@@ -3,12 +3,9 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefineConstants>$(DefineConstants);SOME_TEST_DEFINE</DefineConstants>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <ItemGroup>

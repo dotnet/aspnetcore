@@ -4,7 +4,7 @@
     <BenchmarkDotNetVersion>0.10.3</BenchmarkDotNetVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <DependencyModelVersion>2.0.0-*</DependencyModelVersion>
-    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>

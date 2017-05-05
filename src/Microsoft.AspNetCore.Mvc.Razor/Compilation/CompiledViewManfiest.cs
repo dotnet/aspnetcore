@@ -4,9 +4,7 @@
 using System;
 using System.IO;
 using System.Reflection;
-#if NETSTANDARD1_6
 using System.Runtime.Loader;
-#endif
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
@@ -27,7 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 
         private static void EnsureFeatureAssembly(AssemblyPart assemblyPart)
         {
-#if NETSTANDARD1_6
             if (assemblyPart.Assembly.IsDynamic || string.IsNullOrEmpty(assemblyPart.Assembly.Location))
             {
                 return;
@@ -51,10 +48,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                     // Don't throw if assembly cannot be loaded. This can happen if the file is not a managed assembly.
                 }
             }
-#elif NET46
-#else
-#error target frameworks needs to be updated.
-#endif
         }
     }
 }

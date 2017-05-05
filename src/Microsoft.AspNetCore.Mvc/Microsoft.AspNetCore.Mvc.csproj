@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC is a web framework that gives you a powerful, patterns-based way to build dynamic websites and web APIs. ASP.NET Core MVC enables a clean separation of concerns and gives you full control over markup.</Description>
-    <TargetFrameworks>net46;netstandard1.6</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>

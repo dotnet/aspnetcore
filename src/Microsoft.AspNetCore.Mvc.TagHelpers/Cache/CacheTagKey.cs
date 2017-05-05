@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             // The key is typically too long to be useful, so we use a cryptographic hash
             // as the actual key (better randomization and key distribution, so small vary
             // values will generate dramatically different keys).
-            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
+            using (var sha256 = SHA256.Create())
             {
                 var contentBytes = Encoding.UTF8.GetBytes(key);
                 var hashedBytes = sha256.ComputeHash(contentBytes);

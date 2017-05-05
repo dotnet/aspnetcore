@@ -2,25 +2,12 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFrameworks>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
 
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);FUNCTIONAL_TESTS</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'netcoreapp2.0' ">
-    <!-- Work around https://github.com/dotnet/sdk/issues/926. Align with bitness of the web site projects. -->
-    <PlatformTarget>x86</PlatformTarget>
-
-    <!--
-      Work around https://github.com/Microsoft/vstest/issues/428 aka https://github.com/aspnet/Mvc/issues/5873.
-      Create the appropriate binding redirects.
-    -->
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <ItemGroup>
