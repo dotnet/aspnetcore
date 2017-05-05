@@ -164,16 +164,19 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebSockets" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebUtilities" />
     <FullMetaPackagePackageReference Include="Microsoft.CodeAnalysis.Razor" />
-    <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite" />
+    <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite" PrivateAssets="Build" />
     <FullMetaPackagePackageReference Include="Microsoft.Data.Sqlite.Core" />
-     <!-- workaround for https://github.com/dotnet/sdk/issues/1166 and https://github.com/ericsink/SQLitePCL.raw/issues/157 -->
+    <!-- workaround for https://github.com/dotnet/sdk/issues/1166 and https://github.com/ericsink/SQLitePCL.raw/issues/157 -->
     <FullMetaPackagePackageReference Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawVersion)" PrivateAssets="Build" />
+    <FullMetaPackagePackageReference Include="SQLitePCLRaw.lib.e_sqlite3.v110_xp" Version="$(SQLitePCLRawVersion)" PrivateAssets="Build" />
+    <FullMetaPackagePackageReference Include="SQLitePCLRaw.lib.e_sqlite3.linux" Version="$(SQLitePCLRawVersion)" PrivateAssets="Build" />
+    <FullMetaPackagePackageReference Include="SQLitePCLRaw.lib.e_sqlite3.osx" Version="$(SQLitePCLRawVersion)" PrivateAssets="Build" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Relational.Design" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" PrivateAssets="Build" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
