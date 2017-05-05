@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public override int Read(byte[] buffer, int offset, int count) => _innerStream.Read(buffer, offset, count);
 
-#if !NETSTANDARD1_3
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _innerStream.BeginRead(buffer, offset, count, callback, state);
@@ -49,7 +48,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             return _innerStream.EndRead(asyncResult);
         }
-#endif
         public override void Flush()
         {
             _onStart().GetAwaiter().GetResult();
@@ -73,19 +71,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             await _onStart();
             await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
-#if NETSTANDARD1_3 
-        public IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-#else
+
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-#endif
         {
             return ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
         }
-#if NETSTANDARD1_3
-        public void EndWrite(IAsyncResult asyncResult)
-#else
+
         public override void EndWrite(IAsyncResult asyncResult)
-#endif
         {
             if (asyncResult == null)
             {

@@ -41,12 +41,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationType.Digest)] // TODO: Not implemented
         [InlineData(AuthenticationSchemes.Basic)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/dotnet/corefx/issues/5045).")]
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
@@ -61,12 +60,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
         [InlineData(AuthenticationSchemes.Basic)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/dotnet/corefx/issues/5045).")]
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
@@ -87,8 +85,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/dotnet/corefx/issues/5045).")]
+        [ConditionalTheory(Skip = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
         {
             string address;
@@ -169,8 +166,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact]
-        [SkipOffDomain]
+        [ConditionalFact(Skip = "Requires a domain joined machine - https://github.com/aspnet/HttpSysServer/issues/357")]
         public async Task AuthTypes_RequireKerberosAuth_Success()
         {
             string address;
@@ -189,8 +185,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact]
-        [SkipOffDomain]
+        [ConditionalFact(Skip = "Requires a domain joined machine - https://github.com/aspnet/HttpSysServer/issues/357")]
         public async Task MultipleAuthTypes_KerberosAllowAnonymousButSpecify401_ChallengesAdded()
         {
             string address;

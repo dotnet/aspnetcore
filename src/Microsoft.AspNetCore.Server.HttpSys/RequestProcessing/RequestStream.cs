@@ -190,11 +190,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-#if NETSTANDARD1_3
-        public unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
-#else
         public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
-#endif
         {
             ValidateReadBuffer(buffer, offset, size);
             if (_closed)
@@ -281,11 +277,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return asyncResult;
         }
 
-#if NETSTANDARD1_3
-        public int EndRead(IAsyncResult asyncResult)
-#else
         public override int EndRead(IAsyncResult asyncResult)
-#endif
         {
             if (asyncResult == null)
             {
@@ -416,20 +408,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-#if NETSTANDARD1_3
-        public IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
-#else
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
-#endif
         {
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-#if NETSTANDARD1_3
-        public void EndWrite(IAsyncResult asyncResult)
-#else
         public override void EndWrite(IAsyncResult asyncResult)
-#endif
         {
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }

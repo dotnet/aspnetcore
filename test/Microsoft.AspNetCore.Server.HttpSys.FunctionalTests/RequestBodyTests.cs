@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal("Hello World", response);
             }
         }
-#if NET46
+
         [ConditionalFact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
@@ -68,10 +68,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal("Hello World", response);
             }
         }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
 
         [ConditionalFact]
         public async Task RequestBody_InvalidBuffer_ArgumentException()

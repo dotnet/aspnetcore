@@ -109,13 +109,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         private async Task<string> SendRequestAsync(string uri, 
             X509Certificate cert = null)
         {
-#if NET46
-            WebRequestHandler handler = new WebRequestHandler();
-#elif NETCOREAPP2_0
             WinHttpHandler handler = new WinHttpHandler();
-#else
-#error Target framework needs to be updated
-#endif
             handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
             if (cert != null)
             {
@@ -129,13 +123,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
         private async Task<string> SendRequestAsync(string uri, string upload)
         {
-#if NET46
-            WebRequestHandler handler = new WebRequestHandler();
-#elif NETCOREAPP2_0
             WinHttpHandler handler = new WinHttpHandler();
-#else
-#error Target framework needs to be updated
-#endif
             handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
             using (HttpClient client = new HttpClient(handler))
             {

@@ -12,10 +12,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get
             {
                 return Environment.HasShutdownStarted
-#if !NETSTANDARD1_3
-                    || AppDomain.CurrentDomain.IsFinalizingForUnload()
-#endif
-                    ;
+                    || AppDomain.CurrentDomain.IsFinalizingForUnload();
             }
         }
     }
