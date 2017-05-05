@@ -65,7 +65,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _frameControl.Write(new ArraySegment<byte>(buffer, offset, count));
         }
 
-#if NET46
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var task = WriteAsync(buffer, offset, count, default(CancellationToken), state);
@@ -103,10 +102,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }, tcs, cancellationToken);
             return tcs.Task;
         }
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated.
-#endif
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

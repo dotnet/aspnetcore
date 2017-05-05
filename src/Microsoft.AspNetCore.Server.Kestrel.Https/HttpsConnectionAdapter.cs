@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                             }
                         }
 
-                        var certificate2 = ConvertToX509Certificate2(certificate);
+                        var certificate2 = (X509Certificate2)certificate;
                         if (certificate2 == null)
                         {
                             return false;
@@ -106,28 +106,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             return new HttpsAdaptedConnection(sslStream);
         }
 
-        private static X509Certificate2 ConvertToX509Certificate2(X509Certificate certificate)
-        {
-            if (certificate == null)
-            {
-                return null;
-            }
-
-            X509Certificate2 certificate2 = certificate as X509Certificate2;
-            if (certificate2 != null)
-            {
-                return certificate2;
-            }
-
-#if NETSTANDARD1_3
-            // conversion X509Certificate to X509Certificate2 not supported
-            // https://github.com/dotnet/corefx/issues/4510
-            return null;
-#else
-            return new X509Certificate2(certificate);
-#endif
-        }
-
         private class HttpsAdaptedConnection : IAdaptedConnection
         {
             private readonly SslStream _sslStream;
@@ -141,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
             public void PrepareRequest(IFeatureCollection requestFeatures)
             {
-                var clientCertificate = ConvertToX509Certificate2(_sslStream.RemoteCertificate);
+                var clientCertificate = (X509Certificate2)_sslStream.RemoteCertificate;
                 if (clientCertificate != null)
                 {
                     requestFeatures.Set<ITlsConnectionFeature>(new TlsConnectionFeature { ClientCertificate = clientCertificate });

@@ -61,7 +61,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return ReadAsync(buffer, offset, count).Result;
         }
 
-#if NET46
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
@@ -99,10 +98,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }, tcs, cancellationToken);
             return tcs.Task;
         }
-#elif NETSTANDARD1_3
-#else
-#error target frameworks need to be updated
-#endif
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
