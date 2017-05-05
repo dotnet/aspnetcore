@@ -156,6 +156,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             public void PrepareRequest(IFeatureCollection requestFeatures)
             {
             }
+
+            public void Dispose()
+            {
+            }
         }
 
         private class RewritingStream : Stream

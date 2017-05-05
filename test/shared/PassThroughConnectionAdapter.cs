@@ -4,7 +4,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 
 namespace Microsoft.AspNetCore.Testing
@@ -29,6 +28,10 @@ namespace Microsoft.AspNetCore.Testing
             public Stream ConnectionStream { get; }
 
             public void PrepareRequest(IFeatureCollection requestFeatures)
+            {
+            }
+
+            public void Dispose()
             {
             }
         }

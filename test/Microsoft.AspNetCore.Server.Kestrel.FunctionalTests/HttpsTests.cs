@@ -97,7 +97,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
         {
-            var x509Certificate2 = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
             var loggerFactory = new HandshakeErrorLoggerFactory();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -150,7 +149,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
             var tcs = new TaskCompletionSource<object>();
-            var x509Certificate2 = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
             var loggerFactory = new HandshakeErrorLoggerFactory();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -194,6 +192,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+        }
+
+        // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1693
+        [Fact]
+        public async Task DoesNotThrowObjectDisposedExceptionOnEmptyConnection()
+        {
+            var loggerFactory = new HandshakeErrorLoggerFactory();
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    });
+                })
+                .UseLoggerFactory(loggerFactory)
+                .Configure(app => app.Run(httpContext => Task.CompletedTask));
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                using (var socket = await HttpClientSlim.GetSocket(new Uri($"https://127.0.0.1:{host.GetPort()}/")))
+                using (var stream = new NetworkStream(socket, ownsSocket: false))
+                using (var sslStream = new SslStream(stream, true, (sender, certificate, chain, errors) => true))
+                {
+                    await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
+                        enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                        checkCertificateRevocation: false);
+                }
+            }
+
+            Assert.False(loggerFactory.ErrorLogger.ObjectDisposedExceptionLogged);
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/pull/1197

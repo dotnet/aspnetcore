@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -19,12 +21,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var frameContext = new FrameContext
             {
-                ServiceContext = new TestServiceContext()
+                ServiceContext = new TestServiceContext(),
+                ConnectionInformation = Mock.Of<IConnectionInformation>()
             };
 
             var frame = new Frame<object>(application: null, frameContext: frameContext);
 
-            frame.InitializeHeaders();
+            frame.Reset();
 
             IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 

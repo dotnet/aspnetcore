@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameContext = new FrameContext
             {
                 ServiceContext = _serviceContext,
-                ConnectionInformation = new MockConnectionInformation()
+                ConnectionInformation = Mock.Of<IConnectionInformation>()
             };
 
             _frame = new TestFrame<object>(application: null, context: _frameContext)
@@ -71,7 +71,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             _frame.Reset();
-            _frame.InitializeHeaders();
         }
 
         public void Dispose()
@@ -245,28 +244,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void InitializeHeadersResetsRequestHeaders()
+        public void ResetResetsRequestHeaders()
         {
             // Arrange
             var originalRequestHeaders = _frame.RequestHeaders;
             _frame.RequestHeaders = new FrameRequestHeaders();
 
             // Act
-            _frame.InitializeHeaders();
+            _frame.Reset();
 
             // Assert
             Assert.Same(originalRequestHeaders, _frame.RequestHeaders);
         }
 
         [Fact]
-        public void InitializeHeadersResetsResponseHeaders()
+        public void ResetResetsResponseHeaders()
         {
             // Arrange
             var originalResponseHeaders = _frame.ResponseHeaders;
             _frame.ResponseHeaders = new FrameResponseHeaders();
 
             // Act
-            _frame.InitializeHeaders();
+            _frame.Reset();
 
             // Assert
             Assert.Same(originalResponseHeaders, _frame.ResponseHeaders);
@@ -463,17 +462,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void RequestProcessingAsyncEnablesKeepAliveTimeout()
+        public void ProcessRequestsAsyncEnablesKeepAliveTimeout()
         {
             var connectionControl = new Mock<ITimeoutControl>();
             _frame.TimeoutControl = connectionControl.Object;
 
-            _frame.Start();
+            var requestProcessingTask = _frame.ProcessRequestsAsync();
 
             var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
             connectionControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
 
-            var requestProcessingTask = _frame.StopAsync();
+            _frame.Stop();
             _input.Writer.Complete();
 
             requestProcessingTask.Wait();
@@ -553,12 +552,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task RequestProcessingTaskIsUnwrapped()
         {
-            _frame.Start();
+            var requestProcessingTask = _frame.ProcessRequestsAsync();
 
             var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
             await _input.Writer.WriteAsync(data);
 
-            var requestProcessingTask = _frame.StopAsync();
+            _frame.Stop();
             Assert.IsNotType(typeof(Task<Task>), requestProcessingTask);
 
             await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -677,7 +676,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headers0 = MakeHeaders(header0Count);
             var headers1 = MakeHeaders(header1Count, header0Count);
 
-            var requestProcessingTask = _frame.RequestProcessingAsync();
+            var requestProcessingTask = _frame.ProcessRequestsAsync();
 
             await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
             await WaitForCondition(TimeSpan.FromSeconds(1), () => _frame.RequestHeaders != null);
@@ -711,7 +710,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headers0 = MakeHeaders(header0Count);
             var headers1 = MakeHeaders(header1Count, header0Count);
 
-            var requestProcessingTask = _frame.RequestProcessingAsync();
+            var requestProcessingTask = _frame.ProcessRequestsAsync();
 
             await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
             await WaitForCondition(TimeSpan.FromSeconds(1), () => _frame.RequestHeaders != null);
@@ -828,16 +827,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 return data;
             }
-        }
-
-        private class MockConnectionInformation : IConnectionInformation
-        {
-            public IPEndPoint RemoteEndPoint { get; }
-            public IPEndPoint LocalEndPoint { get; }
-            public PipeFactory PipeFactory { get; }
-            public bool RequiresDispatch { get; }
-            public IScheduler InputWriterScheduler { get; }
-            public IScheduler OutputReaderScheduler { get; }
         }
 
         private class RequestHeadersWrapper : IHeaderDictionary

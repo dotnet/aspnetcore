@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         context.Response.OnStarting(() => Task.Run(() => onStartingCalled = true));
                         context.Response.OnCompleted(() => Task.Run(() => onCompletedCalled = true));
 
-                        // Prevent OnStarting call (see Frame<T>.RequestProcessingAsync()).
+                        // Prevent OnStarting call (see Frame<T>.ProcessRequestsAsync()).
                         throw new Exception();
                     });
                 });

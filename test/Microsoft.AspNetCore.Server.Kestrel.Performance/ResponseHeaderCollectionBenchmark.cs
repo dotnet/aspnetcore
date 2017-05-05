@@ -182,7 +182,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frame = new Frame<object>(application: null, frameContext: frameContext);
 
             frame.Reset();
-            frame.InitializeHeaders();
             _responseHeadersDirect = (FrameResponseHeaders)frame.ResponseHeaders;
             var context = new DefaultHttpContext(frame);
             _response = new DefaultHttpResponse(context);

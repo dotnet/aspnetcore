@@ -138,7 +138,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             };
 
             frame.Reset();
-            frame.InitializeHeaders();
 
             // Start writing
             var ignore = socketOutput.WriteOutputAsync();

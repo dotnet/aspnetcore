@@ -209,5 +209,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             }, tcs, cancellationToken);
             return tcs.Task;
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            // _output is disposed by ConnectionLifetimeControl
+            _input.Complete();
+        }
     }
 }

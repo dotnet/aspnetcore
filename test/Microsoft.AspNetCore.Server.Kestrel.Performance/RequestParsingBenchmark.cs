@@ -148,8 +148,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 readableBuffer = readableBuffer.Slice(consumed);
 
-                Frame.InitializeHeaders();
-
                 if (!Frame.TakeMessageHeaders(readableBuffer, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
@@ -186,8 +184,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 readableBuffer = result.Buffer;
-
-                Frame.InitializeHeaders();
 
                 if (!Frame.TakeMessageHeaders(readableBuffer, out consumed, out examined))
                 {

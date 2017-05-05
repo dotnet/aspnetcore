@@ -43,7 +43,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
         public bool IsHttps => true;
 
-        public async Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
+        public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
+        {
+            // Don't trust SslStream not to block.
+            return Task.Run(() => InnerOnConnectionAsync(context));
+        }
+
+        private async Task<IAdaptedConnection> InnerOnConnectionAsync(ConnectionAdapterContext context)
         {
             SslStream sslStream;
             bool certificateRequired;
@@ -127,6 +133,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
                 requestFeatures.Get<IHttpRequestFeature>().Scheme = "https";
             }
+
+            public void Dispose()
+            {
+                _sslStream.Dispose();
+            }
         }
 
         private class ClosedAdaptedConnection : IAdaptedConnection
@@ -134,6 +145,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             public Stream ConnectionStream { get; } = new ClosedStream();
 
             public void PrepareRequest(IFeatureCollection requestFeatures)
+            {
+            }
+
+            public void Dispose()
             {
             }
         }

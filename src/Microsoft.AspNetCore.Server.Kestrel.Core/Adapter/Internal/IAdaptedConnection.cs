@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
-    public interface IAdaptedConnection
+    public interface IAdaptedConnection : IDisposable
     {
         Stream ConnectionStream { get; }
 

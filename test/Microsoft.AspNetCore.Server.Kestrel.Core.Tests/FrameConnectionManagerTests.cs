@@ -39,17 +39,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             FrameConnectionManager frameConnectionManager,
             Mock<IKestrelTrace> trace)
         {
-            var serviceContext = new TestServiceContext
-            {
-                ConnectionManager = frameConnectionManager
-            };
-
-            // The FrameConnection constructor adds itself to the connection manager.
             var frameConnection = new FrameConnection(new FrameConnectionContext
             {
-                ServiceContext = serviceContext,
+                ServiceContext = new TestServiceContext(),
                 ConnectionId = connectionId
             });
+
+            frameConnectionManager.AddConnection(0, frameConnection);
 
             var connectionCount = 0;
             frameConnectionManager.Walk(_ => connectionCount++);

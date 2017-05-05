@@ -109,7 +109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             };
 
             frame.Reset();
-            frame.InitializeHeaders();
 
             return frame;
         }

@@ -54,7 +54,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
-        private Task _requestProcessingTask;
         protected volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected int _requestAborted;
         private CancellationTokenSource _abortedCts;
@@ -104,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IPipeReader Input { get; set; }
         public ISocketOutput Output { get; set; }
-        public IEnumerable<IAdaptedConnection> AdaptedConnections { get; set; }
+        public IAdaptedConnection[] AdaptedConnections { get; set; }
         public ConnectionLifetimeControl LifetimeControl { get; set; }
         public ITimeoutControl TimeoutControl { get; set; }
 
@@ -294,26 +293,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseStarted => _requestProcessingStatus == RequestProcessingStatus.ResponseStarted;
 
-        protected FrameRequestHeaders FrameRequestHeaders { get; private set; }
+        protected FrameRequestHeaders FrameRequestHeaders { get; } = new FrameRequestHeaders();
 
-        protected FrameResponseHeaders FrameResponseHeaders { get; private set; }
-
-        public void InitializeHeaders()
-        {
-            if (FrameRequestHeaders == null)
-            {
-                FrameRequestHeaders = new FrameRequestHeaders();
-            }
-
-            RequestHeaders = FrameRequestHeaders;
-
-            if (FrameResponseHeaders == null)
-            {
-                FrameResponseHeaders = new FrameResponseHeaders();
-            }
-
-            ResponseHeaders = FrameResponseHeaders;
-        }
+        protected FrameResponseHeaders FrameResponseHeaders { get; } = new FrameResponseHeaders();
 
         public void InitializeStreams(MessageBody messageBody)
         {
@@ -333,9 +315,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Reset()
         {
-            FrameRequestHeaders?.Reset();
-            FrameResponseHeaders?.Reset();
-
             _onStarting = null;
             _onCompleted = null;
 
@@ -366,6 +345,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             LocalPort = LocalEndPoint?.Port ?? 0;
             ConnectionIdFeature = ConnectionId;
 
+            FrameRequestHeaders.Reset();
+            FrameResponseHeaders.Reset();
+            RequestHeaders = FrameRequestHeaders;
+            ResponseHeaders = FrameResponseHeaders;
+
             if (AdaptedConnections != null)
             {
                 try
@@ -393,27 +377,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         /// <summary>
-        /// Called once by Connection class to begin the RequestProcessingAsync loop.
+        /// Stops the request processing loop between requests.
+        /// Called on all active connections when the server wants to initiate a shutdown
+        /// and after a keep-alive timeout.
         /// </summary>
-        public void Start()
-        {
-            Reset();
-            _requestProcessingTask = RequestProcessingAsync();
-        }
-
-        /// <summary>
-        /// Should be called when the server wants to initiate a shutdown. The Task returned will
-        /// become complete when the RequestProcessingAsync function has exited. It is expected that
-        /// Stop will be called on all active connections, and Task.WaitAll() will be called on every
-        /// return value.
-        /// </summary>
-        public Task StopAsync()
+        public void Stop()
         {
             _requestProcessingStopping = true;
             Input.CancelPendingRead();
-
-            Debug.Assert(_requestProcessingTask != null);
-            return _requestProcessingTask ?? Task.CompletedTask;
         }
 
         private void CancelRequestAbortedToken()
@@ -453,7 +424,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// The resulting Task from this loop is preserved in a field which is used when the server needs
         /// to drain and close all currently active connections.
         /// </summary>
-        public abstract Task RequestProcessingAsync();
+        public abstract Task ProcessRequestsAsync();
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
@@ -797,11 +768,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_requestRejectedException != null)
             {
-                if (FrameRequestHeaders == null || FrameResponseHeaders == null)
-                {
-                    InitializeHeaders();
-                }
-
                 return ProduceEnd();
             }
 
@@ -1120,11 +1086,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             StatusCode = statusCode;
             ReasonPhrase = null;
-
-            if (FrameResponseHeaders == null)
-            {
-                InitializeHeaders();
-            }
 
             var responseHeaders = FrameResponseHeaders;
             responseHeaders.Reset();

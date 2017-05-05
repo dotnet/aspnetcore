@@ -5,10 +5,9 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     public class LoggingConnectionAdapter : IConnectionAdapter
     {
@@ -42,6 +41,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
             public Stream ConnectionStream { get; }
 
             public void PrepareRequest(IFeatureCollection requestFeatures)
+            {
+            }
+
+            public void Dispose()
             {
             }
         }

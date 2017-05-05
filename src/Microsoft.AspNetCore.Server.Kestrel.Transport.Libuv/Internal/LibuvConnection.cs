@@ -63,10 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 Input = _connectionContext.Input;
                 Output = new LibuvOutputConsumer(_connectionContext.Output, Thread, _socket, ConnectionId, Log);
 
-                // Start socket prior to applying the ConnectionAdapter
                 StartReading();
-
-                Exception error = null;
 
                 try
                 {
@@ -74,10 +71,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // The socket output consumer is the only thing that can close the connection. If the
                     // output pipe is already closed by the time we start then it's fine since, it'll close gracefully afterwards.
                     await Output.WriteOutputAsync();
+
+                    // Now, complete the input so that no more reads can happen
+                    Input.Complete(new ConnectionAbortedException());
+                    _connectionContext.Output.Complete();
+                    _connectionContext.OnConnectionClosed(ex: null);
                 }
                 catch (UvException ex)
                 {
-                    error = new IOException(ex.Message, ex);
+                    var ioEx = new IOException(ex.Message, ex);
+
+                    Input.Complete(ioEx);
+                    _connectionContext.Output.Complete(ioEx);
+                    _connectionContext.OnConnectionClosed(ioEx);
                 }
                 finally
                 {
@@ -85,18 +91,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // on the stream handle
                     Input.CancelPendingFlush();
 
-                    // Now, complete the input so that no more reads can happen
-                    Input.Complete(new ConnectionAbortedException());
-
                     // Send a FIN
                     Log.ConnectionWriteFin(ConnectionId);
 
                     // We're done with the socket now
                     _socket.Dispose();
-
-                    // Tell the kestrel we're done with this connection
-                    _connectionContext.OnConnectionClosed(error);
-                    _connectionContext.Output.Complete(error);
                 }
             }
             catch (Exception e)

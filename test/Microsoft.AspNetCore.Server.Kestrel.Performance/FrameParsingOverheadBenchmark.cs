@@ -70,8 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
 
-            _frame.InitializeHeaders();
-
             if (!_frame.TakeMessageHeaders(_buffer, out consumed, out examined))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
@@ -91,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private void ParseRequestHeaders()
         {
             _frame.Reset();
-            _frame.InitializeHeaders();
 
             if (!_frame.TakeMessageHeaders(_buffer, out var consumed, out var examined))
             {
