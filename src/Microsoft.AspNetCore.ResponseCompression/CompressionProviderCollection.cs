@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.ObjectModel;
-#if NETSTANDARD1_3
-using System.Reflection;
-#endif
 
 namespace Microsoft.AspNetCore.ResponseCompression
 {

@@ -5,7 +5,7 @@
   <PropertyGroup>
     <VersionPrefix>0.3.0</VersionPrefix>
     <Description>ASP.NET Core middleware for buffering response bodies.</Description>
-    <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;buffer;buffering</PackageTags>

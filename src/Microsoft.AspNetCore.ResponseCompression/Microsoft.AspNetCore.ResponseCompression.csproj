@@ -5,7 +5,7 @@
   <PropertyGroup>
     <VersionPrefix>2.0.0</VersionPrefix>
     <Description>ASP.NET Core middleware for HTTP Response compression.</Description>
-    <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
   </PropertyGroup>
