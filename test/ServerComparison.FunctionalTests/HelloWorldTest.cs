@@ -19,52 +19,51 @@ namespace ServerComparison.FunctionalTests
         {
         }
 
-        // Tests disabled on x86 because of https://github.com/aspnet/Hosting/issues/601
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        //[InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task HelloWorld_Windows(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "https://github.com/aspnet/Hosting/issues/601")]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "https://github.com/aspnet/Hosting/issues/601")]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task HelloWorld_Windows(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(serverType, architecture, applicationType);
         }
 
         [Theory]
-        //[InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task HelloWorld_Kestrel(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "https://github.com/aspnet/Hosting/issues/601")]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Standalone, Skip = "https://github.com/aspnet/Hosting/issues/601")]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task HelloWorld_Kestrel(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(serverType, architecture, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task HelloWorld_Nginx(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task HelloWorld_Nginx(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return HelloWorld(serverType, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(serverType, architecture, applicationType);
         }
 
-        public async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType, [CallerMemberName] string testName = null)
+        public async Task HelloWorld(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType, [CallerMemberName] string testName = null)
         {
-            testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            testName = $"{testName}_{serverType}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorld");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
                 {
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 

@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-#if NET46
 
 using System.Net;
 using System.Net.Http;
@@ -21,28 +20,26 @@ namespace ServerComparison.FunctionalTests
         {
         }
 
-        [ConditionalTheory, Trait("ServerComparison.FunctionalTests", "ServerComparison.FunctionalTests")]
+        [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        // TODO: https://github.com/aspnet/IISIntegration/issues/1
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        // [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "https://github.com/aspnet/Hosting/issues/601")]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable, Skip = "https://github.com/aspnet/IISIntegration/issues/1")]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public async Task NtlmAuthentication(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
+            var testName = $"NtlmAuthentication_{serverType}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
                 {
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "NtlmAuthentication.config", nginxConfig: null),
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0",
+                    TargetFramework = "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 
@@ -66,7 +63,7 @@ namespace ServerComparison.FunctionalTests
                         response = await httpClient.GetAsync("/Anonymous");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal("Anonymous?True", responseText);
-
+                        /* https://github.com/aspnet/ServerTests/issues/82
                         logger.LogInformation("Testing /Restricted");
                         response = await httpClient.GetAsync("/Restricted");
                         responseText = await response.Content.ReadAsStringAsync();
@@ -93,7 +90,7 @@ namespace ServerComparison.FunctionalTests
                         logger.LogInformation("Testing /Forbidden");
                         response = await httpClient.GetAsync("/Forbidden");
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-
+                        */
                         logger.LogInformation("Enabling Default Credentials");
 
                         // Change the http client to one that uses default credentials
@@ -145,7 +142,3 @@ namespace ServerComparison.FunctionalTests
         }
     }
 }
-#elif NETCOREAPP2_0
-#else
-#error target frameworks need to be updated
-#endif
