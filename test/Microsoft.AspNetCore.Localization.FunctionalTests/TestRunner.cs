@@ -44,18 +44,17 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         }
 
         private async Task<string> RunTestAndGetResponse(
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
             string environmentName,
             string locale)
         {
             var loggerFactory = new LoggerFactory();
 
-            var deploymentParameters = new DeploymentParameters(_applicationPath, ServerType.Kestrel, runtimeFlavor, runtimeArchitecture)
+            var deploymentParameters = new DeploymentParameters(_applicationPath, ServerType.Kestrel, RuntimeFlavor.CoreClr, runtimeArchitecture)
             {
                 ApplicationBaseUriHint = ApplicationBasePath,
                 EnvironmentName = environmentName,
-                TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0"
+                TargetFramework = "netcoreapp2.0"
             };
 
             using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
@@ -71,7 +70,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
                 using (var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) })
                 {
-                    var logger = loggerFactory.CreateLogger(string.Format("Localization Test Site:{0}:{1}:{2}", ServerType.Kestrel, runtimeFlavor, runtimeArchitecture));
+                    var logger = loggerFactory.CreateLogger(string.Format("Localization Test Site:{0}:{1}", ServerType.Kestrel, runtimeArchitecture));
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
@@ -85,25 +84,23 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         }
 
         public async Task RunTestAndVerifyResponse(
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
             string environmentName,
             string locale,
             string expectedText)
         {
-            var responseText = await RunTestAndGetResponse(runtimeFlavor, runtimeArchitecture, environmentName, locale);
+            var responseText = await RunTestAndGetResponse(runtimeArchitecture, environmentName, locale);
             Console.WriteLine("Response Text " + responseText);
             Assert.Equal(expectedText, responseText);
         }
 
         public async Task RunTestAndVerifyResponseHeading(
-            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture runtimeArchitecture,
             string environmentName,
             string locale,
             string expectedHeadingText)
         {
-            var responseText = await RunTestAndGetResponse(runtimeFlavor, runtimeArchitecture, environmentName, locale);
+            var responseText = await RunTestAndGetResponse(runtimeArchitecture, environmentName, locale);
             var headingIndex = responseText.IndexOf(expectedHeadingText);
             Console.WriteLine("Response Header " + responseText);
             Assert.True(headingIndex >= 0);
