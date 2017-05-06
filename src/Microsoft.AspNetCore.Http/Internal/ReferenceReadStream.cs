@@ -115,68 +115,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             _position += read;
             return read;
         }
-#if NET46
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            ThrowIfDisposed();
-            VerifyPosition();
-            var tcs = new TaskCompletionSource<int>(state);
-            BeginRead(buffer, offset, count, callback, tcs);
-            return tcs.Task;
-        }
 
-        private async void BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, TaskCompletionSource<int> tcs)
-        {
-            try
-            {
-                var read = await ReadAsync(buffer, offset, count);
-                tcs.TrySetResult(read);
-            }
-            catch (Exception ex)
-            {
-                tcs.TrySetException(ex);
-            }
-
-            if (callback != null)
-            {
-                // Offload callbacks to avoid stack dives on sync completions.
-                var ignored = Task.Run(() =>
-                {
-                    try
-                    {
-                        callback(tcs.Task);
-                    }
-                    catch (Exception)
-                    {
-                        // Suppress exceptions on background threads.
-                    }
-                });
-            }
-        }
-
-        public override int EndRead(IAsyncResult asyncResult)
-        {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException(nameof(asyncResult));
-            }
-
-            var task = (Task<int>)asyncResult;
-            return task.GetAwaiter().GetResult();
-        }
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            throw new NotSupportedException();
-        }
-#elif NETSTANDARD1_3
-#else
-#error Target frameworks need to be updated.
-#endif
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();

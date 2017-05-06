@@ -34,27 +34,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(expectedData, memoryStream.ToArray());
         }
 
-#if NET46
-        [Fact]
-        public async Task DoesNotFlush_UnderlyingStream_OnClosingWriter()
-        {
-            // Arrange
-            var stream = new TestMemoryStream();
-            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
-
-            // Act
-            await writer.WriteAsync("Hello");
-            writer.Close();
-
-            // Assert
-            Assert.Equal(0, stream.FlushCallCount);
-            Assert.Equal(0, stream.FlushAsyncCallCount);
-        }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
-
         [Fact]
         public async Task DoesNotFlush_UnderlyingStream_OnDisposingWriter()
         {
@@ -70,26 +49,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(0, stream.FlushCallCount);
             Assert.Equal(0, stream.FlushAsyncCallCount);
         }
-
-#if NET46
-        [Fact]
-        public async Task DoesNotClose_UnderlyingStream_OnDisposingWriter()
-        {
-            // Arrange
-            var stream = new TestMemoryStream();
-            var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
-
-            // Act
-            await writer.WriteAsync("Hello");
-            writer.Close();
-
-            // Assert
-            Assert.Equal(0, stream.CloseCallCount);
-        }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
 
         [Fact]
         public async Task DoesNotDispose_UnderlyingStream_OnDisposingWriter()
@@ -119,13 +78,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             await writer.WriteAsync(new string('a', byteLength));
 
             // Act
-#if NET46
-            writer.Close();
-#elif NETCOREAPP2_0
             writer.Dispose();
-#else
-#error Target framework needs to be updated
-#endif
 
             // Assert
             Assert.Equal(0, stream.FlushCallCount);
@@ -345,13 +298,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
         [Theory]
         [InlineData("你好世界", "utf-16")]
-#if NET46
-        // CoreCLR does not like shift_jis as an encoding.
-        [InlineData("こんにちは世界", "shift_jis")]
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
         [InlineData("హలో ప్రపంచ", "iso-8859-1")]
         [InlineData("வணக்கம் உலக", "utf-32")]
         public async Task WritesData_InExpectedEncoding(string data, string encodingName)
@@ -379,15 +325,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [InlineData('你', 1023, "utf-16")]
         [InlineData('你', 1024, "utf-16")]
         [InlineData('你', 1050, "utf-16")]
-#if NET46
-        // CoreCLR does not like shift_jis as an encoding.
-        [InlineData('こ', 1023, "shift_jis")]
-        [InlineData('こ', 1024, "shift_jis")]
-        [InlineData('こ', 1050, "shift_jis")]
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
         [InlineData('హ', 1023, "iso-8859-1")]
         [InlineData('హ', 1024, "iso-8859-1")]
         [InlineData('హ', 1050, "iso-8859-1")]
@@ -515,17 +452,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
                 }
                 return base.WriteAsync(buffer, offset, count, cancellationToken);
             }
-
-#if NET46
-            public override void Close()
-            {
-                CloseCallCount++;
-                base.Close();
-            }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
 
             protected override void Dispose(bool disposing)
             {

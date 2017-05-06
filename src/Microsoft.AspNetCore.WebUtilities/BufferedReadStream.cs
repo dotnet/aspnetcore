@@ -201,71 +201,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             return await _inner.ReadAsync(buffer, offset, count, cancellationToken);
         }
-#if NET46
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            return _inner.BeginWrite(buffer, offset, count, callback, state);
-        }
 
-        public override void EndWrite(IAsyncResult asyncResult)
-        {
-            _inner.EndWrite(asyncResult);
-        }
-
-        // We only anticipate using ReadAsync
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            ValidateBuffer(buffer, offset, count);
-
-            // Drain buffer
-            if (_bufferCount > 0)
-            {
-                int toCopy = Math.Min(_bufferCount, count);
-                Buffer.BlockCopy(_buffer, _bufferOffset, buffer, offset, toCopy);
-                _bufferOffset += toCopy;
-                _bufferCount -= toCopy;
-
-                TaskCompletionSource<int> tcs = new TaskCompletionSource<int>(state);
-                tcs.TrySetResult(toCopy);
-                if (callback != null)
-                {
-                    // Offload callbacks to avoid stack dives on sync completions.
-                    var ignored = Task.Run(() =>
-                    {
-                        try
-                        {
-                            callback(tcs.Task);
-                        }
-                        catch (Exception)
-                        {
-                            // Suppress exceptions on background threads.
-                        }
-                    });
-                }
-                return tcs.Task;
-            }
-
-            return _inner.BeginRead(buffer, offset, count, callback, state);
-        }
-
-        public override int EndRead(IAsyncResult asyncResult)
-        {
-            if (asyncResult == null)
-            {
-                throw new ArgumentNullException(nameof(asyncResult));
-            }
-
-            Task<int> task = asyncResult as Task<int>;
-            if (task != null)
-            {
-                return task.GetAwaiter().GetResult();
-            }
-            return _inner.EndRead(asyncResult);
-        }
-#elif NETSTANDARD1_3
-#else
-#error Target frameworks need to be updated.
-#endif
         public bool EnsureBuffered()
         {
             if (_bufferCount > 0)

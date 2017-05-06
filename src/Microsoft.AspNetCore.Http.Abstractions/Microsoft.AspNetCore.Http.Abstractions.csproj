@@ -10,7 +10,7 @@ Microsoft.AspNetCore.Builder.IApplicationBuilder
 Microsoft.AspNetCore.Http.HttpContext
 Microsoft.AspNetCore.Http.HttpRequest
 Microsoft.AspNetCore.Http.HttpResponse</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -24,11 +24,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <PackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="System.Text.Encodings.Web" Version="$(CoreFxVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Globalization.Extensions" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

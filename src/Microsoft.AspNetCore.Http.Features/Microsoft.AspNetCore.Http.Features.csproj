@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP feature interface definitions.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
@@ -15,11 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Security.Principal" Version="$(CoreFxVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Net.WebSockets" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
