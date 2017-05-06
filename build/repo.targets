@@ -62,6 +62,8 @@
     <Exec Command="dotnet store --manifest $(MetaPackageFile) --configuration Release --framework netcoreapp2.0 --runtime $(RID) --output $(PackageCacheOutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)" />
 
     <Exec Command="dotnet restore" WorkingDirectory="$(RepositoryRoot)tools\TrimDeps" />
+    <Exec Command="dotnet restore" WorkingDirectory="$(HostingStartupTemplatePath)" />
+
     <!--- MSBuild caches things if you run inproc so have to use Exec -->
     <Exec Command="dotnet msbuild /t:Restore;Rebuild;CollectDeps $(HostingStartupTemplateFile) /p:DepsOutputPath=$(DepsOutputPath);HostingStartupPackageName=%(HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(Version)"/>
 
