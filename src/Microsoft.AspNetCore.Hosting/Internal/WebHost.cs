@@ -205,18 +205,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 var hostingEnv = _applicationServices.GetRequiredService<IHostingEnvironment>();
                 var showDetailedErrors = hostingEnv.IsDevelopment() || _options.DetailedErrors;
 
-                var model = new ErrorPageModel();
-                var runtimeType = Microsoft.Extensions.Internal.RuntimeEnvironment.RuntimeType;
-                model.RuntimeDisplayName = (runtimeType == "CoreCLR") ? ".NET Core" : runtimeType == "CLR" ? ".NET Framework" : "Mono";
-#if NETSTANDARD1_3 || NETSTANDARD1_5
+                var model = new ErrorPageModel
+                {
+                    RuntimeDisplayName = ".NET Core"
+                };
                 var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
                 var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
                 var clrVersion = assemblyVersion;
-#elif NET46
-                var clrVersion = Environment.Version.ToString();
-#else
-#error Target frameworks need to be updated.
-#endif
                 model.RuntimeArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
                 var currentAssembly = typeof(ErrorPage).GetTypeInfo().Assembly;
                 model.CurrentAssemblyVesion = currentAssembly

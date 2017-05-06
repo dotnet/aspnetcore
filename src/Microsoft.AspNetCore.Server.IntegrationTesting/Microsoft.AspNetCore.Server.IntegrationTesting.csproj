@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Description>ASP.NET Core helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.</Description>
     <VersionPrefix>0.4.0</VersionPrefix>
-    <TargetFrameworks>net46;netstandard1.5</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;testing</PackageTags>
@@ -28,17 +28,6 @@
     <PackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="$(WindowsApiSetsVersion)" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingVersion)" />
     <PackageReference Include="Serilog.Sinks.File" Version="$(SerilogFileSinkVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <PackageReference Include="Microsoft.Web.Administration" Version="$(WebAdministrationVersion)" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
-    <PackageReference Include="System.Diagnostics.Process" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Threading.Thread" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
