@@ -65,7 +65,7 @@
     <Exec Command="dotnet restore" WorkingDirectory="$(HostingStartupTemplatePath)" />
 
     <!--- MSBuild caches things if you run inproc so have to use Exec -->
-    <Exec Command="dotnet msbuild /t:Restore;Rebuild;CollectDeps $(HostingStartupTemplateFile) /p:DepsOutputPath=$(DepsOutputPath);HostingStartupPackageName=%(HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(Version)"/>
+    <Exec Command="dotnet msbuild /t:&quot;Restore;Rebuild;CollectDeps&quot; $(HostingStartupTemplateFile) /p:&quot;DepsOutputPath=$(DepsOutputPath);HostingStartupPackageName=%(HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(Version)&quot;"/>
 
     <ItemGroup>
       <PackageStoreManifestFiles Include="$(PackageCacheOutputPath)**\artifact.xml">
