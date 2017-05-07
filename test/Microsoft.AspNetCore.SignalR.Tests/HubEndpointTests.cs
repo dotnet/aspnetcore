@@ -186,28 +186,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task HubMethodCanBeStatic()
-        {
-            var serviceProvider = CreateServiceProvider();
-
-            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
-
-            using (var client = new TestClient(serviceProvider))
-            {
-                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
-
-                var result = await client.Invoke<InvocationResultDescriptor>(nameof(MethodHub.StaticMethod)).OrTimeout();
-
-                Assert.Equal("fromStatic", result.Result);
-
-                // kill the connection
-                client.Dispose();
-
-                await endPointTask.OrTimeout();
-            }
-        }
-
-        [Fact]
         public async Task HubMethodCanBeVoid()
         {
             var serviceProvider = CreateServiceProvider();
@@ -584,11 +562,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public string Echo(string data)
             {
                 return data;
-            }
-
-            static public string StaticMethod()
-            {
-                return "fromStatic";
             }
 
             public void VoidMethod()

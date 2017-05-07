@@ -8,9 +8,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.SignalR
                     object result = null;
                     if (methodExecutor.IsMethodAsync)
                     {
-                        if (methodExecutor.TaskGenericType == null)
+                        if (methodExecutor.MethodReturnType == typeof(Task))
                         {
                             await (Task)methodExecutor.Execute(hub, invocationDescriptor.Arguments);
                         }
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.SignalR
             public HubMethodDescriptor(ObjectMethodExecutor methodExecutor)
             {
                 MethodExecutor = methodExecutor;
-                ParameterTypes = methodExecutor.ActionParameters.Select(p => p.ParameterType).ToArray();
+                ParameterTypes = methodExecutor.MethodParameters.Select(p => p.ParameterType).ToArray();
             }
 
             public ObjectMethodExecutor MethodExecutor { get; }
