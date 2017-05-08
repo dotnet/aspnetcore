@@ -41,6 +41,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                     TargetFramework = "netcoreapp2.0",
                     Configuration = GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
+                    EnvironmentName = "JavaScript",
                     EnvironmentVariables =
                     {
                         new KeyValuePair<string, string>(
