@@ -20,7 +20,7 @@ namespace Microsoft.Net.Http.Headers
         public const string ContentLanguage = "Content-Language";
         public const string ContentLength = "Content-Length";
         public const string ContentLocation = "Content-Location";
-        public const string ContentMD5 = "ContentMD5";
+        public const string ContentMD5 = "Content-MD5";
         public const string ContentRange = "Content-Range";
         public const string ContentType = "Content-Type";
         public const string Cookie = "Cookie";
