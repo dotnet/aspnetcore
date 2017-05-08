@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
         }
 
-        public ObjectMethodExecutor GetViewComponentMethodExecutor(ViewComponentContext viewComponentContext)
+        internal ObjectMethodExecutor GetViewComponentMethodExecutor(ViewComponentContext viewComponentContext)
         {
             var cache = CurrentCache;
             var viewComponentDescriptor = viewComponentContext.ViewComponentDescriptor;

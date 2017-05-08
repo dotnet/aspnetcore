@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
             using (_logger.ViewComponentScope(context))
             {
-                var arguments = ControllerActionExecutor.PrepareArguments(context.Arguments, executor);
+                var arguments = PrepareArguments(context.Arguments, executor);
 
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
@@ -145,9 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
             using (_logger.ViewComponentScope(context))
             {
-                var arguments = ControllerActionExecutor.PrepareArguments(
-                    context.Arguments,
-                    executor);
+                var arguments = PrepareArguments(context.Arguments, executor);
 
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
@@ -203,6 +202,33 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 typeof(string).Name,
                 typeof(IHtmlContent).Name,
                 typeof(IViewComponentResult).Name));
+        }
+
+        private static object[] PrepareArguments(
+            IDictionary<string, object> parameters,
+            ObjectMethodExecutor objectMethodExecutor)
+        {
+            var declaredParameterInfos = objectMethodExecutor.MethodParameters;
+            var count = declaredParameterInfos.Length;
+            if (count == 0)
+            {
+                return null;
+            }
+
+            var arguments = new object[count];
+            for (var index = 0; index < count; index++)
+            {
+                var parameterInfo = declaredParameterInfos[index];
+
+                if (!parameters.TryGetValue(parameterInfo.Name, out var value))
+                {
+                    value = objectMethodExecutor.GetDefaultValueForParameter(index);
+                }
+
+                arguments[index] = value;
+            }
+
+            return arguments;
         }
     }
 }

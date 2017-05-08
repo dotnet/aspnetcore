@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private ResultExecutingContext _resultExecutingContext;
         private ResultExecutedContext _resultExecutedContext;
 
-        public ControllerActionInvoker(
+        internal ControllerActionInvoker(
             IControllerFactory controllerFactory,
             ParameterBinder parameterBinder,
             IModelMetadataProvider modelMetadataProvider,
@@ -761,7 +760,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var executor = _executor;
             var controller = _controller;
             var arguments = _arguments;
-            var orderedArguments = ControllerActionExecutor.PrepareArguments(arguments, executor);
+            var orderedArguments = PrepareArguments(arguments, executor);
 
             var diagnosticSource = _diagnosticSource;
             var logger = _logger;
@@ -1063,6 +1062,34 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
             }
         }
+
+        private static object[] PrepareArguments(
+            IDictionary<string, object> actionParameters,
+            ObjectMethodExecutor actionMethodExecutor)
+        {
+            var declaredParameterInfos = actionMethodExecutor.MethodParameters;
+            var count = declaredParameterInfos.Length;
+            if (count == 0)
+            {
+                return null;
+            }
+
+            var arguments = new object[count];
+            for (var index = 0; index < count; index++)
+            {
+                var parameterInfo = declaredParameterInfos[index];
+
+                if (!actionParameters.TryGetValue(parameterInfo.Name, out var value))
+                {
+                    value = actionMethodExecutor.GetDefaultValueForParameter(index);
+                }
+
+                arguments[index] = value;
+            }
+
+            return arguments;
+        }
+
 
         private enum Scope
         {

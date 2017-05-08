@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public struct ControllerActionInvokerState
         {
-            public ControllerActionInvokerState(
+            internal ControllerActionInvokerState(
                 IFilterMetadata[] filters,
                 ObjectMethodExecutor actionMethodExecutor)
             {
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             public IFilterMetadata[] Filters { get; }
 
-            public ObjectMethodExecutor ActionMethodExecutor { get; set; }
+            internal ObjectMethodExecutor ActionMethodExecutor { get; }
         }
     }
 }
