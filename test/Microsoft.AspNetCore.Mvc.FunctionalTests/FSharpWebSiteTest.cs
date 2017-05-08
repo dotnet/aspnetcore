@@ -28,5 +28,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("<h1>Hello from FSharpWebSite</h1>", responseBody);
         }
+        
+        [Fact]
+        public async Task HomeAsyncAction_ReturnsContentAsynchronously()
+        {
+            // Act
+            var response = await Client.GetAsync("http://localhost/home/asyncaction");
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Action completed asynchronously", responseBody);
+        }
     }
 }

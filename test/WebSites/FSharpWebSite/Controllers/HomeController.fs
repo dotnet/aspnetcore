@@ -14,3 +14,8 @@ type HomeController () =
 
     member this.Index () =
         this.View()
+
+    member this.AsyncAction () = async {
+        do! Async.Sleep 50
+        return this.Content("Action completed asynchronously")
+    }
