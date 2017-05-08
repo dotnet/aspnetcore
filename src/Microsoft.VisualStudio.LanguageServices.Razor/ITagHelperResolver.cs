@@ -10,6 +10,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     public interface ITagHelperResolver
     {
-        Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, IEnumerable<string> assemblyNameFilters);
+        Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project);
     }
 }

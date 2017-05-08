@@ -175,10 +175,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                     .Select(reference => reference.Display)
                     .Select(filter => Path.GetFileNameWithoutExtension(filter));
                 var projectFilters = project.AllProjectReferences.Select(filter => solution.GetProject(filter.ProjectId).AssemblyName);
-                var tagHelperAssemblyFilters = assemblyFilters
-                    .Concat(projectFilters)
-                    .Concat(new[] { project.AssemblyName });
-                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(project, tagHelperAssemblyFilters);
+                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(project);
 
                 var files = GetCshtmlDocuments(project);
 

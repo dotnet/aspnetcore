@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         [Import]
         public SVsServiceProvider Services { get; set; }
 
-        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, IEnumerable<string> assemblyNameFilters)
+        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         {
                             var jsonObject = await session.InvokeAsync<JObject>(
                                 "GetTagHelpersAsync",
-                                new object[] { project.Id.Id, "Foo", assemblyNameFilters, }).ConfigureAwait(false);
+                                new object[] { project.Id.Id, "Foo", }).ConfigureAwait(false);
 
                             result = GetTagHelperResolutionResult(jsonObject);
 
@@ -57,7 +57,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
                 // The OOP host is turned off, so let's do this in process.
                 var resolver = new CodeAnalysis.Razor.DefaultTagHelperResolver(designTime: true);
-                result = await resolver.GetTagHelpersAsync(project, assemblyNameFilters, CancellationToken.None).ConfigureAwait(false);
+                result = await resolver.GetTagHelpersAsync(project, CancellationToken.None).ConfigureAwait(false);
                 return result;
             }
             catch (Exception exception)

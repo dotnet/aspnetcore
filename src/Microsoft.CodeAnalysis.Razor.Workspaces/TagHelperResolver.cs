@@ -10,15 +10,14 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     internal abstract class TagHelperResolver : ILanguageService
     {
-        public abstract TagHelperResolutionResult GetTagHelpers(Compilation compilation, IEnumerable<string> assemblyNameFilters);
+        public abstract TagHelperResolutionResult GetTagHelpers(Compilation compilation);
 
         public virtual async Task<TagHelperResolutionResult> GetTagHelpersAsync(
             Project project,
-            IEnumerable<string> assemblyNameFilters,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-            return GetTagHelpers(compilation, assemblyNameFilters);
+            return GetTagHelpers(compilation);
         }
     }
 }
