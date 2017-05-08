@@ -6,6 +6,7 @@ branches:
     - release
     - dev
     - /^(.*\/)?ci-.*$/
+    - /^rel\/.*/
 build_script:
   - ps: .\build.ps1
 clone_depth: 1
