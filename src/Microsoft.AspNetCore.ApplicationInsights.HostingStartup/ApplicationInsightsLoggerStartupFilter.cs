@@ -11,15 +11,36 @@ namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
 {
     internal class ApplicationInsightsLoggerStartupFilter : IStartupFilter
     {
-        private readonly Func<string, LogLevel, bool> _noFilter = (s, level) => true;
-
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
         {
             return builder =>
             {
                 var loggerFactory = builder.ApplicationServices.GetService<ILoggerFactory>();
+
                 // We need to disable filtering on logger, filtering would be done by LoggerFactory
-                loggerFactory.AddApplicationInsights(builder.ApplicationServices, _noFilter);
+                var loggerEnabled = true;
+                Action disableCallback = () => loggerEnabled = false;
+
+                if (loggerFactory is LoggerFactory stronglyTypedLoggerFactory &&
+                    ApplicationInsightsLoggerConfiguration.HasLoggingConfigured(stronglyTypedLoggerFactory.Configuration))
+                {
+                    // We detected that logger settings got to LoggerFactory configuration and
+                    // defaults would be applied
+                    loggerFactory.AddApplicationInsights(
+                        builder.ApplicationServices,
+                        (s, level) => loggerEnabled,
+                        disableCallback);
+                }
+                else
+                {
+                    // It's not AspNetCore LoggerFactory or configuration was not wired
+                    // just add a logger with default settings
+                    loggerFactory.AddApplicationInsights(
+                        builder.ApplicationServices,
+                        (s, level) => loggerEnabled && ApplicationInsightsLoggerConfiguration.ApplyDefaultFilter(s, level),
+                        disableCallback);
+                }
+
                 next(builder);
             };
         }
