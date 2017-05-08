@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// </summary>
     public abstract class RazorPageBase : IRazorPage
     {
+        private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
         private StringWriter _valueBuffer;
         private ITagHelperFactory _tagHelperFactory;
         private IViewBufferScope _bufferScope;
@@ -275,6 +276,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return content;
         }
 
+        // Internal for unit testing.
+        protected internal virtual void PushWriter(TextWriter writer)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            _textWriterStack.Push(ViewContext.Writer);
+            ViewContext.Writer = writer;
+        }
+
+        // Internal for unit testing.
+        protected internal virtual TextWriter PopWriter()
+        {
+            ViewContext.Writer = _textWriterStack.Pop();
+            return ViewContext.Writer;
+        }
+
         public virtual string Href(string contentPath)
         {
             if (contentPath == null)
@@ -335,63 +355,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <param name="value">The <see cref="object"/> to write.</param>
         public virtual void Write(object value)
         {
-            WriteTo(Output, value);
-        }
-
-        /// <summary>
-        /// Writes the specified <paramref name="value"/> with HTML encoding to <paramref name="writer"/>.
-        /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        /// <param name="value">The <see cref="object"/> to write.</param>
-        /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
-        /// <see cref="IHtmlContent.WriteTo(TextWriter, HtmlEncoder)"/>.
-        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
-        /// <paramref name="writer"/>.
-        /// </remarks>
-        public virtual void WriteTo(TextWriter writer, object value)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            WriteTo(writer, HtmlEncoder, value);
-        }
-
-        /// <summary>
-        /// Writes the specified <paramref name="value"/> with HTML encoding to given <paramref name="writer"/>.
-        /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        /// <param name="encoder">
-        /// The <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when encoding <paramref name="value"/>.
-        /// </param>
-        /// <param name="value">The <see cref="object"/> to write.</param>
-        /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
-        /// <see cref="IHtmlContent.WriteTo(TextWriter, HtmlEncoder)"/>.
-        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
-        /// <paramref name="writer"/>.
-        /// </remarks>
-        public static void WriteTo(TextWriter writer, HtmlEncoder encoder, object value)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (encoder == null)
-            {
-                throw new ArgumentNullException(nameof(encoder));
-            }
-
             if (value == null || value == HtmlString.Empty)
             {
                 return;
             }
 
-            var htmlContent = value as IHtmlContent;
-            if (htmlContent != null)
+            var writer = Output;
+            var encoder = HtmlEncoder;
+            if (value is IHtmlContent htmlContent)
             {
                 var bufferedWriter = writer as ViewBufferTextWriter;
                 if (bufferedWriter == null || !bufferedWriter.IsBuffering)
@@ -400,8 +371,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 }
                 else
                 {
-                    var htmlContentContainer = value as IHtmlContentContainer;
-                    if (htmlContentContainer != null)
+                    if (value is IHtmlContentContainer htmlContentContainer)
                     {
                         // This is likely another ViewBuffer.
                         htmlContentContainer.MoveTo(bufferedWriter.Buffer);
@@ -417,26 +387,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 return;
             }
 
-            WriteTo(writer, encoder, value.ToString());
+            Write(value.ToString());
         }
 
         /// <summary>
-        /// Writes the specified <paramref name="value"/> with HTML encoding to <paramref name="writer"/>.
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
         /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        public virtual void WriteTo(TextWriter writer, string value)
+        public virtual void Write(string value)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            WriteTo(writer, HtmlEncoder, value);
-        }
-
-        private static void WriteTo(TextWriter writer, HtmlEncoder encoder, string value)
-        {
+            var writer = Output;
+            var encoder = HtmlEncoder;
             if (!string.IsNullOrEmpty(value))
             {
                 // Perf: Encode right away instead of writing it character-by-character.
@@ -452,42 +413,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <param name="value">The <see cref="object"/> to write.</param>
         public virtual void WriteLiteral(object value)
         {
-            WriteLiteralTo(Output, value);
-        }
-
-        /// <summary>
-        /// Writes the specified <paramref name="value"/> without HTML encoding to the <paramref name="writer"/>.
-        /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        /// <param name="value">The <see cref="object"/> to write.</param>
-        public virtual void WriteLiteralTo(TextWriter writer, object value)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (value != null)
-            {
-                WriteLiteralTo(writer, value.ToString());
-            }
+            WriteLiteral(value.ToString());
         }
 
         /// <summary>
         /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        public virtual void WriteLiteralTo(TextWriter writer, string value)
+        public virtual void WriteLiteral(string value)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
             if (!string.IsNullOrEmpty(value))
             {
-                writer.Write(value);
+                Output.Write(value);
             }
         }
 
@@ -499,23 +436,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             int suffixOffset,
             int attributeValuesCount)
         {
-            BeginWriteAttributeTo(Output, name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
-        }
-
-        public virtual void BeginWriteAttributeTo(
-            TextWriter writer,
-            string name,
-            string prefix,
-            int prefixOffset,
-            string suffix,
-            int suffixOffset,
-            int attributeValuesCount)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
             if (prefix == null)
             {
                 throw new ArgumentNullException(nameof(prefix));
@@ -532,23 +452,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // null  or false. Consequently defer the prefix generation until we encounter the attribute value.
             if (attributeValuesCount != 1)
             {
-                WritePositionTaggedLiteral(writer, prefix, prefixOffset);
+                WritePositionTaggedLiteral(prefix, prefixOffset);
             }
         }
 
         public void WriteAttributeValue(
-            string prefix,
-            int prefixOffset,
-            object value,
-            int valueOffset,
-            int valueLength,
-            bool isLiteral)
-        {
-            WriteAttributeValueTo(Output, prefix, prefixOffset, value, valueOffset, valueLength, isLiteral);
-        }
-
-        public void WriteAttributeValueTo(
-            TextWriter writer,
             string prefix,
             int prefixOffset,
             object value,
@@ -566,7 +474,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 }
 
                 // We are not omitting the attribute. Write the prefix.
-                WritePositionTaggedLiteral(writer, _attributeInfo.Prefix, _attributeInfo.PrefixOffset);
+                WritePositionTaggedLiteral(_attributeInfo.Prefix, _attributeInfo.PrefixOffset);
 
                 if (IsBoolTrueWithEmptyPrefixValue(prefix, value))
                 {
@@ -582,12 +490,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 if (!string.IsNullOrEmpty(prefix))
                 {
-                    WritePositionTaggedLiteral(writer, prefix, prefixOffset);
+                    WritePositionTaggedLiteral(prefix, prefixOffset);
                 }
 
                 BeginContext(valueOffset, valueLength, isLiteral);
 
-                WriteUnprefixedAttributeValueTo(writer, value, isLiteral);
+                WriteUnprefixedAttributeValue(value, isLiteral);
 
                 EndContext();
             }
@@ -595,19 +503,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         public virtual void EndWriteAttribute()
         {
-            EndWriteAttributeTo(Output);
-        }
-
-        public virtual void EndWriteAttributeTo(TextWriter writer)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
             if (!_attributeInfo.Suppressed)
             {
-                WritePositionTaggedLiteral(writer, _attributeInfo.Suffix, _attributeInfo.SuffixOffset);
+                WritePositionTaggedLiteral(_attributeInfo.Suffix, _attributeInfo.SuffixOffset);
             }
         }
 
@@ -668,12 +566,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     _valueBuffer = new StringWriter();
                 }
 
+                PushWriter(_valueBuffer);
                 if (!string.IsNullOrEmpty(prefix))
                 {
-                    WriteLiteralTo(_valueBuffer, prefix);
+                    WriteLiteral(prefix);
                 }
 
-                WriteUnprefixedAttributeValueTo(_valueBuffer, value, isLiteral);
+                WriteUnprefixedAttributeValue(value, isLiteral);
+                PopWriter();
             }
         }
 
@@ -738,33 +638,33 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return HtmlString.Empty;
         }
 
-        private void WriteUnprefixedAttributeValueTo(TextWriter writer, object value, bool isLiteral)
+        private void WriteUnprefixedAttributeValue(object value, bool isLiteral)
         {
             var stringValue = value as string;
 
             // The extra branching here is to ensure that we call the Write*To(string) overload where possible.
             if (isLiteral && stringValue != null)
             {
-                WriteLiteralTo(writer, stringValue);
+                WriteLiteral(stringValue);
             }
             else if (isLiteral)
             {
-                WriteLiteralTo(writer, value);
+                WriteLiteral(value);
             }
             else if (stringValue != null)
             {
-                WriteTo(writer, stringValue);
+                Write(stringValue);
             }
             else
             {
-                WriteTo(writer, value);
+                Write(value);
             }
         }
 
-        private void WritePositionTaggedLiteral(TextWriter writer, string value, int position)
+        private void WritePositionTaggedLiteral(string value, int position)
         {
             BeginContext(position, value.Length, isLiteral: true);
-            WriteLiteralTo(writer, value);
+            WriteLiteral(value);
             EndContext();
         }
 

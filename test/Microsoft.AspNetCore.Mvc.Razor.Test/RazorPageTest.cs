@@ -1394,7 +1394,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         [Theory]
         [MemberData(nameof(WriteAttributeData))]
-        public void WriteAttributeTo_WritesAsExpected(
+        public void WriteAttribute_UsesSpecifiedWriter_WritesAsExpected(
             Tuple<string, int, object, int, bool>[] attributeValues,
             string expectedOutput)
         {
@@ -1406,11 +1406,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var suffix = string.Empty;
 
             // Act
-            page.BeginWriteAttributeTo(writer, "someattr", prefix, 0, suffix, 0, attributeValues.Length);
+            page.PushWriter(writer);
+            page.BeginWriteAttribute("someattr", prefix, 0, suffix, 0, attributeValues.Length);
             foreach (var value in attributeValues)
             {
-                page.WriteAttributeValueTo(
-                    writer,
+                page.WriteAttributeValue(
                     value.Item1,
                     value.Item2,
                     value.Item3,
@@ -1418,10 +1418,87 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     value.Item3?.ToString().Length ?? 0,
                     value.Item5);
             }
-            page.EndWriteAttributeTo(writer);
+            page.EndWriteAttribute();
+            page.PopWriter();
 
             // Assert
             Assert.Equal(expectedOutput, writer.ToString());
+        }
+
+        [Fact]
+        public void PushWriter_SetsUnderlyingWriter()
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            var writer = new StringWriter();
+
+            // Act
+            page.PushWriter(writer);
+
+            // Assert
+            Assert.Same(writer, page.ViewContext.Writer);
+        }
+
+        [Fact]
+        public void PopWriter_ResetsUnderlyingWriter()
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            var defaultWriter = new StringWriter();
+            page.ViewContext.Writer = defaultWriter;
+
+            var writer = new StringWriter();
+
+            // Act 1
+            page.PushWriter(writer);
+
+            // Assert 1
+            Assert.Same(writer, page.ViewContext.Writer);
+
+            // Act 2
+            var poppedWriter = page.PopWriter();
+
+            // Assert 2
+            Assert.Same(defaultWriter, poppedWriter);
+            Assert.Same(defaultWriter, page.ViewContext.Writer);
+        }
+
+        [Fact]
+        public void WriteLiteral_BuffersResultToPushedWriter()
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            var defaultWriter = new StringWriter();
+            page.ViewContext.Writer = defaultWriter;
+
+            var bufferWriter = new StringWriter();
+
+            // Act
+            page.WriteLiteral("Not");
+            page.PushWriter(bufferWriter);
+            page.WriteLiteral("This should be buffered");
+            page.PopWriter();
+            page.WriteLiteral(" buffered");
+
+            // Assert
+            Assert.Equal("Not buffered", defaultWriter.ToString());
+            Assert.Equal("This should be buffered", bufferWriter.ToString());
+        }
+
+        [Fact]
+        public void Write_StringValue_UsesSpecifiedWriter_EncodesValue()
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            var bufferWriter = new StringWriter();
+
+            // Act
+            page.PushWriter(bufferWriter);
+            page.Write("This should be encoded");
+            page.PopWriter();
+
+            // Assert
+            Assert.Equal("HtmlEncode[[This should be encoded]]", bufferWriter.ToString());
         }
 
         [Fact]
