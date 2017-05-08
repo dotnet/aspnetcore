@@ -1,10 +1,44 @@
 <Project>
 
   <PropertyGroup>
+    <PrepareDependsOn Condition="'$(MUSICSTORE_ASPNETCORE_STORE_FEED)' != ''">$(PrepareDependsOn);UpdateNuGetConfig</PrepareDependsOn>
     <MusicStoreE2ETestProject>$(RepositoryRoot)test\MusicStore.E2ETests\MusicStore.E2ETests.csproj</MusicStoreE2ETestProject>
   </PropertyGroup>
 
-  <Target Name="_FilterTestProjects" BeforeTargets="TestProjects" Condition="'$(VSTestTestCaseFilter)'=='E2Etests=NanoServer'">
+  <Target Name="UpdateNuGetConfig">
+    <UpdatePackageSource
+      NuGetConfigPath="$(RepositoryRoot)NuGet.config"
+      SourceName="AspNetCoreStore"
+      SourceUri="$(MUSICSTORE_ASPNETCORE_STORE_FEED)" />
+
+    <Message Text="Updated NuGet.Config with feed '$(MUSICSTORE_ASPNETCORE_STORE_FEED)'" Importance="High" />
+  </Target>
+
+  <Target Name="_RunNanoTestsOnly" 
+      BeforeTargets="TestProjects" 
+      DependsOnTargets="_FilterTestProjects" 
+      Condition="'$(RUN_TESTS_ON_NANO)' == 'true' ">
+    <Warning Text="Updated test projects to run only the project '$(MusicStoreE2ETestProject)' as the variable 'RUN_TESTS_ON_NANO' is set to '$(RUN_TESTS_ON_NANO)'" />
+    <ItemGroup>
+      <ProjectsToTest Update="$(MusicStoreE2ETestProject)">
+        <AdditionalProperties>VSTestTestCaseFilter=E2ETests=NanoServer</AdditionalProperties>
+      </ProjectsToTest>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_RunPackageStoreTestsOnly" 
+      BeforeTargets="TestProjects" 
+      DependsOnTargets="_FilterTestProjects" 
+      Condition="'$(MUSICSTORE_ASPNETCORE_STORE_FEED)' != '' ">
+    <Warning Text="Updated test projects to run only the project '$(MusicStoreE2ETestProject)' as the variable 'MUSICSTORE_ASPNETCORE_STORE_FEED' is set to non empty value. Package store tests require to not have RuntimeIdentifiers on MusicStore sample which would fail other standalone tests." />
+    <ItemGroup>
+      <ProjectsToTest Update="$(MusicStoreE2ETestProject)">
+        <AdditionalProperties>VSTestTestCaseFilter=smoketests=usestore</AdditionalProperties>
+      </ProjectsToTest>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_FilterTestProjects">
     <ItemGroup>
       <ProjectsToTest Remove="@(ProjectsToTest)" />
       <ProjectsToTest Include="$(MusicStoreE2ETestProject)" />
@@ -12,4 +46,5 @@
 
     <Error Text="Could not find test projects to run" Condition="@(ProjectsToTest->Count()) == 0" />
   </Target>
+
 </Project>
