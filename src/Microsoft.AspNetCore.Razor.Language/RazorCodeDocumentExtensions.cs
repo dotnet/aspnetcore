@@ -31,26 +31,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             document.Items[typeof(TagHelperDocumentContext)] = context;
         }
 
-        public static string GetTagHelperPrefix(this RazorCodeDocument document)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
-            return document.Items[TagHelperPrefixKey] as string;
-        }
-
-        public static void SetTagHelperPrefix(this RazorCodeDocument document, string tagHelperPrefix)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
-            document.Items[TagHelperPrefixKey] = tagHelperPrefix;
-        }
-
         public static RazorSyntaxTree GetSyntaxTree(this RazorCodeDocument document)
         {
             if (document == null)

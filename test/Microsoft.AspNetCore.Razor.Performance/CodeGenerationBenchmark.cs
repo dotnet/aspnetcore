@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
     {
         public CodeGenerationBenchmark()
         {
-            var current = new DirectoryInfo(Environment.CurrentDirectory);
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
             while  (current != null && !File.Exists(Path.Combine(current.FullName, "MSN.cshtml")))
             {
                 current = current.Parent;

@@ -106,7 +106,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                codeDocument.SetTagHelperPrefix(prefixDirective.DirectiveText);
                 return prefixDirective.DirectiveText;
             }
 

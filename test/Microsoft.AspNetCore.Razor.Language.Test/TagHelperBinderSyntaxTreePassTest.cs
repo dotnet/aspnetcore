@@ -877,7 +877,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         [Theory]
         [MemberData(nameof(ProcessTagHelperPrefixData))]
-        public void ProcessTagHelperPrefix_ParsesPrefixFromDirectives_SetsOnCodeDocument(
+        public void ProcessTagHelperPrefix_ParsesPrefixFromDirectives(
             object directiveDescriptors,
             string expectedPrefix)
         {
@@ -892,7 +892,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Empty(errorSink.Errors);
             Assert.Equal(expectedPrefix, prefix);
-            Assert.Equal(expectedPrefix, document.GetTagHelperPrefix());
         }
 
         public static TheoryData ProcessDirectivesData

@@ -691,7 +691,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void BasicTagHelpers_Prefixed_Runtime()
         {
             // Arrange, Act & Assert
-            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors, tagHelperPrefix: "THS");
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
@@ -1535,7 +1535,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void BasicTagHelpers_Prefixed_DesignTime()
         {
             // Arrange, Act & Assert
-            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors, tagHelperPrefix: "THS");
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
@@ -1630,20 +1630,16 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
         #endregion
 
-        private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors, string tagHelperPrefix = null)
+        private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
         {
             // Arrange
-            var engine = RazorEngine.Create(
-                builder =>
-                {
-                    builder.Features.Add(new ApiSetsIRTestAdapter());
-                    builder.AddTagHelpers(descriptors);
-                });
-            var document = CreateCodeDocument();
-            if (tagHelperPrefix != null)
+            var engine = RazorEngine.Create(builder =>
             {
-                document.SetTagHelperPrefix(tagHelperPrefix);
-            }
+                builder.Features.Add(new ApiSetsIRTestAdapter());
+                builder.AddTagHelpers(descriptors);
+            });
+
+            var document = CreateCodeDocument();
 
             // Act
             engine.Process(document);
@@ -1653,20 +1649,16 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
-        private void RunDesignTimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors, string tagHelperPrefix = null)
+        private void RunDesignTimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
         {
             // Arrange
-            var engine = RazorEngine.CreateDesignTime(
-                builder =>
-                {
-                    builder.Features.Add(new ApiSetsIRTestAdapter());
-                    builder.AddTagHelpers(descriptors);
-                });
-            var document = CreateCodeDocument();
-            if (tagHelperPrefix != null)
+            var engine = RazorEngine.CreateDesignTime(builder =>
             {
-                document.SetTagHelperPrefix(tagHelperPrefix);
-            }
+                builder.Features.Add(new ApiSetsIRTestAdapter());
+                builder.AddTagHelpers(descriptors);
+            });
+
+            var document = CreateCodeDocument();
 
             // Act
             engine.Process(document);
