@@ -74,6 +74,30 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Theory]
+        [InlineData("Development", "InvalidOperationException: Cannot consume scoped service")]
+        [InlineData("Production", "Success")]
+        public async Task CreateDefaultBuilder_InitializesDependencyInjectionSettingsBasedOnEnv(string environment, string expected)
+        {
+            var applicationName = "DependencyInjectionApp";
+            await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
+            {
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var responseText = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    // Assert UseDeveloperExceptionPage is called in WebHostStartupFilter.
+                    Assert.Contains(expected, responseText);
+                }
+                catch (XunitException)
+                {
+                    logger.LogWarning(response.ToString());
+                    logger.LogWarning(responseText);
+                    throw;
+                }
+            }, setTestEnvVars: true, environment: environment);
+        }
+
+        [Theory]
         [InlineData("127.0.0.1", "127.0.0.1")]
         [InlineData("::1", "[::1]")]
         public async Task BindsKestrelHttpEndPointFromConfiguration(string endPointAddress, string requestAddress)
@@ -247,7 +271,10 @@ namespace Microsoft.AspNetCore.Tests
             });
         }
 
-        private async Task ExecuteTestApp(string applicationName, Func<DeploymentResult, ILogger, Task> assertAction, bool setTestEnvVars = false)
+        private async Task ExecuteTestApp(string applicationName,
+            Func<DeploymentResult, ILogger, Task> assertAction,
+            bool setTestEnvVars = false,
+            string environment = "Development")
         {
             using (StartLog(out var loggerFactory, applicationName))
             {
@@ -256,7 +283,7 @@ namespace Microsoft.AspNetCore.Tests
 
                 if (setTestEnvVars)
                 {
-                    deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("aspnetcore_environment", "Development"));
+                    deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("aspnetcore_environment", environment));
                     deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("envKey", "envValue"));
                 }
 
