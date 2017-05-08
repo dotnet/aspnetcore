@@ -10,6 +10,35 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public class TagHelperBinderTest
     {
+        [Fact]
+        public void GetBinding_ReturnsBindingWithInformation()
+        {
+            // Arrange
+            var divTagHelper = TagHelperDescriptorBuilder.Create("DivTagHelper", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .Build();
+            var expectedDescriptors = new[] { divTagHelper };
+            var expectedAttributes = new[]
+            {
+                new KeyValuePair<string, string>("class", "something")
+            };
+            var tagHelperBinder = new TagHelperBinder("th:", expectedDescriptors);
+
+            // Act
+            var bindingResult = tagHelperBinder.GetBinding(
+                tagName: "th:div",
+                attributes: expectedAttributes,
+                parentTagName: "body");
+
+            // Assert
+            Assert.Equal(expectedDescriptors, bindingResult.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal("th:div", bindingResult.TagName);
+            Assert.Equal("body", bindingResult.ParentTagName);
+            Assert.Equal(expectedAttributes, bindingResult.Attributes);
+            Assert.Equal("th:", bindingResult.TagHelperPrefix);
+            Assert.Equal(divTagHelper.TagMatchingRules, bindingResult.GetBoundRules(divTagHelper), TagMatchingRuleComparer.CaseSensitive);
+        }
+
         public static TheoryData RequiredParentData
         {
             get
@@ -107,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName("input")
-                        .RequireAttribute(attribute => 
+                        .RequireAttribute(attribute =>
                             attribute
                             .Name("nodashprefix")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)))
@@ -129,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     .TagMatchingRule(rule =>
                         rule
                         .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
-                        .RequireAttribute(attribute => 
+                        .RequireAttribute(attribute =>
                             attribute
                             .Name("prefix-")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)))
@@ -406,7 +435,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
                 .TagMatchingRule(rule => rule.RequireTagName("div"))
-                .Build(); 
+                .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, divDescriptor };
             var tagHelperBinder = new TagHelperBinder(null, descriptors);
 

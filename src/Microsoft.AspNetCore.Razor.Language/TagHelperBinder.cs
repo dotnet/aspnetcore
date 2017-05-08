@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -97,9 +96,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return null;
             }
 
-            var tagMappingResult = new TagHelperBinding(applicableDescriptorMappings);
+            var tagHelperBinding = new TagHelperBinding(
+                tagName,
+                attributes,
+                parentTagName,
+                applicableDescriptorMappings,
+                _tagHelperPrefix);
 
-            return tagMappingResult;
+            return tagHelperBinding;
         }
 
         private void Register(TagHelperDescriptor descriptor)
