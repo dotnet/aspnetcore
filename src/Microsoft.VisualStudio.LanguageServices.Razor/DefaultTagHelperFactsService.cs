@@ -40,8 +40,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
 
             var prefix = documentContext.Prefix;
-            var provider = new TagHelperDescriptorProvider(prefix, descriptors);
-            var binding = provider.GetTagHelperBinding(tagName, attributes, parentTag);
+            var tagHelperBinder = new TagHelperBinder(prefix, descriptors);
+            var binding = tagHelperBinder.GetBinding(tagName, attributes, parentTag);
 
             return binding;
         }

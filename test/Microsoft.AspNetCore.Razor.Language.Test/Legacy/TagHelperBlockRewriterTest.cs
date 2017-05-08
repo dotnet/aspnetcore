@@ -148,10 +148,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .TypeName(typeof(string).FullName))
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         public static TheoryData WithoutEndTagElementData
@@ -223,10 +222,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagStructure(TagStructure.WithoutEndTag))
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         public static TheoryData TagStructureCompatibilityData
@@ -328,10 +326,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagStructure(structure2))
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         public static TheoryData MalformedTagHelperAttributeBlockData
@@ -1212,13 +1209,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .TypeName(typeof(string).FullName))
                     .Build()
             };
-            var providerContext = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(providerContext,
-                         documentContent,
-                         (MarkupBlock)expectedOutput,
-                         expectedErrors: Enumerable.Empty<RazorError>());
+            EvaluateData(
+                descriptors,
+                documentContent,
+                (MarkupBlock)expectedOutput,
+                expectedErrors: Enumerable.Empty<RazorError>());
         }
 
         public static IEnumerable<object[]> IncompleteHelperBlockData
@@ -2245,10 +2242,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .TypeName(typeof(string).FullName))
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
         }
 
         public static IEnumerable<object[]> ScriptBlockData
@@ -3935,10 +3931,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .TypeName(typeof(int).FullName))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
         }
     }
 }

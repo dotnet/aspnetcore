@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             IEnumerable<RazorError> errors,
             params string[] tagNames)
         {
-            var providerContext = BuildProviderContext(tagNames);
+            var descriptors = BuildDescriptors(tagNames);
 
-            EvaluateData(providerContext, documentContent, expectedOutput, errors);
+            EvaluateData(descriptors, documentContent, expectedOutput, errors);
         }
 
-        internal TagHelperDescriptorProvider BuildProviderContext(params string[] tagNames)
+        internal IEnumerable<TagHelperDescriptor> BuildDescriptors(params string[] tagNames)
         {
             var descriptors = new List<TagHelperDescriptor>();
 
@@ -43,11 +43,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 descriptors.Add(descriptor);
             }
 
-            return new TagHelperDescriptorProvider(null, descriptors);
+            return descriptors;
         }
 
         internal void EvaluateData(
-            TagHelperDescriptorProvider provider,
+            IEnumerable<TagHelperDescriptor> descriptors,
             string documentContent,
             MarkupBlock expectedOutput,
             IEnumerable<RazorError> expectedErrors,
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var syntaxTree = ParseDocument(documentContent);
             var errorSink = new ErrorSink();
-            var parseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, provider);
+            var parseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptors);
             var actualTree = parseTreeRewriter.Rewrite(syntaxTree.Root, errorSink);
 
             var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));

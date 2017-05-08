@@ -68,8 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
             else
             { 
-                var descriptorProvider = new TagHelperDescriptorProvider(tagHelperPrefix, descriptors);
-                var rewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptorProvider);
+                var rewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptors);
                 root = rewriter.Rewrite(root, errorSink);
             }
 

@@ -4,23 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language
 {
     /// <summary>
-    /// Enables retrieval of <see cref="TagHelperDescriptor"/>'s.
+    /// Enables retrieval of <see cref="TagHelperBinding"/>'s.
     /// </summary>
-    internal class TagHelperDescriptorProvider
+    internal class TagHelperBinder
     {
         private IDictionary<string, HashSet<TagHelperDescriptor>> _registrations;
         private readonly string _tagHelperPrefix;
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="TagHelperDescriptorProvider"/>.
+        /// Instantiates a new instance of the <see cref="TagHelperBinder"/>.
         /// </summary>
         /// <param name="tagHelperPrefix">The tag helper prefix being used by the document.</param>
-        /// <param name="descriptors">The descriptors that the <see cref="TagHelperDescriptorProvider"/> will pull from.</param>
-        public TagHelperDescriptorProvider(string tagHelperPrefix, IEnumerable<TagHelperDescriptor> descriptors)
+        /// <param name="descriptors">The descriptors that the <see cref="TagHelperBinder"/> will pull from.</param>
+        public TagHelperBinder(string tagHelperPrefix, IEnumerable<TagHelperDescriptor> descriptors)
         {
             _tagHelperPrefix = tagHelperPrefix;
             _registrations = new Dictionary<string, HashSet<TagHelperDescriptor>>(StringComparer.OrdinalIgnoreCase);
@@ -33,16 +34,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         /// <summary>
-        /// Gets all tag helpers that match the given <paramref name="tagName"/>.
+        /// Gets all tag helpers that match the given HTML tag criteria.
         /// </summary>
         /// <param name="tagName">The name of the HTML tag to match. Providing a '*' tag name
         /// retrieves catch-all <see cref="TagHelperDescriptor"/>s (descriptors that target every tag).</param>
-        /// <param name="attributes">Attributes the HTML element must contain to match.</param>
+        /// <param name="attributes">Attributes on the HTML tag.</param>
         /// <param name="parentTagName">The parent tag name of the given <paramref name="tagName"/> tag.</param>
-        /// <returns><see cref="TagHelperDescriptor"/>s that apply to the given <paramref name="tagName"/>.
-        /// Will return an empty <see cref="Enumerable" /> if no <see cref="TagHelperDescriptor"/>s are
-        /// found.</returns>
-        public TagHelperBinding GetTagHelperBinding(
+        /// <returns><see cref="TagHelperDescriptor"/>s that apply to the given HTML tag criteria.
+        /// Will return <c>null</c> if no <see cref="TagHelperDescriptor"/>s are a match.</returns>
+        public TagHelperBinding GetBinding(
             string tagName,
             IEnumerable<KeyValuePair<string, string>> attributes,
             string parentTagName)

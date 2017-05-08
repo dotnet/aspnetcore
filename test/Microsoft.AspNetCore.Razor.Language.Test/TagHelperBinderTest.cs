@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class TagHelperDescriptorProviderTest
+    public class TagHelperBinderTest
     {
         public static TheoryData RequiredParentData
         {
@@ -67,17 +67,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         [Theory]
         [MemberData(nameof(RequiredParentData))]
-        public void GetTagHelperBinding_ReturnsBindingResultWithDescriptorsParentTags(
+        public void GetBinding_ReturnsBindingResultWithDescriptorsParentTags(
             string tagName,
             string parentTagName,
             object availableDescriptors,
             object expectedDescriptors)
         {
             // Arrange
-            var provider = new TagHelperDescriptorProvider(null, (IEnumerable<TagHelperDescriptor>)availableDescriptors);
+            var tagHelperBinder = new TagHelperBinder(null, (IEnumerable<TagHelperDescriptor>)availableDescriptors);
 
             // Act
-            var bindingResult = provider.GetTagHelperBinding(
+            var bindingResult = tagHelperBinder.GetBinding(
                 tagName,
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: parentTagName);
@@ -233,34 +233,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         [Theory]
         [MemberData(nameof(RequiredAttributeData))]
-        public void GetTagHelperBinding_ReturnsBindingResultDescriptorsWithRequiredAttributes(
+        public void GetBinding_ReturnsBindingResultDescriptorsWithRequiredAttributes(
             string tagName,
             IEnumerable<KeyValuePair<string, string>> providedAttributes,
             object availableDescriptors,
             object expectedDescriptors)
         {
             // Arrange
-            var provider = new TagHelperDescriptorProvider(null, (IEnumerable<TagHelperDescriptor>)availableDescriptors);
+            var tagHelperBinder = new TagHelperBinder(null, (IEnumerable<TagHelperDescriptor>)availableDescriptors);
 
             // Act
-            var bindingResult = provider.GetTagHelperBinding(tagName, providedAttributes, parentTagName: "p");
+            var bindingResult = tagHelperBinder.GetBinding(tagName, providedAttributes, parentTagName: "p");
 
             // Assert
             Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult?.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
         }
 
         [Fact]
-        public void GetTagHelperBinding_ReturnsNullBindingResultPrefixAsTagName()
+        public void GetBinding_ReturnsNullBindingResultPrefixAsTagName()
         {
             // Arrange
             var catchAllDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
                 .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new[] { catchAllDescriptor };
-            var provider = new TagHelperDescriptorProvider("th", descriptors);
+            var tagHelperBinder = new TagHelperBinder("th", descriptors);
 
             // Act
-            var bindingResult = provider.GetTagHelperBinding(
+            var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "th",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
@@ -270,21 +270,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void GetTagHelperBinding_ReturnsBindingResultCatchAllDescriptorsForPrefixedTags()
+        public void GetBinding_ReturnsBindingResultCatchAllDescriptorsForPrefixedTags()
         {
             // Arrange
             var catchAllDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
                 .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new[] { catchAllDescriptor };
-            var provider = new TagHelperDescriptorProvider("th:", descriptors);
+            var tagHelperBinder = new TagHelperBinder("th:", descriptors);
 
             // Act
-            var bindingResultDiv = provider.GetTagHelperBinding(
+            var bindingResultDiv = tagHelperBinder.GetBinding(
                 tagName: "th:div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
-            var bindingResultSpan = provider.GetTagHelperBinding(
+            var bindingResultSpan = tagHelperBinder.GetBinding(
                 tagName: "th:span",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
@@ -297,17 +297,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void GetTagHelperBinding_ReturnsBindingResultDescriptorsForPrefixedTags()
+        public void GetBinding_ReturnsBindingResultDescriptorsForPrefixedTags()
         {
             // Arrange
             var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
                 .TagMatchingRule(rule => rule.RequireTagName("div"))
                 .Build();
             var descriptors = new[] { divDescriptor };
-            var provider = new TagHelperDescriptorProvider("th:", descriptors);
+            var tagHelperBinder = new TagHelperBinder("th:", descriptors);
 
             // Act
-            var bindingResult = provider.GetTagHelperBinding(
+            var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "th:div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
@@ -320,17 +320,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Theory]
         [InlineData("*")]
         [InlineData("div")]
-        public void GetTagHelperBinding_ReturnsNullForUnprefixedTags(string tagName)
+        public void GetBinding_ReturnsNullForUnprefixedTags(string tagName)
         {
             // Arrange
             var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
                 .TagMatchingRule(rule => rule.RequireTagName(tagName))
                 .Build();
             var descriptors = new[] { divDescriptor };
-            var provider = new TagHelperDescriptorProvider("th:", descriptors);
+            var tagHelperBinder = new TagHelperBinder("th:", descriptors);
 
             // Act
-            var bindingResult = provider.GetTagHelperBinding(
+            var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
@@ -350,10 +350,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 .TagMatchingRule(rule => rule.RequireTagName("span"))
                 .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor };
-            var provider = new TagHelperDescriptorProvider(null, descriptors);
+            var tagHelperBinder = new TagHelperBinder(null, descriptors);
 
             // Act
-            var tagHelperBinding = provider.GetTagHelperBinding(
+            var tagHelperBinding = tagHelperBinder.GetBinding(
                 tagName: "foo",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
@@ -376,14 +376,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
-            var provider = new TagHelperDescriptorProvider(null, descriptors);
+            var tagHelperBinder = new TagHelperBinder(null, descriptors);
 
             // Act
-            var divBinding = provider.GetTagHelperBinding(
+            var divBinding = tagHelperBinder.GetBinding(
                 tagName: "div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
-            var spanBinding = provider.GetTagHelperBinding(
+            var spanBinding = tagHelperBinder.GetBinding(
                 tagName: "span",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
@@ -408,10 +408,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 .TagMatchingRule(rule => rule.RequireTagName("div"))
                 .Build(); 
             var descriptors = new TagHelperDescriptor[] { divDescriptor, divDescriptor };
-            var provider = new TagHelperDescriptorProvider(null, descriptors);
+            var tagHelperBinder = new TagHelperBinder(null, descriptors);
 
             // Act
-            var bindingResult = provider.GetTagHelperBinding(
+            var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void GetTagHelperBinding_DescriptorWithMultipleRules_CorrectlySelectsMatchingRules()
+        public void GetBinding_DescriptorWithMultipleRules_CorrectlySelectsMatchingRules()
         {
             // Arrange
             var multiRuleDescriptor = TagHelperDescriptorBuilder.Create("foo", "SomeAssembly")
@@ -435,10 +435,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .RequireTagName("span"))
                 .Build();
             var descriptors = new TagHelperDescriptor[] { multiRuleDescriptor };
-            var provider = new TagHelperDescriptorProvider(null, descriptors);
+            var tagHelperBinder = new TagHelperBinder(null, descriptors);
 
             // Act
-            var binding = provider.GetTagHelperBinding(
+            var binding = tagHelperBinder.GetBinding(
                 tagName: "div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");

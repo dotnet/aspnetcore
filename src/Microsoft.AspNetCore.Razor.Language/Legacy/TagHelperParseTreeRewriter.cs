@@ -39,17 +39,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private readonly string _tagHelperPrefix;
         private readonly List<KeyValuePair<string, string>> _htmlAttributeTracker;
         private readonly StringBuilder _attributeValueBuilder;
-        private readonly TagHelperDescriptorProvider _provider;
+        private readonly TagHelperBinder _tagHelperBinder;
         private readonly Stack<TagBlockTracker> _trackerStack;
         private readonly Stack<BlockBuilder> _blockStack;
         private TagHelperBlockTracker _currentTagHelperTracker;
         private BlockBuilder _currentBlock;
         private string _currentParentTagName;
 
-        public TagHelperParseTreeRewriter(string tagHelperPrefix, TagHelperDescriptorProvider provider)
+        public TagHelperParseTreeRewriter(string tagHelperPrefix, IEnumerable<TagHelperDescriptor> descriptors)
         {
             _tagHelperPrefix = tagHelperPrefix;
-            _provider = provider;
+            _tagHelperBinder = new TagHelperBinder(tagHelperPrefix, descriptors);
             _trackerStack = new Stack<TagBlockTracker>();
             _blockStack = new Stack<BlockBuilder>();
             _attributeValueBuilder = new StringBuilder();
@@ -187,9 +187,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (!IsEndTag(tagBlock))
             {
                 // We're now in a start tag block, we first need to see if the tag block is a tag helper.
-                var providedAttributes = GetAttributeNameValuePairs(tagBlock);
+                var elementAttributes = GetAttributeNameValuePairs(tagBlock);
 
-                tagHelperBinding = _provider.GetTagHelperBinding(tagName, providedAttributes, _currentParentTagName);
+                tagHelperBinding = _tagHelperBinder.GetBinding(tagName, elementAttributes, _currentParentTagName);
 
                 // If there aren't any TagHelperDescriptors registered then we aren't a TagHelper
                 if (tagHelperBinding == null)
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
                 else
                 {
-                    tagHelperBinding = _provider.GetTagHelperBinding(
+                    tagHelperBinding = _tagHelperBinder.GetBinding(
                         tagName,
                         attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                         parentTagName: _currentParentTagName);

@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var errorSink = new ErrorSink();
             var parseResult = ParseDocument(documentContent);
             var document = parseResult.Root;
-            var parseTreeRewriter = new TagHelperParseTreeRewriter(null, provider: null);
+            var parseTreeRewriter = new TagHelperParseTreeRewriter(null, Enumerable.Empty<TagHelperDescriptor>());
 
             // Assert - Guard
             var rootBlock = Assert.IsType<Block>(document);
@@ -171,10 +171,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
         }
 
         public static TheoryData NestedVoidSelfClosingRequiredParentData
@@ -278,10 +277,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         public static TheoryData NestedRequiredParentData
@@ -354,10 +352,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .TagMatchingRule(rule => rule.RequireTagName("p"))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         [Fact]
@@ -378,11 +375,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .TagMatchingRule(rule => rule.RequireTagName("strong"))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider("th:", descriptors);
-
+            
             // Act & Assert
             EvaluateData(
-                descriptorProvider,
+                descriptors,
                 documentContent,
                 expectedOutput,
                 expectedErrors: Enumerable.Empty<RazorError>(),
@@ -687,10 +683,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .AllowChildTag("br")
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors);
         }
 
         [Fact]
@@ -727,10 +722,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .AllowChildTag("br")
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors);
         }
 
         [Fact]
@@ -764,10 +758,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagStructure(TagStructure.WithoutEndTag))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         [Fact]
@@ -801,10 +794,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagStructure(TagStructure.WithoutEndTag))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         public static TheoryData AllowedChildrenData
@@ -1042,10 +1034,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagStructure(TagStructure.WithoutEndTag))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
         }
 
         [Fact]
@@ -1066,7 +1057,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("p",
                     BlockFactory.MarkupTagBlock("</")));
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
             var expectedErrors = new[]
             {
                 new RazorError(
@@ -1078,7 +1068,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors);
         }
 
         [Fact]
@@ -1099,7 +1089,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("th:p",
                     BlockFactory.MarkupTagBlock("</")));
-            var descriptorProvider = new TagHelperDescriptorProvider("th:", descriptors);
             var expectedErrors = new[]
             {
                 new RazorError(
@@ -1111,7 +1100,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors, "th:");
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors, "th:");
         }
 
         [Fact]
@@ -1129,10 +1118,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagStructure(TagStructure.WithoutEndTag))
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         [Fact]
@@ -1161,10 +1149,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagStructure(TagStructure.WithoutEndTag))
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new[] { expectedError });
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new[] { expectedError });
         }
 
         [Fact]
@@ -1200,10 +1187,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireTagStructure(TagStructure.NormalOrSelfClosing))
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new[] { expectedError });
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new[] { expectedError });
         }
 
         public static TheoryData RequiredAttributeData
@@ -1630,10 +1616,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireAttribute(attribute => attribute.Name("catchAll")))
                     .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         public static TheoryData NestedRequiredAttributeData
@@ -1884,10 +1869,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireAttribute(attribute => attribute.Name("catchAll")))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
         }
 
         public static TheoryData MalformedRequiredAttributeData
@@ -2100,10 +2084,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .RequireAttribute(attribute => attribute.Name("class")))
                     .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
         }
 
         public static TheoryData PrefixedTagHelperBoundData
@@ -2252,12 +2235,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object availableDescriptors)
         {
-            // Arrange
-            var descriptorProvider = new TagHelperDescriptorProvider("th:", (IEnumerable<TagHelperDescriptor>)availableDescriptors);
-
             // Act & Assert
             EvaluateData(
-                descriptorProvider,
+                (IEnumerable<TagHelperDescriptor>)availableDescriptors,
                 documentContent,
                 (MarkupBlock)expectedOutput,
                 expectedErrors: Enumerable.Empty<RazorError>(),
