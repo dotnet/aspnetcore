@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             IEnumerable<string> contentMD5 = null;
-            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
 
             var body = await response.Content.ReadAsStreamAsync();
@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             IEnumerable<string> contentMD5 = null;
-            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
 
             var body = await response.Content.ReadAsStreamAsync();
@@ -506,7 +506,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             IEnumerable<string> contentMD5 = null;
-            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
 
             var body = await response.Content.ReadAsStreamAsync();
@@ -564,7 +564,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             IEnumerable<string> contentMD5 = null;
-            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
 
             var body = await response.Content.ReadAsStreamAsync();
@@ -789,7 +789,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 }
             }
             Assert.True(containsVaryAcceptEncoding);
-            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
             Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
         }
@@ -813,7 +813,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             {
                 Assert.False(response.Headers.Contains(HeaderNames.Vary));
             }
-            Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
+            Assert.NotNull(response.Content.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
             Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
         }
