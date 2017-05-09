@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 var win8Version = new Version(6, 2);
 
-                return (new Version(Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion) >= win8Version);
+                return (Environment.OSVersion.Version >= win8Version);
             }
         }
 
