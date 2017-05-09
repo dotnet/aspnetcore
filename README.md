@@ -8,7 +8,7 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 `JavaScriptServices` is a set of client-side technologies for ASP.NET Core. It provides infrastructure that you'll find useful if you:
 
--  Use Angular 2 / React / Knockout / etc.
+-  Use Angular 2 / React / Vue / Aurelia / Knockout / etc.
 -  Build your client-side resources using Webpack.
 -  Execute JavaScript on the server at runtime.
 
