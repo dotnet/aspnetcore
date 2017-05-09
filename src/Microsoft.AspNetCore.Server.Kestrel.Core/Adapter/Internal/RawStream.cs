@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
@@ -13,9 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
     public class RawStream : Stream
     {
         private readonly IPipeReader _input;
-        private readonly ISocketOutput _output;
+        private readonly IPipeWriter _output;
 
-        public RawStream(IPipeReader input, ISocketOutput output)
+        public RawStream(IPipeReader input, IPipeWriter output)
         {
             _input = input;
             _output = output;
@@ -71,19 +70,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            ArraySegment<byte> segment;
-            if (buffer != null)
-            {
-                segment = new ArraySegment<byte>(buffer, offset, count);
-            }
-            else
-            {
-                segment = default(ArraySegment<byte>);
-            }
-            _output.Write(segment);
+            WriteAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             ArraySegment<byte> segment;
             if (buffer != null)
@@ -94,17 +84,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             {
                 segment = default(ArraySegment<byte>);
             }
-            return _output.WriteAsync(segment, cancellationToken: token);
+            var output = _output.Alloc();
+            output.Write(segment);
+            await output.FlushAsync(token);
         }
 
         public override void Flush()
         {
-            _output.Flush();
+            FlushAsync(CancellationToken.None).GetAwaiter().GetResult();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            return _output.FlushAsync(cancellationToken);
+            return WriteAsync(null, 0, 0, cancellationToken);
         }
 
         private async Task<int> ReadAsync(ArraySegment<byte> buffer)
@@ -208,12 +200,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 }
             }, tcs, cancellationToken);
             return tcs.Task;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            // _output is disposed by ConnectionLifetimeControl
-            _input.Complete();
         }
     }
 }

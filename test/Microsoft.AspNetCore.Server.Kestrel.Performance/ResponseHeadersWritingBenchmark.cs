@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
@@ -113,7 +112,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var factory = new PipeFactory();
             var input = factory.Create();
             var output = factory.Create();
-            var socketOutput = new StreamSocketOutput(Stream.Null, output);
 
             var serviceContext = new ServiceContext
             {
@@ -129,18 +127,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ConnectionInformation = new MockConnectionInformation()
             };
 
-            var outputProducer = new OutputProducer(output.Writer, null, null, null);
             var frame = new TestFrame<object>(application: null, context: frameContext)
             {
                 Input = input.Reader,
-                Output = socketOutput,
-                LifetimeControl = new ConnectionLifetimeControl(null, output.Reader, outputProducer, serviceContext.Log)
             };
+            frame.Output = new OutputProducer(output.Writer, "", null);
 
             frame.Reset();
-
-            // Start writing
-            var ignore = socketOutput.WriteOutputAsync();
 
             _frame = frame;
         }

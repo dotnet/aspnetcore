@@ -6,11 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public class OutputProducer : ISocketOutput, IDisposable
+    public class OutputProducer : IDisposable
     {
         private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
 
@@ -24,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _completed = false;
 
         private readonly IPipeWriter _pipe;
-        private readonly Frame _frame;
 
         // https://github.com/dotnet/corefxlab/issues/1334
         // Pipelines don't support multiple awaiters on flush
@@ -33,16 +33,90 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly object _flushLock = new object();
         private Action _flushCompleted;
 
-        public OutputProducer(IPipeWriter pipe, Frame frame, string connectionId, IKestrelTrace log)
+        public OutputProducer(IPipeWriter pipe, string connectionId, IKestrelTrace log)
         {
             _pipe = pipe;
-            _frame = frame;
             _connectionId = connectionId;
             _log = log;
             _flushCompleted = OnFlushCompleted;
         }
 
-        public Task WriteAsync(
+        public void Write(ArraySegment<byte> buffer, bool chunk = false)
+        {
+            WriteAsync(buffer, default(CancellationToken), chunk).GetAwaiter().GetResult();
+        }
+
+        public Task WriteAsync(ArraySegment<byte> buffer, bool chunk = false, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                _cancelled = true;
+                return Task.FromCanceled(cancellationToken);
+            }
+            else if (_cancelled)
+            {
+                return TaskCache.CompletedTask;
+            }
+
+            return WriteAsync(buffer, cancellationToken, chunk);
+        }
+
+        public void Flush()
+        {
+            WriteAsync(_emptyData, default(CancellationToken)).GetAwaiter().GetResult();
+        }
+
+        public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return WriteAsync(_emptyData, cancellationToken);
+        }
+
+        public void Write<T>(Action<WritableBuffer, T> callback, T state)
+        {
+            lock (_contextLock)
+            {
+                if (_completed)
+                {
+                    return;
+                }
+
+                var buffer = _pipe.Alloc(1);
+                callback(buffer, state);
+                buffer.Commit();
+            }
+        }
+
+        public void Dispose()
+        {
+            lock (_contextLock)
+            {
+                if (_completed)
+                {
+                    return;
+                }
+
+                _log.ConnectionDisconnect(_connectionId);
+                _completed = true;
+                _pipe.Complete();
+            }
+        }
+
+        public void Abort()
+        {
+            lock (_contextLock)
+            {
+                if (_completed)
+                {
+                    return;
+                }
+
+                _log.ConnectionDisconnect(_connectionId);
+                _completed = true;
+                _pipe.Complete(new ConnectionAbortedException());
+            }
+        }
+
+        private Task WriteAsync(
             ArraySegment<byte> buffer,
             CancellationToken cancellationToken,
             bool chunk = false)
@@ -108,72 +182,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             await _flushTcs.Task;
 
-            if (cancellationToken.IsCancellationRequested)
-            {
-                _frame.Abort(error: null);
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
         }
 
         private void OnFlushCompleted()
         {
             _flushTcs.TrySetResult(null);
-        }
-
-        void ISocketOutput.Write(ArraySegment<byte> buffer, bool chunk)
-        {
-            WriteAsync(buffer, default(CancellationToken), chunk).GetAwaiter().GetResult();
-        }
-
-        Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool chunk, CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                _frame.Abort(error: null);
-                _cancelled = true;
-                return Task.FromCanceled(cancellationToken);
-            }
-            else if (_cancelled)
-            {
-                return TaskCache.CompletedTask;
-            }
-
-            return WriteAsync(buffer, cancellationToken, chunk);
-        }
-
-        void ISocketOutput.Flush()
-        {
-            WriteAsync(_emptyData, default(CancellationToken)).GetAwaiter().GetResult();
-        }
-
-        Task ISocketOutput.FlushAsync(CancellationToken cancellationToken)
-        {
-            return WriteAsync(_emptyData, cancellationToken);
-        }
-
-        void ISocketOutput.Write<T>(Action<WritableBuffer, T> callback, T state)
-        {
-            lock (_contextLock)
-            {
-                if (_completed)
-                {
-                    return;
-                }
-
-                var buffer = _pipe.Alloc(1);
-                callback(buffer, state);
-                buffer.Commit();
-            }
-        }
-
-        public void Dispose()
-        {
-            lock (_contextLock)
-            {
-                _completed = true;
-                _pipe.Complete();
-            }
         }
     }
 }

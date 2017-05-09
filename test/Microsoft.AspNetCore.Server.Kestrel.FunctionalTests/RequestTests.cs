@@ -1051,24 +1051,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Never send the body so CopyToAsync always fails.
+                    // Full request and response
                     await connection.Send(
                         "POST / HTTP/1.1",
                         "Host:",
                         "Content-Length: 5",
                         "",
-                        "HelloPOST / HTTP/1.1",
-                        "Host:",
-                        "Content-Length: 5",
-                        "",
-                        "");
+                        "Hello");
 
-                    await connection.ReceiveForcedEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 5",
                         "",
                         "World");
+
+                    // Never send the body so CopyToAsync always fails.
+                    await connection.Send("POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "");
+                    await connection.WaitForConnectionClose();
                 }
             }
 

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -77,6 +78,70 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        public async Task ImmediateFinAfterOnConnectionAsyncClosesGracefully()
+        {
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters = { new AsyncConnectionAdapter() }
+            };
+
+            var serviceContext = new TestServiceContext();
+
+            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // FIN
+                    connection.Shutdown(SocketShutdown.Send);
+                    await connection.WaitForConnectionClose();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ImmediateFinAfterThrowingClosesGracefully()
+        {
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters = { new ThrowingConnectionAdapter() }
+            };
+
+            var serviceContext = new TestServiceContext();
+
+            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // FIN
+                    connection.Shutdown(SocketShutdown.Send);
+                    await connection.WaitForConnectionClose();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ImmediateShutdownAfterOnConnectionAsyncDoesNotCrash()
+        {
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters = { new AsyncConnectionAdapter() }
+            };
+
+            var serviceContext = new TestServiceContext();
+
+            var stopTask = Task.CompletedTask;
+            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    stopTask = server.StopAsync();
+                }
+
+                await stopTask;
+            }
+        }
+
+        [Fact]
         public async Task ThrowingSynchronousConnectionAdapterDoesNotCrashServer()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -121,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             public int BytesRead => _rewritingStream.BytesRead;
-       }
+        }
 
         private class AsyncConnectionAdapter : IConnectionAdapter
         {

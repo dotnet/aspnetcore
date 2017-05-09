@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (Volatile.Read(ref _requestAborted) == 0)
                     {
                         await TryProduceInvalidRequestResponse();
-                        LifetimeControl.End(ProduceEndType.SocketShutdown);
+                        Output.Dispose();
                     }
                 }
                 catch (Exception ex)

@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
@@ -36,48 +37,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             while (true)
             {
-                var result = await _pipe.ReadAsync();
-                var buffer = result.Buffer;
-                var consumed = buffer.End;
-
                 try
                 {
-                    if (!buffer.IsEmpty)
+                    var result = await _pipe.ReadAsync();
+                    var buffer = result.Buffer;
+                    var consumed = buffer.End;
+
+                    try
                     {
-                        var writeReq = pool.Allocate();
-
-                        try
+                        if (!buffer.IsEmpty)
                         {
-                            var writeResult = await writeReq.WriteAsync(_socket, buffer);
+                            var writeReq = pool.Allocate();
 
-                            LogWriteInfo(writeResult.Status, writeResult.Error);
-
-                            if (writeResult.Error != null)
+                            try
                             {
-                                consumed = buffer.Start;
-                                throw writeResult.Error;
+                                var writeResult = await writeReq.WriteAsync(_socket, buffer);
+
+                                LogWriteInfo(writeResult.Status, writeResult.Error);
+
+                                if (writeResult.Error != null)
+                                {
+                                    consumed = buffer.Start;
+                                    throw writeResult.Error;
+                                }
+                            }
+                            finally
+                            {
+                                // Make sure we return the writeReq to the pool
+                                pool.Return(writeReq);
                             }
                         }
-                        finally
+
+                        if (buffer.IsEmpty && result.IsCompleted)
                         {
-                            // Make sure we return the writeReq to the pool
-                            pool.Return(writeReq);
+                            break;
                         }
                     }
-
-                    if (result.IsCancelled)
+                    finally
                     {
-                        break;
-                    }
-
-                    if (buffer.IsEmpty && result.IsCompleted)
-                    {
-                        break;
+                        _pipe.Advance(consumed);
                     }
                 }
-                finally
+                catch (ConnectionAbortedException)
                 {
-                    _pipe.Advance(consumed);
+                    break;
                 }
             }
         }

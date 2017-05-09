@@ -102,9 +102,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public IConnectionInformation ConnectionInformation => _frameContext.ConnectionInformation;
 
         public IPipeReader Input { get; set; }
-        public ISocketOutput Output { get; set; }
+        public OutputProducer Output { get; set; }
         public IAdaptedConnection[] AdaptedConnections { get; set; }
-        public ConnectionLifetimeControl LifetimeControl { get; set; }
         public ITimeoutControl TimeoutControl { get; set; }
 
         protected IKestrelTrace Log => ServiceContext.Log;
@@ -411,7 +410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _frameStreams?.Abort(error);
 
-                LifetimeControl.End(ProduceEndType.SocketDisconnect);
+                Output.Abort();
 
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
                 ServiceContext.ThreadPool.UnsafeRun(state => ((Frame)state).CancelRequestAbortedToken(), this);
@@ -827,7 +826,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_keepAlive)
             {
-                LifetimeControl.End(ProduceEndType.ConnectionKeepAlive);
+                Log.ConnectionKeepAlive(ConnectionId);
             }
 
             if (HttpMethods.IsHead(Method) && _responseBytesWritten > 0)
@@ -847,7 +846,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_keepAlive)
             {
-                LifetimeControl.End(ProduceEndType.ConnectionKeepAlive);
+                Log.ConnectionKeepAlive(ConnectionId);
             }
         }
 

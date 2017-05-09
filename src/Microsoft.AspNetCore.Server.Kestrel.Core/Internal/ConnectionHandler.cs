@@ -40,10 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ServiceContext = _serviceContext
             };
 
-            // TODO: Untangle this mess
             var frame = new Frame<TContext>(_application, frameContext);
-            var outputProducer = new OutputProducer(outputPipe.Writer, frame, connectionId, _serviceContext.Log);
-            frame.LifetimeControl = new ConnectionLifetimeControl(connectionId, outputPipe.Reader, outputProducer, _serviceContext.Log);
 
             var connection = new FrameConnection(new FrameConnectionContext
             {
@@ -55,7 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Frame = frame,
                 Input = inputPipe,
                 Output = outputPipe,
-                OutputProducer = outputProducer
             });
 
             _serviceContext.Log.ConnectionStart(connectionId);

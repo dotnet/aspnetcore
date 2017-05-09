@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
@@ -75,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
                 // Act
-                var writeTask = socketOutput.WriteAsync(buffer, default(CancellationToken));
+                var writeTask = socketOutput.WriteAsync(buffer);
 
                 // Assert
                 await writeTask.TimeoutAfter(TimeSpan.FromSeconds(5));
@@ -110,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
                 // Act
-                var writeTask = socketOutput.WriteAsync(buffer, default(CancellationToken));
+                var writeTask = socketOutput.WriteAsync(buffer);
 
                 // Assert
                 await writeTask.TimeoutAfter(TimeSpan.FromSeconds(5));
@@ -156,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
                 // Act
-                var writeTask = socketOutput.WriteAsync(buffer, default(CancellationToken));
+                var writeTask = socketOutput.WriteAsync(buffer);
 
                 // Assert
                 Assert.False(writeTask.IsCompleted);
@@ -211,14 +210,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
                 // Act
-                var writeTask1 = socketOutput.WriteAsync(buffer, default(CancellationToken));
+                var writeTask1 = socketOutput.WriteAsync(buffer);
 
                 // Assert
                 // The first write should pre-complete since it is <= _maxBytesPreCompleted.
                 Assert.Equal(TaskStatus.RanToCompletion, writeTask1.Status);
 
                 // Act
-                var writeTask2 = socketOutput.WriteAsync(buffer, default(CancellationToken));
+                var writeTask2 = socketOutput.WriteAsync(buffer);
                 await _mockLibuv.OnPostTask;
 
                 // Assert
@@ -275,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     var halfWriteBehindBuffer = new ArraySegment<byte>(data, 0, bufferSize);
 
                     // Act
-                    var writeTask1 = socketOutput.WriteAsync(halfWriteBehindBuffer, default(CancellationToken));
+                    var writeTask1 = socketOutput.WriteAsync(halfWriteBehindBuffer);
 
                     // Assert
                     // The first write should pre-complete since it is <= _maxBytesPreCompleted.
@@ -284,17 +283,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.NotEmpty(completeQueue);
 
                     // Add more bytes to the write-behind buffer to prevent the next write from
-                    ((ISocketOutput)socketOutput).Write((writableBuffer, state) =>
+                    socketOutput.Write((writableBuffer, state) =>
                     {
                         writableBuffer.Write(state);
                     },
                     halfWriteBehindBuffer);
 
                     // Act
-                    var writeTask2 = socketOutput.WriteAsync(halfWriteBehindBuffer, default(CancellationToken));
+                    var writeTask2 = socketOutput.WriteAsync(halfWriteBehindBuffer);
                     Assert.False(writeTask2.IsCompleted);
 
-                    var writeTask3 = socketOutput.WriteAsync(halfWriteBehindBuffer, default(CancellationToken));
+                    var writeTask3 = socketOutput.WriteAsync(halfWriteBehindBuffer);
                     Assert.False(writeTask3.IsCompleted);
 
                     // Drain the write queue
@@ -345,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
 
                     // Act
-                    var task1Success = socketOutput.WriteAsync(fullBuffer, abortedSource.Token);
+                    var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
                     // task1 should complete successfully as < _maxBytesPreCompleted
 
                     // First task is completed and successful
@@ -354,8 +353,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.False(task1Success.IsFaulted);
 
                     // following tasks should wait.
-                    var task2Success = socketOutput.WriteAsync(fullBuffer, default(CancellationToken));
-                    var task3Canceled = socketOutput.WriteAsync(fullBuffer, abortedSource.Token);
+                    var task2Success = socketOutput.WriteAsync(fullBuffer);
+                    var task3Canceled = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
 
                     // Give time for tasks to percolate
                     await _mockLibuv.OnPostTask;
@@ -383,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                     // A final write guarantees that the error is observed by OutputProducer,
                     // but doesn't return a canceled/faulted task.
-                    var task4Success = socketOutput.WriteAsync(fullBuffer, default(CancellationToken));
+                    var task4Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
                     Assert.True(task4Success.IsCompleted);
                     Assert.False(task4Success.IsCanceled);
                     Assert.False(task4Success.IsFaulted);
@@ -429,7 +428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
 
                     // Act
-                    var task1Success = socketOutput.WriteAsync(fullBuffer, abortedSource.Token);
+                    var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
                     // task1 should complete successfully as < _maxBytesPreCompleted
 
                     // First task is completed and successful
@@ -438,7 +437,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.False(task1Success.IsFaulted);
 
                     // following tasks should wait.
-                    var task3Canceled = socketOutput.WriteAsync(fullBuffer, abortedSource.Token);
+                    var task3Canceled = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
 
                     // Give time for tasks to percolate
                     await _mockLibuv.OnPostTask;
@@ -458,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                     // A final write guarantees that the error is observed by OutputProducer,
                     // but doesn't return a canceled/faulted task.
-                    var task4Success = socketOutput.WriteAsync(fullBuffer, default(CancellationToken));
+                    var task4Success = socketOutput.WriteAsync(fullBuffer);
                     Assert.True(task4Success.IsCompleted);
                     Assert.False(task4Success.IsCanceled);
                     Assert.False(task4Success.IsFaulted);
@@ -504,7 +503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
 
                     // Act
-                    var task1Waits = socketOutput.WriteAsync(fullBuffer, default(CancellationToken));
+                    var task1Waits = socketOutput.WriteAsync(fullBuffer);
 
                     // First task is not completed
                     Assert.False(task1Waits.IsCompleted);
@@ -512,7 +511,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.False(task1Waits.IsFaulted);
 
                     // following tasks should wait.
-                    var task3Canceled = socketOutput.WriteAsync(fullBuffer, abortedSource.Token);
+                    var task3Canceled = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
 
                     // Give time for tasks to percolate
                     await _mockLibuv.OnPostTask;
@@ -537,7 +536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                     // A final write guarantees that the error is observed by OutputProducer,
                     // but doesn't return a canceled/faulted task.
-                    var task4Success = socketOutput.WriteAsync(fullBuffer, default(CancellationToken));
+                    var task4Success = socketOutput.WriteAsync(fullBuffer);
                     Assert.True(task4Success.IsCompleted);
                     Assert.False(task4Success.IsCanceled);
                     Assert.False(task4Success.IsFaulted);
@@ -575,7 +574,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
                 // Act (Pre-complete the maximum number of bytes in preparation for the rest of the test)
-                var writeTask1 = socketOutput.WriteAsync(buffer, default(CancellationToken));
+                var writeTask1 = socketOutput.WriteAsync(buffer);
 
                 // Assert
                 // The first write should pre-complete since it is < _maxBytesPreCompleted.
@@ -584,8 +583,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 Assert.NotEmpty(completeQueue);
 
                 // Act
-                var writeTask2 = socketOutput.WriteAsync(buffer, default(CancellationToken));
-                var writeTask3 = socketOutput.WriteAsync(buffer, default(CancellationToken));
+                var writeTask2 = socketOutput.WriteAsync(buffer);
+                var writeTask3 = socketOutput.WriteAsync(buffer);
 
                 // Drain the write queue
                 while (completeQueue.TryDequeue(out var triggerNextCompleted))
@@ -635,8 +634,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 // Two calls to WriteAsync trigger uv_write once if both calls
                 // are made before write is scheduled
-                var ignore = socketOutput.WriteAsync(buffer, CancellationToken.None);
-                ignore = socketOutput.WriteAsync(buffer, CancellationToken.None);
+                var ignore = socketOutput.WriteAsync(buffer);
+                ignore = socketOutput.WriteAsync(buffer);
 
                 _mockLibuv.KestrelThreadBlocker.Set();
 
@@ -671,10 +670,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var frame = new Frame<object>(null, new FrameContext { ServiceContext = serviceContext });
 
             var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, transportContext.Log);
-            var socketOutput = new OutputProducer(pipe.Writer, frame, "0", serviceContext.Log);
+            var outputProducer = new OutputProducer(pipe.Writer, "0", serviceContext.Log);
             var consumer = new LibuvOutputConsumer(pipe.Reader, _libuvThread, socket, "0", transportContext.Log);
-
-            frame.LifetimeControl = new ConnectionLifetimeControl("0", pipe.Reader, socketOutput, serviceContext.Log);
+            frame.Output = outputProducer;
 
             if (cts != null)
             {
@@ -683,7 +681,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var ignore = WriteOutputAsync(consumer, pipe.Reader, frame);
 
-            return socketOutput;
+            return outputProducer;
         }
 
         private async Task WriteOutputAsync(LibuvOutputConsumer consumer, IPipeReader outputReader, Frame frame)

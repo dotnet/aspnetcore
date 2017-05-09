@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -106,6 +107,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public TestConnection CreateConnection()
         {
             return new TestConnection(Port, AddressFamily);
+        }
+
+        public Task StopAsync()
+        {
+            return _host.StopAsync();
         }
 
         public void Dispose()

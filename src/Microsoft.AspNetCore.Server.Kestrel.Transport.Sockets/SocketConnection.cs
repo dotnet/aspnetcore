@@ -216,6 +216,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 error = null;
             }
+            catch (ConnectionAbortedException)
+            {
+                error = null;
+            }
             catch (IOException ex)
             {
                 error = ex;

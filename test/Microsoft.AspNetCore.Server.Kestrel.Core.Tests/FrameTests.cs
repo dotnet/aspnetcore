@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _pipelineFactory = new PipeFactory();
             _input = _pipelineFactory.Create();
+            var output = _pipelineFactory.Create();
 
             _serviceContext = new TestServiceContext();
 
@@ -66,9 +67,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frame = new TestFrame<object>(application: null, context: _frameContext)
             {
                 Input = _input.Reader,
-                Output = new MockSocketOutput(),
                 TimeoutControl = Mock.Of<ITimeoutControl>()
             };
+
+            _frame.Output = new OutputProducer(output.Writer, "", Mock.Of<IKestrelTrace>());
 
             _frame.Reset();
         }

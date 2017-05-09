@@ -87,7 +87,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private TestFrame<object> MakeFrame()
         {
-            var socketInput = new PipeFactory().Create();
+            var factory = new PipeFactory();
+            var input = factory.Create();
+            var output = factory.Create();
 
             var serviceContext = new ServiceContext
             {
@@ -104,9 +106,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             var frame = new TestFrame<object>(application: null, context: frameContext)
             {
-                Input = socketInput.Reader,
-                Output = new MockSocketOutput()
+                Input = input.Reader,
             };
+
+            frame.Output = new OutputProducer(output.Writer, "", null);
 
             frame.Reset();
 

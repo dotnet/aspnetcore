@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
@@ -15,77 +15,149 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
     {
         private const int MinAllocBufferSize = 2048;
 
-        private readonly Stream _filteredStream;
-        private readonly StreamSocketOutput _output;
         private readonly IKestrelTrace _trace;
+        private readonly IPipeWriter _transportOutputPipeWriter;
+        private readonly IPipeReader _transportInputPipeReader;
 
-        public AdaptedPipeline(
-            Stream filteredStream,
-            IPipe inputPipe,
-            IPipe outputPipe,
-            IKestrelTrace trace)
+        public AdaptedPipeline(IPipeReader transportInputPipeReader,
+                               IPipeWriter transportOutputPipeWriter,
+                               IPipe inputPipe,
+                               IPipe outputPipe,
+                               IKestrelTrace trace)
         {
+            _transportInputPipeReader = transportInputPipeReader;
+            _transportOutputPipeWriter = transportOutputPipeWriter;
             Input = inputPipe;
-            _output = new StreamSocketOutput(filteredStream, outputPipe);
-            _filteredStream = filteredStream;
+            Output = outputPipe;
             _trace = trace;
         }
 
         public IPipe Input { get; }
 
-        public ISocketOutput Output => _output;
+        public IPipe Output { get; }
 
-        public async Task RunAsync()
+        public async Task RunAsync(Stream stream)
         {
-            try
-            {
-                var inputTask = ReadInputAsync();
-                var outputTask = _output.WriteOutputAsync();
+            var inputTask = ReadInputAsync(stream);
+            var outputTask = WriteOutputAsync(stream);
 
-                await inputTask;
-
-                _output.Dispose();
-
-                await outputTask;
-            }
-            catch (Exception ex)
-            {
-                // adaptedPipeline.RunAsync() shouldn't throw, unless filtered stream's WriteAsync throws.
-                _trace.LogError(0, ex, $"{nameof(AdaptedPipeline)}.{nameof(RunAsync)}");
-            }
+            await inputTask;
+            await outputTask;
         }
 
-        private async Task ReadInputAsync()
+        private async Task WriteOutputAsync(Stream stream)
         {
-            int bytesRead;
+            Exception error = null;
 
-            do
+            try
             {
-                var block = Input.Writer.Alloc(MinAllocBufferSize);
-
-                try
+                if (stream == null)
                 {
-                    var array = block.Buffer.GetArray();
+                    return;
+                }
+
+                while (true)
+                {
+                    var readResult = await Output.Reader.ReadAsync();
+                    var buffer = readResult.Buffer;
+
                     try
                     {
-                        bytesRead = await _filteredStream.ReadAsync(array.Array, array.Offset, array.Count);
-                        block.Advance(bytesRead);
+                        if (buffer.IsEmpty && readResult.IsCompleted)
+                        {
+                            break;
+                        }
+
+                        if (buffer.IsEmpty)
+                        {
+                            await stream.FlushAsync();
+                        }
+                        else if (buffer.IsSingleSpan)
+                        {
+                            var array = buffer.First.GetArray();
+                            await stream.WriteAsync(array.Array, array.Offset, array.Count);
+                        }
+                        else
+                        {
+                            foreach (var memory in buffer)
+                            {
+                                var array = memory.GetArray();
+                                await stream.WriteAsync(array.Array, array.Offset, array.Count);
+                            }
+                        }
                     }
                     finally
                     {
-                        await block.FlushAsync();
+                        Output.Reader.Advance(buffer.End);
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                error = ex;
+            }
+            finally
+            {
+                Output.Reader.Complete();
+                _transportOutputPipeWriter.Complete(error);
+            }
+        }
+
+        private async Task ReadInputAsync(Stream stream)
+        {
+            Exception error = null;
+
+            try
+            {
+                if (stream == null)
                 {
-                    Input.Writer.Complete(ex);
-
-                    // Don't rethrow the exception. It should be handled by the Pipeline consumer.
-                    return;
+                    // If the stream is null then we're going to abort the connection
+                    throw new ConnectionAbortedException();
                 }
-            } while (bytesRead != 0);
 
-            Input.Writer.Complete();
+                while (true)
+                {
+
+                    var outputBuffer = Input.Writer.Alloc(MinAllocBufferSize);
+
+                    var array = outputBuffer.Buffer.GetArray();
+                    try
+                    {
+                        var bytesRead = await stream.ReadAsync(array.Array, array.Offset, array.Count);
+                        outputBuffer.Advance(bytesRead);
+
+                        if (bytesRead == 0)
+                        {
+                            // FIN
+                            break;
+                        }
+                    }
+                    finally
+                    {
+                        outputBuffer.Commit();
+                    }
+
+                    var result = await outputBuffer.FlushAsync();
+
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't rethrow the exception. It should be handled by the Pipeline consumer.
+                error = ex;
+            }
+            finally
+            {
+                Input.Writer.Complete(error);
+                // The application could have ended the input pipe so complete
+                // the transport pipe as well
+                _transportInputPipeReader.Complete();
+            }
         }
     }
 }

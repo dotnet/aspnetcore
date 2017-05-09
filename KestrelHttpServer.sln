@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26405.0
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7972A5D6-3385-4127-9277-428506DD44FF}"
 	ProjectSection(SolutionItems) = preProject
@@ -26,7 +26,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0EF2AC
 		test\shared\LifetimeNotImplemented.cs = test\shared\LifetimeNotImplemented.cs
 		test\shared\MockFrameControl.cs = test\shared\MockFrameControl.cs
 		test\shared\MockLogger.cs = test\shared\MockLogger.cs
-		test\shared\MockSocketOutput.cs = test\shared\MockSocketOutput.cs
 		test\shared\MockSystemClock.cs = test\shared\MockSystemClock.cs
 		test\shared\StringExtensions.cs = test\shared\StringExtensions.cs
 		test\shared\TestApp.cs = test\shared\TestApp.cs
