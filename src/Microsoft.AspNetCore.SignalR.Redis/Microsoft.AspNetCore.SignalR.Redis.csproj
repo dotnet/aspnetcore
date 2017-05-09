@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />
-    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="StackExchange.Redis.StrongName" Version="$(RedisVersion)" />
   </ItemGroup>
 

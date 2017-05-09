@@ -3,43 +3,37 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
     public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub>
     {
+        private long _nextInvocationId = 0;
         private readonly ConnectionList _connections = new ConnectionList();
-        private readonly InvocationAdapterRegistry _registry;
-
-        public DefaultHubLifetimeManager(InvocationAdapterRegistry registry)
-        {
-            _registry = registry;
-        }
 
         public override Task AddGroupAsync(Connection connection, string groupName)
         {
-            var groups = connection.Metadata.GetOrAdd("groups", _ => new HashSet<string>());
+            var groups = connection.Metadata.GetOrAdd(HubConnectionMetadataNames.Groups, _ => new HashSet<string>());
 
             lock (groups)
             {
                 groups.Add(groupName);
             }
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public override Task RemoveGroupAsync(Connection connection, string groupName)
         {
-            var groups = connection.Metadata.Get<HashSet<string>>("groups");
+            var groups = connection.Metadata.Get<HashSet<string>>(HubConnectionMetadataNames.Groups);
 
             if (groups == null)
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             lock (groups)
@@ -47,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR
                 groups.Remove(groupName);
             }
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public override Task InvokeAllAsync(string methodName, object[] args)
@@ -58,11 +52,7 @@ namespace Microsoft.AspNetCore.SignalR
         private Task InvokeAllWhere(string methodName, object[] args, Func<Connection, bool> include)
         {
             var tasks = new List<Task>(_connections.Count);
-            var message = new InvocationDescriptor
-            {
-                Method = methodName,
-                Arguments = args
-            };
+            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
 
             // TODO: serialize once per format by providing a different stream?
             foreach (var connection in _connections)
@@ -72,9 +62,7 @@ namespace Microsoft.AspNetCore.SignalR
                     continue;
                 }
 
-                var invocationAdapter = _registry.GetInvocationAdapter(connection.Metadata.Get<string>("formatType"));
-
-                tasks.Add(WriteAsync(connection, invocationAdapter, message));
+                tasks.Add(WriteAsync(connection, message));
             }
 
             return Task.WhenAll(tasks);
@@ -84,22 +72,16 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var connection = _connections[connectionId];
 
-            var invocationAdapter = _registry.GetInvocationAdapter(connection.Metadata.Get<string>("formatType"));
+            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
 
-            var message = new InvocationDescriptor
-            {
-                Method = methodName,
-                Arguments = args
-            };
-
-            return WriteAsync(connection, invocationAdapter, message);
+            return WriteAsync(connection, message);
         }
 
         public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
         {
             return InvokeAllWhere(methodName, args, connection =>
             {
-                var groups = connection.Metadata.Get<HashSet<string>>("groups");
+                var groups = connection.Metadata.Get<HashSet<string>>(HubConnectionMetadataNames.Groups);
                 return groups?.Contains(groupName) == true;
             });
         }
@@ -115,21 +97,20 @@ namespace Microsoft.AspNetCore.SignalR
         public override Task OnConnectedAsync(Connection connection)
         {
             _connections.Add(connection);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public override Task OnDisconnectedAsync(Connection connection)
         {
             _connections.Remove(connection);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
-        private static async Task WriteAsync(Connection connection, IInvocationAdapter invocationAdapter, InvocationDescriptor invocation)
+        private async Task WriteAsync(Connection connection, HubMessage hubMessage)
         {
-            var stream = new MemoryStream();
-            await invocationAdapter.WriteMessageAsync(invocation, stream);
-
-            var message = new Message(stream.ToArray(), MessageType.Text, endOfMessage: true);
+            var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
+            var payload = await protocol.WriteToArrayAsync(hubMessage);
+            var message = new Message(payload, protocol.MessageType, endOfMessage: true);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {
@@ -138,6 +119,12 @@ namespace Microsoft.AspNetCore.SignalR
                     break;
                 }
             }
+        }
+
+        private string GetInvocationId()
+        {
+            var invocationId = Interlocked.Increment(ref _nextInvocationId);
+            return invocationId.ToString();
         }
     }
 }

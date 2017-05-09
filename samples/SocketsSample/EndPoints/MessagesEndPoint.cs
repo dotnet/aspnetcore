@@ -17,7 +17,7 @@ namespace SocketsSample.EndPoints
         {
             Connections.Add(connection);
 
-            await Broadcast($"{connection.ConnectionId} connected ({connection.Metadata["transport"]})");
+            await Broadcast($"{connection.ConnectionId} connected ({connection.Metadata[ConnectionMetadataNames.Transport]})");
 
             try
             {
@@ -37,7 +37,7 @@ namespace SocketsSample.EndPoints
             {
                 Connections.Remove(connection);
 
-                await Broadcast($"{connection.ConnectionId} disconnected ({connection.Metadata["transport"]})");
+                await Broadcast($"{connection.ConnectionId} disconnected ({connection.Metadata[ConnectionMetadataNames.Transport]})");
             }
         }
 

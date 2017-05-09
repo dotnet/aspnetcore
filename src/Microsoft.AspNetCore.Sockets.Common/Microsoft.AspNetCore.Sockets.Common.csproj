@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="../Common/IOutputExtensions.cs" Link="IOutputExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Binary.Base64" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.IO.Pipelines.Extensions" Version="$(CoreFxLabsVersion)" />

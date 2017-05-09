@@ -3,16 +3,31 @@ import { IConnection } from "./IConnection"
 import { Connection } from "./Connection"
 import { TransportType } from "./Transports"
 
-interface InvocationDescriptor {
-    readonly Id: string;
-    readonly Method: string;
-    readonly Arguments: Array<any>;
+
+const enum MessageType {
+    Invocation = 1,
+    Result,
+    Completion
 }
 
-interface InvocationResultDescriptor {
-    readonly Id: string;
-    readonly Error: string;
-    readonly Result: any;
+interface HubMessage {
+    readonly type: MessageType;
+    readonly invocationId: string;
+}
+
+interface InvocationMessage extends HubMessage {
+    readonly target: string;
+    readonly arguments: Array<any>;
+    readonly nonblocking?: boolean;
+}
+
+interface ResultMessage extends HubMessage {
+    readonly result?: any;
+}
+
+interface CompletionMessage extends HubMessage {
+    readonly error?: string;
+    readonly result?: any;
 }
 
 export { Connection } from "./Connection"
@@ -20,7 +35,7 @@ export { TransportType } from "./Transports"
 
 export class HubConnection {
     private connection: IConnection;
-    private callbacks: Map<string, (invocationDescriptor: InvocationResultDescriptor) => void>;
+    private callbacks: Map<string, (invocationUpdate: CompletionMessage|ResultMessage) => void>;
     private methods: Map<string, (...args: any[]) => void>;
     private id: number;
     private connectionClosedCallback: ConnectionClosed;
@@ -40,7 +55,7 @@ export class HubConnection {
             this.onConnectionClosed(error);
         }
 
-        this.callbacks = new Map<string, (invocationDescriptor: InvocationResultDescriptor) => void>();
+        this.callbacks = new Map<string, (invocationEvent: CompletionMessage|ResultMessage) => void>();
         this.methods = new Map<string, (...args: any[]) => void>();
         this.id = 0;
     }
@@ -51,34 +66,49 @@ export class HubConnection {
         if (!data) {
             return;
         }
-        var descriptor = JSON.parse(data);
-        if (descriptor.Method === undefined) {
-            let invocationResult: InvocationResultDescriptor = descriptor;
-            let callback = this.callbacks.get(invocationResult.Id);
-            if (callback != null) {
-                callback(invocationResult);
-                this.callbacks.delete(invocationResult.Id);
+
+        var message = JSON.parse(data);
+        switch (message.type) {
+            case MessageType.Invocation:
+                this.InvokeClientMethod(<InvocationMessage>message);
+                break;
+            case MessageType.Result:
+            // TODO: Streaming (MessageType.Result) currently not supported - callback will throw
+            case MessageType.Completion:
+                let callback = this.callbacks.get(message.invocationId);
+                if (callback != null) {
+                    callback(message);
+                    this.callbacks.delete(message.invocationId);
+                }
+                break;
+            default:
+                console.log("Invalid message type: " + data);
+                break;
+        }
+    }
+
+    private InvokeClientMethod(invocationMessage: InvocationMessage) {
+        let method = this.methods.get(invocationMessage.target);
+        if (method) {
+            method.apply(this, invocationMessage.arguments);
+            if (!invocationMessage.nonblocking) {
+                // TODO: send result back to the server?
             }
         }
         else {
-            let invocation: InvocationDescriptor = descriptor;
-            let method = this.methods[invocation.Method];
-            if (method != null) {
-                // TODO: bind? args?
-                method.apply(this, invocation.Arguments);
-            }
+            console.log(`No client method with the name '${invocationMessage.target}' found.`);
         }
     }
 
     private onConnectionClosed(error: Error) {
-        let errorInvocationResult = {
-            Id: "-1",
-            Error: error ? error.message : "Invocation cancelled due to connection being closed.",
-            Result: null
-        } as InvocationResultDescriptor;
+        let errorCompletionMessage = <CompletionMessage>{
+            type: MessageType.Completion,
+            invocationId: "-1",
+            error: error ? error.message : "Invocation cancelled due to connection being closed.",
+        };
 
         this.callbacks.forEach(callback => {
-            callback(errorInvocationResult);
+            callback(errorCompletionMessage);
         });
         this.callbacks.clear();
 
@@ -99,19 +129,27 @@ export class HubConnection {
         let id = this.id;
         this.id++;
 
-        let invocationDescriptor: InvocationDescriptor = {
-            "Id": id.toString(),
-            "Method": methodName,
-            "Arguments": args
+        let invocationDescriptor: InvocationMessage = {
+            type: MessageType.Invocation,
+            invocationId: id.toString(),
+            target: methodName,
+            arguments: args,
+            nonblocking: false
         };
 
         let p = new Promise<any>((resolve, reject) => {
-            this.callbacks.set(invocationDescriptor.Id, (invocationResult: InvocationResultDescriptor) => {
-                if (invocationResult.Error != null) {
-                    reject(new Error(invocationResult.Error));
+            this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: CompletionMessage | ResultMessage) => {
+                if (invocationEvent.type === MessageType.Completion) {
+                    let completionMessage = <CompletionMessage>invocationEvent;
+                    if (completionMessage.error) {
+                        reject(new Error(completionMessage.error));
+                    }
+                    else {
+                        resolve(completionMessage.result);
+                    }
                 }
                 else {
-                    resolve(invocationResult.Result);
+                    reject(new Error("Streaming is not supported."))
                 }
             });
 
@@ -119,7 +157,7 @@ export class HubConnection {
             this.connection.send(JSON.stringify(invocationDescriptor))
                 .catch(e => {
                     reject(e);
-                    this.callbacks.delete(invocationDescriptor.Id);
+                    this.callbacks.delete(invocationDescriptor.invocationId);
                 });
         });
 
@@ -127,7 +165,7 @@ export class HubConnection {
     }
 
     on(methodName: string, method: (...args: any[]) => void) {
-        this.methods[methodName] = method;
+        this.methods.set(methodName, method);
     }
 
     set onClosed(callback: ConnectionClosed) {

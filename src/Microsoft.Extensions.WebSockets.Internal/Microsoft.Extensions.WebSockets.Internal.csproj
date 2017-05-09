@@ -17,7 +17,6 @@
     <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.IO.Pipelines.Text.Primitives" Version="$(CoreFxLabsVersion)" />
-    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

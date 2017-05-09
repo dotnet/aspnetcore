@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class EndpointDependencyInjectionExtensions
+    public static class EndPointDependencyInjectionExtensions
     {
         public static IServiceCollection AddEndPoint<TEndPoint>(this IServiceCollection services) where TEndPoint : EndPoint
         {

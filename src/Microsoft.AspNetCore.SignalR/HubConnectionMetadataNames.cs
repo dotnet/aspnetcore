@@ -1,13 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.AspNetCore.SignalR
 {
-    public interface IInvocationBinder
+    public static class HubConnectionMetadataNames
     {
-        Type GetReturnType(string invocationId);
-        Type[] GetParameterTypes(string methodName);
+        public static readonly string HubProtocol = nameof(HubProtocol);
+        public static readonly string Groups = nameof(Groups);
     }
 }

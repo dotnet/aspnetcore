@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             // Is this a frame we care about?
             if (!frame.Opcode.IsMessage())
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             LogFrame("Receiving", frame);

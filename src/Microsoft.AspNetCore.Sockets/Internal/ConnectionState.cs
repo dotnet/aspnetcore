@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
 
         public async Task DisposeAsync()
         {
-            Task disposeTask = TaskCache.CompletedTask;
+            Task disposeTask = Task.CompletedTask;
 
             try
             {
@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal
                     Connection.Dispose();
                     Application.Dispose();
 
-                    var applicationTask = ApplicationTask ?? TaskCache.CompletedTask;
-                    var transportTask = TransportTask ?? TaskCache.CompletedTask;
+                    var applicationTask = ApplicationTask ?? Task.CompletedTask;
+                    var transportTask = TransportTask ?? Task.CompletedTask;
 
                     disposeTask = WaitOnTasks(applicationTask, transportTask);
                 }
