@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace CookieSessionSample
 {
@@ -9,6 +9,11 @@ namespace CookieSessionSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Information);
+                })
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace CookieSessionSample
 {
@@ -18,10 +17,8 @@ namespace CookieSessionSample
             services.AddCookieAuthentication(o => o.SessionStore = new MemoryCacheTicketStore());
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerfactory.AddConsole(LogLevel.Information);
-
             app.UseAuthentication();
 
             app.Run(async context =>

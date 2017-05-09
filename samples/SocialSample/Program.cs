@@ -4,8 +4,8 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 
 namespace SocialSample
 {
@@ -14,6 +14,11 @@ namespace SocialSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddConsole();
+                    factory.AddFilter("Console", level => level >= LogLevel.Information);
+                })
                 .UseKestrel(options =>
                 {
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))

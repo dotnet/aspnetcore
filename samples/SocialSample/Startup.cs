@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace SocialSample
@@ -209,10 +208,8 @@ namespace SocialSample
             });
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerfactory.AddConsole(LogLevel.Information);
-
             app.UseDeveloperExceptionPage();
 
             app.UseAuthentication();

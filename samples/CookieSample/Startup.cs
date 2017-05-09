@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace CookieSample
 {
@@ -17,10 +16,8 @@ namespace CookieSample
             services.AddCookieAuthentication();
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerfactory.AddConsole(LogLevel.Information);
-
             app.UseAuthentication();
 
             app.Run(async context =>

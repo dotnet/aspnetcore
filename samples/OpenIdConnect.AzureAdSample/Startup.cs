@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -79,10 +78,8 @@ namespace OpenIdConnect.AzureAdSample
             });
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerfactory.AddConsole(Microsoft.Extensions.Logging.LogLevel.Information);
-
             app.UseDeveloperExceptionPage();
 
             app.UseAuthentication();
