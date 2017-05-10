@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
 
@@ -13,8 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Security.Principal" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
