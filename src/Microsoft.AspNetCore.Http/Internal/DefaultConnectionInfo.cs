@@ -39,6 +39,13 @@ namespace Microsoft.AspNetCore.Http.Internal
         private ITlsConnectionFeature TlsConnectionFeature=>
             _features.Fetch(ref _features.Cache.TlsConnection, _newTlsConnectionFeature);
 
+        /// <inheritdoc />
+        public override string Id
+        {
+            get { return HttpConnectionFeature.ConnectionId; }
+            set { HttpConnectionFeature.ConnectionId = value; }
+        }
+
         public override IPAddress RemoteIpAddress
         {
             get { return HttpConnectionFeature.RemoteIpAddress; }

@@ -10,6 +10,11 @@ namespace Microsoft.AspNetCore.Http
 {
     public abstract class ConnectionInfo
     {
+        /// <summary>
+        /// Gets or sets a unique identifier to represent this connection.
+        /// </summary>
+        public abstract string Id { get; set; }
+
         public abstract IPAddress RemoteIpAddress { get; set; }
 
         public abstract int RemotePort { get; set; }
