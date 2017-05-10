@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\build\common.props" />
   <PropertyGroup>
     <Description>ASP.NET Core middleware that enables an application to support the OpenID Connect authentication workflow.</Description>
@@ -13,6 +13,5 @@
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(IdentityModelOpenIdVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>

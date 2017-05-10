@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
   <PropertyGroup>
@@ -13,7 +13,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
   </ItemGroup>
   <ItemGroup>

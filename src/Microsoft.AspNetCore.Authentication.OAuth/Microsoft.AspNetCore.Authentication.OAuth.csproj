@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
 
@@ -15,10 +15,6 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Authentication\Microsoft.AspNetCore.Authentication.csproj" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
