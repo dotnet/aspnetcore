@@ -8,24 +8,23 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class TagHelperBinderSyntaxTreePass : IRazorSyntaxTreePass
+    internal class DefaultRazorTagHelperBinderPhase : RazorEnginePhaseBase, IRazorTagHelperBinderPhase
     {
         private static HashSet<char> InvalidNonWhitespaceNameCharacters = new HashSet<char>(new[]
         {
             '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*'
         });
 
-        public RazorEngine Engine { get; set; }
-
-        public int Order => 150;
-
-        public RazorSyntaxTree Execute(RazorCodeDocument codeDocument, RazorSyntaxTree syntaxTree)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            ThrowForMissingDependency(syntaxTree);
+
             var resolver = Engine.Features.OfType<ITagHelperFeature>().FirstOrDefault()?.Resolver;
             if (resolver == null)
             {
                 // No resolver, nothing to do.
-                return syntaxTree;
+                return;
             }
 
             // We need to find directives in all of the *imports* as well as in the main razor file
@@ -63,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 if (errorSink.Errors.Count == 0 && errorList.Count == 0)
                 {
                     // No TagHelpers and errors, no op.
-                    return syntaxTree;
+                    return;
                 }
             }
             else
@@ -80,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var diagnostics = CombineErrors(syntaxTree.Diagnostics, errorList);
 
             var newSyntaxTree = RazorSyntaxTree.Create(root, syntaxTree.Source, diagnostics, syntaxTree.Options);
-            return newSyntaxTree;
+            codeDocument.SetSyntaxTree(newSyntaxTree);
         }
 
         // Internal for testing

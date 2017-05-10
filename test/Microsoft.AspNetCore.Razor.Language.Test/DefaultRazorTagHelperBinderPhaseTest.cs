@@ -3,15 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
-using System.Linq;
 using Moq;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class TagHelperBinderSyntaxTreePassTest
+    public class DefaultRazorTagHelperBinderPhaseTest
     {
         [Fact]
         public void Execute_CanHandleSingleLengthAddTagHelperDirective()
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.AddTagHelpers(new TagHelperDescriptor[0]);
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -47,11 +47,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
             Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
         }
 
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.AddTagHelpers(new TagHelperDescriptor[0]);
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -89,11 +91,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
             Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
         }
 
@@ -106,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.AddTagHelpers(new TagHelperDescriptor[0]);
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -131,11 +135,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
             Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
         }
 
@@ -158,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 });
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -166,11 +172,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = CreateTestSourceDocument();
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
             Assert.Empty(rewrittenTree.Diagnostics);
             Assert.Equal(3, rewrittenTree.Root.Children.Count);
             var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
@@ -205,7 +213,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.AddTagHelpers(new[] { descriptor });
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -218,11 +226,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
             Assert.Empty(rewrittenTree.Diagnostics);
             Assert.Equal(3, rewrittenTree.Root.Children.Count);
 
@@ -256,7 +266,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.AddTagHelpers(new[] { descriptor });
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -269,11 +279,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var rewrittenTree = codeDocument.GetSyntaxTree();
             Assert.Empty(rewrittenTree.Diagnostics);
             Assert.Equal(3, rewrittenTree.Root.Children.Count);
 
@@ -287,18 +299,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var engine = RazorEngine.Create();
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
             var sourceDocument = CreateTestSourceDocument();
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var outputTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var outputTree = codeDocument.GetSyntaxTree();
             Assert.Empty(outputTree.Diagnostics);
             Assert.Same(originalTree, outputTree);
         }
@@ -311,18 +325,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 builder.Features.Add(Mock.Of<ITagHelperFeature>());
             });
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
             var sourceDocument = CreateTestSourceDocument();
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var outputTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var outputTree = codeDocument.GetSyntaxTree();
             Assert.Empty(outputTree.Diagnostics);
             Assert.Same(originalTree, outputTree);
         }
@@ -336,7 +352,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.Features.Add(new TestTagHelperFeature());
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -345,11 +361,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = TestRazorSourceDocument.Create("Hello, world");
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var outputTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var outputTree = codeDocument.GetSyntaxTree();
             Assert.Empty(outputTree.Diagnostics);
             Assert.Same(originalTree, outputTree);
         }
@@ -363,7 +381,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.Features.Add(new TestTagHelperFeature());
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -372,9 +390,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = TestRazorSourceDocument.Create("Hello, world");
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var outputTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
             var context = codeDocument.GetTagHelperContext();
@@ -393,7 +412,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.Features.Add(Mock.Of<ITagHelperFeature>(f => f.Resolver == resolver));
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -408,11 +427,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                 originalTree.Source,
                 new[] { initialError },
                 originalTree.Options);
+            codeDocument.SetSyntaxTree(erroredOriginalTree);
 
             // Act
-            var outputTree = pass.Execute(codeDocument, erroredOriginalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var outputTree = codeDocument.GetSyntaxTree();
             Assert.Empty(originalTree.Diagnostics);
             Assert.NotSame(erroredOriginalTree, outputTree);
             Assert.Equal(new[] { initialError, resolverError }, outputTree.Diagnostics);
@@ -431,7 +452,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var descriptorError = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedTagNameNullOrWhitespace();
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -439,11 +460,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = CreateTestSourceDocument();
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            codeDocument.SetSyntaxTree(originalTree);
 
             // Act
-            var outputTree = pass.Execute(codeDocument, originalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var outputTree = codeDocument.GetSyntaxTree();
             Assert.Empty(originalTree.Diagnostics);
             Assert.Equal(new[] { resolverError, descriptorError }, outputTree.Diagnostics);
         }
@@ -467,7 +490,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 });
             });
 
-            var pass = new TagHelperBinderSyntaxTreePass()
+            var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = engine,
             };
@@ -490,11 +513,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                     length: 4));
 
             var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, originalTree.Source, new[] { initialError }, originalTree.Options);
+            codeDocument.SetSyntaxTree(erroredOriginalTree);
 
             // Act
-            var outputTree = pass.Execute(codeDocument, erroredOriginalTree);
+            phase.Execute(codeDocument);
 
             // Assert
+            var outputTree = codeDocument.GetSyntaxTree();
             Assert.Empty(originalTree.Diagnostics);
             Assert.NotSame(erroredOriginalTree, outputTree);
             Assert.Equal(new[] { initialError, expectedRewritingError }, outputTree.Diagnostics);
@@ -511,7 +536,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var pass = new TagHelperBinderSyntaxTreePass();
+            var phase = new DefaultRazorTagHelperBinderPhase();
 
             var directive = new TagHelperDirectiveDescriptor()
             {
@@ -523,7 +548,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var expected = new SourceLocation(assemblyLocation, 0, assemblyLocation);
 
             // Act
-            var result = pass.ParseAddOrRemoveDirective(directive, errorSink);
+            var result = phase.ParseAddOrRemoveDirective(directive, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -733,12 +758,12 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var errorSink = new ErrorSink();
 
-            var pass = new TagHelperBinderSyntaxTreePass();
+            var phase = new DefaultRazorTagHelperBinderPhase();
 
             // Act
             foreach (var directive in ((IEnumerable<TagHelperDirectiveDescriptor>)directives))
             {
-                Assert.False(pass.IsValidTagHelperPrefix(directive.DirectiveText, directive.Location, errorSink));
+                Assert.False(phase.IsValidTagHelperPrefix(directive.DirectiveText, directive.Location, errorSink));
             }
 
             // Assert
@@ -883,11 +908,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var pass = new TagHelperBinderSyntaxTreePass();
+            var phase = new DefaultRazorTagHelperBinderPhase();
             var document = RazorCodeDocument.Create(new DefaultRazorSourceDocument("Test content", encoding: Encoding.UTF8, fileName: "TestFile"));
 
             // Act
-            var prefix = pass.ProcessTagHelperPrefix(((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors).ToList(), document, errorSink);
+            var prefix = phase.ProcessTagHelperPrefix(((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors).ToList(), document, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1104,12 +1129,12 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var errorSink = new ErrorSink();
 
-            var pass = new TagHelperBinderSyntaxTreePass();
+            var phase = new DefaultRazorTagHelperBinderPhase();
 
             var expected = (IEnumerable<TagHelperDescriptor>)expectedDescriptors;
 
             // Act
-            var results = pass.ProcessDirectives(
+            var results = phase.ProcessDirectives(
                 new List<TagHelperDirectiveDescriptor>((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors),
                 new List<TagHelperDescriptor>((IEnumerable<TagHelperDescriptor>)tagHelpers),
                 errorSink);
@@ -1272,10 +1297,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var errorSink = new ErrorSink();
 
-            var pass = new TagHelperBinderSyntaxTreePass();
+            var phase = new DefaultRazorTagHelperBinderPhase();
 
             // Act
-            var results = pass.ProcessDirectives(
+            var results = phase.ProcessDirectives(
                 new List<TagHelperDirectiveDescriptor>((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors),
                 new List<TagHelperDescriptor>((IEnumerable<TagHelperDescriptor>)tagHelpers),
                 errorSink);
@@ -1311,7 +1336,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var pass = new TagHelperBinderSyntaxTreePass();
+            var phase = new DefaultRazorTagHelperBinderPhase();
 
             var directives = new[]
             {
@@ -1323,7 +1348,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     };
 
             // Act
-            var results = pass.ProcessDirectives(
+            var results = phase.ProcessDirectives(
                 directives,
                 new[] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor },
                 errorSink);
@@ -1352,7 +1377,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var pass = new TagHelperBinderSyntaxTreePass();
+            var phase = new DefaultRazorTagHelperBinderPhase();
 
             var directive = new TagHelperDirectiveDescriptor()
             {
@@ -1367,7 +1392,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 directiveText);
 
             // Act
-            var result = pass.ParseAddOrRemoveDirective(directive, errorSink);
+            var result = phase.ParseAddOrRemoveDirective(directive, errorSink);
 
             // Assert
             Assert.Null(result);

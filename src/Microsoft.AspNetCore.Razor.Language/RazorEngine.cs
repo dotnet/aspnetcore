@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             builder.Phases.Add(new DefaultRazorParsingPhase());
             builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
+            builder.Phases.Add(new DefaultRazorTagHelperBinderPhase());
             builder.Phases.Add(new DefaultRazorIRLoweringPhase());
             builder.Phases.Add(new DefaultRazorDocumentClassifierPhase());
             builder.Phases.Add(new DefaultRazorDirectiveClassifierPhase());
@@ -66,7 +67,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Syntax Tree passes
             builder.Features.Add(new DefaultDirectiveSyntaxTreePass());
             builder.Features.Add(new HtmlNodeOptimizationPass());
-            builder.Features.Add(new TagHelperBinderSyntaxTreePass());
 
             // IR Passes
             builder.Features.Add(new DefaultDocumentClassifierPass());
