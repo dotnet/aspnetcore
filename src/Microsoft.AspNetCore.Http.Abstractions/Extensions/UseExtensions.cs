@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class UseExtensions
     {
         /// <summary>
-        /// Adds a middleware delagate defined in-line to the application's request pipeline.
+        /// Adds a middleware delegate defined in-line to the application's request pipeline.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="middleware">A function that handles the request or calls the given next function.</param>
