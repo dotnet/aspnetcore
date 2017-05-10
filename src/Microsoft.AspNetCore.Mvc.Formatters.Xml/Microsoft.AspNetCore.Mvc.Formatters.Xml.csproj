@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
@@ -14,7 +14,5 @@
 
     <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="System.Runtime.Serialization.Xml" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Xml.XmlSerializer" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>

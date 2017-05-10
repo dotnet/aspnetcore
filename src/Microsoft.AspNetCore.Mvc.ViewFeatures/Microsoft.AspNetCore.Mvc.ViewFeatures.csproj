@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
 
@@ -31,8 +31,6 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="$(JsonNetBsonVersion)" />
-    <PackageReference Include="System.Buffers" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

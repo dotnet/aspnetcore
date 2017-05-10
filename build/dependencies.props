@@ -2,7 +2,6 @@
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <BenchmarkDotNetVersion>0.10.3</BenchmarkDotNetVersion>
-    <CoreFxVersion>4.3.0</CoreFxVersion>
     <DependencyModelVersion>2.0.0-*</DependencyModelVersion>
     <FSharpCoreVersion>4.1.0</FSharpCoreVersion>
     <FSharpNetSdkVersion>1.0.*</FSharpNetSdkVersion>

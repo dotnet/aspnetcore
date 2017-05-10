@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
 
@@ -20,8 +20,6 @@ System.Web.Http.ApiController</Description>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="$(WebApiClientVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="System.Runtime.Serialization.Xml" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Xml.XmlSerializer" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
