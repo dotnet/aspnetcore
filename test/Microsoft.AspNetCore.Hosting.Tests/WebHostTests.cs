@@ -662,7 +662,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Environment", "Staging" }
+                { "Environment", EnvironmentName.Staging }
             };
 
             var builder = new ConfigurationBuilder()
@@ -672,7 +672,7 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = CreateBuilder(config).UseFakeServer().Build())
             {
                 var env = host.Services.GetService<IHostingEnvironment>();
-                Assert.Equal("Staging", env.EnvironmentName);
+                Assert.Equal(EnvironmentName.Staging, env.EnvironmentName);
             }
         }
 

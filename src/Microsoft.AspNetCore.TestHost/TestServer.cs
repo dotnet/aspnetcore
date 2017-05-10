@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.TestHost
 {
     public class TestServer : IServer
     {
-        private const string DefaultEnvironmentName = "Development";
         private const string ServerName = nameof(TestServer);
         private IWebHost _hostInstance;
         private bool _disposed = false;

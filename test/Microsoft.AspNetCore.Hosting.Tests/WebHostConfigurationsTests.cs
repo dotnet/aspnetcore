@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
                 { "webroot", "wwwroot"},
                 { "applicationName", "MyProjectReference"},
                 { "startupAssembly", "MyProjectReference" },
-                { "environment", "Development"},
+                { "environment", EnvironmentName.Development},
                 { "detailederrors", "true"},
                 { "captureStartupErrors", "true" }
             };
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Equal("wwwroot", config.WebRoot);
             Assert.Equal("MyProjectReference", config.ApplicationName);
             Assert.Equal("MyProjectReference", config.StartupAssembly);
-            Assert.Equal("Development", config.Environment);
+            Assert.Equal(EnvironmentName.Development, config.Environment);
             Assert.True(config.CaptureStartupErrors);
             Assert.True(config.DetailedErrors);
         }
@@ -36,10 +36,10 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void ReadsOldEnvKey()
         {
-            var parameters = new Dictionary<string, string>() { { "ENVIRONMENT", "Development" } };
+            var parameters = new Dictionary<string, string>() { { "ENVIRONMENT", EnvironmentName.Development } };
             var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
-            Assert.Equal("Development", config.Environment);
+            Assert.Equal(EnvironmentName.Development, config.Environment);
         }
 
         [Theory]

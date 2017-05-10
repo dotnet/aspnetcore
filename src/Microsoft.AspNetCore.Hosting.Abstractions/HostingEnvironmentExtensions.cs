@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Hosting
     public static class HostingEnvironmentExtensions
     {
         /// <summary>
-        /// Checks if the current hosting environment name is "Development".
+        /// Checks if the current hosting environment name is <see cref="EnvironmentName.Development"/>.
         /// </summary>
         /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
-        /// <returns>True if the environment name is "Development", otherwise false.</returns>
+        /// <returns>True if the environment name is <see cref="EnvironmentName.Development"/>, otherwise false.</returns>
         public static bool IsDevelopment(this IHostingEnvironment hostingEnvironment)
         {
             if (hostingEnvironment == null)
@@ -27,10 +27,10 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Checks if the current hosting environment name is "Staging".
+        /// Checks if the current hosting environment name is <see cref="EnvironmentName.Staging"/>.
         /// </summary>
         /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
-        /// <returns>True if the environment name is "Staging", otherwise false.</returns>
+        /// <returns>True if the environment name is <see cref="EnvironmentName.Staging"/>, otherwise false.</returns>
         public static bool IsStaging(this IHostingEnvironment hostingEnvironment)
         {
             if (hostingEnvironment == null)
@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Checks if the current hosting environment name is "Production".
+        /// Checks if the current hosting environment name is <see cref="EnvironmentName.Production"/>.
         /// </summary>
         /// <param name="hostingEnvironment">An instance of <see cref="IHostingEnvironment"/>.</param>
-        /// <returns>True if the environment name is "Production", otherwise false.</returns>
+        /// <returns>True if the environment name is <see cref="EnvironmentName.Production"/>, otherwise false.</returns>
         public static bool IsProduction(this IHostingEnvironment hostingEnvironment)
         {
             if (hostingEnvironment == null)

@@ -26,7 +26,7 @@ namespace SampleStartups
                 .UseFakeServer()
                 .UseContentRoot(Directory.GetCurrentDirectory()) // Override the content root with the current directory
                 .UseUrls("http://*:1000", "https://*:902")
-                .UseEnvironment("Development")
+                .UseEnvironment(EnvironmentName.Development)
                 .UseWebRoot("public")
                 .ConfigureServices(services =>
                 {
