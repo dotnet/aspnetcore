@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\dependencies.props" />
 
@@ -8,9 +8,4 @@
     <!-- Don't create a NuGet package -->
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Net.WebSockets.Client" Version="$(CoreFxVersion)" />
-  </ItemGroup>
-
 </Project>
