@@ -61,6 +61,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
+        public static void AnnotationEquals(RazorIRNode node, object value)
+        {
+            AnnotationEquals(node, value, value);
+        }
+
+        public static void AnnotationEquals(RazorIRNode node, object key, object value)
+        {
+            try
+            {
+                Assert.NotNull(node);
+                Assert.Equal(value, node.Annotations[key]);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(node, node.Children, e.Message, e);
+            }
+        }
+
+        public static void HasAnnotation(RazorIRNode node, object key)
+        {
+            try
+            {
+                Assert.NotNull(node);
+                Assert.NotNull(node.Annotations[key]);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(node, node.Children, e.Message, e);
+            }
+        }
+
         public static void Html(string expected, RazorIRNode node)
         {
             try

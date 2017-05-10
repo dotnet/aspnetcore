@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     {
         internal static readonly RazorIRNode[] EmptyArray = new RazorIRNode[0];
 
+        public abstract ItemCollection Annotations { get; }
+
         public abstract IList<RazorIRNode> Children { get; }
 
         public abstract RazorIRNode Parent { get; set; }

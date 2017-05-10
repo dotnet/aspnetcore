@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         private class BasicIRNode : RazorIRNode
         {
+            public override ItemCollection Annotations { get; } = new DefaultItemCollection();
+
             public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
             public override RazorIRNode Parent { get; set; }
@@ -88,6 +90,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         private class BasicIRNode2 : RazorIRNode
         {
+            public override ItemCollection Annotations { get; } = new DefaultItemCollection();
+
             public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
             public override RazorIRNode Parent { get; set; }
@@ -102,6 +106,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         private class BasicIRNode3 : RazorIRNode
         {
+            public override ItemCollection Annotations { get; } = new DefaultItemCollection();
+
             public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
             public override RazorIRNode Parent { get; set; }

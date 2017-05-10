@@ -48,24 +48,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             var children = new List<RazorIRNode>(irDocument.Children);
             irDocument.Children.Clear();
 
-            var @namespace = new NamespaceDeclarationIRNode()
-            {
-                //Content = "GeneratedNamespace",
-            };
+            var @namespace = new NamespaceDeclarationIRNode();
+            @namespace.Annotations[CommonAnnotations.PrimaryNamespace] = CommonAnnotations.PrimaryNamespace;
 
-            var @class = new ClassDeclarationIRNode()
-            {
-                //AccessModifier = "public",
-                //Name = "GeneratedClass",
-            };
+            var @class = new ClassDeclarationIRNode();
+            @class.Annotations[CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass;
 
-            var method = new RazorMethodDeclarationIRNode()
-            {
-                //AccessModifier = "public",
-                // Modifiers = new List<string>() { "async" },
-                //Name = "Execute",
-                //ReturnType = "Task",
-            };
+            var method = new RazorMethodDeclarationIRNode();
+            method.Annotations[CommonAnnotations.PrimaryMethod] = CommonAnnotations.PrimaryMethod;
 
             var documentBuilder = RazorIRBuilder.Create(irDocument);
 

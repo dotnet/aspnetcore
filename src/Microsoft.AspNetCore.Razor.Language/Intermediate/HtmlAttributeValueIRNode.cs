@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public class HtmlAttributeValueIRNode : RazorIRNode
     {
+        public override ItemCollection Annotations => ReadonlyItemCollection.Empty;
+
         public override IList<RazorIRNode> Children { get; } = EmptyArray;
 
         public override RazorIRNode Parent { get; set; }

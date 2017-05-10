@@ -259,6 +259,41 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("TestMethod", method.Name);
         }
 
+        [Fact]
+        public void Execute_AddsPrimaryAnnotations()
+        {
+            // Arrange
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var builder = RazorIRBuilder.Create(irDocument);
+            builder.Add(new HtmlContentIRNode());
+            builder.Add(new CSharpStatementIRNode());
+
+            var pass = new TestDocumentClassifierPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+                Namespace = "TestNamespace",
+                Class = "TestClass",
+                Method = "TestMethod",
+            };
+
+            // Act
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+
+            // Assert
+            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
+            AnnotationEquals(@namespace, CommonAnnotations.PrimaryNamespace);
+
+            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            AnnotationEquals(@class, CommonAnnotations.PrimaryClass);
+
+            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            AnnotationEquals(method, CommonAnnotations.PrimaryMethod);
+        }
+
         private class TestDocumentClassifierPass : DocumentClassifierPassBase
         {
             public override int Order => RazorIRPass.DefaultFeatureOrder;

@@ -9,6 +9,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public class DirectiveIRNode : RazorIRNode
     {
+        private ItemCollection _annotations;
+
+        public override ItemCollection Annotations
+        {
+            get
+            {
+                if (_annotations == null)
+                {
+                    _annotations = new DefaultItemCollection();
+                }
+
+                return _annotations;
+            }
+        }
+
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }

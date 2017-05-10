@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class RazorIRToken : RazorIRNode
     {
+        public override ItemCollection Annotations => ReadonlyItemCollection.Empty;
+
         public override IList<RazorIRNode> Children => RazorIRNode.EmptyArray;
 
         public string Content { get; set; }

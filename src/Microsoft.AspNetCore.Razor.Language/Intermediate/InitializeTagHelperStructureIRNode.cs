@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class InitializeTagHelperStructureIRNode : RazorIRNode
+    public sealed class InitializeTagHelperStructureIRNode : RazorIRNode
     {
+        public override ItemCollection Annotations => ReadonlyItemCollection.Empty;
+
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }

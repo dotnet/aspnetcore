@@ -70,6 +70,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             public string Name { get; }
 
+            public override ItemCollection Annotations { get; } = new DefaultItemCollection();
+
             public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
             public override RazorIRNode Parent { get; set; }

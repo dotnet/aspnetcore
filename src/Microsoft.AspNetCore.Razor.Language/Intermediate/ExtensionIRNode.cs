@@ -7,6 +7,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public abstract class ExtensionIRNode : RazorIRNode
     {
+        private ItemCollection _annotations;
+
+        public override ItemCollection Annotations
+        {
+            get
+            {
+                if (_annotations == null)
+                {
+                    _annotations = new DefaultItemCollection();
+                }
+
+                return _annotations;
+            }
+        }
+
         public abstract void WriteNode(RuntimeTarget target, CSharpRenderingContext context);
 
         protected static void AcceptExtensionNode<TNode>(TNode node, RazorIRNodeVisitor visitor) 
