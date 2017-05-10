@@ -16,6 +16,8 @@ Follow the [Getting Started](https://docs.microsoft.com/en-us/aspnet/core/gettin
 
 Also checkout the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
+Download .NET SDK and learn more at [Azure SDK and Tools for Visual Studio](https://www.visualstudio.com/features/azure-tools-vs)
+
 ## Builds
 
 If you want to use the latest dev build then you need to:
