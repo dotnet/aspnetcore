@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
         public DefaultModelMetadataProvider(ICompositeMetadataDetailsProvider detailsProvider)
-            : this(detailsProvider, new ModelBindingMessageProvider())
+            : this(detailsProvider, new DefaultModelBindingMessageProvider())
         {
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         private DefaultModelMetadataProvider(
             ICompositeMetadataDetailsProvider detailsProvider,
-            ModelBindingMessageProvider modelBindingMessageProvider)
+            DefaultModelBindingMessageProvider modelBindingMessageProvider)
         {
             if (detailsProvider == null)
             {
@@ -62,10 +62,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         protected ICompositeMetadataDetailsProvider DetailsProvider { get; }
 
         /// <summary>
-        /// Gets the <see cref="Metadata.ModelBindingMessageProvider"/>.
+        /// Gets the <see cref="Metadata.DefaultModelBindingMessageProvider"/>.
         /// </summary>
         /// <value>Same as <see cref="MvcOptions.ModelBindingMessageProvider"/> in all production scenarios.</value>
-        protected ModelBindingMessageProvider ModelBindingMessageProvider { get; }
+        protected DefaultModelBindingMessageProvider ModelBindingMessageProvider { get; }
 
         /// <inheritdoc />
         public virtual IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             return cacheEntry.Metadata;
         }
 
-        private static ModelBindingMessageProvider GetMessageProvider(IOptions<MvcOptions> optionsAccessor)
+        private static DefaultModelBindingMessageProvider GetMessageProvider(IOptions<MvcOptions> optionsAccessor)
         {
             if (optionsAccessor == null)
             {

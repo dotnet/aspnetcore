@@ -45,8 +45,11 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var provider = new TestModelMetadataProvider();
             provider
                 .ForProperty(typeof(TypeWithNumericProperty), nameof(TypeWithNumericProperty.Id))
-                .BindingDetails(d => d.ModelBindingMessageProvider.ValueMustBeANumberAccessor =
-                    name => $"Error message about '{ name }' from override.");
+                .BindingDetails(d =>
+                {
+                    d.ModelBindingMessageProvider.SetValueMustBeANumberAccessor(
+                        name => $"Error message about '{ name }' from override.");
+                });
             var metadata = provider.GetMetadataForProperty(
                 typeof(TypeWithNumericProperty),
                 nameof(TypeWithNumericProperty.Id));

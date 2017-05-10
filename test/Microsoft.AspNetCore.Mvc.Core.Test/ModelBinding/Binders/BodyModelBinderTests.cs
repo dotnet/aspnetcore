@@ -131,8 +131,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             provider.ForType<Person>().BindingDetails(d =>
             {
                 d.BindingSource = BindingSource.Body;
-                d.ModelBindingMessageProvider.MissingRequestBodyRequiredValueAccessor =
-                    () => "Customized error message";
+                d.ModelBindingMessageProvider.SetMissingRequestBodyRequiredValueAccessor(
+                    () => "Customized error message");
             });
 
             var bindingContext = GetBindingContext(

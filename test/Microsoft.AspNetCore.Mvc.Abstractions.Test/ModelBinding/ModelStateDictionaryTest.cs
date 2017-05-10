@@ -890,8 +890,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var bindingMetadataProvider = new DefaultBindingMetadataProvider();
             var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
             var optionsAccessor = new OptionsAccessor();
-            optionsAccessor.Value.ModelBindingMessageProvider.UnknownValueIsInvalidAccessor =
-                name => $"Hmm, the supplied value is not valid for { name }.";
+            optionsAccessor.Value.ModelBindingMessageProvider.SetUnknownValueIsInvalidAccessor(
+                name => $"Hmm, the supplied value is not valid for { name }.");
 
             var provider = new DefaultModelMetadataProvider(compositeProvider, optionsAccessor);
             var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
@@ -935,8 +935,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var bindingMetadataProvider = new DefaultBindingMetadataProvider();
             var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
             var optionsAccessor = new OptionsAccessor();
-            optionsAccessor.Value.ModelBindingMessageProvider.AttemptedValueIsInvalidAccessor =
-                (value, name) => $"Hmm, the value '{ value }' is not valid for { name }.";
+            optionsAccessor.Value.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor(
+                (value, name) => $"Hmm, the value '{ value }' is not valid for { name }.");
 
             var provider = new DefaultModelMetadataProvider(compositeProvider, optionsAccessor);
             var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));

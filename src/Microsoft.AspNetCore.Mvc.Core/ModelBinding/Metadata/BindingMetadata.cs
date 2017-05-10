@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// </summary>
     public class BindingMetadata
     {
-        private ModelBindingMessageProvider _messageProvider;
+        private DefaultModelBindingMessageProvider _messageProvider;
 
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.BindingSource"/>.
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public bool? IsReadOnly { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="Metadata.ModelBindingMessageProvider"/> instance. See
+        /// Gets the <see cref="Metadata.DefaultModelBindingMessageProvider"/> instance. See
         /// <see cref="ModelMetadata.ModelBindingMessageProvider"/>.
         /// </summary>
-        public ModelBindingMessageProvider ModelBindingMessageProvider
+        public DefaultModelBindingMessageProvider ModelBindingMessageProvider
         {
             get
             {

@@ -256,9 +256,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract bool IsRequired { get; }
 
         /// <summary>
-        /// Gets the <see cref="IModelBindingMessageProvider"/> instance.
+        /// Gets the <see cref="Metadata.ModelBindingMessageProvider"/> instance.
         /// </summary>
-        public abstract IModelBindingMessageProvider ModelBindingMessageProvider { get; }
+        public abstract ModelBindingMessageProvider ModelBindingMessageProvider { get; }
 
         /// <summary>
         /// Gets a value indicating where the current metadata should be ordered relative to other properties

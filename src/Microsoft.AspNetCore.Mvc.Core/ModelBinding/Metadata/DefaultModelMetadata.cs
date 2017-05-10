@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         // Default message provider for all DefaultModelMetadata instances; cloned before exposing to
         // IBindingMetadataProvider instances to ensure customizations are not accidentally shared.
-        private readonly ModelBindingMessageProvider _modelBindingMessageProvider;
+        private readonly DefaultModelBindingMessageProvider _modelBindingMessageProvider;
 
         private ReadOnlyDictionary<object, object> _additionalValues;
         private ModelMetadata _elementMetadata;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             IModelMetadataProvider provider,
             ICompositeMetadataDetailsProvider detailsProvider,
             DefaultMetadataDetails details)
-            : this(provider, detailsProvider, details, new ModelBindingMessageProvider())
+            : this(provider, detailsProvider, details, new DefaultModelBindingMessageProvider())
         {
         }
 
@@ -51,12 +51,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <param name="provider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="detailsProvider">The <see cref="ICompositeMetadataDetailsProvider"/>.</param>
         /// <param name="details">The <see cref="DefaultMetadataDetails"/>.</param>
-        /// <param name="modelBindingMessageProvider">The <see cref="Metadata.ModelBindingMessageProvider"/>.</param>
+        /// <param name="modelBindingMessageProvider">The <see cref="Metadata.DefaultModelBindingMessageProvider"/>.</param>
         public DefaultModelMetadata(
             IModelMetadataProvider provider,
             ICompositeMetadataDetailsProvider detailsProvider,
             DefaultMetadataDetails details,
-            ModelBindingMessageProvider modelBindingMessageProvider)
+            DefaultModelBindingMessageProvider modelBindingMessageProvider)
             : base(details.Key)
         {
             if (provider == null)
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
                     // Provide a unique ModelBindingMessageProvider instance so providers' customizations are per-type.
                     context.BindingMetadata.ModelBindingMessageProvider =
-                        new ModelBindingMessageProvider(_modelBindingMessageProvider);
+                        new DefaultModelBindingMessageProvider(_modelBindingMessageProvider);
 
                     _detailsProvider.CreateBindingMetadata(context);
                     _details.BindingMetadata = context.BindingMetadata;
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override IModelBindingMessageProvider ModelBindingMessageProvider
+        public override ModelBindingMessageProvider ModelBindingMessageProvider
         {
             get
             {

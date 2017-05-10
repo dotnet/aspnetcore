@@ -527,7 +527,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
-            public override IModelBindingMessageProvider ModelBindingMessageProvider
+            public override ModelBindingMessageProvider ModelBindingMessageProvider
             {
                 get
                 {

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc
             InputFormatters = new FormatterCollection<IInputFormatter>();
             OutputFormatters = new FormatterCollection<IOutputFormatter>();
             ModelBinderProviders = new List<IModelBinderProvider>();
-            ModelBindingMessageProvider = new ModelBindingMessageProvider();
+            ModelBindingMessageProvider = new DefaultModelBindingMessageProvider();
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ValueProviderFactories = new List<IValueProviderFactory>();
@@ -98,11 +98,11 @@ namespace Microsoft.AspNetCore.Mvc
         public IList<IModelBinderProvider> ModelBinderProviders { get; }
 
         /// <summary>
-        /// Gets the default <see cref="IModelBindingMessageProvider"/>. Changes here are copied to the
+        /// Gets the default <see cref="ModelBinding.Metadata.ModelBindingMessageProvider"/>. Changes here are copied to the
         /// <see cref="ModelMetadata.ModelBindingMessageProvider"/> property of all <see cref="ModelMetadata"/>
         /// instances unless overridden in a custom <see cref="IBindingMetadataProvider"/>.
         /// </summary>
-        public ModelBindingMessageProvider ModelBindingMessageProvider { get; }
+        public DefaultModelBindingMessageProvider ModelBindingMessageProvider { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IMetadataDetailsProvider"/> instances that will be used to

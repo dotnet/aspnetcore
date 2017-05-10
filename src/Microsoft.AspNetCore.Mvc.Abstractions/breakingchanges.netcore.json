@@ -1,7 +1,11 @@
 [
   {
     "TypeId": "public interface Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IModelBindingMessageProvider",
-    "MemberId": "System.Func<System.String> get_MissingRequestBodyRequiredValueAccessor()",
-    "Kind": "Addition"
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public abstract class Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata : System.IEquatable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata>",
+    "MemberId": "public abstract Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IModelBindingMessageProvider get_ModelBindingMessageProvider()",
+    "Kind": "Removal"
   }
 ]

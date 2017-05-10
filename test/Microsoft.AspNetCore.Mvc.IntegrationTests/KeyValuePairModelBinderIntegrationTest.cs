@@ -100,7 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .BindingDetails((System.Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
                 {
                     // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.MissingKeyOrValueAccessor = () => $"Hurts when nothing is provided.";
+                    binding.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(
+                        () => $"Hurts when nothing is provided.");
                 }));
 
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
@@ -183,7 +184,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .BindingDetails((System.Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
                 {
                     // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.MissingKeyOrValueAccessor = () => $"Hurts when nothing is provided.";
+                    binding.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(
+                        () => $"Hurts when nothing is provided.");
                 }));
 
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);

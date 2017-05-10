@@ -256,8 +256,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .BindingDetails(binding =>
                 {
                     // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.AttemptedValueIsInvalidAccessor =
-                        (value, name) => $"Hmm, '{ value }' is not a valid value for '{ name }'.";
+                    binding.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor(
+                        (value, name) => $"Hmm, '{ value }' is not a valid value for '{ name }'.");
                 });
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
             var parameter = new ParameterDescriptor()
@@ -357,8 +357,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .BindingDetails(binding =>
                 {
                     // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.ValueMustNotBeNullAccessor =
-                        value => $"Hurts when '{ value }' is provided.";
+                    binding.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
+                        value => $"Hurts when '{ value }' is provided.");
                 });
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
 

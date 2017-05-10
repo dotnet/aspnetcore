@@ -1847,8 +1847,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .BindingDetails((Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
                 {
                     // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.MissingBindRequiredValueAccessor =
-                        name => $"Hurts when '{ name }' is not provided.";
+                    binding.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(
+                        name => $"Hurts when '{ name }' is not provided.");
                 }));
 
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);

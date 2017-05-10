@@ -121,5 +121,29 @@
     "TypeId": "public abstract class Microsoft.AspNetCore.Mvc.ControllerBase",
     "MemberId": "public virtual Microsoft.AspNetCore.Mvc.SignOutResult SignOut(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, params System.String[] authenticationSchemes)",
     "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider : Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IModelBindingMessageProvider",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions",
+    "MemberId": "public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider get_ModelBindingMessageProvider()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata",
+    "MemberId": "public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider get_ModelBindingMessageProvider()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata",
+    "MemberId": "public System.Void set_ModelBindingMessageProvider(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata : Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata",
+    "MemberId": "public override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IModelBindingMessageProvider get_ModelBindingMessageProvider()",
+    "Kind": "Removal"
   }
 ]
