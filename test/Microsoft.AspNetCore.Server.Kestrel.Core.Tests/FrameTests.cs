@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 TimeoutControl = Mock.Of<ITimeoutControl>()
             };
 
-            _frame.Output = new OutputProducer(output.Writer, "", Mock.Of<IKestrelTrace>());
+            _frame.Output = new OutputProducer(output, "", Mock.Of<IKestrelTrace>());
 
             _frame.Reset();
         }

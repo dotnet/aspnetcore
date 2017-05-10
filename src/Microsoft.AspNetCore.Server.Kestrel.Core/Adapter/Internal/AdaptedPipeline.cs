@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
@@ -16,17 +15,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         private const int MinAllocBufferSize = 2048;
 
         private readonly IKestrelTrace _trace;
-        private readonly IPipeWriter _transportOutputPipeWriter;
+        private readonly IPipe _transportOutputPipe;
         private readonly IPipeReader _transportInputPipeReader;
 
         public AdaptedPipeline(IPipeReader transportInputPipeReader,
-                               IPipeWriter transportOutputPipeWriter,
+                               IPipe transportOutputPipe,
                                IPipe inputPipe,
                                IPipe outputPipe,
                                IKestrelTrace trace)
         {
             _transportInputPipeReader = transportInputPipeReader;
-            _transportOutputPipeWriter = transportOutputPipeWriter;
+            _transportOutputPipe = transportOutputPipe;
             Input = inputPipe;
             Output = outputPipe;
             _trace = trace;
@@ -58,18 +57,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
                 while (true)
                 {
-                    var readResult = await Output.Reader.ReadAsync();
-                    var buffer = readResult.Buffer;
+                    var result = await Output.Reader.ReadAsync();
+                    var buffer = result.Buffer;
 
                     try
                     {
-                        if (buffer.IsEmpty && readResult.IsCompleted)
+                        if (result.IsCancelled)
                         {
+                            // Forward the cancellation to the transport pipe
+                            _transportOutputPipe.Reader.CancelPendingRead();
                             break;
                         }
 
                         if (buffer.IsEmpty)
                         {
+                            if (result.IsCompleted)
+                            {
+                                break;
+                            }
                             await stream.FlushAsync();
                         }
                         else if (buffer.IsSingleSpan)
@@ -99,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             finally
             {
                 Output.Reader.Complete();
-                _transportOutputPipeWriter.Complete(error);
+                _transportOutputPipe.Writer.Complete(error);
             }
         }
 
@@ -111,8 +116,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             {
                 if (stream == null)
                 {
-                    // If the stream is null then we're going to abort the connection
-                    throw new ConnectionAbortedException();
+                    // REVIEW: Do we need an exception here?
+                    return;
                 }
 
                 while (true)

@@ -392,6 +392,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.True(task3Canceled.IsCanceled);
 
                     Assert.True(abortedSource.IsCancellationRequested);
+
+                    await _mockLibuv.OnPostTask;
+
+                    // Complete the 4th write
+                    while (completeQueue.TryDequeue(out var triggerNextCompleted))
+                    {
+                        await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
+                    }
                 }
             });
         }
@@ -467,6 +475,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.True(task3Canceled.IsCanceled);
 
                     Assert.True(abortedSource.IsCancellationRequested);
+
+                    await _mockLibuv.OnPostTask;
+
+                    // Complete the 4th write
+                    while (completeQueue.TryDequeue(out var triggerNextCompleted))
+                    {
+                        await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
+                    }
                 }
             });
         }
@@ -544,6 +560,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     // Third task is now canceled
                     await Assert.ThrowsAsync<OperationCanceledException>(() => task3Canceled);
                     Assert.True(task3Canceled.IsCanceled);
+
+                    await _mockLibuv.OnPostTask;
+
+                    // Complete the 4th write
+                    while (completeQueue.TryDequeue(out var triggerNextCompleted))
+                    {
+                        await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
+                    }
                 }
             });
         }
@@ -585,6 +609,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Act
                 var writeTask2 = socketOutput.WriteAsync(buffer);
                 var writeTask3 = socketOutput.WriteAsync(buffer);
+
+                await _mockLibuv.OnPostTask;
 
                 // Drain the write queue
                 while (completeQueue.TryDequeue(out var triggerNextCompleted))
@@ -670,7 +696,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var frame = new Frame<object>(null, new FrameContext { ServiceContext = serviceContext });
 
             var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, transportContext.Log);
-            var outputProducer = new OutputProducer(pipe.Writer, "0", serviceContext.Log);
+            var outputProducer = new OutputProducer(pipe, "0", serviceContext.Log);
             var consumer = new LibuvOutputConsumer(pipe.Reader, _libuvThread, socket, "0", transportContext.Log);
             frame.Output = outputProducer;
 

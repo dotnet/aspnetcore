@@ -47,15 +47,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ConnectionId = connectionId,
                 FrameConnectionId = frameConnectionId,
                 ServiceContext = _serviceContext,
-                PipeFactory = connectionInfo.PipeFactory,
+                ConnectionInformation = connectionInfo,
                 ConnectionAdapters = _listenOptions.ConnectionAdapters,
                 Frame = frame,
                 Input = inputPipe,
                 Output = outputPipe,
             });
-
-            _serviceContext.Log.ConnectionStart(connectionId);
-            KestrelEventSource.Log.ConnectionStart(connection, connectionInfo);
 
             // Since data cannot be added to the inputPipe by the transport until OnConnection returns,
             // Frame.ProcessRequestsAsync is guaranteed to unblock the transport thread before calling

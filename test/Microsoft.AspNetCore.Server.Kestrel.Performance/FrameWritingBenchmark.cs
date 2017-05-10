@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 Input = input.Reader,
             };
 
-            frame.Output = new OutputProducer(output.Writer, "", null);
+            frame.Output = new OutputProducer(output, "", null);
 
             frame.Reset();
 

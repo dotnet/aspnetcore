@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IPipeWriter Input => _context.Input.Writer;
         public IPipeReader Output => _context.Output.Reader;
 
-        private PipeFactory PipeFactory => _context.PipeFactory;
+        private PipeFactory PipeFactory => _context.ConnectionInformation.PipeFactory;
 
         // Internal for testing
         internal PipeOptions AdaptedInputPipeOptions => new PipeOptions
@@ -70,21 +70,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             try
             {
+                Log.ConnectionStart(ConnectionId);
+                KestrelEventSource.Log.ConnectionStart(this, _context.ConnectionInformation);
+
                 AdaptedPipeline adaptedPipeline = null;
                 var adaptedPipelineTask = Task.CompletedTask;
                 var input = _context.Input.Reader;
-                var output = _context.Output.Writer;
+                var output = _context.Output;
 
                 if (_connectionAdapters.Count > 0)
                 {
-                    adaptedPipeline = new AdaptedPipeline(_context.Input.Reader,
-                                                          _context.Output.Writer,
+                    adaptedPipeline = new AdaptedPipeline(input,
+                                                          output,
                                                           PipeFactory.Create(AdaptedInputPipeOptions),
                                                           PipeFactory.Create(AdaptedOutputPipeOptions),
                                                           Log);
 
                     input = adaptedPipeline.Input.Reader;
-                    output = adaptedPipeline.Output.Writer;
+                    output = adaptedPipeline.Output;
                 }
 
                 // Set these before the first await, this is to make sure that we don't yield control
@@ -114,6 +117,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 _context.ServiceContext.ConnectionManager.RemoveConnection(_context.FrameConnectionId);
                 DisposeAdaptedConnections();
+
+                Log.ConnectionStop(ConnectionId);
+                KestrelEventSource.Log.ConnectionStop(this);
             }
         }
 
@@ -122,8 +128,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // Abort the connection (if not already aborted)
             _frame.Abort(ex);
 
-            Log.ConnectionStop(ConnectionId);
-            KestrelEventSource.Log.ConnectionStop(this);
             _socketClosedTcs.TrySetResult(null);
         }
 

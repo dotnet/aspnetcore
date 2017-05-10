@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -21,10 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // This locks access to to all of the below fields
         private readonly object _contextLock = new object();
 
-        private bool _cancelled = false;
         private bool _completed = false;
 
-        private readonly IPipeWriter _pipe;
+        private readonly IPipe _pipe;
 
         // https://github.com/dotnet/corefxlab/issues/1334
         // Pipelines don't support multiple awaiters on flush
@@ -33,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly object _flushLock = new object();
         private Action _flushCompleted;
 
-        public OutputProducer(IPipeWriter pipe, string connectionId, IKestrelTrace log)
+        public OutputProducer(IPipe pipe, string connectionId, IKestrelTrace log)
         {
             _pipe = pipe;
             _connectionId = connectionId;
@@ -50,12 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _cancelled = true;
                 return Task.FromCanceled(cancellationToken);
-            }
-            else if (_cancelled)
-            {
-                return TaskCache.CompletedTask;
             }
 
             return WriteAsync(buffer, cancellationToken, chunk);
@@ -80,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return;
                 }
 
-                var buffer = _pipe.Alloc(1);
+                var buffer = _pipe.Writer.Alloc(1);
                 callback(buffer, state);
                 buffer.Commit();
             }
@@ -97,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _log.ConnectionDisconnect(_connectionId);
                 _completed = true;
-                _pipe.Complete();
+                _pipe.Writer.Complete();
             }
         }
 
@@ -112,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _log.ConnectionDisconnect(_connectionId);
                 _completed = true;
-                _pipe.Complete(new ConnectionAbortedException());
+                _pipe.Reader.CancelPendingRead();
             }
         }
 
@@ -130,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return TaskCache.CompletedTask;
                 }
 
-                writableBuffer = _pipe.Alloc(1);
+                writableBuffer = _pipe.Writer.Alloc(1);
                 var writer = new WritableBufferWriter(writableBuffer);
                 if (buffer.Count > 0)
                 {

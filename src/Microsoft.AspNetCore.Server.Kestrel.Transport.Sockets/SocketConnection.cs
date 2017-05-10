@@ -167,6 +167,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     var result = await _output.ReadAsync();
                     var buffer = result.Buffer;
 
+                    if (result.IsCancelled)
+                    {
+                        break;
+                    }
+
                     try
                     {
                         if (!buffer.IsEmpty)
@@ -189,15 +194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                                 }
                             }
                         }
-
-                        if (result.IsCancelled)
-                        {
-                            // Send a FIN
-                            _socket.Shutdown(SocketShutdown.Send);
-                            break;
-                        }
-
-                        if (buffer.IsEmpty && result.IsCompleted)
+                        else if (result.IsCompleted)
                         {
                             break;
                         }
@@ -207,16 +204,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         _output.Advance(buffer.End);
                     }
                 }
+
+                _socket.Shutdown(SocketShutdown.Send);
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
             {
                 error = null;
             }
             catch (ObjectDisposedException)
-            {
-                error = null;
-            }
-            catch (ConnectionAbortedException)
             {
                 error = null;
             }
