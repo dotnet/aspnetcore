@@ -1,0 +1,87 @@
+﻿@using System
+@{
+    Response.StatusCode = 500;
+    Response.ContentType = "text/html; charset=utf-8";
+    Response.ContentLength = null; // Clear any prior Content-Length
+}
+@functions
+{
+    public DeveloperCertificateViewModel Model { get; set; }
+
+    public string UrlEncode(string content)
+    {
+        return UrlEncoder.Encode(content);
+    }
+
+    public string JavaScriptEncode(string content)
+    {
+        return JavaScriptEncoder.Encode(content);
+    }
+}
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Internal Server Error</title>
+    <style>
+        <%$ include: ErrorPage.css %>
+    </style>
+</head>
+<body>
+    <h1>@Strings.CertificateErrorPage_Title</h1>
+    <p>
+    </p>
+    <hr />
+
+    @if (!Model.CertificateExists || Model.CertificateIsInvalid)
+    {
+        <h2>@Strings.MissingOrInvalidCertificate</h2>
+        <p>@Strings.ManualCertificateGenerationInfo<a href="@Strings.ManualCertificateGenerationInfoLink">@Strings.ManualCertificateGenerationInfoLink</a></p>
+        <br />
+        <hr />
+        <div>
+            <p>
+                <button id="createCertificate" onclick="CreateCertificate()">@Strings.CreateCertificate</button>
+                <span id="createCertificateError" class="error"></span>
+                <span id="createCertificateSuccess"></span>
+            </p>
+            <script>
+                function CreateCertificate() {
+                    createCertificate.disabled = true;
+                    createCertificateError.innerHTML = "";
+                    createCertificate.innerHTML = "@JavaScriptEncode(Strings.CreateCertificateRunning)";
+
+                    var req = new XMLHttpRequest();
+
+                    req.onload = function (e) {
+                        if (req.status === 204) {
+                            createCertificate.innerHTML = "@JavaScriptEncode(Strings.CreateCertificateDone)";
+                            createCertificateSuccess.innerHTML = "@JavaScriptEncode(Strings.CreateCertificateRefresh)";
+                        } else {
+                            ErrorCreatingCertificate();
+                        }
+                    };
+
+                    req.onerror = function (e) {
+                        ErrorCreatingCertificate();
+                    };
+
+                    var formBody = "";
+                    req.open("POST", "@JavaScriptEncode(Model.Options.ListeningEndpoint.Value)", true);
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    req.setRequestHeader("Content-length", formBody.length);
+                    req.setRequestHeader("Connection", "close");
+                    req.send(formBody);
+                }
+
+                function ErrorCreatingCertificate() {
+                    createCertificate.innerHTML = "@JavaScriptEncode(Strings.CreateCertificate)";
+                    createCertificateError.innerHTML = "@JavaScriptEncode(Strings.CreateCertificateFailed)";
+                    createCertificate.disabled = false;
+                }
+            </script>
+        </div>
+    }
+</body>
+</html>
