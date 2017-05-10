@@ -96,15 +96,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             FrameControl = this;
             _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
             _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
+
+            Output = new OutputProducer(frameContext.Output, frameContext.ConnectionId, frameContext.ServiceContext.Log);
         }
 
         public ServiceContext ServiceContext => _frameContext.ServiceContext;
         public IConnectionInformation ConnectionInformation => _frameContext.ConnectionInformation;
 
-        public IPipeReader Input { get; set; }
-        public OutputProducer Output { get; set; }
         public IFeatureCollection ConnectionFeatures { get; set; }
-        public ITimeoutControl TimeoutControl { get; set; }
+        public IPipeReader Input => _frameContext.Input;
+        public OutputProducer Output { get; }
+        public ITimeoutControl TimeoutControl => _frameContext.TimeoutControl;
 
         protected IKestrelTrace Log => ServiceContext.Log;
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;

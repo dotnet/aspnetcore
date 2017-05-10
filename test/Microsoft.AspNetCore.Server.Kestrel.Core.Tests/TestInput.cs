@@ -7,10 +7,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
+using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
@@ -21,15 +23,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public TestInput()
         {
-            var innerContext = new FrameContext { ServiceContext = new TestServiceContext() };
-
-            FrameContext = new Frame<object>(null, innerContext);
-            FrameContext.FrameControl = this;
-
             _memoryPool = new MemoryPool();
             _pipelineFactory = new PipeFactory();
+
             Pipe = _pipelineFactory.Create();
-            FrameContext.Input = Pipe.Reader;
+
+            FrameContext = new Frame<object>(null, new FrameContext
+            {
+                ServiceContext = new TestServiceContext(),
+                Input = Pipe.Reader
+            });
+            FrameContext.FrameControl = this;
         }
 
         public IPipe Pipe { get;  }

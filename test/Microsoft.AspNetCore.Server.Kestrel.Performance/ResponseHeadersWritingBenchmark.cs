@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -121,17 +122,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParserFactory = f => new HttpParser<FrameAdapter>()
             };
 
-            var frameContext = new FrameContext
+            var frame = new TestFrame<object>(application: null, context: new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation()
-            };
-
-            var frame = new TestFrame<object>(application: null, context: frameContext)
-            {
+                ConnectionInformation = new MockConnectionInformation(),
+                TimeoutControl = new MockTimeoutControl(),
                 Input = input.Reader,
-            };
-            frame.Output = new OutputProducer(output, "", null);
+                Output = output
+            });
 
             frame.Reset();
 

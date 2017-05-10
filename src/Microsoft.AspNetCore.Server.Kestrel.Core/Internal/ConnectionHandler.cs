@@ -33,15 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var connectionId = CorrelationIdGenerator.GetNextId();
             var frameConnectionId = Interlocked.Increment(ref _lastFrameConnectionId);
 
-            var frameContext = new FrameContext
-            {
-                ConnectionId = connectionId,
-                ConnectionInformation = connectionInfo,
-                ServiceContext = _serviceContext
-            };
-
-            var frame = new Frame<TContext>(_application, frameContext);
-
             var connection = new FrameConnection(new FrameConnectionContext
             {
                 ConnectionId = connectionId,
@@ -49,7 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ServiceContext = _serviceContext,
                 ConnectionInformation = connectionInfo,
                 ConnectionAdapters = _listenOptions.ConnectionAdapters,
-                Frame = frame,
                 Input = inputPipe,
                 Output = outputPipe,
             });
@@ -57,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // Since data cannot be added to the inputPipe by the transport until OnConnection returns,
             // Frame.ProcessRequestsAsync is guaranteed to unblock the transport thread before calling
             // application code.
-            connection.StartRequestProcessing();
+            connection.StartRequestProcessing<TContext>(_application);
 
             return connection;
         }

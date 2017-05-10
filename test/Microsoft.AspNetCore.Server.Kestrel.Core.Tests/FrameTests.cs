@@ -36,11 +36,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly PipeFactory _pipelineFactory;
         private ReadCursor _consumed;
         private ReadCursor _examined;
+        private Mock<ITimeoutControl> _timeoutControl;
 
         private class TestFrame<TContext> : Frame<TContext>
         {
             public TestFrame(IHttpApplication<TContext> application, FrameContext context)
-            : base(application, context)
+                : base(application, context)
             {
             }
 
@@ -57,21 +58,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var output = _pipelineFactory.Create();
 
             _serviceContext = new TestServiceContext();
-
+            _timeoutControl = new Mock<ITimeoutControl>();
             _frameContext = new FrameContext
             {
                 ServiceContext = _serviceContext,
-                ConnectionInformation = Mock.Of<IConnectionInformation>()
-            };
-
-            _frame = new TestFrame<object>(application: null, context: _frameContext)
-            {
+                ConnectionInformation = Mock.Of<IConnectionInformation>(),
+                TimeoutControl = _timeoutControl.Object,
                 Input = _input.Reader,
-                TimeoutControl = Mock.Of<ITimeoutControl>()
+                Output = output
             };
 
-            _frame.Output = new OutputProducer(output, "", Mock.Of<IKestrelTrace>());
-
+            _frame = new TestFrame<object>(application: null, context: _frameContext);
             _frame.Reset();
         }
 
@@ -343,16 +340,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ParseRequestStartsRequestHeadersTimeoutOnFirstByteAvailable()
         {
-            var connectionControl = new Mock<ITimeoutControl>();
-            _frame.TimeoutControl = connectionControl.Object;
-
             await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("G"));
 
             _frame.ParseRequest((await _input.Reader.ReadAsync()).Buffer, out _consumed, out _examined);
             _input.Reader.Advance(_consumed, _examined);
 
             var expectedRequestHeadersTimeout = _serviceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
-            connectionControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
+            _timeoutControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
         }
 
         [Fact]
@@ -466,13 +460,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ProcessRequestsAsyncEnablesKeepAliveTimeout()
         {
-            var connectionControl = new Mock<ITimeoutControl>();
-            _frame.TimeoutControl = connectionControl.Object;
-
             var requestProcessingTask = _frame.ProcessRequestsAsync();
 
             var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
-            connectionControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
+            _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
 
             _frame.Stop();
             _input.Writer.Complete();

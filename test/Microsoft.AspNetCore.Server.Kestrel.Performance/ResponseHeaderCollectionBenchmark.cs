@@ -32,10 +32,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         }
 
         [Params(
-            BenchmarkTypes.ContentLengthNumeric, 
-            BenchmarkTypes.ContentLengthString, 
-            BenchmarkTypes.Plaintext, 
-            BenchmarkTypes.Common, 
+            BenchmarkTypes.ContentLengthNumeric,
+            BenchmarkTypes.ContentLengthString,
+            BenchmarkTypes.Plaintext,
+            BenchmarkTypes.Common,
             BenchmarkTypes.Unknown
         )]
         public BenchmarkTypes Type { get; set; }

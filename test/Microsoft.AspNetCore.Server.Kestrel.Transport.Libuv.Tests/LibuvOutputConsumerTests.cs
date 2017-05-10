@@ -693,12 +693,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             };
             var transportContext = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
 
-            var frame = new Frame<object>(null, new FrameContext { ServiceContext = serviceContext });
-
             var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, transportContext.Log);
-            var outputProducer = new OutputProducer(pipe, "0", serviceContext.Log);
             var consumer = new LibuvOutputConsumer(pipe.Reader, _libuvThread, socket, "0", transportContext.Log);
-            frame.Output = outputProducer;
+
+            var frame = new Frame<object>(null, new FrameContext
+            {
+                ServiceContext = serviceContext,
+                TimeoutControl = Mock.Of<ITimeoutControl>(),
+                Output = pipe
+            });
 
             if (cts != null)
             {
@@ -707,7 +710,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var ignore = WriteOutputAsync(consumer, pipe.Reader, frame);
 
-            return outputProducer;
+            return frame.Output;
         }
 
         private async Task WriteOutputAsync(LibuvOutputConsumer consumer, IPipeReader outputReader, Frame frame)

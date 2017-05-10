@@ -4,13 +4,14 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Testing
 {
     public class TestFrame<TContext> : Frame<TContext>
     {
         public TestFrame(IHttpApplication<TContext> application, FrameContext context)
-        : base(application, context)
+            : base(application, context)
         {
         }
 

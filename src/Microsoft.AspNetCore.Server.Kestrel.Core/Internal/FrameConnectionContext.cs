@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public ServiceContext ServiceContext { get; set; }
         public List<IConnectionAdapter> ConnectionAdapters { get; set; }
         public IConnectionInformation ConnectionInformation { get; set; }
-        public Frame Frame { get; set; }
 
         public IPipe Input { get; set; }
         public IPipe Output { get; set; }

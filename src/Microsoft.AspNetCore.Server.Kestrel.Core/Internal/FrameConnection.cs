@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -20,9 +21,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     public class FrameConnection : IConnectionContext, ITimeoutControl
     {
         private readonly FrameConnectionContext _context;
-        private readonly Frame _frame;
         private List<IAdaptedConnection> _adaptedConnections;
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private Frame _frame;
 
         private long _lastTimestamp;
         private long _timeoutTimestamp = long.MaxValue;
@@ -33,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public FrameConnection(FrameConnectionContext context)
         {
             _context = context;
-            _frame = context.Frame;
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -61,12 +61,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public void StartRequestProcessing()
+        public void StartRequestProcessing<TContext>(IHttpApplication<TContext> application)
         {
-            _lifetimeTask = ProcessRequestsAsync();
+            _lifetimeTask = ProcessRequestsAsync<TContext>(application);
         }
 
-        private async Task ProcessRequestsAsync()
+        private async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
         {
             try
             {
@@ -90,11 +90,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     output = adaptedPipeline.Output;
                 }
 
-                // Set these before the first await, this is to make sure that we don't yield control
-                // to the transport until we've added the connection to the connection manager
-                _frame.TimeoutControl = this;
-                _frame.Input = input;
-                _frame.Output = new OutputProducer(output, ConnectionId, Log);
+                // _frame must be initialized before adding the connection to the connection manager
+                _frame = new Frame<TContext>(application, new FrameContext
+                {
+                    ConnectionId = _context.ConnectionId,
+                    ConnectionInformation = _context.ConnectionInformation,
+                    ServiceContext = _context.ServiceContext,
+                    TimeoutControl = this,
+                    Input = input,
+                    Output = output
+                });
+
+                // Do this before the first await so we don't yield control to the transport until we've
+                // added the connection to the connection manager
                 _context.ServiceContext.ConnectionManager.AddConnection(_context.FrameConnectionId, this);
                 _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
 
@@ -125,6 +133,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void OnConnectionClosed(Exception ex)
         {
+            Debug.Assert(_frame != null, $"nameof({_frame}) is null");
+
             // Abort the connection (if not already aborted)
             _frame.Abort(ex);
 
@@ -133,6 +143,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public Task StopAsync()
         {
+            Debug.Assert(_frame != null, $"nameof({_frame}) is null");
+
             _frame.Stop();
 
             return _lifetimeTask;
@@ -140,12 +152,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void Abort(Exception ex)
         {
+            Debug.Assert(_frame != null, $"nameof({_frame}) is null");
+
             // Abort the connection (if not already aborted)
             _frame.Abort(ex);
         }
 
         public Task AbortAsync(Exception ex)
         {
+            Debug.Assert(_frame != null, $"nameof({_frame}) is null");
+
             // Abort the connection (if not already aborted)
             _frame.Abort(ex);
 
@@ -154,11 +170,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void Timeout()
         {
+            Debug.Assert(_frame != null, $"nameof({_frame}) is null");
+
             _frame.SetBadRequestState(RequestRejectionReason.RequestTimeout);
         }
 
         private async Task<Stream> ApplyConnectionAdaptersAsync()
         {
+            Debug.Assert(_frame != null, $"nameof({_frame}) is null");
+
             var features = new FeatureCollection();
             var connectionAdapters = _context.ConnectionAdapters;
             var stream = new RawStream(_context.Input.Reader, _context.Output.Writer);
@@ -202,6 +222,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void Tick(DateTimeOffset now)
         {
+            Debug.Assert(_frame != null, $"nameof({_frame}) is null");
+
             var timestamp = now.Ticks;
 
             // TODO: Use PlatformApis.VolatileRead equivalent again
