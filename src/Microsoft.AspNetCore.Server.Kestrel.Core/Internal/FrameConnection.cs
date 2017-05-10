@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         private readonly FrameConnectionContext _context;
         private readonly Frame _frame;
-        private readonly List<IConnectionAdapter> _connectionAdapters;
+        private List<IAdaptedConnection> _adaptedConnections;
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private long _lastTimestamp;
@@ -33,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             _context = context;
             _frame = context.Frame;
-            _connectionAdapters = context.ConnectionAdapters;
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 var input = _context.Input.Reader;
                 var output = _context.Output;
 
-                if (_connectionAdapters.Count > 0)
+                if (_context.ConnectionAdapters.Count > 0)
                 {
                     adaptedPipeline = new AdaptedPipeline(input,
                                                           output,
@@ -159,17 +159,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private async Task<Stream> ApplyConnectionAdaptersAsync()
         {
+            var features = new FeatureCollection();
+            var connectionAdapters = _context.ConnectionAdapters;
             var stream = new RawStream(_context.Input.Reader, _context.Output.Writer);
-            var adapterContext = new ConnectionAdapterContext(stream);
-            var adaptedConnections = new IAdaptedConnection[_connectionAdapters.Count];
+            var adapterContext = new ConnectionAdapterContext(features, stream);
+            _adaptedConnections = new List<IAdaptedConnection>(connectionAdapters.Count);
 
             try
             {
-                for (var i = 0; i < _connectionAdapters.Count; i++)
+                for (var i = 0; i < connectionAdapters.Count; i++)
                 {
-                    var adaptedConnection = await _connectionAdapters[i].OnConnectionAsync(adapterContext);
-                    adaptedConnections[i] = adaptedConnection;
-                    adapterContext = new ConnectionAdapterContext(adaptedConnection.ConnectionStream);
+                    var adaptedConnection = await connectionAdapters[i].OnConnectionAsync(adapterContext);
+                    _adaptedConnections.Add(adaptedConnection);
+                    adapterContext = new ConnectionAdapterContext(features, adaptedConnection.ConnectionStream);
                 }
             }
             catch (Exception ex)
@@ -180,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                _frame.AdaptedConnections = adaptedConnections;
+                _frame.ConnectionFeatures = features;
             }
 
             return adapterContext.ConnectionStream;
@@ -188,10 +190,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void DisposeAdaptedConnections()
         {
-            var adaptedConnections = _frame.AdaptedConnections;
+            var adaptedConnections = _adaptedConnections;
             if (adaptedConnections != null)
             {
-                for (int i = adaptedConnections.Length - 1; i >= 0; i--)
+                for (int i = adaptedConnections.Count - 1; i >= 0; i--)
                 {
                     adaptedConnections[i].Dispose();
                 }

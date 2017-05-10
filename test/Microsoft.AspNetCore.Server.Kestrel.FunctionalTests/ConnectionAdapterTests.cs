@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -217,10 +216,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             public Stream ConnectionStream { get; }
-
-            public void PrepareRequest(IFeatureCollection requestFeatures)
-            {
-            }
 
             public void Dispose()
             {

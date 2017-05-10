@@ -40,10 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
             public Stream ConnectionStream { get; }
 
-            public void PrepareRequest(IFeatureCollection requestFeatures)
-            {
-            }
-
             public void Dispose()
             {
             }

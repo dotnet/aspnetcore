@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
@@ -21,6 +20,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Http.Features;
 
 // ReSharper disable AccessToModifiedClosure
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IPipeReader Input { get; set; }
         public OutputProducer Output { get; set; }
-        public IAdaptedConnection[] AdaptedConnections { get; set; }
+        public IFeatureCollection ConnectionFeatures { get; set; }
         public ITimeoutControl TimeoutControl { get; set; }
 
         protected IKestrelTrace Log => ServiceContext.Log;
@@ -349,18 +349,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestHeaders = FrameRequestHeaders;
             ResponseHeaders = FrameResponseHeaders;
 
-            if (AdaptedConnections != null)
+            if (ConnectionFeatures != null)
             {
-                try
+                foreach (var feature in ConnectionFeatures)
                 {
-                    foreach (var adaptedConnection in AdaptedConnections)
+                    // Set the scheme to https if there's an ITlsConnectionFeature
+                    if (feature.Key == typeof(ITlsConnectionFeature))
                     {
-                        adaptedConnection.PrepareRequest(this);
+                        Scheme = "https";
                     }
-                }
-                catch (Exception ex)
-                {
-                    Log.LogError(0, ex, $"Uncaught exception from the {nameof(IAdaptedConnection.PrepareRequest)} method of an {nameof(IAdaptedConnection)}.");
+
+                    FastFeatureSet(feature.Key, feature.Value);
                 }
             }
 

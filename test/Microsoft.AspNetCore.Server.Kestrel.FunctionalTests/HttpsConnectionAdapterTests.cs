@@ -94,7 +94,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var server = new TestServer(context =>
                 {
-                    Assert.Equal(context.Features.Get<ITlsConnectionFeature>(), null);
+                    var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(tlsFeature);
+                    Assert.Null(tlsFeature.ClientCertificate);
                     return context.Response.WriteAsync("hello world");
                 },
                 serviceContext, listenOptions))

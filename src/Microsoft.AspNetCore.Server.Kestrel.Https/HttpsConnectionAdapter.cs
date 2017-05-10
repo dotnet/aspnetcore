@@ -109,6 +109,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                 return _closedAdaptedConnection;
             }
 
+            // Always set the feature even though the cert might be null
+            context.Features.Set<ITlsConnectionFeature>(new TlsConnectionFeature
+            {
+                ClientCertificate = (X509Certificate2)sslStream.RemoteCertificate
+            });
+
             return new HttpsAdaptedConnection(sslStream);
         }
 
@@ -123,17 +129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
             public Stream ConnectionStream => _sslStream;
 
-            public void PrepareRequest(IFeatureCollection requestFeatures)
-            {
-                var clientCertificate = (X509Certificate2)_sslStream.RemoteCertificate;
-                if (clientCertificate != null)
-                {
-                    requestFeatures.Set<ITlsConnectionFeature>(new TlsConnectionFeature { ClientCertificate = clientCertificate });
-                }
-
-                requestFeatures.Get<IHttpRequestFeature>().Scheme = "https";
-            }
-
             public void Dispose()
             {
                 _sslStream.Dispose();
@@ -143,10 +138,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         private class ClosedAdaptedConnection : IAdaptedConnection
         {
             public Stream ConnectionStream { get; } = new ClosedStream();
-
-            public void PrepareRequest(IFeatureCollection requestFeatures)
-            {
-            }
 
             public void Dispose()
             {

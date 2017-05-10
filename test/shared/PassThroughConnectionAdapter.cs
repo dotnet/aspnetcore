@@ -27,10 +27,6 @@ namespace Microsoft.AspNetCore.Testing
 
             public Stream ConnectionStream { get; }
 
-            public void PrepareRequest(IFeatureCollection requestFeatures)
-            {
-            }
-
             public void Dispose()
             {
             }

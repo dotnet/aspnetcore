@@ -3,14 +3,11 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     public interface IAdaptedConnection : IDisposable
     {
         Stream ConnectionStream { get; }
-
-        void PrepareRequest(IFeatureCollection requestFeatures);
     }
 }
