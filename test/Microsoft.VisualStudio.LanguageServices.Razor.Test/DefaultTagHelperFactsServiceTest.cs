@@ -307,6 +307,32 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         [Fact]
+        public void GetTagHelpersGivenParent_AllowsRootParentTagForParentRestrictedTagHelperDescriptors()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("PTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule
+                        .RequireTagName("p")
+                        .RequireParentTag("body"))
+                    .Build()
+            };
+            var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
+            var service = new DefaultTagHelperFactsService();
+
+            // Act
+            var descriptors = service.GetTagHelpersGivenParent(documentContext, parentTag: null /* root */);
+
+            // Assert
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(documentDescriptors[0], descriptor, TagHelperDescriptorComparer.CaseSensitive);
+        }
+
+        [Fact]
         public void GetTagHelpersGivenParent_AllowsUnspecifiedParentTagHelpers()
         {
             // Arrange
