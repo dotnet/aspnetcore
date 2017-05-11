@@ -11,7 +11,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public static class ModelDirective
     {
-        public static readonly DirectiveDescriptor Directive = DirectiveDescriptorBuilder.Create("model").AddType().Build();
+        public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
+            "model",
+            DirectiveKind.SingleLine,
+            builder => builder.AddTypeToken());
 
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
         {

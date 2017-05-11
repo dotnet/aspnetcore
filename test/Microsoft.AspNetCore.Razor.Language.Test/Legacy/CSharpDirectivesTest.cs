@@ -14,7 +14,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_UnderstandsTypeTokens()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddType().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddTypeToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -34,7 +37,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_UnderstandsMemberTokens()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddMember().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddMemberToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -54,7 +60,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void Parser_ParsesNamespaceDirectiveToken_WithSingleSegment()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddNamespace().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddNamespaceToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -74,7 +83,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void Parser_ParsesNamespaceDirectiveToken_WithMultipleSegments()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddNamespace().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddNamespaceToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -94,7 +106,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_UnderstandsStringTokens()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddStringToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -114,7 +129,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_StringToken_ParserErrorForUnquotedValue()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddStringToken());
+
             var expectedError = new RazorError(
                 LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
                 new SourceLocation(8, 0, 8),
@@ -135,7 +154,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_StringToken_ParserErrorForNonStringValue()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddStringToken());
+
             var expectedError = new RazorError(
                 LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
                 new SourceLocation(8, 0, 8),
@@ -156,7 +179,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_StringToken_ParserErrorForSingleQuotedValue()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddStringToken());
+
             var expectedError = new RazorError(
                 LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
                 new SourceLocation(8, 0, 8),
@@ -177,7 +204,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_StringToken_ParserErrorForPartialQuotedValue()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddStringToken());
+
             var expectedError = new RazorError(
                 LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
                 new SourceLocation(8, 0, 8),
@@ -199,11 +230,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_UnderstandsMultipleTokens()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom")
-                .AddType()
-                .AddMember()
-                .AddString()
-                .Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddTypeToken().AddMemberToken().AddStringToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -234,7 +264,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_UnderstandsRazorBlocks()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.CreateRazorBlock("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.RazorBlock,
+                b => b.AddStringToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -267,7 +300,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_UnderstandsCodeBlocks()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.CodeBlock,
+                b => b.AddStringToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -293,10 +329,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_AllowsWhiteSpaceAroundTokens()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom")
-                .AddType()
-                .AddMember()
-                .Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddTypeToken().AddMemberToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -325,7 +361,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_ErrorsForInvalidMemberTokens()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddMember().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddMemberToken());
+
             var expectedErorr = new RazorError(
                 LegacyResources.FormatDirectiveExpectsIdentifier("custom"),
                 new SourceLocation(8, 0, 8),
@@ -347,7 +387,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_NoErrorsSemicolonAfterDirective()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddStringToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -368,7 +411,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_ErrorsExtraContentAfterDirective()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddStringToken());
+
             var expectedErorr = new RazorError(
                 LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "line break"),
                 new SourceLocation(16, 0, 16),
@@ -395,7 +442,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_ErrorsWhenExtraContentBeforeBlockStart()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.CodeBlock,
+                b => b.AddStringToken());
+
             var expectedErorr = new RazorError(
                 LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "{"),
                 new SourceLocation(16, 0, 16),
@@ -422,7 +473,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_ErrorsWhenEOFBeforeDirectiveBlockStart()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.CodeBlock,
+                b => b.AddStringToken());
+
             var expectedErorr = new RazorError(
                 LegacyResources.FormatUnexpectedEOFAfterDirective("custom", "{"),
                 new SourceLocation(15, 0, 15),
@@ -447,7 +502,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void DirectiveDescriptor_ErrorsWhenMissingEndBrace()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.CodeBlock,
+                b => b.AddStringToken());
+
             var expectedErorr = new RazorError(
                 LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("custom", "}", "{"),
                 new SourceLocation(16, 0, 16),
@@ -884,7 +943,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void OptionalDirectiveTokens_AreSkipped()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddOptionalStringToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -901,7 +963,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void OptionalDirectiveTokens_WithSimpleTokens_AreParsed()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddOptionalStringToken());
+
             var chunkGenerator = new DirectiveTokenChunkGenerator(descriptor.Tokens.First());
 
             // Act & Assert
@@ -922,7 +988,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void OptionalDirectiveTokens_WithBraces_AreParsed()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddOptionalStringToken());
+
             var chunkGenerator = new DirectiveTokenChunkGenerator(descriptor.Tokens.First());
 
             // Act & Assert
@@ -943,7 +1013,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void OptionalDirectiveTokens_WithMultipleOptionalTokens_AreParsed()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().AddType().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddOptionalStringToken().AddOptionalTypeToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -967,7 +1040,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void OptionalMemberTokens_WithMissingMember_IsParsed()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("TestDirective").BeginOptionals().AddMember().AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "TestDirective",
+                DirectiveKind.SingleLine,
+                b => b.AddOptionalMemberToken().AddOptionalStringToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -984,7 +1060,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void OptionalMemberTokens_WithMemberSpecified_IsParsed()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("TestDirective").BeginOptionals().AddMember().AddString().Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "TestDirective",
+                DirectiveKind.SingleLine,
+                b => b.AddOptionalMemberToken().AddOptionalStringToken());
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -1004,7 +1083,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void Directives_CanUseReservedWord_Class()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("class").Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "class",
+                DirectiveKind.SingleLine);
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -1020,7 +1101,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void Directives_CanUseReservedWord_Namespace()
         {
             // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("namespace").Build();
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "namespace",
+                DirectiveKind.SingleLine);
 
             // Act & Assert
             ParseCodeBlockTest(

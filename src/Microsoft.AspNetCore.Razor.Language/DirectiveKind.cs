@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public enum DirectiveDescriptorKind
+    public enum DirectiveKind
     {
         SingleLine,
         RazorBlock,

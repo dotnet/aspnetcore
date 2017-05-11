@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 builder.Append(")");
             }
 
-            if (directive.Kind == DirectiveDescriptorKind.CodeBlock || directive.Kind == DirectiveDescriptorKind.RazorBlock)
+            if (directive.Kind == DirectiveKind.CodeBlock || directive.Kind == DirectiveKind.RazorBlock)
             {
                 builder.Append("{ ... }");
             }

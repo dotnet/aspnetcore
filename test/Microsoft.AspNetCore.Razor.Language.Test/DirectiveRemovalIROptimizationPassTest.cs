@@ -19,8 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var defaultEngine = RazorEngine.Create(b =>
             {
-                var customDirective = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
-                b.AddDirective(customDirective);
+                b.AddDirective(DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, d => d.AddStringToken()));
             });
             var irDocument = Lower(codeDocument, defaultEngine);
             var pass = new DirectiveRemovalIROptimizationPass()
@@ -54,8 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var defaultEngine = RazorEngine.Create(b =>
             {
-                var customDirective = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
-                b.AddDirective(customDirective);
+                b.AddDirective(DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, d => d.AddStringToken()));
             });
             var irDocument = Lower(codeDocument, defaultEngine);
             var pass = new DirectiveRemovalIROptimizationPass()

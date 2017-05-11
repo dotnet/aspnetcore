@@ -11,12 +11,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class PageDirective
     {
-        public static readonly DirectiveDescriptor DirectiveDescriptor = DirectiveDescriptorBuilder
-            .Create("page")
-            .BeginOptionals()
-            .AddString() // Route template
-            .AddString() // Page Name
-            .Build();
+        public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
+            "page",
+            DirectiveKind.SingleLine,
+            builder => builder.AddOptionalStringToken());
 
         private PageDirective(string routeTemplate, string pageName)
         {
@@ -30,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
         {
-            builder.AddDirective(DirectiveDescriptor);
+            builder.AddDirective(Directive);
             return builder;
         }
 
@@ -80,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public override void VisitDirective(DirectiveIRNode node)
             {
-                if (node.Descriptor == DirectiveDescriptor)
+                if (node.Descriptor == Directive)
                 {
                     DirectiveNode = node;
                 }

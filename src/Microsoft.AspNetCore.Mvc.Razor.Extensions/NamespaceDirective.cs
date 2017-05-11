@@ -12,9 +12,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public static class NamespaceDirective
     {
-        private static readonly char[] Separators = new char[] { '\\', '/' }; 
+        private static readonly char[] Separators = new char[] { '\\', '/' };
 
-        public static readonly DirectiveDescriptor Directive = DirectiveDescriptorBuilder.Create("namespace").AddNamespace().Build();
+        public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
+            "namespace",
+            DirectiveKind.SingleLine,
+            builder => builder.AddNamespaceToken());
 
         public static void Register(IRazorEngineBuilder builder)
         {

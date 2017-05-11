@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange
             var engine = RazorEngine.Create(b =>
             {
-                b.AddDirective(DirectiveDescriptorBuilder.Create("test_directive").Build());
+                b.AddDirective(DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine));
             });
 
             var document = CreateCodeDocument();

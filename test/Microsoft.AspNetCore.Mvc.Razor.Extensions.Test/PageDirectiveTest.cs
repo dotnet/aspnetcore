@@ -102,25 +102,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Null(pageDirective.PageName);
         }
 
-        [Fact]
-        public void TryGetPageDirective_ParsesPageName()
-        {
-            // Arrange
-            var content = "@page \"some-route\" \"some name\"";
-            var sourceDocument = RazorSourceDocument.Create(content, "file");
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var engine = CreateEngine();
-            var irDocument = CreateIRDocument(engine, codeDocument);
-
-            // Act
-            var result = PageDirective.TryGetPageDirective(irDocument, out var pageDirective);
-
-            // Assert
-            Assert.True(result);
-            Assert.Equal("some-route", pageDirective.RouteTemplate);
-            Assert.Equal("some name", pageDirective.PageName);
-        }
-
         private RazorEngine CreateEngine()
         {
             return RazorEngine.Create(b =>

@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var irDocument = Lower(codeDocument, b =>
             {
-                b.AddDirective(DirectiveDescriptorBuilder.Create("test").AddMember().Build());
+                b.AddDirective(DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine, d => d.AddMemberToken()));
             });
 
             // Assert
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var irDocument = Lower(codeDocument, b =>
             {
-                b.AddDirective(DirectiveDescriptorBuilder.CreateRazorBlock("block").AddMember().Build());
+                b.AddDirective(DirectiveDescriptor.CreateDirective("block", DirectiveKind.RazorBlock, d => d.AddMemberToken()));
             });
 
             // Assert

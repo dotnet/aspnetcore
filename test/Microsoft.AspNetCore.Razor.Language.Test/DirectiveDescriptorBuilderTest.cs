@@ -5,98 +5,102 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class DirectiveDescriptorBuilderTest
+    public class DirectiveDescriptorBuilderExtensionsTest
     {
         [Fact]
-        public void Create_BuildsSingleLineDirectiveDescriptor()
+        public void AddMemberToken_AddsToken()
         {
-            // Act
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").Build();
-
-            // Assert
-            Assert.Equal(DirectiveDescriptorKind.SingleLine, descriptor.Kind);
-        }
-
-        [Fact]
-        public void CreateRazorBlock_BuildsRazorBlockDirectiveDescriptor()
-        {
-            // Act
-            var descriptor = DirectiveDescriptorBuilder.CreateRazorBlock("custom").Build();
-
-            // Assert
-            Assert.Equal(DirectiveDescriptorKind.RazorBlock, descriptor.Kind);
-        }
-
-        [Fact]
-        public void CreateCodeBlock_BuildsCodeBlockDirectiveDescriptor()
-        {
-            // Act
-            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").Build();
-
-            // Assert
-            Assert.Equal(DirectiveDescriptorKind.CodeBlock, descriptor.Kind);
-        }
-
-        [Fact]
-        public void AddType_AddsToken()
-        {
-            // Arrange
-            var builder = DirectiveDescriptorBuilder.Create("custom");
-
-            // Act
-            var descriptor = builder.AddType().Build();
-
-            // Assert
-            var token = Assert.Single(descriptor.Tokens);
-            Assert.Equal(DirectiveTokenKind.Type, token.Kind);
-        }
-
-        [Fact]
-        public void AddMember_AddsToken()
-        {
-            // Arrange
-            var builder = DirectiveDescriptorBuilder.Create("custom");
-
-            // Act
-            var descriptor = builder.AddMember().Build();
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddMemberToken());
 
             // Assert
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.Member, token.Kind);
+            Assert.False(token.Optional);
         }
 
         [Fact]
-        public void AddString_AddsToken()
+        public void AddNamespaceToken_AddsToken()
         {
-            // Arrange
-            var builder = DirectiveDescriptorBuilder.Create("custom");
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddNamespaceToken());
 
-            // Act
-            var descriptor = builder.AddString().Build();
+            // Assert
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.Namespace, token.Kind);
+            Assert.False(token.Optional);
+        }
+
+        [Fact]
+        public void AddStringToken_AddsToken()
+        {
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddStringToken());
 
             // Assert
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.String, token.Kind);
+            Assert.False(token.Optional);
         }
 
         [Fact]
-        public void AddX_MaintainsMultipleTokens()
+        public void AddTypeToken_AddsToken()
         {
-            // Arrange
-            var builder = DirectiveDescriptorBuilder.Create("custom");
-
-            // Act
-            var descriptor = builder
-                .AddType()
-                .AddMember()
-                .AddString()
-                .Build();
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddTypeToken());
 
             // Assert
-            Assert.Collection(descriptor.Tokens,
-                token => Assert.Equal(DirectiveTokenKind.Type, token.Kind),
-                token => Assert.Equal(DirectiveTokenKind.Member, token.Kind),
-                token => Assert.Equal(DirectiveTokenKind.String, token.Kind));
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.Type, token.Kind);
+            Assert.False(token.Optional);
+        }
+
+        [Fact]
+        public void AddOptionalTypeToken_AddsToken()
+        {
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalTypeToken());
+
+            // Assert
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.Type, token.Kind);
+            Assert.True(token.Optional);
+        }
+
+        [Fact]
+        public void AddOptionalMemberToken_AddsToken()
+        {
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalMemberToken());
+
+            // Assert
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.Member, token.Kind);
+            Assert.True(token.Optional);
+        }
+
+        [Fact]
+        public void AddOptionalNamespaceToken_AddsToken()
+        {
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalNamespaceToken());
+
+            // Assert
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.Namespace, token.Kind);
+            Assert.True(token.Optional);
+        }
+
+        [Fact]
+        public void AddOptionalStringToken_AddsToken()
+        {
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalStringToken());
+
+            // Assert
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.String, token.Kind);
+            Assert.True(token.Optional);
         }
     }
 }

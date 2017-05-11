@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             var syntaxTree = codeDocument.GetSyntaxTree();
             var directive = Assert.Single(syntaxTree.Options.Directives);
-            Assert.Equal("test_directive", directive.Name);
+            Assert.Equal("test", directive.Name);
         }
 
         [Fact]
@@ -71,8 +70,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Collection(
                 codeDocument.GetImportSyntaxTrees(),
-                t => { Assert.Same(t.Source, imports[0]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); },
-                t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); });
+                t => { Assert.Same(t.Source, imports[0]); Assert.Equal("test", Assert.Single(t.Options.Directives).Name); },
+                t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test", Assert.Single(t.Options.Directives).Name); });
         }
 
         private class MyParserOptionsFeature : IRazorParserOptionsFeature
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public void Configure(RazorParserOptions options)
             {
-                options.Directives.Add(DirectiveDescriptorBuilder.Create("test_directive").Build());
+                options.Directives.Add(DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine));
             }
         }
     }

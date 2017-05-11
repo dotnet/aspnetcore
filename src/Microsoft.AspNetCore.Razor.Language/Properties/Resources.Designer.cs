@@ -151,18 +151,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             => GetString("RazorProject_PathMustStartWithForwardSlash");
 
         /// <summary>
-        /// The method '{0}' has already been invoked.
+        /// A non-optional directive token cannot follow an optional directive token.
         /// </summary>
-        internal static string DirectiveDescriptor_BeginOptionalsAlreadyInvoked
+        internal static string DirectiveDescriptor_InvalidNonOptionalToken
         {
-            get => GetString("DirectiveDescriptor_BeginOptionalsAlreadyInvoked");
+            get => GetString("DirectiveDescriptor_InvalidNonOptionalToken");
         }
 
         /// <summary>
-        /// The method '{0}' has already been invoked.
+        /// A non-optional directive token cannot follow an optional directive token.
         /// </summary>
-        internal static string FormatDirectiveDescriptor_BeginOptionalsAlreadyInvoked(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveDescriptor_BeginOptionalsAlreadyInvoked"), p0);
+        internal static string FormatDirectiveDescriptor_InvalidNonOptionalToken()
+            => GetString("DirectiveDescriptor_InvalidNonOptionalToken");
 
         /// <summary>
         /// The document of kind '{0}' does not have a '{1}'. The document classifier must set a value for '{2}'.
@@ -387,6 +387,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         internal static string FormatInvalidOperation_SpanIsNotChangeOwner(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidOperation_SpanIsNotChangeOwner"), p0, p1);
+
+        /// <summary>
+        /// Invalid directive name '{0}'. Directives must have a non-empty name that consists only of letters.
+        /// </summary>
+        internal static string DirectiveDescriptor_InvalidDirectiveName
+        {
+            get => GetString("DirectiveDescriptor_InvalidDirectiveName");
+        }
+
+        /// <summary>
+        /// Invalid directive name '{0}'. Directives must have a non-empty name that consists only of letters.
+        /// </summary>
+        internal static string FormatDirectiveDescriptor_InvalidDirectiveName(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveDescriptor_InvalidDirectiveName"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {

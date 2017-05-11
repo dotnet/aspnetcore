@@ -147,8 +147,8 @@
   <data name="RazorProject_PathMustStartWithForwardSlash" xml:space="preserve">
     <value>Path must begin with a forward slash '/'.</value>
   </data>
-  <data name="DirectiveDescriptor_BeginOptionalsAlreadyInvoked" xml:space="preserve">
-    <value>The method '{0}' has already been invoked.</value>
+  <data name="DirectiveDescriptor_InvalidNonOptionalToken" xml:space="preserve">
+    <value>A non-optional directive token cannot follow an optional directive token.</value>
   </data>
   <data name="DocumentMissingTarget" xml:space="preserve">
     <value>The document of kind '{0}' does not have a '{1}'. The document classifier must set a value for '{2}'.</value>
@@ -197,5 +197,8 @@
   </data>
   <data name="InvalidOperation_SpanIsNotChangeOwner" xml:space="preserve">
     <value>The node '{0}' is not the owner of change '{1}'.</value>
+  </data>
+  <data name="DirectiveDescriptor_InvalidDirectiveName" xml:space="preserve">
+    <value>Invalid directive name '{0}'. Directives must have a non-empty name that consists only of letters.</value>
   </data>
 </root>

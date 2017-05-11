@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 b.Features.Add(expected);
 
                 // Act
-                b.AddDirective(DirectiveDescriptorBuilder.Create("test_directive").Build());
+                b.AddDirective(DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine));
             });
 
             // Assert
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Same(expected, actual);
 
             var directive = Assert.Single(actual.Directives);
-            Assert.Equal("test_directive", directive.Name);
+            Assert.Equal("test", directive.Name);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b =>
             {
                 // Act
-                b.AddDirective(DirectiveDescriptorBuilder.Create("test_directive").Build());
+                b.AddDirective(DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine));
             });
 
             // Assert
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.IsType<DefaultRazorDirectiveFeature>(actual);
 
             var directive = Assert.Single(actual.Directives);
-            Assert.Equal("test_directive", directive.Name);
+            Assert.Equal("test", directive.Name);
         }
 
         [Fact]

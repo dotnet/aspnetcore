@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
             {
-                if (chunkGenerator.Descriptor.Kind == DirectiveDescriptorKind.SingleLine)
+                if (chunkGenerator.Descriptor.Kind == DirectiveKind.SingleLine)
                 {
                     _insideLineDirective = true;
 

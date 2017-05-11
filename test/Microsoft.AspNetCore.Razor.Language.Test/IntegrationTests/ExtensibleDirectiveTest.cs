@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 builder.Features.Add(new ApiSetsIRTestAdapter());
 
-                builder.AddDirective(DirectiveDescriptorBuilder.Create("custom").AddNamespace().Build());
+                builder.AddDirective(DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddNamespaceToken()));
             });
 
             var document = CreateCodeDocument();

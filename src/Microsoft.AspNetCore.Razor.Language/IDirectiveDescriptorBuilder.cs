@@ -1,19 +1,17 @@
 ﻿// Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public interface IDirectiveDescriptorBuilder
     {
-        IDirectiveDescriptorBuilder AddType();
+        string Name { get; }
 
-        IDirectiveDescriptorBuilder AddMember();
+        DirectiveKind Kind { get; }
 
-        IDirectiveDescriptorBuilder AddNamespace();
-
-        IDirectiveDescriptorBuilder AddString();
-
-        IDirectiveDescriptorBuilder BeginOptionals();
+        IList<DirectiveTokenDescriptor> Tokens { get; }
 
         DirectiveDescriptor Build();
     }

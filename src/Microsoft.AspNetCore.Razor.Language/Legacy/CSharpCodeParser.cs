@@ -13,40 +13,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static readonly Func<CSharpSymbol, bool> IsValidStatementSpacingSymbol =
             IsSpacingToken(includeNewLines: true, includeComments: true);
 
-        internal static readonly DirectiveDescriptor SectionDirectiveDescriptor =
-            DirectiveDescriptorBuilder
-                .CreateRazorBlock(SyntaxConstants.CSharp.SectionKeyword)
-                .AddMember()
-                .Build();
+        internal static readonly DirectiveDescriptor SectionDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
+            SyntaxConstants.CSharp.SectionKeyword,
+            DirectiveKind.RazorBlock,
+            builder => builder.AddMemberToken());
 
-        internal static readonly DirectiveDescriptor FunctionsDirectiveDescriptor =
-            DirectiveDescriptorBuilder
-                .CreateCodeBlock(SyntaxConstants.CSharp.FunctionsKeyword)
-                .Build();
+        internal static readonly DirectiveDescriptor FunctionsDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
+            SyntaxConstants.CSharp.FunctionsKeyword,
+            DirectiveKind.CodeBlock);
 
-        internal static readonly DirectiveDescriptor InheritsDirectiveDescriptor =
-            DirectiveDescriptorBuilder
-                .Create(SyntaxConstants.CSharp.InheritsKeyword)
-                .AddType()
-                .Build();
+        internal static readonly DirectiveDescriptor InheritsDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
+            SyntaxConstants.CSharp.InheritsKeyword,
+            DirectiveKind.SingleLine,
+            builder => builder.AddTypeToken());
 
-        internal static readonly DirectiveDescriptor AddTagHelperDirectiveDescriptor =
-            DirectiveDescriptorBuilder
-                .Create(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                .AddString()
-                .Build();
+        internal static readonly DirectiveDescriptor AddTagHelperDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
+            SyntaxConstants.CSharp.AddTagHelperKeyword,
+            DirectiveKind.SingleLine,
+            builder => builder.AddStringToken());
 
-        internal static readonly DirectiveDescriptor RemoveTagHelperDirectiveDescriptor =
-            DirectiveDescriptorBuilder
-                .Create(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                .AddString()
-                .Build();
+        internal static readonly DirectiveDescriptor RemoveTagHelperDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
+            SyntaxConstants.CSharp.RemoveTagHelperKeyword,
+            DirectiveKind.SingleLine,
+            builder => builder.AddStringToken());
 
-        internal static readonly DirectiveDescriptor TagHelperPrefixDirectiveDescriptor =
-            DirectiveDescriptorBuilder
-                .Create(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
-                .AddString()
-                .Build();
+        internal static readonly DirectiveDescriptor TagHelperPrefixDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
+            SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+            DirectiveKind.SingleLine,
+            builder => builder.AddStringToken());
 
         internal static readonly IEnumerable<DirectiveDescriptor> DefaultDirectiveDescriptors = new[]
         {
@@ -1638,7 +1632,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             switch (descriptor.Kind)
             {
-                case DirectiveDescriptorKind.SingleLine:
+                case DirectiveKind.SingleLine:
                     Optional(CSharpSymbolType.Semicolon);
                     AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
@@ -1656,7 +1650,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     Output(SpanKind.Markup, AcceptedCharacters.WhiteSpace);
                     break;
-                case DirectiveDescriptorKind.RazorBlock:
+                case DirectiveKind.RazorBlock:
                     AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
                     Output(SpanKind.Markup, AcceptedCharacters.AllWhiteSpace);
 
@@ -1681,7 +1675,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         NextToken();
                     });
                     break;
-                case DirectiveDescriptorKind.CodeBlock:
+                case DirectiveKind.CodeBlock:
                     AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
                     Output(SpanKind.Markup, AcceptedCharacters.AllWhiteSpace);
 
