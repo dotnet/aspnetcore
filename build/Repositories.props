@@ -28,7 +28,6 @@
     <Repository Include="HttpAbstractions" Commit="" />
     <Repository Include="HttpSysServer" Commit="" />
     <Repository Include="Identity" Commit="" />
-    <Repository Include="IdentityService" Commit="" />
     <Repository Include="IISIntegration" Commit="" />
     <Repository Include="JsonPatch" Commit="" />
     <Repository Include="KestrelHttpServer" Commit="" />
