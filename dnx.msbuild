@@ -662,8 +662,7 @@
         <Justification>Deps files are auto-generated</Justification>
       </FileExclusions>
       <FileExclusions
-          Include="$(PoliCheckPath)**\net46\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
-                    $(PoliCheckPath)**\netstandard1.3\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
+          Include="$(PoliCheckPath)**\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
                     $(PoliCheckPath)**\src\EFCore.Specification.Tests\TestModels\Northwind\NorthwindData.Objects.cs;
                     $(PoliCheckPath)**\src\EFCore.Specification.Tests\DatabindingTestBase.cs">
         <Justification>Northwind database contains too many violations to track them individually.</Justification>
