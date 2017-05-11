@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ConditionalAttributes_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [44] ConditionalAttributes.cshtml)
                     RazorIRToken - (2:0,2 [44] ConditionalAttributes.cshtml) - CSharp - \n    var ch = true;\n    var cls = "bar";\n
                 HtmlContent - (46:3,0 [28] ConditionalAttributes.cshtml)

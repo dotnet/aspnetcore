@@ -6,7 +6,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TransitionsInTagHelperAttributes_Runtime -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - test - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (35:1,2 [59] TransitionsInTagHelperAttributes.cshtml)
                     RazorIRToken - (35:1,2 [59] TransitionsInTagHelperAttributes.cshtml) - CSharp -  \n    var @class = "container-fluid";\n    var @int = 1;\n
                 HtmlContent - (97:5,0 [2] TransitionsInTagHelperAttributes.cshtml)

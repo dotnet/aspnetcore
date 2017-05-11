@@ -29,7 +29,7 @@ Document -
                 DirectiveToken - (34:1,14 [14] Inject.cshtml) - MyPropertyName
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (18:0,18 [2] Inject.cshtml)
                     RazorIRToken - (18:0,18 [2] Inject.cshtml) - Html - \n
             InjectDirective - 

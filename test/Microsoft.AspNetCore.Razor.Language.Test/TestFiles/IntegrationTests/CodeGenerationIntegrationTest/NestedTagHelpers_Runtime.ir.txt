@@ -8,7 +8,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - SpanTagHelper - DivTagHelper - InputTagHelper
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 TagHelper - (31:1,0 [26] NestedTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - span - TagMode.StartTagAndEndTag
                         HtmlContent - (46:1,15 [4] NestedTagHelpers.cshtml)

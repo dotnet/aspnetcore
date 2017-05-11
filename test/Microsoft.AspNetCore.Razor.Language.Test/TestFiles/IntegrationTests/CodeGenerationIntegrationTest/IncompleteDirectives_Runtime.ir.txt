@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
                 HtmlContent - (135:5,0 [2] IncompleteDirectives.cshtml)

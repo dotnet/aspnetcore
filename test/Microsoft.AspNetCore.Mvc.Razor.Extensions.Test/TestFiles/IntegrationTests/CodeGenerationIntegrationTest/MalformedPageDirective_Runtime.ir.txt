@@ -9,7 +9,7 @@ Document -
         UsingStatement - (104:4,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingStatement - (147:5,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - BeginContext(6, 49, true);
                 HtmlContent - (6:0,6 [49] MalformedPageDirective.cshtml)

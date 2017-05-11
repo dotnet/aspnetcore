@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             RazorCodeDocument codeDocument,
             NamespaceDeclarationIRNode @namespace,
             ClassDeclarationIRNode @class,
-            RazorMethodDeclarationIRNode method)
+            MethodDeclarationIRNode method)
         {
             var configuration = Engine.Features.OfType<DefaultDocumentClassifierPassFeature>().FirstOrDefault();
             if (configuration != null)

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             // Arrange
             var document = new DocumentIRNode();
-            var method = new RazorMethodDeclarationIRNode();
+            var method = new MethodDeclarationIRNode();
             method.Annotations[CommonAnnotations.PrimaryMethod] = CommonAnnotations.PrimaryMethod;
 
             var builder = RazorIRBuilder.Create(document);

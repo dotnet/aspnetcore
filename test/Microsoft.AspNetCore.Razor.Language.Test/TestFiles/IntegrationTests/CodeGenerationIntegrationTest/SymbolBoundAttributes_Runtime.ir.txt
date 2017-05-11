@@ -13,7 +13,7 @@ Document -
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_6 - #local - value - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7 - #local - value - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.CatchAllTagHelper
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [253] SymbolBoundAttributes.cshtml)
                     RazorIRToken - (31:1,0 [2] SymbolBoundAttributes.cshtml) - Html - \n
                     RazorIRToken - (33:2,0 [3] SymbolBoundAttributes.cshtml) - Html - <ul

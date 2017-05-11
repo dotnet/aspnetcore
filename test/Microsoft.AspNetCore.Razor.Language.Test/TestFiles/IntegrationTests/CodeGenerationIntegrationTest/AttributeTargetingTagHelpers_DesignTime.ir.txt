@@ -9,7 +9,7 @@ Document -
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.CatchAllTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [4] AttributeTargetingTagHelpers.cshtml)
                     RazorIRToken - (29:0,29 [4] AttributeTargetingTagHelpers.cshtml) - Html - \n\n
                 TagHelper - (33:2,0 [228] AttributeTargetingTagHelpers.cshtml)

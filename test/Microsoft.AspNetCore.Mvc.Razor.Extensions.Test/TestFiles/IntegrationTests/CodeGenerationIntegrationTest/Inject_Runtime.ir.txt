@@ -10,7 +10,7 @@ Document -
         UsingStatement - (147:5,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         UsingStatement - (1:0,1 [19] Inject.cshtml) - MyNamespace
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inject_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 

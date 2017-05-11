@@ -27,7 +27,7 @@ Document -
                 DirectiveToken - (159:11,8 [8] IncompleteDirectives.cshtml) - TypeName
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
                 HtmlContent - (108:4,6 [5] IncompleteDirectives.cshtml)

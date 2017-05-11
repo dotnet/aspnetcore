@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ImplicitExpression_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (1:0,1 [32] ImplicitExpression.cshtml)
                     RazorIRToken - (1:0,1 [32] ImplicitExpression.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n
                 HtmlContent - (33:1,0 [21] ImplicitExpression.cshtml)

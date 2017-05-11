@@ -6,7 +6,7 @@ Document -
         ClassDeclaration -  - public - Template -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.SingleQuotes
             DeclareTagHelperFields -  - InputTagHelper
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [12] TagHelpersWithBoundAttributes.cshtml)
                     RazorIRToken - (31:1,0 [6] TagHelpersWithBoundAttributes.cshtml) - Html - <form>
                     RazorIRToken - (37:1,6 [6] TagHelpersWithBoundAttributes.cshtml) - Html - \n    

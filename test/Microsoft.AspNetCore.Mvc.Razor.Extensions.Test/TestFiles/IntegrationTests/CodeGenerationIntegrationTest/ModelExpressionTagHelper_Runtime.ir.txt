@@ -10,7 +10,7 @@ Document -
         UsingStatement - (147:5,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime> - 
             DeclareTagHelperFields -  - Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - BeginContext(17, 2, true);
                 HtmlContent - (17:1,0 [2] ModelExpressionTagHelper.cshtml)

@@ -10,7 +10,7 @@ Document -
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - InputTagHelper
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [2] TagHelpersWithPrefix.cshtml)
                     RazorIRToken - (29:0,29 [2] TagHelpersWithPrefix.cshtml) - Html - \n
                 HtmlContent - (53:1,22 [14] TagHelpersWithPrefix.cshtml)

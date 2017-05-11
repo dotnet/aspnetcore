@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new DefaultDocumentWriter(target, context);
 
             var builder = RazorIRBuilder.Document();
-            builder.Add(new RazorMethodDeclarationIRNode()
+            builder.Add(new MethodDeclarationIRNode()
             {
                 AccessModifier = "internal",
                 Modifiers = new List<string> { "virtual", "async", },

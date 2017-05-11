@@ -17,14 +17,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             return FindWithAnnotation<ClassDeclarationIRNode>(node, CommonAnnotations.PrimaryClass);
         }
 
-        public static RazorMethodDeclarationIRNode FindPrimaryMethod(this DocumentIRNode node)
+        public static MethodDeclarationIRNode FindPrimaryMethod(this DocumentIRNode node)
         {
             if (node == null)
             {
                 throw new ArgumentNullException(nameof(node));
             }
 
-            return FindWithAnnotation<RazorMethodDeclarationIRNode>(node, CommonAnnotations.PrimaryMethod);
+            return FindWithAnnotation<MethodDeclarationIRNode>(node, CommonAnnotations.PrimaryMethod);
         }
 
         public static NamespaceDeclarationIRNode FindPrimaryNamespace(this DocumentIRNode node)

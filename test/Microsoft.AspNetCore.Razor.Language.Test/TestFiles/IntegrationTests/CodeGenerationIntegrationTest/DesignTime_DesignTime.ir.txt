@@ -8,7 +8,7 @@ Document -
                 DirectiveToken - (173:11,9 [6] DesignTime.cshtml) - Footer
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [19] DesignTime.cshtml)
                     RazorIRToken - (0:0,0 [5] DesignTime.cshtml) - Html - <div>
                     RazorIRToken - (5:0,5 [14] DesignTime.cshtml) - Html - \n            

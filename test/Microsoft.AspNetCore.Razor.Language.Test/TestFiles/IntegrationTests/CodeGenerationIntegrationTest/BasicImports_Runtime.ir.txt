@@ -7,7 +7,7 @@ Document -
         UsingStatement - (80:3,1 [29] BasicImports_Imports0.cshtml) - System.ComponentModel
         UsingStatement - (23:1,1 [20] BasicImports_Imports1.cshtml) - System.Text
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_Runtime - Hello - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] BasicImports.cshtml)
                     RazorIRToken - (0:0,0 [3] BasicImports.cshtml) - Html - <p>
                     RazorIRToken - (3:0,3 [9] BasicImports.cshtml) - Html - Hi there!

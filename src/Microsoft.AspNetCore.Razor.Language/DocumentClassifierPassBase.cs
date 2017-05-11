@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var @class = new ClassDeclarationIRNode();
             @class.Annotations[CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass;
 
-            var method = new RazorMethodDeclarationIRNode();
+            var method = new MethodDeclarationIRNode();
             method.Annotations[CommonAnnotations.PrimaryMethod] = CommonAnnotations.PrimaryMethod;
 
             var documentBuilder = RazorIRBuilder.Create(irDocument);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             RazorCodeDocument codeDocument,
             NamespaceDeclarationIRNode @namespace,
             ClassDeclarationIRNode @class,
-            RazorMethodDeclarationIRNode @method)
+            MethodDeclarationIRNode @method)
         {
             // Intentionally empty.
         }

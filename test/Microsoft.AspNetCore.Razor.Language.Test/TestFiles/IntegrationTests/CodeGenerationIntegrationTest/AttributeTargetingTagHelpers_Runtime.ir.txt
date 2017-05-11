@@ -8,7 +8,7 @@ Document -
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_1 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - btn - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.CatchAllTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [2] AttributeTargetingTagHelpers.cshtml)
                     RazorIRToken - (31:1,0 [2] AttributeTargetingTagHelpers.cshtml) - Html - \n
                 TagHelper - (33:2,0 [228] AttributeTargetingTagHelpers.cshtml)

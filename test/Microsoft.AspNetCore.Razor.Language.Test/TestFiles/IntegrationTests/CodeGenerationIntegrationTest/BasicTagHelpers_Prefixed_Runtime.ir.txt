@@ -7,7 +7,7 @@ Document -
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (57:2,0 [52] BasicTagHelpers_Prefixed.cshtml)
                     RazorIRToken - (57:2,0 [2] BasicTagHelpers_Prefixed.cshtml) - Html - \n
                     RazorIRToken - (59:3,0 [7] BasicTagHelpers_Prefixed.cshtml) - Html - <THSdiv

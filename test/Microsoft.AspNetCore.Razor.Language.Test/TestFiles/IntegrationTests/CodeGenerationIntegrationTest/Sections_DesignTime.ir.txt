@@ -10,7 +10,7 @@ Document -
                 DirectiveToken - (235:14,9 [15] Sections.cshtml) - NestedDelegates
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [44] Sections.cshtml)
                     RazorIRToken - (2:0,2 [44] Sections.cshtml) - CSharp - \n    Layout = "_SectionTestLayout.cshtml"\n
                 HtmlContent - (49:3,0 [31] Sections.cshtml)

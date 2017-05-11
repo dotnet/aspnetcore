@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_StringLiterals_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [2013] StringLiterals.cshtml)
                     RazorIRToken - (0:0,0 [3] StringLiterals.cshtml) - Html - <p>
                     RazorIRToken - (3:0,3 [14] StringLiterals.cshtml) - Html - This is line 1

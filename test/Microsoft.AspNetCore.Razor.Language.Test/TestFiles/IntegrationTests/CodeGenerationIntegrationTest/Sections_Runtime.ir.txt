@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Sections_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [44] Sections.cshtml)
                     RazorIRToken - (2:0,2 [44] Sections.cshtml) - CSharp - \n    Layout = "_SectionTestLayout.cshtml"\n
                 HtmlContent - (49:3,0 [31] Sections.cshtml)

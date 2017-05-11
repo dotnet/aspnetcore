@@ -27,7 +27,7 @@ Document -
                 DirectiveToken - (11:0,11 [14] ViewWithNamespace.cshtml) - Test.Namespace
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (27:1,0 [20] ViewWithNamespace.cshtml)
                     RazorIRToken - (27:1,0 [4] ViewWithNamespace.cshtml) - Html - <h1>
                     RazorIRToken - (31:1,4 [9] ViewWithNamespace.cshtml) - Html - Hi There!

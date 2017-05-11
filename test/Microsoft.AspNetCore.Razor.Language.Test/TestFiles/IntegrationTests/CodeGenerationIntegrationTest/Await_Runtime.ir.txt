@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Await_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (91:6,0 [100] Await.cshtml)
                     RazorIRToken - (91:6,0 [2] Await.cshtml) - Html - \n
                     RazorIRToken - (93:7,0 [9] Await.cshtml) - Html - <section>

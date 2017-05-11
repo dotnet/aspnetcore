@@ -247,9 +247,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public ClassDeclarationIRNode Class { get; private set; }
 
-            public RazorMethodDeclarationIRNode Method { get; private set; }
+            public MethodDeclarationIRNode Method { get; private set; }
 
-            public override void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
+            public override void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
             {
                 Method = node;
             }

@@ -67,9 +67,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
             var @class = @namespace.Children[2];
             Children(@class,
-                node => Assert.IsType<RazorMethodDeclarationIRNode>(node),
+                node => Assert.IsType<MethodDeclarationIRNode>(node),
                 node => CSharpStatement(" var value = true; ", node));
-            var method = (RazorMethodDeclarationIRNode)@class.Children[0];
+            var method = (MethodDeclarationIRNode)@class.Children[0];
             Assert.Empty(method.Children);
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
             var @class = @namespace.Children[2];
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             Children(method,
                 node => CSharpStatement("DefineSection(\"Header\", async () => {", node),
                 node => Html(" <p>Hello World</p> ", node),
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
             var @class = @namespace.Children[2];
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             Children(method,
                 node => CSharpStatement("DefineSection(\"Header\", async (__razor_section_writer) => {", node),
                 node => Html(" <p>Hello World</p> ", node),

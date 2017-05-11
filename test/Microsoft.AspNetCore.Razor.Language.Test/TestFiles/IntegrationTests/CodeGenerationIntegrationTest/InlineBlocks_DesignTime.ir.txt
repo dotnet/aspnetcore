@@ -8,7 +8,7 @@ Document -
                 DirectiveToken - (9:0,9 [4] InlineBlocks.cshtml) - Link
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - DefineSection("Link", async (__razor_section_writer) => {
                 CSharpStatement - 

@@ -14,7 +14,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7 - AGE - 40 - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_8 - Age - 500 - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] DuplicateAttributeTagHelpers.cshtml)
                     RazorIRToken - (33:1,0 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
                 TagHelper - (35:2,0 [259] DuplicateAttributeTagHelpers.cshtml)

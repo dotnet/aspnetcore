@@ -27,7 +27,7 @@ Document -
                 DirectiveToken - (7:0,7 [30] Model.cshtml) - System.Collections.IEnumerable
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 

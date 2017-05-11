@@ -35,7 +35,7 @@ Document -
                 DirectiveToken - (147:4,26 [5] InjectWithSemicolon.cshtml) - Html2
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 

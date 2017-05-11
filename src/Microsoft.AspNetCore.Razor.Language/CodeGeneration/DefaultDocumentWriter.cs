@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
             }
 
-            public override void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
+            public override void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
             {
                 Context.Writer.WriteLine("#pragma warning disable 1998");
 

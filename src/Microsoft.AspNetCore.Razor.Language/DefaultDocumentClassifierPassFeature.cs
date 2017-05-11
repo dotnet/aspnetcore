@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public IList<Action<RazorCodeDocument, NamespaceDeclarationIRNode>> ConfigureNamespace { get; } =
             new List<Action<RazorCodeDocument, NamespaceDeclarationIRNode>>();
 
-        public IList<Action<RazorCodeDocument, RazorMethodDeclarationIRNode>> ConfigureMethod { get; } =
-            new List<Action<RazorCodeDocument, RazorMethodDeclarationIRNode>>();
+        public IList<Action<RazorCodeDocument, MethodDeclarationIRNode>> ConfigureMethod { get; } =
+            new List<Action<RazorCodeDocument, MethodDeclarationIRNode>>();
     }
 }

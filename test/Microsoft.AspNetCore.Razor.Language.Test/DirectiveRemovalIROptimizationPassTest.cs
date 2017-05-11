@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
             var @class = @namespace.Children[2];
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             Assert.Empty(method.Children);
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
             var @class = @namespace.Children[2];
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             Assert.Empty(method.Children);
         }
 

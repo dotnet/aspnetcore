@@ -5,7 +5,7 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EnumTagHelpers_Runtime -  - 
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.CatchAllTagHelper
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] EnumTagHelpers.cshtml)
                     RazorIRToken - (33:1,0 [2] EnumTagHelpers.cshtml) - Html - \n
                 CSharpStatement - (37:2,2 [39] EnumTagHelpers.cshtml)

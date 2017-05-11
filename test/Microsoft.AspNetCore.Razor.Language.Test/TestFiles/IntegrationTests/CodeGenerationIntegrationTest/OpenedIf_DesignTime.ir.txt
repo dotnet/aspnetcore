@@ -7,7 +7,7 @@ Document -
             DesignTimeDirective - 
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [16] OpenedIf.cshtml)
                     RazorIRToken - (0:0,0 [6] OpenedIf.cshtml) - Html - <html>
                     RazorIRToken - (6:0,6 [2] OpenedIf.cshtml) - Html - \n

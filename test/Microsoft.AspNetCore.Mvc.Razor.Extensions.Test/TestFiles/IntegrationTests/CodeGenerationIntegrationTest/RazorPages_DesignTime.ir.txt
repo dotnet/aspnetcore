@@ -30,7 +30,7 @@ Document -
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - DivTagHelper
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (7:1,0 [2] RazorPages.cshtml)
                     RazorIRToken - (7:1,0 [2] RazorPages.cshtml) - Html - \n
                 HtmlContent - (57:3,31 [2] RazorPages.cshtml)

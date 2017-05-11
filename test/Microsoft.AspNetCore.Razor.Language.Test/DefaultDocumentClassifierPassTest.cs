@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
             var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             NoChildren(method);
         }
     }

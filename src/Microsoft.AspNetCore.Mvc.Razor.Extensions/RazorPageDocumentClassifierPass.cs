@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             RazorCodeDocument codeDocument,
             NamespaceDeclarationIRNode @namespace,
             ClassDeclarationIRNode @class,
-            RazorMethodDeclarationIRNode method)
+            MethodDeclarationIRNode method)
         {
             var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FileName;
 

@@ -5,7 +5,7 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EscapedTagHelpers_Runtime -  - 
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [3] EscapedTagHelpers.cshtml)
                     RazorIRToken - (31:1,0 [2] EscapedTagHelpers.cshtml) - Html - \n
                     RazorIRToken - (33:2,0 [1] EscapedTagHelpers.cshtml) - Html - <

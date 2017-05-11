@@ -8,7 +8,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - FormTagHelper - InputTagHelper
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - BeginContext(31, 28, true);
                 HtmlContent - (31:1,0 [28] BasicTest.cshtml)

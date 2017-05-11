@@ -10,7 +10,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_4 - data-delay - 1000 - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [71] BasicTagHelpers.cshtml)
                     RazorIRToken - (33:1,0 [2] BasicTagHelpers.cshtml) - Html - \n
                     RazorIRToken - (35:2,0 [4] BasicTagHelpers.cshtml) - Html - <div

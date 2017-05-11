@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorComments_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (36:0,36 [17] RazorComments.cshtml)
                     RazorIRToken - (36:0,36 [2] RazorComments.cshtml) - Html - \n
                     RazorIRToken - (38:1,0 [3] RazorComments.cshtml) - Html - <p>

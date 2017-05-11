@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.Content);
         }
 
-        public override void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
+        public override void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
         {
             WriteContentNode(node, node.AccessModifier, string.Join(", ", node.Modifiers ?? new List<string>()), node.ReturnType, node.Name);
         }

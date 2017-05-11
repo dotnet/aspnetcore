@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
             var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             NoChildren(method);
         }
 
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Children(
                 @class,
                 n => Assert.IsType<DeclareTagHelperFieldsIRNode>(n),
-                n => Assert.IsType<RazorMethodDeclarationIRNode>(n));
+                n => Assert.IsType<MethodDeclarationIRNode>(n));
         }
 
         [Fact]
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
             var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             Children(
                 method,
                 n => Assert.IsType<HtmlContentIRNode>(n),
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
             Assert.Equal("TestClass", @class.Name);
 
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             Assert.Equal("TestMethod", method.Name);
         }
 
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
             AnnotationEquals(@class, CommonAnnotations.PrimaryClass);
 
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            var method = SingleChild<MethodDeclarationIRNode>(@class);
             AnnotationEquals(method, CommonAnnotations.PrimaryMethod);
         }
 
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RazorCodeDocument codeDocument,
                 NamespaceDeclarationIRNode @namespace,
                 ClassDeclarationIRNode @class,
-                RazorMethodDeclarationIRNode method)
+                MethodDeclarationIRNode method)
             {
                 @namespace.Content = Namespace;
                 @class.Name = Class;

@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ExpressionsInCode_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [51] ExpressionsInCode.cshtml)
                     RazorIRToken - (2:0,2 [51] ExpressionsInCode.cshtml) - CSharp - \n    object foo = null;\n    string bar = "Foo";\n
                 HtmlContent - (56:4,0 [2] ExpressionsInCode.cshtml)

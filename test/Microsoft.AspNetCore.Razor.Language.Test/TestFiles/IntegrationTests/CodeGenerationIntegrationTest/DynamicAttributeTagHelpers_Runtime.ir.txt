@@ -5,7 +5,7 @@ Document -
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DynamicAttributeTagHelpers_Runtime -  - 
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] DynamicAttributeTagHelpers.cshtml)
                     RazorIRToken - (33:1,0 [2] DynamicAttributeTagHelpers.cshtml) - Html - \n
                 TagHelper - (35:2,0 [40] DynamicAttributeTagHelpers.cshtml)

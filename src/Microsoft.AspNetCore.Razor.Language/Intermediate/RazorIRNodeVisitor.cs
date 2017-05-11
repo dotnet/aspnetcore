@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
+        public virtual void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
         {
             VisitDefault(node);
         }

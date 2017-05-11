@@ -4,7 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Blocks_Runtime -  - 
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [18] Blocks.cshtml)
                     RazorIRToken - (2:0,2 [18] Blocks.cshtml) - CSharp - \n    int i = 1;\n
                 HtmlContent - (23:3,0 [2] Blocks.cshtml)

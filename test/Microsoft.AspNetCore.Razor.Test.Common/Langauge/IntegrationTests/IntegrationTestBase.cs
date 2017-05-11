@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     VisitDefault(node);
                 }
 
-                public override void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
+                public override void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
                 {
                     node.AccessModifier = "public";
                     node.Modifiers = new[] { "async" };

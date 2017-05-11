@@ -15,7 +15,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - form-group - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - class - col-md-offset-2 col-md-10 - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - DivTagHelper
-            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - BeginContext(7, 2, true);
                 HtmlContent - (7:1,0 [2] RazorPages.cshtml)

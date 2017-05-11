@@ -7,7 +7,7 @@ Document -
             DesignTimeDirective - 
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpStatement - (2:0,2 [48] ConditionalAttributes.cshtml)
                     RazorIRToken - (2:0,2 [48] ConditionalAttributes.cshtml) - CSharp - \n    var ch = true;\n    var cls = "bar";\n    
                 HtmlContent - (50:3,4 [16] ConditionalAttributes.cshtml)

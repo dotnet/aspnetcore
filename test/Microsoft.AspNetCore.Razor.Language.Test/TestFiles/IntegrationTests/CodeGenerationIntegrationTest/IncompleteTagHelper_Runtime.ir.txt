@@ -6,7 +6,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteTagHelper_Runtime -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class -  - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper
-            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] IncompleteTagHelper.cshtml)
                     RazorIRToken - (33:1,0 [2] IncompleteTagHelper.cshtml) - Html - \n
                 TagHelper - (35:2,0 [10] IncompleteTagHelper.cshtml)
