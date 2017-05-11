@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             private class ApiSetsIRWalker : RazorIRNodeWalker
             {
-                public override void VisitClass(ClassDeclarationIRNode node)
+                public override void VisitClassDeclaration(ClassDeclarationIRNode node)
                 {
                     node.Name = Filename.Replace('/', '_');
                     node.AccessModifier = "public";
@@ -229,14 +229,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     VisitDefault(node);
                 }
 
-                public override void VisitNamespace(NamespaceDeclarationIRNode node)
+                public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
                 {
                     node.Content = "Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles";
 
                     VisitDefault(node);
                 }
 
-                public override void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
+                public override void VisitMethodDeclaration(MethodDeclarationIRNode node)
                 {
                     node.AccessModifier = "public";
                     node.Modifiers = new[] { "async" };

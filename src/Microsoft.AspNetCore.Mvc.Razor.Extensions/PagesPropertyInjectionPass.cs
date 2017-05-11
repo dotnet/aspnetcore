@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             public ClassDeclarationIRNode Class { get; private set; }
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 if (Class == null)
                 {
                     Class = node;
                 }
 
-                base.VisitClass(node);
+                base.VisitClassDeclaration(node);
             }
         }
     }

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteBasicNode(node);
         }
 
-        public override void VisitClass(ClassDeclarationIRNode node)
+        public override void VisitClassDeclaration(ClassDeclarationIRNode node)
         {
             WriteContentNode(node, node.AccessModifier, node.Name, node.BaseType, string.Join(", ", node.Interfaces ?? new List<string>()));
         }
@@ -61,12 +61,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.Prefix, node.Content);
         }
 
-        public override void VisitNamespace(NamespaceDeclarationIRNode node)
+        public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
         {
             WriteContentNode(node, node.Content);
         }
 
-        public override void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
+        public override void VisitMethodDeclaration(MethodDeclarationIRNode node)
         {
             WriteContentNode(node, node.AccessModifier, string.Join(", ", node.Modifiers ?? new List<string>()), node.ReturnType, node.Name);
         }

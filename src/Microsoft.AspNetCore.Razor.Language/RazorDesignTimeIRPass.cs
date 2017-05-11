@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             private DesignTimeDirectiveIRNode _designTimeDirectiveIRNode;
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 var designTimeHelperDeclaration = new CSharpStatementIRNode();
                 RazorIRBuilder.Create(designTimeHelperDeclaration)

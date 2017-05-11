@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitNamespace(this);
+            visitor.VisitNamespaceDeclaration(this);
         }
     }
 }

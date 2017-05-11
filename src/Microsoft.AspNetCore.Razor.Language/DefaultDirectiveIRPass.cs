@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public IList<DirectiveIRNode> SectionDirectiveNodes { get; } = new List<DirectiveIRNode>();
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 if (ClassNode == null)
                 {

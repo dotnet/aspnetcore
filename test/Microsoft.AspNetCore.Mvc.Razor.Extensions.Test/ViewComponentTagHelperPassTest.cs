@@ -348,7 +348,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
         {
             public ClassDeclarationIRNode Node { get; set; }
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 Node = node;
             }

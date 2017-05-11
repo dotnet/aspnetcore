@@ -129,5 +129,81 @@ internal virtual async string TestMethod()
                 csharp,
                 ignoreLineEndingDifferences: true);
         }
+
+        [Fact]
+        public void WriteDocument_WritesField()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+            var options = RazorParserOptions.CreateDefaultOptions();
+
+            var target = RuntimeTarget.CreateDefault(codeDocument, options);
+            var context = new CSharpRenderingContext()
+            {
+                Options = options,
+                Writer = new Legacy.CSharpCodeWriter(),
+            };
+            var writer = new DefaultDocumentWriter(target, context);
+
+            var builder = RazorIRBuilder.Document();
+            builder.Add(new FieldDeclarationIRNode()
+            {
+                AccessModifier = "internal",
+                Modifiers = new List<string> { "readonly",},
+                Name = "_foo",
+                Type = "string",
+            });
+
+            var document = (DocumentIRNode)builder.Build();
+
+            // Act
+            writer.WriteDocument(document);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"internal readonly string _foo;
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteDocument_WritesProperty()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+            var options = RazorParserOptions.CreateDefaultOptions();
+
+            var target = RuntimeTarget.CreateDefault(codeDocument, options);
+            var context = new CSharpRenderingContext()
+            {
+                Options = options,
+                Writer = new Legacy.CSharpCodeWriter(),
+            };
+            var writer = new DefaultDocumentWriter(target, context);
+
+            var builder = RazorIRBuilder.Document();
+            builder.Add(new PropertyDeclarationIRNode()
+            {
+                AccessModifier = "internal",
+                Modifiers = new List<string> { "virtual", },
+                Name = "Foo",
+                Type = "string",
+            });
+
+            var document = (DocumentIRNode)builder.Build();
+
+            // Act
+            writer.WriteDocument(document);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"internal virtual string Foo { get; set; }
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
     }
 }

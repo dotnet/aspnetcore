@@ -164,24 +164,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // We want the last one, so get them all and then .
             public DirectiveIRNode LastNamespaceDirective { get; private set; }
 
-            public override void VisitNamespace(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
             {
                 if (FirstNamespace == null)
                 {
                     FirstNamespace = node;
                 }
 
-                base.VisitNamespace(node);
+                base.VisitNamespaceDeclaration(node);
             }
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 if (FirstClass == null)
                 {
                     FirstClass = node;
                 }
 
-                base.VisitClass(node);
+                base.VisitClassDeclaration(node);
             }
 
             public override void VisitDirective(DirectiveIRNode node)

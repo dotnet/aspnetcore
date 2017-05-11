@@ -70,14 +70,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public IList<DirectiveIRNode> Directives { get; } = new List<DirectiveIRNode>();
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 if (Class == null)
                 {
                     Class = node;
                 }
 
-                base.VisitClass(node);
+                base.VisitClassDeclaration(node);
             }
 
             public override void VisitDirective(DirectiveIRNode node)

@@ -358,6 +358,66 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 string.Format(CultureInfo.InvariantCulture, InstanceMethodFormat, instanceName, methodName));
         }
 
+        public CSharpCodeWriter WriteField(string accessibility, string typeName, string fieldName)
+        {
+            if (accessibility == null)
+            {
+                throw new ArgumentNullException(nameof(accessibility));
+            }
+
+            if (typeName == null)
+            {
+                throw new ArgumentNullException(nameof(typeName));
+            }
+
+            if (fieldName == null)
+            {
+                throw new ArgumentNullException(nameof(fieldName));
+            }
+
+            return WriteField(accessibility, Array.Empty<string>(), typeName, fieldName);
+        }
+
+        public CSharpCodeWriter WriteField(string accessibility, IList<string> modifiers, string typeName, string fieldName)
+        {
+            if (accessibility == null)
+            {
+                throw new ArgumentNullException(nameof(accessibility));
+            }
+
+            if (modifiers == null)
+            {
+                throw new ArgumentNullException(nameof(modifiers));
+            }
+
+            if (typeName == null)
+            {
+                throw new ArgumentNullException(nameof(typeName));
+            }
+
+            if (fieldName == null)
+            {
+                throw new ArgumentNullException(nameof(fieldName));
+            }
+
+            Write(accessibility);
+            Write(" ");
+
+            for (var i = 0; i < modifiers.Count; i++)
+            {
+                Write(modifiers[i]);
+                Write(" ");
+            }
+
+            Write(typeName);
+            Write(" ");
+            Write(fieldName);
+            Write(";");
+            WriteLine();
+
+            return this;
+        }
+
         public CSharpCodeWriter WriteMethodInvocation(string methodName, params string[] parameters)
         {
             return WriteMethodInvocation(methodName, endLine: true, parameters: parameters);
@@ -370,15 +430,64 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 .WriteEndMethodInvocation(endLine);
         }
 
-        public CSharpCodeWriter WriteAutoPropertyDeclaration(string accessibility, string typeName, string name)
+        public CSharpCodeWriter WriteAutoPropertyDeclaration(string accessibility, string typeName, string propertyName)
         {
-            return Write(accessibility)
-                .Write(" ")
-                .Write(typeName)
-                .Write(" ")
-                .Write(name)
-                .Write(" { get; set; }")
-                .WriteLine();
+            if (accessibility == null)
+            {
+                throw new ArgumentNullException(nameof(accessibility));
+            }
+
+            if (typeName == null)
+            {
+                throw new ArgumentNullException(nameof(typeName));
+            }
+
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
+            return WriteAutoPropertyDeclaration(accessibility, Array.Empty<string>(), typeName, propertyName);
+        }
+
+        public CSharpCodeWriter WriteAutoPropertyDeclaration(string accessibility, IList<string> modifiers, string typeName, string propertyName)
+        {
+            if (accessibility == null)
+            {
+                throw new ArgumentNullException(nameof(accessibility));
+            }
+
+            if (modifiers == null)
+            {
+                throw new ArgumentNullException(nameof(modifiers));
+            }
+
+            if (typeName == null)
+            {
+                throw new ArgumentNullException(nameof(typeName));
+            }
+
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
+            Write(accessibility);
+            Write(" ");
+
+            for (var i = 0; i < modifiers.Count; i++)
+            {
+                Write(modifiers[i]);
+                Write(" ");
+            }
+
+            Write(typeName);
+            Write(" ");
+            Write(propertyName);
+            Write(" { get; set; }");
+            WriteLine();
+
+            return this;
         }
 
         public CSharpDisableWarningScope BuildDisableWarningScope(int warning)

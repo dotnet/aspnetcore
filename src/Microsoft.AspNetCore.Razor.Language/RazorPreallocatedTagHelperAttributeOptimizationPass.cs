@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             private int _variableCountOffset;
             private int _preallocatedDeclarationCount = 0;
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 _classDeclaration = node;
                 _variableCountOffset = node.Children.Count;

@@ -113,24 +113,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public IList<DirectiveIRNode> ModelDirectives { get; } = new List<DirectiveIRNode>();
 
-            public override void VisitNamespace(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
             {
                 if (Namespace == null)
                 {
                     Namespace = node;
                 }
 
-                base.VisitNamespace(node);
+                base.VisitNamespaceDeclaration(node);
             }
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 if (Class == null)
                 {
                     Class = node;
                 }
 
-                base.VisitClass(node);
+                base.VisitClassDeclaration(node);
             }
 
             public override void VisitDirective(DirectiveIRNode node)

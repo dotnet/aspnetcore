@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class ClassDeclarationIRNode : RazorIRNode
+    public sealed class ClassDeclarationIRNode : MemberDeclarationIRNode
     {
         private ItemCollection _annotations;
 
@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 return _annotations;
             }
         }
+
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitClass(this);
+            visitor.VisitClassDeclaration(this);
         }
     }
 }

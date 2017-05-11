@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             public ClassDeclarationIRNode Node { get; set; }
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 Node = node;
             }

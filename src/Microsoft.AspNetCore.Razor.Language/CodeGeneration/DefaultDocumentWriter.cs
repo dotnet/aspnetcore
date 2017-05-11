@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.BasicWriter.WriteUsingStatement(Context, node);
             }
 
-            public override void VisitNamespace(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
             {
                 Context.Writer
                     .Write("namespace ")
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
             }
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 Context.Writer
                     .Write(node.AccessModifier)
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
             }
 
-            public override void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
+            public override void VisitMethodDeclaration(MethodDeclarationIRNode node)
             {
                 Context.Writer.WriteLine("#pragma warning disable 1998");
 
@@ -172,6 +172,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
 
                 Context.Writer.WriteLine("#pragma warning restore 1998");
+            }
+
+            public override void VisitFieldDeclaration(FieldDeclarationIRNode node)
+            {
+                Context.Writer.WriteField(node.AccessModifier, node.Modifiers, node.Type, node.Name);
+            }
+
+            public override void VisitPropertyDeclaration(PropertyDeclarationIRNode node)
+            {
+                Context.Writer.WriteAutoPropertyDeclaration(node.AccessModifier, node.Modifiers, node.Type, node.Name);
             }
 
             public override void VisitExtension(ExtensionIRNode node)

@@ -64,12 +64,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitClass(ClassDeclarationIRNode node)
+        public virtual void VisitClassDeclaration(ClassDeclarationIRNode node)
         {
             VisitDefault(node);
         }
 
-        public virtual void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
+        public virtual void VisitMethodDeclaration(MethodDeclarationIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitFieldDeclaration(FieldDeclarationIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitPropertyDeclaration(PropertyDeclarationIRNode node)
         {
             VisitDefault(node);
         }
@@ -84,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitNamespace(NamespaceDeclarationIRNode node)
+        public virtual void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
         {
             VisitDefault(node);
         }

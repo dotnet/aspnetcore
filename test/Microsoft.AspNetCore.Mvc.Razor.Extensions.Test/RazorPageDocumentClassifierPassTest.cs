@@ -249,21 +249,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public MethodDeclarationIRNode Method { get; private set; }
 
-            public override void VisitRazorMethodDeclaration(MethodDeclarationIRNode node)
+            public override void VisitMethodDeclaration(MethodDeclarationIRNode node)
             {
                 Method = node;
             }
 
-            public override void VisitNamespace(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
             {
                 Namespace = node;
-                base.VisitNamespace(node);
+                base.VisitNamespaceDeclaration(node);
             }
 
-            public override void VisitClass(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
                 Class = node;
-                base.VisitClass(node);
+                base.VisitClassDeclaration(node);
             }
         }
     }

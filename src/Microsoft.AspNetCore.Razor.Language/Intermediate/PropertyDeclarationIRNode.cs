@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class MethodDeclarationIRNode : MemberDeclarationIRNode
+    public sealed class PropertyDeclarationIRNode : MemberDeclarationIRNode
     {
         private ItemCollection _annotations;
 
@@ -23,7 +23,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
+        public override IList<RazorIRNode> Children { get; } = EmptyArray;
+
+        public IList<string> Modifiers { get; set; } = new List<string>();
 
         public override RazorIRNode Parent { get; set; }
 
@@ -31,11 +33,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string AccessModifier { get; set; }
 
-        public IList<string> Modifiers { get; set; } = new List<string>();
-
         public string Name { get; set; }
 
-        public string ReturnType { get; set; }
+        public string Type { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitMethodDeclaration(this);
+            visitor.VisitPropertyDeclaration(this);
         }
     }
 }
