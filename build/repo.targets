@@ -1,7 +1,7 @@
 <Project>
   <Target Name="RestoreNpm" AfterTargets="Restore" Condition="'$(PreflightRestore)' != 'True'">
     <Message Text="Restoring NPM modules" Importance="high" />
-    <Exec Command="npm install" WorkingDirectory="$(RepositoryRoot)client-ts" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)client-ts" />
   </Target>
 
   <Target Name="RunTSClientNodeTests" AfterTargets="Test">
