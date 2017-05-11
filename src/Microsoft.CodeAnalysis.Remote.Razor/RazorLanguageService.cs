@@ -16,17 +16,15 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 {
     internal class RazorLanguageService : ServiceHubServiceBase
     {
-        [Obsolete("This will be removed as part of #976. ServiceHub still calls this constructor. Remove once ServiceHub can use the other one.")]
         public RazorLanguageService(Stream stream, IServiceProvider serviceProvider)
-            : base(stream, serviceProvider)
-        {
-            Rpc.JsonSerializer.Converters.Add(new RazorDiagnosticJsonConverter());
-        }
-
-        public RazorLanguageService(IServiceProvider serviceProvider, Stream stream)
             : base(serviceProvider, stream)
         {
             Rpc.JsonSerializer.Converters.Add(new RazorDiagnosticJsonConverter());
+
+            // Due to this issue - https://github.com/dotnet/roslyn/issues/16900#issuecomment-277378950
+            // We need to manually start the RPC connection. Otherwise we'd be opting ourselves into 
+            // race condition prone call paths.
+            Rpc.StartListening();
         }
 
         public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Guid projectIdBytes, string projectDebugName, IEnumerable<string> assemblyNameFilters, CancellationToken cancellationToken = default(CancellationToken))
