@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public abstract SourceSpan? Source { get; set; }
 
-        public abstract void Accept(RazorIRNodeVisitor visitor);        
+        public abstract void Accept(RazorIRNodeVisitor visitor);
     }
 }

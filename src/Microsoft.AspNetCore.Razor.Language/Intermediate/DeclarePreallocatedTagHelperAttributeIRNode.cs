@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class DeclarePreallocatedTagHelperAttributeIRNode : ExtensionIRNode
+    internal sealed class DeclarePreallocatedTagHelperAttributeIRNode : ExtensionIRNode
     {
         public override IList<RazorIRNode> Children { get; } = EmptyArray;
 

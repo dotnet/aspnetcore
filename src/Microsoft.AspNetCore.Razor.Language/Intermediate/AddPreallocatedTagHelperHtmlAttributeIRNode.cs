@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class AddPreallocatedTagHelperHtmlAttributeIRNode : ExtensionIRNode
+    internal sealed class AddPreallocatedTagHelperHtmlAttributeIRNode : ExtensionIRNode
     {
         public override IList<RazorIRNode> Children { get; } = EmptyArray;
 
