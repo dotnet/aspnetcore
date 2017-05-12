@@ -75,11 +75,9 @@ namespace Microsoft.AspNetCore.Internal
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData(null, 0)]
-        [InlineData(0, null)]
-        [InlineData(0, 0)]
-        public void NormalizeRanges_ReturnsNormalizedRange(long? start, long? end)
+        [InlineData(0, null, 0, 2)]
+        [InlineData(0, 0, 0, 0)]
+        public void NormalizeRanges_ReturnsNormalizedRange(long? start, long? end, long? normalizedStart, long? normalizedEnd)
         {
             // Arrange
             var ranges = new[]
@@ -88,12 +86,12 @@ namespace Microsoft.AspNetCore.Internal
             };
 
             // Act
-            var normalizedRanges = RangeHelper.NormalizeRanges(ranges, 1);
+            var normalizedRanges = RangeHelper.NormalizeRanges(ranges, 3);
 
             // Assert
             var range = Assert.Single(normalizedRanges);
-            Assert.Equal(0, range.From);
-            Assert.Equal(0, range.To);
+            Assert.Equal(normalizedStart, range.From);
+            Assert.Equal(normalizedEnd, range.To);
         }
 
         [Fact]
@@ -115,11 +113,9 @@ namespace Microsoft.AspNetCore.Internal
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData(null, 0)]
-        [InlineData(0, null)]
-        [InlineData(0, 0)]
-        public void NormalizeRanges_MultipleRanges_ReturnsNormalizedRange(long? start, long? end)
+        [InlineData(0, null, 0, 2)]
+        [InlineData(0, 0, 0, 0)]
+        public void NormalizeRanges_MultipleRanges_ReturnsNormalizedRange(long? start, long? end, long? normalizedStart, long? normalizedEnd)
         {
             // Arrange
             var ranges = new[]
@@ -135,8 +131,8 @@ namespace Microsoft.AspNetCore.Internal
             Assert.Collection(normalizedRanges,
                 range =>
                 {
-                    Assert.Equal(0, range.From);
-                    Assert.Equal(0, range.To);
+                    Assert.Equal(normalizedStart, range.From);
+                    Assert.Equal(normalizedEnd, range.To);
                 },
                 range =>
                 {
