@@ -568,7 +568,7 @@ namespace Microsoft.AspNetCore.Session
                     {
                         byte[] value;
                         Assert.False(context.Session.TryGetValue("key", out value));
-                        Assert.Equal(null, value);
+                        Assert.Null(value);
                         Assert.Equal(string.Empty, context.Session.Id);
                         Assert.False(context.Session.Keys.Any());
                         return Task.FromResult(0);
