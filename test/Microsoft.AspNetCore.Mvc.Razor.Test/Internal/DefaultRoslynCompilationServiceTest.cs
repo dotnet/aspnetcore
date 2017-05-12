@@ -36,10 +36,7 @@ public class MyTestType
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "test.cshtml"));
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = content
-            };
+            var csharpDocument = RazorCSharpDocument.Create(content, Array.Empty<RazorDiagnostic>());
 
             // Act
             var result = compilationService.Compile(codeDocument, csharpDocument);
@@ -60,10 +57,7 @@ public class MyTestType  {}";
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "test.cshtml"));
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = content
-            };
+            var csharpDocument = RazorCSharpDocument.Create(content, Array.Empty<RazorDiagnostic>());
 
             // Act
             var result = compilationService.Compile(codeDocument, csharpDocument);
@@ -85,10 +79,7 @@ this should fail";
             var compilationService = GetRoslynCompilationService();
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(fileContent, viewPath));
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = content
-            };
+            var csharpDocument = RazorCSharpDocument.Create(content, Array.Empty<RazorDiagnostic>());
 
             // Act
             var result = compilationService.Compile(codeDocument, csharpDocument);
@@ -112,10 +103,7 @@ this should fail";
             var compilationService = GetRoslynCompilationService();
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(fileContent, viewPath));
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = content
-            };
+            var csharpDocument = RazorCSharpDocument.Create(content, Array.Empty<RazorDiagnostic>());
 
             // Act
             var result = compilationService.Compile(codeDocument, csharpDocument);
@@ -146,10 +134,7 @@ public class MyNonCustomDefinedClass {}
             var compilationService = GetRoslynCompilationService(options: options);
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", viewPath));
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = content
-            };
+            var csharpDocument = RazorCSharpDocument.Create(content, Array.Empty<RazorDiagnostic>());
 
             // Act
             var result = compilationService.Compile(codeDocument, csharpDocument);
@@ -252,10 +237,7 @@ public class MyNonCustomDefinedClass {}
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "some-relative-path"));
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = content
-            };
+            var csharpDocument = RazorCSharpDocument.Create(content, Array.Empty<RazorDiagnostic>());
 
             // Act
             var result = compilationService.Compile(codeDocument, csharpDocument);
@@ -276,10 +258,7 @@ public class MyNonCustomDefinedClass {}
             var compilationService = GetRoslynCompilationService(options: options);
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "some-relative-path.cshtml"));
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = content
-            };
+            var csharpDocument = RazorCSharpDocument.Create(content, Array.Empty<RazorDiagnostic>());
 
             // Act
             var result = compilationService.Compile(codeDocument, csharpDocument);
@@ -306,10 +285,7 @@ public class MyNonCustomDefinedClass {}
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "some-relative-path.cshtml"));
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = content
-            };
+            var csharpDocument = RazorCSharpDocument.Create(content, Array.Empty<RazorDiagnostic>());
 
             // Act
             var result = compilationService.Compile(codeDocument, csharpDocument);
