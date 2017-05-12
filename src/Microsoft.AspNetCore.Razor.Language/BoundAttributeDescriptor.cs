@@ -43,13 +43,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IReadOnlyDictionary<string, string> Metadata { get; protected set; }
 
-        public bool HasAnyErrors
+        public bool HasErrors
         {
             get
             {
-                var anyErrors = Diagnostics.Any(diagnostic => diagnostic.Severity == RazorDiagnosticSeverity.Error);
+                var errors = Diagnostics.Any(diagnostic => diagnostic.Severity == RazorDiagnosticSeverity.Error);
 
-                return anyErrors;
+                return errors;
             }
         }
 

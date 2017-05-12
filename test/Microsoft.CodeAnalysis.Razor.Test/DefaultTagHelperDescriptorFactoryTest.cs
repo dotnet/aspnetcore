@@ -1518,7 +1518,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var descriptor = factory.CreateDescriptor(tagHelperType);
 
             // Assert
-            Assert.False(descriptor.HasAnyErrors);
+            Assert.False(descriptor.HasErrors);
         }
 
         public static TheoryData<string> ValidAttributePrefixData
@@ -1558,7 +1558,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var descriptor = factory.CreateDescriptor(tagHelperType);
 
             // Assert
-            Assert.False(descriptor.HasAnyErrors);
+            Assert.False(descriptor.HasErrors);
         }
 
         // name, expectedErrorMessages

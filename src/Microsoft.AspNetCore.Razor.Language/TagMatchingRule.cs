@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IReadOnlyList<RazorDiagnostic> Diagnostics { get; protected set; }
 
-        public bool HasAnyErrors
+        public bool HasErrors
         {
             get
             {
                 var allDiagnostics = GetAllDiagnostics();
-                var anyErrors = allDiagnostics.Any(diagnostic => diagnostic.Severity == RazorDiagnosticSeverity.Error);
+                var errors = allDiagnostics.Any(diagnostic => diagnostic.Severity == RazorDiagnosticSeverity.Error);
 
-                return anyErrors;
+                return errors;
             }
         }
 
