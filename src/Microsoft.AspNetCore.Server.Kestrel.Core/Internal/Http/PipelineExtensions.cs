@@ -40,7 +40,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 finally
                 {
-                    pipelineReader.Advance(result.Buffer.Start, result.Buffer.Start);
+                    pipelineReader.Advance(result.Buffer.Start, result.Buffer.IsEmpty
+                        ? result.Buffer.End
+                        : result.Buffer.Start);
                 }
                 input = pipelineReader.ReadAsync();
             }
@@ -68,7 +70,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 finally
                 {
-                    pipelineReader.Advance(result.Buffer.Start, result.Buffer.Start);
+                    pipelineReader.Advance(result.Buffer.Start, result.Buffer.IsEmpty
+                        ? result.Buffer.End
+                        : result.Buffer.Start);
                 }
 
                 readingTask = pipelineReader.ReadAsync();
