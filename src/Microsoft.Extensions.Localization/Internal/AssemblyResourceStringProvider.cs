@@ -1,21 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Resources;
-using System.Text;
 
 namespace Microsoft.Extensions.Localization.Internal
 {
     public class AssemblyResourceStringProvider : IResourceStringProvider
     {
-        private const string AssemblyElementDelimiter = ", ";
-
         private readonly AssemblyWrapper _assembly;
         private readonly string _resourceBaseName;
         private readonly IResourceNamesCache _resourceNamesCache;
@@ -32,9 +28,12 @@ namespace Microsoft.Extensions.Localization.Internal
 
         private string GetResourceCacheKey(CultureInfo culture)
         {
-            var assemblyName = ApplyCultureToAssembly(culture);
+            var assemblyName = new AssemblyName(_assembly.FullName)
+            {
+                CultureName = culture.Name
+            };
 
-            return $"Assembly={assemblyName};resourceName={_resourceBaseName}";
+            return $"Assembly={assemblyName.FullName};resourceName={_resourceBaseName}";
         }
 
         private string GetResourceName(CultureInfo culture)
@@ -96,11 +95,14 @@ namespace Microsoft.Extensions.Localization.Internal
 
         protected virtual AssemblyWrapper GetAssembly(CultureInfo culture)
         {
-            var assemblyString = ApplyCultureToAssembly(culture);
             Assembly assembly;
+            var assemblyName = new AssemblyName(_assembly.FullName)
+            {
+                CultureName = culture.Name
+            };
             try
             {
-                assembly = Assembly.Load(new AssemblyName(assemblyString));
+                assembly = Assembly.Load(assemblyName);
             }
             catch (FileNotFoundException)
             {
@@ -108,41 +110,6 @@ namespace Microsoft.Extensions.Localization.Internal
             }
 
             return new AssemblyWrapper(assembly);
-        }
-
-        // This is all a workaround for https://github.com/dotnet/coreclr/issues/6123
-        private string ApplyCultureToAssembly(CultureInfo culture)
-        {
-            var builder = new StringBuilder(_assembly.FullName);
-
-            var cultureName = string.IsNullOrEmpty(culture.Name) ? "neutral" : culture.Name;
-            var cultureString = $"Culture={cultureName}";
-
-            var cultureStartIndex = _assembly.FullName.IndexOf("Culture", StringComparison.OrdinalIgnoreCase);
-            if (cultureStartIndex < 0)
-            {
-                builder.Append(AssemblyElementDelimiter + cultureString);
-            }
-            else
-            {
-                var cultureEndIndex = _assembly.FullName.IndexOf(
-                    AssemblyElementDelimiter,
-                    cultureStartIndex,
-                    StringComparison.Ordinal);
-                var cultureLength = cultureEndIndex - cultureStartIndex;
-                builder.Remove(cultureStartIndex, cultureLength);
-                builder.Insert(cultureStartIndex, cultureString);
-            }
-
-            var firstSplit = _assembly.FullName.IndexOf(AssemblyElementDelimiter);
-            if (firstSplit < 0)
-            {
-                //Index of end of Assembly name
-                firstSplit = _assembly.FullName.Length;
-            }
-            builder.Insert(firstSplit, ".resources");
-
-            return builder.ToString();
         }
     }
 }
