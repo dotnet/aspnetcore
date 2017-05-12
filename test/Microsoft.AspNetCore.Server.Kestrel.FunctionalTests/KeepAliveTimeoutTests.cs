@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -19,7 +19,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private static readonly TimeSpan LongDelay = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan ShortDelay = TimeSpan.FromSeconds(LongDelay.TotalSeconds / 10);
 
-        [Fact]
+        // This test is particularly flaky on some teamcity agents, so skip there for now.
+        // https://github.com/aspnet/KestrelHttpServer/issues/1684
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition("TEAMCITY_VERSION", null)]
         public Task TestKeepAliveTimeout()
         {
             // Delays in these tests cannot be much longer than expected.

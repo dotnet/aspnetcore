@@ -8,13 +8,17 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class LoggingConnectionAdapterTests
     {
-        [Fact]
+        // This test is particularly flaky on some teamcity agents, so skip there for now.
+        // https://github.com/aspnet/KestrelHttpServer/issues/1697
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition("TEAMCITY_VERSION", null)]
         public async Task LoggingConnectionAdapterCanBeAddedBeforeAndAfterHttpsAdapter()
         {
             var host = new WebHostBuilder()
