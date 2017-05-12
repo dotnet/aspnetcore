@@ -61,8 +61,7 @@ Document -
                                 HtmlContent - (284:6,21 [8] BasicTagHelpers.cshtml)
                                     RazorIRToken - (284:6,21 [8] BasicTagHelpers.cshtml) - Html - checkbox
                             SetTagHelperProperty - (303:6,40 [4] BasicTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (303:6,40 [4] BasicTagHelpers.cshtml)
-                                    RazorIRToken - (303:6,40 [4] BasicTagHelpers.cshtml) - Html - true
+                                RazorIRToken - (303:6,40 [4] BasicTagHelpers.cshtml) - CSharp - true
                             ExecuteTagHelpers - 
                         HtmlContent - (310:6,47 [6] BasicTagHelpers.cshtml)
                             RazorIRToken - (310:6,47 [6] BasicTagHelpers.cshtml) - Html - \n    

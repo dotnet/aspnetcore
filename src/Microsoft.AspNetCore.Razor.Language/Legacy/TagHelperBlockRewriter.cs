@@ -42,17 +42,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // no end tag to ignore.
             var symbolOffset = validStructure ? 2 : 1;
             var attributeChildren = tagBlock.Children.Skip(1).Take(tagBlock.Children.Count() - symbolOffset);
+            var processedBoundAttributeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var child in attributeChildren)
             {
                 TryParseResult result;
                 if (child.IsBlock)
                 {
-                    result = TryParseBlock(tagName, (Block)child, bindingResult.Descriptors, errorSink);
+                    result = TryParseBlock(tagName, (Block)child, bindingResult.Descriptors, errorSink, processedBoundAttributeNames);
                 }
                 else
                 {
-                    result = TryParseSpan((Span)child, bindingResult.Descriptors, errorSink);
+                    result = TryParseSpan((Span)child, bindingResult.Descriptors, errorSink, processedBoundAttributeNames);
                 }
 
                 // Only want to track the attribute if we succeeded in parsing its corresponding Block/Span.
@@ -145,7 +146,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static TryParseResult TryParseSpan(
             Span span,
             IEnumerable<TagHelperDescriptor> descriptors,
-            ErrorSink errorSink)
+            ErrorSink errorSink,
+            HashSet<string> processedBoundAttributeNames)
         {
             var afterEquals = false;
             var builder = new SpanBuilder(span.Start)
@@ -299,13 +301,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return null;
             }
 
-            var result = CreateTryParseResult(name, descriptors);
+            var result = CreateTryParseResult(name, descriptors, processedBoundAttributeNames);
 
             // If we're not after an equal then we should treat the value as if it were a minimized attribute.
             Span attributeValue = null;
             if (afterEquals)
             {
-                attributeValue = CreateMarkupAttribute(builder, result.IsBoundNonStringAttribute);
+                attributeValue = CreateMarkupAttribute(builder, result);
             }
             else
             {
@@ -321,7 +323,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             string tagName,
             Block block,
             IEnumerable<TagHelperDescriptor> descriptors,
-            ErrorSink errorSink)
+            ErrorSink errorSink,
+            HashSet<string> processedBoundAttributeNames)
         {
             // TODO: Accept more than just spans: https://github.com/aspnet/Razor/issues/96.
             // The first child will only ever NOT be a Span if a user is doing something like:
@@ -345,7 +348,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // i.e. <div class="plain text in attribute">
             if (builder.Children.Count == 1)
             {
-                return TryParseSpan(childSpan, descriptors, errorSink);
+                return TryParseSpan(childSpan, descriptors, errorSink, processedBoundAttributeNames);
             }
 
             var nameSymbols = childSpan
@@ -367,7 +370,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Have a name now. Able to determine correct isBoundNonStringAttribute value.
-            var result = CreateTryParseResult(name, descriptors);
+            var result = CreateTryParseResult(name, descriptors, processedBoundAttributeNames);
 
             var firstChild = builder.Children[0] as Span;
             if (firstChild != null && firstChild.Symbols[0] is HtmlSymbol)
@@ -429,7 +432,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var spanBuilder = new SpanBuilder(child);
 
                     result.AttributeValueNode =
-                        CreateMarkupAttribute(spanBuilder, result.IsBoundNonStringAttribute);
+                        CreateMarkupAttribute(spanBuilder, result);
 
                     return result;
                 }
@@ -471,7 +474,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 spanBuilder.ChunkGenerator = new MarkupChunkGenerator();
                             }
 
-                            ConfigureNonStringAttribute(spanBuilder);
+                            ConfigureNonStringAttribute(spanBuilder, result.IsDuplicateAttribute);
 
                             span = spanBuilder.Build();
                         }
@@ -616,16 +619,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return firstNonWhitespaceSymbol.Start;
         }
 
-        private static Span CreateMarkupAttribute(SpanBuilder builder, bool isBoundNonStringAttribute)
+        private static Span CreateMarkupAttribute(SpanBuilder builder, TryParseResult result)
         {
             Debug.Assert(builder != null);
 
             // If the attribute was requested by a tag helper but the corresponding property was not a string,
             // then treat its value as code. A non-string value can be any C# value so we need to ensure the
             // SyntaxTreeNode reflects that.
-            if (isBoundNonStringAttribute)
+            if (result.IsBoundNonStringAttribute)
             {
-                ConfigureNonStringAttribute(builder);
+                ConfigureNonStringAttribute(builder, result.IsDuplicateAttribute);
             }
 
             return builder.Build();
@@ -668,7 +671,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Create a TryParseResult for given name, filling in binding details.
-        private static TryParseResult CreateTryParseResult(string name, IEnumerable<TagHelperDescriptor> descriptors)
+        private static TryParseResult CreateTryParseResult(
+            string name,
+            IEnumerable<TagHelperDescriptor> descriptors,
+            HashSet<string> processedBoundAttributeNames)
         {
             var firstBoundAttribute = FindFirstBoundAttribute(name, descriptors);
             var isBoundAttribute = firstBoundAttribute != null;
@@ -679,12 +685,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 firstBoundAttribute.IndexerNamePrefix != null &&
                 name.Length == firstBoundAttribute.IndexerNamePrefix.Length;
 
+            var isDuplicateAttribute = false;
+            if (isBoundAttribute && !processedBoundAttributeNames.Add(name))
+            {
+                // A bound attribute with the same name has already been processed.
+                isDuplicateAttribute = true;
+            }
+
             return new TryParseResult
             {
                 AttributeName = name,
                 IsBoundAttribute = isBoundAttribute,
                 IsBoundNonStringAttribute = isBoundNonStringAttribute,
                 IsMissingDictionaryKey = isMissingDictionaryKey,
+                IsDuplicateAttribute = isDuplicateAttribute
             };
         }
 
@@ -706,7 +720,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                    htmlSymbol.Type == HtmlSymbolType.SingleQuote;
         }
 
-        private static void ConfigureNonStringAttribute(SpanBuilder builder)
+        private static void ConfigureNonStringAttribute(SpanBuilder builder, bool isDuplicateAttribute)
         {
             builder.Kind = SpanKind.Code;
             builder.EditHandler = new ImplicitExpressionEditHandler(
@@ -716,6 +730,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 AcceptedCharacters = AcceptedCharacters.AnyExceptNewline
             };
+
+            if (!isDuplicateAttribute && builder.ChunkGenerator != SpanChunkGenerator.Null)
+            {
+                // We want to mark the value of non-string bound attributes to be CSharp.
+                // Except in two cases,
+                // 1. Cases when we don't want to render the span. Eg: Transition span '@'.
+                // 2. Cases when it is a duplicate of a bound attribute. This should just be rendered as html.
+
+                builder.ChunkGenerator = new ExpressionChunkGenerator();
+            }
         }
 
         private class TryParseResult
@@ -731,6 +755,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             public bool IsBoundNonStringAttribute { get; set; }
 
             public bool IsMissingDictionaryKey { get; set; }
+
+            public bool IsDuplicateAttribute { get; set; }
         }
     }
 }

@@ -37,6 +37,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .Name("bound")
                                 .PropertyName("BoundProp")
                                 .TypeName("System.String"),
+                            builder => builder
+                                .Name("age")
+                                .PropertyName("AgeProp")
+                                .TypeName("System.Int32"),
                         })
                 };
             }

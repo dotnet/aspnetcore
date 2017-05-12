@@ -27,7 +27,13 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
-#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+__TestNamespace_PTagHelper.Age = @@(1+2);
+
+#line default
+#line hidden
+#line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
              if (false)
             {
                 
@@ -39,7 +45,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
             __TestNamespace_InputTagHelper.Type = "text";
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                                                                                    
             }
             else
@@ -50,14 +56,14 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
-#line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                         __o = checkbox;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper.Type = string.Empty;
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
-#line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                      __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
@@ -67,7 +73,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
                 
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
-#line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                          __o = true ? "checkbox" : "anything";
 
 #line default
@@ -78,103 +84,103 @@ global::System.Object __typeHelper = "*, TestAssembly";
                 
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
-#line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                               if(true) { 
 
 #line default
 #line hidden
-#line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                                                } else { 
 
 #line default
 #line hidden
-#line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                                                                               }
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper.Type = string.Empty;
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
-#line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                                                                                  
             }
 
 #line default
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                           __o = DateTime.Now;
 
 #line default
 #line hidden
-#line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 23 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                var @object = false;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
-#line 23 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 24 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.Checked = (@object);
 
 #line default
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 21 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
      __TestNamespace_PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
-#line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 27 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                   __TestNamespace_InputTagHelper2.Checked = (DateTimeOffset.Now.Year > 2014);
 
 #line default
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_PTagHelper.Age = -1970 + @DateTimeOffset.Now.Year;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
-#line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.Checked = DateTimeOffset.Now.Year > 2014;
 
 #line default
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
-#line 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 33 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.Checked =    @(  DateTimeOffset.Now.Year  ) > 2014   ;
 
 #line default
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 31 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
 
 #line default
 #line hidden
-#line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
    __o = someMethod(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
     __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
-#line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                      __TestNamespace_InputTagHelper2.Checked = checked;
 
 #line default
 #line hidden
     __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_PTagHelper.Age = 123;
 
 #line default
@@ -184,7 +190,7 @@ __TestNamespace_PTagHelper.Age = 123;
 
 #line default
 #line hidden
-#line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+#line 36 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
           
 }
 

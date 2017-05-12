@@ -22,8 +22,7 @@ Document -
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpAttributeValue - (109:6,10 [6] TransitionsInTagHelperAttributes.cshtml) - 
                     SetTagHelperProperty - (122:6,23 [4] TransitionsInTagHelperAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (122:6,23 [4] TransitionsInTagHelperAttributes.cshtml)
-                            RazorIRToken - (122:6,23 [4] TransitionsInTagHelperAttributes.cshtml) - Html - 1337
+                        RazorIRToken - (122:6,23 [4] TransitionsInTagHelperAttributes.cshtml) - CSharp - 1337
                     ExecuteTagHelpers - 
                 HtmlContent - (143:6,44 [2] TransitionsInTagHelperAttributes.cshtml)
                     RazorIRToken - (143:6,44 [2] TransitionsInTagHelperAttributes.cshtml) - Html - \n
@@ -35,8 +34,7 @@ Document -
                             CSharpExpression - (157:7,12 [6] TransitionsInTagHelperAttributes.cshtml)
                                 RazorIRToken - (157:7,12 [6] TransitionsInTagHelperAttributes.cshtml) - CSharp - @class
                     SetTagHelperProperty - (171:7,26 [2] TransitionsInTagHelperAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (171:7,26 [2] TransitionsInTagHelperAttributes.cshtml)
-                            RazorIRToken - (171:7,26 [2] TransitionsInTagHelperAttributes.cshtml) - Html - 42
+                        RazorIRToken - (171:7,26 [2] TransitionsInTagHelperAttributes.cshtml) - CSharp - 42
                     ExecuteTagHelpers - 
                 HtmlContent - (179:7,34 [2] TransitionsInTagHelperAttributes.cshtml)
                     RazorIRToken - (179:7,34 [2] TransitionsInTagHelperAttributes.cshtml) - Html - \n
@@ -47,13 +45,11 @@ Document -
                         HtmlContent - (191:8,10 [4] TransitionsInTagHelperAttributes.cshtml)
                             RazorIRToken - (191:8,10 [4] TransitionsInTagHelperAttributes.cshtml) - Html - test
                     SetTagHelperProperty - (202:8,21 [9] TransitionsInTagHelperAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (202:8,21 [5] TransitionsInTagHelperAttributes.cshtml)
-                            RazorIRToken - (202:8,21 [2] TransitionsInTagHelperAttributes.cshtml) - Html - 42
-                            RazorIRToken - (204:8,23 [2] TransitionsInTagHelperAttributes.cshtml) - Html -  +
-                            RazorIRToken - (206:8,25 [1] TransitionsInTagHelperAttributes.cshtml) - Html -  
+                        RazorIRToken - (202:8,21 [2] TransitionsInTagHelperAttributes.cshtml) - CSharp - 42
+                        RazorIRToken - (204:8,23 [2] TransitionsInTagHelperAttributes.cshtml) - CSharp -  +
+                        RazorIRToken - (206:8,25 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp -  
                         CSharpExpression - (207:8,26 [4] TransitionsInTagHelperAttributes.cshtml)
-                            HtmlContent - (207:8,26 [1] TransitionsInTagHelperAttributes.cshtml)
-                                RazorIRToken - (207:8,26 [1] TransitionsInTagHelperAttributes.cshtml) - Html - @
+                            RazorIRToken - (207:8,26 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp - @
                             RazorIRToken - (208:8,27 [3] TransitionsInTagHelperAttributes.cshtml) - CSharp - int
                     ExecuteTagHelpers - 
                 HtmlContent - (217:8,36 [2] TransitionsInTagHelperAttributes.cshtml)
@@ -78,11 +74,9 @@ Document -
                             RazorIRToken - (262:10,10 [4] TransitionsInTagHelperAttributes.cshtml) - Html - test
                     SetTagHelperProperty - (273:10,21 [7] TransitionsInTagHelperAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (274:10,22 [6] TransitionsInTagHelperAttributes.cshtml)
-                            HtmlContent - (274:10,22 [1] TransitionsInTagHelperAttributes.cshtml)
-                                RazorIRToken - (274:10,22 [1] TransitionsInTagHelperAttributes.cshtml) - Html - (
+                            RazorIRToken - (274:10,22 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp - (
                             RazorIRToken - (275:10,23 [4] TransitionsInTagHelperAttributes.cshtml) - CSharp - @int
-                            HtmlContent - (279:10,27 [1] TransitionsInTagHelperAttributes.cshtml)
-                                RazorIRToken - (279:10,27 [1] TransitionsInTagHelperAttributes.cshtml) - Html - )
+                            RazorIRToken - (279:10,27 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp - )
                     ExecuteTagHelpers - 
                 HtmlContent - (286:10,34 [2] TransitionsInTagHelperAttributes.cshtml)
                     RazorIRToken - (286:10,34 [2] TransitionsInTagHelperAttributes.cshtml) - Html - \n
@@ -95,17 +89,14 @@ Document -
                             CSharpExpression - (307:11,19 [6] TransitionsInTagHelperAttributes.cshtml)
                                 RazorIRToken - (307:11,19 [6] TransitionsInTagHelperAttributes.cshtml) - CSharp - @class
                     SetTagHelperProperty - (321:11,33 [15] TransitionsInTagHelperAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (321:11,33 [4] TransitionsInTagHelperAttributes.cshtml)
-                            RazorIRToken - (321:11,33 [1] TransitionsInTagHelperAttributes.cshtml) - Html - 4
-                            RazorIRToken - (322:11,34 [2] TransitionsInTagHelperAttributes.cshtml) - Html -  *
-                            RazorIRToken - (324:11,36 [1] TransitionsInTagHelperAttributes.cshtml) - Html -  
+                        RazorIRToken - (321:11,33 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp - 4
+                        RazorIRToken - (322:11,34 [2] TransitionsInTagHelperAttributes.cshtml) - CSharp -  *
+                        RazorIRToken - (324:11,36 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp -  
                         CSharpExpression - (325:11,37 [11] TransitionsInTagHelperAttributes.cshtml)
-                            HtmlContent - (325:11,37 [2] TransitionsInTagHelperAttributes.cshtml)
-                                RazorIRToken - (325:11,37 [1] TransitionsInTagHelperAttributes.cshtml) - Html - @
-                                RazorIRToken - (326:11,38 [1] TransitionsInTagHelperAttributes.cshtml) - Html - (
+                            RazorIRToken - (325:11,37 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp - @
+                            RazorIRToken - (326:11,38 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp - (
                             RazorIRToken - (327:11,39 [8] TransitionsInTagHelperAttributes.cshtml) - CSharp - @int + 2
-                            HtmlContent - (335:11,47 [1] TransitionsInTagHelperAttributes.cshtml)
-                                RazorIRToken - (335:11,47 [1] TransitionsInTagHelperAttributes.cshtml) - Html - )
+                            RazorIRToken - (335:11,47 [1] TransitionsInTagHelperAttributes.cshtml) - CSharp - )
                     ExecuteTagHelpers - 
                 HtmlContent - (342:11,54 [2] TransitionsInTagHelperAttributes.cshtml)
                     RazorIRToken - (342:11,54 [2] TransitionsInTagHelperAttributes.cshtml) - Html - \n

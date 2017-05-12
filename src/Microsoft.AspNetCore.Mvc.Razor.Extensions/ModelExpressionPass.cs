@@ -38,12 +38,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         Content = "ModelExpressionProvider.CreateModelExpression(ViewData, __model => ",
                     });
 
-                    if (node.Children.Count == 1 && node.Children[0] is HtmlContentIRNode original)
+                    if (node.Children.Count == 1 && node.Children[0] is RazorIRToken token && token.IsCSharp)
                     {
                         // A 'simple' expression will look like __model => __model.Foo
-                        //
-                        // Note that the fact we're looking for HTML here is based on a bug.
-                        // https://github.com/aspnet/Razor/issues/963
 
                         builder.Add(new RazorIRToken()
                         {
@@ -51,13 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                             Content = "__model."
                         });
 
-                        var content = GetContent(original);
-                        builder.Add(new RazorIRToken()
-                        {
-                            Kind = RazorIRToken.TokenKind.CSharp,
-                            Content = content,
-                            Source = original.Source,
-                        });
+                        builder.Add(token);
                     }
                     else
                     {
@@ -76,19 +67,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                                 continue;
                             }
-
-                            // Note that the fact we're looking for HTML here is based on a bug.
-                            // https://github.com/aspnet/Razor/issues/963
-                            if (node.Children[i] is HtmlContentIRNode html)
-                            {
-                                var content = GetContent(html);
-                                builder.Add(new RazorIRToken()
-                                {
-                                    Kind = RazorIRToken.TokenKind.CSharp,
-                                    Content = content,
-                                    Source = html.Source,
-                                });
-                            }
                         }
                     }
 
@@ -103,20 +81,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     node.Children.Add(expression);
                     expression.Parent = node;
                 }
-            }
-
-            private string GetContent(HtmlContentIRNode node)
-            {
-                var builder = new StringBuilder();
-                for (var i = 0; i < node.Children.Count; i++)
-                {
-                    if (node.Children[i] is RazorIRToken token && token.IsHtml)
-                    {
-                        builder.Append(token.Content);
-                    }
-                }
-
-                return builder.ToString();
             }
         }
     }

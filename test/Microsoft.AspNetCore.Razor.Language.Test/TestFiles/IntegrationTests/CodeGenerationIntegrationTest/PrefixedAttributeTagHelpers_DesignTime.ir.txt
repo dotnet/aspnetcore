@@ -26,17 +26,13 @@ Document -
                         HtmlContent - (344:15,17 [8] PrefixedAttributeTagHelpers.cshtml)
                             RazorIRToken - (344:15,17 [8] PrefixedAttributeTagHelpers.cshtml) - Html - checkbox
                     SetTagHelperProperty - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml) - int-dictionary - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml) - Html - intDictionary
+                        RazorIRToken - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml) - CSharp - intDictionary
                     SetTagHelperProperty - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml) - int-dictionary - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml) - Html - intDictionary
+                        RazorIRToken - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml) - CSharp - intDictionary
                     SetTagHelperProperty - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - string-dictionary - StringDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - Html - stringDictionary
+                        RazorIRToken - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - CSharp - stringDictionary
                     SetTagHelperProperty - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - string-dictionary - StringDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - Html - stringDictionary
+                        RazorIRToken - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - CSharp - stringDictionary
                     ExecuteTagHelpers - 
                 HtmlContent - (423:15,96 [6] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (423:15,96 [6] PrefixedAttributeTagHelpers.cshtml) - Html - \n    
@@ -48,23 +44,17 @@ Document -
                         HtmlContent - (442:16,17 [8] PrefixedAttributeTagHelpers.cshtml)
                             RazorIRToken - (442:16,17 [8] PrefixedAttributeTagHelpers.cshtml) - Html - password
                     SetTagHelperProperty - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml) - int-dictionary - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml) - Html - intDictionary
+                        RazorIRToken - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml) - CSharp - intDictionary
                     SetTagHelperProperty - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml) - int-dictionary - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml) - Html - intDictionary
+                        RazorIRToken - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml) - CSharp - intDictionary
                     SetTagHelperProperty - (502:16,77 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-garlic - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (502:16,77 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (502:16,77 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 37
+                        RazorIRToken - (502:16,77 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 37
                     SetTagHelperProperty - (502:16,77 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-garlic - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (502:16,77 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (502:16,77 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 37
+                        RazorIRToken - (502:16,77 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 37
                     SetTagHelperProperty - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-grabber - IntProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 42
+                        RazorIRToken - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 42
                     SetTagHelperProperty - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-grabber - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 42
+                        RazorIRToken - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 42
                     ExecuteTagHelpers - 
                 HtmlContent - (532:16,107 [6] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (532:16,107 [6] PrefixedAttributeTagHelpers.cshtml) - Html - \n    
@@ -76,23 +66,17 @@ Document -
                         HtmlContent - (551:17,17 [5] PrefixedAttributeTagHelpers.cshtml)
                             RazorIRToken - (551:17,17 [5] PrefixedAttributeTagHelpers.cshtml) - Html - radio
                     SetTagHelperProperty - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-grabber - IntProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 42
+                        RazorIRToken - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 42
                     SetTagHelperProperty - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-grabber - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 42
+                        RazorIRToken - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 42
                     SetTagHelperProperty - (611:18,52 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-salt - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (611:18,52 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (611:18,52 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 37
+                        RazorIRToken - (611:18,52 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 37
                     SetTagHelperProperty - (611:18,52 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-salt - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (611:18,52 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (611:18,52 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 37
+                        RazorIRToken - (611:18,52 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 37
                     SetTagHelperProperty - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-pepper - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 98
+                        RazorIRToken - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 98
                     SetTagHelperProperty - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-pepper - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 98
+                        RazorIRToken - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 98
                     AddTagHelperHtmlAttribute -  - int-prefix-salt - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (655:18,96 [1] PrefixedAttributeTagHelpers.cshtml)
                             RazorIRToken - (655:18,96 [1] PrefixedAttributeTagHelpers.cshtml) - Html - 8
@@ -132,11 +116,9 @@ Document -
                     CreateTagHelper -  - TestNamespace.InputTagHelper1
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
                     SetTagHelperProperty - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-value - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 37
+                        RazorIRToken - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 37
                     SetTagHelperProperty - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-value - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml)
-                            RazorIRToken - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml) - Html - 37
+                        RazorIRToken - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 37
                     SetTagHelperProperty - (851:21,54 [6] PrefixedAttributeTagHelpers.cshtml) - string-prefix-thyme - StringDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (851:21,54 [6] PrefixedAttributeTagHelpers.cshtml)
                             RazorIRToken - (851:21,54 [6] PrefixedAttributeTagHelpers.cshtml) - Html - string

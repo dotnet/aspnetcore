@@ -41,8 +41,7 @@ Document -
                                 HtmlContent - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml)
                                     RazorIRToken - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - Html - true
+                                RazorIRToken - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
                             AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (158:4,46 [8] DuplicateAttributeTagHelpers.cshtml)
                                     RazorIRToken - (158:4,46 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
@@ -63,8 +62,7 @@ Document -
                                 HtmlContent - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml)
                                     RazorIRToken - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - Html - true
+                                RazorIRToken - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
                             AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (233:5,45 [8] DuplicateAttributeTagHelpers.cshtml)
                                     RazorIRToken - (233:5,45 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
@@ -82,8 +80,7 @@ Document -
                             RazorIRToken - (288:5,100 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - Html - 3
+                        RazorIRToken - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - CSharp - 3
                     AddTagHelperHtmlAttribute -  - AGE - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (51:2,16 [2] DuplicateAttributeTagHelpers.cshtml)
                             RazorIRToken - (51:2,16 [2] DuplicateAttributeTagHelpers.cshtml) - Html - 40

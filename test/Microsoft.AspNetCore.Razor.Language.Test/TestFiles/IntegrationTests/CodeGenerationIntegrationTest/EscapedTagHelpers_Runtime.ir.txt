@@ -47,8 +47,7 @@ Document -
                         CSharpExpression - (204:5,51 [12] EscapedTagHelpers.cshtml)
                             RazorIRToken - (204:5,51 [12] EscapedTagHelpers.cshtml) - CSharp - DateTime.Now
                     SetTagHelperProperty - (227:5,74 [4] EscapedTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (227:5,74 [4] EscapedTagHelpers.cshtml)
-                            RazorIRToken - (227:5,74 [4] EscapedTagHelpers.cshtml) - Html - true
+                        RazorIRToken - (227:5,74 [4] EscapedTagHelpers.cshtml) - CSharp - true
                     ExecuteTagHelpers - 
                 HtmlContent - (235:5,82 [8] EscapedTagHelpers.cshtml)
                     RazorIRToken - (235:5,82 [6] EscapedTagHelpers.cshtml) - Html - \n    

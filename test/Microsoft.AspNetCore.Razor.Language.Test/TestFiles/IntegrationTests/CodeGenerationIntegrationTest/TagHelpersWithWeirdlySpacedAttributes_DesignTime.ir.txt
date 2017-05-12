@@ -19,8 +19,7 @@ Document -
                         HtmlContent - (54:5,1 [11] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             RazorIRToken - (54:5,1 [11] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - Hello World
                     SetTagHelperProperty - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
-                            RazorIRToken - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - 1337
+                        RazorIRToken - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - 1337
                     AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (99:6,19 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             RazorIRToken - (99:6,19 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - true
@@ -47,8 +46,7 @@ Document -
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
-                            RazorIRToken - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - 1234
+                        RazorIRToken - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - 1234
                     AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.SingleQuotes
                         HtmlContent - (209:11,3 [6] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             RazorIRToken - (209:11,3 [6] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - hello2

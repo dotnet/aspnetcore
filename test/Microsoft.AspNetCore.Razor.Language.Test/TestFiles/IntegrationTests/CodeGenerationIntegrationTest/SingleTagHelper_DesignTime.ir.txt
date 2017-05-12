@@ -19,6 +19,5 @@ Document -
                         HtmlContent - (45:2,10 [11] SingleTagHelper.cshtml)
                             RazorIRToken - (45:2,10 [11] SingleTagHelper.cshtml) - Html - Hello World
                     SetTagHelperProperty - (63:2,28 [4] SingleTagHelper.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (63:2,28 [4] SingleTagHelper.cshtml)
-                            RazorIRToken - (63:2,28 [4] SingleTagHelper.cshtml) - Html - 1337
+                        RazorIRToken - (63:2,28 [4] SingleTagHelper.cshtml) - CSharp - 1337
                     ExecuteTagHelpers - 

@@ -45,8 +45,7 @@ Document -
                                 HtmlContent - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml)
                                     RazorIRToken - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml) - Html - checkbox
                             SetTagHelperProperty - (187:5,36 [4] AttributeTargetingTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (187:5,36 [4] AttributeTargetingTagHelpers.cshtml)
-                                    RazorIRToken - (187:5,36 [4] AttributeTargetingTagHelpers.cshtml) - Html - true
+                                RazorIRToken - (187:5,36 [4] AttributeTargetingTagHelpers.cshtml) - CSharp - true
                             ExecuteTagHelpers - 
                         HtmlContent - (195:5,44 [6] AttributeTargetingTagHelpers.cshtml)
                             RazorIRToken - (195:5,44 [6] AttributeTargetingTagHelpers.cshtml) - Html - \n    
@@ -62,8 +61,7 @@ Document -
                                 HtmlContent - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml)
                                     RazorIRToken - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml) - Html - checkbox
                             SetTagHelperProperty - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml)
-                                    RazorIRToken - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml) - Html - true
+                                RazorIRToken - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml) - CSharp - true
                             AddTagHelperHtmlAttribute -  - catchAll - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (249:6,52 [2] AttributeTargetingTagHelpers.cshtml)
                                     RazorIRToken - (249:6,52 [2] AttributeTargetingTagHelpers.cshtml) - Html - hi

@@ -19,8 +19,7 @@ Document -
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
                     SetTagHelperProperty - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
-                            RazorIRToken - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - 1337
+                        RazorIRToken - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - 1337
                     AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (99:6,19 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             RazorIRToken - (99:6,19 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - true
@@ -41,8 +40,7 @@ Document -
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
-                            RazorIRToken - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - 1234
+                        RazorIRToken - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - 1234
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
                     ExecuteTagHelpers - 
                 HtmlContent - (221:11,15 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)

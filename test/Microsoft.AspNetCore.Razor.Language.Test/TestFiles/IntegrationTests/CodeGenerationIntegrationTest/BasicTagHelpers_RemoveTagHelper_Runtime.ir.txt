@@ -39,8 +39,7 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - type - Type
                             SetTagHelperProperty - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml)
-                                    RazorIRToken - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - true
+                                RazorIRToken - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - CSharp - true
                             ExecuteTagHelpers - 
                         HtmlContent - (241:7,47 [6] BasicTagHelpers_RemoveTagHelper.cshtml)
                             RazorIRToken - (241:7,47 [6] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n    

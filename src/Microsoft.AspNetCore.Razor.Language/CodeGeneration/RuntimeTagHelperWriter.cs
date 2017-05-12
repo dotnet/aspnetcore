@@ -380,7 +380,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                     if (node.Descriptor.IsEnum &&
                         node.Children.Count == 1 &&
-                        node.Children.First() is HtmlContentIRNode)
+                        node.Children.First() is RazorIRToken token &&
+                        token.IsCSharp)
                     {
                         context.Writer
                             .Write("global::")

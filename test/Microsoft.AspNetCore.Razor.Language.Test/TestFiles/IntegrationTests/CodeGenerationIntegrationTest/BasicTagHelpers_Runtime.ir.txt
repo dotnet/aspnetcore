@@ -52,8 +52,7 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_2 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_2 - type - Type
                             SetTagHelperProperty - (303:6,40 [4] BasicTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (303:6,40 [4] BasicTagHelpers.cshtml)
-                                    RazorIRToken - (303:6,40 [4] BasicTagHelpers.cshtml) - Html - true
+                                RazorIRToken - (303:6,40 [4] BasicTagHelpers.cshtml) - CSharp - true
                             ExecuteTagHelpers - 
                         HtmlContent - (310:6,47 [6] BasicTagHelpers.cshtml)
                             RazorIRToken - (310:6,47 [6] BasicTagHelpers.cshtml) - Html - \n    

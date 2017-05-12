@@ -36,8 +36,7 @@ Document -
                     CreateTagHelper -  - TestNamespace.InputTagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     SetTagHelperProperty - (171:8,14 [7] EnumTagHelpers.cshtml) - value - Value - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (171:8,14 [7] EnumTagHelpers.cshtml)
-                            RazorIRToken - (171:8,14 [7] EnumTagHelpers.cshtml) - Html - MyValue
+                        RazorIRToken - (171:8,14 [7] EnumTagHelpers.cshtml) - CSharp - MyValue
                     ExecuteTagHelpers - 
                 HtmlContent - (182:8,25 [2] EnumTagHelpers.cshtml)
                     RazorIRToken - (182:8,25 [2] EnumTagHelpers.cshtml) - Html - \n
@@ -46,11 +45,9 @@ Document -
                     CreateTagHelper -  - TestNamespace.InputTagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     SetTagHelperProperty - (198:9,14 [13] EnumTagHelpers.cshtml) - value - Value - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (198:9,14 [13] EnumTagHelpers.cshtml)
-                            RazorIRToken - (198:9,14 [13] EnumTagHelpers.cshtml) - Html - MySecondValue
+                        RazorIRToken - (198:9,14 [13] EnumTagHelpers.cshtml) - CSharp - MySecondValue
                     SetTagHelperProperty - (224:9,40 [7] EnumTagHelpers.cshtml) - catch-all - CatchAll - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (224:9,40 [7] EnumTagHelpers.cshtml)
-                            RazorIRToken - (224:9,40 [7] EnumTagHelpers.cshtml) - Html - MyValue
+                        RazorIRToken - (224:9,40 [7] EnumTagHelpers.cshtml) - CSharp - MyValue
                     ExecuteTagHelpers - 
                 HtmlContent - (234:9,50 [2] EnumTagHelpers.cshtml)
                     RazorIRToken - (234:9,50 [2] EnumTagHelpers.cshtml) - Html - \n

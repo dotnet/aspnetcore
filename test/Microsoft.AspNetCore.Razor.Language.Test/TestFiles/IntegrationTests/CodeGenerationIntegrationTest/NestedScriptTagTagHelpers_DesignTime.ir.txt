@@ -51,8 +51,7 @@ Document -
                                 HtmlContent - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml)
                                     RazorIRToken - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml) - Html - text
                             SetTagHelperProperty - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml)
-                                    RazorIRToken - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - Html - true
+                                RazorIRToken - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - CSharp - true
                             ExecuteTagHelpers - 
                         HtmlContent - (395:7,106 [27] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (395:7,106 [18] NestedScriptTagTagHelpers.cshtml) - Html - \n                

@@ -26,7 +26,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 attributes: new List<TagHelperAttributeNode>
                                 {
                                     new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("[item]", factory.CodeMarkup("items"), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode(
+                                        "[item]",
+                                        factory.CodeMarkup("items").With(new ExpressionChunkGenerator()),
+                                        HtmlAttributeValueStyle.SingleQuotes)
                                 }))
                     },
                     {
@@ -36,7 +39,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 attributes: new List<TagHelperAttributeNode>
                                 {
                                     new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("[(item)]", factory.CodeMarkup("items"), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode(
+                                        "[(item)]",
+                                        factory.CodeMarkup("items").With(new ExpressionChunkGenerator()),
+                                        HtmlAttributeValueStyle.SingleQuotes)
                                 }))
                     },
                     {
@@ -48,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
                                     new TagHelperAttributeNode(
                                         "(click)",
-                                        factory.CodeMarkup("doSomething()"),
+                                        factory.CodeMarkup("doSomething()").With(new ExpressionChunkGenerator()),
                                         HtmlAttributeValueStyle.SingleQuotes)
                                 },
                                 children: factory.Markup("Click Me")))
@@ -62,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
                                     new TagHelperAttributeNode(
                                         "(^click)",
-                                        factory.CodeMarkup("doSomething()"),
+                                        factory.CodeMarkup("doSomething()").With(new ExpressionChunkGenerator()),
                                         HtmlAttributeValueStyle.SingleQuotes)
                                 },
                                 children: factory.Markup("Click Me")))
@@ -961,7 +967,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("age", factory.CodeMarkup("12"))
+                                    new TagHelperAttributeNode("age", factory.CodeMarkup("12").With(new ExpressionChunkGenerator()))
                                 }))
                     },
                     {
@@ -973,7 +979,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 {
                                     new TagHelperAttributeNode(
                                         "birthday",
-                                        factory.CodeMarkup("DateTime.Now"))
+                                        factory.CodeMarkup("DateTime.Now").With(new ExpressionChunkGenerator()))
                                 }))
                     },
                     {
@@ -1005,9 +1011,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         "age",
                                         new MarkupBlock(
                                             new MarkupBlock(
-                                                factory.CodeMarkup(" "),
+                                                factory.CodeMarkup(" ").With(new ExpressionChunkGenerator()),
                                                 new ExpressionBlock(
-                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("@").With(new ExpressionChunkGenerator()),
                                                     factory
                                                         .CSharpCodeMarkup("DateTime.Now.Year")
                                                         .With(new ExpressionChunkGenerator())))))
@@ -1045,39 +1051,38 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "age",
                                         new MarkupBlock(
-                                            factory.CodeMarkup("1"),
-                                            factory.CodeMarkup(" +"),
+                                            factory.CodeMarkup("1").With(new ExpressionChunkGenerator()),
+                                            factory.CodeMarkup(" +").With(new ExpressionChunkGenerator()),
                                             new MarkupBlock(
-                                                factory.CodeMarkup(" "),
+                                                factory.CodeMarkup(" ").With(new ExpressionChunkGenerator()),
                                                 new ExpressionBlock(
-                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("@").With(new ExpressionChunkGenerator()),
                                                     factory.CSharpCodeMarkup("value")
                                                         .With(new ExpressionChunkGenerator()))),
-                                            factory.CodeMarkup(" +"),
-                                            factory.CodeMarkup(" 2"))),
+                                            factory.CodeMarkup(" +").With(new ExpressionChunkGenerator()),
+                                            factory.CodeMarkup(" 2").With(new ExpressionChunkGenerator()))),
                                     new TagHelperAttributeNode(
                                         "birthday",
                                         new MarkupBlock(
-                                            factory.CodeMarkup("(bool)"),
+                                            factory.CodeMarkup("(bool)").With(new ExpressionChunkGenerator()),
                                             new MarkupBlock(
                                                 new ExpressionBlock(
-                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("@").With(new ExpressionChunkGenerator()),
                                                     factory
                                                         .CSharpCodeMarkup("Bag[\"val\"]")
                                                         .With(new ExpressionChunkGenerator()))),
-                                            factory.CodeMarkup(" ?"),
+                                            factory.CodeMarkup(" ?").With(new ExpressionChunkGenerator()),
                                             new MarkupBlock(
-                                                factory.CodeMarkup(" @")
+                                                factory.CodeMarkup(" @").With(new ExpressionChunkGenerator())
                                                     .As(SpanKind.Code),
-                                                factory.CodeMarkup("@")
-                                                    .As(SpanKind.Code)
-                                                    .With(SpanChunkGenerator.Null)),
-                                            factory.CodeMarkup("DateTime"),
-                                            factory.CodeMarkup(" :"),
+                                                factory.CodeMarkup("@").With(SpanChunkGenerator.Null)
+                                                    .As(SpanKind.Code)),
+                                            factory.CodeMarkup("DateTime").With(new ExpressionChunkGenerator()),
+                                            factory.CodeMarkup(" :").With(new ExpressionChunkGenerator()),
                                             new MarkupBlock(
-                                                factory.CodeMarkup(" "),
+                                                factory.CodeMarkup(" ").With(new ExpressionChunkGenerator()),
                                                 new ExpressionBlock(
-                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("@").With(new ExpressionChunkGenerator()),
                                                     factory
                                                         .CSharpCodeMarkup("DateTime.Now")
                                                         .With(new ExpressionChunkGenerator())))),
@@ -1091,10 +1096,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("age", factory.CodeMarkup("12")),
+                                    new TagHelperAttributeNode("age", factory.CodeMarkup("12").With(new ExpressionChunkGenerator())),
                                     new TagHelperAttributeNode(
                                         "birthday",
-                                        factory.CodeMarkup("DateTime.Now")),
+                                        factory.CodeMarkup("DateTime.Now").With(new ExpressionChunkGenerator())),
                                     new TagHelperAttributeNode(
                                         "name",
                                         new MarkupBlock(factory.Markup("Time:"), dateTimeNow))
@@ -1107,10 +1112,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("age", factory.CodeMarkup("12")),
+                                    new TagHelperAttributeNode("age", factory.CodeMarkup("12").With(new ExpressionChunkGenerator())),
                                     new TagHelperAttributeNode(
                                         "birthday",
-                                        factory.CodeMarkup("DateTime.Now")),
+                                        factory.CodeMarkup("DateTime.Now").With(new ExpressionChunkGenerator())),
                                     new TagHelperAttributeNode(
                                         "name",
                                         new MarkupBlock(
@@ -1130,10 +1135,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("age", factory.CodeMarkup("12")),
+                                    new TagHelperAttributeNode("age", factory.CodeMarkup("12").With(new ExpressionChunkGenerator())),
                                     new TagHelperAttributeNode(
                                         "birthday",
-                                        factory.CodeMarkup("DateTime.Now")),
+                                        factory.CodeMarkup("DateTime.Now").With(new ExpressionChunkGenerator())),
                                     new TagHelperAttributeNode(
                                         "name",
                                         new MarkupBlock(
@@ -1156,22 +1161,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         "age",
                                         new MarkupBlock(
                                             new MarkupBlock(
-                                                factory.CodeMarkup("@"),
-                                                factory.CodeMarkup("@")
-                                                    .With(SpanChunkGenerator.Null)),
+                                                factory.CodeMarkup("@").With(new ExpressionChunkGenerator()),
+                                                factory.CodeMarkup("@").With(SpanChunkGenerator.Null)),
                                             new MarkupBlock(
                                                 factory.EmptyHtml()
-                                                    .AsCodeMarkup()
+                                                    .AsCodeMarkup().With(new ExpressionChunkGenerator())
                                                     .As(SpanKind.Code),
                                                 new ExpressionBlock(
-                                                    factory.CSharpCodeMarkup("@"),
-                                                    factory.CSharpCodeMarkup("("),
+                                                    factory.CSharpCodeMarkup("@").With(new ExpressionChunkGenerator()),
+                                                    factory.CSharpCodeMarkup("(").With(new ExpressionChunkGenerator()),
                                                     factory.CSharpCodeMarkup("11+1")
                                                         .With(new ExpressionChunkGenerator()),
-                                                    factory.CSharpCodeMarkup(")"))))),
+                                                    factory.CSharpCodeMarkup(")").With(new ExpressionChunkGenerator()))))),
                                     new TagHelperAttributeNode(
                                         "birthday",
-                                        factory.CodeMarkup("DateTime.Now")),
+                                        factory.CodeMarkup("DateTime.Now").With(new ExpressionChunkGenerator())),
                                     new TagHelperAttributeNode(
                                         "name",
                                         new MarkupBlock(factory.Markup("Time:"), dateTimeNow))
@@ -1954,7 +1958,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", factory.CodeMarkup("    true"), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode(
+                                        "bound",
+                                        factory.CodeMarkup("    true").With(new ExpressionChunkGenerator()),
+                                        HtmlAttributeValueStyle.SingleQuotes)
                                 })),
                         new RazorError[0]
                     },
@@ -1966,7 +1973,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", factory.CodeMarkup("    "), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode(
+                                        "bound",
+                                        factory.CodeMarkup("    ").With(new ExpressionChunkGenerator()),
+                                        HtmlAttributeValueStyle.SingleQuotes)
                                 })),
                         new[]
                         {
@@ -2004,8 +2014,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", factory.CodeMarkup(" "), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound", factory.CodeMarkup("  "))
+                                    new TagHelperAttributeNode(
+                                        "bound",
+                                        factory.CodeMarkup(" ").With(new ExpressionChunkGenerator()),
+                                        HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode(
+                                        "bound",
+                                        factory.CodeMarkup("  "))
                                 })),
                         new[]
                         {
@@ -2025,7 +2040,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", factory.CodeMarkup("true"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode(
+                                        "bound",
+                                        factory.CodeMarkup("true").With(new ExpressionChunkGenerator()),
+                                        HtmlAttributeValueStyle.SingleQuotes),
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null),
@@ -2088,7 +2106,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", factory.CodeMarkup("true"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode(
+                                        "bound",
+                                        factory.CodeMarkup("true").With(new ExpressionChunkGenerator()),
+                                        HtmlAttributeValueStyle.SingleQuotes),
                                     new TagHelperAttributeNode("name", factory.Markup("john"), HtmlAttributeValueStyle.SingleQuotes),
                                     new TagHelperAttributeNode(
                                         "bound",
@@ -2177,12 +2198,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             "bound",
                                             new MarkupBlock(
                                                 new MarkupBlock(
-                                                factory.CodeMarkup("    "),
+                                                factory.CodeMarkup("    ").With(new ExpressionChunkGenerator()),
                                                 new ExpressionBlock(
-                                                    factory.CSharpCodeMarkup("@"),
+                                                    factory.CSharpCodeMarkup("@").With(new ExpressionChunkGenerator()),
                                                     factory.CSharpCodeMarkup("true")
                                                         .With(new ExpressionChunkGenerator()))),
-                                                factory.CodeMarkup("  ")),
+                                                factory.CodeMarkup("  ").With(new ExpressionChunkGenerator())),
                                             HtmlAttributeValueStyle.SingleQuotes)
                                     }
                                 })),
@@ -2201,14 +2222,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             "bound",
                                             new MarkupBlock(
                                                 new MarkupBlock(
-                                                factory.CodeMarkup("    "),
+                                                factory.CodeMarkup("    ").With(new ExpressionChunkGenerator()),
                                                 new ExpressionBlock(
-                                                    factory.CSharpCodeMarkup("@"),
-                                                    factory.CSharpCodeMarkup("("),
+                                                    factory.CSharpCodeMarkup("@").With(new ExpressionChunkGenerator()),
+                                                    factory.CSharpCodeMarkup("(").With(new ExpressionChunkGenerator()),
                                                     factory.CSharpCodeMarkup("true")
                                                         .With(new ExpressionChunkGenerator()),
-                                                    factory.CSharpCodeMarkup(")"))),
-                                                factory.CodeMarkup("  ")),
+                                                    factory.CSharpCodeMarkup(")").With(new ExpressionChunkGenerator()))),
+                                                factory.CodeMarkup("  ").With(new ExpressionChunkGenerator())),
                                             HtmlAttributeValueStyle.SingleQuotes)
                                     }
                                 })),
@@ -3125,7 +3146,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("int-prefix-value", factory.CodeMarkup("3"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode(
+                                        "int-prefix-value",
+                                        factory.CodeMarkup("3").With(new ExpressionChunkGenerator()),
+                                        HtmlAttributeValueStyle.SingleQuotes),
                                 })),
                         new RazorError[0]
                     },
