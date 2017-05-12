@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var server = new TestServer(builder);
 
             var response = await server.CreateClient().GetAsync("");
-            Assert.Equal(response.Headers.Location.OriginalString, "/");
+            Assert.Equal("/", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             var response = await server.CreateClient().GetStringAsync("");
 
-            Assert.Equal(response, "/");
+            Assert.Equal("/", response);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             var response = await server.CreateClient().GetAsync("");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "/foo");
+            Assert.Equal("/foo", response.Headers.Location.OriginalString);
         }
     }
 }

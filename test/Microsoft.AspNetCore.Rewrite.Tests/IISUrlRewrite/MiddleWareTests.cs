@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "/foo");
+            Assert.Equal("/foo", response.Headers.Location.OriginalString);
         }
 
         [Theory]
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var condition = new UriMatchCondition(
                 inputParser,
                 "{REQUEST_URI}",
-                conditionInputPattern, 
+                conditionInputPattern,
                 uriMatchPart,
                 ignoreCase: true,
                 negate: false);
@@ -578,8 +578,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             ruleBuilder.AddUrlCondition(condition);
 
             var action = new RewriteAction(
-                RuleResult.SkipRemainingRules, 
-                inputParser.ParseInputString(@"http://www.test.com{C:1}", uriMatchPart), 
+                RuleResult.SkipRemainingRules,
+                inputParser.ParseInputString(@"http://www.test.com{C:1}", uriMatchPart),
                 queryStringAppend: false);
             ruleBuilder.AddUrlAction(action);
 

@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.HttpOverrides.Internal
             Assert.Equal(expectedPort, endpoint.Port);
         }
 
+        [Theory]
         [InlineData(null)]
         [InlineData("[::1]:")]
         [InlineData("[::1:")]
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.HttpOverrides.Internal
             IPEndPoint endpoint;
             var success = IPEndPointParser.TryParse(input, out endpoint);
             Assert.False(success);
-            Assert.Equal(null, endpoint);
+            Assert.Null(endpoint);
         }
     }
 }
