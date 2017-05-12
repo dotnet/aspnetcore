@@ -1678,7 +1678,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Theory]
-        [MemberData("OptionalParamValues")]
+        [MemberData(nameof(OptionalParamValues))]
         public void TreeRouter_GenerateLink_Match_WithOptionalParameters(
             string template,
             object ambientValues,

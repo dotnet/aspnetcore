@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Routing
             var innerConstraint = ((OptionalRouteConstraint)route.Constraints["id"]).InnerConstraint;
             Assert.IsType<CompositeRouteConstraint>(innerConstraint);
             var compositeConstraint = (CompositeRouteConstraint)innerConstraint;
-            Assert.Equal(compositeConstraint.Constraints.Count<IRouteConstraint>(), 2);
+            Assert.Equal(2, compositeConstraint.Constraints.Count<IRouteConstraint>());
 
             Assert.Single(compositeConstraint.Constraints, c => c is IntRouteConstraint);
             Assert.Single(compositeConstraint.Constraints, c => c is RangeRouteConstraint);
@@ -720,7 +720,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Theory]
-        [MemberData("DataTokensTestData")]
+        [MemberData(nameof(DataTokensTestData))]
         public void GetVirtualPath_ReturnsDataTokens_WhenTargetReturnsVirtualPathData(
             RouteValueDictionary dataTokens)
         {
@@ -764,7 +764,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Theory]
-        [MemberData("DataTokensTestData")]
+        [MemberData(nameof(DataTokensTestData))]
         public void GetVirtualPath_ReturnsDataTokens_WhenTargetReturnsNullVirtualPathData(
             RouteValueDictionary dataTokens)
         {
@@ -1529,7 +1529,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Theory]
-        [MemberData("DataTokens")]
+        [MemberData(nameof(DataTokens))]
         public void RegisteringRoute_WithDataTokens_AbleToAddTheRoute(object dataToken,
                                                                       IDictionary<string, object> expectedDictionary)
         {

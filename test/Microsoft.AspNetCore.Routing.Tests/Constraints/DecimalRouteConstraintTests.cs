@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         [InlineData("1.79769313486232E+300", false)]
         [InlineData("not-parseable-as-decimal", false)]
         [InlineData(false, false)]
-        [MemberData("GetDecimalObject")]
+        [MemberData(nameof(GetDecimalObject))]
         public void DecimalRouteConstraint_ApplyConstraint(object parameterValue, bool expected)
         {
             // Arrange

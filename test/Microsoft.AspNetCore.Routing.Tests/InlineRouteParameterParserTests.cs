@@ -917,7 +917,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal("p1", templatePart.Name);
-            Assert.Equal(templatePart.DefaultValue, "123-456-7890");
+            Assert.Equal("123-456-7890", templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.InlineConstraints);

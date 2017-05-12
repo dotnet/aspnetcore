@@ -229,8 +229,17 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
-                kvp => { Assert.Equal("CoolnessFactor", kvp.Key); Assert.Equal(73, kvp.Value); },
-                kvp => { Assert.Equal("IsAwesome", kvp.Key); Assert.Equal(false, kvp.Value); });
+                kvp =>
+                {
+                    Assert.Equal("CoolnessFactor", kvp.Key);
+                    Assert.Equal(73, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("IsAwesome", kvp.Key);
+                    var value = Assert.IsType<bool>(kvp.Value);
+                    Assert.False(value);
+                });
         }
 
         [Fact]
@@ -246,7 +255,12 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
-                kvp => { Assert.Equal("IsPublic", kvp.Key); Assert.Equal(true, kvp.Value); });
+                kvp =>
+                {
+                    Assert.Equal("IsPublic", kvp.Key);
+                    var value = Assert.IsType<bool>(kvp.Value);
+                    Assert.True(value);
+                });
         }
 
         [Fact]
@@ -290,8 +304,18 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.IsType<RouteValueDictionary.PropertyStorage>(dict._storage);
             Assert.Collection(
                 dict.OrderBy(kvp => kvp.Key),
-                kvp => { Assert.Equal("DerivedProperty", kvp.Key); Assert.Equal(false, kvp.Value); },
-                kvp => { Assert.Equal("TotallySweetProperty", kvp.Key); Assert.Equal(true, kvp.Value); });
+                kvp =>
+                {
+                    Assert.Equal("DerivedProperty", kvp.Key);
+                    var value = Assert.IsType<bool>(kvp.Value);
+                    Assert.False(value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("TotallySweetProperty", kvp.Key);
+                    var value = Assert.IsType<bool>(kvp.Value);
+                    Assert.True(value);
+                });
         }
 
         [Fact]

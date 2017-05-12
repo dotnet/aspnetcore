@@ -403,6 +403,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
+        [Fact(Skip = "Fails")]
         public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_LastSegment()
         {
             // Arrange
@@ -544,6 +545,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                  + Environment.NewLine + "Parameter name: routeTemplate");
         }
 
+        [Theory(Skip = "Skipped because it causes the test framework to crash")]
         [InlineData("{p1}-{p2?}", "-")]
         [InlineData("{p1}..{p2?}", "..")]
         [InlineData("..{p2?}", "..")]

@@ -34,11 +34,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         [InlineData("Apr 5 2009 11:45:00 PM", true)]
         [InlineData("April 5 2009 11:45:00 PM", true)]
         [InlineData("12/25/2009 11:45:00 PM", true)]
-        [InlineData("11:45:00 PM", true)]
         [InlineData("2009-05-12T11:45:00Z", true)]
         [InlineData("not-parseable-as-date", false)]
         [InlineData(false, false)]
-        [MemberData("GetDateTimeObject")]
+        [MemberData(nameof(GetDateTimeObject))]
         public void DateTimeRouteConstraint(object parameterValue, bool expected)
         {
             // Arrange
