@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
-    public class DefaultRazorProjectTest
+    public class FileProviderRazorProjectTest
     {
         [Fact]
         public void EnumerateFiles_ReturnsEmptySequenceIfNoCshtmlFilesArePresent()
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var file2 = fileProvider.AddFile("File2.js", "content");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file1, file2 });
 
-            var razorProject = new DefaultRazorProject(fileProvider);
+            var razorProject = new FileProviderRazorProject(fileProvider);
 
             // Act
             var razorFiles = razorProject.EnumerateItems("/");
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var file3 = fileProvider.AddFile("File3.cshtml", "content");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file1, file2, file3 });
 
-            var razorProject = new DefaultRazorProject(fileProvider);
+            var razorProject = new FileProviderRazorProject(fileProvider);
 
             // Act
             var razorFiles = razorProject.EnumerateItems("/");
@@ -75,7 +75,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var file5 = fileProvider.AddFile("Level1-Dir2/File5.cshtml", "content");
             fileProvider.AddDirectoryContent("/Level1-Dir2", new IFileInfo[] { file5 });
             fileProvider.AddDirectoryContent("/Level1/Level2", new IFileInfo[0]);
-            var razorProject = new DefaultRazorProject(fileProvider);
+
+            var razorProject = new FileProviderRazorProject(fileProvider);
 
             // Act
             var razorFiles = razorProject.EnumerateItems("/");
@@ -115,7 +116,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var file5 = fileProvider.AddFile("Level1-Dir2/File5.cshtml", "content");
             fileProvider.AddDirectoryContent("/Level1-Dir2", new IFileInfo[] { file5 });
             fileProvider.AddDirectoryContent("/Level1/Level2", new IFileInfo[0]);
-            var razorProject = new DefaultRazorProject(fileProvider);
+
+            var razorProject = new FileProviderRazorProject(fileProvider);
 
             // Act
             var razorFiles = razorProject.EnumerateItems("/Level1-Dir1");

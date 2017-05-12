@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
@@ -175,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             fileProvider.AddFile("/Home/Path1/_ViewStart.cshtml", "content1");
             fileProvider.AddFile("/_ViewStart.cshtml", "content2");
 
-            var defaultRazorProject = new TestRazorProject(fileProvider);
+            var defaultRazorProject = new FileProviderRazorProject(fileProvider);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,

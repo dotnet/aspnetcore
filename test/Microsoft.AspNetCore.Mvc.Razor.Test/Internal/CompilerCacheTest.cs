@@ -48,10 +48,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void GetOrAdd_ReturnsFileNotFoundResult_IfFileIsNotFoundInFileSystem()
         {
             // Arrange
+            var item = new Mock<RazorProjectItem>();
+            item
+                .SetupGet(i => i.Path)
+                .Returns("/path");
+            item
+                .SetupGet(i => i.Exists)
+                .Returns(false);
+
             var fileProvider = new TestFileProvider();
             var cache = new CompilerCache(fileProvider);
             var compilerCacheContext = new CompilerCacheContext(
-                new NotFoundProjectItem("", "/path"),
+                item.Object,
                 Enumerable.Empty<RazorProjectItem>(),
                 _ => throw new Exception("Shouldn't be called."));
 
@@ -113,10 +121,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Arrange
             var fileProvider = new TestFileProvider();
             var fileInfo = fileProvider.AddFile(ViewPath, "some content");
+
+            var foundItem = new FileProviderRazorProjectItem(fileInfo, "", ViewPath);
+
+            var notFoundItem = new Mock<RazorProjectItem>();
+            notFoundItem
+                .SetupGet(i => i.Path)
+                .Returns(ViewPath);
+            notFoundItem
+                .SetupGet(i => i.Exists)
+                .Returns(false);
+
             var cache = new CompilerCache(fileProvider);
             var expected = new CompilationResult(typeof(TestView));
-            var projectItem = new DefaultRazorProjectItem(fileInfo, "", ViewPath);
-            var cacheContext = new CompilerCacheContext(projectItem, Enumerable.Empty<RazorProjectItem>(), _ => expected);
+            var cacheContext = new CompilerCacheContext(foundItem, Enumerable.Empty<RazorProjectItem>(), _ => expected);
 
             // Act 1
             var result1 = cache.GetOrAdd(ViewPath, _ => cacheContext);
@@ -419,7 +437,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             {
                 return cache.GetOrAdd("/Views/Home/Index.cshtml", path =>
                 {
-                    var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+                    var projectItem = new FileProviderRazorProjectItem(new TestFileInfo(), "", path);
                     return new CompilerCacheContext(projectItem, Enumerable.Empty<RazorProjectItem>(), compile1);
                 });
             });
@@ -429,7 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 // Event 4
                 return cache.GetOrAdd("/Views/Home/About.cshtml", path =>
                 {
-                    var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+                    var projectItem = new FileProviderRazorProjectItem(new TestFileInfo(), "", path);
                     return new CompilerCacheContext(projectItem, Enumerable.Empty<RazorProjectItem>(), compile2);
                 });
             });
@@ -472,7 +490,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             {
                 return cache.GetOrAdd(ViewPath, path =>
                 {
-                    var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+                    var projectItem = new FileProviderRazorProjectItem(new TestFileInfo(), "", path);
                     return new CompilerCacheContext(projectItem, Enumerable.Empty<RazorProjectItem>(), compile);
                 });
             });
@@ -607,7 +625,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private CompilerCacheContext ThrowsIfCalled(string path, Exception exception)
         {
             exception = exception ?? new Exception("Shouldn't be called");
-            var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+            var projectItem = new FileProviderRazorProjectItem(new TestFileInfo(), "", path);
 
             return new CompilerCacheContext(
                 projectItem,
@@ -622,12 +640,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private CompilerCacheContext CreateCacheContext(CompilationResult compile, string path = ViewPath)
         {
-            var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+            var projectItem = new FileProviderRazorProjectItem(new TestFileInfo(), "", path);
 
             var imports = new List<RazorProjectItem>();
             foreach (var importFilePath in _viewImportsPath)
             {
-                var importProjectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", importFilePath);
+                var importProjectItem = new FileProviderRazorProjectItem(new TestFileInfo(), "", importFilePath);
 
                 imports.Add(importProjectItem);
             }

@@ -158,7 +158,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Razor compilation infrastructure
             //
-            services.TryAddSingleton<RazorProject, DefaultRazorProject>();
+            services.TryAddSingleton<RazorProject, FileProviderRazorProject>();
             services.TryAddSingleton<RazorTemplateEngine, MvcRazorTemplateEngine>();
             services.TryAddSingleton<RazorCompiler>();
             services.TryAddSingleton<LazyMetadataReferenceFeature>();

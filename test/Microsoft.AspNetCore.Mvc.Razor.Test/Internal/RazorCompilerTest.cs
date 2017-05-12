@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorEngine = RazorEngine.Create();
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(viewPath, "<span name=\"@(User.Id\">");
-            var razorProject = new DefaultRazorProject(fileProvider);
+            var razorProject = new FileProviderRazorProject(fileProvider);
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
             var compiler = new RazorCompiler(
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var fileProvider = new TestFileProvider();
             var file = fileProvider.AddFile(viewPath, "<span name=\"@(User.Id\">");
             file.PhysicalPath = physicalPath;
-            var razorProject = new DefaultRazorProject(fileProvider);
+            var razorProject = new FileProviderRazorProject(fileProvider);
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
             var compiler = new RazorCompiler(
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorEngine = RazorEngine.Create();
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(viewPath, fileContent);
-            var razorProject = new DefaultRazorProject(fileProvider);
+            var razorProject = new FileProviderRazorProject(fileProvider);
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
             var compiler = new RazorCompiler(
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             fileProvider.AddFile(viewPath, fileContent);
             var importsFile = fileProvider.AddFile("/Views/_MyImports.cshtml", importsContent);
             importsFile.PhysicalPath = importsFilePath;
-            var razorProject = new DefaultRazorProject(fileProvider);
+            var razorProject = new FileProviderRazorProject(fileProvider);
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject)
             {
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var compiler = new RazorCompiler(
                 Mock.Of<ICompilationService>(),
                 GetCompilerCacheProvider(fileProvider),
-                new MvcRazorTemplateEngine(RazorEngine.Create(), new DefaultRazorProject(fileProvider)));
+                new MvcRazorTemplateEngine(RazorEngine.Create(), new FileProviderRazorProject(fileProvider)));
 
             // Act
             var result = compiler.GetCompilationFailedResult(codeDocument, diagnostics);

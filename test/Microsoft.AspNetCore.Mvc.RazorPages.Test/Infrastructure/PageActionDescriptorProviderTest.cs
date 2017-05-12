@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 Content = content,
             };
 
-            return new DefaultRazorProjectItem(testFileInfo, basePath, path);
+            return new FileProviderRazorProjectItem(testFileInfo, basePath, path);
         }
 
         private class TestPageApplicationModelProvider : IPageApplicationModelProvider

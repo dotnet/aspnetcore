@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             return new RazorCompiler(
                 Mock.Of<ICompilationService>(),
                 compilerCacheProvider.Object,
-                new MvcRazorTemplateEngine(RazorEngine.Create(), new DefaultRazorProject(new TestFileProvider())));
+                new MvcRazorTemplateEngine(RazorEngine.Create(), new FileProviderRazorProject(new TestFileProvider())));
         }
 
         private class TestRazorPage : RazorPage

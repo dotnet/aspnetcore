@@ -9,18 +9,17 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
-    public class DefaultRazorProject : RazorProject
+    public class FileProviderRazorProject : RazorProject
     {
         private const string RazorFileExtension = ".cshtml";
         private readonly IFileProvider _provider;
 
-        public DefaultRazorProject(IRazorViewEngineFileProviderAccessor accessor)
+        public FileProviderRazorProject(IRazorViewEngineFileProviderAccessor accessor)
             : this(accessor.FileProvider)
         {
         }
 
-        // Internal for unit testing
-        internal DefaultRazorProject(IFileProvider provider)
+        public FileProviderRazorProject(IFileProvider provider)
         {
             _provider = provider;
         }
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             path = NormalizeAndEnsureValidPath(path);
             var fileInfo = _provider.GetFileInfo(path);
-            return new DefaultRazorProjectItem(fileInfo, basePath: string.Empty, path: path);
+            return new FileProviderRazorProjectItem(fileInfo, basePath: string.Empty, path: path);
         }
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string path)
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     }
                     else if (string.Equals(RazorFileExtension, Path.GetExtension(file.Name), StringComparison.OrdinalIgnoreCase))
                     {
-                        yield return new DefaultRazorProjectItem(file, basePath, prefix + "/" + file.Name);
+                        yield return new FileProviderRazorProjectItem(file, basePath, prefix + "/" + file.Name);
                     }
                 }
             }

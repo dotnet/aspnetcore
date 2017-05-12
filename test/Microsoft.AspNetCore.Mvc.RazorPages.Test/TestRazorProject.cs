@@ -7,7 +7,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    public class TestRazorProject : DefaultRazorProject
+    public class TestRazorProject : FileProviderRazorProject
     {
         public TestRazorProject(IFileProvider fileProvider)
             :base(GetAccessor(fileProvider))
