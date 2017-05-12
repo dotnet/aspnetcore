@@ -131,7 +131,7 @@
     <value>Method '{0}' of view component '{1}' should be declared to return a value.</value>
   </data>
   <data name="ViewComponent_CannotFindComponent" xml:space="preserve">
-    <value>A view component named '{0}' could not be found.</value>
+    <value>A view component named '{0}' could not be found. A view component must be a public non-abstract class, not contain any generic parameters, and either be decorated with '{1}' or have a class name ending with the '{2}' suffix. A view component must not be decorated with '{3}'.</value>
   </data>
   <data name="ViewComponent_IViewComponentFactory_ReturnedNull" xml:space="preserve">
     <value>An invoker could not be created for the view component '{0}'.</value>

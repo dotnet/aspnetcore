@@ -105,7 +105,10 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_Throws_IfViewComponentCouldNotBeFound_ByName()
         {
             // Arrange
-            var expected = "A view component named 'Text' could not be found.";
+            var expected = "A view component named 'Text' could not be found. A view component must be " +
+                "a public non-abstract class, not contain any generic parameters, and either be decorated " +
+                "with 'ViewComponentAttribute' or have a class name ending with the 'ViewComponent' suffix. " +
+                "A view component must not be decorated with 'NonViewComponentAttribute'.";
 
             var actionContext = CreateActionContext();
 
@@ -125,7 +128,10 @@ namespace Microsoft.AspNetCore.Mvc
         public async Task ExecuteResultAsync_Throws_IfViewComponentCouldNotBeFound_ByType()
         {
             // Arrange
-            var expected = $"A view component named '{typeof(TextViewComponent).FullName}' could not be found.";
+            var expected = $"A view component named '{typeof(TextViewComponent).FullName}' could not be found. " +
+                "A view component must be a public non-abstract class, not contain any generic parameters, and either be decorated " +
+                "with 'ViewComponentAttribute' or have a class name ending with the 'ViewComponent' suffix. " +
+                "A view component must not be decorated with 'NonViewComponentAttribute'.";
 
             var actionContext = CreateActionContext();
             var services = CreateServices(diagnosticListener: null, context: actionContext.HttpContext);
