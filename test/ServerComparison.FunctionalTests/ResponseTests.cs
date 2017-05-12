@@ -159,7 +159,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(serverType, architecture, CheckManuallyChunkedAndCloseAsync, applicationType);
         }
 
-        public async Task ResponseFormats(ServerType serverType, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, [CallerMemberName] string testName = null)
+        private async Task ResponseFormats(ServerType serverType, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, [CallerMemberName] string testName = null)
         {
             testName = $"{testName}_{serverType}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))

@@ -122,7 +122,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseCompression(serverType, architecture, CheckAppCompressionAsync, applicationType, hostCompression: true);
         }
 
-        public async Task ResponseCompression(ServerType serverType, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, bool hostCompression, [CallerMemberName] string testName = null)
+        private async Task ResponseCompression(ServerType serverType, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, bool hostCompression, [CallerMemberName] string testName = null)
         {
             testName = $"{testName}_{serverType}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))

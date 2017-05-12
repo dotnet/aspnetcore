@@ -51,7 +51,7 @@ namespace ServerComparison.FunctionalTests
             return HelloWorld(serverType, architecture, applicationType);
         }
 
-        public async Task HelloWorld(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType, [CallerMemberName] string testName = null)
+        private async Task HelloWorld(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType, [CallerMemberName] string testName = null)
         {
             testName = $"{testName}_{serverType}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
