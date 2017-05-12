@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class HtmlAttributeIRNode : RazorIRNode
+    public sealed class HtmlAttributeIRNode : RazorIRNode
     {
         public override ItemCollection Annotations => ReadonlyItemCollection.Empty;
 

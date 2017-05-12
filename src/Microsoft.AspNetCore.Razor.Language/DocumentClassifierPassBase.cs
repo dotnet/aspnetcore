@@ -131,7 +131,18 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitUsingStatement(UsingStatementIRNode node)
             {
-                _namespace.AddAfter<UsingStatementIRNode>(node);
+                var children = _namespace.Current.Children;
+                var i = children.Count - 1;
+                for (; i >= 0; i--)
+                {
+                    var child = children[i];
+                    if (child is UsingStatementIRNode)
+                    {
+                        break;
+                    }
+                }
+
+                _namespace.Insert(i + 1, node);
             }
 
             public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class TagHelperIRNode : RazorIRNode
+    public sealed class TagHelperIRNode : RazorIRNode
     {
         private ItemCollection _annotations;
 

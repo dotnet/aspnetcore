@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DirectiveRemovalIROptimizationPass : RazorIRPassBase, IRazorIROptimizationPass
     {
-        public override int Order => RazorIRPass.DefaultFeatureOrder + 50;
+        public override int Order => DefaultFeatureOrder + 50;
 
         public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {

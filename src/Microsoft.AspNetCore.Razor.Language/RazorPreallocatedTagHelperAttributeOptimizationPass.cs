@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class RazorPreallocatedTagHelperAttributeOptimizationPass : RazorIRPassBase, IRazorIROptimizationPass
     {
-        public override int Order => RazorIRPass.DefaultFeatureOrder;
+        public override int Order => DefaultFeatureOrder;
 
         public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {

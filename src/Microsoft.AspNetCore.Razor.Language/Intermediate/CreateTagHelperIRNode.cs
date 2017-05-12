@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class CreateTagHelperIRNode : RazorIRNode
+    public sealed class CreateTagHelperIRNode : RazorIRNode
     {
         public override ItemCollection Annotations => ReadonlyItemCollection.Empty;
 

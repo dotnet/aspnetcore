@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    internal class DesignTimeDirectiveIRNode : ExtensionIRNode
+    internal sealed class DesignTimeDirectiveIRNode : ExtensionIRNode
     {
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 

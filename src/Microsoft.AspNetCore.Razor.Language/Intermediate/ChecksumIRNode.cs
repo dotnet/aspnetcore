@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class ChecksumIRNode : RazorIRNode
+    public sealed class ChecksumIRNode : RazorIRNode
     {
         public override ItemCollection Annotations => ReadonlyItemCollection.Empty;
 

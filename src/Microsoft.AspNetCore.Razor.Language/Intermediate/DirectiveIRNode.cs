@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class DirectiveIRNode : RazorIRNode
+    public sealed class DirectiveIRNode : RazorIRNode
     {
         private ItemCollection _annotations;
 

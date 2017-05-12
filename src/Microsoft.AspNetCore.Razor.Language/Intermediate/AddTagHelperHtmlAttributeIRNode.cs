@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class AddTagHelperHtmlAttributeIRNode : RazorIRNode
+    public sealed class AddTagHelperHtmlAttributeIRNode : RazorIRNode
     {
         public override ItemCollection Annotations => ReadonlyItemCollection.Empty;
 

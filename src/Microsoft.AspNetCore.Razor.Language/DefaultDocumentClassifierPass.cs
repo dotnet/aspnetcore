@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultDocumentClassifierPass : DocumentClassifierPassBase
     {
-        public override int Order => RazorIRPass.DefaultFeatureOrder;
+        public override int Order => DefaultFeatureOrder;
 
         protected override string DocumentKind => "default";
 

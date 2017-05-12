@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private class TestDocumentClassifierPass : DocumentClassifierPassBase
         {
-            public override int Order => RazorIRPass.DefaultFeatureOrder;
+            public override int Order => RazorIRPassBase.DefaultFeatureOrder;
 
             public bool ShouldMatch { get; set; } = true;
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class TemplateIRNode : ExtensionIRNode
+    public sealed class TemplateIRNode : ExtensionIRNode
     {
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 

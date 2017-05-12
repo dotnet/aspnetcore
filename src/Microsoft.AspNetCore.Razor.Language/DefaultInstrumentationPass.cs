@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public class DefaultInstrumentationPass : RazorIRPassBase, IRazorIROptimizationPass
     {
-        public override int Order => RazorIRPass.DefaultFeatureOrder;
+        public override int Order => DefaultFeatureOrder;
 
         public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {

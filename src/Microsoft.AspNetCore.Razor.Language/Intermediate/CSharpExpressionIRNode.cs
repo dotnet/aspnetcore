@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public class CSharpExpressionIRNode : RazorIRNode
+    public sealed class CSharpExpressionIRNode : RazorIRNode
     {
         private ItemCollection _annotations;
 
