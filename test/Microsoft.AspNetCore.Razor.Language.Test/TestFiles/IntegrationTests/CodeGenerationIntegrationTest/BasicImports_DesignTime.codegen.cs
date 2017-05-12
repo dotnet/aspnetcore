@@ -1,8 +1,6 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
-    using System;
-    using System.Threading.Tasks;
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicImports_Imports0.cshtml"
 using System.Globalization;
 

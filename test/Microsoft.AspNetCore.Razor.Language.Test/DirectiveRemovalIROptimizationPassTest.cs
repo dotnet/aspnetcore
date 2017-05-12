@@ -36,10 +36,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
             var @namespace = irDocument.Children[1];
             Children(@namespace,
-                node => Assert.IsType<UsingStatementIRNode>(node),
-                node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
-            var @class = @namespace.Children[2];
+            var @class = @namespace.Children[0];
             var method = SingleChild<MethodDeclarationIRNode>(@class);
             Assert.Empty(method.Children);
         }
@@ -70,10 +68,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
             var @namespace = irDocument.Children[1];
             Children(@namespace,
-                node => Assert.IsType<UsingStatementIRNode>(node),
-                node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
-            var @class = @namespace.Children[2];
+            var @class = @namespace.Children[0];
             var method = SingleChild<MethodDeclarationIRNode>(@class);
             Assert.Empty(method.Children);
         }

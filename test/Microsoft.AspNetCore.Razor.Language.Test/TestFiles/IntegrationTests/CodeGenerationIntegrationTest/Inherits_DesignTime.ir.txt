@@ -1,8 +1,6 @@
 Document - 
     Checksum - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
-        UsingStatement -  - System
-        UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inherits_DesignTime - foo.bar<baz<biz>>.boz - 
             DesignTimeDirective - 
                 DirectiveToken - (20:2,10 [21] Inherits.cshtml) - foo.bar<baz<biz>>.boz

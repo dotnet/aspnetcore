@@ -2,12 +2,6 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
-#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
-using System;
-
-#line default
-#line hidden
-    using System.Threading.Tasks;
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using System.IO;
 
@@ -15,6 +9,11 @@ using System.IO;
 #line hidden
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using Foo = System.Text.Encoding;
+
+#line default
+#line hidden
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+using System;
 
 #line default
 #line hidden

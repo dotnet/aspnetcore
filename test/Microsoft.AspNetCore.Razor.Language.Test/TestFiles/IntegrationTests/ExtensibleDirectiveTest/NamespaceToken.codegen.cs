@@ -1,8 +1,6 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
-    using System;
-    using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_ExtensibleDirectiveTest_NamespaceToken
     {
         #pragma warning disable 219

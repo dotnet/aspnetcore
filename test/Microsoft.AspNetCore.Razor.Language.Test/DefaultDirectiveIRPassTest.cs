@@ -32,10 +32,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
             var @namespace = irDocument.Children[1];
             Children(@namespace,
-                node => Assert.IsType<UsingStatementIRNode>(node),
-                node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
-            var @class = (ClassDeclarationIRNode)@namespace.Children[2];
+            var @class = (ClassDeclarationIRNode)@namespace.Children[0];
             Assert.Equal("Hello<World[]>", @class.BaseType);
         }
 
@@ -62,10 +60,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
             var @namespace = irDocument.Children[1];
             Children(@namespace,
-                node => Assert.IsType<UsingStatementIRNode>(node),
-                node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
-            var @class = @namespace.Children[2];
+            var @class = @namespace.Children[0];
             Children(@class,
                 node => Assert.IsType<MethodDeclarationIRNode>(node),
                 node => CSharpStatement(" var value = true; ", node));
@@ -96,10 +92,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
             var @namespace = irDocument.Children[1];
             Children(@namespace,
-                node => Assert.IsType<UsingStatementIRNode>(node),
-                node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
-            var @class = @namespace.Children[2];
+            var @class = @namespace.Children[0];
             var method = SingleChild<MethodDeclarationIRNode>(@class);
             Children(method,
                 node => CSharpStatement("DefineSection(\"Header\", async () => {", node),
@@ -131,10 +125,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
             var @namespace = irDocument.Children[1];
             Children(@namespace,
-                node => Assert.IsType<UsingStatementIRNode>(node),
-                node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
-            var @class = @namespace.Children[2];
+            var @class = @namespace.Children[0];
             var method = SingleChild<MethodDeclarationIRNode>(@class);
             Children(method,
                 node => CSharpStatement("DefineSection(\"Header\", async (__razor_section_writer) => {", node),

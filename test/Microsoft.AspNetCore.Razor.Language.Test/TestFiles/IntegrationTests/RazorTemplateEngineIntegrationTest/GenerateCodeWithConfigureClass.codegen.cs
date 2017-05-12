@@ -2,8 +2,6 @@
 namespace Razor
 {
     #line hidden
-    using System;
-    using System.Threading.Tasks;
     protected internal class MyClass : CustomBaseType, global::System.IDisposable
     {
         #pragma warning disable 1998

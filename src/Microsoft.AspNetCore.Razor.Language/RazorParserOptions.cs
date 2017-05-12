@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private RazorParserOptions()
         {
             Directives = new List<DirectiveDescriptor>();
-            NamespaceImports = new HashSet<string>(StringComparer.Ordinal) { nameof(System), typeof(Task).Namespace };
+            NamespaceImports = new HashSet<string>(StringComparer.Ordinal);
         }
 
         public bool DesignTimeMode { get; set; }

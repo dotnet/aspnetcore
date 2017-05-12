@@ -1,8 +1,6 @@
 Document - 
     Checksum - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
-        UsingStatement -  - System
-        UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inherits_Runtime - foo.bar<baz<biz>>.boz - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpExpression - (1:0,1 [5] Inherits.cshtml)

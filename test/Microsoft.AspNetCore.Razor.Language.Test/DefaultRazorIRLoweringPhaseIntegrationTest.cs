@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class DefaultRazorIRLoweringPhaseIntegrationTest
     {
         [Fact]
-        public void Lower_EmptyDocument_AddsGlobalUsingsAndNamespace()
+        public void Lower_EmptyDocument_AddsChecksum()
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
@@ -23,10 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var irDocument = Lower(codeDocument);
 
             // Assert
-            Children(irDocument,
-                n => Checksum(n),
-                n => Using("System", n),
-                n => Using("System.Threading.Tasks", n));
+            Children(irDocument, n => Checksum(n));
         }
 
         [Fact]
@@ -55,8 +52,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(irDocument,
                 n => Checksum(n),
-                n => Assert.IsType<UsingStatementIRNode>(n),
-                n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Html("Hello, World!", n));
         }
 
@@ -77,8 +72,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(irDocument,
                 n => Checksum(n),
-                n => Assert.IsType<UsingStatementIRNode>(n),
-                n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Html(
 @"
 <html>
@@ -107,8 +100,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(irDocument,
                 n => Checksum(n),
-                n => Assert.IsType<UsingStatementIRNode>(n),
-                n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Html(
 @"
 <html>
@@ -142,8 +133,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(irDocument,
                 n => Checksum(n),
-                n => Assert.IsType<UsingStatementIRNode>(n),
-                n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Directive(
                     "functions",
                     n,
@@ -167,8 +156,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     Using("System", n);
                     Assert.Equal(expectedSourceLocation, n.Source);
-                },
-                n => Using(typeof(Task).Namespace, n));
+                });
         }
 
         [Fact]
@@ -191,8 +179,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(irDocument,
                 n => Checksum(n),
-                n => Using("System", n),
-                n => Using(typeof(Task).Namespace, n),
                 n => Directive(
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
@@ -236,8 +222,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(irDocument,
                 n => Checksum(n),
-                n => Using("System", n),
-                n => Using(typeof(Task).Namespace, n),
                 n => Directive(
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
@@ -287,8 +271,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             Children(
                 irDocument,
                 n => Checksum(n),
-                n => Using("System", n),
-                n => Using(typeof(Task).Namespace, n),
                 n => Directive(
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
@@ -345,8 +327,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             Children(
                 irDocument,
                 n => Checksum(n),
-                n => Using("System", n),
-                n => Using(typeof(Task).Namespace, n),
                 n => Directive(
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
@@ -372,7 +352,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Lower_WithImports_Using()
         {
             // Arrange
-            var source = TestRazorSourceDocument.Create("<p>Hi!</p>");
+            var source = TestRazorSourceDocument.Create(@"@using System.Threading.Tasks
+<p>Hi!</p>");
             var imports = new[]
             {
                 TestRazorSourceDocument.Create("@using System.Globalization"),
@@ -388,10 +369,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             Children(
                 irDocument,
                 n => Checksum(n),
-                n => Using("System", n),
-                n => Using(typeof(Task).Namespace, n),
                 n => Using("System.Globalization", n),
                 n => Using("System.Text", n),
+                n => Using("System.Threading.Tasks", n),
                 n => Html("<p>Hi!</p>", n));
         }
 
@@ -418,8 +398,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             Children(
                 irDocument,
                 n => Checksum(n),
-                n => Using("System", n),
-                n => Using(typeof(Task).Namespace, n),
                 n => Directive("test", n, c => DirectiveToken(DirectiveTokenKind.Member, "value1", c)),
                 n => Directive("test", n, c => DirectiveToken(DirectiveTokenKind.Member, "value2", c)),
                 n => Html("<p>Hi!</p>", n));
@@ -447,8 +425,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             Children(
                 irDocument,
                 n => Checksum(n),
-                n => Using("System", n),
-                n => Using(typeof(Task).Namespace, n),
                 n => Html("<p>Hi!</p>", n));
         }
 

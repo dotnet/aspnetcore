@@ -2,8 +2,6 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
-    using System;
-    using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersInSection_Runtime
     {
         #line hidden

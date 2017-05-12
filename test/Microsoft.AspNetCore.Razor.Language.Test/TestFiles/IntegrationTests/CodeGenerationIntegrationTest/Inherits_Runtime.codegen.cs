@@ -2,8 +2,6 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
-    using System;
-    using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inherits_Runtime : foo.bar<baz<biz>>.boz
     {
         #pragma warning disable 1998

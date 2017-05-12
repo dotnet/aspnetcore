@@ -2,8 +2,6 @@
 namespace Razor
 {
     #line hidden
-    using System;
-    using System.Threading.Tasks;
     public class Template : MyBaseType
     {
         #pragma warning disable 1998

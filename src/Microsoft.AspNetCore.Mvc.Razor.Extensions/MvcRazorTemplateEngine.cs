@@ -43,8 +43,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             using (var writer = new StreamWriter(stream, Encoding.UTF8))
             {
                 writer.WriteLine("@using System");
-                writer.WriteLine("@using System.Linq");
                 writer.WriteLine("@using System.Collections.Generic");
+                writer.WriteLine("@using System.Linq");
+                writer.WriteLine("@using System.Threading.Tasks");
                 writer.WriteLine("@using Microsoft.AspNetCore.Mvc");
                 writer.WriteLine("@using Microsoft.AspNetCore.Mvc.Rendering");
                 writer.WriteLine("@using Microsoft.AspNetCore.Mvc.ViewFeatures");

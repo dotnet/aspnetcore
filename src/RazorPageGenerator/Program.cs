@@ -57,6 +57,10 @@ namespace RazorPageGenerator
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
             var razorProject = RazorProject.Create(targetProjectDirectory);
             var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
+            templateEngine.Options.DefaultImports = RazorSourceDocument.Create(@"
+@using System
+@using System.Threading.Tasks
+", fileName: null);
 
             var fileCount = 0;
 
