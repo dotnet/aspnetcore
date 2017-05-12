@@ -16,7 +16,6 @@
     "typescript": "^2.2.1",
     "url-loader": "^0.5.7",
     "vue": "^2.2.2",
-    "vue-class-component": "^5.0.1",
     "vue-loader": "^11.1.4",
     "vue-property-decorator": "^5.0.1",
     "vue-router": "^2.3.0",
