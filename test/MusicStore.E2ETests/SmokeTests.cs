@@ -9,8 +9,7 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    // TODO: temporarily disabling these tests as dotnet xunit runner does not support 32-bit yet.
-    internal class SmokeTests_X86
+    public class SmokeTests_X86
     {
         private readonly ITestOutputHelper _output;
 
@@ -19,7 +18,8 @@ namespace E2ETests
             _output = output;
         }
 
-        [ConditionalTheory, Trait("E2Etests", "Smoke")]
+        [ConditionalTheory(Skip = "temporarily disabling these tests as dotnet xunit runner does not support 32-bit yet.")]
+        [Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Portable)]
@@ -37,7 +37,8 @@ namespace E2ETests
             await smokeTestRunner.SmokeTestSuite(serverType, architecture, applicationType);
         }
 
-        [ConditionalTheory(Skip = "Temporarily disabling test"), Trait("E2Etests", "Smoke")]
+        [ConditionalTheory(Skip = "Temporarily disabling test")]
+        [Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable)]
         public async Task NonWindowsOS(
@@ -91,7 +92,7 @@ namespace E2ETests
         }
     }
 
-    class SmokeTests_OnIIS
+    public class SmokeTests_OnIIS
     {
         private readonly ITestOutputHelper _output;
 
@@ -100,7 +101,8 @@ namespace E2ETests
             _output = output;
         }
 
-        [ConditionalTheory, Trait("E2Etests", "Smoke")]
+        [ConditionalTheory]
+        [Trait("E2Etests", "Smoke")]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]

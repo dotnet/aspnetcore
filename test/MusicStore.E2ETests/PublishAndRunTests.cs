@@ -55,10 +55,9 @@ namespace E2ETests
         }
     }
 
-    // TODO: temporarily disabling x86 tests as dotnet xunit test runner currently does not support 32-bit
-    // public
-    class PublishAndRunTests_OnX86
+    public class PublishAndRunTests_OnX86
     {
+        private const string SkipReason = "temporarily disabling x86 tests as dotnet xunit test runner currently does not support 32-bit";
         private readonly ITestOutputHelper _output;
 
         public PublishAndRunTests_OnX86(ITestOutputHelper output)
@@ -66,7 +65,8 @@ namespace E2ETests
             _output = output;
         }
 
-        [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
+        [ConditionalTheory(Skip = SkipReason)]
+        [Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
@@ -84,7 +84,8 @@ namespace E2ETests
                 serverType, architecture, applicationType, noSource);
         }
 
-        [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
+        [ConditionalTheory(Skip = SkipReason)]
+        [Trait("E2Etests", "PublishAndRun")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
         public async Task NonWindowsOS(

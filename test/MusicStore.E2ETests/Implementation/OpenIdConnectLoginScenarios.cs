@@ -38,7 +38,6 @@ namespace E2ETests
             Assert.Equal<string>("code id_token", queryItems["response_type"]);
             Assert.Equal<string>("openid profile", queryItems["scope"]);
             Assert.Equal<string>("ValidStateData", queryItems["state"]);
-            Assert.NotNull(queryItems["nonce"]);
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.OpenIdConnect.Nonce.protectedString"));
 
             // This is just enable the auto-redirect.
