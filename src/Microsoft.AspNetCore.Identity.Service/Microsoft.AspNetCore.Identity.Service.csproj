@@ -14,12 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Microsoft.AspNetCore.Identity/Microsoft.AspNetCore.Identity.csproj" />
     <ProjectReference Include="../Microsoft.AspNetCore.Identity.Service.Core/Microsoft.AspNetCore.Identity.Service.Core.csproj" />
   </ItemGroup>
 </Project>

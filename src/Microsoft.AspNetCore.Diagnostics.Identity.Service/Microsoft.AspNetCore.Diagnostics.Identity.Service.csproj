@@ -11,12 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.RazorViews.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Microsoft.AspNetCore.Identity/Microsoft.AspNetCore.Identity.csproj" />
     <ProjectReference Include="../Microsoft.AspNetCore.Identity.Service/Microsoft.AspNetCore.Identity.Service.csproj" />
     <ProjectReference Include="../Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore/Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.csproj" />
     <ProjectReference Include="../Microsoft.AspNetCore.Identity.Service.Mvc/Microsoft.AspNetCore.Identity.Service.Mvc.csproj" />

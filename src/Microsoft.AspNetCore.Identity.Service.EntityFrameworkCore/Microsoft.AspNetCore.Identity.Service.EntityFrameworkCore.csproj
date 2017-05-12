@@ -11,10 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Identity.EntityFrameworkCore\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Identity.Service\Microsoft.AspNetCore.Identity.Service.csproj" />
   </ItemGroup>
 
