@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     /// <summary>
     /// A <see cref="RazorProjectItem"/> that does not exist.
     /// </summary>
-    public class NotFoundProjectItem : RazorProjectItem
+    internal class NotFoundProjectItem : RazorProjectItem
     {
         /// <summary>
         /// Initializes a new instance of <see cref="NotFoundProjectItem"/>.

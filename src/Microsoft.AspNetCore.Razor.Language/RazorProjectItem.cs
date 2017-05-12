@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// The root relative path of the item.
         /// </summary>
-        public virtual string CombinedPath
+        public string CombinedPath
         {
             get
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// The extension of the file.
         /// </summary>
-        public virtual string Extension
+        public string Extension
         {
             get
             {
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// The name of the file including the extension.
         /// </summary>
-        public virtual string FileName
+        public string FileName
         {
             get
             {
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// Path relative to <see cref="BasePath"/> without the extension.
         /// </summary>
-        public virtual string PathWithoutExtension
+        public string PathWithoutExtension
         {
             get
             {

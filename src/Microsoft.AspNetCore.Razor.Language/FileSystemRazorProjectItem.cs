@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override bool Exists => File.Exists;
 
-        public override string FileName => File.Name;
-
         public override string PhysicalPath => File.FullName;
 
         public override Stream Read() => File.OpenRead();
