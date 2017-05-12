@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication
 
                 var identity = (ClaimsIdentity) readTicket.Principal.Identity;
                 Assert.NotNull(identity.Actor);
-                Assert.Equal(identity.Actor.AuthenticationType, "actor");
+                Assert.Equal("actor", identity.Actor.AuthenticationType);
             }
         }
 
@@ -113,17 +113,17 @@ namespace Microsoft.AspNetCore.Authentication
 
                 var readClaim = readTicket.Principal.FindFirst("type");
                 Assert.NotNull(claim);
-                Assert.Equal(claim.Type, "type");
-                Assert.Equal(claim.Value, "value");
-                Assert.Equal(claim.ValueType, "valueType");
-                Assert.Equal(claim.Issuer, "issuer");
-                Assert.Equal(claim.OriginalIssuer, "original-issuer");
+                Assert.Equal("type", claim.Type);
+                Assert.Equal("value", claim.Value);
+                Assert.Equal("valueType", claim.ValueType);
+                Assert.Equal("issuer", claim.Issuer);
+                Assert.Equal("original-issuer", claim.OriginalIssuer);
 
                 var property1 = readClaim.Properties["property-1"];
-                Assert.Equal(property1, "property-value");
+                Assert.Equal("property-value", property1);
 
                 var property2 = readClaim.Properties["property-2"];
-                Assert.Equal(property2, string.Empty);
+                Assert.Equal(string.Empty, property2);
             }
         }
     }

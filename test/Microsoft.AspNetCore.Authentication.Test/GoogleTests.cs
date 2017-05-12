@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Equal("Test Family Name", transaction.FindClaimValue(ClaimTypes.Surname, expectedIssuer));
             Assert.Equal("Test email", transaction.FindClaimValue(ClaimTypes.Email, expectedIssuer));
 
-            // Ensure claims transformation 
+            // Ensure claims transformation
             Assert.Equal("yup", transaction.FindClaimValue("xform"));
 
             transaction = await server.SendAsync("https://example.com/tokens", authCookie);
@@ -688,14 +688,14 @@ namespace Microsoft.AspNetCore.Authentication.Google
                     OnCreatingTicket = context =>
                     {
                         Assert.NotNull(context.User);
-                        Assert.Equal(context.AccessToken, "Test Access Token");
-                        Assert.Equal(context.RefreshToken, "Test Refresh Token");
-                        Assert.Equal(context.ExpiresIn, TimeSpan.FromSeconds(3600));
-                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.Email)?.Value, "Test email");
-                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value, "Test User ID");
-                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.Name)?.Value, "Test Name");
-                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.Surname)?.Value, "Test Family Name");
-                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.GivenName)?.Value, "Test Given Name");
+                        Assert.Equal("Test Access Token", context.AccessToken);
+                        Assert.Equal("Test Refresh Token", context.RefreshToken);
+                        Assert.Equal(TimeSpan.FromSeconds(3600), context.ExpiresIn);
+                        Assert.Equal("Test email", context.Identity.FindFirst(ClaimTypes.Email)?.Value);
+                        Assert.Equal("Test User ID", context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                        Assert.Equal("Test Name", context.Identity.FindFirst(ClaimTypes.Name)?.Value);
+                        Assert.Equal("Test Family Name", context.Identity.FindFirst(ClaimTypes.Surname)?.Value);
+                        Assert.Equal("Test Given Name", context.Identity.FindFirst(ClaimTypes.GivenName)?.Value);
                         return Task.FromResult(0);
                     }
                 };
@@ -954,7 +954,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             var authCookie = transaction.AuthenticationCookieValue;
             transaction = await server.SendAsync("https://example.com/authenticateFacebook", authCookie);
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-            Assert.Equal(null, transaction.FindClaimValue(ClaimTypes.Name));
+            Assert.Null(transaction.FindClaimValue(ClaimTypes.Name));
         }
 
         [Fact]
@@ -1103,7 +1103,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         }
                         else if (req.Path == new PathString("/unauthorized"))
                         {
-                            // Simulate Authorization failure 
+                            // Simulate Authorization failure
                             var result = await context.AuthenticateAsync("Google");
                             await context.ChallengeAsync("Google");
                         }

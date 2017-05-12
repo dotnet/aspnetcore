@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
+        [Fact]
         public async Task ThrowsIfCallbackPathMissing()
         {
             var server = CreateServer(
@@ -118,6 +119,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
+        [Fact]
         public async Task ThrowsIfAuthorizationEndpointMissing()
         {
             var server = CreateServer(

@@ -106,6 +106,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(allowed);
         }
 
+        [Fact]
         public async Task Authorize_ShouldInvokeAllHandlersByDefault()
         {
             // Arrange
