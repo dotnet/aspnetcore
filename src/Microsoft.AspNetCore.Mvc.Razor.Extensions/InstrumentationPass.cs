@@ -3,11 +3,12 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class DefaultInstrumentationPass : RazorIRPassBase, IRazorIROptimizationPass
+    public class InstrumentationPass : RazorIRPassBase, IRazorIROptimizationPass
     {
         public override int Order => DefaultFeatureOrder;
 

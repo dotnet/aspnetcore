@@ -1,13 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Language.Intermediate.RazorIRAssert;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class DefaultInstrumentationPassTest
+    public class InstrumentationPassTest
     {
         [Fact]
         public void InstrumentationPass_InstrumentsHtml()
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Children(
                 irDocument,
                 n => BeginInstrumentation("1, 1, true", n),
-                n => Html("Hi", n),
+                n => RazorIRAssert.Html("Hi", n),
                 n => EndInstrumentation(n));
         }
 
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(
                 irDocument,
-                n => Html("Hi", n));
+                n => RazorIRAssert.Html("Hi", n));
         }
 
         [Fact]
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -147,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -195,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -232,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -262,7 +263,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -293,7 +294,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new DefaultInstrumentationPass();
+            var pass = new InstrumentationPass();
 
             // Act
             pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             if (!builder.DesignTime)
             {
-                builder.Features.Add(new DefaultInstrumentationPass());
+                builder.Features.Add(new InstrumentationPass());
             }
         }
     }

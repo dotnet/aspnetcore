@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 {
     public class InstrumentationPassIntegrationTest : IntegrationTestBase
     {
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var engine = RazorEngine.Create(b =>
             {
                 b.AddTagHelpers(descriptors);
-                b.Features.Add(new DefaultInstrumentationPass());
+                b.Features.Add(new InstrumentationPass());
             });
 
             var document = CreateCodeDocument();
