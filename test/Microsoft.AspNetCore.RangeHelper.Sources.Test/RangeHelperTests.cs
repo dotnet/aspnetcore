@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Internal
         [InlineData(null, 0)]
         [InlineData(0, null)]
         [InlineData(0, 0)]
-        public void NormalizeRanges_ReturnsNormalizedRange(long start, long end)
+        public void NormalizeRanges_ReturnsNormalizedRange(long? start, long? end)
         {
             // Arrange
             var ranges = new[]
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Internal
         [InlineData(null, 0)]
         [InlineData(0, null)]
         [InlineData(0, 0)]
-        public void NormalizeRanges_MultipleRanges_ReturnsNormalizedRange(long start, long end)
+        public void NormalizeRanges_MultipleRanges_ReturnsNormalizedRange(long? start, long? end)
         {
             // Arrange
             var ranges = new[]

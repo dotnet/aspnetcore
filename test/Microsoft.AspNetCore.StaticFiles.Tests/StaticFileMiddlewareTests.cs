@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             await FoundFile_Served(baseUrl, baseDir, requestUrl);
         }
 
-        public async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
+        private async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public async Task Unknown_Match_PassesThrough(string baseUrl, string baseDir, string requestUrl) =>
             await PassesThrough("VERB", baseUrl, baseDir, requestUrl);
 
-        public async Task PassesThrough(string method, string baseUrl, string baseDir, string requestUrl)
+        private async Task PassesThrough(string method, string baseUrl, string baseDir, string requestUrl)
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {

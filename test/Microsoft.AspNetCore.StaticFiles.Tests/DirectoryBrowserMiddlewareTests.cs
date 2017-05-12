@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             await NoMatch_PassesThrough(baseUrl, baseDir, requestUrl);
         }
 
-        public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
+        private async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             await FoundDirectory_Served(baseUrl, baseDir, requestUrl);
         }
 
-        public async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl)
+        private async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl)
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
         }
 
-        public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
+        private async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             await PostDirectory_PassesThrough(baseUrl, baseDir, requestUrl);
         }
 
-        public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
+        private async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             await HeadDirectory_HeadersButNotBodyServed(baseUrl, baseDir, requestUrl);
         }
 
-        public async Task HeadDirectory_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
+        private async Task HeadDirectory_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {

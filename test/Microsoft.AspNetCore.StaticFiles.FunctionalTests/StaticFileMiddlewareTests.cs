@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 {
                     var last = File.GetLastWriteTimeUtc(Path.Combine(AppContext.BaseDirectory, "TestDocument.txt"));
                     var response = await client.GetAsync("TestDocument.txt");
-                    
+
                     var trimed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, TimeSpan.Zero).ToUniversalTime();
 
                     Assert.Equal(response.Content.Headers.LastModified.Value, trimed);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             await FoundFile_Served(baseUrl, baseDir, requestUrl);
         }
 
-        public async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
+        private async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
             var baseAddress = "http://localhost:12345";
             var builder = new WebHostBuilder()
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             ClientDisconnect_NoWriteExceptionThrown(ServerType.WebListener);
         }
 
-        public void ClientDisconnect_NoWriteExceptionThrown(ServerType serverType)
+        private void ClientDisconnect_NoWriteExceptionThrown(ServerType serverType)
         {
             var interval = TimeSpan.FromSeconds(15);
             var baseAddress = "http://localhost:12345";
