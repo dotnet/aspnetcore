@@ -68,13 +68,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
             diagnostics.AddRange(renderingContext.Diagnostics);
 
-            var csharpDocument = new RazorCSharpDocument()
-            {
-                GeneratedCode = renderingContext.Writer.GenerateCode(),
-                LineMappings = renderingContext.LineMappings,
-                Diagnostics = diagnostics
-            };
-
+            var csharpDocument = RazorCSharpDocument.Create(
+                renderingContext.Writer.GenerateCode(),
+                diagnostics,
+                renderingContext.LineMappings);
             codeDocument.SetCSharpDocument(csharpDocument);
         }
     }

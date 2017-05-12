@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var expected = new RazorCSharpDocument();
+            var expected = RazorCSharpDocument.Create("", Array.Empty<RazorDiagnostic>());
             codeDocument.Items[typeof(RazorCSharpDocument)] = expected;
 
             // Act
@@ -108,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var expected = new RazorCSharpDocument();
+            var expected = RazorCSharpDocument.Create("", Array.Empty<RazorDiagnostic>());
 
             // Act
             codeDocument.SetCSharpDocument(expected);
