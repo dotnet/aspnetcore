@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                             var associatedAttributeDescriptor = associatedDescriptor.BoundAttributes.First(
                                 attributeDescriptor => TagHelperMatchingConventions.CanSatisfyBoundAttribute(attribute.Name, attributeDescriptor));
                             var tagHelperTypeName = associatedDescriptor.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
-                            var attributePropertyName = associatedAttributeDescriptor.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey];
+                            var attributePropertyName = associatedAttributeDescriptor.Metadata[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey];
 
                             var setTagHelperProperty = new SetTagHelperPropertyIRNode()
                             {

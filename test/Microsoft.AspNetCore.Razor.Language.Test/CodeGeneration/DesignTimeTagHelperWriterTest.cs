@@ -67,7 +67,7 @@ private global::MyTagHelper __MyTagHelper = null;
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly",
-                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                    attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("bound")
@@ -110,7 +110,7 @@ __InputTagHelper.FooProp = ""value"";
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly",
-                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                    attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("bound")
@@ -156,7 +156,7 @@ __InputTagHelper.FooProp = 42;
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly",
-                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                    attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("bound")
@@ -244,7 +244,7 @@ __InputTagHelper.FooProp[""bound""] = 42;
             string tagName,
             string typeName,
             string assemblyName,
-            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null)
+            IEnumerable<Action<TagHelperBoundAttributeDescriptorBuilder>> attributes = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 

@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             foreach (var attribute in descriptor.BoundAttributes)
             {
                 writer.WriteAutoPropertyDeclaration(
-                    "public", attribute.TypeName, attribute.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]);
+                    "public", attribute.TypeName, attribute.Metadata[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]);
 
                 if (attribute.IndexerTypeName != null)
                 {
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         private string[] GetMethodParameters(TagHelperDescriptor descriptor)
         {
             var propertyNames = descriptor.BoundAttributes.Select(
-                attribute => attribute.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]);
+                attribute => attribute.Metadata[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]);
             var joinedPropertyNames = string.Join(", ", propertyNames);
             var parametersString = $"new {{ { joinedPropertyNames } }}";
 

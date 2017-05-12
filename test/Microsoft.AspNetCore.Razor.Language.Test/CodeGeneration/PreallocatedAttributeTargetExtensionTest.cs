@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new CSharpCodeWriter()
             };
 
-            var descriptor = ITagHelperBoundAttributeDescriptorBuilder
+            var descriptor = TagHelperBoundAttributeDescriptorBuilder
                 .Create("FooTagHelper")
                 .Name("Foo")
                 .TypeName("System.String")
@@ -174,7 +174,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
                 Writer = new CSharpCodeWriter()
             };
 
-            var descriptor = ITagHelperBoundAttributeDescriptorBuilder
+            var descriptor = TagHelperBoundAttributeDescriptorBuilder
                 .Create("FooTagHelper")
                 .Name("Foo")
                 .TypeName("System.Collections.Generic.Dictionary<System.String, System.String>")

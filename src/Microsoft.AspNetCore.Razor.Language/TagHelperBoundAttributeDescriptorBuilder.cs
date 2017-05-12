@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public sealed class ITagHelperBoundAttributeDescriptorBuilder
+    public sealed class TagHelperBoundAttributeDescriptorBuilder
     {
         public static readonly string DescriptorKind = "ITagHelper";
         public static readonly string PropertyNameKey = "ITagHelper.PropertyName";
@@ -46,46 +46,46 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly Dictionary<string, string> _metadata;
         private HashSet<RazorDiagnostic> _diagnostics;
 
-        private ITagHelperBoundAttributeDescriptorBuilder(string containingTypeName)
+        private TagHelperBoundAttributeDescriptorBuilder(string containingTypeName)
         {
             _containingTypeName = containingTypeName;
             _metadata = new Dictionary<string, string>();
         }
 
-        public static ITagHelperBoundAttributeDescriptorBuilder Create(string containingTypeName)
+        public static TagHelperBoundAttributeDescriptorBuilder Create(string containingTypeName)
         {
-            return new ITagHelperBoundAttributeDescriptorBuilder(containingTypeName);
+            return new TagHelperBoundAttributeDescriptorBuilder(containingTypeName);
         }
 
-        public ITagHelperBoundAttributeDescriptorBuilder Name(string name)
+        public TagHelperBoundAttributeDescriptorBuilder Name(string name)
         {
             _name = name;
 
             return this;
         }
 
-        public ITagHelperBoundAttributeDescriptorBuilder PropertyName(string propertyName)
+        public TagHelperBoundAttributeDescriptorBuilder PropertyName(string propertyName)
         {
             _propertyName = propertyName;
 
             return this;
         }
 
-        public ITagHelperBoundAttributeDescriptorBuilder TypeName(string typeName)
+        public TagHelperBoundAttributeDescriptorBuilder TypeName(string typeName)
         {
             _typeName = typeName;
 
             return this;
         }
 
-        public ITagHelperBoundAttributeDescriptorBuilder AsEnum()
+        public TagHelperBoundAttributeDescriptorBuilder AsEnum()
         {
             _isEnum = true;
 
             return this;
         }
 
-        public ITagHelperBoundAttributeDescriptorBuilder AsDictionary(string attributeNamePrefix, string valueTypeName)
+        public TagHelperBoundAttributeDescriptorBuilder AsDictionary(string attributeNamePrefix, string valueTypeName)
         {
             _indexerNamePrefix = attributeNamePrefix;
             _indexerValueTypeName = valueTypeName;
@@ -94,21 +94,21 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
-        public ITagHelperBoundAttributeDescriptorBuilder Documentation(string documentation)
+        public TagHelperBoundAttributeDescriptorBuilder Documentation(string documentation)
         {
             _documentation = documentation;
 
             return this;
         }
 
-        public ITagHelperBoundAttributeDescriptorBuilder AddMetadata(string key, string value)
+        public TagHelperBoundAttributeDescriptorBuilder AddMetadata(string key, string value)
         {
             _metadata[key] = value;
 
             return this;
         }
 
-        public ITagHelperBoundAttributeDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
+        public TagHelperBoundAttributeDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
         {
             EnsureDiagnostics();
             _diagnostics.Add(diagnostic);

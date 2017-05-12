@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
-        public TagHelperDescriptorBuilder BindAttribute(Action<ITagHelperBoundAttributeDescriptorBuilder> configure)
+        public TagHelperDescriptorBuilder BindAttribute(Action<TagHelperBoundAttributeDescriptorBuilder> configure)
         {
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var builder = ITagHelperBoundAttributeDescriptorBuilder.Create(_typeName);
+            var builder = TagHelperBoundAttributeDescriptorBuilder.Create(_typeName);
 
             configure(builder);
 

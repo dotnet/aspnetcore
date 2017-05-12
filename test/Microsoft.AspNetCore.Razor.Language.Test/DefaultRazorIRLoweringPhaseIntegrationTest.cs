@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly",
-                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                    attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("bound")
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             string tagName,
             string typeName,
             string assemblyName,
-            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null)
+            IEnumerable<Action<TagHelperBoundAttributeDescriptorBuilder>> attributes = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 

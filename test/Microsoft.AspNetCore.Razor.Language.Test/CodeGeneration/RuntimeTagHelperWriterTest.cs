@@ -291,7 +291,7 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly",
-                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                    attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("bound")
@@ -339,7 +339,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.Fo
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly",
-                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                    attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("bound")
@@ -386,7 +386,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.Fo
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly",
-                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                    attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("bound")
@@ -478,7 +478,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             string tagName,
             string typeName,
             string assemblyName,
-            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null)
+            IEnumerable<Action<TagHelperBoundAttributeDescriptorBuilder>> attributes = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 

@@ -1458,7 +1458,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             string tagName,
             string typeName,
             string assemblyName,
-            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null,
+            IEnumerable<Action<TagHelperBoundAttributeDescriptorBuilder>> attributes = null,
             IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);

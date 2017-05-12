@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             string attributeName,
             BoundAttributeDescriptor descriptor)
         {
-            var propertyAccessor = $"{tagHelperVariableName}.{descriptor.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]}";
+            var propertyAccessor = $"{tagHelperVariableName}.{descriptor.Metadata[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]}";
 
             if (isIndexerNameMatch)
             {

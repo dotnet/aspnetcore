@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
                     tagName: "input",
                     typeName: "InputTagHelper",
                     assemblyName: "TestAssembly",
-                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                    attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("value")
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             string tagName,
             string typeName,
             string assemblyName,
-            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null)
+            IEnumerable<Action<TagHelperBoundAttributeDescriptorBuilder>> attributes = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 

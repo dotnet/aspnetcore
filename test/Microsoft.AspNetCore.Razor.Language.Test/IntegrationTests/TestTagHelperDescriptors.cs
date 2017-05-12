@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "InputTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("value")
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                         },
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper2",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                         },
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("catch-all")
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("value")
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("[item]")
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("catchall-bound-string")
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("input-bound-required-string")
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("bound")
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                         },
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper2",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "checked", inputCheckedPropertyInfo),
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper1",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("int-prefix-grabber")
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper2",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => builder
                                 .Name("int-dictionary")
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "MyTagHelper",
                         typeName: "TestNamespace.MyTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "BoundProperty", propertyInfo),
                         }),
@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "p",
                         typeName: "TestNamespace.PTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "age", pAgePropertyInfo),
                         },
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                         },
@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "input",
                         typeName: "TestNamespace.InputTagHelper2",
                         assemblyName: "TestAssembly",
-                        attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
+                        attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "checked", checkedPropertyInfo),
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             string tagName,
             string typeName,
             string assemblyName,
-            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null,
+            IEnumerable<Action<TagHelperBoundAttributeDescriptorBuilder>> attributes = null,
             IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         private static void BuildBoundAttributeDescriptorFromPropertyInfo(
-            ITagHelperBoundAttributeDescriptorBuilder builder,
+            TagHelperBoundAttributeDescriptorBuilder builder,
             string name,
             PropertyInfo propertyInfo)
         {
