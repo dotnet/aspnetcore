@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     /// <summary>
     /// Options for code generation in the <see cref="RazorTemplateEngine"/>.
     /// </summary>
-    public class RazorTemplateEngineOptions
+    public sealed class RazorTemplateEngineOptions
     {
         /// <summary>
         /// Gets or sets the file name of the imports file (e.g. _ViewImports.cshtml).
