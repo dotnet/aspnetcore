@@ -6,9 +6,13 @@
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
-    <_RepositoryListFileName>Repositories.props</_RepositoryListFileName>
-    <_DependencyRepositoryList>$(_DependencyBuildDirectory)$(_RepositoryListFileName)</_DependencyRepositoryList>
     <_RestoreGraphSpecsDirectory>$(RepositoryRoot)obj\package-specs\</_RestoreGraphSpecsDirectory>
+
+    <_RepositoryListFileName>Repositories.props</_RepositoryListFileName>
+    <_DefaultRepositoryList>$(MSBuildThisFileDirectory)$(_RepositoryListFileName)</_DefaultRepositoryList>
+    <_DependencyRepositoryList>$(_DependencyBuildDirectory)$(_RepositoryListFileName)</_DependencyRepositoryList>
+    <_RepositoryListToImport Condition="Exists('$(_DependencyRepositoryList)')">$(_DependencyRepositoryList)</_RepositoryListToImport>
+    <_RepositoryListToImport Condition="!Exists('$(_DependencyRepositoryList)')">$(_DefaultRepositoryList)</_RepositoryListToImport>
 
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Verify</_RepositoryBuildTargets>
@@ -22,12 +26,7 @@
     <PackageReference Include="PackagePublisher" Version="1.0.2-*" />
   </ItemGroup>
 
-  <Import
-    Project="$(_DependencyRepositoryList)"
-    Condition="Exists('$(_DependencyRepositoryList)')" />
-  <Import
-    Project="$(_RepositoryListFileName)"
-    Condition="!Exists('$(_DependencyRepositoryList)')" />
+  <Import Project="$(_RepositoryListToImport)" />
 
   <Target Name="CleanUniverseArtifacts">
     <RemoveDir Directories="$(RepositoryRoot)obj" Condition="Exists('$(RepositoryRoot)obj')" />
@@ -66,6 +65,8 @@
       </_CloneRepository>
     </ItemGroup>
 
+    <Message Text="Using the repository list information from '$(_RepositoryListToImport)' to clone ..." Importance="High" />
+
     <MakeDir Directories="$(_CloneRepositoryRoot)" />
 
     <MSBuild Projects="@(_CloneRepository)"
@@ -98,6 +99,7 @@
       Condition="'$(GateBranchExitCode)'!='0'"
       WorkingDirectory="$(_CloneRepositoryRoot)" />
 
+    <Message Text="Resetting $(CloneRepository) commit to $(CloneRepositoryCommit) ..." Importance="High" Condition="'$(CloneRepositoryCommit)'!=''"/>
     <Exec
       Command="git reset --quiet --hard $(CloneRepositoryCommit)"
       WorkingDirectory="$(_CloneRepositoryRoot)$(CloneRepository)"
@@ -186,7 +188,7 @@
       <RepositoryFileWithCommit>$(BuildDir)$(_RepositoryListFileName)</RepositoryFileWithCommit>
     </PropertyGroup>
     <Copy
-      SourceFiles="$(MSBuildThisFileDirectory)$(_RepositoryListFileName)"
+      SourceFiles="$(_DefaultRepositoryList)"
       DestinationFiles="$(RepositoryFileWithCommit)" />
 
     <XmlPoke
