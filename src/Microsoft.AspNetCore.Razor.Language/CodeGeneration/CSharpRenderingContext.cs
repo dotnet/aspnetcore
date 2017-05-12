@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return scope;
         }
 
-        public TagHelperRenderingContextScope Push(TagHelperRenderingContext context)
+        internal TagHelperRenderingContextScope Push(TagHelperRenderingContext context)
         {
             if (context == null)
             {
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public struct TagHelperRenderingContextScope : IDisposable
+        internal struct TagHelperRenderingContextScope : IDisposable
         {
             private readonly CSharpRenderingContext _context;
             private readonly TagHelperRenderingContext _renderingContext;

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class TagHelperRenderingContext
+    internal class TagHelperRenderingContext
     {
         private Dictionary<string, string> _renderedBoundAttributes;
         private HashSet<string> _verifiedPropertyDictionaries;
