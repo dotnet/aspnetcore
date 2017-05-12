@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Theory]
-        [MemberData("NewLines")]
+        [MemberData(nameof(NewLines))]
         public void CodeWriter_TracksPosition_WithWriteLine_WithNewLineInContent(string newLine)
         {
             // Arrange
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Theory]
-        [MemberData("NewLines")]
+        [MemberData(nameof(NewLines))]
         public void CodeWriter_TracksPosition_WithWrite_WithNewlineInContent(string newLine)
         {
             // Arrange

@@ -94,8 +94,8 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             await output.GetChildContentAsync();
 
             // Assert - 2
-            Assert.Equal(callCount, 0);
-            Assert.Equal(updatedCallCount, 1);
+            Assert.Equal(0, callCount);
+            Assert.Equal(1, updatedCallCount);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             var context = executionContext.Context;
             var attribute = Assert.Single(context.AllAttributes);
             Assert.Equal(tagName, context.TagName);
-            Assert.Equal(attribute.Name, "Another attribute");
+            Assert.Equal("Another attribute", attribute.Name);
             Assert.Equal(updatedUniqueId, context.UniqueId);
             Assert.Same(updatedItems, context.Items);
         }

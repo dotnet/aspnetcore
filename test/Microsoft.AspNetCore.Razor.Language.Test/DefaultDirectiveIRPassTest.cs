@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node => Assert.IsType<UsingStatementIRNode>(node),
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
             var @class = (ClassDeclarationIRNode)@namespace.Children[2];
-            Assert.Equal(@class.BaseType, "Hello<World[]>");
+            Assert.Equal("Hello<World[]>", @class.BaseType);
         }
 
         [Fact]

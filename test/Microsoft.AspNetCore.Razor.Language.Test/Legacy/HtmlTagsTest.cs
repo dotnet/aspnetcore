@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Theory]
-        [MemberData("VoidElementNames")]
+        [MemberData(nameof(VoidElementNames))]
         public void VoidElementFollowedByContent(string tagName)
         {
             ParseBlockTest("<" + tagName + ">foo",
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Theory]
-        [MemberData("VoidElementNames")]
+        [MemberData(nameof(VoidElementNames))]
         public void VoidElementFollowedByOtherTag(string tagName)
         {
             ParseBlockTest("<" + tagName + "><other>foo",
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Theory]
-        [MemberData("VoidElementNames")]
+        [MemberData(nameof(VoidElementNames))]
         public void VoidElementFollowedByCloseTag(string tagName)
         {
             ParseBlockTest("<" + tagName + "> </" + tagName + ">foo",
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Theory]
-        [MemberData("VoidElementNames")]
+        [MemberData(nameof(VoidElementNames))]
         public void IncompleteVoidElementEndTag(string tagName)
         {
             ParseBlockTest("<" + tagName + "></" + tagName,

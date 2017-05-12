@@ -122,7 +122,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
-            Assert.Equal(tokenNode.Kind, RazorIRToken.TokenKind.CSharp);
+            Assert.Equal(RazorIRToken.TokenKind.CSharp, tokenNode.Kind);
         }
 
         [Fact]
@@ -195,7 +195,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
-            Assert.Equal(tokenNode.Kind, RazorIRToken.TokenKind.CSharp);
+            Assert.Equal(RazorIRToken.TokenKind.CSharp, tokenNode.Kind);
         }
 
         [Fact]
@@ -280,7 +280,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
-            Assert.Equal(tokenNode.Kind, RazorIRToken.TokenKind.CSharp);
+            Assert.Equal(RazorIRToken.TokenKind.CSharp, tokenNode.Kind);
         }
 
         private RazorCodeDocument CreateDocument(string content)
