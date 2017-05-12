@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
                 using (var rsa = RSA.Create(2048))
                 {
                     var signingRequest = new CertificateRequest(
-                        new X500DistinguishedName("CN=IdentityService.Development"), rsa, HashAlgorithmName.SHA256);
+                        new X500DistinguishedName("CN=IdentityService.Development"), rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                     var enhacedKeyUsage = new OidCollection();
                     enhacedKeyUsage.Add(new Oid("1.3.6.1.5.5.7.3.1", "Server Authentication"));
                     signingRequest.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(enhacedKeyUsage, critical: true));
