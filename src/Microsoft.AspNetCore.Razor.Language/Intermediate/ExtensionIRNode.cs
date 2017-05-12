@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public abstract void WriteNode(RuntimeTarget target, CSharpRenderingContext context);
+        public abstract void WriteNode(CodeTarget target, CSharpRenderingContext context);
 
         protected static void AcceptExtensionNode<TNode>(TNode node, RazorIRNodeVisitor visitor) 
             where TNode : ExtensionIRNode

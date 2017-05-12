@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Execute_ThrowsForMissingDependency_RuntimeTarget()
+        public void Execute_ThrowsForMissingDependency_CodeTarget()
         {
             // Arrange
             var phase = new DefaultRazorCSharpLoweringPhase();
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => phase.Execute(codeDocument),
-                $"The document of kind 'test' does not have a '{nameof(RuntimeTarget)}'. " +
+                $"The document of kind 'test' does not have a '{nameof(CodeTarget)}'. " +
                 $"The document classifier must set a value for '{nameof(DocumentIRNode.Target)}'.");
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var irDocument = new DocumentIRNode()
             {
                 DocumentKind = "test",
-                Target = RuntimeTarget.CreateDefault(codeDocument, options),
+                Target = CodeTarget.CreateDefault(codeDocument, options),
                 Options = options,
             };
             codeDocument.SetIRDocument(irDocument);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var irDocument = new DocumentIRNode()
             {
                 DocumentKind = "test",
-                Target = RuntimeTarget.CreateDefault(codeDocument, options),
+                Target = CodeTarget.CreateDefault(codeDocument, options),
                 Options = options,
             };
             codeDocument.SetIRDocument(irDocument);

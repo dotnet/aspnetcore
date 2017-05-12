@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public override SourceSpan? Source { get; set; }
 
-        public RuntimeTarget Target { get; set; }
+        public CodeTarget Target { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {

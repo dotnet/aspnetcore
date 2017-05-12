@@ -5,14 +5,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public interface IRuntimeTargetBuilder
+    public interface ICodeTargetBuilder
     {
         RazorCodeDocument CodeDocument { get; }
 
         RazorParserOptions Options { get; }
 
-        ICollection<IRuntimeTargetExtension> TargetExtensions { get; }
+        ICollection<ICodeTargetExtension> TargetExtensions { get; }
 
-        RuntimeTarget Build();
+        CodeTarget Build();
     }
 }

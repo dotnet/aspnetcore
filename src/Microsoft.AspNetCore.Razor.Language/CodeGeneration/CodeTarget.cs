@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public abstract class RuntimeTarget
+    public abstract class CodeTarget
     {
-        public static RuntimeTarget CreateDefault(RazorCodeDocument codeDocument, RazorParserOptions options)
+        public static CodeTarget CreateDefault(RazorCodeDocument codeDocument, RazorParserOptions options)
         {
             if (codeDocument == null)
             {
@@ -22,10 +22,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return CreateDefault(codeDocument, options, configure: null);
         }
 
-        public static RuntimeTarget CreateDefault(
+        public static CodeTarget CreateDefault(
             RazorCodeDocument codeDocument,
             RazorParserOptions options,
-            Action<IRuntimeTargetBuilder> configure)
+            Action<ICodeTargetBuilder> configure)
         {
             if (codeDocument == null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var builder = new DefaultRuntimeTargetBuilder(codeDocument, options);
+            var builder = new DefaultCodeTargetBuilder(codeDocument, options);
 
             if (builder.Options.DesignTimeMode)
             {
@@ -56,10 +56,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return builder.Build();
         }
 
-        public static RuntimeTarget CreateEmpty(
+        public static CodeTarget CreateEmpty(
             RazorCodeDocument codeDocument,
             RazorParserOptions options, 
-            Action<IRuntimeTargetBuilder> configure)
+            Action<ICodeTargetBuilder> configure)
         {
             if (codeDocument == null)
             {
@@ -71,25 +71,25 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var builder = new DefaultRuntimeTargetBuilder(codeDocument, options);
+            var builder = new DefaultCodeTargetBuilder(codeDocument, options);
             configure?.Invoke(builder);
             return builder.Build();
         }
 
-        internal static void AddDesignTimeDefaults(IRuntimeTargetBuilder builder)
+        internal static void AddDesignTimeDefaults(ICodeTargetBuilder builder)
         {
 
         }
 
-        internal static void AddRuntimeDefaults(IRuntimeTargetBuilder builder)
+        internal static void AddRuntimeDefaults(ICodeTargetBuilder builder)
         {
 
         }
 
         public abstract DocumentWriter CreateWriter(CSharpRenderingContext context);
 
-        public abstract TExtension GetExtension<TExtension>() where TExtension : class, IRuntimeTargetExtension;
+        public abstract TExtension GetExtension<TExtension>() where TExtension : class, ICodeTargetExtension;
 
-        public abstract bool HasExtension<TExtension>() where TExtension : class, IRuntimeTargetExtension;
+        public abstract bool HasExtension<TExtension>() where TExtension : class, ICodeTargetExtension;
     }
 }

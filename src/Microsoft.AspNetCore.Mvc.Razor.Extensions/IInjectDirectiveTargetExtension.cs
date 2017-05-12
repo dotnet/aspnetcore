@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public interface IInjectDirectiveTargetExtension : IRuntimeTargetExtension
+    public interface IInjectDirectiveTargetExtension : ICodeTargetExtension
     {
         void WriteInjectProperty(CSharpRenderingContext context, InjectDirectiveIRNode node);
     }

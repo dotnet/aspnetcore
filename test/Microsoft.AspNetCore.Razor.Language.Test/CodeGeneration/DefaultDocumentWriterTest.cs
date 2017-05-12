@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var target = RuntimeTarget.CreateDefault(codeDocument, options);
+            var target = CodeTarget.CreateDefault(codeDocument, options);
             var context = new CSharpRenderingContext()
             {
                 Options = options,
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var target = RuntimeTarget.CreateDefault(codeDocument, options);
+            var target = CodeTarget.CreateDefault(codeDocument, options);
             var context = new CSharpRenderingContext()
             {
                 Options = options,
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var target = RuntimeTarget.CreateDefault(codeDocument, options);
+            var target = CodeTarget.CreateDefault(codeDocument, options);
             var context = new CSharpRenderingContext()
             {
                 Options = options,
@@ -137,7 +137,7 @@ internal virtual async string TestMethod()
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var target = RuntimeTarget.CreateDefault(codeDocument, options);
+            var target = CodeTarget.CreateDefault(codeDocument, options);
             var context = new CSharpRenderingContext()
             {
                 Options = options,
@@ -175,7 +175,7 @@ internal virtual async string TestMethod()
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var target = RuntimeTarget.CreateDefault(codeDocument, options);
+            var target = CodeTarget.CreateDefault(codeDocument, options);
             var context = new CSharpRenderingContext()
             {
                 Options = options,

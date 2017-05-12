@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    internal interface ITemplateTargetExtension : IRuntimeTargetExtension
+    internal interface ITemplateTargetExtension : ICodeTargetExtension
     {
         void WriteTemplate(CSharpRenderingContext context, TemplateIRNode node);
     }

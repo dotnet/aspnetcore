@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Same(extension, Assert.Single(actual.TargetExtensions));
         }
 
-        private class MyTargetExtension : IRuntimeTargetExtension
+        private class MyTargetExtension : ICodeTargetExtension
         {
         }
     }

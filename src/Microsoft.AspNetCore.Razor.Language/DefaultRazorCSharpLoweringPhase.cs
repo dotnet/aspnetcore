@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var message = Resources.FormatDocumentMissingTarget(
                     irDocument.DocumentKind,
-                    nameof(RuntimeTarget),
+                    nameof(CodeTarget),
                     nameof(DocumentIRNode.Target));
                 throw new InvalidOperationException(message);
             }

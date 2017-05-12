@@ -6,20 +6,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class RuntimeTargetTest
+    public class CodeTargetTest
     {
         [Fact]
-        public void CreateDefault_CreatesDefaultRuntimeTarget()
+        public void CreateDefault_CreatesDefaultCodeTarget()
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorParserOptions.CreateDefaultOptions();
 
             // Act
-            var target = RuntimeTarget.CreateDefault(codeDocument, options);
+            var target = CodeTarget.CreateDefault(codeDocument, options);
 
             // Assert
-            Assert.IsType<DefaultRuntimeTarget>(target);
+            Assert.IsType<DefaultCodeTarget>(target);
         }
 
         [Fact]
@@ -27,13 +27,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var wasCalled = false;
-            Action<IRuntimeTargetBuilder> @delegate = (b) => { wasCalled = true; };
+            Action<ICodeTargetBuilder> @delegate = (b) => { wasCalled = true; };
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorParserOptions.CreateDefaultOptions();
 
             // Act
-            RuntimeTarget.CreateDefault(codeDocument, options, @delegate);
+            CodeTarget.CreateDefault(codeDocument, options, @delegate);
 
             // Assert
             Assert.True(wasCalled);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var options = RazorParserOptions.CreateDefaultOptions();
 
             // Act
-            RuntimeTarget.CreateDefault(codeDocument, options, configure: null);
+            CodeTarget.CreateDefault(codeDocument, options, configure: null);
 
             // Assert (does not throw)
         }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var options = RazorParserOptions.CreateDefaultOptions();
 
             // Act
-            RuntimeTarget.CreateDefault(codeDocument, options, configure: null);
+            CodeTarget.CreateDefault(codeDocument, options, configure: null);
 
             // Assert (does not throw)
         }

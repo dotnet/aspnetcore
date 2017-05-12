@@ -10,6 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public RazorEngine Engine { get; set; }
 
-        public ICollection<IRuntimeTargetExtension> TargetExtensions { get; } = new List<IRuntimeTargetExtension>();
+        public ICollection<ICodeTargetExtension> TargetExtensions { get; } = new List<ICodeTargetExtension>();
     }
 }

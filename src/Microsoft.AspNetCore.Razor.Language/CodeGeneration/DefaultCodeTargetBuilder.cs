@@ -6,25 +6,25 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    internal class DefaultRuntimeTargetBuilder : IRuntimeTargetBuilder
+    internal class DefaultCodeTargetBuilder : ICodeTargetBuilder
     {
-        public DefaultRuntimeTargetBuilder(RazorCodeDocument codeDocument, RazorParserOptions options)
+        public DefaultCodeTargetBuilder(RazorCodeDocument codeDocument, RazorParserOptions options)
         {
             CodeDocument = codeDocument;
             Options = options;
 
-            TargetExtensions = new List<IRuntimeTargetExtension>();
+            TargetExtensions = new List<ICodeTargetExtension>();
         }
 
         public RazorCodeDocument CodeDocument { get; }
 
         public RazorParserOptions Options { get; }
 
-        public ICollection<IRuntimeTargetExtension> TargetExtensions { get; }
+        public ICollection<ICodeTargetExtension> TargetExtensions { get; }
 
-        public RuntimeTarget Build()
+        public CodeTarget Build()
         {
-            return new DefaultRuntimeTarget(Options, TargetExtensions);
+            return new DefaultCodeTarget(Options, TargetExtensions);
         }
     }
 }

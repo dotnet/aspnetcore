@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    internal interface IPreallocatedAttributeTargetExtension : IRuntimeTargetExtension
+    internal interface IPreallocatedAttributeTargetExtension : ICodeTargetExtension
     {
         void WriteDeclarePreallocatedTagHelperHtmlAttribute(CSharpRenderingContext context, DeclarePreallocatedTagHelperHtmlAttributeIRNode node);
 

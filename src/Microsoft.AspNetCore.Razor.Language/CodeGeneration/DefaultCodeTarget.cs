@@ -7,17 +7,17 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    internal class DefaultRuntimeTarget : RuntimeTarget
+    internal class DefaultCodeTarget : CodeTarget
     {
         private readonly RazorParserOptions _options;
 
-        public DefaultRuntimeTarget(RazorParserOptions options, IEnumerable<IRuntimeTargetExtension> extensions)
+        public DefaultCodeTarget(RazorParserOptions options, IEnumerable<ICodeTargetExtension> extensions)
         {
             _options = options;
             Extensions = extensions.ToArray();
         }
 
-        public IRuntimeTargetExtension[] Extensions { get; }
+        public ICodeTargetExtension[] Extensions { get; }
 
         public override DocumentWriter CreateWriter(CSharpRenderingContext context)
         {

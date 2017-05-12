@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public interface IRazorTargetExtensionFeature : IRazorEngineFeature
     {
-        ICollection<IRuntimeTargetExtension> TargetExtensions { get; }
+        ICollection<ICodeTargetExtension> TargetExtensions { get; }
     }
 }

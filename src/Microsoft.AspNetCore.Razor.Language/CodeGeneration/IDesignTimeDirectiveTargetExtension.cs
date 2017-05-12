@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    internal interface IDesignTimeDirectiveTargetExtension : IRuntimeTargetExtension
+    internal interface IDesignTimeDirectiveTargetExtension : ICodeTargetExtension
     {
         void WriteDesignTimeDirective(CSharpRenderingContext context, DesignTimeDirectiveIRNode node);
     }

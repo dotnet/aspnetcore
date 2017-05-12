@@ -417,7 +417,7 @@ if (true) { }
                 throw new NotImplementedException();
             }
 
-            public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
+            public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
             {
                 throw new NotImplementedException();
             }

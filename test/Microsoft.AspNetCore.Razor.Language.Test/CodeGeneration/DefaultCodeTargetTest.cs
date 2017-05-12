@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class DefaultRuntimeTargetTest
+    public class DefaultCodeTargetTest
     {
         [Fact]
         public void Constructor_CreatesDefensiveCopy()
@@ -14,14 +14,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var extensions = new IRuntimeTargetExtension[]
+            var extensions = new ICodeTargetExtension[]
             {
                 new MyExtension2(),
                 new MyExtension1(),
             };
 
             // Act
-            var target = new DefaultRuntimeTarget(options, extensions);
+            var target = new DefaultCodeTarget(options, extensions);
 
             // Assert
             Assert.NotSame(extensions, target);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var target = new DefaultRuntimeTarget(options, Enumerable.Empty<IRuntimeTargetExtension>());
+            var target = new DefaultCodeTarget(options, Enumerable.Empty<ICodeTargetExtension>());
 
             // Act
             var writer = target.CreateWriter(new CSharpRenderingContext());
@@ -48,13 +48,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var extensions = new IRuntimeTargetExtension[]
+            var extensions = new ICodeTargetExtension[]
             {
                 new MyExtension2(),
                 new MyExtension1(),
             };
 
-            var target = new DefaultRuntimeTarget(options, extensions);
+            var target = new DefaultCodeTarget(options, extensions);
 
             // Act
             var result = target.HasExtension<MyExtension1>();
@@ -69,13 +69,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var extensions = new IRuntimeTargetExtension[]
+            var extensions = new ICodeTargetExtension[]
             {
                 new MyExtension2(),
                 new MyExtension2(),
             };
 
-            var target = new DefaultRuntimeTarget(options, extensions);
+            var target = new DefaultCodeTarget(options, extensions);
 
             // Act
             var result = target.HasExtension<MyExtension1>();
@@ -90,13 +90,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var extensions = new IRuntimeTargetExtension[]
+            var extensions = new ICodeTargetExtension[]
             {
                 new MyExtension2(),
                 new MyExtension1(),
             };
 
-            var target = new DefaultRuntimeTarget(options, extensions);
+            var target = new DefaultCodeTarget(options, extensions);
 
             // Act
             var result = target.GetExtension<MyExtension1>();
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var extensions = new IRuntimeTargetExtension[]
+            var extensions = new ICodeTargetExtension[]
             {
                 new MyExtension2(),
                 new MyExtension1(),
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 new MyExtension1(),
             };
 
-            var target = new DefaultRuntimeTarget(options, extensions);
+            var target = new DefaultCodeTarget(options, extensions);
 
             // Act
             var result = target.GetExtension<MyExtension1>();
@@ -135,13 +135,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var extensions = new IRuntimeTargetExtension[]
+            var extensions = new ICodeTargetExtension[]
             {
                 new MyExtension2(),
                 new MyExtension2(),
             };
 
-            var target = new DefaultRuntimeTarget(options, extensions);
+            var target = new DefaultCodeTarget(options, extensions);
 
             // Act
             var result = target.GetExtension<MyExtension1>();
@@ -150,11 +150,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             Assert.Null(result);
         }
 
-        private class MyExtension1 : IRuntimeTargetExtension
+        private class MyExtension1 : ICodeTargetExtension
         {
         }
 
-        private class MyExtension2 : IRuntimeTargetExtension
+        private class MyExtension2 : ICodeTargetExtension
         {
         }
     }

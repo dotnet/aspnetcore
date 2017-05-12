@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             AcceptExtensionNode<DeclarePreallocatedTagHelperHtmlAttributeIRNode>(this, visitor);
         }
 
-        public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
+        public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
         {
             var extension = target.GetExtension<IPreallocatedAttributeTargetExtension>();
             extension.WriteDeclarePreallocatedTagHelperHtmlAttribute(context, this);

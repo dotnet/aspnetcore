@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class DocumentClassifierPassBase : RazorIRPassBase, IRazorDocumentClassifierPass
     {
-        private static readonly IRuntimeTargetExtension[] EmptyExtensionArray = new IRuntimeTargetExtension[0];
+        private static readonly ICodeTargetExtension[] EmptyExtensionArray = new ICodeTargetExtension[0];
 
         protected abstract string DocumentKind { get; }
 
-        protected IRuntimeTargetExtension[] TargetExtensions { get; private set; }
+        protected ICodeTargetExtension[] TargetExtensions { get; private set; }
 
         protected override void OnIntialized()
         {
@@ -82,9 +82,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected abstract bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
 
-        private RuntimeTarget CreateTarget(RazorCodeDocument codeDocument, RazorParserOptions options)
+        private CodeTarget CreateTarget(RazorCodeDocument codeDocument, RazorParserOptions options)
         {
-            return RuntimeTarget.CreateDefault(codeDocument, options, (builder) =>
+            return CodeTarget.CreateDefault(codeDocument, options, (builder) =>
             {
                 for (var i = 0; i < TargetExtensions.Length; i++)
                 {
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             });
         }
 
-        protected virtual void ConfigureTarget(IRuntimeTargetBuilder builder)
+        protected virtual void ConfigureTarget(ICodeTargetBuilder builder)
         {
             // Intentionally empty.
         }

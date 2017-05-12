@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     internal class DefaultDocumentWriter : DocumentWriter
     {
         private readonly CSharpRenderingContext _context;
-        private readonly RuntimeTarget _target;
+        private readonly CodeTarget _target;
 
-        public DefaultDocumentWriter(RuntimeTarget target, CSharpRenderingContext context)
+        public DefaultDocumentWriter(CodeTarget target, CSharpRenderingContext context)
         {
             if (target == null)
             {
@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private class Visitor : RazorIRNodeVisitor
         {
             private readonly CSharpRenderingContext _context;
-            private readonly RuntimeTarget _target;
+            private readonly CodeTarget _target;
 
-            public Visitor(RuntimeTarget target, CSharpRenderingContext context)
+            public Visitor(CodeTarget target, CSharpRenderingContext context)
             {
                 _target = target;
                 _context = context;

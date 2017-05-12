@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Options = RazorParserOptions.CreateDefaultOptions(),
             };
 
-            var expected = new IRuntimeTargetExtension[]
+            var expected = new ICodeTargetExtension[]
             {
                 new MyExtension1(),
                 new MyExtension2(),
@@ -81,9 +81,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             });
 
-            IRuntimeTargetExtension[] extensions = null;
+            ICodeTargetExtension[] extensions = null;
 
-            pass.RuntimeTargetCallback = (builder) => extensions = builder.TargetExtensions.ToArray();
+            pass.CodeTargetCallback = (builder) => extensions = builder.TargetExtensions.ToArray();
 
             // Act
             pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public bool ShouldMatch { get; set; } = true;
 
-            public Action<IRuntimeTargetBuilder> RuntimeTargetCallback { get; set; }
+            public Action<ICodeTargetBuilder> CodeTargetCallback { get; set; }
 
             public string Namespace { get; set;  }
 
@@ -326,17 +326,17 @@ namespace Microsoft.AspNetCore.Razor.Language
                 @method.Name = Method;
             }
 
-            protected override void ConfigureTarget(IRuntimeTargetBuilder builder)
+            protected override void ConfigureTarget(ICodeTargetBuilder builder)
             {
-                RuntimeTargetCallback?.Invoke(builder);
+                CodeTargetCallback?.Invoke(builder);
             }
         }
 
-        private class MyExtension1 : IRuntimeTargetExtension
+        private class MyExtension1 : ICodeTargetExtension
         {
         }
 
-        private class MyExtension2 : IRuntimeTargetExtension
+        private class MyExtension2 : ICodeTargetExtension
         {
         }
     }

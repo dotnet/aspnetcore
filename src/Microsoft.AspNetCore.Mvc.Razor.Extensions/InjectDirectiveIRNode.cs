@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             AcceptExtensionNode<InjectDirectiveIRNode>(this, visitor);
         }
 
-        public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
+        public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
         {
             if (target == null)
             {

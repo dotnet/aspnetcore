@@ -5,18 +5,18 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class DefaultRuntimeTargetBuilderTest
+    public class DefaultCodeTargetBuilderTest
     {
         [Fact]
-        public void Build_CreatesDefaultRuntimeTarget()
+        public void Build_CreatesDefaultCodeTarget()
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorParserOptions.CreateDefaultOptions();
 
-            var builder = new DefaultRuntimeTargetBuilder(codeDocument, options);
+            var builder = new DefaultCodeTargetBuilder(codeDocument, options);
 
-            var extensions = new IRuntimeTargetExtension[]
+            var extensions = new ICodeTargetExtension[]
             {
                 new MyExtension1(),
                 new MyExtension2(),
@@ -31,15 +31,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var result = builder.Build();
 
             // Assert
-            var target = Assert.IsType<DefaultRuntimeTarget>(result);
+            var target = Assert.IsType<DefaultCodeTarget>(result);
             Assert.Equal(extensions, target.Extensions);
         }
 
-        private class MyExtension1 : IRuntimeTargetExtension
+        private class MyExtension1 : ICodeTargetExtension
         {
         }
 
-        private class MyExtension2 : IRuntimeTargetExtension
+        private class MyExtension2 : ICodeTargetExtension
         {
         }
     }
