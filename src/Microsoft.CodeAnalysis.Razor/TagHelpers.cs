@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public static class TagHelpers
+    internal static class TagHelpers
     {
         public static IReadOnlyList<TagHelperDescriptor> GetTagHelpers(Compilation compilation)
         {
