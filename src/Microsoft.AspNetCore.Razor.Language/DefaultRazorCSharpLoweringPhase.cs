@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var irDocument = codeDocument.GetIRDocument();
-            ThrowForMissingDependency(irDocument);
+            ThrowForMissingDocumentDependency(irDocument);
 
             var syntaxTree = codeDocument.GetSyntaxTree();
-            ThrowForMissingDependency(syntaxTree);
+            ThrowForMissingDocumentDependency(syntaxTree);
 
             var target = irDocument.Target;
             if (target == null)

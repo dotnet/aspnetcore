@@ -3,10 +3,8 @@
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DesignTimeParserOptionsFeature : IRazorParserOptionsFeature
+    internal class DesignTimeParserOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature
     {
-        public RazorEngine Engine { get; set; }
-
         public int Order { get; set; }
 
         public void Configure(RazorParserOptions options)

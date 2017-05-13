@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public class DefaultMetadataReferenceFeature : IMetadataReferenceFeature
+    public class DefaultMetadataReferenceFeature : RazorEngineFeatureBase, IMetadataReferenceFeature
     {
-        public RazorEngine Engine { get; set; }
-
         public IReadOnlyList<MetadataReference> References { get; set; }
     }
 }

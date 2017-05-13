@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var syntaxTree = codeDocument.GetSyntaxTree();
-            ThrowForMissingDependency(syntaxTree);
+            ThrowForMissingDocumentDependency(syntaxTree);
             
             foreach (var pass in Passes)
             {

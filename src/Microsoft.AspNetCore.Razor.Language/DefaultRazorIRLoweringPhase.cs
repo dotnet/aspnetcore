@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var syntaxTree = codeDocument.GetSyntaxTree();
-            ThrowForMissingDependency(syntaxTree);
+            ThrowForMissingDocumentDependency(syntaxTree);
 
             // This might not have been set if there are no tag helpers.
             var tagHelperContext = codeDocument.GetTagHelperContext();

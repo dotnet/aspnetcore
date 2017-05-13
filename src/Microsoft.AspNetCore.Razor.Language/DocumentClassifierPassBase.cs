@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected ICodeTargetExtension[] TargetExtensions { get; private set; }
 
-        protected override void OnIntialized()
+        protected override void OnInitialized()
         {
             var feature = Engine.Features.OfType<IRazorTargetExtensionFeature>();
 

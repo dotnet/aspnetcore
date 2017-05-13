@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DefaultDocumentClassifierPassFeature : IRazorEngineFeature
+    internal class DefaultDocumentClassifierPassFeature : RazorEngineFeatureBase
     {
-        public RazorEngine Engine { get; set; }
-
         public IList<Action<RazorCodeDocument, ClassDeclarationIRNode>> ConfigureClass { get; } =
             new List<Action<RazorCodeDocument, ClassDeclarationIRNode>>();
 

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var syntaxTree = codeDocument.GetSyntaxTree();
-            ThrowForMissingDependency(syntaxTree);
+            ThrowForMissingDocumentDependency(syntaxTree);
 
             var resolver = Engine.Features.OfType<ITagHelperFeature>().FirstOrDefault()?.Resolver;
             if (resolver == null)

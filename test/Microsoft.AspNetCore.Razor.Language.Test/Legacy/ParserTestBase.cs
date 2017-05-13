@@ -52,11 +52,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var root = context.Builder.Build();
             var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
 
-            var tree = RazorSyntaxTree.Create(root, source, diagnostics, options);
-            var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
-            tree = defaultDirectivePass.Execute(codeDocument: null, syntaxTree: tree);
+            var codeDocument = RazorCodeDocument.Create(source);
 
-            return tree;
+            var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
+            codeDocument.SetSyntaxTree(syntaxTree);
+
+            var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
+            syntaxTree = defaultDirectivePass.Execute(codeDocument, syntaxTree);
+
+            return syntaxTree;
         }
 
         internal virtual RazorSyntaxTree ParseHtmlBlock(string document, bool designTime = false)

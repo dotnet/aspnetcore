@@ -1,19 +1,28 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DefaultDirectiveSyntaxTreePass : IRazorSyntaxTreePass
+    internal class DefaultDirectiveSyntaxTreePass : RazorEngineFeatureBase, IRazorSyntaxTreePass
     {
-        public RazorEngine Engine { get; set; }
-
         public int Order => 75;
 
         public RazorSyntaxTree Execute(RazorCodeDocument codeDocument, RazorSyntaxTree syntaxTree)
         {
+            if (codeDocument == null)
+            {
+                throw new ArgumentNullException(nameof(codeDocument));
+            }
+
+            if (syntaxTree == null)
+            {
+                throw new ArgumentNullException(nameof(syntaxTree));
+            }
+
             var errorSink = new ErrorSink();
             var sectionVerifier = new NestedSectionVerifier();
             sectionVerifier.Verify(syntaxTree, errorSink);

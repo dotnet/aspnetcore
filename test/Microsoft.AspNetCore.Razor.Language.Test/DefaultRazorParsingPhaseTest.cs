@@ -74,10 +74,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test", Assert.Single(t.Options.Directives).Name); });
         }
 
-        private class MyParserOptionsFeature : IRazorParserOptionsFeature
+        private class MyParserOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature
         {
-            public RazorEngine Engine { get; set; }
-
             public int Order { get; }
 
             public void Configure(RazorParserOptions options)

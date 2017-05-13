@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public abstract class RazorEnginePhaseBase : IRazorEnginePhase
+    public abstract class RazorEngineFeatureBase : IRazorEngineFeature
     {
         private RazorEngine _engine;
 
@@ -21,26 +21,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
 
                 _engine = value;
-                OnIntialized();
+                OnInitialized();
             }
         }
 
-        public void Execute(RazorCodeDocument codeDocument)
-        {
-            if (codeDocument == null)
-            {
-                throw new ArgumentNullException(nameof(codeDocument));
-            }
-
-            if (Engine == null)
-            {
-                throw new InvalidOperationException(Resources.FormatPhaseMustBeInitialized(nameof(Engine)));
-            }
-
-            ExecuteCore(codeDocument);
-        }
-
-        protected T GetRequiredFeature<T>()
+        protected T GetRequiredFeature<T>() where T : IRazorEngineFeature
         {
             if (Engine == null)
             {
@@ -58,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (value == null)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatPhaseDependencyMissing(
+                    Resources.FormatFeatureDependencyMissing(
                         GetType().Name,
                         typeof(TDocumentDependency).Name,
                         typeof(RazorCodeDocument).Name));
@@ -70,17 +55,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (value == null)
             {
                 throw new InvalidOperationException(
-                    Resources.FormatPhaseDependencyMissing(
+                    Resources.FormatFeatureDependencyMissing(
                         GetType().Name,
                         typeof(TEngineDependency).Name,
                         typeof(RazorEngine).Name));
             }
         }
 
-        protected virtual void OnIntialized()
+        protected virtual void OnInitialized()
         {
         }
-
-        protected abstract void ExecuteCore(RazorCodeDocument codeDocument);
     }
 }

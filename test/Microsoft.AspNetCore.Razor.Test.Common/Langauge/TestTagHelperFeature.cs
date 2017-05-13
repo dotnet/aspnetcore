@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class TestTagHelperFeature : ITagHelperFeature
+    public class TestTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
     {
         public TestTagHelperFeature()
         {
@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             Resolver = new TestTagHelperDescriptorResolver(tagHelpers);
         }
-
-        public RazorEngine Engine { get; set; }
 
         public List<TagHelperDescriptor> TagHelpers => ((TestTagHelperDescriptorResolver)Resolver).TagHelpers;
 

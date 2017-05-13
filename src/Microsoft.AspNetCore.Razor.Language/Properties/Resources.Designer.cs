@@ -402,6 +402,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatDirectiveDescriptor_InvalidDirectiveName(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveDescriptor_InvalidDirectiveName"), p0);
 
+        /// <summary>
+        /// The feature must be initialized by setting the '{0}' property.
+        /// </summary>
+        internal static string FeatureMustBeInitialized
+        {
+            get => GetString("FeatureMustBeInitialized");
+        }
+
+        /// <summary>
+        /// The feature must be initialized by setting the '{0}' property.
+        /// </summary>
+        internal static string FormatFeatureMustBeInitialized(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("FeatureMustBeInitialized"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

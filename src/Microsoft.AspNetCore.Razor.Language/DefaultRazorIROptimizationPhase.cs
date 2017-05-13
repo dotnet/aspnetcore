@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var irDocument = codeDocument.GetIRDocument();
-            ThrowForMissingDependency(irDocument);
+            ThrowForMissingDocumentDependency(irDocument);
 
             foreach (var pass in Passes)
             {

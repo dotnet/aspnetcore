@@ -364,14 +364,12 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             }
         }
 
-        private class TagHelperFeature : ITagHelperFeature
+        private class TagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
         {
             public TagHelperFeature(TagHelperDescriptor[] tagHelpers)
             {
                 Resolver = new TagHelperDescriptorResolver(tagHelpers);
             }
-
-            public RazorEngine Engine { get; set; }
 
             public ITagHelperDescriptorResolver Resolver { get; }
         }

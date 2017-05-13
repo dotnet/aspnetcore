@@ -562,7 +562,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
                 .Build();
         }
 
-        private static IRazorEngineFeature GetMetadataReferenceFeature()
+        private static IMetadataReferenceFeature GetMetadataReferenceFeature()
         {
             var currentAssembly = typeof(CodeGenerationIntegrationTest).GetTypeInfo().Assembly;
             var dependencyContext = DependencyContext.Load(currentAssembly);

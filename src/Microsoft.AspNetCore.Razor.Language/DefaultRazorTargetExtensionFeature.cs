@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DefaultRazorTargetExtensionFeature : IRazorTargetExtensionFeature
+    internal class DefaultRazorTargetExtensionFeature : RazorEngineFeatureBase, IRazorTargetExtensionFeature
     {
-        public RazorEngine Engine { get; set; }
-
         public ICollection<ICodeTargetExtension> TargetExtensions { get; } = new List<ICodeTargetExtension>();
     }
 }
