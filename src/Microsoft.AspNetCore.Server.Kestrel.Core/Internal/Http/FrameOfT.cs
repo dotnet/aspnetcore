@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 KestrelEventSource.Log.RequestStart(this);
 
-                                await _application.ProcessRequestAsync(context).ConfigureAwait(false);
+                                await _application.ProcessRequestAsync(context);
 
                                 if (Volatile.Read(ref _requestAborted) == 0)
                                 {
