@@ -1,9 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -17,7 +15,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         private RazorParserOptions()
         {
             Directives = new List<DirectiveDescriptor>();
-            NamespaceImports = new HashSet<string>(StringComparer.Ordinal);
         }
 
         public bool DesignTimeMode { get; set; }
@@ -29,7 +26,5 @@ namespace Microsoft.AspNetCore.Razor.Language
         public bool StopParsingAfterFirstDirective { get; set; }
 
         public ICollection<DirectiveDescriptor> Directives { get; }
-
-        public HashSet<string> NamespaceImports { get; }
     }
 }

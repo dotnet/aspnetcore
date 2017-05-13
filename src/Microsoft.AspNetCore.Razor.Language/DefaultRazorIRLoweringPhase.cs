@@ -25,14 +25,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             document.Options = syntaxTree.Options;
 
-            var namespaces = new Dictionary<string, SourceSpan?>(StringComparer.Ordinal);
-            foreach (var defaultNamespace in syntaxTree.Options.NamespaceImports)
-            {
-                namespaces[defaultNamespace] = null;
-            }
-
             var checksum = ChecksumIRNode.Create(codeDocument.Source);
             builder.Insert(0, checksum);
+
+            var namespaces = new Dictionary<string, SourceSpan?>(StringComparer.Ordinal);
 
             // The import documents should be inserted logically before the main document.
             var imports = codeDocument.GetImportSyntaxTrees();
