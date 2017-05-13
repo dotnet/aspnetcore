@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // This might not have been set if there are no tag helpers.
             var tagHelperContext = codeDocument.GetTagHelperContext();
-
-            var builder = RazorIRBuilder.Document();
-            var document = (DocumentIRNode)builder.Current;
+            
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
 
             document.Options = syntaxTree.Options;
 

@@ -7,11 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public abstract class RazorIRBuilder
     {
-        public static RazorIRBuilder Document()
-        {
-            return Create(new DocumentIRNode());
-        }
-
         public static RazorIRBuilder Create(RazorIRNode root)
         {
             if (root == null)

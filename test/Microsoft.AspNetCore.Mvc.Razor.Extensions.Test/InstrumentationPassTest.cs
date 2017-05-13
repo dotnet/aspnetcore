@@ -14,7 +14,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_InstrumentsHtml()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
+
             builder.Push(new HtmlContentIRNode()
             {
                 Source = CreateSource(1),
@@ -26,20 +28,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 Source = CreateSource(1)
             });
             builder.Pop();
-
-            var irDocument = (DocumentIRNode)builder.Build();
-
+            
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n => BeginInstrumentation("1, 1, true", n),
                 n => RazorIRAssert.Html("Hi", n),
                 n => EndInstrumentation(n));
@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsHtml_WithoutLocation()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Push(new HtmlContentIRNode());
             builder.Add(new RazorIRToken()
             {
@@ -58,19 +59,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
             builder.Pop();
 
-            var irDocument = (DocumentIRNode)builder.Build();
-
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n => RazorIRAssert.Html("Hi", n));
         }
 
@@ -78,7 +77,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_InstrumentsCSharpExpression()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Push(new CSharpExpressionIRNode()
             {
                 Source = CreateSource(2),
@@ -89,19 +89,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 Kind = RazorIRToken.TokenKind.CSharp,
             });
 
-            var irDocument = (DocumentIRNode)builder.Build();
-
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n => BeginInstrumentation("2, 2, false", n),
                 n => CSharpExpression("Hi", n),
                 n => EndInstrumentation(n));
@@ -111,7 +109,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_WithoutLocation()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Push(new CSharpExpressionIRNode());
             builder.Add(new RazorIRToken()
             {
@@ -119,19 +118,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 Kind = RazorIRToken.TokenKind.CSharp,
             });
 
-            var irDocument = (DocumentIRNode)builder.Build();
-
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n => CSharpExpression("Hi", n));
         }
 
@@ -139,7 +136,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperAttribute()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Push(new TagHelperIRNode()
             {
                 Source = CreateSource(3)
@@ -158,19 +156,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 Kind = RazorIRToken.TokenKind.CSharp,
             });
 
-            var irDocument = (DocumentIRNode)builder.Build();
-
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n =>
                 {
                     Assert.IsType<TagHelperIRNode>(n);
@@ -190,7 +186,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperProperty()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Push(new TagHelperIRNode()
             {
                 Source = CreateSource(3)
@@ -209,19 +206,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 Kind = RazorIRToken.TokenKind.CSharp,
             });
 
-            var irDocument = (DocumentIRNode)builder.Build();
-
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n =>
                 {
                     Assert.IsType<TagHelperIRNode>(n);
@@ -241,7 +236,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_InstrumentsExecuteTagHelper_InsideTagHelper()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Push(new TagHelperIRNode()
             {
                 Source = CreateSource(3),
@@ -249,19 +245,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             builder.Add(new ExecuteTagHelpersIRNode());
 
-            var irDocument = (DocumentIRNode)builder.Build();
-
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n =>
                 {
                     Assert.IsType<TagHelperIRNode>(n);
@@ -277,12 +271,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsExecuteTagHelper_WithoutLocation()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Push(new TagHelperIRNode());
 
             builder.Add(new ExecuteTagHelpersIRNode());
-
-            var irDocument = (DocumentIRNode)builder.Build();
 
             var pass = new InstrumentationPass()
             {
@@ -290,11 +283,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n =>
                 {
                     Assert.IsType<TagHelperIRNode>(n);
@@ -308,7 +301,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsExecuteTagHelper_MalformedTagHelper()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Push(new TagHelperIRNode()
             {
                 Source = CreateSource(3),
@@ -316,19 +310,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Push(new CSharpExpressionIRNode());
             builder.Add(new ExecuteTagHelpersIRNode()); // Malformed
 
-            var irDocument = (DocumentIRNode)builder.Build();
-
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
             };
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
 
             // Assert
             Children(
-                irDocument,
+                document,
                 n =>
                 {
                     Assert.IsType<TagHelperIRNode>(n);

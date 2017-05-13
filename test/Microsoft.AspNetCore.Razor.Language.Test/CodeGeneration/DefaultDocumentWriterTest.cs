@@ -25,13 +25,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var writer = new DefaultDocumentWriter(target, context);
 
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Add(new NamespaceDeclarationIRNode()
             {
                 Content = "TestNamespace",
             });
-
-            var document = (DocumentIRNode)builder.Build();
 
             // Act
             writer.WriteDocument(document);
@@ -63,7 +62,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             };
             var writer = new DefaultDocumentWriter(target, context);
 
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Add(new ClassDeclarationIRNode()
             {
                 AccessModifier = "internal",
@@ -71,8 +71,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Interfaces = new List<string> { "IFoo", "IBar", },
                 Name = "TestClass",
             });
-
-            var document = (DocumentIRNode)builder.Build();
 
             // Act
             writer.WriteDocument(document);
@@ -103,7 +101,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             };
             var writer = new DefaultDocumentWriter(target, context);
 
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Add(new MethodDeclarationIRNode()
             {
                 AccessModifier = "internal",
@@ -111,8 +110,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Name = "TestMethod",
                 ReturnType = "string",
             });
-
-            var document = (DocumentIRNode)builder.Build();
 
             // Act
             writer.WriteDocument(document);
@@ -145,16 +142,15 @@ internal virtual async string TestMethod()
             };
             var writer = new DefaultDocumentWriter(target, context);
 
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Add(new FieldDeclarationIRNode()
             {
                 AccessModifier = "internal",
-                Modifiers = new List<string> { "readonly",},
+                Modifiers = new List<string> { "readonly", },
                 Name = "_foo",
                 Type = "string",
             });
-
-            var document = (DocumentIRNode)builder.Build();
 
             // Act
             writer.WriteDocument(document);
@@ -183,7 +179,8 @@ internal virtual async string TestMethod()
             };
             var writer = new DefaultDocumentWriter(target, context);
 
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
             builder.Add(new PropertyDeclarationIRNode()
             {
                 AccessModifier = "internal",
@@ -191,8 +188,6 @@ internal virtual async string TestMethod()
                 Name = "Foo",
                 Type = "string",
             });
-
-            var document = (DocumentIRNode)builder.Build();
 
             // Act
             writer.WriteDocument(document);

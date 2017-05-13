@@ -117,7 +117,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Pass_SetsNamespaceAndClassName_ComputedFromImports()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
 
             builder.Push(new DirectiveIRNode()
             {
@@ -132,9 +133,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var @class = new ClassDeclarationIRNode() { Name = "default" };
             builder.Add(@class);
-
-            var irDocument = (DocumentIRNode)builder.Build();
-            irDocument.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
+            
+            document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
-            pass.Execute(codeDocument, irDocument);
+            pass.Execute(codeDocument, document);
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
@@ -154,7 +154,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Pass_SetsNamespaceAndClassName_ComputedFromSource()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
 
             // This will be ignored.
             builder.Push(new DirectiveIRNode()
@@ -179,9 +180,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var @class = new ClassDeclarationIRNode() { Name = "default" };
             builder.Add(@class);
-
-            var irDocument = (DocumentIRNode)builder.Build();
-            irDocument.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
+            
+            document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
-            pass.Execute(codeDocument, irDocument);
+            pass.Execute(codeDocument, document);
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
@@ -201,7 +201,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Pass_SetsNamespaceAndClassName_ComputedFromSource_ForView()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
 
             // This will be ignored.
             builder.Push(new DirectiveIRNode()
@@ -226,9 +227,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var @class = new ClassDeclarationIRNode() { Name = "default" };
             builder.Add(@class);
-
-            var irDocument = (DocumentIRNode)builder.Build();
-            irDocument.DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind;
+            
+            document.DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
-            pass.Execute(codeDocument, irDocument);
+            pass.Execute(codeDocument, document);
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
@@ -249,7 +249,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Pass_SetsNamespaceButNotClassName_VerbatimFromImports()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
 
             builder.Push(new DirectiveIRNode()
             {
@@ -264,9 +265,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var @class = new ClassDeclarationIRNode() { Name = "default" };
             builder.Add(@class);
-
-            var irDocument = (DocumentIRNode)builder.Build();
-            irDocument.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
+            
+            document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
-            pass.Execute(codeDocument, irDocument);
+            pass.Execute(codeDocument, document);
 
             // Assert
             Assert.Equal("WebApplication.Account", @namespace.Content);
@@ -285,7 +285,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Pass_DoesNothing_ForUnknownDocumentKind()
         {
             // Arrange
-            var builder = RazorIRBuilder.Document();
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
 
             builder.Push(new DirectiveIRNode()
             {
@@ -300,9 +301,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var @class = new ClassDeclarationIRNode() { Name = "default" };
             builder.Add(@class);
-
-            var irDocument = (DocumentIRNode)builder.Build();
-            irDocument.DocumentKind = null;
+            
+            document.DocumentKind = null;
 
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage/AddUser.cshtml"));
 
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
-            pass.Execute(codeDocument, irDocument);
+            pass.Execute(codeDocument, document);
 
             // Assert
             Assert.Equal("default", @namespace.Content);

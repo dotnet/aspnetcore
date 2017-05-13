@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var expected = RazorIRBuilder.Document().Build();
+            var expected = new DocumentIRNode();
             codeDocument.Items[typeof(DocumentIRNode)] = expected;
 
             // Act
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var expected = RazorIRBuilder.Document().Build();
+            var expected = new DocumentIRNode();
 
             // Act
             codeDocument.SetIRDocument((DocumentIRNode)expected);
