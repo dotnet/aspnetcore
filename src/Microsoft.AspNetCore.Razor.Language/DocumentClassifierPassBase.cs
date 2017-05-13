@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             TargetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? EmptyExtensionArray;
         }
 
-        public sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             if (irDocument.DocumentKind != null)
             {

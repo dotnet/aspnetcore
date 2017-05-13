@@ -29,10 +29,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -57,10 +60,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -85,10 +91,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -112,10 +121,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -148,10 +160,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -196,10 +211,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -233,10 +251,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -263,10 +284,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -294,10 +318,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = (DocumentIRNode)builder.Build();
 
-            var pass = new InstrumentationPass();
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
 
             // Act
-            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(

@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         protected class ApiSetsIRTestAdapter : RazorIRPassBase, IRazorIROptimizationPass
         {
-            public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 var walker = new ApiSetsIRWalker();
                 walker.Visit(irDocument);

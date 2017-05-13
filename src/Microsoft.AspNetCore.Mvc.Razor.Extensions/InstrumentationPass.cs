@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     {
         public override int Order => DefaultFeatureOrder;
 
-        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var walker = new Visitor();
             walker.VisitDocument(irDocument);

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     {
         private const string ModelExpressionTypeName = "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression";
 
-        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var visitor = new Visitor();
             visitor.Visit(irDocument);

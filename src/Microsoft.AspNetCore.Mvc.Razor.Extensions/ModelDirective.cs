@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Runs after the @inherits directive
             public override int Order => 5;
 
-            public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 var visitor = new Visitor();
                 var modelType = GetModelType(irDocument, visitor);

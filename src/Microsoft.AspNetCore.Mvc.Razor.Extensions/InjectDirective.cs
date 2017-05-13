@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Runs after the @model and @namespace directives
             public override int Order => 10;
             
-            public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 var visitor = new Visitor();
                 visitor.Visit(irDocument);

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class PagesPropertyInjectionPass : RazorIRPassBase, IRazorIROptimizationPass
     {
-        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             if (irDocument.DocumentKind != RazorPageDocumentClassifierPass.RazorPageDocumentKind)
             {

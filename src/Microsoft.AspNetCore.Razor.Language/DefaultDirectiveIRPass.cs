@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultDirectiveIRPass : RazorIRPassBase, IRazorDirectiveClassifierPass
     {
-        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var parserOptions = irDocument.Options;
 

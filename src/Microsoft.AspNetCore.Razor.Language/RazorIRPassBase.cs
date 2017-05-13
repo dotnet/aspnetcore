@@ -85,6 +85,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             ExecuteCore(codeDocument, irDocument);
         }
 
-        public abstract void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
+        protected abstract void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
     }
 }

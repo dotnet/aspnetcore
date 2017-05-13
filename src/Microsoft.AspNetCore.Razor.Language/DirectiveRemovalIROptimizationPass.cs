@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public override int Order => DefaultFeatureOrder + 50;
 
-        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var visitor = new Visitor();
             visitor.VisitDocument(irDocument);

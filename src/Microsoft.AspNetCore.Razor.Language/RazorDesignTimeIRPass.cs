@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         // This needs to run before other directive classifiers.
         public override int Order => -10;
 
-        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var walker = new DesignTimeHelperWalker();
             walker.VisitDocument(irDocument);

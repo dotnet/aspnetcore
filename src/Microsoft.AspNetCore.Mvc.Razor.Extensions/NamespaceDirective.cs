@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         // internal for testing
         internal class Pass : RazorIRPassBase, IRazorDirectiveClassifierPass
         {
-            public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 if (irDocument.DocumentKind != RazorPageDocumentClassifierPass.RazorPageDocumentKind &&
                     irDocument.DocumentKind != MvcViewDocumentClassifierPass.MvcViewDocumentKind)
