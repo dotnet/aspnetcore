@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var item = new Mock<RazorProjectItem>();
             item
                 .SetupGet(i => i.Path)
-                .Returns("/path");
+                .Returns("/some/path");
             item
                 .SetupGet(i => i.Exists)
                 .Returns(false);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Act 2
             // Delete the file from the file system and set it's expiration token.
             cacheContext = new CompilerCacheContext(
-                new NotFoundProjectItem("", ViewPath),
+                notFoundItem.Object,
                 Enumerable.Empty<RazorProjectItem>(),
                 _ => throw new Exception("Shouldn't be called."));
             fileProvider.GetChangeToken(ViewPath).HasChanged = true;
