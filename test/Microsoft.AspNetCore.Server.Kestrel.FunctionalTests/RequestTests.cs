@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip= "https://github.com/aspnet/KestrelHttpServer/issues/1835")]
         public async Task ConnectionResetBetweenRequestsIsLoggedAsDebug()
         {
             var requestDone = new SemaphoreSlim(0);
