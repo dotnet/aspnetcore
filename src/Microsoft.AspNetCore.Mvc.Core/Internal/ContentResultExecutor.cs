@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _httpResponseStreamWriterFactory = httpResponseStreamWriterFactory;
         }
 
-        public async Task ExecuteAsync(ActionContext context, ContentResult result)
+        public virtual async Task ExecuteAsync(ActionContext context, ContentResult result)
         {
             if (context == null)
             {

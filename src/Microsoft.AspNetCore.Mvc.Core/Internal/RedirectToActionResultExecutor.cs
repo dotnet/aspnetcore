@@ -31,8 +31,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _urlHelperFactory = urlHelperFactory;
         }
 
-        public void Execute(ActionContext context, RedirectToActionResult result)
+        public virtual void Execute(ActionContext context, RedirectToActionResult result)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
 
             var destinationUrl = urlHelper.Action(

@@ -16,8 +16,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         protected ILogger Logger { get; }
 
-        protected void SetHeadersAndLog(ActionContext context, FileResult result)
+        protected virtual void SetHeadersAndLog(ActionContext context, FileResult result)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             SetContentType(context, result);
             SetContentDispositionHeader(context, result);
             Logger.FileResultExecuting(result.FileDownloadName);

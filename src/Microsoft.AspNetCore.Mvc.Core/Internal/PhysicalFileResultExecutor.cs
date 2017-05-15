@@ -20,14 +20,34 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
         }
 
-        public Task ExecuteAsync(ActionContext context, PhysicalFileResult result)
+        public virtual Task ExecuteAsync(ActionContext context, PhysicalFileResult result)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             SetHeadersAndLog(context, result);
             return WriteFileAsync(context, result);
         }
 
-        private async Task WriteFileAsync(ActionContext context, PhysicalFileResult result)
+        protected virtual async Task WriteFileAsync(ActionContext context, PhysicalFileResult result)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             var response = context.HttpContext.Response;
 
             if (!Path.IsPathRooted(result.FileName))

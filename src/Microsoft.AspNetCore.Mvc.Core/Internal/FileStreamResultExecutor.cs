@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -16,14 +17,34 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
         }
 
-        public Task ExecuteAsync(ActionContext context, FileStreamResult result)
+        public virtual Task ExecuteAsync(ActionContext context, FileStreamResult result)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             SetHeadersAndLog(context, result);
             return WriteFileAsync(context, result);
         }
 
-        private static async Task WriteFileAsync(ActionContext context, FileStreamResult result)
+        protected virtual async Task WriteFileAsync(ActionContext context, FileStreamResult result)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             var response = context.HttpContext.Response;
             var outputStream = response.Body;
 

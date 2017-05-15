@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
         /// <param name="context">The <see cref="ActionContext"/>.</param>
         /// <param name="result">The <see cref="JsonResult"/>.</param>
         /// <returns>A <see cref="Task"/> which will complete when writing has completed.</returns>
-        public Task ExecuteAsync(ActionContext context, JsonResult result)
+        public virtual Task ExecuteAsync(ActionContext context, JsonResult result)
         {
             if (context == null)
             {

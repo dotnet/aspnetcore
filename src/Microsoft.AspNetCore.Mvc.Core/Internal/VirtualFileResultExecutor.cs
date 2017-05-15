@@ -29,14 +29,34 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _hostingEnvironment = hostingEnvironment;
         }
 
-        public Task ExecuteAsync(ActionContext context, VirtualFileResult result)
+        public virtual Task ExecuteAsync(ActionContext context, VirtualFileResult result)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             SetHeadersAndLog(context, result);
             return WriteFileAsync(context, result);
         }
 
-        private async Task WriteFileAsync(ActionContext context, VirtualFileResult result)
+        protected virtual async Task WriteFileAsync(ActionContext context, VirtualFileResult result)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             var response = context.HttpContext.Response;
             var fileProvider = GetFileProvider(result);
 
