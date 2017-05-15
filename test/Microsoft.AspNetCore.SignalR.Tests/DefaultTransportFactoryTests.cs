@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public class DefaultTransportFactoryTests
     {
         [Theory]
-        [InlineData(0)]
+        [InlineData((TransportType)0)]
         [InlineData(TransportType.All + 1)]
         public void DefaultTransportFactoryCannotBeCreatedWithInvalidTransportType(TransportType transportType)
         {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new DefaultTransportFactory(TransportType.All, new LoggerFactory(), httpClient: null));
 
-            Assert.Equal(exception.ParamName, "httpClient");
+            Assert.Equal("httpClient", exception.ParamName);
         }
 
         [ConditionalTheory]

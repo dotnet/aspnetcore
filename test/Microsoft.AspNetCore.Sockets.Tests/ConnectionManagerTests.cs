@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.NotNull(state.Connection.Transport);
 
             await state.DisposeAsync();
-            Assert.Equal(state.Status, ConnectionState.ConnectionStatus.Disposed);
+            Assert.Equal(ConnectionState.ConnectionStatus.Disposed, state.Status);
         }
 
         private static ConnectionManager CreateConnectionManager()

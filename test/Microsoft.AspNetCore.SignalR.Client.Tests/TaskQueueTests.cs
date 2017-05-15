@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Client.Tests
             });
 
             task.Wait();
-            Assert.Equal(n, 2);
+            Assert.Equal(2, n);
         }
     }
 }

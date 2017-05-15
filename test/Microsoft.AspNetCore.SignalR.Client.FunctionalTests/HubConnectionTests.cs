@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var ex = await Assert.ThrowsAnyAsync<Exception>(
                         async () => await connection.Invoke<object>("!@#$%"));
 
-                    Assert.Equal(ex.Message, "Unknown hub method '!@#$%'");
+                    Assert.Equal("Unknown hub method '!@#$%'", ex.Message);
                 }
                 finally
                 {

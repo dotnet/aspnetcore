@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
         }
 
         [Theory]
-        [InlineData(0)]
+        [InlineData((TransportType)0)]
         [InlineData(TransportType.All + 1)]
         public async Task CannotStartConnectionWithInvalidTransportType(TransportType requestedTransportType)
         {
