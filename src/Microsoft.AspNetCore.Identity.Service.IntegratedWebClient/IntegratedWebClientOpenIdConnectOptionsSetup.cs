@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
 
             if (!string.IsNullOrEmpty(_webApplicationOptions.Value.TokenRedirectUrn))
             {
-                options.DisplayName = null;
                 options.Events = new OpenIdConnectEvents
                 {
                     OnRedirectToIdentityProvider = (ctx) =>
