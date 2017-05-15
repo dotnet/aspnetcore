@@ -3,9 +3,13 @@
 
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
@@ -34,10 +38,14 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, [CanBeNull] TState state, [CanBeNull] Exception exception, [CanBeNull] Func<TState, Exception, string> formatter)
         {
-            var errorState = state as DatabaseErrorLogState;
-            if (errorState != null && exception != null && LastError != null)
+            if (exception != null 
+                && LastError != null
+                && (eventId.Id == CoreEventId.SaveChangesFailed.Id
+                || eventId.Id == CoreEventId.QueryIterationFailed.Id))
             {
-                LastError.SetError(errorState.ContextType, exception);
+                LastError.SetError(
+                    (Type)((IReadOnlyList<KeyValuePair<string, object>>)state).Single(p => p.Key == "contextType").Value,
+                    exception);
             }
         }
 
