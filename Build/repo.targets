@@ -3,10 +3,12 @@
     <MicrosoftCommonTargetsImported>true</MicrosoftCommonTargetsImported>
     <VerifyDependsOn>$(VerifyDependsOn);PublishPackage</VerifyDependsOn>
     <PublishFeed>https://dotnet.myget.org/F/aspnetcoremodule/api/v2/package</PublishFeed>
+    <NuGetCommandLineVersion>3.5.0</NuGetCommandLineVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="PackagePublisher" Version="1.0.1-*" />
+    <PackageReference Include="NuGet.CommandLine" Version="$(NuGetCommandLineVersion)" />
   </ItemGroup>
 
   <Target Name="_LocateMSBuildExe">
@@ -33,7 +35,7 @@
 
   <Target Name="PackageProjects">
     <PropertyGroup>
-      <NuGetExePath>$(RepositoryRoot).build\nuget.exe</NuGetExePath>
+      <NuGetExePath>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))nuget.commandline\$(NuGetCommandLineVersion)\tools\nuget.exe</NuGetExePath>
       <NuspecPath>$(RepositoryRoot)nuget\AspNetCore.nuspec</NuspecPath>
     </PropertyGroup>
 
