@@ -68,7 +68,7 @@
             <DropParamName>-n &quot;$(DropName)&quot;</DropParamName>
             <DropParamSource>-d &quot;$(DropSource)&quot;</DropParamSource>
 
-            <DropListCmd>$(DropExe) List $(DropParamService) $(DropParamAuth) $(DropParamTimeout) $(DropParamTraceLevel) -p &quot;$(DropName)&quot;</DropListCmd>
+            <DropListCmd>$(DropExe) List $(DropParamService) $(DropParamAuth) $(DropParamTimeout) -b -p &quot;$(DropName)&quot;</DropListCmd>
 
             <DropUpgradeCmd>$(DropExe) Upgrade $(DropParamService) $(DropParamAuth) $(DropParamTimeout) $(DropParamTraceLevel)</DropUpgradeCmd>
             <DropCreateCmd>$(DropExe) Create $(DropParamService) $(DropParamAuth) $(DropParamTimeout) $(DropParamTraceLevel) $(DropParamExpirationDate) $(DropParamName)</DropCreateCmd>
