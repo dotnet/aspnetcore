@@ -15,16 +15,15 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.Tests
 {
-    public class StartupManagerTests : IFakeStartupCallback
+    public class StartupManagerTests
     {
-        private readonly IList<object> _configurationMethodCalledList = new List<object>();
-
         [Fact]
         public void StartupClassMayHaveHostingServicesInjected()
         {
+            var callbackStartup = new FakeStartupCallback();
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
-            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(callbackStartup);
             var services = serviceCollection.BuildServiceProvider();
 
             var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "WithServices");
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
             startup.ConfigureDelegate(app);
 
-            Assert.Equal(2, _configurationMethodCalledList.Count);
+            Assert.Equal(2, callbackStartup.MethodsCalled);
         }
 
         [Theory]
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
-            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(new FakeStartupCallback());
             var services = serviceCollection.BuildServiceProvider();
             var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "Boom");
             var ex = Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, type, "Boom"));
@@ -81,7 +80,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
-            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(new FakeStartupCallback());
             var services = serviceCollection.BuildServiceProvider();
 
             var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "TwoConfigures");
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
-            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(new FakeStartupCallback());
             var services = serviceCollection.BuildServiceProvider();
 
             var diagnosticMessages = new List<string>();
@@ -110,7 +109,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
-            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(new FakeStartupCallback());
             var services = serviceCollection.BuildServiceProvider();
 
             var type = StartupLoader.FindStartupType("Microsoft.AspNetCore.Hosting.Tests", "TwoConfigureServices");
@@ -395,9 +394,16 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             }
         }
 
-        public void ConfigurationMethodCalled(object instance)
+        public class FakeStartupCallback : IFakeStartupCallback
         {
-            _configurationMethodCalledList.Add(instance);
+            private readonly IList<object> _configurationMethodCalledList = new List<object>();
+
+            public int MethodsCalled => _configurationMethodCalledList.Count;
+
+            public void ConfigurationMethodCalled(object instance)
+            {
+                _configurationMethodCalledList.Add(instance);
+            }
         }
     }
 }

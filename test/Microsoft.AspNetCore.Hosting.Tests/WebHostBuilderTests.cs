@@ -837,7 +837,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup<StartupWithILoggerFactory>()
                 .Build()) { }
 
-            Assert.Equal(false, factory.Disposed);
+            Assert.False(factory.Disposed);
         }
 
         [Fact]
