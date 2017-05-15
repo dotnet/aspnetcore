@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                const int bufferSize = 1024;
+                const int bufferSize = 4096;
                 var totalBytes = 0;
                 var incomingMessage = new List<ArraySegment<byte>>();
                 WebSocketReceiveResult receiveResult;
