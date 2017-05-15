@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Identity.Service.Serialization;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Identity.Service
 
             // Assert
             Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
-            Assert.NotNull(httpContext.Response.Headers[HeaderNames.Location]);
+            Assert.False(StringValues.IsNullOrEmpty(httpContext.Response.Headers[HeaderNames.Location]));
             var uri = new Uri(httpContext.Response.Headers[HeaderNames.Location]);
 
             Assert.False(string.IsNullOrEmpty(uri.Query));
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Identity.Service
 
             // Assert
             Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
-            Assert.NotNull(httpContext.Response.Headers[HeaderNames.Location]);
+            Assert.False(StringValues.IsNullOrEmpty(httpContext.Response.Headers[HeaderNames.Location]));
             var uri = new Uri(httpContext.Response.Headers[HeaderNames.Location]);
 
             Assert.False(string.IsNullOrEmpty(uri.Fragment));

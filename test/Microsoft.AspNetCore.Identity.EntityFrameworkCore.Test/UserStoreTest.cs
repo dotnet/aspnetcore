@@ -64,11 +64,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             return CreateContext();
         }
 
-        public void EnsureDatabase()
-        {
-            CreateContext();
-        }
-
         public ApplicationDbContext CreateAppContext()
         {
             var db = DbUtil.Create<ApplicationDbContext>(_fixture.ConnectionString);

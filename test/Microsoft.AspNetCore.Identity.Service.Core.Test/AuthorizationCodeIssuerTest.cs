@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             Assert.NotNull(context.AuthorizationCode);
             var result = Assert.IsType<AuthorizationCode>(context.AuthorizationCode.Token);
             Assert.NotNull(result);
-            Assert.Equal(null, result.Nonce);
+            Assert.Null(result.Nonce);
         }
 
         [Fact]
