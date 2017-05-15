@@ -37,7 +37,7 @@
         <!-- drop.exe list -p $(DropName) prints the "DropName" if the file is already on the drop.
         We'll use that to determine if we need to publish a drop. This allows us to perform rebuilds of this repo without
         incrementing the build number -->
-        <CallTargets Targets="PublishToVSDropCore" Condition="'$(InvokePublishToVSDropCore)'!='false'" />
+        <CallTarget Targets="PublishToVSDropCore" Condition="'$(InvokePublishToVSDropCore)'!='false'" />
 
         <Message Text="Skipping PublishTOVSDropCore since the drop is already present.%0aOutput from list command: $(DropListOutput)"
             Condition="'$(InvokePublishToVSDropCore)'=='false'"
