@@ -30,10 +30,18 @@
           <Output TaskParameter="ConsoleOutput" PropertyName="DropListOutput" />
         </Exec>
 
-        <!-- drop.exe list -p $(DropName) prints some output if the file is already on the drop and is empty if it does not exist.
-        We'll use that to determine if we need to publish a drop. This allows us to perform rebuilds of this repo without 
+        <PropertyGroup>
+          <InvokePublishToVSDropCore Condition="$(DropListOutput.Contains('$(DropName)'))">false</InvokePublishToVSDropCore>
+        </PropertyGroup>
+
+        <!-- drop.exe list -p $(DropName) prints the "DropName" if the file is already on the drop.
+        We'll use that to determine if we need to publish a drop. This allows us to perform rebuilds of this repo without
         incrementing the build number -->
-        <CallTargets Targets="PublishToVSDropCore" Condition="'(DropListOutput.Trim())'==''" />
+        <CallTargets Targets="PublishToVSDropCore" Condition="'$(InvokePublishToVSDropCore)'!='false'" />
+
+        <Message Text="Skipping PublishTOVSDropCore since the drop is already present.%0aOutput from list command: $(DropListOutput)"
+            Condition="'$(InvokePublishToVSDropCore)'=='false'"
+            Importance="High" />
 
         <ItemGroup>
             <DropManifests Include="$(DropSource)\*.vsman" />
