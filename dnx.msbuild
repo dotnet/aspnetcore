@@ -469,7 +469,6 @@
 
   <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="Sign;InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
     <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
-    <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOobOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
   </Target>
 
   <Target Name="CreateTimestampFreePackages" DependsOnTargets="NuGetVerifyTimestampPackages">
