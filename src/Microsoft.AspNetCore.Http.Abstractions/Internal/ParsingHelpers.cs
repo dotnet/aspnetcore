@@ -26,9 +26,13 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             foreach (var segment in new HeaderSegmentCollection(values))
             {
-                if (segment.Data.HasValue)
+                if (!StringSegment.IsNullOrEmpty(segment.Data))
                 {
-                    yield return DeQuote(segment.Data.Value);
+                    var value = DeQuote(segment.Data.Value);
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        yield return value;
+                    }
                 }
             }
         }

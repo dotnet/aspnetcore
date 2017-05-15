@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -15,7 +16,9 @@ namespace Microsoft.AspNetCore.Http
           new[] { "Value1", "Value2", "Value3", "Value4" },
           new[] { "Value1", "", "Value3", "Value4" },
           new[] { "Value1", "", "", "Value4" },
-          new[] { "", "", "", "" }
+          new[] { "Value1", "", null, "Value4" },
+          new[] { "", "", "", "" },
+          new[] { "", null, "", null },
         };
 
         [Fact]
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Http
 
         [Theory]
         [MemberData(nameof(HeaderSegmentData))]
-        public void EmptyHeaderSegmentsAreParsable(IEnumerable<string> segments)
+        public void EmptyHeaderSegmentsAreIgnored(IEnumerable<string> segments)
         {
             var header = string.Join(",", segments);
 
@@ -48,8 +51,22 @@ namespace Microsoft.AspNetCore.Http
                });
 
             var result = headers.GetCommaSeparatedValues("Header1");
+            var expectedResult = segments.Where(s => !string.IsNullOrEmpty(s));
 
-            Assert.Equal(segments, result);
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public void EmtpyQuotedHeaderSegmentsAreIgnored()
+        {
+            var headers = new HeaderDictionary(
+               new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+               {
+                    { "Header1",  "Value1,\"\",,Value2" },
+               });
+
+            var result = headers.GetCommaSeparatedValues("Header1");
+            Assert.Equal(new[] { "Value1", "Value2" }, result);
         }
     }
 }
