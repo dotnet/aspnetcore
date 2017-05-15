@@ -1464,6 +1464,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
+        public void WriteLiteral_NullValue_DoesNothing()
+        {
+            // Arrange
+            var page = CreatePage(p => { });
+            var defaultWriter = new StringWriter();
+            page.ViewContext.Writer = defaultWriter;
+
+            // Act
+            page.WriteLiteral((object)null);
+
+            // Assert - does not throw
+            Assert.Empty(defaultWriter.ToString());
+        }
+
+        [Fact]
         public void WriteLiteral_BuffersResultToPushedWriter()
         {
             // Arrange

@@ -413,6 +413,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <param name="value">The <see cref="object"/> to write.</param>
         public virtual void WriteLiteral(object value)
         {
+            if (value == null)
+            {
+                return;
+            }
+
             WriteLiteral(value.ToString());
         }
 
