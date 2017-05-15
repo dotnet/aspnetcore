@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Tests
         public void Equals_EmptyFragmentStringAndDefaultFragmentString()
         {
             // Act and Assert
-            Assert.Equal(FragmentString.Empty, default(FragmentString));
+            Assert.Equal(default(FragmentString), FragmentString.Empty);
             Assert.Equal(default(FragmentString), FragmentString.Empty);
             // explicitly checking == operator
             Assert.True(FragmentString.Empty == default(FragmentString));
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Tests
             var fragmentString = new FragmentString("#col=1");
 
             // Act and Assert
-            Assert.NotEqual(fragmentString, default(FragmentString));
+            Assert.NotEqual(default(FragmentString), fragmentString);
         }
 
         [Fact]

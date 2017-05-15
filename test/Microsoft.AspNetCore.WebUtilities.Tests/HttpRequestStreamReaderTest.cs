@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             var read = await reader.ReadAsync(chars, 4, 3);
 
             // Assert
-            Assert.Equal(read, 3);
+            Assert.Equal(3, read);
             for (var i = 0; i < 3; i++)
             {
                 Assert.Equal(CharData[i], chars[i + 4]);

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http
         public void Equals_EmptyPathStringAndDefaultPathString()
         {
             // Act and Assert
-            Assert.Equal(PathString.Empty, default(PathString));
+            Assert.Equal(default(PathString), PathString.Empty);
             Assert.Equal(default(PathString), PathString.Empty);
             Assert.True(PathString.Empty == default(PathString));
             Assert.True(default(PathString) == PathString.Empty);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http
             var pathString = new PathString("/hello");
 
             // Act and Assert
-            Assert.NotEqual(pathString, default(PathString));
+            Assert.NotEqual(default(PathString), pathString);
         }
 
         [Fact]

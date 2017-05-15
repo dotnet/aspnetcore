@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore.Owin
 
             var requestFeature = Get<IHttpRequestFeature>(features);
             Assert.Equal(requestFeature.Method, HttpMethods.Post);
-            Assert.Equal(requestFeature.Path, "/path");
-            Assert.Equal(requestFeature.PathBase, "/pathBase");
-            Assert.Equal(requestFeature.QueryString, "?name=value");
+            Assert.Equal("/path", requestFeature.Path);
+            Assert.Equal("/pathBase", requestFeature.PathBase);
+            Assert.Equal("?name=value", requestFeature.QueryString);
         }
 
         [Fact]

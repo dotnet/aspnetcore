@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         public void Equals_EmptyQueryStringAndDefaultQueryString()
         {
             // Act and Assert
-            Assert.Equal(QueryString.Empty, default(QueryString));
+            Assert.Equal(default(QueryString), QueryString.Empty);
             Assert.Equal(default(QueryString), QueryString.Empty);
             // explicitly checking == operator
             Assert.True(QueryString.Empty == default(QueryString));
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions
             var queryString = new QueryString("?foo=1");
 
             // Act and Assert
-            Assert.NotEqual(queryString, default(QueryString));
+            Assert.NotEqual(default(QueryString), queryString);
         }
 
         [Fact]

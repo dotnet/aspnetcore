@@ -72,7 +72,7 @@ namespace Microsoft.Net.Http.Headers
             // Change one value and verify the other is unchanged.
             pair0.Value = "othervalue";
             Assert.Equal("othervalue", pair0.Value);
-            Assert.Equal(null, pair1.Value);
+            Assert.Null(pair1.Value);
         }
 
         [Fact]
@@ -90,7 +90,7 @@ namespace Microsoft.Net.Http.Headers
             // Change one value and verify the other is unchanged.
             pair0.Value = "othervalue";
             Assert.Equal("othervalue", pair0.Value);
-            Assert.Equal(null, pair1.Value);
+            Assert.Null(pair1.Value);
             Assert.Throws<InvalidOperationException>(() => { pair1.Value = "othervalue"; });
         }
 

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
             var httpContext = new DefaultHttpContext();
 
             app.Invoke(httpContext);
-            Assert.Equal(httpContext.Response.StatusCode, 404);
+            Assert.Equal(404, httpContext.Response.StatusCode);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
             var builder2 = builder1.New();
             builder2.Properties["test"] = "value2";
 
-            Assert.Equal(builder1.Properties["test"], "value1");
+            Assert.Equal("value1", builder1.Properties["test"]);
         }
     }
 }

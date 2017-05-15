@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Http
             var result = hostString.Port;
 
             // Assert
-            Assert.Equal(null, result);
+            Assert.Null(result);
         }
 
         [Theory]
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Http
         public void Equals_EmptyHostStringAndDefaultHostString()
         {
             // Act and Assert
-            Assert.Equal(new HostString(string.Empty), default(HostString));
+            Assert.Equal(default(HostString), new HostString(string.Empty));
             Assert.Equal(default(HostString), new HostString(string.Empty));
             // explicitly checking == operator
             Assert.True(new HostString(string.Empty) == default(HostString));
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Http
             var hostString = new HostString("example.com");
 
             // Act and Assert
-            Assert.NotEqual(hostString, default(HostString));
+            Assert.NotEqual(default(HostString), hostString);
         }
 
         [Fact]

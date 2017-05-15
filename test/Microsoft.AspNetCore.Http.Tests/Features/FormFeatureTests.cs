@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 Assert.True(body.CanSeek);
                 var content = reader.ReadToEnd();
-                Assert.Equal(content, "<html><body>Hello World</body></html>");
+                Assert.Equal("<html><body>Hello World</body></html>", content);
             }
 
             await responseFeature.CompleteAsync();
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 Assert.True(body.CanSeek);
                 var content = reader.ReadToEnd();
-                Assert.Equal(content, "<html><body>Hello World</body></html>");
+                Assert.Equal("<html><body>Hello World</body></html>", content);
             }
 
             await responseFeature.CompleteAsync();
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 Assert.True(body.CanSeek);
                 var content = reader.ReadToEnd();
-                Assert.Equal(content, "<html><body>Hello World</body></html>");
+                Assert.Equal("<html><body>Hello World</body></html>", content);
             }
 
             await responseFeature.CompleteAsync();
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Http.Features
             context.Features.Set<IFormFeature>(formFeature);
 
             var exception = await Assert.ThrowsAsync<InvalidDataException> (() => context.Request.ReadFormAsync());
-            Assert.Equal(exception.Message, "Form value count limit 2 exceeded.");
+            Assert.Equal("Form value count limit 2 exceeded.", exception.Message);
         }
 
         [Theory]
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Http.Features
             context.Features.Set<IFormFeature>(formFeature);
 
             var exception = await Assert.ThrowsAsync<InvalidDataException> (() => context.Request.ReadFormAsync());
-            Assert.Equal(exception.Message, "Form value count limit 2 exceeded.");
+            Assert.Equal("Form value count limit 2 exceeded.", exception.Message);
         }
 
         [Theory]

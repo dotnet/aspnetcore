@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Authentication
             props.StoreTokens(new[] { new AuthenticationToken { Name = "Zero", Value = "0" } });
 
             Assert.Equal("0", props.GetTokenValue("Zero"));
-            Assert.Equal(null, props.GetTokenValue("One"));
-            Assert.Equal(null, props.GetTokenValue("Two"));
-            Assert.Equal(null, props.GetTokenValue("Three"));
+            Assert.Null(props.GetTokenValue("One"));
+            Assert.Null(props.GetTokenValue("Two"));
+            Assert.Null(props.GetTokenValue("Three"));
             Assert.Equal(1, props.GetTokens().Count());
         }
 
