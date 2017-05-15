@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private Action _callback;
 
-        private Exception _exception;
+        private UvException _exception;
 
         private int _status;
 
-        public static readonly Action<TRequest, int, Exception, object> Callback = (req, status, error, state) =>
+        public static readonly Action<TRequest, int, UvException, object> Callback = (req, status, error, state) =>
         {
             var awaitable = (LibuvAwaitable<TRequest>)state;
 
@@ -71,9 +71,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     public struct UvWriteResult
     {
         public int Status { get; }
-        public Exception Error { get; }
+        public UvException Error { get; }
 
-        public UvWriteResult(int status, Exception error)
+        public UvWriteResult(int status, UvException error)
         {
             Status = status;
             Error = error;

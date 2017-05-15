@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 (pipe, status, error, state) => ((ListenerPrimary)state).OnListenPipe(pipe, status, error), this);
         }
 
-        private void OnListenPipe(UvStreamHandle pipe, int status, Exception error)
+        private void OnListenPipe(UvStreamHandle pipe, int status, UvException error)
         {
             if (status < 0)
             {

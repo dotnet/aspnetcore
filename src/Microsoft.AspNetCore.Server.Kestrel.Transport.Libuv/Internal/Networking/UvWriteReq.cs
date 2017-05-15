@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
         private IntPtr _bufs;
 
-        private Action<UvWriteReq, int, Exception, object> _callback;
+        private Action<UvWriteReq, int, UvException, object> _callback;
         private object _state;
         private const int BUFFER_COUNT = 4;
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private unsafe void Write(
             UvStreamHandle handle,
             ReadableBuffer buffer,
-            Action<UvWriteReq, int, Exception, object> callback,
+            Action<UvWriteReq, int, UvException, object> callback,
             object state)
         {
             try
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private void Write(
             UvStreamHandle handle,
             ArraySegment<ArraySegment<byte>> bufs,
-            Action<UvWriteReq, int, Exception, object> callback,
+            Action<UvWriteReq, int, UvException, object> callback,
             object state)
         {
             WriteArraySegmentInternal(handle, bufs, sendHandle: null, callback: callback, state: state);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             UvStreamHandle handle,
             ArraySegment<ArraySegment<byte>> bufs,
             UvStreamHandle sendHandle,
-            Action<UvWriteReq, int, Exception, object> callback,
+            Action<UvWriteReq, int, UvException, object> callback,
             object state)
         {
             WriteArraySegmentInternal(handle, bufs, sendHandle, callback, state);
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             UvStreamHandle handle,
             ArraySegment<ArraySegment<byte>> bufs,
             UvStreamHandle sendHandle,
-            Action<UvWriteReq, int, Exception, object> callback,
+            Action<UvWriteReq, int, UvException, object> callback,
             object state)
         {
             try
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             var state = req._state;
             req._state = null;
 
-            Exception error = null;
+            UvException error = null;
             if (status < 0)
             {
                 req.Libuv.Check(status, out error);

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
-        private static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
+        private static void ConnectionCallback(UvStreamHandle stream, int status, UvException error, object state)
         {
             var listener = (Listener)state;
 

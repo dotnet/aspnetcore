@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         private readonly static LibuvFunctions.uv_alloc_cb _uv_alloc_cb = (IntPtr handle, int suggested_size, out LibuvFunctions.uv_buf_t buf) => UvAllocCb(handle, suggested_size, out buf);
         private readonly static LibuvFunctions.uv_read_cb _uv_read_cb = (IntPtr handle, int status, ref LibuvFunctions.uv_buf_t buf) => UvReadCb(handle, status, ref buf);
 
-        private Action<UvStreamHandle, int, Exception, object> _listenCallback;
+        private Action<UvStreamHandle, int, UvException, object> _listenCallback;
         private object _listenState;
         private GCHandle _listenVitality;
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             return base.ReleaseHandle();
         }
 
-        public void Listen(int backlog, Action<UvStreamHandle, int, Exception, object> callback, object state)
+        public void Listen(int backlog, Action<UvStreamHandle, int, UvException, object> callback, object state)
         {
             if (_listenVitality.IsAllocated)
             {
@@ -123,8 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             var stream = FromIntPtr<UvStreamHandle>(handle);
 
-            Exception error;
-            stream.Libuv.Check(status, out error);
+            stream.Libuv.Check(status, out var error);
 
             try
             {

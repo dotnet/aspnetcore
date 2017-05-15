@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             throw GetError(statusCode);
         }
 
-        public void Check(int statusCode, out Exception error)
+        public void Check(int statusCode, out UvException error)
         {
             // Note: method is explicitly small so the success case is easily inlined
             error = statusCode < 0 ? GetError(statusCode) : null;
@@ -345,14 +345,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
         protected delegate int uv_ip4_addr_func(string ip, int port, out SockAddr addr);
         protected uv_ip4_addr_func _uv_ip4_addr;
-        public void ip4_addr(string ip, int port, out SockAddr addr, out Exception error)
+        public void ip4_addr(string ip, int port, out SockAddr addr, out UvException error)
         {
             Check(_uv_ip4_addr(ip, port, out addr), out error);
         }
 
         protected delegate int uv_ip6_addr_func(string ip, int port, out SockAddr addr);
         protected uv_ip6_addr_func _uv_ip6_addr;
-        public void ip6_addr(string ip, int port, out SockAddr addr, out Exception error)
+        public void ip6_addr(string ip, int port, out SockAddr addr, out UvException error)
         {
             Check(_uv_ip6_addr(ip, port, out addr), out error);
         }

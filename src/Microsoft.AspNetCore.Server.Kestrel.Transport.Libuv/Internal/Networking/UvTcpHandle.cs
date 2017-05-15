@@ -33,13 +33,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             SockAddr addr;
             var addressText = endPoint.Address.ToString();
 
-            Exception error1;
-            _uv.ip4_addr(addressText, endPoint.Port, out addr, out error1);
+            _uv.ip4_addr(addressText, endPoint.Port, out addr, out var error1);
 
             if (error1 != null)
             {
-                Exception error2;
-                _uv.ip6_addr(addressText, endPoint.Port, out addr, out error2);
+                _uv.ip6_addr(addressText, endPoint.Port, out addr, out var error2);
                 if (error2 != null)
                 {
                     throw error1;

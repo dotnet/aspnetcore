@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
     {
         private readonly static LibuvFunctions.uv_connect_cb _uv_connect_cb = (req, status) => UvConnectCb(req, status);
 
-        private Action<UvConnectRequest, int, Exception, object> _callback;
+        private Action<UvConnectRequest, int, UvException, object> _callback;
         private object _state;
 
         public UvConnectRequest(ILibuvTrace logger) : base (logger)
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         public void Connect(
             UvPipeHandle pipe, 
             string name, 
-            Action<UvConnectRequest, int, Exception, object> callback, 
+            Action<UvConnectRequest, int, UvException, object> callback, 
             object state)
         {
             _callback = callback;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             var state = req._state;
             req._state = null;
 
-            Exception error = null;
+            UvException error = null;
             if (status < 0)
             {
                 req.Libuv.Check(status, out error);
