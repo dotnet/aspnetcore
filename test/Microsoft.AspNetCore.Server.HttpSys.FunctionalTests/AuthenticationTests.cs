@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        [ConditionalTheory(Skip = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
+        [Fact(Skip = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
         {
             string address;
