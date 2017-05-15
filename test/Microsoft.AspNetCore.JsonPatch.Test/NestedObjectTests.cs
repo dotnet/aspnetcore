@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             patchDoc.ApplyTo(doc);
 
             // Assert
-            Assert.Equal(null, doc.SimpleDTO.StringProperty);
+            Assert.Null(doc.SimpleDTO.StringProperty);
         }
 
         [Fact]
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             deserialized.ApplyTo(doc);
 
             // Assert
-            Assert.Equal(null, doc.SimpleDTO.StringProperty);
+            Assert.Null(doc.SimpleDTO.StringProperty);
         }
 
         [Fact]
@@ -1796,7 +1796,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // Assert
             Assert.Equal("A", doc.SimpleDTO.AnotherStringProperty);
-            Assert.Equal(null, doc.SimpleDTO.StringProperty);
+            Assert.Null(doc.SimpleDTO.StringProperty);
         }
 
         [Fact]
@@ -1824,7 +1824,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // Assert
             Assert.Equal("A", doc.SimpleDTO.AnotherStringProperty);
-            Assert.Equal(null, doc.SimpleDTO.StringProperty);
+            Assert.Null(doc.SimpleDTO.StringProperty);
         }
 
         [Fact]
@@ -1858,7 +1858,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             Assert.Equal("C", doc.SimpleDTO.StringProperty);
             Assert.Equal("D", doc.SimpleDTO.AnotherStringProperty);
             Assert.Same(iDto, doc.SimpleDTO);
-            Assert.Equal(null, doc.InheritedDTO);
+            Assert.Null(doc.InheritedDTO);
         }
 
         [Fact]
@@ -1895,7 +1895,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             Assert.Equal("C", doc.SimpleDTO.StringProperty);
             Assert.Equal("D", doc.SimpleDTO.AnotherStringProperty);
             Assert.Same(iDto, doc.SimpleDTO);
-            Assert.Equal(null, doc.InheritedDTO);
+            Assert.Null(doc.InheritedDTO);
         }
 
         [Fact]

@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             patchDoc.ApplyTo(doc);
 
             // Assert
-            Assert.Equal(null, doc.StringProperty);
+            Assert.Null(doc.StringProperty);
         }
 
         [Fact]
@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             deserialized.ApplyTo(doc);
 
             // Assert
-            Assert.Equal(null, doc.StringProperty);
+            Assert.Null(doc.StringProperty);
         }
 
         [Fact]
@@ -654,7 +654,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             // Arrange
             var doc = new SimpleDTOWithNullCheck()
             {
-                StringProperty = "A",                
+                StringProperty = "A",
             };
 
             // create patch
@@ -720,8 +720,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             var serialized = JsonConvert.SerializeObject(patchDoc);
 
             // Assert
-            Assert.Equal(false, serialized.Contains("operations"));
-            Assert.Equal(false, serialized.Contains("Operations"));
+            Assert.False(serialized.Contains("operations"));
+            Assert.False(serialized.Contains("Operations"));
         }
 
         [Fact]
@@ -864,7 +864,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             // Assert
             Assert.Equal(1, doc.SimpleDTO.DoubleValue);
             Assert.Equal(0, doc.SimpleDTO.IntegerValue);
-            Assert.Equal(null, doc.SimpleDTO.IntegerList);
+            Assert.Null(doc.SimpleDTO.IntegerList);
         }
 
         [Fact]
@@ -1460,7 +1460,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             // Assert
             Assert.Equal("A", doc.AnotherStringProperty);
-            Assert.Equal(null, doc.StringProperty);
+            Assert.Null(doc.StringProperty);
         }
 
         [Fact]
@@ -1485,7 +1485,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             // Assert
             Assert.Equal("A", doc.AnotherStringProperty);
-            Assert.Equal(null, doc.StringProperty);
+            Assert.Null(doc.StringProperty);
         }
 
         [Fact]
@@ -2283,7 +2283,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             deserialized.ApplyTo(doc);
 
             // Assert
-            Assert.Equal(null, doc.StringProperty);
+            Assert.Null(doc.StringProperty);
         }
 
         class ClassWithPrivateProperties
@@ -2308,7 +2308,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => patchDoc.ApplyTo(doc));
             Assert.Equal(
-                string.Format("The target location specified by path segment '{0}' was not found.", "Age"), 
+                string.Format("The target location specified by path segment '{0}' was not found.", "Age"),
                 exception.Message);
         }
     }

@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             deserialized.ApplyTo(doc);
 
             Assert.Equal("B", doc.StringProperty);
-            Assert.Equal(null, doc.SimpleDTO.AnotherStringProperty);
+            Assert.Null(doc.SimpleDTO.AnotherStringProperty);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             deserialized.ApplyTo(doc);
 
             Assert.Equal("A", doc.Nested.AnotherStringProperty);
-            Assert.Equal(null, doc.Nested.StringProperty);
+            Assert.Null(doc.Nested.StringProperty);
         }
 
         [Fact]

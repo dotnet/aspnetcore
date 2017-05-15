@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             deserialized.ApplyTo(doc);
 
             Assert.Equal("A", doc.AnotherStringProperty);
-            Assert.Equal(null, doc.StringProperty);
+            Assert.Null(doc.StringProperty);
         }
 
         [Fact]

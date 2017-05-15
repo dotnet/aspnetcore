@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // get path
             var pathToCheck = deserialized.Operations.First().path;
-            Assert.Equal(pathToCheck, "/anothername");
+            Assert.Equal("/anothername", pathToCheck);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(doc.AnotherName, "John");
+            Assert.Equal("John", doc.AnotherName);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(doc.Name, "John");
+            Assert.Equal("John", doc.Name);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(null, doc.Name);
+            Assert.Null(doc.Name);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // get path
             var pathToCheck = deserialized.Operations.First().path;
-            Assert.Equal(pathToCheck, "/anothername");
+            Assert.Equal("/anothername", pathToCheck);
         }
 
         [Fact]

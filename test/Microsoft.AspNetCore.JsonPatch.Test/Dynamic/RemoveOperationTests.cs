@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
             deserialized.ApplyTo(doc);
-            Assert.Equal(null, doc.SimpleDTO.StringProperty);
+            Assert.Null(doc.SimpleDTO.StringProperty);
         }
 
         [Fact]
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(null, doc.SimpleDTO.StringProperty);
+            Assert.Null(doc.SimpleDTO.StringProperty);
         }
 
         [Fact]

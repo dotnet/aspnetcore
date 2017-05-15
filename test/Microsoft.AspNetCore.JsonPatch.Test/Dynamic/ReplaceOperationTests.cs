@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             Assert.Equal(1, doc.SimpleDTO.DoubleValue);
             Assert.Equal(0, doc.SimpleDTO.IntegerValue);
-            Assert.Equal(null, doc.SimpleDTO.IntegerList);
+            Assert.Null(doc.SimpleDTO.IntegerList);
         }
 
         [Fact]

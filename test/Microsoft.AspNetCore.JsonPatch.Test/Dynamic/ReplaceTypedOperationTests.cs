@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Replace("GuidValue", newGuid);
 
-            // serialize & deserialize 
+            // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Replace("SimpleDTO", newDTO);
 
-            // serialize & deserialize 
+            // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             Assert.Equal(1, doc.SimpleDTO.DoubleValue);
             Assert.Equal(0, doc.SimpleDTO.IntegerValue);
-            Assert.Equal(null, doc.SimpleDTO.IntegerList);
+            Assert.Null(doc.SimpleDTO.IntegerList);
         }
 
         [Fact]
