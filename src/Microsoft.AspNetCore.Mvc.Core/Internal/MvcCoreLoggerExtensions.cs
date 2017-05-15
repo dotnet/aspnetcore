@@ -120,12 +120,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             _authorizationFailure = LoggerMessage.Define<object>(
                 LogLevel.Information,
-                1,
+                3,
                 "Authorization failed for the request at filter '{AuthorizationFilter}'.");
 
             _resourceFilterShortCircuit = LoggerMessage.Define<object>(
                 LogLevel.Debug,
-                2,
+                4,
                 "Request was short circuited at resource filter '{ResourceFilter}'.");
 
             _actionFilterShortCircuit = LoggerMessage.Define<object>(
