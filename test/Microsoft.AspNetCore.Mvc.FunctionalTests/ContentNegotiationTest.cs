@@ -469,7 +469,7 @@ END:VCARD
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal(body, "MethodWithFormatFilter");
+            Assert.Equal("MethodWithFormatFilter", body);
         }
 
         [Fact]

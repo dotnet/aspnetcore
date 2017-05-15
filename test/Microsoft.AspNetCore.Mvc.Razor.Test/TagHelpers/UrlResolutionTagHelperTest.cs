@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             // Assert
             var attribute = Assert.Single(tagHelperOutput.Attributes);
             Assert.Equal("href", attribute.Name, StringComparer.Ordinal);
-            Assert.Equal(true, attribute.Value);
+            Assert.True(Assert.IsType<bool>(attribute.Value));
             Assert.Equal(HtmlAttributeValueStyle.DoubleQuotes, attribute.ValueStyle);
         }
 

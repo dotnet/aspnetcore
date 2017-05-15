@@ -167,7 +167,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = valueProvider.GetValue("prefix.name");
 
             // Assert
-            Assert.NotNull(result);
             Assert.Equal("someOtherValue", (string)result);
             Assert.Equal(culture, result.Culture);
         }
@@ -183,7 +182,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = valueProvider.GetValue("some");
 
             // Assert
-            Assert.NotNull(result);
             Assert.Equal(new[] { "someValue1", "someValue2" }, result.Values);
             Assert.Equal("someValue1,someValue2", (string)result);
             Assert.Equal(culture, result.Culture);

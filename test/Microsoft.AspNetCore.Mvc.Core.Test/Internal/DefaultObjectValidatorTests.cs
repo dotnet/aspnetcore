@@ -846,15 +846,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             AssertKeysEqual(modelState, "items[0]", "items[1]", "items[2]");
 
             var entry = modelState["items[0]"];
-            Assert.Equal(entry.ValidationState, ModelValidationState.Valid);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
             Assert.Empty(entry.Errors);
 
             entry = modelState["items[1]"];
-            Assert.Equal(entry.ValidationState, ModelValidationState.Valid);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
             Assert.Empty(entry.Errors);
 
             entry = modelState["items[2]"];
-            Assert.Equal(entry.ValidationState, ModelValidationState.Valid);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
             Assert.Empty(entry.Errors);
         }
 

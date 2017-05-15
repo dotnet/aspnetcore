@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             factory.ReleaseViewComponent(context, component);
 
             // Assert
-            Assert.Equal(true, component.Disposed);
+            Assert.True(component.Disposed);
         }
     }
 

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 kvp =>
                 {
                     Assert.Equal("data-val-equalto-other", kvp.Key);
-                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                    Assert.Equal("*.OtherProperty", kvp.Value);
                 });
         }
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 kvp =>
                 {
                     Assert.Equal("data-val-equalto-other", kvp.Key);
-                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                    Assert.Equal("*.OtherProperty", kvp.Value);
                 });
         }
 
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 kvp =>
                 {
                     Assert.Equal("data-val-equalto-other", kvp.Key);
-                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                    Assert.Equal("*.OtherProperty", kvp.Value);
                 });
         }
 
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 kvp =>
                 {
                     Assert.Equal("data-val-equalto-other", kvp.Key);
-                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                    Assert.Equal("*.OtherProperty", kvp.Value);
                 });
         }
 
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 kvp =>
                 {
                     Assert.Equal("data-val-equalto-other", kvp.Key);
-                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                    Assert.Equal("*.OtherProperty", kvp.Value);
                 });
         }
 

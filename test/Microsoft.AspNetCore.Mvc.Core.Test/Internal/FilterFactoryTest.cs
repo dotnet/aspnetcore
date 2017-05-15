@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class FilterFactoryTest
     {
+        [Fact]
         public void GetAllFilters_ReturnsNoFilters_IfNoFiltersAreSpecified()
         {
             // Arrange

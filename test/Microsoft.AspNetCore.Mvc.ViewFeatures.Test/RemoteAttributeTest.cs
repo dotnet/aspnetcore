@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var keyValuePair = Assert.Single(attribute.RouteData);
-            Assert.Equal(keyValuePair.Key, "controller");
+            Assert.Equal("controller", keyValuePair.Key);
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var keyValuePair = Assert.Single(attribute.RouteData);
-            Assert.Equal(keyValuePair.Key, "action");
+            Assert.Equal("action", keyValuePair.Key);
             Assert.Null(attribute.RouteName);
         }
 

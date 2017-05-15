@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal(false, actual);
+            Assert.False(actual);
         }
 
         [Fact]
@@ -577,7 +577,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal(true, actual);
+            Assert.True(actual);
         }
 
         [Fact]

@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             var description = Assert.Single(result);
-            Assert.Equal(description.GroupName, "ApiExplorerNameSetByConvention");
+            Assert.Equal("ApiExplorerNameSetByConvention", description.GroupName);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             var description = Assert.Single(result);
-            Assert.Equal(description.GroupName, "SetOnController");
+            Assert.Equal("SetOnController", description.GroupName);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             var description = Assert.Single(result);
-            Assert.Equal(description.GroupName, "SetOnAction");
+            Assert.Equal("SetOnAction", description.GroupName);
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             var description = Assert.Single(result);
-            Assert.Equal(description.RelativePath, "ApiExplorerRouteAndPathParametersInformation");
+            Assert.Equal("ApiExplorerRouteAndPathParametersInformation", description.RelativePath);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             var description = Assert.Single(result);
-            Assert.Equal(description.RelativePath, "ApiExplorerRouteAndPathParametersInformation/{id}");
+            Assert.Equal("ApiExplorerRouteAndPathParametersInformation/{id}", description.RelativePath);
 
             var parameter = Assert.Single(description.ParameterDescriptions);
             Assert.Equal("id", parameter.Name);

@@ -376,7 +376,7 @@ namespace System.Net.Http.Formatting
         }
 
         [Theory]
-        [MemberData("MatchAcceptHeaderData")]
+        [MemberData(nameof(MatchAcceptHeaderData))]
         public void MatchAcceptHeader_ReturnsMatch(string[] acceptHeaders, string[] supportedMediaTypes, string expectedMediaType, double expectedQuality, int ranking)
         {
             // Arrange
@@ -409,7 +409,7 @@ namespace System.Net.Http.Formatting
         }
 
         [Theory]
-        [MemberData("MatchRequestMediaTypeData")]
+        [MemberData(nameof(MatchRequestMediaTypeData))]
         public void MatchRequestMediaType_ReturnsMatch(string requestMediaType, string[] supportedMediaTypes, string expectedMediaType)
         {
             // Arrange
@@ -443,7 +443,7 @@ namespace System.Net.Http.Formatting
         }
 
         [Theory]
-        [MemberData("ShouldMatchOnTypeData")]
+        [MemberData(nameof(ShouldMatchOnTypeData))]
         public void ShouldMatchOnType_ReturnsExpectedResult(bool excludeMatchOnType, string[] acceptHeaders, bool expectedResult)
         {
             // Arrange
@@ -459,7 +459,7 @@ namespace System.Net.Http.Formatting
         }
 
         [Theory]
-        [MemberData("MatchTypeData")]
+        [MemberData(nameof(MatchTypeData))]
         public void MatchType_ReturnsMatch(string[] supportedMediaTypes, string expectedMediaType)
         {
             // Arrange
@@ -482,7 +482,7 @@ namespace System.Net.Http.Formatting
         }
 
         [Theory]
-        [MemberData("SelectResponseMediaTypeData")]
+        [MemberData(nameof(SelectResponseMediaTypeData))]
         public void SelectResponseMediaTypeFormatter_SelectsMediaType(ICollection<MediaTypeFormatterMatch> matches, MediaTypeFormatterMatch expectedWinner)
         {
             // Arrange
@@ -496,7 +496,7 @@ namespace System.Net.Http.Formatting
         }
 
         [Theory]
-        [MemberData("SelectResponseCharacterEncodingData")]
+        [MemberData(nameof(SelectResponseCharacterEncodingData))]
         public void SelectResponseCharacterEncoding_SelectsEncoding(string[] acceptCharsetHeaders, string requestEncoding, string[] supportedEncodings, string expectedEncoding)
         {
             // Arrange
@@ -664,7 +664,7 @@ namespace System.Net.Http.Formatting
         }
 
         [Theory]
-        [MemberData("UpdateBestMatchData")]
+        [MemberData(nameof(UpdateBestMatchData))]
         public void UpdateBestMatch_SelectsCorrectly(MediaTypeFormatterMatch current, MediaTypeFormatterMatch replacement, bool currentWins)
         {
             // Arrange

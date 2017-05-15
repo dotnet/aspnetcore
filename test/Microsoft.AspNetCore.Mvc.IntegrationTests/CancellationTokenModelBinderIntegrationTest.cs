@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Model
             var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
             Assert.NotNull(boundPerson);
-            Assert.NotNull(boundPerson.Token);
+            Assert.NotSame(default(CancellationToken), boundPerson.Token);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Model
             var boundPerson = Assert.IsType<Person>(modelBindingResult.Model);
             Assert.NotNull(boundPerson);
-            Assert.NotNull(boundPerson.Token);
+            Assert.NotSame(default(CancellationToken), boundPerson.Token);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Model
             var token = Assert.IsType<CancellationToken>(modelBindingResult.Model);
-            Assert.NotNull(token);
+            Assert.NotSame(default(CancellationToken), token);
 
             // ModelState
             Assert.True(modelState.IsValid);

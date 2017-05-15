@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(result);
         }
 
+        [Fact]
         public void GetBinder_WhenNoInputFormatters_Throws()
         {
             // Arrange

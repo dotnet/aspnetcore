@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = await formatter.ReadAsync(context);
 
             // Assert
-            Assert.Equal(true, result.HasError);
-            Assert.Equal(true, context.ModelState.ContainsKey("something"));
+            Assert.True(result.HasError);
+            Assert.True(context.ModelState.ContainsKey("something"));
             Assert.Equal(1, context.ModelState["something"].Errors.Count);
 
             var error = context.ModelState["something"].Errors[0];

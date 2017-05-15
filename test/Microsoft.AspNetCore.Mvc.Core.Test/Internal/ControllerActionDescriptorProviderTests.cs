@@ -392,6 +392,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(showPeople.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
         }
 
+        [Fact]
         public void AttributeRouting_TokenReplacement_IsAfterReflectedModel()
         {
             // Arrange

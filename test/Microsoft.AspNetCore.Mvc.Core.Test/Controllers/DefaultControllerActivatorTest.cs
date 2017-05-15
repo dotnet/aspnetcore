@@ -57,9 +57,9 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             activator.Release(new ControllerContext(), controller);
 
             // Assert
-            Assert.Equal(true, controller.Disposed);
+            Assert.True(controller.Disposed);
         }
-                
+
         [Fact]
         public void DefaultControllerActivator_ReleasesNonIDisposableController()
         {

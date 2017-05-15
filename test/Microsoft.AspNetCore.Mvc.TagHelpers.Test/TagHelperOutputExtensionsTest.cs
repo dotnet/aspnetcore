@@ -962,7 +962,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             tagHelperOutput.MergeAttributes(tagBuilder);
 
             // Assert
-            Assert.Equal(tagHelperOutput.Attributes.Count, 2);
+            Assert.Equal(2, tagHelperOutput.Attributes.Count);
             var attribute = Assert.Single(tagHelperOutput.Attributes, attr => attr.Name.Equals("class"));
             Assert.Equal(expectedOutputAttribute.Value, attribute.Value);
             attribute = Assert.Single(tagHelperOutput.Attributes, attr => attr.Name.Equals("for"));

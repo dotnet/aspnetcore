@@ -861,7 +861,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("GetEmployees", result.Action);
 
             Assert.Equal("/api/Company/5/Employees", result.ExpectedUrls.Single());
-            Assert.Equal(null, result.RouteName);
+            Assert.Null(result.RouteName);
         }
 
         [Fact]

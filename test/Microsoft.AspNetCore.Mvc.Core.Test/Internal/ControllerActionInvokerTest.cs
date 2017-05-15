@@ -2448,6 +2448,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     () => invoker.InvokeAsync());
         }
 
+        [Fact]
         public async Task InvokeAction_AsyncAction_WithExceptionsAfterAwait()
         {
             // Arrange
@@ -3549,7 +3550,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             public void OnAuthorization(AuthorizationFilterContext context)
             {
-                Assert.NotNull(context.ModelState.MaxAllowedErrors);
                 Assert.Equal(_expectedMaxAllowedErrors, context.ModelState.MaxAllowedErrors);
             }
         }

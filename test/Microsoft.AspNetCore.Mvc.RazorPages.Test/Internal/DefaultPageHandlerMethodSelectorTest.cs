@@ -537,11 +537,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Equal(message, ex.Message);
         }
 
-        public void Post()
+        protected void Post()
         {
         }
 
-        public void PostAsync()
+        protected void PostAsync()
         {
         }
     }
