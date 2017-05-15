@@ -20,8 +20,8 @@ namespace Microsoft.Extensions.Internal.Test
         public static TheoryData CanGetStackTraceData => new TheoryData<Action, string>
         {
             {
-                ThrowsException,
-                $"{typeof(StackTraceTest).GetTypeInfo().FullName}.{nameof(ThrowsException)}()"
+                TestMethods.ThrowsException,
+                $"{typeof(TestMethods).GetTypeInfo().FullName}.{nameof(TestMethods.ThrowsException)}()"
             },
             {
                 new ExceptionType().MethodThatThrows,
@@ -84,19 +84,18 @@ namespace Microsoft.Extensions.Internal.Test
         {
             get
             {
-                var thisType = typeof(StackTraceTest);
                 var intParse = ((Func<string, int>)int.Parse).GetMethodInfo();
                 var dateTimeOffsetTryParse = typeof(DateTimeOffset).GetMethods()
                     .First(m => m.Name == nameof(DateTimeOffset.TryParse) && m.GetParameters().Length == 2);
                 var genericTypeMethod = typeof(List<Process>).GetMethod(nameof(List<Process>.Remove));
-                var genericMethod = thisType.GetMethod(nameof(GenericMethod));
-                var multiGenericMethod = thisType.GetMethod(nameof(MultiParameterGenericMethod));
-                var byRefMethod = thisType.GetMethod(nameof(ByRefMethod));
-                var asyncMethod = thisType.GetMethod(nameof(AsyncMethod));
-                var nullableParam = thisType.GetMethod(nameof(MethodWithNullableParams));
-                var nestedMethod = thisType.GetNestedType(nameof(NestedType), BindingFlags.Public)
+                var genericMethod = typeof(TestMethods).GetMethod(nameof(TestMethods.GenericMethod));
+                var multiGenericMethod = typeof(TestMethods).GetMethod(nameof(TestMethods.MultiParameterGenericMethod));
+                var byRefMethod = typeof(TestMethods).GetMethod(nameof(TestMethods.ByRefMethod));
+                var asyncMethod = typeof(TestMethods).GetMethod(nameof(TestMethods.AsyncMethod));
+                var nullableParam = typeof(TestMethods).GetMethod(nameof(TestMethods.MethodWithNullableParams));
+                var nestedMethod = typeof(StackTraceTest).GetNestedType(nameof(NestedType), BindingFlags.Public)
                     .GetMethod(nameof(NestedType.NestedMethod));
-                var nestedGenericMethod = thisType.GetNestedType(nameof(NestedType), BindingFlags.Public)
+                var nestedGenericMethod = typeof(StackTraceTest).GetNestedType(nameof(NestedType), BindingFlags.Public)
                     .GetMethod(nameof(NestedType.NestedGenericMethod));
 
                 return new TheoryData<MethodBase, string>
@@ -104,11 +103,11 @@ namespace Microsoft.Extensions.Internal.Test
                     { intParse, "int.Parse(string s)" },
                     { dateTimeOffsetTryParse, "System.DateTimeOffset.TryParse(string input, out DateTimeOffset result)" },
                     { genericTypeMethod, "System.Collections.Generic.List<System.Diagnostics.Process>.Remove(Process item)" },
-                    { genericMethod, $"{thisType}.{nameof(GenericMethod)}<TVal>(TVal value)" },
-                    { multiGenericMethod, $"{thisType}.{nameof(MultiParameterGenericMethod)}<TKey, TVal>(KeyValuePair<TKey, TVal> keyValuePair)" },
-                    { byRefMethod, $"{thisType}.{nameof(ByRefMethod)}(int a, CultureInfo b, ref long c)" },
-                    { asyncMethod, $"{thisType}.{nameof(AsyncMethod)}(string name)" },
-                    { nullableParam, $"{thisType}.{nameof(MethodWithNullableParams)}(Nullable<int> name, string value)" },
+                    { genericMethod, $"{typeof(TestMethods)}.{nameof(TestMethods.GenericMethod)}<TVal>(TVal value)" },
+                    { multiGenericMethod, $"{typeof(TestMethods)}.{nameof(TestMethods.MultiParameterGenericMethod)}<TKey, TVal>(KeyValuePair<TKey, TVal> keyValuePair)" },
+                    { byRefMethod, $"{typeof(TestMethods)}.{nameof(TestMethods.ByRefMethod)}(int a, CultureInfo b, ref long c)" },
+                    { asyncMethod, $"{typeof(TestMethods)}.{nameof(TestMethods.AsyncMethod)}(string name)" },
+                    { nullableParam, $"{typeof(TestMethods)}.{nameof(TestMethods.MethodWithNullableParams)}(Nullable<int> name, string value)" },
                     { nestedMethod, $"{typeof(NestedType)}.{nameof(NestedType.NestedMethod)}(string value)" },
                     { nestedGenericMethod, $"{typeof(NestedType)}.{nameof(NestedType.NestedGenericMethod)}<TKey>(NestedParameterType a, TKey key)" }
                 };
@@ -126,23 +125,26 @@ namespace Microsoft.Extensions.Internal.Test
             Assert.Equal(expected, actual.ToString());
         }
 
-        public static void ThrowsException()
+        public class TestMethods
         {
-            throw new Exception();
-        }
+            public static void ThrowsException()
+            {
+                throw new Exception();
+            }
 
-        public string GenericMethod<TVal>(TVal value) => value.ToString();
+            public string GenericMethod<TVal>(TVal value) => value.ToString();
 
-        public void MultiParameterGenericMethod<TKey, TVal>(KeyValuePair<TKey, TVal> keyValuePair)
-        {
-        }
+            public void MultiParameterGenericMethod<TKey, TVal>(KeyValuePair<TKey, TVal> keyValuePair)
+            {
+            }
 
-        public decimal ByRefMethod(int a, CultureInfo b, ref long c) => a + c;
+            public decimal ByRefMethod(int a, CultureInfo b, ref long c) => a + c;
 
-        public async Task<object> AsyncMethod(string name) => await Task.FromResult(0);
+            public async Task<object> AsyncMethod(string name) => await Task.FromResult(0);
 
-        public void MethodWithNullableParams(int? name, string value)
-        {
+            public void MethodWithNullableParams(int? name, string value)
+            {
+            }
         }
 
         public class NestedType
