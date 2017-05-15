@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 {
-    public class ConnectionTests
+    public class LibuvConnectionTests
     {
         [Fact]
         public async Task DoesNotEndConnectionOnZeroRead()
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), 0, ref ignored);
                 }, (object)null);
 
-                var readAwaitable = await mockConnectionHandler.Input.Reader.ReadAsync();
+                var readAwaitable = mockConnectionHandler.Input.Reader.ReadAsync();
                 Assert.False(readAwaitable.IsCompleted);
             }
             finally
@@ -169,6 +169,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Assert that we don't try to start reading
                 Assert.Null(mockLibuv.AllocCallback);
                 Assert.Null(mockLibuv.ReadCallback);
+            }
+            finally
+            {
+                await thread.StopAsync(TimeSpan.FromSeconds(1));
+            }
+        }
+
+        [Fact]
+        public async Task DoesNotThrowIfOnReadCallbackCalledWithEOFButAllocCallbackNotCalled()
+        {
+            var mockConnectionHandler = new MockConnectionHandler();
+            var mockLibuv = new MockLibuv();
+            var transportContext = new TestLibuvTransportContext() { ConnectionHandler = mockConnectionHandler };
+            var transport = new LibuvTransport(mockLibuv, transportContext, null);
+            var thread = new LibuvThread(transport);
+
+            try
+            {
+                await thread.StartAsync();
+                await thread.PostAsync(_ =>
+                {
+                    var listenerContext = new ListenerContext(transportContext)
+                    {
+                        Thread = thread
+                    };
+                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
+                    var connection = new LibuvConnection(listenerContext, socket);
+                    _ = connection.Start();
+
+                    var ignored = new LibuvFunctions.uv_buf_t();
+                    mockLibuv.ReadCallback(socket.InternalGetHandle(), TestConstants.EOF, ref ignored);
+                }, (object)null);
+
+                var readAwaitable = await mockConnectionHandler.Input.Reader.ReadAsync();
+                Assert.True(readAwaitable.IsCompleted);
             }
             finally
             {
