@@ -127,7 +127,7 @@
     <value>Page created by '{0}' must be an instance of '{1}'.</value>
   </data>
   <data name="PageViewResult_ContextIsInvalid" xml:space="preserve">
-    <value>Argument '{0}' is not the same instance used to create '{1}'.</value>
+    <value>The context used to execute '{0}' must be an instance of '{1}'. Returning a '{2}' from a controller is a not supported.</value>
   </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>

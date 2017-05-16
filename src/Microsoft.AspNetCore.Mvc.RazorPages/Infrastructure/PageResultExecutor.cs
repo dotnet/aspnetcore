@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -65,9 +66,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 pageContext.ViewData.Model = result.Model;
             }
 
-            var view = new RazorView(_razorViewEngine, _razorPageActivator, pageContext.ViewStarts, result.Page, _htmlEncoder);
-            pageContext.View = view;
-            return ExecuteAsync(pageContext, result.ContentType, result.StatusCode);
+            var viewStarts = new IRazorPage[pageContext.ViewStartFactories.Count];
+            for (var i = 0; i < pageContext.ViewStartFactories.Count; i++)
+            {
+                viewStarts[i] = pageContext.ViewStartFactories[i]();
+            }
+
+            var viewContext = result.Page.ViewContext;
+            viewContext.View = new RazorView(
+                _razorViewEngine,
+                _razorPageActivator,
+                viewStarts,
+                result.Page,
+                _htmlEncoder);
+
+            return ExecuteAsync(viewContext, result.ContentType, result.StatusCode);
         }
     }
 }

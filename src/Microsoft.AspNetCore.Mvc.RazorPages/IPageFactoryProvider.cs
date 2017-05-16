@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
@@ -15,13 +16,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The Razor page factory.</returns>
-        Func<PageContext, object> CreatePageFactory(CompiledPageActionDescriptor descriptor);
+        Func<PageContext, ViewContext, object> CreatePageFactory(CompiledPageActionDescriptor descriptor);
 
         /// <summary>
         /// Releases a Razor page.
         /// </summary>
         /// <param name="descriptor">The <see cref="CompiledPageActionDescriptor"/>.</param>
         /// <returns>The delegate used to release the created page.</returns>
-        Action<PageContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor);
+        Action<PageContext, ViewContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor);
     }
 }

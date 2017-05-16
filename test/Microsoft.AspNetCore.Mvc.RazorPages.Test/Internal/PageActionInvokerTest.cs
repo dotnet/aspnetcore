@@ -14,8 +14,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -344,10 +346,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 .Verifiable();
 
             var filter3 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-            var actionDescriptor = new CompiledPageActionDescriptor();
+
+            var actionDescriptor = new CompiledPageActionDescriptor()
+            {
+                HandlerTypeInfo = typeof(TestPage).GetTypeInfo(),
+                ModelTypeInfo = typeof(TestPage).GetTypeInfo(),
+                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
+            };
+
             var cacheEntry = new PageActionInvokerCacheEntry(
                 actionDescriptor,
-                (context) => createCalled = true,
+                null,
+                (context, viewContext) => createCalled = true,
                 null,
                 (context) => null,
                 null,
@@ -400,10 +410,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var filter3 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
 
-            var actionDescriptor = new CompiledPageActionDescriptor();
+            var actionDescriptor = new CompiledPageActionDescriptor()
+            {
+                HandlerTypeInfo = typeof(TestPage).GetTypeInfo(),
+                ModelTypeInfo = typeof(TestPage).GetTypeInfo(),
+                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
+            };
+
             var cacheEntry = new PageActionInvokerCacheEntry(
                 actionDescriptor,
-                (context) => createCalled = true,
+                null,
+                (context, viewContext) => createCalled = true,
                 null,
                 (context) => null,
                 null,
@@ -540,6 +557,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             PageResultExecutor executor = null,
             IPageHandlerMethodSelector selector = null,
             PageActionInvokerCacheEntry cacheEntry = null,
+            ITempDataDictionaryFactory tempDataFactory = null,
             int maxAllowedErrorsInModelState = 200,
             List<IValueProviderFactory> valueProviderFactories = null,
             RouteData routeData = null,
@@ -572,15 +590,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 httpContext: httpContext,
                 routeData: routeData,
                 actionDescriptor: actionDescriptor);
-            var pageContext = new PageContext(
-                actionContext,
-                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
-                Mock.Of<ITempDataDictionary>(),
-                new HtmlHelperOptions())
+            var pageContext = new PageContext(actionContext)
             {
-                ActionDescriptor = actionDescriptor
+                ActionDescriptor = actionDescriptor,
             };
 
+            var viewDataFactory = ViewDataDictionaryFactory.CreateFactory(actionDescriptor.ModelTypeInfo);
+            pageContext.ViewData = viewDataFactory(new EmptyModelMetadataProvider(), pageContext.ModelState);
+            
             if (selector == null)
             {
                 selector = Mock.Of<IPageHandlerMethodSelector>();
@@ -596,7 +613,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 logger = NullLogger.Instance;
             }
 
-            Func<PageContext, object> pageFactory = (context) =>
+            if (tempDataFactory == null)
+            {
+                tempDataFactory = Mock.Of<ITempDataDictionaryFactory>(m => m.GetTempData(It.IsAny<HttpContext>()) == Mock.Of<ITempDataDictionary>());
+            }
+
+            Func<PageContext, ViewContext, object> pageFactory = (context, viewContext) =>
             {
                 var instance = (Page)Activator.CreateInstance(actionDescriptor.PageTypeInfo.AsType());
                 instance.PageContext = context;
@@ -605,8 +627,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             cacheEntry = new PageActionInvokerCacheEntry(
                 actionDescriptor,
+                viewDataFactory,
                 pageFactory,
-                (c, page) => { (page as IDisposable)?.Dispose(); },
+                (c, viewContext, page) => { (page as IDisposable)?.Dispose(); },
                 _ => Activator.CreateInstance(actionDescriptor.ModelTypeInfo.AsType()),
                 (c, model) => { (model as IDisposable)?.Dispose(); },
                 null,
@@ -622,7 +645,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 filters,
                 valueProviderFactories.AsReadOnly(),
                 cacheEntry,
-                GetParameterBinder());
+                GetParameterBinder(),
+                tempDataFactory,
+                new HtmlHelperOptions());
             return invoker;
         }
 

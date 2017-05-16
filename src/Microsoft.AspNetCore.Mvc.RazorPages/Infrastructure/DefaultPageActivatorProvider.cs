@@ -4,18 +4,19 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     /// <summary>
     /// <see cref="IPageActivatorProvider"/> that uses type activation to create Pages.
     /// </summary>
-    public class DefaultPageActivator : IPageActivatorProvider
+    public class DefaultPageActivatorProvider : IPageActivatorProvider
     {
-        private readonly Action<PageContext, object> _disposer = Dispose;
+        private readonly Action<PageContext, ViewContext, object> _disposer = Dispose;
 
         /// <inheritdoc />
-        public virtual Func<PageContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
+        public virtual Func<PageContext, ViewContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return CreatePageFactory(pageTypeInfo);
         }
 
-        public virtual Action<PageContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+        public virtual Action<PageContext, ViewContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
@@ -49,25 +50,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return null;
         }
 
-        private static Func<PageContext, object> CreatePageFactory(Type pageTypeInfo)
+        private static Func<PageContext, ViewContext, object> CreatePageFactory(Type pageTypeInfo)
         {
-            var parameter = Expression.Parameter(typeof(PageContext), "pageContext");
+            var parameter1 = Expression.Parameter(typeof(PageContext), "pageContext");
+            var parameter2 = Expression.Parameter(typeof(ViewContext), "viewContext");
 
             // new Page();
             var newExpression = Expression.New(pageTypeInfo);
 
             // () => new Page();
             var pageFactory = Expression
-                .Lambda<Func<PageContext, object>>(newExpression, parameter)
+                .Lambda<Func<PageContext, ViewContext, object>>(newExpression, parameter1, parameter2)
                 .Compile();
             return pageFactory;
         }
 
-        private static void Dispose(PageContext context, object page)
+        private static void Dispose(PageContext context, ViewContext viewContext, object page)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
+            }
+
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
             }
 
             if (page == null)
@@ -76,21 +83,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             ((IDisposable)page).Dispose();
-        }
-
-        private static void NullDisposer(PageContext context, object page)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page));
-            }
-
-            // No-op
         }
     }
 }

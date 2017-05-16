@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             // Arrange
             var context = new PageContext();
-            var activator = new DefaultPageActivator();
+            var activator = new DefaultPageModelActivatorProvider();
             var actionDescriptor = new CompiledPageActionDescriptor
             {
                 PageTypeInfo = pageType.GetTypeInfo(),
@@ -113,11 +114,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             // Arrange
             var context = new PageContext();
-            var activator = new DefaultPageActivator();
+
+            var activator = new DefaultPageModelActivatorProvider();
             var actionDescriptor = new CompiledPageActionDescriptor
             {
-                PageTypeInfo = typeof(DisposableModel).GetTypeInfo(),
+                ModelTypeInfo = typeof(DisposableModel).GetTypeInfo(),
             };
+
             var model = new DisposableModel();
 
             // Act & Assert

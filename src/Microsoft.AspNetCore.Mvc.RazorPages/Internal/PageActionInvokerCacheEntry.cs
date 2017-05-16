@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -13,16 +16,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         public PageActionInvokerCacheEntry(
             CompiledPageActionDescriptor actionDescriptor,
-            Func<PageContext, object> pageFactory,
-            Action<PageContext, object> releasePage,
+            Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> viewDataFactory,
+            Func<PageContext, ViewContext, object> pageFactory,
+            Action<PageContext, ViewContext, object> releasePage,
             Func<PageContext, object> modelFactory,
             Action<PageContext, object> releaseModel,
-            Func<Page, object, Task> propertyBinder,
+            Func<PageContext, object, Task> propertyBinder,
             Func<object, object[], Task<IActionResult>>[] executors,
             IReadOnlyList<Func<IRazorPage>> viewStartFactories,
             FilterItem[] cacheableFilters)
         {
             ActionDescriptor = actionDescriptor;
+            ViewDataFactory = viewDataFactory;
             PageFactory = pageFactory;
             ReleasePage = releasePage;
             ModelFactory = modelFactory;
@@ -35,12 +40,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         public CompiledPageActionDescriptor ActionDescriptor { get; }
 
-        public Func<PageContext, object> PageFactory { get; }
+        public Func<PageContext, ViewContext, object> PageFactory { get; }
 
         /// <summary>
         /// The action invoked to release a page. This may be <c>null</c>.
         /// </summary>
-        public Action<PageContext, object> ReleasePage { get; }
+        public Action<PageContext, ViewContext, object> ReleasePage { get; }
 
         public Func<PageContext, object> ModelFactory { get; }
 
@@ -53,9 +58,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         /// The delegate invoked to bind either the handler type (page or model).
         /// This may be <c>null</c>.
         /// </summary>
-        public Func<Page, object, Task> PropertyBinder { get; }
+        public Func<PageContext, object, Task> PropertyBinder { get; }
 
         public Func<object, object[], Task<IActionResult>>[] Executors { get; }
+
+        public Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> ViewDataFactory { get; }
 
         /// <summary>
         /// Gets the applicable ViewStart pages.

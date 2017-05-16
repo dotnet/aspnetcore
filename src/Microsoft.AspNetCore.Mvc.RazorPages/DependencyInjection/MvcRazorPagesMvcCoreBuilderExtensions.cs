@@ -113,7 +113,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPageModelActivatorProvider, DefaultPageModelActivatorProvider>();
             services.TryAddSingleton<IPageModelFactoryProvider, DefaultPageModelFactoryProvider>();
 
-            services.TryAddSingleton<IPageActivatorProvider, DefaultPageActivator>();
+            services.TryAddSingleton<IPageActivatorProvider, DefaultPageActivatorProvider>();
             services.TryAddSingleton<IPageFactoryProvider, DefaultPageFactory>();
 
             services.TryAddSingleton<IPageLoader, DefaultPageLoader>();

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public static class PagePropertyBinderFactory
     {
-        public static Func<Page, object, Task> CreateBinder(
+        public static Func<PageContext, object, Task> CreateBinder(
             ParameterBinder parameterBinder,
             IModelMetadataProvider modelMetadataProvider,
             CompiledPageActionDescriptor actionDescriptor)
@@ -45,20 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             return Bind;
 
-            Task Bind(Page page, object model)
+            Task Bind(PageContext pageContext, object instance)
             {
-                if (page == null)
-                {
-                    throw new ArgumentNullException(nameof(page));
-                }
-
-                if (!isHandlerThePage && model == null)
-                {
-                    throw new ArgumentNullException(nameof(model));
-                }
-
-                var pageContext = page.PageContext;
-                var instance = isHandlerThePage ? page : model;
                 return BindPropertiesAsync(parameterBinder, pageContext, instance, properties, metadata);
             }
         }

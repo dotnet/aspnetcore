@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => string.Format(CultureInfo.CurrentCulture, GetString("ActivatedInstance_MustBeAnInstanceOf"), p0, p1);
 
         /// <summary>
-        /// Argument '{0}' is not the same instance used to create '{1}'.
+        /// The context used to execute '{0}' must be an instance of '{1}'. Returning a '{2}' from a controller is a not supported.
         /// </summary>
         internal static string PageViewResult_ContextIsInvalid
         {
@@ -61,10 +61,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Argument '{0}' is not the same instance used to create '{1}'.
+        /// The context used to execute '{0}' must be an instance of '{1}'. Returning a '{2}' from a controller is a not supported.
         /// </summary>
-        internal static string FormatPageViewResult_ContextIsInvalid(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("PageViewResult_ContextIsInvalid"), p0, p1);
+        internal static string FormatPageViewResult_ContextIsInvalid(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("PageViewResult_ContextIsInvalid"), p0, p1, p2);
 
         /// <summary>
         /// Value cannot be null or empty.

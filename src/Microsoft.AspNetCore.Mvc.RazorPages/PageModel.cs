@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
@@ -25,47 +24,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     [PagesBaseClass]
     public abstract class PageModel
     {
-        private IObjectModelValidator _objectValidator;
         private IModelMetadataProvider _metadataProvider;
         private IModelBinderFactory _modelBinderFactory;
+        private IObjectModelValidator _objectValidator;
+        private ITempDataDictionary _tempData;
         private IUrlHelper _urlHelper;
-
-        /// <summary>
-        /// Gets or sets the <see cref="IUrlHelper"/>.
-        /// </summary>
-        public IUrlHelper Url
-        {
-            get
-            {
-                if (_urlHelper == null)
-                {
-                    var factory = HttpContext?.RequestServices?.GetRequiredService<IUrlHelperFactory>();
-                    _urlHelper = factory?.GetUrlHelper(PageContext);
-                }
-
-                return _urlHelper;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _urlHelper = value;
-            }
-        }
 
         /// <summary>
         /// Gets the <see cref="RazorPages.PageContext"/>.
         /// </summary>
         [PageContext]
         public PageContext PageContext { get; set; }
-
-        /// <summary>
-        /// Gets the <see cref="ViewContext"/>.
-        /// </summary>
-        public ViewContext ViewContext => PageContext;
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/>.
@@ -98,10 +67,61 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         public ClaimsPrincipal User => HttpContext?.User;
 
         /// <summary>
-        /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="PageContext"/>.
+        /// Gets or sets <see cref="ITempDataDictionary"/> used by <see cref="PageResult"/>.
         /// </summary>
-        /// <remarks>Returns null if <see cref="PageContext"/> is null.</remarks>
-        public ITempDataDictionary TempData => PageContext?.TempData;
+        public ITempDataDictionary TempData
+        {
+            get
+            {
+                if (_tempData == null)
+                {
+                    var factory = HttpContext?.RequestServices?.GetRequiredService<ITempDataDictionaryFactory>();
+                    _tempData = factory?.GetTempData(HttpContext);
+                }
+
+                return _tempData;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _tempData = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="IUrlHelper"/>.
+        /// </summary>
+        public IUrlHelper Url
+        {
+            get
+            {
+                if (_urlHelper == null)
+                {
+                    var factory = HttpContext?.RequestServices?.GetRequiredService<IUrlHelperFactory>();
+                    _urlHelper = factory?.GetUrlHelper(PageContext);
+                }
+
+                return _urlHelper;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _urlHelper = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="PageResult"/>.
+        /// </summary>
+        public ViewDataDictionary ViewData => PageContext?.ViewData;
 
         private IObjectModelValidator ObjectValidator
         {
@@ -141,11 +161,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 return _modelBinderFactory;
             }
         }
-
-        /// <summary>
-        /// Gets the <see cref="ViewDataDictionary"/>.
-        /// </summary>
-        public ViewDataDictionary ViewData => PageContext?.ViewData;
 
         /// <summary>
         /// Updates the specified <paramref name="model"/> instance using values from the <see cref="PageModel"/>'s current
@@ -797,7 +812,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Creates a <see cref="PageResult"/> object that renders the page.
         /// </summary>
         /// <returns>The <see cref="PageResult"/>.</returns>
-        public virtual PageResult Page() => new PageResult(PageContext.Page, this);
+        public virtual PageResult Page() => new PageResult();
 
         /// <summary>
         /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>) with the

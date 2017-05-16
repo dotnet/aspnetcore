@@ -3,12 +3,12 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
@@ -16,8 +16,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class RazorPagePropertyActivator
     {
-        private delegate ViewDataDictionary CreateViewDataNestedDelegate(ViewDataDictionary source);
-        private delegate ViewDataDictionary CreateViewDataRootDelegate(ModelStateDictionary modelState);
+        private readonly IModelMetadataProvider _metadataProvider;
+        private readonly Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> _rootFactory;
+        private readonly Func<ViewDataDictionary, ViewDataDictionary> _nestedFactory;
+        private readonly Type _viewDataDictionaryType;
+        private readonly PropertyActivator<ViewContext>[] _propertyActivators;
 
         public RazorPagePropertyActivator(
             Type pageType,
@@ -25,25 +28,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             IModelMetadataProvider metadataProvider,
             PropertyValueAccessors propertyValueAccessors)
         {
-            var viewDataType = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
-            ViewDataDictionaryType = viewDataType;
-            CreateViewDataNested = GetCreateViewDataNested(viewDataType);
-            CreateViewDataRoot = GetCreateViewDataRoot(viewDataType, metadataProvider);
+            _metadataProvider = metadataProvider;
 
-            PropertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
+            _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
+            _rootFactory = ViewDataDictionaryFactory.CreateFactory(modelType.GetTypeInfo());
+            _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(modelType.GetTypeInfo());
+
+            _propertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
                     pageType,
                     typeof(RazorInjectAttribute),
                     propertyInfo => CreateActivateInfo(propertyInfo, propertyValueAccessors),
                     includeNonPublic: true);
         }
-
-        private PropertyActivator<ViewContext>[] PropertyActivators { get; }
-
-        private Type ViewDataDictionaryType { get; }
-
-        private CreateViewDataNestedDelegate CreateViewDataNested { get; }
-
-        private CreateViewDataRootDelegate CreateViewDataRoot { get; }
 
         public void Activate(object page, ViewContext context)
         {
@@ -54,9 +50,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             context.ViewData = CreateViewDataDictionary(context);
 
-            for (var i = 0; i < PropertyActivators.Length; i++)
+            for (var i = 0; i < _propertyActivators.Length; i++)
             {
-                var activateInfo = PropertyActivators[i];
+                var activateInfo = _propertyActivators[i];
                 activateInfo.Activate(page, context);
             }
         }
@@ -68,56 +64,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             if (context.ViewData == null)
             {
                 // Create ViewDataDictionary<TModel>(IModelMetadataProvider, ModelStateDictionary).
-                return CreateViewDataRoot(context.ModelState);
+                return _rootFactory(_metadataProvider, context.ModelState);
             }
-            else if (context.ViewData.GetType() != ViewDataDictionaryType)
+            else if (context.ViewData.GetType() != _viewDataDictionaryType)
             {
                 // Create ViewDataDictionary<TModel>(ViewDataDictionary).
-                return CreateViewDataNested(context.ViewData);
+                return _nestedFactory(context.ViewData);
             }
 
             return context.ViewData;
-        }
-
-        private static CreateViewDataNestedDelegate GetCreateViewDataNested(Type viewDataDictionaryType)
-        {
-            var parameterTypes = new Type[] { typeof(ViewDataDictionary) };
-            var matchingConstructor = viewDataDictionaryType.GetConstructor(parameterTypes);
-            Debug.Assert(matchingConstructor != null);
-
-            var parameters = new ParameterExpression[] { Expression.Parameter(parameterTypes[0]) };
-            var newExpression = Expression.New(matchingConstructor, parameters);
-            var castNewCall = Expression.Convert(
-                newExpression,
-                typeof(ViewDataDictionary));
-            var lambda = Expression.Lambda<CreateViewDataNestedDelegate>(castNewCall, parameters);
-            return lambda.Compile();
-        }
-
-        private static CreateViewDataRootDelegate GetCreateViewDataRoot(
-            Type viewDataDictionaryType,
-            IModelMetadataProvider provider)
-        {
-            var parameterTypes = new[]
-            {
-                typeof(IModelMetadataProvider),
-                typeof(ModelStateDictionary)
-            };
-            var matchingConstructor = viewDataDictionaryType.GetConstructor(parameterTypes);
-            Debug.Assert(matchingConstructor != null);
-
-            var parameterExpression = Expression.Parameter(parameterTypes[1]);
-            var parameters = new Expression[]
-            {
-                Expression.Constant(provider),
-                parameterExpression
-            };
-            var newExpression = Expression.New(matchingConstructor, parameters);
-            var castNewCall = Expression.Convert(
-                newExpression,
-                typeof(ViewDataDictionary));
-            var lambda = Expression.Lambda<CreateViewDataRootDelegate>(castNewCall, parameterExpression);
-            return lambda.Compile();
         }
 
         private static PropertyActivator<ViewContext> CreateActivateInfo(

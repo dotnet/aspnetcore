@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Moq;
@@ -28,17 +30,24 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             var modelState = new ModelStateDictionary();
             var actionContext = new ActionContext(httpContext, new RouteData(), new PageActionDescriptor(), modelState);
             var modelMetadataProvider = new EmptyModelMetadataProvider();
-            var viewDataDictionary = new ViewDataDictionary(modelMetadataProvider, modelState);
+            var viewData = new ViewDataDictionary(modelMetadataProvider, modelState);
             var tempData = Mock.Of<ITempDataDictionary>();
-            var pageContext = new PageContext(actionContext, viewDataDictionary, tempData, new HtmlHelperOptions());
+
+            var pageContext = new PageContext(actionContext)
+            {
+                ViewData = viewData,
+            };
+            var viewContext = new ViewContext(pageContext, NullView.Instance, viewData, tempData, TextWriter.Null, new HtmlHelperOptions());
 
             var page = new TestPage
             {
                 PageContext = pageContext,
+                ViewContext = viewContext,
             };
 
             // Act & Assert
-            Assert.Same(pageContext, page.ViewContext);
+            Assert.Same(pageContext, page.PageContext);
+            Assert.Same(viewContext, page.ViewContext);
             Assert.Same(httpContext, page.HttpContext);
             Assert.Same(httpContext.Request, page.Request);
             Assert.Same(httpContext.Response, page.Response);

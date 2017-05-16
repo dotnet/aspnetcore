@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
@@ -14,26 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public class PageResult : ActionResult
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="PageResult"/>.
-        /// </summary>
-        /// <param name="page">The <see cref="RazorPages.PageBase"/> to render.</param>
-        public PageResult(PageBase page)
-        {
-            Page = page;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="PageResult"/> with the specified <paramref name="model"/>.
-        /// </summary>
-        /// <param name="page">The <see cref="RazorPages.PageBase"/> to render.</param>
-        /// <param name="model">The page model.</param>
-        public PageResult(PageBase page, object model)
-        {
-            Page = page;
-            Model = model;
-        }
-
-        /// <summary>
         /// Gets or sets the Content-Type header for the response.
         /// </summary>
         public string ContentType { get; set; }
@@ -41,12 +22,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <summary>
         /// Gets the page model.
         /// </summary>
-        public object Model { get; }
+        public object Model => ViewData?.Model;
 
         /// <summary>
-        /// Gets the <see cref="RazorPages.Page"/> to execute.
+        /// Gets or sets the <see cref="PageBase"/> to be executed.
         /// </summary>
-        public PageBase Page { get; }
+        public PageBase Page { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ViewDataDictionary"/> for the page to be executed.
+        /// </summary>
+        public ViewDataDictionary ViewData { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.
@@ -56,14 +42,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <inheritdoc />
         public override Task ExecuteResultAsync(ActionContext context)
         {
-            if (!object.ReferenceEquals(context, Page.PageContext))
+            if (!(context is PageContext pageContext))
             {
-                throw new ArgumentException(
-                    Resources.FormatPageViewResult_ContextIsInvalid(nameof(context), nameof(Page)));
+                throw new ArgumentException(Resources.FormatPageViewResult_ContextIsInvalid(
+                    nameof(context),
+                    nameof(Page),
+                    nameof(PageResult)));
             }
 
             var executor = context.HttpContext.RequestServices.GetRequiredService<PageResultExecutor>();
-            return executor.ExecuteAsync(Page.PageContext, this);
+            return executor.ExecuteAsync(pageContext, this);
         }
     }
 }

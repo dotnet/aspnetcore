@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             };
 
             // Act
-            await factory(page, null);
+            await factory(page.PageContext, page);
 
             // Assert
             Assert.Equal(10, page.Id);
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var model = new PageModelWithProperty();
 
             // Act
-            await factory(page, model);
+            await factory(page.PageContext, model);
 
             // Assert
             // Verify that the page properties were not bound.
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var defaultValue = model.PropertyWithDefaultValue;
 
             // Act
-            await factory(page, model);
+            await factory(page.PageContext, model);
 
             // Assert
             Assert.Equal(defaultValue, model.PropertyWithDefaultValue);
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var model = new PageModelWithSupportsGetProperty();
 
             // Act
-            await factory(page, model);
+            await factory(page.PageContext, model);
 
             // Assert
             Assert.Equal("value", model.SupportsGet);
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var model = new PageModelWithSupportsGetProperty();
 
             // Act
-            await factory(page, model);
+            await factory(page.PageContext, model);
 
             // Assert
             Assert.Equal("value", model.SupportsGet);

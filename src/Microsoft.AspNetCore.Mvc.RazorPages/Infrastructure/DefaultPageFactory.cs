@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
         }
 
-        public virtual Func<PageContext, object> CreatePageFactory(CompiledPageActionDescriptor actionDescriptor)
+        public virtual Func<PageContext, ViewContext, object> CreatePageFactory(CompiledPageActionDescriptor actionDescriptor)
         {
             if (!typeof(Page).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
             {
@@ -57,17 +57,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 _modelMetadataProvider,
                 _propertyAccessors);
 
-            return (context) =>
+            return (pageContext, viewContext) =>
             {
-                var page = (Page)activatorFactory(context);
-                page.PageContext = context;
-                page.Path = context.ActionDescriptor.RelativePath;
-                propertyActivator.Activate(page, context);
+                var page = (Page)activatorFactory(pageContext, viewContext);
+                page.PageContext = pageContext;
+                page.Path = pageContext.ActionDescriptor.RelativePath;
+                page.ViewContext = viewContext;
+                propertyActivator.Activate(page, viewContext);
                 return page;
             };
         }
 
-        public virtual Action<PageContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor)
+        public virtual Action<PageContext, ViewContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

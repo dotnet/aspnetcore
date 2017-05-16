@@ -53,11 +53,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 ActionDescriptor = descriptor
             };
+            var viewContext = new ViewContext();
             var factoryProvider = CreatePageFactory();
 
             // Act
             var factory = factoryProvider.CreatePageFactory(descriptor);
-            var instance = factory(pageContext);
+            var instance = factory(pageContext, viewContext);
 
             // Assert
             var testPage = Assert.IsType<TestPage>(instance);
@@ -75,11 +76,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     PageTypeInfo = typeof(TestPage).GetTypeInfo(),
                 }
             };
+
+            var viewContext = new ViewContext();
+
             var urlHelperFactory = new Mock<IUrlHelperFactory>();
             var urlHelper = Mock.Of<IUrlHelper>();
-            urlHelperFactory.Setup(f => f.GetUrlHelper(pageContext))
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(viewContext))
                 .Returns(urlHelper)
                 .Verifiable();
+
             var htmlEncoder = HtmlEncoder.Create();
 
             var factoryProvider = CreatePageFactory(
@@ -88,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // Act
             var factory = factoryProvider.CreatePageFactory(pageContext.ActionDescriptor);
-            var instance = factory(pageContext);
+            var instance = factory(pageContext, viewContext);
 
             // Assert
             var testPage = Assert.IsType<TestPage>(instance);
@@ -113,9 +119,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 ActionDescriptor = descriptor
             };
             
+            var viewContext = new ViewContext();
+
             // Act
             var factory = CreatePageFactory().CreatePageFactory(descriptor);
-            var instance = factory(pageContext);
+            var instance = factory(pageContext, viewContext);
 
             // Assert
             var testPage = Assert.IsType<ViewDataTestPage>(instance);
@@ -135,11 +143,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 },
             };
 
+            var viewContext = new ViewContext();
+
             var factoryProvider = CreatePageFactory();
 
             // Act
             var factory = factoryProvider.CreatePageFactory(pageContext.ActionDescriptor);
-            var instance = factory(pageContext);
+            var instance = factory(pageContext, viewContext);
 
             // Assert
             var testPage = Assert.IsType<ViewDataTestPage>(instance);
@@ -158,11 +168,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 },
             };
 
+            var viewContext = new ViewContext();
+
             var factoryProvider = CreatePageFactory();
 
             // Act
             var factory = factoryProvider.CreatePageFactory(pageContext.ActionDescriptor);
-            var instance = factory(pageContext);
+            var instance = factory(pageContext, viewContext);
 
             // Assert
             var testPage = Assert.IsType<NonGenericViewDataTestPage>(instance);
@@ -170,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         [Fact]
-        public void PageFactorySetsNestedVidewDataDictionaryWhenContextHasANonNullDictionary()
+        public void PageFactory_SetsViewDataOnPage_FromPageContext()
         {
             // Arrange
             var modelMetadataProvider = new EmptyModelMetadataProvider();
@@ -180,21 +192,28 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     PageTypeInfo = typeof(TestPage).GetTypeInfo()
                 },
-                ViewData = new ViewDataDictionary(modelMetadataProvider, new ModelStateDictionary())
+                ViewData = new ViewDataDictionary<TestPage>(modelMetadataProvider, new ModelStateDictionary())
                 {
                     { "test-key", "test-value" },
                 }
+            };
+
+            var viewContext = new ViewContext()
+            {
+                HttpContext = pageContext.HttpContext,
+                ViewData = pageContext.ViewData,
             };
 
             var factoryProvider = CreatePageFactory();
 
             // Act
             var factory = factoryProvider.CreatePageFactory(pageContext.ActionDescriptor);
-            var instance = factory(pageContext);
+            var instance = factory(pageContext, viewContext);
 
             // Assert
             var testPage = Assert.IsType<TestPage>(instance);
             Assert.NotNull(testPage.ViewData);
+            Assert.Same(pageContext.ViewData, testPage.ViewData);
             Assert.Equal("test-value", testPage.ViewData["test-key"]);
         }
 
@@ -205,6 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<ILogger>(NullLogger.Instance)
                 .BuildServiceProvider();
+
             var pageContext = new PageContext
             {
                 ActionDescriptor = new CompiledPageActionDescriptor
@@ -215,14 +235,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     RequestServices = serviceProvider,
                 },
+            };
 
+            var viewContext = new ViewContext()
+            {
+                HttpContext = pageContext.HttpContext,
             };
 
             var factoryProvider = CreatePageFactory();
 
             // Act
             var factory = factoryProvider.CreatePageFactory(pageContext.ActionDescriptor);
-            var instance = factory(pageContext);
+            var instance = factory(pageContext, viewContext);
 
             // Assert
             var testPage = Assert.IsType<PropertiesWithoutRazorInject>(instance);
@@ -258,10 +282,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private static IPageActivatorProvider CreateActivator()
         {
             var activator = new Mock<IPageActivatorProvider>();
-            activator.Setup(a => a.CreateActivator(It.IsAny<CompiledPageActionDescriptor>()))
+            activator
+                .Setup(a => a.CreateActivator(It.IsAny<CompiledPageActionDescriptor>()))
                 .Returns((CompiledPageActionDescriptor descriptor) =>
                 {
-                    return (context) => Activator.CreateInstance(descriptor.PageTypeInfo.AsType());
+                    return (context, viewContext) => Activator.CreateInstance(descriptor.PageTypeInfo.AsType());
                 });
             return activator.Object;
         }

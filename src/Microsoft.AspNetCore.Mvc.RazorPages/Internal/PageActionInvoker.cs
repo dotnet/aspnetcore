@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -13,8 +14,11 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -23,9 +27,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly IPageHandlerMethodSelector _selector;
         private readonly PageContext _pageContext;
         private readonly ParameterBinder _parameterBinder;
+        private readonly ITempDataDictionaryFactory _tempDataFactory;
+        private readonly HtmlHelperOptions _htmlHelperOptions;
 
+        private CompiledPageActionDescriptor _actionDescriptor;
         private Page _page;
         private object _model;
+        private ViewContext _viewContext;
         private ExceptionContext _exceptionContext;
 
         public PageActionInvoker(
@@ -36,7 +44,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IFilterMetadata[] filterMetadata,
             IList<IValueProviderFactory> valueProviderFactories,
             PageActionInvokerCacheEntry cacheEntry,
-            ParameterBinder parameterBinder)
+            ParameterBinder parameterBinder,
+            ITempDataDictionaryFactory tempDataFactory,
+            HtmlHelperOptions htmlHelperOptions)
             : base(
                   diagnosticSource,
                   logger,
@@ -48,9 +58,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _pageContext = pageContext;
             CacheEntry = cacheEntry;
             _parameterBinder = parameterBinder;
+            _tempDataFactory = tempDataFactory;
+            _htmlHelperOptions = htmlHelperOptions;
+
+            _actionDescriptor = pageContext.ActionDescriptor;
         }
 
-        public PageActionInvokerCacheEntry CacheEntry { get; }
+        // Internal for testing
+        internal PageActionInvokerCacheEntry CacheEntry { get; }
+
+        // Internal for testing
+        internal PageContext PageContext => _pageContext;
 
         /// <remarks>
         /// <see cref="ResourceInvoker"/> for details on what the variables in this method represent.
@@ -77,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             if (_page != null && CacheEntry.ReleasePage != null)
             {
-                CacheEntry.ReleasePage(_pageContext, _page);
+                CacheEntry.ReleasePage(_pageContext, _viewContext, _page);
             }
         }
 
@@ -303,47 +321,36 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
         }
 
-        private async Task ExecutePageAsync()
+        private Task ExecutePageAsync()
         {
-            var actionDescriptor = _pageContext.ActionDescriptor;
-            _page = (Page)CacheEntry.PageFactory(_pageContext);
-            _pageContext.Page = _page;
             _pageContext.ValueProviderFactories = _valueProviderFactories;
 
-            IRazorPage[] viewStarts;
-
-            if (CacheEntry.ViewStartFactories == null || CacheEntry.ViewStartFactories.Count == 0)
+            // There's a fork in the road here between the case where we have a full-fledged PageModel
+            // vs just a Page. We need to know up front because we want to execute handler methods
+            // on the PageModel without instantiating the Page or ViewContext.
+            var hasPageModel = _actionDescriptor.HandlerTypeInfo != _actionDescriptor.PageTypeInfo;
+            if (hasPageModel)
             {
-                viewStarts = Array.Empty<IRazorPage>();
+                return ExecutePageWithPageModelAsync();
             }
             else
             {
-                viewStarts = new IRazorPage[CacheEntry.ViewStartFactories.Count];
-                for (var i = 0; i < viewStarts.Length; i++)
-                {
-                    var pageFactory = CacheEntry.ViewStartFactories[i];
-                    viewStarts[i] = pageFactory();
-                }
+                return ExecutePageWithoutPageModelAsync();
             }
-            _pageContext.ViewStarts = viewStarts;
+        }
 
-            if (actionDescriptor.ModelTypeInfo == actionDescriptor.PageTypeInfo)
-            {
-                _model = _page;
-            }
-            else
-            {
-                _model = CacheEntry.ModelFactory(_pageContext);
-            }
-
-            if (_model != null)
-            {
-                _pageContext.ViewData.Model = _model;
-            }
+        private async Task ExecutePageWithPageModelAsync()
+        {
+            // Since this is a PageModel, we need to activate it, and then run a handler method on the model.
+            //
+            // We also know that the model is the pagemodel at this point.
+            Debug.Assert(_actionDescriptor.ModelTypeInfo == _actionDescriptor.HandlerTypeInfo);
+            _model = CacheEntry.ModelFactory(_pageContext);
+            _pageContext.ViewData.Model = _model;
 
             if (CacheEntry.PropertyBinder != null)
             {
-                await CacheEntry.PropertyBinder(_page, _model);
+                await CacheEntry.PropertyBinder(_pageContext, _model);
             }
 
             // This is a workaround for not yet having proper filter for Pages.
@@ -359,44 +366,82 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             if (propertyFilter != null)
             {
-                object subject = _page;
-
-                if (_model != null)
-                {
-                    subject = _model;
-                }
-
-                propertyFilter.Subject = subject;
+                propertyFilter.Subject = _model;
                 propertyFilter.ApplyTempDataChanges(_pageContext.HttpContext);
             }
 
-            IActionResult result = null;
-
-            var handler = _selector.Select(_pageContext);
-            if (handler != null)
+            _result = await ExecuteHandlerMethod(_model);
+            if (_result is PageResult pageResult)
             {
-                var arguments = await GetArguments(handler);
+                // If we get here, we are going to render the page, so we need to create it and then initialize
+                // the context so we can run the result.
+                _viewContext = new ViewContext(
+                    _pageContext,
+                    NullView.Instance,
+                    _pageContext.ViewData,
+                    _tempDataFactory.GetTempData(_pageContext.HttpContext),
+                    TextWriter.Null,
+                    _htmlHelperOptions);
 
-                Func<object, object[], Task<IActionResult>> executor = null;
-                for (var i = 0; i < actionDescriptor.HandlerMethods.Count; i++)
+                _page = (Page)CacheEntry.PageFactory(_pageContext, _viewContext);
+
+                pageResult.Page = _page;
+                pageResult.ViewData = pageResult.ViewData ?? _pageContext.ViewData;
+            }
+
+            await _result.ExecuteResultAsync(_pageContext);
+        }
+
+        private async Task ExecutePageWithoutPageModelAsync()
+        {
+            // Since this is a Page without a PageModel, we need to create the Page before running a handler method.
+            _viewContext = new ViewContext(
+                _pageContext,
+                NullView.Instance,
+                _pageContext.ViewData,
+                _tempDataFactory.GetTempData(_pageContext.HttpContext),
+                TextWriter.Null,
+                _htmlHelperOptions);
+
+            _page = (Page)CacheEntry.PageFactory(_pageContext, _viewContext);
+
+            if (_actionDescriptor.ModelTypeInfo == _actionDescriptor.PageTypeInfo)
+            {
+                _model = _page;
+                _pageContext.ViewData.Model = _model;
+            }
+
+            if (CacheEntry.PropertyBinder != null)
+            {
+                await CacheEntry.PropertyBinder(_pageContext, _model);
+            }
+
+            // This is a workaround for not yet having proper filter for Pages.
+            PageSaveTempDataPropertyFilter propertyFilter = null;
+            for (var i = 0; i < _filters.Length; i++)
+            {
+                propertyFilter = _filters[i] as PageSaveTempDataPropertyFilter;
+                if (propertyFilter != null)
                 {
-                    if (object.ReferenceEquals(handler, actionDescriptor.HandlerMethods[i]))
-                    {
-                        executor = CacheEntry.Executors[i];
-                        break;
-                    }
+                    break;
                 }
-
-                var instance = actionDescriptor.ModelTypeInfo == actionDescriptor.HandlerTypeInfo ? _model : _page;
-                result = await executor(instance, arguments);
             }
 
-            if (result == null)
+            if (propertyFilter != null)
             {
-                result = new PageResult(_page);
+                propertyFilter.Subject = _model;
+                propertyFilter.ApplyTempDataChanges(_pageContext.HttpContext);
             }
 
-            await result.ExecuteResultAsync(_pageContext);
+            _result = await ExecuteHandlerMethod(_model);
+            if (_result is PageResult pageResult)
+            {
+                // If we get here we're going to render the page so we need to initialize the context.
+                pageResult.Page = _page;
+                pageResult.ViewData = pageResult.ViewData ?? _pageContext.ViewData;
+            }
+
+            await _result.ExecuteResultAsync(_pageContext);
         }
 
         private async Task<object[]> GetArguments(HandlerMethodDescriptor handler)
@@ -409,7 +454,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 var parameter = handler.Parameters[i];
 
                 var result = await _parameterBinder.BindModelAsync(
-                    _page.PageContext,
+                    _pageContext,
                     valueProvider,
                     parameter,
                     value: null);
@@ -429,6 +474,36 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             return arguments;
+        }
+
+        private async Task<IActionResult> ExecuteHandlerMethod(object instance)
+        {
+            IActionResult result = null;
+
+            var handler = _selector.Select(_pageContext);
+            if (handler != null)
+            {
+                var arguments = await GetArguments(handler);
+
+                Func<object, object[], Task<IActionResult>> executor = null;
+                for (var i = 0; i < _actionDescriptor.HandlerMethods.Count; i++)
+                {
+                    if (object.ReferenceEquals(handler, _actionDescriptor.HandlerMethods[i]))
+                    {
+                        executor = CacheEntry.Executors[i];
+                        break;
+                    }
+                }
+                
+                result = await executor(instance, arguments);
+            }
+
+            if (result == null)
+            {
+                result = new PageResult();
+            }
+
+            return result;
         }
 
         private async Task InvokeNextExceptionFilterAsync()

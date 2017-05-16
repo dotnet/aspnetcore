@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
@@ -164,7 +166,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var testProp = pageType.GetProperty(nameof(TestPageString.Test));
             var test2Prop = pageType.GetProperty(nameof(TestPageString.Test2));
 
-            provider.TempDataProperties = new List<TempDataProperty> {
+            provider.TempDataProperties = new List<TempDataProperty>
+            {
                 new TempDataProperty(testProp, testProp.GetValue, testProp.SetValue),
                 new TempDataProperty(test2Prop, test2Prop.GetValue, test2Prop.SetValue)
             };
@@ -177,15 +180,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Assert.Null(page.Test2);
         }
 
-        private static PageContext CreateViewContext(HttpContext httpContext, ITempDataDictionary tempData)
+        private static ViewContext CreateViewContext(HttpContext httpContext, ITempDataDictionary tempData)
         {
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var metadataProvider = new EmptyModelMetadataProvider();
             var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
-            var viewContext = new PageContext(
+            var viewContext = new ViewContext(
                 actionContext,
+                NullView.Instance,
                 viewData,
                 tempData,
+                TextWriter.Null,
                 new HtmlHelperOptions());
 
             return viewContext;

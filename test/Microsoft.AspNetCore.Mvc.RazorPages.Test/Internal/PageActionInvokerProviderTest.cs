@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Language;
@@ -38,8 +39,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 FilterDescriptors = new FilterDescriptor[0],
             };
 
-            Func<PageContext, object> factory = _ => null;
-            Action<PageContext, object> releaser = (_, __) => { };
+            Func<PageContext, ViewContext, object> factory = (a, b) => null;
+            Action<PageContext, ViewContext, object> releaser = (a, b, c) => { };
 
             var loader = new Mock<IPageLoader>();
             loader
@@ -78,6 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Same(releaser, entry.ReleasePage);
             Assert.Null(entry.ModelFactory);
             Assert.Null(entry.ReleaseModel);
+            Assert.NotNull(entry.ViewDataFactory);
         }
 
         [Fact]
@@ -90,8 +92,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 FilterDescriptors = new FilterDescriptor[0],
             };
 
-            Func<PageContext, object> factory = _ => null;
-            Action<PageContext, object> releaser = (_, __) => { };
+            Func<PageContext, ViewContext, object> factory = (a, b) => null;
+            Action<PageContext, ViewContext, object> releaser = (a, b, c) => { };
             Func<PageContext, object> modelFactory = _ => null;
             Action<PageContext, object> modelDisposer = (_, __) => { };
 
@@ -134,7 +136,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Assert
             Assert.NotNull(context.Result);
+
             var actionInvoker = Assert.IsType<PageActionInvoker>(context.Result);
+
             var entry = actionInvoker.CacheEntry;
             var compiledPageActionDescriptor = Assert.IsType<CompiledPageActionDescriptor>(entry.ActionDescriptor);
             Assert.Equal(descriptor.RelativePath, compiledPageActionDescriptor.RelativePath);
@@ -142,6 +146,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Same(releaser, entry.ReleasePage);
             Assert.Same(modelFactory, entry.ModelFactory);
             Assert.Same(modelDisposer, entry.ReleaseModel);
+            Assert.NotNull(entry.ViewDataFactory);
+
+            var pageContext = actionInvoker.PageContext;
+            Assert.Same(compiledPageActionDescriptor, pageContext.ActionDescriptor);
+            Assert.Same(context.ActionContext.HttpContext, pageContext.HttpContext);
+            Assert.Same(context.ActionContext.ModelState, pageContext.ModelState);
+            Assert.Same(context.ActionContext.RouteData, pageContext.RouteData);
+            Assert.Empty(pageContext.ValueProviderFactories);
+            Assert.NotNull(Assert.IsType<ViewDataDictionary<TestPageModel>>(pageContext.ViewData));
+            Assert.Empty(pageContext.ViewStartFactories);
         }
 
         [Fact]
@@ -476,16 +490,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             PageActionDescriptor descriptor,
             Type pageType = null)
         {
+            pageType = pageType ?? typeof(object);
+            var pageTypeInfo = pageType.GetTypeInfo();
+
             TypeInfo modelTypeInfo = null;
             if (pageType != null)
             {
-                modelTypeInfo = pageType.GetTypeInfo().GetProperty("Model")?.PropertyType.GetTypeInfo();
+                modelTypeInfo = pageTypeInfo.GetProperty("Model")?.PropertyType.GetTypeInfo();
             }
 
             return new CompiledPageActionDescriptor(descriptor)
             {
-                ModelTypeInfo = modelTypeInfo,
-                PageTypeInfo = (pageType ?? typeof(object)).GetTypeInfo()
+                HandlerTypeInfo = modelTypeInfo ?? pageTypeInfo,
+                ModelTypeInfo = modelTypeInfo ?? pageTypeInfo,
+                PageTypeInfo = pageTypeInfo,
             };
         }
 

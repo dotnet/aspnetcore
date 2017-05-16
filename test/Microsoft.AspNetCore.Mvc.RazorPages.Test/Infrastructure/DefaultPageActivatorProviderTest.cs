@@ -4,20 +4,21 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class DefaultPageActivatorTest
+    public class DefaultPageActivatorProviderTest
     {
         [Fact]
         public void CreateActivator_ThrowsIfPageTypeInfoIsNull()
         {
             // Arrange
             var descriptor = new CompiledPageActionDescriptor();
-            var activator = new DefaultPageActivator();
+            var activator = new DefaultPageActivatorProvider();
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
@@ -33,16 +34,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             // Arrange
             var pageContext = new PageContext();
+            var viewContext = new ViewContext();
             var descriptor = new CompiledPageActionDescriptor
             {
                 PageTypeInfo = type.GetTypeInfo(),
             };
 
-            var activator = new DefaultPageActivator();
+
+            var activator = new DefaultPageActivatorProvider();
 
             // Act
             var factory = activator.CreateActivator(descriptor);
-            var instance = factory(pageContext);
+            var instance = factory(pageContext, viewContext);
 
             // Assert
             Assert.NotNull(instance);
@@ -58,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 PageTypeInfo = typeof(PageWithoutParameterlessConstructor).GetTypeInfo(),
             };
             var pageContext = new PageContext();
-            var activator = new DefaultPageActivator();
+            var activator = new DefaultPageActivatorProvider();
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => activator.CreateActivator(descriptor));
@@ -71,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             // Arrange
             var context = new PageContext();
-            var activator = new DefaultPageActivator();
+            var activator = new DefaultPageActivatorProvider();
             var page = new TestPage();
 
             // Act
@@ -89,7 +92,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             // Arrange
             var context = new PageContext();
-            var activator = new DefaultPageActivator();
+            var viewContext = new ViewContext();
+            var activator = new DefaultPageActivatorProvider();
             var page = new DisposablePage();
 
             // Act & Assert
@@ -98,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 PageTypeInfo = page.GetType().GetTypeInfo()
             });
             Assert.NotNull(disposer);
-            disposer(context, page);
+            disposer(context, viewContext, page);
 
             // Assert
             Assert.True(page.Disposed);

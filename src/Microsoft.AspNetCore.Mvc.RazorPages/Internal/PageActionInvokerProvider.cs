@@ -16,10 +16,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -146,14 +146,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             PageActionInvokerCacheEntry cacheEntry,
             IFilterMetadata[] filters)
         {
-            var tempData = _tempDataFactory.GetTempData(actionContext.HttpContext);
-            var pageContext = new PageContext(
-                actionContext,
-                new ViewDataDictionary(_modelMetadataProvider, actionContext.ModelState),
-                tempData,
-                _htmlHelperOptions);
-
-            pageContext.ActionDescriptor = cacheEntry.ActionDescriptor;
+            var pageContext = new PageContext(actionContext)
+            {
+                ActionDescriptor = cacheEntry.ActionDescriptor,
+                ViewData = cacheEntry.ViewDataFactory(_modelMetadataProvider, actionContext.ModelState),
+                ViewStartFactories = cacheEntry.ViewStartFactories.ToList(),
+            };
 
             return new PageActionInvoker(
                 _selector,
@@ -163,7 +161,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 filters,
                 new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories),
                 cacheEntry,
-                _parameterBinder);
+                _parameterBinder,
+                _tempDataFactory,
+                _htmlHelperOptions);
         }
 
         private PageActionInvokerCacheEntry CreateCacheEntry(
@@ -172,6 +172,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             var actionDescriptor = (PageActionDescriptor)context.ActionContext.ActionDescriptor;
             var compiledActionDescriptor = _loader.Load(actionDescriptor);
+
+            var viewDataFactory = ViewDataDictionaryFactory.CreateFactory(compiledActionDescriptor.ModelTypeInfo);
 
             var pageFactory = _pageFactoryProvider.CreatePageFactory(compiledActionDescriptor);
             var pageDisposer = _pageFactoryProvider.CreatePageDisposer(compiledActionDescriptor);
@@ -194,6 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             return new PageActionInvokerCacheEntry(
                 compiledActionDescriptor,
+                viewDataFactory,
                 pageFactory,
                 pageDisposer,
                 modelFactory,

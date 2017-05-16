@@ -1406,15 +1406,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             var modelState = new ModelStateDictionary();
             var actionContext = new ActionContext(httpContext, new RouteData(), new PageActionDescriptor(), modelState);
             var modelMetadataProvider = new EmptyModelMetadataProvider();
-            var viewDataDictionary = new ViewDataDictionary(modelMetadataProvider, modelState);
-            var tempData = Mock.Of<ITempDataDictionary>();
-            var pageContext = new PageContext(actionContext, viewDataDictionary, tempData, new HtmlHelperOptions());
+            var viewData = new ViewDataDictionary(modelMetadataProvider, modelState);
+            var pageContext = new PageContext(actionContext)
+            {
+                ViewData = viewData,
+            };
 
             var page = new TestPage
             {
                 PageContext = pageContext,
             };
-            pageContext.Page = page;
 
             var pageModel = new TestPageModel
             {
@@ -1423,13 +1424,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
             // Act & Assert
             Assert.Same(pageContext, pageModel.PageContext);
-            Assert.Same(pageContext, pageModel.ViewContext);
             Assert.Same(httpContext, pageModel.HttpContext);
             Assert.Same(httpContext.Request, pageModel.Request);
             Assert.Same(httpContext.Response, pageModel.Response);
             Assert.Same(modelState, pageModel.ModelState);
-            Assert.Same(viewDataDictionary, pageModel.ViewData);
-            Assert.Same(tempData, pageModel.TempData);
+            Assert.Same(viewData, pageModel.ViewData);
         }
 
         [Fact]
@@ -1483,10 +1482,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             var page = new TestPage();
             var pageModel = new TestPageModel
             {
-                PageContext = new PageContext
-                {
-                    Page = page,
-                }
+                PageContext = new PageContext()
             };
 
             // Act
@@ -1494,7 +1490,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
             // Assert
             var pageResult = Assert.IsType<PageResult>(result);
-            Assert.Same(page, pageResult.Page);
+            Assert.Null(pageResult.Page); // This is set by the invoker
         }
 
         private class ContentPageModel : PageModel
