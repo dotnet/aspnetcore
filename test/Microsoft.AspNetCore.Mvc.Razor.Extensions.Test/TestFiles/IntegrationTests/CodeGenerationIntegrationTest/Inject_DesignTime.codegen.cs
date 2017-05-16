@@ -14,7 +14,7 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-MyApp __typeHelper = null;
+MyApp __typeHelper = default(MyApp);
         }
         ))();
         ((System.Action)(() => {

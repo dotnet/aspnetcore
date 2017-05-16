@@ -56,14 +56,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 {
                     case DirectiveTokenKind.Type:
 
-                        // {node.Content} __typeHelper = null;
+                        // {node.Content} __typeHelper = default({node.Content});
 
                         context.AddLineMappingFor(node);
                         context.Writer
                             .Write(node.Content)
                             .Write(" ")
                             .WriteStartAssignment(TypeHelper)
-                            .WriteLine("null;");
+                            .Write("default(")
+                            .Write(node.Content)
+                            .WriteLine(");");
                         break;
 
                     case DirectiveTokenKind.Member:

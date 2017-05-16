@@ -5,21 +5,21 @@ Generated Location: (630:16,0 [7] )
 
 Source Location: (24:1,8 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithModel.cshtml)
 |MyApp|
-Generated Location: (720:20,0 [5] )
+Generated Location: (732:20,0 [5] )
 |MyApp|
 
 Source Location: (30:1,14 [14] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithModel.cshtml)
 |MyPropertyName|
-Generated Location: (830:24,22 [14] )
+Generated Location: (852:24,22 [14] )
 |MyPropertyName|
 
 Source Location: (54:2,8 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithModel.cshtml)
 |MyService<TModel>|
-Generated Location: (914:28,0 [17] )
+Generated Location: (936:28,0 [17] )
 |MyService<TModel>|
 
 Source Location: (72:2,26 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithModel.cshtml)
 |Html|
-Generated Location: (1036:32,22 [4] )
+Generated Location: (1080:32,22 [4] )
 |Html|
 

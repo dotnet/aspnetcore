@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-foo.bar<baz<biz>>.boz __typeHelper = null;
+foo.bar<baz<biz>>.boz __typeHelper = default(foo.bar<baz<biz>>.boz);
         }
         ))();
         }

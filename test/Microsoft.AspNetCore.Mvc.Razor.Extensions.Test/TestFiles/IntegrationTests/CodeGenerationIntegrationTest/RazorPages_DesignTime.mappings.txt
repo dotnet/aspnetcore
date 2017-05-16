@@ -10,12 +10,12 @@ Generated Location: (777:21,0 [8] )
 
 Source Location: (40:3,14 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml)
 |"*, AppCode"|
-Generated Location: (905:25,37 [12] )
+Generated Location: (918:25,37 [12] )
 |"*, AppCode"|
 
 Source Location: (661:28,47 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml)
 |Model.Name|
-Generated Location: (1441:37,47 [10] )
+Generated Location: (1454:37,47 [10] )
 |Model.Name|
 
 Source Location: (112:6,12 [360] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml)
@@ -36,7 +36,7 @@ Source Location: (112:6,12 [360] TestFiles/IntegrationTests/CodeGenerationIntegr
         public string Name { get; set; }
     }
 |
-Generated Location: (1916:48,12 [360] )
+Generated Location: (1929:48,12 [360] )
 |
     public class NewModel : PageModel
     {

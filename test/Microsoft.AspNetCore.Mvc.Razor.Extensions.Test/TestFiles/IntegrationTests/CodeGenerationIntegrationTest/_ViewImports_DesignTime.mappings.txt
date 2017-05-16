@@ -5,6 +5,6 @@ Generated Location: (627:16,0 [19] )
 
 Source Location: (28:0,28 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/_ViewImports.cshtml)
 |Model|
-Generated Location: (751:20,22 [5] )
+Generated Location: (775:20,22 [5] )
 |Model|
 

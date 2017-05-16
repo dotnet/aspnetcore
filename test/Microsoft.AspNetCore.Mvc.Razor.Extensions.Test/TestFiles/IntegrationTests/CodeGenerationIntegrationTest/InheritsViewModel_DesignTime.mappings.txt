@@ -5,6 +5,6 @@ Generated Location: (602:16,0 [26] )
 
 Source Location: (45:1,7 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InheritsViewModel.cshtml)
 |MyModel|
-Generated Location: (711:20,0 [7] )
+Generated Location: (742:20,0 [7] )
 |MyModel|
 

@@ -5,6 +5,6 @@ Generated Location: (621:16,0 [5] )
 
 Source Location: (14:0,14 [14] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml)
 |MyPropertyName|
-Generated Location: (731:20,22 [14] )
+Generated Location: (741:20,22 [14] )
 |MyPropertyName|
 

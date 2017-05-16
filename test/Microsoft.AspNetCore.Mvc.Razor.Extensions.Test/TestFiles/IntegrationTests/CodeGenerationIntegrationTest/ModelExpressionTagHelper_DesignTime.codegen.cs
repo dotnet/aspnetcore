@@ -14,7 +14,7 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-DateTime __typeHelper = null;
+DateTime __typeHelper = default(DateTime);
         }
         ))();
         ((System.Action)(() => {

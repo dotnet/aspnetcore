@@ -65,7 +65,7 @@ private void __RazorDirectiveTokenHelpers__() {
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
 ((System.Action)(() => {
-System.String __typeHelper = null;
+System.String __typeHelper = default(System.String);
 }
 ))();
 }
