@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Server.IntegrationTesting.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(nameof(ShutdownTest));
 
-                var applicationPath = Path.Combine(TestProjectHelpers.GetSolutionRoot(), "test",
+                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test",
                     "Microsoft.AspNetCore.Hosting.TestSites");
 
                 var deploymentParameters = new DeploymentParameters(
