@@ -437,20 +437,32 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <SuppressFromVsix Include="Esent.Interop.dll" />
+    <SuppressFromVsix Include="Microsoft.CodeAnalysis.CSharp.EditorFeatures.dll" />
+    <SuppressFromVsix Include="Microsoft.CodeAnalysis.EditorFeatures.dll" />
+    <SuppressFromVsix Include="Microsoft.CodeAnalysis.EditorFeatures.Text.dll" />
+    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Elfie.dll" />
+    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Features.dll" />
+    <SuppressFromVsix Include="Microsoft.CodeAnalysis.VisualBasic.EditorFeatures.dll" />
     <SuppressFromVsix Include="System.AppContext.dll" />
     <SuppressFromVsix Include="System.Console.dll" />
     <SuppressFromVsix Include="System.Diagnostics.FileVersionInfo.dll" />
     <SuppressFromVsix Include="System.Diagnostics.StackTrace.dll" />
+    <SuppressFromVsix Include="System.IO.Compression.dll" />
     <SuppressFromVsix Include="System.IO.FileSystem.dll" />
     <SuppressFromVsix Include="System.IO.FileSystem.Primitives.dll" />
+    <SuppressFromVsix Include="System.Runtime.InteropServices.RuntimeInformation.dll" />
+    <SuppressFromVsix Include="System.Security.Cryptography.Algorithms.dll" />
     <SuppressFromVsix Include="System.Security.Cryptography.Encoding.dll" />
     <SuppressFromVsix Include="System.Security.Cryptography.Primitives.dll" />
     <SuppressFromVsix Include="System.Security.Cryptography.X509Certificates.dll" />
     <SuppressFromVsix Include="System.Text.Encoding.CodePages.dll" />
     <SuppressFromVsix Include="System.Threading.Thread.dll" />
+    <SuppressFromVsix Include="System.ValueTuple.dll" />
     <SuppressFromVsix Include="System.Xml.ReaderWriter.dll" />
     <SuppressFromVsix Include="System.Xml.XmlDocument.dll" />
     <SuppressFromVsix Include="System.Xml.XPath.dll" />
+    <SuppressFromVsix Include="System.Xml.XPath.XDocument.dll" />
   </ItemGroup>
   <!-- Workaround for https://github.com/dotnet/sdk/issues/433 -->
   <ItemGroup>
