@@ -169,10 +169,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     RazorExtensions.Register(b);
 
-                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperFeature());
-
+                    // Roslyn + TagHelpers infrastructure
                     var metadataReferenceFeature = s.GetRequiredService<LazyMetadataReferenceFeature>();
                     b.Features.Add(metadataReferenceFeature);
+                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature());
+
+                    // TagHelperDescriptorProviders (actually do tag helper discovery)
+                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider());
+                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.ViewComponentTagHelperDescriptorProvider());
                 });
             });
 
