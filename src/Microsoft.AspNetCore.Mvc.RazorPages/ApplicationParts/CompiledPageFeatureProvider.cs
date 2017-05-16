@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
@@ -30,24 +32,45 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         /// <inheritdoc />
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewsFeature feature)
         {
-            foreach (var item in GetCompiledPageInfo(parts))
+            foreach (var item in GetCompiledPageDescriptors(parts))
             {
-                feature.Views.Add(item.Path, item.CompiledType);
+                feature.ViewDescriptors.Add(item);
             }
         }
 
         /// <summary>
-        /// Gets the sequence of <see cref="CompiledPageInfo"/> from <paramref name="parts"/>.
+        /// Gets the sequence of <see cref="CompiledViewDescriptor"/> from <paramref name="parts"/>.
         /// </summary>
         /// <param name="parts">The <see cref="ApplicationPart"/>s</param>
-        /// <returns>The sequence of <see cref="CompiledPageInfo"/>.</returns>
-        public static IEnumerable<CompiledPageInfo> GetCompiledPageInfo(IEnumerable<ApplicationPart> parts)
+        /// <returns>The sequence of <see cref="CompiledViewDescriptor"/>.</returns>
+        public static IEnumerable<CompiledViewDescriptor> GetCompiledPageDescriptors(IEnumerable<ApplicationPart> parts)
         {
-            return parts.OfType<AssemblyPart>()
+            var manifests = parts.OfType<AssemblyPart>()
                 .Select(part => CompiledViewManfiest.GetManifestType(part, FullyQualifiedManifestTypeName))
                 .Where(type => type != null)
-                .Select(type => (CompiledPageManifest)Activator.CreateInstance(type))
-                .SelectMany(manifest => manifest.CompiledPages);
+                .Select(type => (CompiledPageManifest)Activator.CreateInstance(type));
+
+            foreach (var page in manifests.SelectMany(m => m.CompiledPages))
+            {
+                var normalizedPath = ViewPath.NormalizePath(page.Path);
+                var modelType = page.CompiledType.GetProperty("Model")?.PropertyType;
+
+                var pageAttribute = new RazorPageAttribute(
+                    normalizedPath,
+                    page.CompiledType,
+                    modelType,
+                    page.RoutePrefix);
+
+                var viewDescriptor = new CompiledViewDescriptor
+                {
+                    RelativePath = normalizedPath,
+                    ViewAttribute = pageAttribute,
+                    ExpirationTokens = Array.Empty<IChangeToken>(),
+                    IsPrecompiled = true,
+                };
+
+                yield return viewDescriptor;
+            }
         }
     }
 }

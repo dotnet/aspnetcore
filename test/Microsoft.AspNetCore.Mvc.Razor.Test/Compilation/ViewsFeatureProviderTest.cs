@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             applicationPartManager.PopulateFeature(feature);
 
             // Assert
-            Assert.Empty(feature.Views);
+            Assert.Empty(feature.ViewDescriptors);
         }
 
         [Fact]
@@ -52,21 +52,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             applicationPartManager.PopulateFeature(feature);
 
             // Assert
-            Assert.Collection(feature.Views.OrderBy(f => f.Key, StringComparer.Ordinal),
+            Assert.Collection(feature.ViewDescriptors.OrderBy(f => f.RelativePath, StringComparer.Ordinal),
                 view =>
                 {
-                    Assert.Equal("/Areas/Admin/Views/About.cshtml", view.Key);
-                    Assert.Equal(typeof(int), view.Value);
+                    Assert.Equal("/Areas/Admin/Views/About.cshtml", view.RelativePath);
+                    Assert.Equal(typeof(int), view.ViewAttribute.ViewType);
                 },
                 view =>
                 {
-                    Assert.Equal("/Areas/Admin/Views/Index.cshtml", view.Key);
-                    Assert.Equal(typeof(string), view.Value);
+                    Assert.Equal("/Areas/Admin/Views/Index.cshtml", view.RelativePath);
+                    Assert.Equal(typeof(string), view.ViewAttribute.ViewType);
                 },
                 view =>
                 {
-                    Assert.Equal("/Views/test/Index.cshtml", view.Key);
-                    Assert.Equal(typeof(object), view.Value);
+                    Assert.Equal("/Views/test/Index.cshtml", view.RelativePath);
+                    Assert.Equal(typeof(object), view.ViewAttribute.ViewType);
                 });
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             applicationPartManager.PopulateFeature(feature);
 
             // Assert
-            Assert.Empty(feature.Views);
+            Assert.Empty(feature.ViewDescriptors);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             applicationPartManager.PopulateFeature(feature);
 
             // Assert
-            Assert.Empty(feature.Views);
+            Assert.Empty(feature.ViewDescriptors);
         }
 
         private class TestableViewsFeatureProvider : ViewsFeatureProvider

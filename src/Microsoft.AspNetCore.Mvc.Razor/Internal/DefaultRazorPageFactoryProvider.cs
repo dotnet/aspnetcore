@@ -4,6 +4,7 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
@@ -13,16 +14,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class DefaultRazorPageFactoryProvider : IRazorPageFactoryProvider
     {
-        private readonly RazorCompiler _compiler;
+        private readonly IViewCompilerProvider _viewCompilerProvider;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultRazorPageFactoryProvider"/>.
         /// </summary>
-        /// <param name="compiler">The <see cref="RazorCompiler"/>.</param>
-        public DefaultRazorPageFactoryProvider(RazorCompiler compiler)
+        /// <param name="viewCompilerProvider">The <see cref="IViewCompilerProvider"/>.</param>
+        public DefaultRazorPageFactoryProvider(IViewCompilerProvider viewCompilerProvider)
         {
-            _compiler = compiler;
+            _viewCompilerProvider = viewCompilerProvider;
         }
+
+        private IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
 
         /// <inheritdoc />
         public RazorPageFactoryResult CreateFactory(string relativePath)
@@ -38,26 +41,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 relativePath = relativePath.Substring(1);
             }
 
-            var result = _compiler.Compile(relativePath);
-            if (result.Success)
+            var compileTask = Compiler.CompileAsync(relativePath);
+            var viewDescriptor = compileTask.GetAwaiter().GetResult();
+            if (viewDescriptor.ViewAttribute != null)
             {
-                var compiledType = result.CompiledType;
+                var compiledType = viewDescriptor.ViewAttribute.ViewType;
 
                 var newExpression = Expression.New(compiledType);
                 var pathProperty = compiledType.GetTypeInfo().GetProperty(nameof(IRazorPage.Path));
 
                 // Generate: page.Path = relativePath;
                 // Use the normalized path specified from the result.
-                var propertyBindExpression = Expression.Bind(pathProperty, Expression.Constant(result.RelativePath));
+                var propertyBindExpression = Expression.Bind(pathProperty, Expression.Constant(viewDescriptor.RelativePath));
                 var objectInitializeExpression = Expression.MemberInit(newExpression, propertyBindExpression);
                 var pageFactory = Expression
                     .Lambda<Func<IRazorPage>>(objectInitializeExpression)
                     .Compile();
-                return new RazorPageFactoryResult(pageFactory, result.ExpirationTokens, result.IsPrecompiled);
+                return new RazorPageFactoryResult(pageFactory, viewDescriptor.ExpirationTokens, viewDescriptor.IsPrecompiled);
             }
             else
             {
-                return new RazorPageFactoryResult(result.ExpirationTokens);
+                return new RazorPageFactoryResult(viewDescriptor.ExpirationTokens);
             }
         }
     }

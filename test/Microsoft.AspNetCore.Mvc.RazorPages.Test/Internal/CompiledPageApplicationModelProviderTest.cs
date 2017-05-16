@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -15,12 +17,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_AddsModelsForCompiledViews()
         {
             // Arrange
-            var info = new[]
+            var descriptors = new[]
             {
-                new CompiledPageInfo("/Pages/About.cshtml", typeof(object), routePrefix: string.Empty),
-                new CompiledPageInfo("/Pages/Home.cshtml", typeof(object), "some-prefix"),
+                GetDescriptor("/Pages/About.cshtml"),
+                GetDescriptor("/Pages/Home.cshtml", "some-prefix"),
             };
-            var provider = new TestCompiledPageApplicationModelProvider(info, new RazorPagesOptions());
+            var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
             var context = new PageApplicationModelProviderContext();
 
             // Act
@@ -48,12 +50,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_AddsMultipleSelectorsForIndexPage_WithIndexAtRoot()
         {
             // Arrange
-            var info = new[]
+            var descriptors = new[]
             {
-                new CompiledPageInfo("/Pages/Index.cshtml", typeof(object), routePrefix: string.Empty),
-                new CompiledPageInfo("/Pages/Admin/Index.cshtml", typeof(object), "some-template"),
+                GetDescriptor("/Pages/Index.cshtml"),
+                GetDescriptor("/Pages/Admin/Index.cshtml", "some-template"),
             };
-            var provider = new TestCompiledPageApplicationModelProvider(info, new RazorPagesOptions { RootDirectory = "/" });
+            var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions { RootDirectory = "/" });
             var context = new PageApplicationModelProviderContext();
 
             // Act
@@ -83,12 +85,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_AddsMultipleSelectorsForIndexPage()
         {
             // Arrange
-            var info = new[]
+            var descriptors = new[]
             {
-                new CompiledPageInfo("/Pages/Index.cshtml", typeof(object), routePrefix: string.Empty),
-                new CompiledPageInfo("/Pages/Admin/Index.cshtml", typeof(object), "some-template"),
+                GetDescriptor("/Pages/Index.cshtml"),
+                GetDescriptor("/Pages/Admin/Index.cshtml", "some-template"),
             };
-            var provider = new TestCompiledPageApplicationModelProvider(info, new RazorPagesOptions());
+            var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
             var context = new PageApplicationModelProviderContext();
 
             // Act
@@ -118,12 +120,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_ThrowsIfRouteTemplateHasOverridePattern()
         {
             // Arrange
-            var info = new[]
+            var descriptors = new[]
             {
-                new CompiledPageInfo("/Pages/Index.cshtml", typeof(object), routePrefix: string.Empty),
-                new CompiledPageInfo("/Pages/Home.cshtml", typeof(object), "/some-prefix"),
+                GetDescriptor("/Pages/Index.cshtml"),
+                GetDescriptor("/Pages/Home.cshtml", "/some-prefix"),
             };
-            var provider = new TestCompiledPageApplicationModelProvider(info, new RazorPagesOptions());
+            var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
             var context = new PageApplicationModelProviderContext();
 
             // Act & Assert
@@ -132,17 +134,27 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 ex.Message);
         }
 
+        private static CompiledViewDescriptor GetDescriptor(string path, string prefix = "")
+        {
+            return new CompiledViewDescriptor
+            {
+                RelativePath = path,
+                ViewAttribute = new RazorPageAttribute(path, typeof(object), typeof(object), prefix),
+            };
+        }
+
         public class TestCompiledPageApplicationModelProvider : CompiledPageApplicationModelProvider
         {
-            private readonly IEnumerable<CompiledPageInfo> _info;
+            private readonly IEnumerable<CompiledViewDescriptor> _info;
 
-            public TestCompiledPageApplicationModelProvider(IEnumerable<CompiledPageInfo> info, RazorPagesOptions options)
+            public TestCompiledPageApplicationModelProvider(IEnumerable<CompiledViewDescriptor> info, RazorPagesOptions options)
                 : base(new ApplicationPartManager(), new TestOptionsManager<RazorPagesOptions>(options))
             {
                 _info = info;
             }
 
-            protected override IEnumerable<CompiledPageInfo> GetCompiledPages() => _info;
+
+            protected override IEnumerable<CompiledViewDescriptor> GetCompiledPageDescriptors() => _info;
         }
     }
 }

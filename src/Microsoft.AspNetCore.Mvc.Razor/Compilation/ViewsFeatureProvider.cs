@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
@@ -40,7 +42,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 
                 foreach (var item in viewContainer.ViewInfos)
                 {
-                    feature.Views[item.Path] = item.Type;
+                    var relativePath = ViewPath.NormalizePath(item.Path);
+                    var viewDescriptor = new CompiledViewDescriptor
+                    {
+                        ExpirationTokens = Array.Empty<IChangeToken>(),
+                        RelativePath = relativePath,
+                        ViewAttribute = new RazorViewAttribute(relativePath, item.Type),
+                        IsPrecompiled = true,
+                    };
+
+                    feature.ViewDescriptors.Add(viewDescriptor);
                 }
             }
         }

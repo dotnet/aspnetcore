@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -56,17 +58,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 }
 
                 var cachedApplicationModels = new List<PageApplicationModel>();
-                var pages = GetCompiledPages();
-                foreach (var page in pages)
+                foreach (var pageDescriptor in GetCompiledPageDescriptors())
                 {
-                    if (!page.Path.StartsWith(rootDirectory))
+                    var pageAttribute = (RazorPageAttribute)pageDescriptor.ViewAttribute;
+
+                    if (!pageDescriptor.RelativePath.StartsWith(rootDirectory))
                     {
                         continue;
                     }
 
-                    var viewEnginePath = GetViewEnginePath(rootDirectory, page.Path);
-                    var model = new PageApplicationModel(page.Path, viewEnginePath);
-                    PageSelectorModel.PopulateDefaults(model, page.RoutePrefix);
+                    var viewEnginePath = GetViewEnginePath(rootDirectory, pageDescriptor.RelativePath);
+                    var model = new PageApplicationModel(pageDescriptor.RelativePath, viewEnginePath);
+                    PageSelectorModel.PopulateDefaults(model, pageAttribute.RouteTemplate);
 
                     cachedApplicationModels.Add(model);
                 }
@@ -75,8 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
         }
 
-        protected virtual IEnumerable<CompiledPageInfo> GetCompiledPages()
-            => CompiledPageFeatureProvider.GetCompiledPageInfo(_applicationManager.ApplicationParts);
+        protected virtual IEnumerable<CompiledViewDescriptor> GetCompiledPageDescriptors()
+            => CompiledPageFeatureProvider.GetCompiledPageDescriptors(_applicationManager.ApplicationParts);
 
         private string GetViewEnginePath(string rootDirectory, string path)
         {

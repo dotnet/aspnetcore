@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Xunit;
 
@@ -30,7 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             };
 
             // Act
-            var actual = DefaultPageLoader.CreateDescriptor(expected, typeof(EmptyPage).GetTypeInfo());
+            var actual = DefaultPageLoader.CreateDescriptor(expected,
+                new RazorPageAttribute(expected.RelativePath, typeof(EmptyPage), null, ""));
 
             // Assert
             Assert.Same(expected.ActionConstraints, actual.ActionConstraints);
@@ -47,10 +49,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void CreateDescriptor_EmptyPage()
         {
             // Arrange
-            var type = typeof(EmptyPage).GetTypeInfo();
+            var type = typeof(EmptyPage);
 
             // Act
-            var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(), type);
+            var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(),
+                new RazorPageAttribute("/Pages/Index", type, type, ""));
 
             // Assert
             Assert.Empty(result.BoundProperties);
@@ -65,10 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void CreateDescriptor_EmptyPageModel()
         {
             // Arrange
-            var type = typeof(EmptyPageWithPageModel).GetTypeInfo();
+            var type = typeof(EmptyPageWithPageModel);
 
             // Act
-            var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(), type);
+            var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(),
+                new RazorPageAttribute("/Pages/Index", type, typeof(EmptyPageModel), ""));
 
             // Assert
             Assert.Empty(result.BoundProperties);
@@ -130,10 +134,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void CreateDescriptor_FindsHandlerMethod_OnModel()
         {
             // Arrange
-            var type = typeof(PageWithHandlerThatGetsIgnored).GetTypeInfo();
+            var type = typeof(PageWithHandlerThatGetsIgnored);
 
             // Act
-            var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(), type);
+            var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(),
+                new RazorPageAttribute("/Pages/Index", type, typeof(ModelWithHandler), ""));
 
             // Assert
             Assert.Collection(result.BoundProperties, p => Assert.Equal("BindMe", p.Name));
@@ -166,10 +171,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void CreateDescriptor_FindsHandlerMethodOnPage_WhenModelHasNoHandlers()
         {
             // Arrange
-            var type = typeof(PageWithHandler).GetTypeInfo();
+            var type = typeof(PageWithHandler);
 
             // Act
-            var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(), type);
+            var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(),
+                new RazorPageAttribute("/Pages/Index", type, typeof(PocoModel), ""));
 
             // Assert
             Assert.Collection(result.BoundProperties, p => Assert.Equal("BindMe", p.Name));
@@ -581,7 +587,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             public int IgnoreMe { get; set; }
         }
-        
+
         [Fact]
         public void CreateBoundProperties_SupportsGet_OnClass()
         {

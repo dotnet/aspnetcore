@@ -4,8 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -24,12 +22,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 Mock.Of<IChangeToken>(),
                 Mock.Of<IChangeToken>(),
             };
-            var compilerCache = new Mock<ICompilerCache>();
+            var descriptor = new CompiledViewDescriptor
+            {
+                RelativePath = path,
+                ExpirationTokens = expirationTokens,
+            };
+            var compilerCache = new Mock<IViewCompiler>();
             compilerCache
-                .Setup(f => f.GetOrAdd(It.IsAny<string>(), It.IsAny<Func<string, CompilerCacheContext>>()))
-                .Returns(new CompilerCacheResult(path, expirationTokens));
+                .Setup(f => f.CompileAsync(It.IsAny<string>()))
+                .ReturnsAsync(descriptor);
 
-            var factoryProvider = new DefaultRazorPageFactoryProvider(CreateCompiler(compilerCache.Object));
+            var factoryProvider = new DefaultRazorPageFactoryProvider(GetCompilerProvider(compilerCache.Object));
 
             // Act
             var result = factoryProvider.CreateFactory(path);
@@ -49,19 +52,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 Mock.Of<IChangeToken>(),
                 Mock.Of<IChangeToken>(),
             };
-            var compilerCache = new Mock<ICompilerCache>();
+            var descriptor = new CompiledViewDescriptor
+            {
+                RelativePath = relativePath,
+                ViewAttribute = new RazorViewAttribute(relativePath, typeof(TestRazorPage)),
+                ExpirationTokens = expirationTokens,
+            };
+            var compilerCache = new Mock<IViewCompiler>();
             compilerCache
-                .Setup(f => f.GetOrAdd(It.IsAny<string>(), It.IsAny<Func<string, CompilerCacheContext>>()))
-                .Returns(new CompilerCacheResult(relativePath, new CompilationResult(typeof(TestRazorPage)), expirationTokens));
+                .Setup(f => f.CompileAsync(It.IsAny<string>()))
+                .ReturnsAsync(descriptor);
 
-            var factoryProvider = new DefaultRazorPageFactoryProvider(CreateCompiler(compilerCache.Object));
+            var factoryProvider = new DefaultRazorPageFactoryProvider(GetCompilerProvider(compilerCache.Object));
 
             // Act
             var result = factoryProvider.CreateFactory(relativePath);
 
             // Assert
             Assert.True(result.Success);
-            Assert.Equal(expirationTokens, result.ExpirationTokens);
+            Assert.Equal(expirationTokens, descriptor.ExpirationTokens);
         }
 
         [Fact]
@@ -69,12 +78,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var relativePath = "/file-exists";
-            var compilerCache = new Mock<ICompilerCache>();
-            compilerCache
-                .Setup(f => f.GetOrAdd(It.IsAny<string>(), It.IsAny<Func<string, CompilerCacheContext>>()))
-                .Returns(new CompilerCacheResult(relativePath, new CompilationResult(typeof(TestRazorPage)), new IChangeToken[0]));
-            
-            var factoryProvider = new DefaultRazorPageFactoryProvider(CreateCompiler(compilerCache.Object));
+            var descriptor = new CompiledViewDescriptor
+            {
+                RelativePath = relativePath,
+                ViewAttribute = new RazorViewAttribute(relativePath, typeof(TestRazorPage)),
+                ExpirationTokens = Array.Empty<IChangeToken>(),
+            };
+            var viewCompiler = new Mock<IViewCompiler>();
+            viewCompiler
+                .Setup(f => f.CompileAsync(It.IsAny<string>()))
+                .ReturnsAsync(descriptor);
+
+            var factoryProvider = new DefaultRazorPageFactoryProvider(GetCompilerProvider(viewCompiler.Object));
 
             // Act
             var result = factoryProvider.CreateFactory(relativePath);
@@ -85,17 +100,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             Assert.Equal("/file-exists", actual.Path);
         }
 
-        private RazorCompiler CreateCompiler(ICompilerCache cache)
+        private IViewCompilerProvider GetCompilerProvider(IViewCompiler cache)
         {
-            var compilerCacheProvider = new Mock<ICompilerCacheProvider>();
+            var compilerCacheProvider = new Mock<IViewCompilerProvider>();
             compilerCacheProvider
-                .SetupGet(c => c.Cache)
+                .Setup(c => c.GetCompiler())
                 .Returns(cache);
 
-            return new RazorCompiler(
-                Mock.Of<ICompilationService>(),
-                compilerCacheProvider.Object,
-                new MvcRazorTemplateEngine(RazorEngine.Create(), new FileProviderRazorProject(new TestFileProvider())));
+            return compilerCacheProvider.Object;
         }
 
         private class TestRazorPage : RazorPage

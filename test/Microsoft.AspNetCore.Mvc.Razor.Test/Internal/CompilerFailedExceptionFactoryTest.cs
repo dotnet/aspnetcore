@@ -3,15 +3,15 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
-using Moq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
-    public class RazorCompilerTest
+    public class CompilerFailedExceptionFactoryTest
     {
         [Fact]
         public void GetCompilationFailedResult_ReadsRazorErrorsFromPage()
@@ -24,15 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorProject = new FileProviderRazorProject(fileProvider);
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
-            var compiler = new RazorCompiler(
-                Mock.Of<ICompilationService>(),
-                GetCompilerCacheProvider(fileProvider),
-                templateEngine);
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
             // Act
             var csharpDocument = templateEngine.GenerateCode(codeDocument);
-            var compilationResult = compiler.GetCompilationFailedResult(codeDocument, csharpDocument.Diagnostics);
+            var compilationResult = CompilationFailedExceptionFactory.Create(codeDocument, csharpDocument.Diagnostics);
 
             // Assert
             var failure = Assert.Single(compilationResult.CompilationFailures);
@@ -59,15 +55,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorProject = new FileProviderRazorProject(fileProvider);
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
-            var compiler = new RazorCompiler(
-                Mock.Of<ICompilationService>(),
-                GetCompilerCacheProvider(fileProvider),
-                templateEngine);
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
             // Act
             var csharpDocument = templateEngine.GenerateCode(codeDocument);
-            var compilationResult = compiler.GetCompilationFailedResult(codeDocument, csharpDocument.Diagnostics);
+            var compilationResult = CompilationFailedExceptionFactory.Create(codeDocument, csharpDocument.Diagnostics);
 
             // Assert
             var failure = Assert.Single(compilationResult.CompilationFailures);
@@ -93,15 +85,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorProject = new FileProviderRazorProject(fileProvider);
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
-            var compiler = new RazorCompiler(
-                Mock.Of<ICompilationService>(),
-                GetCompilerCacheProvider(fileProvider),
-                templateEngine);
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
             // Act
             var csharpDocument = templateEngine.GenerateCode(codeDocument);
-            var compilationResult = compiler.GetCompilationFailedResult(codeDocument, csharpDocument.Diagnostics);
+            var compilationResult = CompilationFailedExceptionFactory.Create(codeDocument, csharpDocument.Diagnostics);
 
             // Assert
             var failure = Assert.Single(compilationResult.CompilationFailures);
@@ -131,15 +119,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     ImportsFileName = "_MyImports.cshtml",
                 }
             };
-            var compiler = new RazorCompiler(
-                Mock.Of<ICompilationService>(),
-                GetCompilerCacheProvider(fileProvider),
-                templateEngine);
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
             // Act
             var csharpDocument = templateEngine.GenerateCode(codeDocument);
-            var compilationResult = compiler.GetCompilationFailedResult(codeDocument, csharpDocument.Diagnostics);
+            var compilationResult = CompilationFailedExceptionFactory.Create(codeDocument, csharpDocument.Diagnostics);
 
             // Assert
             Assert.Collection(
@@ -183,13 +167,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 GetRazorDiagnostic("message-4", new SourceLocation(viewImportsPath, 1, 3, 8), length: 4),
             };
             var fileProvider = new TestFileProvider();
-            var compiler = new RazorCompiler(
-                Mock.Of<ICompilationService>(),
-                GetCompilerCacheProvider(fileProvider),
-                new MvcRazorTemplateEngine(RazorEngine.Create(), new FileProviderRazorProject(fileProvider)));
 
             // Act
-            var result = compiler.GetCompilationFailedResult(codeDocument, diagnostics);
+            var result = CompilationFailedExceptionFactory.Create(codeDocument, diagnostics);
 
             // Assert
             Assert.Collection(result.CompilationFailures,
@@ -243,13 +223,85 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             });
         }
 
-        private ICompilerCacheProvider GetCompilerCacheProvider(TestFileProvider fileProvider)
+        [Fact]
+        public void GetCompilationFailedResult_ReturnsCompilationResult_WithGroupedMessages()
         {
-            var compilerCache = new CompilerCache(fileProvider);
-            var compilerCacheProvider = new Mock<ICompilerCacheProvider>();
-            compilerCacheProvider.SetupGet(p => p.Cache).Returns(compilerCache);
+            // Arrange
+            var viewPath = "Views/Home/Index";
+            var generatedCodeFileName = "Generated Code";
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("view-content", viewPath));
+            var assemblyName = "random-assembly-name";
 
-            return compilerCacheProvider.Object;
+            var diagnostics = new[]
+            {
+                Diagnostic.Create(
+                    GetRoslynDiagnostic("message-1"),
+                    Location.Create(
+                        viewPath,
+                        new TextSpan(10, 5),
+                        new LinePositionSpan(new LinePosition(10, 1), new LinePosition(10, 2)))),
+                Diagnostic.Create(
+                    GetRoslynDiagnostic("message-2"),
+                    Location.Create(
+                        assemblyName,
+                        new TextSpan(1, 6),
+                        new LinePositionSpan(new LinePosition(1, 2), new LinePosition(3, 4)))),
+                Diagnostic.Create(
+                    GetRoslynDiagnostic("message-3"),
+                    Location.Create(
+                        viewPath,
+                        new TextSpan(40, 50),
+                        new LinePositionSpan(new LinePosition(30, 5), new LinePosition(40, 12)))),
+            };
+
+            // Act
+            var compilationResult = CompilationFailedExceptionFactory.Create(
+                codeDocument,
+                "compilation-content",
+                assemblyName,
+                diagnostics);
+
+            // Assert
+            Assert.Collection(compilationResult.CompilationFailures,
+                failure =>
+                {
+                    Assert.Equal(viewPath, failure.SourceFilePath);
+                    Assert.Equal("view-content", failure.SourceFileContent);
+                    Assert.Collection(failure.Messages,
+                        message =>
+                        {
+                            Assert.Equal("message-1", message.Message);
+                            Assert.Equal(viewPath, message.SourceFilePath);
+                            Assert.Equal(11, message.StartLine);
+                            Assert.Equal(2, message.StartColumn);
+                            Assert.Equal(11, message.EndLine);
+                            Assert.Equal(3, message.EndColumn);
+                        },
+                        message =>
+                        {
+                            Assert.Equal("message-3", message.Message);
+                            Assert.Equal(viewPath, message.SourceFilePath);
+                            Assert.Equal(31, message.StartLine);
+                            Assert.Equal(6, message.StartColumn);
+                            Assert.Equal(41, message.EndLine);
+                            Assert.Equal(13, message.EndColumn);
+                        });
+                },
+                failure =>
+                {
+                    Assert.Equal(generatedCodeFileName, failure.SourceFilePath);
+                    Assert.Equal("compilation-content", failure.SourceFileContent);
+                    Assert.Collection(failure.Messages,
+                        message =>
+                        {
+                            Assert.Equal("message-2", message.Message);
+                            Assert.Equal(assemblyName, message.SourceFilePath);
+                            Assert.Equal(2, message.StartLine);
+                            Assert.Equal(3, message.StartColumn);
+                            Assert.Equal(4, message.EndLine);
+                            Assert.Equal(5, message.EndColumn);
+                        });
+                });
         }
 
         private static RazorSourceDocument Create(string path, string template)
@@ -264,6 +316,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var sourceSpan = new SourceSpan(sourceLocation, length);
 
             return RazorDiagnostic.Create(diagnosticDescriptor, sourceSpan);
+        }
+
+        private static DiagnosticDescriptor GetRoslynDiagnostic(string messageFormat)
+        {
+            return new DiagnosticDescriptor(
+                id: "someid",
+                title: "sometitle",
+                messageFormat: messageFormat,
+                category: "some-category",
+                defaultSeverity: DiagnosticSeverity.Error,
+                isEnabledByDefault: true);
         }
     }
 }

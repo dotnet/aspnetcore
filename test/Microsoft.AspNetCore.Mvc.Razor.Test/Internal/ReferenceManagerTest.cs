@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
@@ -31,7 +29,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
             var expectedReferenceDisplays = partReferences
                 .Concat(new[] { objectAssemblyMetadataReference })
                 .Select(r => r.Display);
-            var referenceManager = new RazorReferenceManager(applicationPartManager, GetAccessor(options));
+            var referenceManager = new RazorReferenceManager(
+                applicationPartManager,
+                new TestOptionsManager<RazorViewEngineOptions>(options));
 
             // Act
             var references = referenceManager.CompilationReferences;
@@ -44,18 +44,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
         private static ApplicationPartManager GetApplicationPartManager()
         {
             var applicationPartManager = new ApplicationPartManager();
-            var assembly = typeof(DefaultRoslynCompilationServiceTest).GetTypeInfo().Assembly;
+            var assembly = typeof(ReferenceManagerTest).GetTypeInfo().Assembly;
             applicationPartManager.ApplicationParts.Add(new AssemblyPart(assembly));
             applicationPartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
 
             return applicationPartManager;
-        }
-
-        private static IOptions<RazorViewEngineOptions> GetAccessor(RazorViewEngineOptions options)
-        {
-            var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
-            optionsAccessor.SetupGet(a => a.Value).Returns(options);
-            return optionsAccessor.Object;
         }
     }
 }
