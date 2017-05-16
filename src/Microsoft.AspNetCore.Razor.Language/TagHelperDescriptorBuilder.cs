@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public sealed class TagHelperDescriptorBuilder
     {
-        public static readonly string DescriptorKind = "ITagHelper";
-        public static readonly string TypeNameKey = "ITagHelper.TypeName";
+        internal const string DescriptorKind = "ITagHelper";
+        internal const string TypeNameKey = "ITagHelper.TypeName";
 
         private static ICollection<char> InvalidNonWhitespaceAllowedChildCharacters { get; } = new HashSet<char>(
             new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });

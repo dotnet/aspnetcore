@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 GenerateVCTHClass(visitor.Class, tagHelper.Value);
 
-                var tagHelperTypeName = tagHelper.Value.Metadata[TagHelperDescriptorBuilder.TypeNameKey];
+                var tagHelperTypeName = tagHelper.Value.GetTypeName();
                 if (visitor.Fields.UsedTagHelperTypeNames.Remove(tagHelperTypeName))
                 {
                     visitor.Fields.UsedTagHelperTypeNames.Add(GetVCTHFullName(visitor.Namespace, visitor.Class, tagHelper.Value));
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             foreach (var attribute in descriptor.BoundAttributes)
             {
                 writer.WriteAutoPropertyDeclaration(
-                    "public", attribute.TypeName, attribute.Metadata[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]);
+                    "public", attribute.TypeName, attribute.GetPropertyName());
 
                 if (attribute.IndexerTypeName != null)
                 {
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         private string[] GetMethodParameters(TagHelperDescriptor descriptor)
         {
             var propertyNames = descriptor.BoundAttributes.Select(
-                attribute => attribute.Metadata[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]);
+                attribute => attribute.GetPropertyName());
             var joinedPropertyNames = string.Join(", ", propertyNames);
             var parametersString = $"new {{ { joinedPropertyNames } }}";
 

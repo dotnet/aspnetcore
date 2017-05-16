@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
             var tagHelperRenderingContext = context.TagHelperRenderingContext;
-            var propertyName = node.Descriptor.Metadata[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey];
+            var propertyName = node.Descriptor.GetPropertyName();
 
             // Ensure that the property we're trying to set has initialized its dictionary bound properties.
             if (node.IsIndexerNameMatch &&
@@ -453,7 +453,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             string attributeName,
             BoundAttributeDescriptor descriptor)
         {
-            var propertyAccessor = $"{tagHelperVariableName}.{descriptor.Metadata[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]}";
+            var propertyAccessor = $"{tagHelperVariableName}.{descriptor.GetPropertyName()}";
 
             if (isIndexerNameMatch)
             {

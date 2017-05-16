@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public sealed class TagHelperBoundAttributeDescriptorBuilder
     {
-        public static readonly string DescriptorKind = "ITagHelper";
-        public static readonly string PropertyNameKey = "ITagHelper.PropertyName";
+        internal const string DescriptorKind = "ITagHelper";
+        internal const string PropertyNameKey = "ITagHelper.PropertyName";
 
         private static readonly IReadOnlyDictionary<string, string> PrimitiveDisplayTypeNameLookups = new Dictionary<string, string>(StringComparer.Ordinal)
         {
