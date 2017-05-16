@@ -37,29 +37,42 @@ namespace AspNetCoreModule.Test
             get
             {
                 bool result = true;
-                if (_environmentVariableName == "RunAsAdministratorAndX64Bitness")
+                if (_environmentVariableName == "%ANCMTestFlags%")
                 {
-                    try
+                    var envValue = Environment.ExpandEnvironmentVariables(_environmentVariableName);
+                    if (envValue == "")
                     {
-                        if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
-                        {
-                            throw new System.InvalidOperationException("this should be started with x64 process mode on 64 bit machine");
-                        }
-
-                        bool isElevated;
-                        WindowsIdentity identity = WindowsIdentity.GetCurrent();
-                        WindowsPrincipal principal = new WindowsPrincipal(identity);
-                        isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
-                        if (!isElevated)
-                        {
-                            throw new System.ApplicationException("this should be started as an administrator");
-                        }
+                        envValue = "AdminAnd64Bit";
                     }
-                    catch (Exception ex)
+                    switch (envValue)
                     {
-                        AdditionalInfo = ex.Message;
+                        case "AdminAnd64Bit":
+                            try
+                            {
+                                if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
+                                {
+                                    throw new System.InvalidOperationException("this should be started with x64 process mode on 64 bit machine");
+                                }
 
-                        result = false;
+                                bool isElevated;
+                                WindowsIdentity identity = WindowsIdentity.GetCurrent();
+                                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                                isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
+                                if (!isElevated)
+                                {
+                                    throw new System.ApplicationException("this should be started as an administrator");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                AdditionalInfo = ex.Message;
+
+                                result = false;
+                            }
+                            break;
+                        case "SkipTest":
+                            result = false;
+                            break;
                     }
                 }
                 return result;
