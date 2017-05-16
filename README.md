@@ -88,12 +88,13 @@ The [`samples` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/
 
 ## Contributing
 
-If you're interested in contributing to the various packages, samples, and project templates in this repo, that's great! You can run the code in this repo just by:
+If you're interested in contributing to the various packages, samples, and project templates in this repo, that's great! You can run the code in this repo as follows:
 
- * Cloning the repo
- * Running `dotnet restore` at the repo root dir
- * Going to whatever sample or template you want to run (for example, `cd templates/Angular2Spa`)
- * Restoring NPM dependencies (run `npm install`)
- * Launching it (`dotnet run`)
+ * Clone the repo
+ * Run `dotnet restore` at the repo root dir
+ * Go to whatever sample or template you want to run (for example, `cd templates/Angular2Spa`)
+ * Restore NPM dependencies (run `npm install`)
+ * If the sample/template you're trying to run has a file called `webpack.config.vendor.js` at its root, run `webpack --config webpack.config.vendor.js`. It it has a file called `webpack.config.js`, run `webpack` (no args). You might need to install webpack first, by running `npm install -g webpack`.
+ * Launch it (`dotnet run`)
 
 If you're planning to submit a pull request, and if it's more than a trivial fix (for example, for a typo), it's usually a good idea first to file an issue describing what you're proposing to do and how it will work. Then you can find out if it's likely that such a pull request will be accepted, and how it fits into wider ongoing plans.
