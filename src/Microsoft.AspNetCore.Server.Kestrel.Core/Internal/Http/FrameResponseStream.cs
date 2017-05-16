@@ -33,9 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Flush()
         {
-            ValidateState(default(CancellationToken));
-
-            _frameControl.Flush();
+            FlushAsync(default(CancellationToken)).GetAwaiter().GetResult();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
@@ -60,9 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            ValidateState(default(CancellationToken));
-
-            _frameControl.Write(new ArraySegment<byte>(buffer, offset, count));
+            WriteAsync(buffer, offset, count, default(CancellationToken)).GetAwaiter().GetResult();
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)

@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             FrameContext.FrameControl = this;
         }
 
-        public IPipe Pipe { get;  }
+        public IPipe Pipe { get; }
 
         public Frame FrameContext { get; set; }
 
@@ -70,21 +70,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
         }
 
-        void IFrameControl.ProduceContinue()
-        {
-        }
-
-        void IFrameControl.Write(ArraySegment<byte> data)
-        {
-        }
-
         Task IFrameControl.WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
             return TaskCache.CompletedTask;
-        }
-
-        void IFrameControl.Flush()
-        {
         }
 
         Task IFrameControl.FlushAsync(CancellationToken cancellationToken)

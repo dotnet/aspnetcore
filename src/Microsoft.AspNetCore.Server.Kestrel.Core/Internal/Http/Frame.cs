@@ -503,64 +503,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void Flush()
-        {
-            InitializeResponse(0).GetAwaiter().GetResult();
-            Output.Flush();
-        }
-
-        public async Task FlushAsync(CancellationToken cancellationToken)
+        public async Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             await InitializeResponse(0);
             await Output.FlushAsync(cancellationToken);
         }
 
-        public void Write(ArraySegment<byte> data)
-        {
-            // For the first write, ensure headers are flushed if Write(Chunked) isn't called.
-            var firstWrite = !HasResponseStarted;
-
-            if (firstWrite)
-            {
-                InitializeResponse(data.Count).GetAwaiter().GetResult();
-            }
-            else
-            {
-                VerifyAndUpdateWrite(data.Count);
-            }
-
-            if (_canHaveBody)
-            {
-                if (_autoChunk)
-                {
-                    if (data.Count == 0)
-                    {
-                        if (firstWrite)
-                        {
-                            Flush();
-                        }
-                        return;
-                    }
-                    WriteChunked(data);
-                }
-                else
-                {
-                    CheckLastWrite();
-                    Output.Write(data);
-                }
-            }
-            else
-            {
-                HandleNonBodyResponseWrite();
-
-                if (firstWrite)
-                {
-                    Flush();
-                }
-            }
-        }
-
-        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (!HasResponseStarted)
             {
@@ -679,11 +628,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void WriteChunked(ArraySegment<byte> data)
-        {
-            Output.Write(data, chunk: true);
-        }
-
         private Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
             return Output.WriteAsync(data, chunk: true, cancellationToken: cancellationToken);
@@ -707,12 +651,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            StringValues expect;
             if (_httpVersion == Http.HttpVersion.Http11 &&
-                RequestHeaders.TryGetValue("Expect", out expect) &&
+                RequestHeaders.TryGetValue("Expect", out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                Output.Write(_continueBytes);
+                Output.WriteAsync(_continueBytes).GetAwaiter().GetResult();
             }
         }
 

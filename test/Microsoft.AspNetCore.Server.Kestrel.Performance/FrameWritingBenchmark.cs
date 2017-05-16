@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -36,18 +35,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             _frameChunked.Reset();
             _frameChunked.RequestHeaders.Add("Transfer-Encoding", "chunked");
-        }
-
-        [Benchmark]
-        public void Write()
-        {
-            _frame.Write(new ArraySegment<byte>(_writeData));
-        }
-
-        [Benchmark]
-        public void WriteChunked()
-        {
-            _frameChunked.Write(new ArraySegment<byte>(_writeData));
         }
 
         [Benchmark]

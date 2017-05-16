@@ -11,20 +11,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests.TestHelpers
 {
     public class MockFrameControl : IFrameControl
     {
-        public void Flush()
-        {
-        }
-
         public Task FlushAsync(CancellationToken cancellationToken)
         {
             return TaskCache.CompletedTask;
         }
 
         public void ProduceContinue()
-        {
-        }
-
-        public void Write(ArraySegment<byte> data)
         {
         }
 

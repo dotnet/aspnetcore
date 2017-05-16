@@ -39,11 +39,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _flushCompleted = OnFlushCompleted;
         }
 
-        public void Write(ArraySegment<byte> buffer, bool chunk = false)
-        {
-            WriteAsync(buffer, default(CancellationToken), chunk).GetAwaiter().GetResult();
-        }
-
         public Task WriteAsync(ArraySegment<byte> buffer, bool chunk = false, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
@@ -52,11 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return WriteAsync(buffer, cancellationToken, chunk);
-        }
-
-        public void Flush()
-        {
-            WriteAsync(_emptyData, default(CancellationToken)).GetAwaiter().GetResult();
         }
 
         public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))

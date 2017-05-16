@@ -10,9 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public interface IFrameControl
     {
         void ProduceContinue();
-        void Write(ArraySegment<byte> data);
         Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken);
-        void Flush();
         Task FlushAsync(CancellationToken cancellationToken);
     }
 }

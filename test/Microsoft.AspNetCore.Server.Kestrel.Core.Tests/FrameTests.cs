@@ -211,10 +211,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void ThrowsWhenStatusCodeIsSetAfterResponseStarted()
+        public async Task ThrowsWhenStatusCodeIsSetAfterResponseStarted()
         {
             // Act
-            _frame.Write(new ArraySegment<byte>(new byte[1]));
+            await _frame.WriteAsync(new ArraySegment<byte>(new byte[1]));
 
             // Assert
             Assert.True(_frame.HasResponseStarted);
@@ -222,10 +222,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void ThrowsWhenReasonPhraseIsSetAfterResponseStarted()
+        public async Task ThrowsWhenReasonPhraseIsSetAfterResponseStarted()
         {
             // Act
-            _frame.Write(new ArraySegment<byte>(new byte[1]));
+            await _frame.WriteAsync(new ArraySegment<byte>(new byte[1]));
 
             // Assert
             Assert.True(_frame.HasResponseStarted);
@@ -233,9 +233,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void ThrowsWhenOnStartingIsSetAfterResponseStarted()
+        public async Task ThrowsWhenOnStartingIsSetAfterResponseStarted()
         {
-            _frame.Write(new ArraySegment<byte>(new byte[1]));
+            await _frame.WriteAsync(new ArraySegment<byte>(new byte[1]));
 
             // Act/Assert
             Assert.True(_frame.HasResponseStarted);
@@ -472,13 +472,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void WriteThrowsForNonBodyResponse()
+        public async Task WriteThrowsForNonBodyResponse()
         {
             // Arrange
             ((IHttpResponseFeature)_frame).StatusCode = StatusCodes.Status304NotModified;
 
             // Act/Assert
-            Assert.Throws<InvalidOperationException>(() => _frame.Write(new ArraySegment<byte>(new byte[1])));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _frame.WriteAsync(new ArraySegment<byte>(new byte[1])));
         }
 
         [Fact]
@@ -493,14 +493,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void WriteDoesNotThrowForHeadResponse()
+        public async Task WriteDoesNotThrowForHeadResponse()
         {
             // Arrange
             _frame.HttpVersion = "HTTP/1.1";
             ((IHttpRequestFeature)_frame).Method = "HEAD";
 
             // Act/Assert
-            _frame.Write(new ArraySegment<byte>(new byte[1]));
+            await _frame.WriteAsync(new ArraySegment<byte>(new byte[1]));
         }
 
         [Fact]
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void ManuallySettingTransferEncodingThrowsForHeadResponse()
+        public async Task ManuallySettingTransferEncodingThrowsForHeadResponse()
         {
             // Arrange
             _frame.HttpVersion = "HTTP/1.1";
@@ -525,11 +525,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");
 
             // Assert
-            Assert.Throws<InvalidOperationException>(() => _frame.Flush());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _frame.FlushAsync());
         }
 
         [Fact]
-        public void ManuallySettingTransferEncodingThrowsForNoBodyResponse()
+        public async Task ManuallySettingTransferEncodingThrowsForNoBodyResponse()
         {
             // Arrange
             _frame.HttpVersion = "HTTP/1.1";
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");
 
             // Assert
-            Assert.Throws<InvalidOperationException>(() => _frame.Flush());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _frame.FlushAsync());
         }
 
         [Fact]
@@ -558,7 +558,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void RequestAbortedTokenIsResetBeforeLastWriteWithContentLength()
+        public async Task RequestAbortedTokenIsResetBeforeLastWriteWithContentLength()
         {
             _frame.ResponseHeaders["Content-Length"] = "12";
 
@@ -567,11 +567,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             foreach (var ch in "hello, worl")
             {
-                _frame.Write(new ArraySegment<byte>(new[] { (byte)ch }));
+                await _frame.WriteAsync(new ArraySegment<byte>(new[] { (byte)ch }));
                 Assert.Same(original, _frame.RequestAborted.WaitHandle);
             }
 
-            _frame.Write(new ArraySegment<byte>(new[] { (byte)'d' }));
+            await _frame.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }));
             Assert.NotSame(original, _frame.RequestAborted.WaitHandle);
         }
 
