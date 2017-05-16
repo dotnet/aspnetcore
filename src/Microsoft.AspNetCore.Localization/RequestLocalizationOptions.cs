@@ -109,5 +109,53 @@ namespace Microsoft.AspNetCore.Builder
         /// </list>
         /// </summary>
         public IList<IRequestCultureProvider> RequestCultureProviders { get; set; }
+
+        
+        /// <summary>
+        /// Adds the set of the supported cultures by the application.
+        /// </summary>
+        /// <param name="cultures">The cultures to be added.</param>
+        /// <returns>The <see cref="RequestLocalizationOptions"/>.</returns>
+        public RequestLocalizationOptions AddSupportedCultures(params string[] cultures)
+        {
+            var supportedCultures = new List<CultureInfo>();
+
+            foreach (var culture in cultures)
+            {
+                supportedCultures.Add(new CultureInfo(culture));
+            }
+
+            SupportedCultures = supportedCultures;
+            return this;
+        }
+
+        /// <summary>
+        /// Adds the set of the supported UI cultures by the application.
+        /// </summary>
+        /// <param name="uiCultures">The UI cultures to be added.</param>
+        /// <returns>The <see cref="RequestLocalizationOptions"/>.</returns>
+        public RequestLocalizationOptions AddSupportedUICultures(params string[] uiCultures)
+        {
+            var supportedUICultures = new List<CultureInfo>();
+            foreach (var culture in uiCultures)
+            {
+                supportedUICultures.Add(new CultureInfo(culture));
+            }
+
+            SupportedUICultures = supportedUICultures;
+            return this;
+        }
+
+        /// <summary>
+        /// Set the default culture to be used by the application when a supported culture could not be determined by
+        /// one of the configured <see cref="IRequestCultureProvider"/>s.
+        /// </summary>
+        /// <param name="defaultCulture">The default culture to be set.</param>
+        /// <returns>The <see cref="RequestLocalizationOptions"/>.</returns>
+        public RequestLocalizationOptions SetDefaultCulture(string defaultCulture)
+        {
+            DefaultRequestCulture = new RequestCulture(defaultCulture);
+            return this;
+        }
     }
 }
