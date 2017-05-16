@@ -511,6 +511,7 @@
 
     <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)Packages -f $(PublishFeed)" />
     <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)PackageCache -f $(PublishFeed)" />
+    <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceSignedDestinationDir)OobPackages -f $(PublishFeed)" />
     <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)ext -f $(PublishFeed)" />
     <Exec Command="dotnet $(PackagePublisherBinary) -d $(CoherenceDestinationDir)noship -f $(PublishFeed)" />
   </Target>
