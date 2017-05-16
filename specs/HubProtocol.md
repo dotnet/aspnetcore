@@ -181,8 +181,10 @@ S->C: StreamItem { Id = 42, Item = 0 }
 S->C: StreamItem { Id = 42, Item = 1 }
 S->C: StreamItem { Id = 42, Item = 2 }
 S->C: StreamItem { Id = 42, Item = 3 }
-S->C: Completion { Id = 42, Item = 4 }
+S->C: Completion { Id = 42, Result = 4 }
 ```
+
+This is invalid because the `Completion` frame may not have a `Result` when the results are being streamed.
 
 ### Streamed Result with Error (`StreamFailure` example above)
 
@@ -201,7 +203,7 @@ This should manifest to the Calling code as a sequence which emits `0`, `1`, `2`
 ### Non-Blocking Call (`NonBlocking` example above)
 
 ```
-C->S: Invocation { Id = 42, Target = "NonBlocking", Arguments = [ "foo" ] }
+C->S: Invocation { Id = 42, Target = "NonBlocking", Arguments = [ "foo" ], NonBlocking = true }
 ```
 
 ## JSON Encoding
