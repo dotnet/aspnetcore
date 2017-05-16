@@ -1,24 +1,24 @@
-Source Location: (60:4,1 [41] /TestFiles/Input/RazorPages.cshtml)
+Source Location: (55:4,1 [41] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml)
 |using Microsoft.AspNetCore.Mvc.RazorPages|
-Generated Location: (370:12,0 [41] )
+Generated Location: (423:12,0 [41] )
 |using Microsoft.AspNetCore.Mvc.RazorPages|
 
-Source Location: (16:2,7 [8] /TestFiles/Input/RazorPages.cshtml)
+Source Location: (16:2,7 [8] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml)
 |NewModel|
-Generated Location: (684:21,0 [8] )
+Generated Location: (777:21,0 [8] )
 |NewModel|
 
-Source Location: (40:3,14 [17] /TestFiles/Input/RazorPages.cshtml)
-|"*, TestAssembly"|
-Generated Location: (812:25,37 [17] )
-|"*, TestAssembly"|
+Source Location: (40:3,14 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml)
+|"*, AppCode"|
+Generated Location: (905:25,37 [12] )
+|"*, AppCode"|
 
-Source Location: (666:28,47 [4] /TestFiles/Input/RazorPages.cshtml)
-|Name|
-Generated Location: (1313:37,47 [4] )
-|Name|
+Source Location: (661:28,47 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml)
+|Model.Name|
+Generated Location: (1441:37,47 [10] )
+|Model.Name|
 
-Source Location: (117:6,12 [360] /TestFiles/Input/RazorPages.cshtml)
+Source Location: (112:6,12 [360] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml)
 |
     public class NewModel : PageModel
     {
@@ -36,7 +36,7 @@ Source Location: (117:6,12 [360] /TestFiles/Input/RazorPages.cshtml)
         public string Name { get; set; }
     }
 |
-Generated Location: (1742:48,12 [360] )
+Generated Location: (1916:48,12 [360] )
 |
     public class NewModel : PageModel
     {

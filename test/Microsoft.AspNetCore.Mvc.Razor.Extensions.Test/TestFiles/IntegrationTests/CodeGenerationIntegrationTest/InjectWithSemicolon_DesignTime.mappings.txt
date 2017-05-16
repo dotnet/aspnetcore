@@ -1,45 +1,45 @@
-Source Location: (7:0,7 [7] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (7:0,7 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |MyModel|
-Generated Location: (580:16,0 [7] )
+Generated Location: (634:16,0 [7] )
 |MyModel|
 
-Source Location: (24:1,8 [5] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (24:1,8 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |MyApp|
-Generated Location: (670:20,0 [5] )
+Generated Location: (724:20,0 [5] )
 |MyApp|
 
-Source Location: (30:1,14 [14] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (30:1,14 [14] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |MyPropertyName|
-Generated Location: (780:24,22 [14] )
+Generated Location: (834:24,22 [14] )
 |MyPropertyName|
 
-Source Location: (58:2,8 [17] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (58:2,8 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |MyService<TModel>|
-Generated Location: (864:28,0 [17] )
+Generated Location: (918:28,0 [17] )
 |MyService<TModel>|
 
-Source Location: (76:2,26 [4] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (76:2,26 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |Html|
-Generated Location: (986:32,22 [4] )
+Generated Location: (1040:32,22 [4] )
 |Html|
 
-Source Location: (93:3,8 [5] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (93:3,8 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |MyApp|
-Generated Location: (1060:36,0 [5] )
+Generated Location: (1114:36,0 [5] )
 |MyApp|
 
-Source Location: (99:3,14 [15] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (99:3,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |MyPropertyName2|
-Generated Location: (1170:40,22 [15] )
+Generated Location: (1224:40,22 [15] )
 |MyPropertyName2|
 
-Source Location: (129:4,8 [17] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (129:4,8 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |MyService<TModel>|
-Generated Location: (1255:44,0 [17] )
+Generated Location: (1309:44,0 [17] )
 |MyService<TModel>|
 
-Source Location: (147:4,26 [5] /TestFiles/Input/InjectWithSemicolon.cshtml)
+Source Location: (147:4,26 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml)
 |Html2|
-Generated Location: (1377:48,22 [5] )
+Generated Location: (1431:48,22 [5] )
 |Html2|
 

@@ -876,7 +876,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // Assert
             AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            AssertLineMappingsMatchBaseline(document);
         }
 
         private void RunTimeTest()
@@ -928,7 +929,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // Assert
             AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertDesignTimeDocumentMatchBaseline(document);
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            AssertLineMappingsMatchBaseline(document);
         }
     }
 }

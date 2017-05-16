@@ -1,10 +1,10 @@
-Source Location: (7:0,7 [21] /TestFiles/Input/MultipleModels.cshtml)
+Source Location: (7:0,7 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MultipleModels.cshtml)
 |ThisShouldBeGenerated|
-Generated Location: (621:16,0 [21] )
+Generated Location: (652:16,0 [21] )
 |ThisShouldBeGenerated|
 
-Source Location: (37:1,7 [30] /TestFiles/Input/MultipleModels.cshtml)
+Source Location: (37:1,7 [30] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MultipleModels.cshtml)
 |System.Collections.IEnumerable|
-Generated Location: (725:20,0 [30] )
+Generated Location: (756:20,0 [30] )
 |System.Collections.IEnumerable|
 

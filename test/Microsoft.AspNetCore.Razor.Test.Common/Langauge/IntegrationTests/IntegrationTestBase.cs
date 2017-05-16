@@ -169,23 +169,16 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Equal(baseline, actual);
         }
 
-        protected void AssertDesignTimeDocumentMatchBaseline(RazorCodeDocument document)
+        protected void AssertLineMappingsMatchBaseline(RazorCodeDocument document)
         {
             if (Filename == null)
             {
-                var message = $"{nameof(AssertDesignTimeDocumentMatchBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
+                var message = $"{nameof(AssertLineMappingsMatchBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
                 throw new InvalidOperationException(message);
             }
 
             var csharpDocument = document.GetCSharpDocument();
             Assert.NotNull(csharpDocument);
-
-            var syntaxTree = document.GetSyntaxTree();
-            Assert.NotNull(syntaxTree);
-            Assert.True(syntaxTree.Options.DesignTimeMode);
-
-            // Validate generated code.
-            AssertCSharpDocumentMatchesBaseline(csharpDocument);
 
             var baselineFilename = Path.ChangeExtension(Filename, ".mappings.txt");
             var serializedMappings = LineMappingsSerializer.Serialize(csharpDocument, document.Source);

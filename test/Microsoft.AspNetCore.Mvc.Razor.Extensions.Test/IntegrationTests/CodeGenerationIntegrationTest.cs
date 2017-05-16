@@ -487,6 +487,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             // Assert
             AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            AssertLineMappingsMatchBaseline(document);
             AssertDocumentCompiles(document, compilationReferences, expectedErrors);
         }
 
