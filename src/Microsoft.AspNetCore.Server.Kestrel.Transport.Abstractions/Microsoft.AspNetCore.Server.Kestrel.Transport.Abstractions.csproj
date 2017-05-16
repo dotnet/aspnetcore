@@ -10,12 +10,15 @@
     <NoWarn>CS1570;CS1571;CS1572;CS1573;CS1574;CS1591;$(NoWarn)</NoWarn>
     <EnableApiCheck>false</EnableApiCheck>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseSystemMemory>false</UseSystemMemory>
     <DefineConstants>$(DefineConstants);KESTREL_BY_SOURCE</DefineConstants>
+    <DefineConstants Condition="'$(UseSystemMemory)' == 'true'">$(DefineConstants);SYSTEM_MEMORY</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Internal.CoreFxLab.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
+    <PackageReference Condition="'$(UseSystemMemory)' == 'true'" Include="System.Memory" Version="$(SystemMemoryVersion)" />
   </ItemGroup>
 
 </Project>

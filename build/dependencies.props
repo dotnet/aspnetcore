@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
+    <SystemMemoryVersion>4.4.0-*</SystemMemoryVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <LibUvVersion>1.10.0-*</LibUvVersion>
     <JsonNetVersion>9.0.1</JsonNetVersion>
