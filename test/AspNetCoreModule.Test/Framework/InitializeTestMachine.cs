@@ -17,24 +17,34 @@ namespace AspNetCoreModule.Test.Framework
 
         public static int SiteId = 40000;
         public const string PrivateFileName = "aspnetcore_private.dll";
-        public static string Aspnetcore_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", PrivateFileName);
-        public static string Aspnetcore_path_original = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", "aspnetcore.dll");
-        public static string Aspnetcore_X86_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "syswow64", "inetsrv", PrivateFileName);
-        public static string IISExpressAspnetcore_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "IIS Express", PrivateFileName);
-        public static string IISExpressAspnetcore_X86_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "IIS Express", PrivateFileName);
+        public static string FullIisAspnetcore_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", PrivateFileName);
+        public static string FullIisAspnetcore_path_original = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", "aspnetcore.dll");
+        public static string FullIisAspnetcore_X86_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "syswow64", "inetsrv", PrivateFileName);
+        public static string IisExpressAspnetcore_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "IIS Express", PrivateFileName);
+        public static string IisExpressAspnetcore_X86_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "IIS Express", PrivateFileName);
 
-        public static string IISExpressAspnetcoreSchema_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "IIS Express", "config", "schema", "aspnetcore_schema.xml");
-        public static string IISAspnetcoreSchema_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", "config", "schema", "aspnetcore_schema.xml");
+        public static string IisExpressAspnetcoreSchema_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "IIS Express", "config", "schema", "aspnetcore_schema.xml");
+        public static string IisExpressAspnetcoreSchema_X86_path = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "IIS Express", "config", "schema", "aspnetcore_schema.xml");
+        public static string FullIisAspnetcoreSchema_path = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "inetsrv", "config", "schema", "aspnetcore_schema.xml");
         public static int _referenceCount = 0;
         private static bool _InitializeTestMachineCompleted = false;
         private string _setupScriptPath = null;
         
+        private void CheckPerquisiteForANCMTEst()
+        {
+            if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
+            {
+                throw new System.InvalidOperationException(@"ANCM test should be started with x64 process mode on 64 bit machine; if you run this test on Visual Studio, you should set X64 first after selecting 'Test -> Test Settings -> Default Process Architecture' menu");
+            }
+        }
         public InitializeTestMachine()
         {
             _referenceCount++;
 
             if (_referenceCount == 1)
             {
+                CheckPerquisiteForANCMTEst();
+
                 TestUtility.LogInformation("InitializeTestMachine::InitializeTestMachine() Start");
 
                 _InitializeTestMachineCompleted = false;
@@ -160,7 +170,7 @@ namespace AspNetCoreModule.Test.Framework
                     {
                         using (var iisConfig = new IISConfigUtility(ServerType.IIS, null))
                         {
-                            iisConfig.AddModule("AspNetCoreModule", Aspnetcore_path, null);
+                            iisConfig.AddModule("AspNetCoreModule", FullIisAspnetcore_path, null);
                         }
                     }
                 }
@@ -269,16 +279,28 @@ namespace AspNetCoreModule.Test.Framework
                         TestUtility.ResetHelper(ResetHelperMode.KillWorkerProcess);
                         TestUtility.ResetHelper(ResetHelperMode.StopW3svcStartW3svc);
                         Thread.Sleep(1000);
+
                         string from = Path.Combine(outputPath, "x64", "aspnetcore.dll");
-                        TestUtility.FileCopy(from, Aspnetcore_path, overWrite:true, ignoreExceptionWhileDeletingExistingFile:false);
-                        TestUtility.FileCopy(from, IISExpressAspnetcore_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
+                        TestUtility.FileCopy(from, FullIisAspnetcore_path, overWrite:true, ignoreExceptionWhileDeletingExistingFile:false);
+                        TestUtility.FileCopy(from, IisExpressAspnetcore_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
+
+                        // NOTE: schema file can't be overwritten, if there is any schema change, that should be updated manually
+                        from = Path.Combine(outputPath, "x64", "aspnetcore_schema.xml");
+                        TestUtility.FileCopy(from, FullIisAspnetcoreSchema_path, overWrite: false, ignoreExceptionWhileDeletingExistingFile: false);
+                        TestUtility.FileCopy(from, IisExpressAspnetcoreSchema_path, overWrite: false, ignoreExceptionWhileDeletingExistingFile: false);
 
                         if (TestUtility.IsOSAmd64)
                         {
                             from = Path.Combine(outputPath, "Win32", "aspnetcore.dll");
-                            TestUtility.FileCopy(from, Aspnetcore_X86_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
-                            TestUtility.FileCopy(from, IISExpressAspnetcore_X86_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
+                            TestUtility.FileCopy(from, FullIisAspnetcore_X86_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
+                            TestUtility.FileCopy(from, IisExpressAspnetcore_X86_path, overWrite: true, ignoreExceptionWhileDeletingExistingFile: false);
+
+                            // NOTE: schema file can't be overwritten, if there is any schema change, that should be updated manually
+                            from = Path.Combine(outputPath, "Win32", "aspnetcore_schema.xml");
+                            TestUtility.FileCopy(from, IisExpressAspnetcoreSchema_X86_path, overWrite: false, ignoreExceptionWhileDeletingExistingFile: false);
                         }
+
+
                         updateSuccess = true;
                     }
                     catch

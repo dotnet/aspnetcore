@@ -40,7 +40,7 @@ namespace AspNetCoreModule.Test
                 if (_environmentVariableName == "%ANCMTestFlags%")
                 {
                     var envValue = Environment.ExpandEnvironmentVariables(_environmentVariableName);
-                    if (envValue == "")
+                    if (string.IsNullOrEmpty(envValue))
                     {
                         envValue = "AdminAnd64Bit";
                     }

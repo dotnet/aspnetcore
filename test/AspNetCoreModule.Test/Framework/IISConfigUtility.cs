@@ -81,7 +81,7 @@ namespace AspNetCoreModule.Test.Framework
 
         public static void RestoreAppHostConfig(bool restoreFromMasterBackupFile = true)
         {
-            string masterBackupFileExtension = ".ancmtest.mastebackup";
+            string masterBackupFileExtension = ".ancmtest.masterbackup";
             string masterBackupFilePath = Strings.AppHostConfigPath + masterBackupFileExtension;
             string temporaryBackupFileExtenstion = null;
             string temporaryBackupFilePath = null;
@@ -532,14 +532,14 @@ namespace AspNetCoreModule.Test.Framework
             bool result = true;
             if (servertype == ServerType.IIS)
             {
-                if (!File.Exists(InitializeTestMachine.IISAspnetcoreSchema_path))
+                if (!File.Exists(InitializeTestMachine.FullIisAspnetcoreSchema_path))
                 {
                     result = false;
                 }
             }            
             else
             {
-                if (!File.Exists(InitializeTestMachine.IISExpressAspnetcoreSchema_path))
+                if (!File.Exists(InitializeTestMachine.IisExpressAspnetcoreSchema_path))
                 {
                     result = false;
                 }

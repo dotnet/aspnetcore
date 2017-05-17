@@ -187,6 +187,10 @@ namespace AspNetCoreModule.Test.Framework
                     string tempSiteName = "ANCMTest_Temp";
                     int tempId = InitializeTestMachine.SiteId - 1;
                     string argumentFileName = (new TestWebApplication("/", publishPathOutput, null)).GetArgumentFileName();
+                    if (string.IsNullOrEmpty(argumentFileName))
+                    {
+                        argumentFileName = "AspNetCoreModule.TestSites.Standard.dll";
+                    }
                     iisConfig.CreateSite(tempSiteName, publishPathOutput, tempId, tempId);
                     iisConfig.SetANCMConfig(tempSiteName, "/", "arguments", Path.Combine(publishPathOutput, argumentFileName));
                     iisConfig.DeleteSite(tempSiteName);
@@ -322,7 +326,6 @@ namespace AspNetCoreModule.Test.Framework
                 catch
                 {
                     statusCode = "ExceptionError";
-                    
                 }
                 if ("200" == statusCode)
                 {

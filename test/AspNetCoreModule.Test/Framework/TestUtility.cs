@@ -437,25 +437,41 @@ namespace AspNetCoreModule.Test.Framework
         public static string GetMakeCertPath()
         {
             string makecertExeFilePath = "makecert.exe";
-            var makecertExeFilePaths = new string[]
+            var makecertExeFilePaths = new Dictionary<string, string>();
+            makecertExeFilePaths.Add("default", Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits"));
+            if (IsOSAmd64)
             {
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits", "8.1", "bin", "x64", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits", "8.1", "bin", "x86", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits", "8.0", "bin", "x64", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits", "8.0", "bin", "x86", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows SKDs", "Windows", "v7.1A", "bin", "x64", "makecert.exe"),
-                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows SKDs", "Windows", "v7.1A", "bin", "makecert.exe")
-            };
+                makecertExeFilePaths.Add("wow64mode", Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits"));
+            }
 
-            foreach (string item in makecertExeFilePaths)
+            foreach (var item in makecertExeFilePaths)
             {
-                if (File.Exists(item))
+                string[] files = null;
+                if (!Directory.Exists(item.Value))
                 {
-                    makecertExeFilePath = item;
+                    continue;
+                }
+                files = Directory.GetFiles(item.Value, "makecert.exe", SearchOption.AllDirectories);
+                
+                foreach (string makecert in files)
+                {
+                    if (makecert.Contains("arm"))
+                    {
+                        // arm process version is skipped here
+                        continue;
+                    }                    
+                    makecertExeFilePath = makecert;
+                    try
+                    {
+                        TestUtility.RunCommand(makecertExeFilePath, null, true, true);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
                     break;
                 }
             }
-
             return makecertExeFilePath;
         }
 
