@@ -24,7 +24,8 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "https://github.com/aspnet/Hosting/issues/601")]
-        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable, Skip = "https://github.com/aspnet/IISIntegration/issues/1")]
+        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Portable, Skip = "https://github.com/aspnet/Hosting/issues/601")]
         [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public async Task NtlmAuthentication(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
@@ -70,66 +71,26 @@ namespace ServerComparison.FunctionalTests
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                         Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
                         Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
-
-                        logger.LogInformation("Testing /RestrictedNTLM");
-                        response = await httpClient.GetAsync("/RestrictedNTLM");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                        Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
-                        // Note IIS can't restrict a challenge to a specific auth type, the native auth modules always add themselves.
-                        // However WebListener can.
-                        if (serverType == ServerType.WebListener)
-                        {
-                            Assert.DoesNotContain("Negotiate", response.Headers.WwwAuthenticate.ToString());
-                        }
-                        else if (serverType == ServerType.IISExpress)
-                        {
-                            Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
-                        }
+                        */
 
                         logger.LogInformation("Testing /Forbidden");
                         response = await httpClient.GetAsync("/Forbidden");
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-                        */
+
                         logger.LogInformation("Enabling Default Credentials");
 
                         // Change the http client to one that uses default credentials
                         httpClient = deploymentResult.CreateHttpClient(new HttpClientHandler() { UseDefaultCredentials = true });
 
-                        logger.LogInformation("Testing /AutoForbid");
-                        response = await httpClient.GetAsync("/AutoForbid");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-
                         logger.LogInformation("Testing /Restricted");
                         response = await httpClient.GetAsync("/Restricted");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                        Assert.Equal("Negotiate", responseText);
+                        Assert.Equal("Authenticated", responseText);
 
-                        logger.LogInformation("Testing /RestrictedNegotiate");
-                        response = await httpClient.GetAsync("/RestrictedNegotiate");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                        Assert.Equal("Negotiate", responseText);
-
-                        logger.LogInformation("Testing /RestrictedNTLM");
-                        if (serverType == ServerType.WebListener)
-                        {
-                            response = await httpClient.GetAsync("/RestrictedNTLM");
-                            responseText = await response.Content.ReadAsStringAsync();
-                            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                            Assert.Equal("NTLM", responseText);
-                        }
-                        else if (serverType == ServerType.IISExpress)
-                        {
-                            response = await httpClient.GetAsync("/RestrictedNTLM");
-                            responseText = await response.Content.ReadAsStringAsync();
-                            // This isn't a Forbidden because we authenticate with Negotiate and challenge for NTLM.
-                            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                            // Note IIS can't restrict a challenge to a specific auth type, the native auth modules always add themselves,
-                            // so both Negotiate and NTLM get sent again.
-                        }
+                        logger.LogInformation("Testing /Forbidden");
+                        response = await httpClient.GetAsync("/Forbidden");
+                        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
                     }
                     catch (XunitException)
                     {
