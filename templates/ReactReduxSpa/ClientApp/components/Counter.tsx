@@ -5,7 +5,10 @@ import { ApplicationState }  from '../store';
 import * as CounterStore from '../store/Counter';
 import * as WeatherForecasts from '../store/WeatherForecasts';
 
-type CounterProps = CounterStore.CounterState & typeof CounterStore.actionCreators;
+type CounterProps =
+    CounterStore.CounterState
+    & typeof CounterStore.actionCreators
+    & RouteComponentProps<{}>;
 
 class Counter extends React.Component<CounterProps, {}> {
     public render() {
@@ -22,7 +25,7 @@ class Counter extends React.Component<CounterProps, {}> {
 }
 
 // Wire up the React component to the Redux store
-export default connect<CounterStore.CounterState, {}, RouteComponentProps<{}>>(
+export default connect(
     (state: ApplicationState) => state.counter, // Selects which state properties are merged into the component's props
     CounterStore.actionCreators                 // Selects which action creators are merged into the component's props
-)(Counter);
+)(Counter) as typeof Counter;

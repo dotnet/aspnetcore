@@ -9,9 +9,8 @@ export default function configureStore(history: History, initialState?: Store.Ap
     const windowIfDefined = typeof window === 'undefined' ? null : window as any;
     // If devTools is installed, connect to it
     const devToolsExtension = windowIfDefined && windowIfDefined.devToolsExtension as () => GenericStoreEnhancer;
-    const middlewares = [thunk, routerMiddleware(history)];
     const createStoreWithMiddleware = compose(
-        applyMiddleware(...middlewares),
+        applyMiddleware(thunk, routerMiddleware(history)),
         devToolsExtension ? devToolsExtension() : f => f
     )(createStore);
 

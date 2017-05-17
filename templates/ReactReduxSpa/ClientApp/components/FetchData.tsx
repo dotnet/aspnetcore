@@ -67,7 +67,7 @@ class FetchData extends React.Component<WeatherForecastProps, {}> {
     }
 }
 
-export default connect<WeatherForecastsState.WeatherForecastsState, {}, WeatherForecastProps>(
+export default connect(
     (state: ApplicationState) => state.weatherForecasts, // Selects which state properties are merged into the component's props
     WeatherForecastsState.actionCreators                 // Selects which action creators are merged into the component's props
-)(FetchData);
+)(FetchData) as typeof FetchData;
