@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             // Act
             var target = CodeTarget.CreateDefault(codeDocument, options);
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             Action<ICodeTargetBuilder> @delegate = (b) => { wasCalled = true; };
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             // Act
             CodeTarget.CreateDefault(codeDocument, options, @delegate);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             // Act
             CodeTarget.CreateDefault(codeDocument, options, configure: null);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             // Act
             CodeTarget.CreateDefault(codeDocument, options, configure: null);

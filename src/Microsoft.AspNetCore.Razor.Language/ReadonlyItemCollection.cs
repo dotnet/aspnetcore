@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class ReadonlyItemCollection : ItemCollection
+    internal class ReadOnlyItemCollection : ItemCollection
     {
-        public static readonly ItemCollection Empty = new ReadonlyItemCollection();
+        public static readonly ItemCollection Empty = new ReadOnlyItemCollection();
 
         public override object this[object key]
         {

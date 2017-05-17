@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             var parserOptions = irDocument.Options;
 
-            var designTime = parserOptions.DesignTimeMode;
+            var designTime = parserOptions.DesignTime;
             var walker = new DirectiveWalker();
             walker.VisitDocument(irDocument);
 

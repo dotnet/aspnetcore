@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public abstract class CodeTarget
     {
-        public static CodeTarget CreateDefault(RazorCodeDocument codeDocument, RazorParserOptions options)
+        public static CodeTarget CreateDefault(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
         {
             if (codeDocument == null)
             {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public static CodeTarget CreateDefault(
             RazorCodeDocument codeDocument,
-            RazorParserOptions options,
+            RazorCodeGenerationOptions options,
             Action<ICodeTargetBuilder> configure)
         {
             if (codeDocument == null)
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var builder = new DefaultCodeTargetBuilder(codeDocument, options);
 
-            if (builder.Options.DesignTimeMode)
+            if (builder.Options.DesignTime)
             {
                 AddDesignTimeDefaults(builder);
             }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public static CodeTarget CreateEmpty(
             RazorCodeDocument codeDocument,
-            RazorParserOptions options, 
+            RazorCodeGenerationOptions options, 
             Action<ICodeTargetBuilder> configure)
         {
             if (codeDocument == null)

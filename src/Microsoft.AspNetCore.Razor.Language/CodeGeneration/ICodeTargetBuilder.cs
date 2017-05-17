@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     {
         RazorCodeDocument CodeDocument { get; }
 
-        RazorParserOptions Options { get; }
+        RazorCodeGenerationOptions Options { get; }
 
         ICollection<ICodeTargetExtension> TargetExtensions { get; }
 

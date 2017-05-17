@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _context.RenderChildren = visitor.RenderChildren;
             _context.RenderNode = visitor.Visit;
 
-            _context.BasicWriter = _context.Options.DesignTimeMode ? (BasicWriter)new DesignTimeBasicWriter() : new RuntimeBasicWriter();
-            _context.TagHelperWriter = _context.Options.DesignTimeMode ? (TagHelperWriter)new DesignTimeTagHelperWriter() : new RuntimeTagHelperWriter();
+            _context.BasicWriter = _context.Options.DesignTime ? (BasicWriter)new DesignTimeBasicWriter() : new RuntimeBasicWriter();
+            _context.TagHelperWriter = _context.Options.DesignTime ? (TagHelperWriter)new DesignTimeTagHelperWriter() : new RuntimeTagHelperWriter();
 
             visitor.VisitDocument(node);
             _context.RenderChildren = null;

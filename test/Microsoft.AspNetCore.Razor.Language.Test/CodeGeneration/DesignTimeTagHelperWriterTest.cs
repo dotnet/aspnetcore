@@ -195,7 +195,7 @@ __InputTagHelper.FooProp[""bound""] = 42;
 
         private static CSharpRenderingContext GetCSharpRenderingContext(TagHelperWriter writer, RazorCodeDocument codeDocument = null)
         {
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
             var codeWriter = new Legacy.CSharpCodeWriter();
             var context = new CSharpRenderingContext()
             {

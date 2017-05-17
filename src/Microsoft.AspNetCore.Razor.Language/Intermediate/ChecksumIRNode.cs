@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class ChecksumIRNode : RazorIRNode
     {
-        public override ItemCollection Annotations => ReadonlyItemCollection.Empty;
+        public override ItemCollection Annotations => ReadOnlyItemCollection.Empty;
 
         public override IList<RazorIRNode> Children => EmptyArray;
 

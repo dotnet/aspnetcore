@@ -1,30 +1,43 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public sealed class RazorParserOptions
+    public abstract class RazorParserOptions
     {
-        public static RazorParserOptions CreateDefaultOptions()
+        public static RazorParserOptions Create(IEnumerable<DirectiveDescriptor> directives, bool designTime)
         {
-            return new RazorParserOptions();
+            if (directives == null)
+            {
+                throw new ArgumentNullException(nameof(directives));
+            }
+
+            return new DefaultRazorParserOptions(directives.ToArray(), designTime, parseOnlyLeadingDirectives: false);
         }
 
-        private RazorParserOptions()
+        public static RazorParserOptions Create(IEnumerable<DirectiveDescriptor> directives, bool designTime, bool parseOnlyLeadingDirectives)
         {
-            Directives = new List<DirectiveDescriptor>();
+            if (directives == null)
+            {
+                throw new ArgumentNullException(nameof(directives));
+            }
+
+            return new DefaultRazorParserOptions(directives.ToArray(), designTime, parseOnlyLeadingDirectives);
         }
 
-        public bool DesignTimeMode { get; set; }
+        public static RazorParserOptions CreateDefault()
+        {
+            return new DefaultRazorParserOptions(Array.Empty<DirectiveDescriptor>(), designTime: false, parseOnlyLeadingDirectives: false);
+        }
 
-        public int TabSize { get; set; } = 4;
+        public abstract bool DesignTime { get; }
 
-        public bool IsIndentingWithTabs { get; set; }
+        public abstract IReadOnlyCollection<DirectiveDescriptor> Directives { get; }
 
-        public bool StopParsingAfterFirstDirective { get; set; }
-
-        public ICollection<DirectiveDescriptor> Directives { get; }
+        public abstract bool ParseOnlyLeadingDirectives { get; }
     }
 }

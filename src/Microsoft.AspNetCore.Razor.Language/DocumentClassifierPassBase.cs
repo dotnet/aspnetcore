@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         protected override void OnInitialized()
         {
             var feature = Engine.Features.OfType<IRazorTargetExtensionFeature>();
-
             TargetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? EmptyExtensionArray;
         }
 
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected abstract bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
 
-        private CodeTarget CreateTarget(RazorCodeDocument codeDocument, RazorParserOptions options)
+        private CodeTarget CreateTarget(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
         {
             return CodeTarget.CreateDefault(codeDocument, options, (builder) =>
             {

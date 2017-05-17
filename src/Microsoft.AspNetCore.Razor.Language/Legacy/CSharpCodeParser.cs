@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         public CSharpCodeParser(IEnumerable<DirectiveDescriptor> directiveDescriptors, ParserContext context)
-            : base(context.StopParsingAfterFirstDirective ? FirstDirectiveCSharpLanguageCharacteristics.Instance : CSharpLanguageCharacteristics.Instance, context)
+            : base(context.ParseOnlyLeadingDirectives ? FirstDirectiveCSharpLanguageCharacteristics.Instance : CSharpLanguageCharacteristics.Instance, context)
         {
             Keywords = new HashSet<string>();
             SetUpKeywords();

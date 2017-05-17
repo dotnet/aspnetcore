@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     internal class DefaultCodeTargetBuilder : ICodeTargetBuilder
     {
-        public DefaultCodeTargetBuilder(RazorCodeDocument codeDocument, RazorParserOptions options)
+        public DefaultCodeTargetBuilder(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
         {
             CodeDocument = codeDocument;
             Options = options;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public RazorCodeDocument CodeDocument { get; }
 
-        public RazorParserOptions Options { get; }
+        public RazorCodeGenerationOptions Options { get; }
 
         public ICollection<ICodeTargetExtension> TargetExtensions { get; }
 

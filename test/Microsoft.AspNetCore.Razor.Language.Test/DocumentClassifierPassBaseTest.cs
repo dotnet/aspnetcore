@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var irDocument = new DocumentIRNode()
             {
                 DocumentKind = "ignore",
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var pass = new TestDocumentClassifierPass();
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var pass = new TestDocumentClassifierPass()
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var expected = new ICodeTargetExtension[]
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var pass = new TestDocumentClassifierPass();
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var builder = RazorIRBuilder.Create(irDocument);
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var builder = RazorIRBuilder.Create(irDocument);
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var builder = RazorIRBuilder.Create(irDocument);
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var builder = RazorIRBuilder.Create(irDocument);
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var builder = RazorIRBuilder.Create(irDocument);
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var builder = RazorIRBuilder.Create(irDocument);

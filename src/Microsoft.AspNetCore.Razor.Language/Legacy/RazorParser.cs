@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal class RazorParser
     {
         public RazorParser()
-            : this(RazorParserOptions.CreateDefaultOptions())
+            : this(RazorParserOptions.CreateDefault())
         {
         }
 

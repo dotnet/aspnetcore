@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             var builder = new DefaultCodeTargetBuilder(codeDocument, options);
 

@@ -169,7 +169,7 @@ using System;
 
             var context = new CSharpRenderingContext()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
@@ -254,7 +254,7 @@ Test(i++);
 
             var context = new CSharpRenderingContext()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
                 CodeDocument = RazorCodeDocument.Create(sourceDocument),
                 Writer = new Legacy.CSharpCodeWriter(),
             };
@@ -361,7 +361,7 @@ Test(i++);
             var context = new CSharpRenderingContext()
             {
                 Writer = new Legacy.CSharpCodeWriter(),
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var node = new CSharpStatementIRNode()
@@ -400,7 +400,7 @@ if (true) { }
             var context = new CSharpRenderingContext()
             {
                 Writer = new Legacy.CSharpCodeWriter(),
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var node = new CSharpStatementIRNode()
@@ -437,7 +437,7 @@ if (true) { }
             var context = new CSharpRenderingContext()
             {
                 Writer = new Legacy.CSharpCodeWriter(),
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var node = new HtmlContentIRNode();
@@ -467,7 +467,7 @@ if (true) { }
             var context = new CSharpRenderingContext()
             {
                 Writer = new Legacy.CSharpCodeWriter(),
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
 
@@ -601,7 +601,7 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
 
         private static CSharpRenderingContext GetCSharpRenderingContext(BasicWriter writer)
         {
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
             var codeWriter = new Legacy.CSharpCodeWriter();
             var context = new CSharpRenderingContext()
             {

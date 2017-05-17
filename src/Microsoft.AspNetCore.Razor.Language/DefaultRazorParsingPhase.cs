@@ -16,11 +16,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var builder = new DefaultRazorParserOptionsBuilder();
             for (var i = 0; i < _parserOptionsCallbacks.Length; i++)
             {
-                _parserOptionsCallbacks[i].Configure(options);
+                _parserOptionsCallbacks[i].Configure(builder);
             }
+
+            var options = builder.Build();
 
             var syntaxTree = RazorSyntaxTree.Parse(codeDocument.Source, options);
             codeDocument.SetSyntaxTree(syntaxTree);

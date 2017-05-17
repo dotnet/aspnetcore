@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string DocumentKind { get; set; }
 
-        public RazorParserOptions Options { get; set; }
+        public RazorCodeGenerationOptions Options { get; set; }
 
         public override RazorIRNode Parent { get; set; }
 

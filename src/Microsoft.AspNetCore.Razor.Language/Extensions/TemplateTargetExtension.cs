@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
             {
-                if (!context.Options.DesignTimeMode)
+                if (!context.Options.DesignTime)
                 {
                     context.Writer.WriteMethodInvocation(PushWriterMethod, TemplateWriterName);
                 }
 
                 context.RenderChildren(node);
 
-                if (!context.Options.DesignTimeMode)
+                if (!context.Options.DesignTime)
                 {
                     context.Writer.WriteMethodInvocation(PopWriterMethod);
                 }

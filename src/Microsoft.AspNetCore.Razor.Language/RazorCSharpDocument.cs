@@ -15,11 +15,18 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract IReadOnlyList<RazorDiagnostic> Diagnostics { get; }
 
-        public static RazorCSharpDocument Create(string generatedCode, IEnumerable<RazorDiagnostic> diagnostics)
+        public abstract RazorCodeGenerationOptions Options { get; }
+
+        public static RazorCSharpDocument Create(string generatedCode, RazorCodeGenerationOptions options, IEnumerable<RazorDiagnostic> diagnostics)
         {
             if (generatedCode == null)
             {
                 throw new ArgumentNullException(nameof(generatedCode));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
             }
 
             if (diagnostics == null)
@@ -27,17 +34,23 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(diagnostics));
             }
 
-            return new DefaultRazorCSharpDocument(generatedCode, diagnostics.ToArray(), lineMappings: null);
+            return new DefaultRazorCSharpDocument(generatedCode, options, diagnostics.ToArray(), lineMappings: null);
         }
 
         public static RazorCSharpDocument Create(
             string generatedCode,
+            RazorCodeGenerationOptions options,
             IEnumerable<RazorDiagnostic> diagnostics,
             IEnumerable<LineMapping> lineMappings)
         {
             if (generatedCode == null)
             {
                 throw new ArgumentNullException(nameof(generatedCode));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
             }
 
             if (diagnostics == null)
@@ -50,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(lineMappings));
             }
 
-            return new DefaultRazorCSharpDocument(generatedCode, diagnostics.ToArray(), lineMappings.ToArray());
+            return new DefaultRazorCSharpDocument(generatedCode, options, diagnostics.ToArray(), lineMappings.ToArray());
         }
     }
 }

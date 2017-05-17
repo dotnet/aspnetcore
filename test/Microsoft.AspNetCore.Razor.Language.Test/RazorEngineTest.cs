@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalIROptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
-                feature => Assert.IsType<DesignTimeParserOptionsFeature>(feature),
+                feature => Assert.IsType<DesignTimeOptionsFeature>(feature),
                 feature => Assert.IsType<RazorDesignTimeIRPass>(feature));
         }
 

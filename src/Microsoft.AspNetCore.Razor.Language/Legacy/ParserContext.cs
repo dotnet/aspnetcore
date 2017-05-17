@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             Source = source;
-            DesignTimeMode = options.DesignTimeMode;
-            StopParsingAfterFirstDirective = options.StopParsingAfterFirstDirective;
+            DesignTimeMode = options.DesignTime;
+            ParseOnlyLeadingDirectives = options.ParseOnlyLeadingDirectives;
             Builder = new SyntaxTreeBuilder();
             ErrorSink = new ErrorSink();
         }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public bool DesignTimeMode { get; }
 
-        public bool StopParsingAfterFirstDirective { get; }
+        public bool ParseOnlyLeadingDirectives { get; }
 
         public bool WhiteSpaceIsSignificantToAncestorBlock { get; set; }
 

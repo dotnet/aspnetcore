@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         internal RazorSourceDocument SourceDocument => CodeDocument?.Source;
 
-        internal RazorParserOptions Options { get; set; }
+        internal RazorCodeGenerationOptions Options { get; set; }
 
         internal TagHelperRenderingContext TagHelperRenderingContext { get; set; }
 

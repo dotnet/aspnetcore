@@ -3,10 +3,10 @@
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public interface IRazorParserOptionsFeature : IRazorEngineFeature
+    public interface IRazorCodeGenerationOptionsFeature : IRazorEngineFeature
     {
         int Order { get; }
 
-        void Configure(RazorParserOptionsBuilder options);
+        void Configure(RazorCodeGenerationOptionsBuilder options);
     }
 }

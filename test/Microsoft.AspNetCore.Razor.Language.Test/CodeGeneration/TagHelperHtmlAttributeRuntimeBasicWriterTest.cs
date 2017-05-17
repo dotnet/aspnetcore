@@ -92,7 +92,7 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
 
         private static CSharpRenderingContext GetCSharpRenderingContext(BasicWriter writer)
         {
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
             var codeWriter = new Legacy.CSharpCodeWriter();
             var context = new CSharpRenderingContext()
             {

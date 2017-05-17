@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public int Order => 100;
 
-        void IRazorParserOptionsFeature.Configure(RazorParserOptions options)
+        void IRazorParserOptionsFeature.Configure(RazorParserOptionsBuilder options)
         {
             if (options == null)
             {

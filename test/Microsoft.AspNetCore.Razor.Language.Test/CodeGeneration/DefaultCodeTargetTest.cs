@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void Constructor_CreatesDefensiveCopy()
         {
             // Arrange
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             var extensions = new ICodeTargetExtension[]
             {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CreateWriter_CreatesDefaultDocumentWriter()
         {
             // Arrange
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             var target = new DefaultCodeTarget(options, Enumerable.Empty<ICodeTargetExtension>());
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void HasExtension_ReturnsTrue_WhenExtensionFound()
         {
             // Arrange
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             var extensions = new ICodeTargetExtension[]
             {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void HasExtension_ReturnsFalse_WhenExtensionNotFound()
         {
             // Arrange
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             var extensions = new ICodeTargetExtension[]
             {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void GetExtension_ReturnsExtension_WhenExtensionFound()
         {
             // Arrange
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             var extensions = new ICodeTargetExtension[]
             {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void GetExtension_ReturnsFirstMatch_WhenExtensionFound()
         {
             // Arrange
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             var extensions = new ICodeTargetExtension[]
             {
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void GetExtension_ReturnsNull_WhenExtensionNotFound()
         {
             // Arrange
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
 
             var extensions = new ICodeTargetExtension[]
             {

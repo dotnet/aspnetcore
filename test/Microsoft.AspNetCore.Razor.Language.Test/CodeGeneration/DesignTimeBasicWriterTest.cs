@@ -115,7 +115,7 @@ using System;
 
             var context = new CSharpRenderingContext()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
@@ -194,7 +194,7 @@ __o = i++;
 
             var context = new CSharpRenderingContext()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
                 CodeDocument = RazorCodeDocument.Create(sourceDocument),
                 Writer = new Legacy.CSharpCodeWriter(),
             };
@@ -270,7 +270,7 @@ __o = i++;
             var context = new CSharpRenderingContext()
             {
                 Writer = new Legacy.CSharpCodeWriter(),
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var node = new CSharpStatementIRNode()
@@ -336,7 +336,7 @@ __o = i++;
             var context = new CSharpRenderingContext()
             {
                 Writer = new Legacy.CSharpCodeWriter(),
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var node = new CSharpStatementIRNode()
@@ -375,7 +375,7 @@ if (true) { }
             var context = new CSharpRenderingContext()
             {
                 Writer = new Legacy.CSharpCodeWriter(),
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var node = new CSharpStatementIRNode()

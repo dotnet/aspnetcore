@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 BasicWriter = new RuntimeBasicWriter(),
                 TagHelperWriter = new RuntimeTagHelperWriter(),
                 Writer = new CSharpCodeWriter(),
-                Options = RazorParserOptions.CreateDefaultOptions()
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             context.RenderChildren = (n) =>

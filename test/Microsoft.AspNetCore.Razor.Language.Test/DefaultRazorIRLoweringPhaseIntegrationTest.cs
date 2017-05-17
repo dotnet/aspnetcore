@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Language.Intermediate.RazorIRAssert;
+using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Lower_SetsOptions()
+        public void Lower_SetsOptions_Defaults()
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
@@ -37,7 +38,38 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.NotNull(irDocument.Options);
-            Assert.Same(codeDocument.GetSyntaxTree().Options, irDocument.Options);
+            Assert.False(irDocument.Options.DesignTime);
+            Assert.Equal(4, irDocument.Options.IndentSize);
+            Assert.False(irDocument.Options.IndentWithTabs);
+        }
+
+        [Fact]
+        public void Lower_SetsOptions_RunsConfigureCallbacks()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var callback = new Mock<IRazorCodeGenerationOptionsFeature>();
+            callback
+                .Setup(c => c.Configure(It.IsAny<RazorCodeGenerationOptionsBuilder>()))
+                .Callback<RazorCodeGenerationOptionsBuilder>(o =>
+                {
+                    o.DesignTime = true;
+                    o.IndentSize = 17;
+                    o.IndentWithTabs = true;
+                });
+
+            // Act
+            var irDocument = Lower(codeDocument, builder: b =>
+            {
+                b.Features.Add(callback.Object);
+            });
+
+            // Assert
+            Assert.NotNull(irDocument.Options);
+            Assert.True(irDocument.Options.DesignTime);
+            Assert.Equal(17, irDocument.Options.IndentSize);
+            Assert.True(irDocument.Options.IndentWithTabs);
         }
 
         [Fact]

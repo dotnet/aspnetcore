@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             public int Order { get; }
 
-            public void Configure(RazorParserOptions options)
+            public void Configure(RazorParserOptionsBuilder options)
             {
                 options.Directives.Add(DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine));
             }

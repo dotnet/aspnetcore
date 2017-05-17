@@ -37,8 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var source = TestRazorSourceDocument.Create(document);
             var reader = new SeekableTextReader(document, filePath: null);
 
-            var options = RazorParserOptions.CreateDefaultOptions();
-            options.DesignTimeMode = designTime;
+            var options = RazorParserOptions.Create(Array.Empty<DirectiveDescriptor>(), designTime);
             var context = new ParserContext(reader, options);
 
             var codeParser = new CSharpCodeParser(context);
@@ -69,8 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             using (var reader = new SeekableTextReader(document, filePath: null))
             {
-                var options = RazorParserOptions.CreateDefaultOptions();
-                options.DesignTimeMode = designTime;
+                var options = RazorParserOptions.Create(Array.Empty<DirectiveDescriptor>(), designTime);
                 var context = new ParserContext(reader, options);
 
                 var parser = new HtmlMarkupParser(context);
@@ -102,8 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             using (var reader = new SeekableTextReader(document, filePath: null))
             {
-                var options = RazorParserOptions.CreateDefaultOptions();
-                options.DesignTimeMode = designTime;
+                var options = RazorParserOptions.Create(descriptors, designTime);
                 var context = new ParserContext(reader, options);
 
                 var parser = new CSharpCodeParser(descriptors, context);
@@ -116,12 +113,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 var root = context.Builder.Build();
                 var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
-
-                options.Directives.Clear();
-                foreach (var directive in descriptors)
-                {
-                    options.Directives.Add(directive);
-                }
 
                 return RazorSyntaxTree.Create(root, source, diagnostics, options);
             }

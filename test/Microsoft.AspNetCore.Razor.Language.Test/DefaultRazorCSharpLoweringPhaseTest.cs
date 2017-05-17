@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
             var codeDocument = TestRazorCodeDocument.Create("<p class=@(");
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source));
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
             var irDocument = new DocumentIRNode()
             {
                 DocumentKind = "test",
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("@ ")),
                 RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("<p @(")),
             });
-            var options = RazorParserOptions.CreateDefaultOptions();
+            var options = RazorCodeGenerationOptions.CreateDefault();
             var irDocument = new DocumentIRNode()
             {
                 DocumentKind = "test",

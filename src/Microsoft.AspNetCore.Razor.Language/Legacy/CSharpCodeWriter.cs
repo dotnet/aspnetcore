@@ -76,17 +76,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var basePadding = CalculatePadding();
             var resolvedPadding = Math.Max(basePadding - offset, 0);
 
-            if (context.Options.IsIndentingWithTabs)
+            if (context.Options.IndentWithTabs)
             {
                 // Avoid writing directly to the StringBuilder here, that will throw off the manual indexing 
                 // done by the base class.
-                var tabs = resolvedPadding / context.Options.TabSize;
+                var tabs = resolvedPadding / context.Options.IndentSize;
                 for (var i = 0; i < tabs; i++)
                 {
                     Write("\t");
                 }
 
-                var spaces = resolvedPadding % context.Options.TabSize;
+                var spaces = resolvedPadding % context.Options.IndentSize;
                 for (var i = 0; i < spaces; i++)
                 {
                     Write(" ");
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     else if (@char == '\t')
                     {
-                        spaceCount += context.Options.TabSize;
+                        spaceCount += context.Options.IndentSize;
                     }
                     else
                     {

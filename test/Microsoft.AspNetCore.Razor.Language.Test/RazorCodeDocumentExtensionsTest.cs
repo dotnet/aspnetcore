@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var expected = RazorCSharpDocument.Create("", Array.Empty<RazorDiagnostic>());
+            var expected = RazorCSharpDocument.Create("", RazorCodeGenerationOptions.CreateDefault(), Array.Empty<RazorDiagnostic>());
             codeDocument.Items[typeof(RazorCSharpDocument)] = expected;
 
             // Act
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var expected = RazorCSharpDocument.Create("", Array.Empty<RazorDiagnostic>());
+            var expected = RazorCSharpDocument.Create("", RazorCodeGenerationOptions.CreateDefault(), Array.Empty<RazorDiagnostic>());
 
             // Act
             codeDocument.SetCSharpDocument(expected);

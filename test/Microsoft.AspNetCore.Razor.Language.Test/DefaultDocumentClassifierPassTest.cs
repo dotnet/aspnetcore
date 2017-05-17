@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var irDocument = new DocumentIRNode()
             {
                 DocumentKind = "ignore",
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var pass = new DefaultDocumentClassifierPass();
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var irDocument = new DocumentIRNode()
             {
-                Options = RazorParserOptions.CreateDefaultOptions(),
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
             var pass = new DefaultDocumentClassifierPass();

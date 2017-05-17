@@ -70,6 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var csharpDocument = RazorCSharpDocument.Create(
                 renderingContext.Writer.GenerateCode(),
+                irDocument.Options,
                 diagnostics,
                 renderingContext.LineMappings);
             codeDocument.SetCSharpDocument(csharpDocument);

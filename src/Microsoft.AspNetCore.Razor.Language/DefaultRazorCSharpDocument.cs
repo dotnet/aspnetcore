@@ -11,9 +11,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly string _generatedCode;
         private readonly RazorDiagnostic[] _diagnostics;
         private readonly LineMapping[] _lineMappings;
+        private readonly RazorCodeGenerationOptions _options;
 
         public DefaultRazorCSharpDocument(
             string generatedCode,
+            RazorCodeGenerationOptions options,
             RazorDiagnostic[] diagnostics,
             LineMapping[] lineMappings)
         {
@@ -22,7 +24,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(generatedCode));
             }
 
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _generatedCode = generatedCode;
+            _options = options;
+
             _diagnostics = diagnostics ?? Array.Empty<RazorDiagnostic>();
             _lineMappings = lineMappings ?? Array.Empty<LineMapping>();
         }
@@ -32,5 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override string GeneratedCode => _generatedCode;
 
         public override IReadOnlyList<LineMapping> LineMappings => _lineMappings;
+
+        public override RazorCodeGenerationOptions Options => _options;
     }
 }

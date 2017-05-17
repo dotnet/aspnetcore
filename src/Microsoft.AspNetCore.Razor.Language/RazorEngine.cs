@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static void AddDesignTimeDefaults(IRazorEngineBuilder builder)
         {
             // Configure options
-            builder.Features.Add(new DesignTimeParserOptionsFeature());
+            builder.Features.Add(new DesignTimeOptionsFeature());
 
             // IR Passes
             builder.Features.Add(new RazorDesignTimeIRPass());

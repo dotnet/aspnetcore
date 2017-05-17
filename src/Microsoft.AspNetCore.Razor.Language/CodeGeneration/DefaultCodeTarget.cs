@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,9 +8,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     internal class DefaultCodeTarget : CodeTarget
     {
-        private readonly RazorParserOptions _options;
+        private readonly RazorCodeGenerationOptions _options;
 
-        public DefaultCodeTarget(RazorParserOptions options, IEnumerable<ICodeTargetExtension> extensions)
+        public DefaultCodeTarget(RazorCodeGenerationOptions options, IEnumerable<ICodeTargetExtension> extensions)
         {
             _options = options;
             Extensions = extensions.ToArray();
