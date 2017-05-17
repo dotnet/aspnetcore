@@ -27,10 +27,10 @@ artifacts:
 clone_depth: 1
 test_script:
   - dotnet restore
-  - npm install selenium-standalone
-  - ps: Start-Process node './start-selenium.js'
   - ps: Push-Location
   - cd test
+  - npm install selenium-standalone
+  - ps: Start-Process node './start-selenium.js'
   - npm install
   - npm test
 on_finish :
