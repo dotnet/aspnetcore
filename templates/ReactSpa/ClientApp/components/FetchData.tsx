@@ -27,7 +27,6 @@ export class FetchData extends React.Component<{}, FetchDataExampleState> {
             <h1>Weather forecast</h1>
             <p>This component demonstrates fetching data from the server.</p>
             { contents }
-            <p>For more sophisticated applications, consider an architecture such as Redux or Flux for managing state. You can generate an ASP.NET Core application with React and Redux using <code>dotnet new aspnet/spa/reactredux</code> instead of using this template.</p>
         </div>;
     }
 
