@@ -1,10 +1,11 @@
-import { createStore, applyMiddleware, compose, combineReducers, GenericStoreEnhancer } from 'redux';
+import { createStore, applyMiddleware, compose, combineReducers, GenericStoreEnhancer, Store } from 'redux';
 import thunk from 'redux-thunk';
 import { routerReducer, routerMiddleware } from 'react-router-redux';
-import * as Store from './store';
+import * as StoreModule from './store';
+import { ApplicationState, reducers } from './store';
 import { History } from 'history';
 
-export default function configureStore(history: History, initialState?: Store.ApplicationState) {
+export default function configureStore(history: History, initialState?: ApplicationState) {
     // Build middleware. These are functions that can process the actions before they reach the store.
     const windowIfDefined = typeof window === 'undefined' ? null : window as any;
     // If devTools is installed, connect to it
@@ -15,13 +16,13 @@ export default function configureStore(history: History, initialState?: Store.Ap
     )(createStore);
 
     // Combine all reducers and instantiate the app-wide store instance
-    const allReducers = buildRootReducer(Store.reducers);
-    const store = createStoreWithMiddleware(allReducers, initialState) as Redux.Store<Store.ApplicationState>;
+    const allReducers = buildRootReducer(reducers);
+    const store = createStoreWithMiddleware(allReducers, initialState) as Store<ApplicationState>;
 
     // Enable Webpack hot module replacement for reducers
     if (module.hot) {
         module.hot.accept('./store', () => {
-            const nextRootReducer = require<typeof Store>('./store');
+            const nextRootReducer = require<typeof StoreModule>('./store');
             store.replaceReducer(buildRootReducer(nextRootReducer.reducers));
         });
     }
@@ -30,5 +31,5 @@ export default function configureStore(history: History, initialState?: Store.Ap
 }
 
 function buildRootReducer(allReducers) {
-    return combineReducers<Store.ApplicationState>(Object.assign({}, allReducers, { routing: routerReducer }));
+    return combineReducers<ApplicationState>(Object.assign({}, allReducers, { routing: routerReducer }));
 }
