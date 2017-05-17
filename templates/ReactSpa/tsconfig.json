@@ -2,10 +2,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "moduleResolution": "node",
-    "target": "es6",
-    "jsx": "preserve",
+    "target": "es5",
+    "jsx": "react",
     "sourceMap": true,
     "skipDefaultLibCheck": true,
+    "types": [ "webpack-env" ],
     "paths": {
       // Fix "Duplicate identifier" errors caused by multiple dependencies fetching their own copies of type definitions.
       // We tell TypeScript which type definitions module to treat as the canonical one (instead of combining all of them).
