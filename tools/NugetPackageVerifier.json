@@ -4,6 +4,13 @@
             "SigningVerificationCompositeRule"
         ],
         "packages": {
+            "Microsoft.EntityFrameworkCore.ApplicationInsights": {
+                "exclusions": {
+                    "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
+                        "Microsoft.EntityFrameworkCore.ApplicationInsights; .NETStandard,Version=v1.3": "Spurious exception as 2.4.0-beta3 is approved and in use here."
+                    }
+                }
+            },
             "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
                 "exclusions": {
                     "BUILD_ITEMS_FRAMEWORK": {
