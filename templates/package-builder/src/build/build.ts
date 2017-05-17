@@ -152,6 +152,18 @@ function buildDotNetNewNuGetPackage() {
                     type: 'bind',
                     binding: 'dotnet-cli-version',
                     replaces: 'sdkVersionInjectedHere'
+                },
+                Framework: {
+                    type: "parameter",
+                    description: "The target framework for the project.",
+                    datatype: "choice",
+                    choices: [
+                        {
+                            choice: "netcoreapp1.1",
+                            description: "Target netcoreapp1.1"
+                        }
+                    ],
+                    defaultValue: "netcoreapp1.1"
                 }
             },
             tags: { language: 'C#', type: 'project' },
