@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\shared\Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources\**\*.cs" />
   </ItemGroup>
 
