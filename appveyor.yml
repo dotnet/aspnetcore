@@ -27,9 +27,8 @@ artifacts:
 clone_depth: 1
 test_script:
   - dotnet restore
-  - npm install -g selenium-standalone
-  - selenium-standalone install
-  - ps: Start-Process selenium-standalone 'start','-Djna.nosys=true'
+  - npm install selenium-standalone
+  - ps: Start-Process node './start-selenium.js'
   - ps: Push-Location
   - cd test
   - npm install
