@@ -123,7 +123,7 @@ namespace MusicStore
             // dnx . web
             services.AddMicrosoftAccountAuthentication(options =>
             {
-                options.DisplayName = "MicrosoftAccount - Requires project changes";
+                // MicrosoftAccount requires project changes
                 options.ClientId = "000000004012C08A";
                 options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
             });
