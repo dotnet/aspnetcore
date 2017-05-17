@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -14,138 +14,67 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     internal class AuthenticationHandler : IAuthenticationHandler
     {
         private RequestContext _requestContext;
-        private AuthenticationSchemes _authSchemes;
-        private AuthenticationSchemes _customChallenges;
+        private AuthenticationScheme _scheme;
 
-        internal AuthenticationHandler(RequestContext requestContext)
-        {
-            _requestContext = requestContext;
-            _authSchemes = requestContext.Response.AuthenticationChallenges;
-            _customChallenges = AuthenticationSchemes.None;
-        }
-
-        public Task AuthenticateAsync(AuthenticateContext context)
+        public Task<AuthenticateResult> AuthenticateAsync()
         {
             var identity = _requestContext.User?.Identity;
-
-            foreach (var authType in ListEnabledAuthSchemes())
+            if (identity != null && identity.IsAuthenticated)
             {
-                var authScheme = authType.ToString();
-                if (string.Equals(authScheme, context.AuthenticationScheme, StringComparison.Ordinal))
-                {
-                    if (identity != null && identity.IsAuthenticated
-                        && string.Equals(authScheme, identity.AuthenticationType, StringComparison.Ordinal))
-                    {
-                        context.Authenticated(_requestContext.User, properties: null, description: null);
-                    }
-                    else
-                    {
-                        context.NotAuthenticated();
-                    }
-                }
+                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(_requestContext.User, properties: null, authenticationScheme: _scheme.Name)));
             }
-            return TaskCache.CompletedTask;
+            return Task.FromResult(AuthenticateResult.None());
         }
 
         public Task ChallengeAsync(ChallengeContext context)
         {
-            var automaticChallenge = string.Equals("Automatic", context.AuthenticationScheme, StringComparison.Ordinal);
-            foreach (var scheme in ListEnabledAuthSchemes())
+            switch (context.Behavior)
             {
-                var authScheme = scheme.ToString();
-                // Not including any auth types means it's a blanket challenge for any auth type.
-                if (automaticChallenge || string.Equals(context.AuthenticationScheme, authScheme, StringComparison.Ordinal))
-                {
-                    switch (context.Behavior)
+                case ChallengeBehavior.Forbidden:
+                    _requestContext.Response.StatusCode = 403;
+                    break;
+                case ChallengeBehavior.Unauthorized:
+                    _requestContext.Response.StatusCode = 401;
+                    break;
+                case ChallengeBehavior.Automatic:
+                    var identity = (ClaimsIdentity)_requestContext.User?.Identity;
+                    if (identity != null && identity.IsAuthenticated)
                     {
-                        case ChallengeBehavior.Forbidden:
-                            _requestContext.Response.StatusCode = 403;
-                            context.Accept();
-                            break;
-                        case ChallengeBehavior.Unauthorized:
-                            _requestContext.Response.StatusCode = 401;
-                            _customChallenges |= scheme;
-                            context.Accept();
-                            break;
-                        case ChallengeBehavior.Automatic:
-                            var identity = (ClaimsIdentity)_requestContext.User?.Identity;
-                            if (identity != null && identity.IsAuthenticated
-                                && (automaticChallenge || string.Equals(identity.AuthenticationType, context.AuthenticationScheme, StringComparison.Ordinal)))
-                            {
-                                _requestContext.Response.StatusCode = 403;
-                                context.Accept();
-                            }
-                            else
-                            {
-                                _requestContext.Response.StatusCode = 401;
-                                _customChallenges |= scheme;
-                                context.Accept();
-                            }
-                            break;
-                        default:
-                            throw new NotSupportedException(context.Behavior.ToString());
+                        _requestContext.Response.StatusCode = 403;
                     }
-                }
+                    else
+                    {
+                        _requestContext.Response.StatusCode = 401;
+                    }
+                    break;
+                default:
+                    throw new NotSupportedException(context.Behavior.ToString());
             }
-            // A challenge was issued, it overrides any pre-set auth types.
-            _requestContext.Response.AuthenticationChallenges = _customChallenges;
+
             return TaskCache.CompletedTask;
         }
 
-        public void GetDescriptions(DescribeSchemesContext context)
+        public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
         {
-            // TODO: Caching, this data doesn't change per request.
-            foreach (var scheme in ListEnabledAuthSchemes())
+            _scheme = scheme;
+            _requestContext = context.Features.Get<RequestContext>();
+
+            if (_requestContext == null)
             {
-                context.Accept(GetDescription(scheme.ToString()));
+                throw new InvalidOperationException("No RequestContext found.");
             }
+
+            return TaskCache.CompletedTask;
         }
 
         public Task SignInAsync(SignInContext context)
         {
-            // Not supported. AuthenticationManager will throw if !Accepted.
-            return TaskCache.CompletedTask;
+            throw new NotSupportedException();
         }
 
         public Task SignOutAsync(SignOutContext context)
         {
-            // Not supported. AuthenticationManager will throw if !Accepted.
             return TaskCache.CompletedTask;
-        }
-
-        private IDictionary<string, object> GetDescription(string authenticationScheme)
-        {
-            return new Dictionary<string, object>()
-            {
-                { "AuthenticationScheme", authenticationScheme },
-            };
-        }
-
-        private IEnumerable<AuthenticationSchemes> ListEnabledAuthSchemes()
-        {
-            // Order by strength.
-            if ((_authSchemes & AuthenticationSchemes.Kerberos) == AuthenticationSchemes.Kerberos)
-            {
-                yield return AuthenticationSchemes.Kerberos;
-            }
-            if ((_authSchemes & AuthenticationSchemes.Negotiate) == AuthenticationSchemes.Negotiate)
-            {
-                yield return AuthenticationSchemes.Negotiate;
-            }
-            if ((_authSchemes & AuthenticationSchemes.NTLM) == AuthenticationSchemes.NTLM)
-            {
-                yield return AuthenticationSchemes.NTLM;
-            }
-            /*if ((_authSchemes & AuthenticationSchemes.Digest) == AuthenticationSchemes.Digest)
-            {
-                // TODO:
-                throw new NotImplementedException("Digest challenge generation has not been implemented.");
-                yield return AuthenticationSchemes.Digest;
-            }*/
-            if ((_authSchemes & AuthenticationSchemes.Basic) == AuthenticationSchemes.Basic)
-            {
-                yield return AuthenticationSchemes.Basic;
-            }
         }
     }
 }

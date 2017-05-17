@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -306,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var dynamicServer = Utilities.CreateHttpServerReturnRoot("/", out root, app);
             dynamicServer.Dispose();
             var rootUri = new Uri(root);
-            var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory());
+            var server = Utilities.CreatePump();
 
             foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
             {

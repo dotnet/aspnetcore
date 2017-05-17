@@ -4,14 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -289,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
 
-            var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory());
+            var server = Utilities.CreatePump();
             server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
             server.Listener.Options.RequestQueueLimit = 1001;
 
