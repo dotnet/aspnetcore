@@ -163,10 +163,11 @@ function buildDotNetNewNuGetPackage() {
         
         fs.writeFileSync(path.join(templateConfigDir, 'vs-2017.3.host.json'), JSON.stringify({
             name: { text: templateConfig.displayName },
-            description: { text: templateConfig.displayName },
+            description: { text: `Web application built with MVC ASP.NET Core and ${templateConfig.displayName}` },
             order: 2000,
-            learnMoreLink: "https://github.com/aspnet/JavaScriptServices",
-            uiFilters: [ "oneaspnet" ]
+            icon: 'icon.png',
+            learnMoreLink: 'https://github.com/aspnet/JavaScriptServices',
+            uiFilters: [ 'oneaspnet' ]
         }, null, 2));
     });
 
