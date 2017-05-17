@@ -1,11 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -51,30 +52,18 @@ namespace TestSites
                     }
                     else
                     {
-                        return context.Authentication.ChallengeAsync();
+                        return context.ChallengeAsync();
                     }
                 }
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.Authentication.ForbidAsync(AuthenticationManager.AutomaticScheme);
+                    return context.ForbidAsync();
                 }
 
                 if (context.Request.Path.Equals("/AutoForbid"))
                 {
-                    return context.Authentication.ChallengeAsync();
-                }
-
-                if (context.Request.Path.Equals("/RestrictedNegotiate"))
-                {
-                    if (string.Equals("Negotiate", context.User.Identity.AuthenticationType, StringComparison.Ordinal))
-                    {
-                        return context.Response.WriteAsync("Negotiate");
-                    }
-                    else
-                    {
-                        return context.Authentication.ChallengeAsync("Negotiate");
-                    }
+                    return context.ChallengeAsync();
                 }
 
                 if (context.Request.Path.Equals("/RestrictedNTLM"))
@@ -85,7 +74,7 @@ namespace TestSites
                     }
                     else
                     {
-                        return context.Authentication.ChallengeAsync("NTLM");
+                        return context.ChallengeAsync(IISMiddleware.AuthenticationScheme);
                     }
                 }
 
