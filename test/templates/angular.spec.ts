@@ -13,7 +13,7 @@ if (!process.env.SKIP_PROJECT_GENERATION) {
     generateProjectSync(appDir, {
         framework: 'angular',
         name: 'Test App',
-        tests: false
+        tests: true
     });
     publishProjectSync(appDir, publishedAppDir);
 }
