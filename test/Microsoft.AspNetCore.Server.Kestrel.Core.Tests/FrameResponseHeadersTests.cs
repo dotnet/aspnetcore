@@ -66,7 +66,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("Ser™ver", "Data")]
         [InlineData("Server", "Da™ta")]
         [InlineData("Unknown™-Header", "Data")]
-        [InlineData("Ser™ver", "Data")]
         [InlineData("šerver", "Data")]
         [InlineData("Server", "Dašta")]
         [InlineData("Unknownš-Header", "Data")]
@@ -218,7 +217,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             dictionary.Remove("Content-Length");
 
-            Assert.Equal(null, headers.ContentLength);
+            Assert.Null(headers.ContentLength);
         }
 
         [Fact]
@@ -230,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             dictionary.Clear();
 
-            Assert.Equal(null, headers.ContentLength);
+            Assert.Null(headers.ContentLength);
         }
 
         private static long ParseLong(string value)

@@ -1113,8 +1113,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory]
         [InlineData("gzip")]
         [InlineData("chunked, gzip")]
-        [InlineData("gzip")]
-        [InlineData("chunked, gzip")]
         public async Task ConnectionClosedWhenChunkedIsNotFinalTransferCoding(string responseTransferEncoding)
         {
             using (var server = new TestServer(async httpContext =>
@@ -1158,8 +1156,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [InlineData("gzip")]
-        [InlineData("chunked, gzip")]
         [InlineData("gzip")]
         [InlineData("chunked, gzip")]
         public async Task ConnectionClosedWhenChunkedIsNotFinalTransferCodingEvenIfConnectionKeepAliveSetInResponse(string responseTransferEncoding)
@@ -2064,6 +2060,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.Equal(1, testLogger.ApplicationErrorsLogged);
         }
 
+        [Theory]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task FailedWritesResultInAbortedRequest(ListenOptions listenOptions)
         {
@@ -2077,9 +2074,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var writeTcs = new TaskCompletionSource<object>();
             var registrationWh = new ManualResetEventSlim();
             var connectionCloseWh = new ManualResetEventSlim();
+            var requestStartWh = new ManualResetEventSlim();
 
             using (var server = new TestServer(async httpContext =>
             {
+                requestStartWh.Set();
                 var response = httpContext.Response;
                 var request = httpContext.Request;
                 var lifetime = httpContext.Features.Get<IHttpRequestLifetimeFeature>();
@@ -2087,7 +2086,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 lifetime.RequestAborted.Register(() => registrationWh.Set());
 
                 await request.Body.CopyToAsync(Stream.Null);
-                connectionCloseWh.Wait();
+                Assert.True(connectionCloseWh.Wait(10_000));
 
                 try
                 {
@@ -2115,13 +2114,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Content-Length: 5",
                         "",
                         "Hello");
-                    // Don't wait to receive the response. Just close the socket.
+
+                    Assert.True(requestStartWh.Wait(10_000));
                 }
 
                 connectionCloseWh.Set();
 
                 // Write failed
-                await Assert.ThrowsAsync<TaskCanceledException>(async () => await writeTcs.Task);
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await writeTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(15));
                 // RequestAborted tripped
                 Assert.True(registrationWh.Wait(1000));
             }

@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             headers["custom"] = new[] { "value" };
 
-            Assert.NotNull(headers["custom"]);
             Assert.Equal(1, headers["custom"].Count);
             Assert.Equal("value", headers["custom"][0]);
         }
@@ -43,8 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             headers["host"] = new[] { "value" };
             headers["content-length"] = new[] { "0" };
 
-            Assert.NotNull(headers["host"]);
-            Assert.NotNull(headers["content-length"]);
             Assert.Equal(1, headers["host"].Count);
             Assert.Equal(1, headers["content-length"].Count);
             Assert.Equal("value", headers["host"][0]);
@@ -307,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void AppendThrowsWhenHeaderNameContainsNonASCIICharacters()
         {
             var headers = new FrameRequestHeaders();
-            const string key = "\u00141ód\017c";
+            const string key = "\u00141\u00F3d\017c";
 
             var encoding = Encoding.GetEncoding("iso-8859-1");
             var exception = Assert.Throws<BadHttpRequestException>(

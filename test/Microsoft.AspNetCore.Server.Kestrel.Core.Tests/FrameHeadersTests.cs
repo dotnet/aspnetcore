@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(" ,,", ConnectionOptions.None)]
         [InlineData(",, ", ConnectionOptions.None)]
         [InlineData(" , ,", ConnectionOptions.None)]
-        [InlineData(" , ,", ConnectionOptions.None)]
         [InlineData(" , , ", ConnectionOptions.None)]
         [InlineData("keep-alive", ConnectionOptions.KeepAlive)]
         [InlineData("keep-alive, upgrade", ConnectionOptions.KeepAlive | ConnectionOptions.Upgrade)]
@@ -31,8 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("upgrade,,keep-alive", ConnectionOptions.KeepAlive | ConnectionOptions.Upgrade)]
         [InlineData("keep-alive,", ConnectionOptions.KeepAlive)]
         [InlineData("keep-alive,,", ConnectionOptions.KeepAlive)]
-        [InlineData(",keep-alive", ConnectionOptions.KeepAlive)]
-        [InlineData(",,keep-alive", ConnectionOptions.KeepAlive)]
         [InlineData("keep-alive, ", ConnectionOptions.KeepAlive)]
         [InlineData("keep-alive, ,", ConnectionOptions.KeepAlive)]
         [InlineData("keep-alive, , ", ConnectionOptions.KeepAlive)]
@@ -45,8 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(", , keep-alive", ConnectionOptions.KeepAlive)]
         [InlineData("upgrade,", ConnectionOptions.Upgrade)]
         [InlineData("upgrade,,", ConnectionOptions.Upgrade)]
-        [InlineData(",upgrade", ConnectionOptions.Upgrade)]
-        [InlineData(",,upgrade", ConnectionOptions.Upgrade)]
         [InlineData("upgrade, ", ConnectionOptions.Upgrade)]
         [InlineData("upgrade, ,", ConnectionOptions.Upgrade)]
         [InlineData("upgrade, , ", ConnectionOptions.Upgrade)]
@@ -59,8 +54,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(", , upgrade", ConnectionOptions.Upgrade)]
         [InlineData("close,", ConnectionOptions.Close)]
         [InlineData("close,,", ConnectionOptions.Close)]
-        [InlineData(",close", ConnectionOptions.Close)]
-        [InlineData(",,close", ConnectionOptions.Close)]
         [InlineData("close, ", ConnectionOptions.Close)]
         [InlineData("close, ,", ConnectionOptions.Close)]
         [InlineData("close, , ", ConnectionOptions.Close)]
@@ -83,17 +76,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("upgrade,close", ConnectionOptions.Close | ConnectionOptions.Upgrade)]
         [InlineData("close,upgrade", ConnectionOptions.Close | ConnectionOptions.Upgrade)]
         [InlineData("keep-alive2", ConnectionOptions.None)]
-        [InlineData("keep-alive2,", ConnectionOptions.None)]
         [InlineData("keep-alive2 ", ConnectionOptions.None)]
         [InlineData("keep-alive2 ,", ConnectionOptions.None)]
         [InlineData("keep-alive2,", ConnectionOptions.None)]
         [InlineData("upgrade2", ConnectionOptions.None)]
-        [InlineData("upgrade2,", ConnectionOptions.None)]
         [InlineData("upgrade2 ", ConnectionOptions.None)]
         [InlineData("upgrade2 ,", ConnectionOptions.None)]
         [InlineData("upgrade2,", ConnectionOptions.None)]
         [InlineData("close2", ConnectionOptions.None)]
-        [InlineData("close2,", ConnectionOptions.None)]
         [InlineData("close2 ", ConnectionOptions.None)]
         [InlineData("close2 ,", ConnectionOptions.None)]
         [InlineData("close2,", ConnectionOptions.None)]
@@ -171,12 +161,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(" ,,", TransferCoding.None)]
         [InlineData(",, ", TransferCoding.None)]
         [InlineData(" , ,", TransferCoding.None)]
-        [InlineData(" , ,", TransferCoding.None)]
         [InlineData(" , , ", TransferCoding.None)]
         [InlineData("chunked,", TransferCoding.Chunked)]
         [InlineData("chunked,,", TransferCoding.Chunked)]
-        [InlineData(",chunked", TransferCoding.Chunked)]
-        [InlineData(",,chunked", TransferCoding.Chunked)]
         [InlineData("chunked, ", TransferCoding.Chunked)]
         [InlineData("chunked, ,", TransferCoding.Chunked)]
         [InlineData("chunked, , ", TransferCoding.Chunked)]
@@ -241,7 +228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             StringValues value;
 
             Assert.False(headers.TryGetValue("Content-Length", out value));
-            Assert.Equal(null, frameHeaders.ContentLength);
+            Assert.Null(frameHeaders.ContentLength);
             Assert.False(frameHeaders.ContentLength.HasValue);
 
             frameHeaders.ContentLength = 1;
@@ -258,7 +245,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             frameHeaders.ContentLength = null;
             Assert.False(headers.TryGetValue("Content-Length", out value));
-            Assert.Equal(null, frameHeaders.ContentLength);
+            Assert.Null(frameHeaders.ContentLength);
             Assert.False(frameHeaders.ContentLength.HasValue);
         }
 
@@ -276,14 +263,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             StringValues value;
 
             Assert.False(headers.TryGetValue("Content-Length", out value));
-            Assert.Equal(null, frameHeaders.ContentLength);
+            Assert.Null(frameHeaders.ContentLength);
             Assert.False(frameHeaders.ContentLength.HasValue);
 
             Assert.Throws<ArgumentOutOfRangeException>(() => frameHeaders.ContentLength = -1);
             Assert.Throws<ArgumentOutOfRangeException>(() => frameHeaders.ContentLength = long.MinValue);
 
             Assert.False(headers.TryGetValue("Content-Length", out value));
-            Assert.Equal(null, frameHeaders.ContentLength);
+            Assert.Null(frameHeaders.ContentLength);
             Assert.False(frameHeaders.ContentLength.HasValue);
         }
     }
