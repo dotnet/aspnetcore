@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>HTTP header parser implementations.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="System.Buffers" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
