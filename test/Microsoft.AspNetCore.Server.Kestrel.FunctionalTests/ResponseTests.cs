@@ -1775,6 +1775,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.Send(
                         "GET / HTTP/1.1",
                         "Host:",
+                        "Connection: Upgrade",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
@@ -1789,7 +1790,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await connection.Send(
                         "GET / HTTP/1.0",
-                        "Connection: keep-alive",
+                        "Connection: keep-alive, Upgrade",
                         "",
                         "");
                     await connection.ReceiveForcedEnd(

@@ -892,6 +892,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatRequestProcessingEndError()
             => GetString("RequestProcessingEndError");
 
+        /// <summary>
+        /// Cannot upgrade a non-upgradable request. Check IHttpUpgradeFeature.IsUpgradableRequest to determine if a request can be upgraded.
+        /// </summary>
+        internal static string CannotUpgradeNonUpgradableRequest
+        {
+            get => GetString("CannotUpgradeNonUpgradableRequest");
+        }
+
+        /// <summary>
+        /// Cannot upgrade a non-upgradable request. Check IHttpUpgradeFeature.IsUpgradableRequest to determine if a request can be upgraded.
+        /// </summary>
+        internal static string FormatCannotUpgradeNonUpgradableRequest()
+            => GetString("CannotUpgradeNonUpgradableRequest");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

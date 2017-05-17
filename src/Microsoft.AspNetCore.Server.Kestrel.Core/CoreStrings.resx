@@ -306,4 +306,7 @@
   <data name="RequestProcessingEndError" xml:space="preserve">
     <value>Connection processing ended abnormally.</value>
   </data>
+  <data name="CannotUpgradeNonUpgradableRequest" xml:space="preserve">
+    <value>Cannot upgrade a non-upgradable request. Check IHttpUpgradeFeature.IsUpgradableRequest to determine if a request can be upgraded.</value>
+  </data>
 </root>

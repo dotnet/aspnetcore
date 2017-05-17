@@ -182,5 +182,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "");
             }
         }
+
+        [Fact]
+        public async Task ThrowsWhenUpgradingNonUpgradableRequest()
+        {
+            var upgradeTcs = new TaskCompletionSource<bool>();
+            using (var server = new TestServer(async context =>
+             {
+                 var feature = context.Features.Get<IHttpUpgradeFeature>();
+                 Assert.False(feature.IsUpgradableRequest);
+                 try
+                 {
+                     var stream = await feature.UpgradeAsync();
+                 }
+                 catch (Exception e)
+                 {
+                     upgradeTcs.TrySetException(e);
+                 }
+                 finally
+                 {
+                     upgradeTcs.TrySetResult(false);
+                 }
+             }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send("GET / HTTP/1.1",
+                            "Host:",
+                            "",
+                            "");
+                    await connection.Receive("HTTP/1.1 200 OK");
+                }
+            }
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(15));
+            Assert.Equal(CoreStrings.CannotUpgradeNonUpgradableRequest, ex.Message);
+        }
     }
 }

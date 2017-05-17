@@ -162,6 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await connection.Send(
                     "GET /upgrade HTTP/1.1",
                     "Host:",
+                    "Connection: Upgrade",
                     "",
                     "");
                 await connection.Receive(
