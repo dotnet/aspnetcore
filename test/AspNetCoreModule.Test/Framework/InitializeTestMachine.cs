@@ -13,7 +13,7 @@ namespace AspNetCoreModule.Test.Framework
         // 
         // By default, we use the private AspNetCoreFile which were created from this solution
         // 
-        public static bool UsePrivateAspNetCoreFile = true;
+        public static bool UsePrivateAspNetCoreFile = false;
 
         public static int SiteId = 40000;
         public const string PrivateFileName = "aspnetcore_private.dll";
