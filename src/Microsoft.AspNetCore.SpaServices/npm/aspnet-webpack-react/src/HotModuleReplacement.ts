@@ -1,78 +1,66 @@
 import * as webpack from 'webpack';
-type OldOrNewModule = webpack.OldModule & webpack.NewModule;
 
-export function addReactHotModuleReplacementBabelTransform(webpackConfig: webpack.Configuration) {
-    const moduleConfig = webpackConfig.module as OldOrNewModule;
-    const moduleRules = moduleConfig.rules      // Webpack >= 2.1.0 beta 23
-                     || moduleConfig.loaders;   // Legacy/back-compat
+const reactHotLoaderWebpackLoader = 'react-hot-loader/webpack';
+const reactHotLoaderPatch = 'react-hot-loader/patch';
+const supportedTypeScriptLoaders = ['ts-loader', 'awesome-typescript-loader'];
+
+export function addReactHotModuleReplacementConfig(webpackConfig: webpack.Configuration) {
+    const moduleConfig = webpackConfig.module as webpack.NewModule;
+    const moduleRules = moduleConfig.rules;
     if (!moduleRules) {
-        return; // Unknown rules list format
+        return; // Unknown rules list format. Might be Webpack 1.x, which is not supported.
     }
 
-    moduleRules.forEach(rule => {
-        // Allow rules/loaders entries to be either { loader: ... } or { use: ... }
-        // Ignore other config formats (too many combinations to support them all)
-        let loaderConfig =
-            (rule as webpack.NewUseRule).use        // Recommended config format for Webpack 2.x
-            || (rule as webpack.LoaderRule).loader; // Typical config format for Webpack 1.x
-        if (!loaderConfig) {
-            return; // Not a supported rule format (e.g., an array)
+    // Find the rule that loads TypeScript files, and prepend 'react-hot-loader/webpack'
+    // to its array of loaders
+    for (let ruleIndex = 0; ruleIndex < moduleRules.length; ruleIndex++) {
+        // We only support NewUseRule (i.e., { use: ... }) because OldUseRule doesn't accept array values
+        const rule = moduleRules[ruleIndex] as webpack.NewUseRule;
+        if (!rule.use) {
+            continue;
         }
 
-        // Allow use/loader values to be either { loader: 'name' } or 'name'
-        // We don't need to support other possible ways of specifying loaders (e.g., arrays),
-        // so skip unrecognized formats.
-        const loaderNameString =
-            (loaderConfig as (webpack.OldLoader | webpack.NewLoader)).loader
-            || (loaderConfig as string);
-        if (!loaderNameString || (typeof loaderNameString !== 'string')) {
-            return; // Not a supported loader format (e.g., an array)
+        // We're looking for the first 'use' value that's a TypeScript loader
+        const loadersArray = rule.use instanceof Array ? rule.use : [rule.use];
+        const isTypescriptLoader = supportedTypeScriptLoaders.some(typeScriptLoaderName => containsLoader(loadersArray, typeScriptLoaderName));
+        if (!isTypescriptLoader) {
+            continue;
         }
 
-        // Find the babel-loader entry
-        if (loaderNameString.match(/\bbabel-loader\b/)) {
-            // If the rule is of the form { use: 'name' }, then replace it
-            // with { use: { loader: 'name' }} so we can attach options
-            if ((rule as webpack.NewUseRule).use && typeof loaderConfig === 'string') {
-                loaderConfig = (rule as webpack.NewUseRule).use = { loader: loaderConfig };
-            }
-
-            const configItemWithOptions = typeof loaderConfig === 'string'
-                ? rule          // The rule is of the form { loader: 'name' }, so put options on the rule
-                : loaderConfig; // The rule is of the form { use/loader: { loader: 'name' }}, so put options on the use/loader
-
-            // Ensure the config has an 'options' (or a legacy 'query')
-            let optionsObject =
-                (configItemWithOptions as webpack.NewLoader).options        // Recommended config format for Webpack 2.x
-                || (configItemWithOptions as webpack.OldLoaderRule).query;  // Legacy
-            if (!optionsObject) {
-                // If neither options nor query was set, define a new value,
-                // using the legacy format ('query') for compatibility with Webpack 1.x
-                optionsObject = (configItemWithOptions as webpack.OldLoaderRule).query = {};
-            }
-
-            // Ensure Babel plugins includes 'react-transform'
-            const plugins = optionsObject['plugins'] = optionsObject['plugins'] || [];
-            const hasReactTransform = plugins.some(p => p && p[0] === 'react-transform');
-            if (!hasReactTransform) {
-                plugins.push(['react-transform', {}]);
-            }
-
-            // Ensure 'react-transform' plugin is configured to use 'react-transform-hmr'
-            plugins.forEach(pluginConfig => {
-                if (pluginConfig && pluginConfig[0] === 'react-transform') {
-                    const pluginOpts = pluginConfig[1] = pluginConfig[1] || {};
-                    const transforms = pluginOpts.transforms = pluginOpts.transforms || [];
-                    const hasReactTransformHmr = transforms.some(t => t.transform === 'react-transform-hmr');
-                    if (!hasReactTransformHmr) {
-                        transforms.push({
-                            transform: 'react-transform-hmr',
-                            imports: ['react'],
-                            locals: ['module'] // Important for Webpack HMR
-                        });
-                    }
-                }
-            });
+        // This is the one - prefix it with the react-hot-loader loader
+        // (unless it's already in there somewhere)
+        if (!containsLoader(loadersArray, reactHotLoaderWebpackLoader)) {
+            loadersArray.unshift(reactHotLoaderWebpackLoader);
+            rule.use = loadersArray; // In case we normalised it to an array
         }
+        break;
+    }
+
+    // Ensure the entrypoint is prefixed with 'react-hot-loader/patch' (unless it's already in there).
+    // We only support entrypoints of the form { name: value } (not just 'name' or ['name'])
+    // because that gives us a place to prepend the new value
+    if (!webpackConfig.entry || typeof webpackConfig.entry === 'string' || webpackConfig.entry instanceof Array) {
+        throw new Error('Cannot enable React HMR because \'entry\' in Webpack config is not of the form { name: value }');
+    }
+    const entryConfig = webpackConfig.entry as webpack.Entry;
+    Object.getOwnPropertyNames(entryConfig).forEach(entrypointName => {
+        if (typeof(entryConfig[entrypointName]) === 'string') {
+            // Normalise to array
+            entryConfig[entrypointName] = [entryConfig[entrypointName] as string];
+        }
+
+        let entryValueArray = entryConfig[entrypointName] as string[];
+        if (entryValueArray.indexOf(reactHotLoaderPatch) < 0) {
+            entryValueArray.unshift(reactHotLoaderPatch);
+        }
+    });
+}
+
+function containsLoader(loadersArray: webpack.Loader[], loaderName: string) {
+    return loadersArray.some(loader => {
+        // Allow 'use' values to be either { loader: 'name' } or 'name'
+        // No need to support legacy webpack.OldLoader
+        const actualLoaderName = (loader as webpack.NewLoader).loader || (loader as string);
+        return actualLoaderName && new RegExp(`\\b${ loaderName }\\b`).test(actualLoaderName);
     });
 }
