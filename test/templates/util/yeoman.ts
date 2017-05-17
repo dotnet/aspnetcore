@@ -9,7 +9,6 @@ const yoPackageDirAbsolute = path.resolve('./node_modules/yo');
 export interface GeneratorOptions {
     framework: string;
     name: string;
-    sdkVersion?: string;
     tests?: boolean;
 }
 

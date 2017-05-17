@@ -31,7 +31,7 @@ artifacts:
 #  - ps: .\build.ps1
 clone_depth: 1
 test_script:
-  - dotnet restore ./src
+  - dotnet restore
   - npm install -g selenium-standalone
   - selenium-standalone install
   # The nosys flag is needed for selenium to work on Appveyor
