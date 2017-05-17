@@ -660,6 +660,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // Non-loopback addresses
                 var ipv6Addresses = GetIPAddresses()
+                    .Where(ip => !ip.Equals(IPAddress.IPv6Loopback))
                     .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
                     .Where(ip => ip.ScopeId == 0)
                     .Where(ip => CanBindAndConnectToEndpoint(new IPEndPoint(ip, 0)));
