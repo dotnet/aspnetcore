@@ -16,13 +16,13 @@ Generated Location: (865:20,6 [66] )
 
 Source Location: (427:15,40 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
 |item|
-Generated Location: (1208:29,40 [4] )
+Generated Location: (1173:29,40 [4] )
 |item|
 
 Source Location: (482:15,95 [8] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
 |);
     |
-Generated Location: (1624:38,95 [8] )
+Generated Location: (1589:38,95 [8] )
 |);
     |
 
@@ -35,7 +35,7 @@ Source Location: (47:2,12 [268] TestFiles/IntegrationTests/CodeGenerationIntegra
         helperResult.WriteTo(Output, HtmlEncoder);
     }
 |
-Generated Location: (1895:47,12 [268] )
+Generated Location: (1860:47,12 [268] )
 |
     public void RenderTemplate(string title, Func<string, HelperResult> template)
     {

@@ -416,6 +416,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatFeatureMustBeInitialized(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("FeatureMustBeInitialized"), p0);
 
+        /// <summary>
+        /// The document type '{0}' does not support the extension '{1}'.
+        /// </summary>
+        internal static string Diagnostic_CodeTarget_UnsupportedExtension
+        {
+            get => GetString("Diagnostic_CodeTarget_UnsupportedExtension");
+        }
+
+        /// <summary>
+        /// The document type '{0}' does not support the extension '{1}'.
+        /// </summary>
+        internal static string FormatDiagnostic_CodeTarget_UnsupportedExtension(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Diagnostic_CodeTarget_UnsupportedExtension"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 

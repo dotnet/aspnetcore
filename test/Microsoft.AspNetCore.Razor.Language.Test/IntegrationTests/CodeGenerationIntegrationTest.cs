@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -868,7 +869,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         private void DesignTimeTest()
         {
             // Arrange
-            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var engine = RazorEngine.CreateDesignTime(builder => 
+            {
+                builder.Features.Add(new ApiSetsIRTestAdapter());
+
+                // Some of these tests use templates
+                builder.AddTargetExtension(new TemplateTargetExtension());
+            });
+
             var document = CreateCodeDocument();
 
             // Act
@@ -883,7 +891,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         private void RunTimeTest()
         {
             // Arrange
-            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var engine = RazorEngine.Create(builder =>
+            {
+                builder.Features.Add(new ApiSetsIRTestAdapter());
+
+                // Some of these tests use templates
+                builder.AddTargetExtension(new TemplateTargetExtension());
+            });
+
             var document = CreateCodeDocument();
 
             // Act
@@ -901,6 +916,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 builder.Features.Add(new ApiSetsIRTestAdapter());
                 builder.AddTagHelpers(descriptors);
+
+                // Some of these tests use templates
+                builder.AddTargetExtension(new TemplateTargetExtension());
             });
 
             var document = CreateCodeDocument();
@@ -920,6 +938,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 builder.Features.Add(new ApiSetsIRTestAdapter());
                 builder.AddTagHelpers(descriptors);
+
+                // Some of these tests use templates
+                builder.AddTargetExtension(new TemplateTargetExtension());
             });
 
             var document = CreateCodeDocument();

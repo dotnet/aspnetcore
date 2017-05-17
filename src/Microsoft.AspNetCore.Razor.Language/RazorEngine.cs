@@ -74,7 +74,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new DirectiveRemovalIROptimizationPass());
 
             // Default Runtime Targets
-            builder.AddTargetExtension(new TemplateTargetExtension());
             builder.AddTargetExtension(new PreallocatedAttributeTargetExtension());
 
             // Default configuration

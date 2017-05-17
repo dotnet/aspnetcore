@@ -82,6 +82,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return scope;
         }
 
+        public void ReportMissingExtension<TExtension>() where TExtension : ICodeTargetExtension
+        {
+            var documentKind = CodeDocument.GetIRDocument()?.DocumentKind ?? string.Empty;
+            Diagnostics.Add(RazorDiagnosticFactory.CreateCodeTarget_UnsupportedExtension(documentKind, typeof(TExtension)));
+        }
+
         internal TagHelperRenderingContextScope Push(TagHelperRenderingContext context)
         {
             if (context == null)

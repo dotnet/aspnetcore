@@ -34,11 +34,11 @@ Generated Location: (1473:42,6 [27] )
 
 Source Location: (295:15,41 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml)
 |item|
-Generated Location: (1764:48,41 [4] )
+Generated Location: (1729:48,41 [4] )
 |item|
 
 Source Location: (306:15,52 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml)
 |; |
-Generated Location: (1969:55,52 [2] )
+Generated Location: (1934:55,52 [2] )
 |; |
 

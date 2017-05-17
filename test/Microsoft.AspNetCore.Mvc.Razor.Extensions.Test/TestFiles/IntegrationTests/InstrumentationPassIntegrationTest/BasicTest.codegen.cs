@@ -95,7 +95,7 @@ __InputTagHelper.BarProp = DateTime.Now;
             EndContext();
             BeginContext(217, 29, false);
 #line 9 "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml"
-Write(Foo(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+Write(Foo(item => new Template(async(__razor_template_writer) => {
     PushWriter(__razor_template_writer);
     BeginContext(222, 24, true);
     WriteLiteral("<span>Hello world</span>");

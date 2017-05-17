@@ -204,4 +204,7 @@
   <data name="FeatureMustBeInitialized" xml:space="preserve">
     <value>The feature must be initialized by setting the '{0}' property.</value>
   </data>
+  <data name="Diagnostic_CodeTarget_UnsupportedExtension" xml:space="preserve">
+    <value>The document type '{0}' does not support the extension '{1}'.</value>
+  </data>
 </root>

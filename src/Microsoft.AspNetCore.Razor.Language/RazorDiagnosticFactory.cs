@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Razor.Language
 {
     internal static class RazorDiagnosticFactory
@@ -9,33 +11,35 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         #region General Errors
 
-        /*
-         * General Errors ID Offset = 0
-         */
+        // General Errors ID Offset = 0
 
         #endregion
 
         #region Language Errors
 
-        /*
-         * Language Errors ID Offset = 1000
-         */
+        // Language Errors ID Offset = 1000
 
         #endregion
 
         #region Semantic Errors
 
-        /*
-         * Semantic Errors ID Offset = 2000
-         */
+        // Semantic Errors ID Offset = 2000
+
+        public static readonly RazorDiagnosticDescriptor CodeTarget_UnsupportedExtension =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2000",
+                () => Resources.Diagnostic_CodeTarget_UnsupportedExtension,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateCodeTarget_UnsupportedExtension(string documentKind, Type extensionType)
+        {
+            return RazorDiagnostic.Create(CodeTarget_UnsupportedExtension, SourceSpan.Undefined, documentKind, extensionType.Name);
+        }
 
         #endregion
 
         #region TagHelper Errors
 
-        /*
-         * TagHelper Errors ID Offset = 3000
-         */
+        // TagHelper Errors ID Offset = 3000
 
         private static readonly RazorDiagnosticDescriptor TagHelper_InvalidRestrictedChildNullOrWhitespace =
             new RazorDiagnosticDescriptor(

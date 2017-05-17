@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Xunit;
 
@@ -46,6 +47,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             {
                 b.AddTagHelpers(descriptors);
                 b.Features.Add(new InstrumentationPass());
+                
+                // This test includes templates
+                b.AddTargetExtension(new TemplateTargetExtension());
             });
 
             var document = CreateCodeDocument();

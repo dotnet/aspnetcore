@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         {
             WriteLiteral("<div>");
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpressionWithMarkup.cshtml"
-  Write(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+  Write(item => new Template(async(__razor_template_writer) => {
     PushWriter(__razor_template_writer);
     WriteLiteral("</div>");
     PopWriter();

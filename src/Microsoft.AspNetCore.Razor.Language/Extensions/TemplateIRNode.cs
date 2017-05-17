@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     public sealed class TemplateIRNode : ExtensionIRNode
     {
@@ -28,6 +29,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
         {
             var extension = target.GetExtension<ITemplateTargetExtension>();
+            if (extension == null)
+            {
+                context.ReportMissingExtension<ITemplateTargetExtension>();
+                return;
+            }
+
             extension.WriteTemplate(context, this);
         }
     }

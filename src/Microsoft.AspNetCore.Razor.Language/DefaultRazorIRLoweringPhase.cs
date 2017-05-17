@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 

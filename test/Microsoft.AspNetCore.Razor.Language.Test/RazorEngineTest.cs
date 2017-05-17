@@ -138,9 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var feature = engine.Features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
             Assert.NotNull(feature);
 
-            Assert.Collection(
-                feature.TargetExtensions,
-                f => Assert.IsType<TemplateTargetExtension>(f));
+            Assert.Empty(feature.TargetExtensions);
         }
 
         private static void AssertDefaultRuntimeFeatures(IEnumerable<IRazorEngineFeature> features)

@@ -1,14 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
+namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    internal class TemplateTargetExtension : ITemplateTargetExtension
+    public class TemplateTargetExtension : ITemplateTargetExtension
     {
-        public static readonly string DefaultTemplateTypeName = "Microsoft.AspNetCore.Mvc.Razor.HelperResult";
+        public static readonly string DefaultTemplateTypeName = "Template";
         public static readonly string DefaultPushWriterMethod = "PushWriter";
         public static readonly string DefaultPopWriterMethod = "PopWriter";
 

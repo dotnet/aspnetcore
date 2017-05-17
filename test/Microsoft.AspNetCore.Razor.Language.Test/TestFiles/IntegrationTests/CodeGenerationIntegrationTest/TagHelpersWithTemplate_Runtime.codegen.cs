@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-                item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+                item => new Template(async(__razor_template_writer) => {
                     PushWriter(__razor_template_writer);
                     __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                         WriteLiteral("<h3>");

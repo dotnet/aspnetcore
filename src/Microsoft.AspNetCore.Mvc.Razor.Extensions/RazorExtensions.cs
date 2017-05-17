@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
@@ -15,6 +16,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             PageDirective.Register(builder);
 
             builder.AddTargetExtension(new InjectDirectiveTargetExtension());
+            builder.AddTargetExtension(new TemplateTargetExtension()
+            {
+                TemplateTypeName = "global::Microsoft.AspNetCore.Mvc.Razor.HelperResult",
+            });
 
             builder.Features.Add(new ModelExpressionPass());
             builder.Features.Add(new PagesPropertyInjectionPass());

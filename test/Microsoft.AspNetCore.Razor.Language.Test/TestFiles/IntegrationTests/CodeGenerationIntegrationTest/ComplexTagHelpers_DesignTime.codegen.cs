@@ -171,7 +171,7 @@ __TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
 #line default
 #line hidden
 #line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-   __o = someMethod(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+   __o = someMethod(item => new Template(async(__razor_template_writer) => {
     __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
     __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
