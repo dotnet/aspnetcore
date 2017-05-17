@@ -34,8 +34,7 @@ test_script:
   - dotnet restore
   - npm install -g selenium-standalone
   - selenium-standalone install
-  # The nosys flag is needed for selenium to work on Appveyor
-  - ps: Start-Process selenium-standalone 'start','--','-Djna.nosys=true'
+  - ps: Start-Process selenium-standalone 'start'
   - ps: Push-Location
   - cd test
   - npm install
