@@ -4,17 +4,12 @@ install:
    - ps: Install-Product node 6.9.2 x64
    # .NET Core SDK binaries
    # Download .NET Core SDK and add to PATH
-   - ps: $urlCurrent = "https://go.microsoft.com/fwlink/?LinkID=834991"
-   - ps: $urlPreview = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/rel-1.0.0/dotnet-dev-win-x64.latest.zip"
+   - ps: $urlCurrent = "https://download.microsoft.com/download/E/7/8/E782433E-7737-4E6C-BFBF-290A0A81C3D7/dotnet-dev-win-x64.1.0.4.zip"
    - ps: $env:DOTNET_INSTALL_DIR = "$pwd\.dotnetsdk"
    - ps: mkdir $env:DOTNET_INSTALL_DIR -Force | Out-Null
    - ps: $tempFileCurrent = [System.IO.Path]::GetTempFileName()
-   - ps: $tempFilePreview = [System.IO.Path]::GetTempFileName()
    - ps: (New-Object System.Net.WebClient).DownloadFile($urlCurrent, $tempFileCurrent)
-   - ps: (New-Object System.Net.WebClient).DownloadFile($urlPreview, $tempFilePreview)
    - ps: Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory($tempFileCurrent, $env:DOTNET_INSTALL_DIR)
-   - ps: Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory($tempFilePreview, $env:DOTNET_INSTALL_DIR + "preview")
-   - ps: Copy-Item "${env:DOTNET_INSTALL_DIR}preview\*" "${env:DOTNET_INSTALL_DIR}" -Force -Recurse
    - ps: $env:Path = "$env:DOTNET_INSTALL_DIR;$env:Path"
 build_script:
   - ps: Push-Location
