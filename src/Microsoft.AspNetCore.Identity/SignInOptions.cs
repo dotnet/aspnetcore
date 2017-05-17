@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
-    /// Options for configuring sign in..
+    /// Options for configuring sign in.
     /// </summary>
     public class SignInOptions
     {

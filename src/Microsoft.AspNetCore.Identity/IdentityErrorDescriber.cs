@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Returns an <see cref="IdentityError"/> indicating user lockout is not enabled.
         /// </summary>
-        /// <returns>An <see cref="IdentityError"/> indicating user lockout is not enabled..</returns>
+        /// <returns>An <see cref="IdentityError"/> indicating user lockout is not enabled.</returns>
         public virtual IdentityError UserLockoutNotEnabled()
         {
             return new IdentityError

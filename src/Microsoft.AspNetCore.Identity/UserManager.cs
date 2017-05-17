@@ -877,7 +877,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Retrieves the user associated with the specified external login provider and login provider key..
+        /// Retrieves the user associated with the specified external login provider and login provider key.
         /// </summary>
         /// <param name="loginProvider">The login provider who provided the <paramref name="providerKey"/>.</param>
         /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>

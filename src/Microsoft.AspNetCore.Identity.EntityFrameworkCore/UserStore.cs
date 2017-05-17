@@ -872,7 +872,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Retrieves the user associated with the specified login provider and login provider key..
+        /// Retrieves the user associated with the specified login provider and login provider key.
         /// </summary>
         /// <param name="loginProvider">The login provider who provided the <paramref name="providerKey"/>.</param>
         /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>
@@ -1100,7 +1100,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Retrieves the current failed access count for the specified <paramref name="user"/>..
+        /// Retrieves the current failed access count for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose failed access count should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -1136,7 +1136,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Set the flag indicating if the specified <paramref name="user"/> can be locked out..
+        /// Set the flag indicating if the specified <paramref name="user"/> can be locked out.
         /// </summary>
         /// <param name="user">The user whose ability to be locked out should be set.</param>
         /// <param name="enabled">A flag indicating if lock out can be enabled for the specified <paramref name="user"/>.</param>
@@ -1211,7 +1211,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// Sets a flag indicating if the specified <paramref name="user"/>'s phone number has been confirmed..
+        /// Sets a flag indicating if the specified <paramref name="user"/>'s phone number has been confirmed.
         /// </summary>
         /// <param name="user">The user whose telephone number confirmation status should be set.</param>
         /// <param name="confirmed">A flag indicating whether the user's telephone number has been confirmed.</param>
