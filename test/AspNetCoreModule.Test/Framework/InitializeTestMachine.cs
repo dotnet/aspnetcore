@@ -10,10 +10,44 @@ namespace AspNetCoreModule.Test.Framework
 {
     public class InitializeTestMachine : IDisposable
     {
-        // 
-        // By default, we use the private AspNetCoreFile which were created from this solution
-        // 
-        public static bool UsePrivateAspNetCoreFile = false;
+        public const string ANCMTestFlagsEnvironmentVariable = "%ANCMTestFlags%";
+        public const string ANCMTestFlagsDefaultContext = "AdminAnd64Bit";
+        public const string ANCMTestFlagsTestSkipContext = "SkipTest";
+        public const string ANCMTestFlagsUsePrivateAspNetCoreFileContext = "UsePrivateAspNetCoreFile";
+        
+        private static bool? _usePrivateAspNetCoreFile = null;
+        public static bool? UsePrivateAspNetCoreFile
+        {
+            get {
+                // 
+                // By default, we don't use the private AspNetCore.dll that is compiled with this solution.
+                // In order to use the private file, you should add 'UsePrivateAspNetCoreFile' flag to the Environmnet variable %ANCMTestFlag%.
+                //
+                //     Set ANCMTestFlag=%ANCMTestFlag%;UsePrivateAspNetCoreFile 
+                //     Or
+                //     $Env:ANCMTestFlag=$Env:ANCMTestFlag + ";UsePrivateAspNetCoreFile"
+                //
+                if (_usePrivateAspNetCoreFile == null)
+                {
+                    _usePrivateAspNetCoreFile = false;
+                    var envValue = Environment.ExpandEnvironmentVariables(ANCMTestFlagsEnvironmentVariable);
+                    if (envValue.ToLower().Contains(ANCMTestFlagsUsePrivateAspNetCoreFileContext.ToLower()))
+                    {
+                        TestUtility.LogInformation("PrivateAspNetCoreFile is set");
+                        _usePrivateAspNetCoreFile = true;
+                    }
+                    else
+                    {
+                        TestUtility.LogInformation("PrivateAspNetCoreFile is not set");
+                    }
+                }
+                return _usePrivateAspNetCoreFile;
+            }
+            set
+            {
+                _usePrivateAspNetCoreFile = value;
+            }
+        }
 
         public static int SiteId = 40000;
         public const string PrivateFileName = "aspnetcore_private.dll";
@@ -30,12 +64,18 @@ namespace AspNetCoreModule.Test.Framework
         private static bool _InitializeTestMachineCompleted = false;
         private string _setupScriptPath = null;
         
-        private void CheckPerquisiteForANCMTEst()
+        private bool CheckPerquisiteForANCMTest()
         {
+            bool result = true;
+            TestUtility.LogInformation("CheckPerquisiteForANCMTest(): Environment.Is64BitOperatingSystem: {0}, Environment.Is64BitProcess {1}", Environment.Is64BitOperatingSystem, Environment.Is64BitProcess);
+            TestUtility.LogInformation("%ANCMTestFlags%: {0}", Environment.ExpandEnvironmentVariables(ANCMTestFlagsEnvironmentVariable));
+
             if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
             {
-                throw new System.InvalidOperationException(@"ANCM test should be started with x64 process mode on 64 bit machine; if you run this test on Visual Studio, you should set X64 first after selecting 'Test -> Test Settings -> Default Process Architecture' menu");
+                TestUtility.LogInformation("CheckPerquisiteForANCMTest() Failed: ANCM test should be started with x64 process mode on 64 bit machine; if you run this test on Visual Studio, you should set X64 first after selecting 'Test -> Test Settings -> Default Process Architecture' menu");
+                result = false;
             }
+            return result;
         }
         public InitializeTestMachine()
         {
@@ -43,7 +83,7 @@ namespace AspNetCoreModule.Test.Framework
 
             if (_referenceCount == 1)
             {
-                CheckPerquisiteForANCMTEst();
+                CheckPerquisiteForANCMTest();
 
                 TestUtility.LogInformation("InitializeTestMachine::InitializeTestMachine() Start");
 
@@ -161,7 +201,7 @@ namespace AspNetCoreModule.Test.Framework
                     }
                 }
                 
-                if (InitializeTestMachine.UsePrivateAspNetCoreFile)
+                if (InitializeTestMachine.UsePrivateAspNetCoreFile == true)
                 {
                     PreparePrivateANCMFiles();
 
@@ -267,7 +307,7 @@ namespace AspNetCoreModule.Test.Framework
             }
             
             // create an extra private copy of the private file on IIS directory
-            if (InitializeTestMachine.UsePrivateAspNetCoreFile)
+            if (InitializeTestMachine.UsePrivateAspNetCoreFile == true)
             {
                 bool updateSuccess = false;
 

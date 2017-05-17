@@ -374,6 +374,7 @@ $([Convert]::ToBase64String($certificate.Export('Cert'), [System.Base64Formattin
         Import-Certificate -CertStoreLocation $_exportToSSLStore -FilePath $tempExportFile | Out-Null
     }
 
+    Sleep 3
     if (-not (Test-Path "$_exportToSSLStore\$_targetThumbPrint"))
     {
         return ("Error!!! Can't copy $TargetSSLStore\$_targetThumbPrint to $_exportToSSLStore")

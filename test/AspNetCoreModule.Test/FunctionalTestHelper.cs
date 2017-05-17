@@ -26,7 +26,6 @@ namespace AspNetCoreModule.Test
     public class ANCMTestSkipCondition : Attribute, ITestCondition
     {
         private readonly string _environmentVariableName;
-
         public ANCMTestSkipCondition(string environmentVariableName)
         {
             _environmentVariableName = environmentVariableName;
@@ -37,16 +36,24 @@ namespace AspNetCoreModule.Test
             get
             {
                 bool result = true;
-                if (_environmentVariableName == "%ANCMTestFlags%")
+                if (_environmentVariableName == InitializeTestMachine.ANCMTestFlagsEnvironmentVariable)
                 {
                     var envValue = Environment.ExpandEnvironmentVariables(_environmentVariableName);
                     if (string.IsNullOrEmpty(envValue))
                     {
-                        envValue = "AdminAnd64Bit";
+                        envValue = InitializeTestMachine.ANCMTestFlagsDefaultContext;
                     }
-                    switch (envValue)
+                    else
                     {
-                        case "AdminAnd64Bit":
+                        envValue += ";" + InitializeTestMachine.ANCMTestFlagsDefaultContext;
+                    }
+
+                    // split tokens with ';'
+                    var tokens = envValue.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string token in tokens)
+                    {
+                        if (token.Equals(InitializeTestMachine.ANCMTestFlagsDefaultContext, StringComparison.InvariantCultureIgnoreCase))
+                        {
                             try
                             {
                                 if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
@@ -69,10 +76,12 @@ namespace AspNetCoreModule.Test
 
                                 result = false;
                             }
-                            break;
-                        case "SkipTest":
+                        }
+                        if (token.Equals(InitializeTestMachine.ANCMTestFlagsTestSkipContext, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            AdditionalInfo = InitializeTestMachine.ANCMTestFlagsTestSkipContext + " is set";
                             result = false;
-                            break;
+                        }
                     }
                 }
                 return result;
@@ -242,7 +251,7 @@ namespace AspNetCoreModule.Test
                     TestUtility.ResetHelper(ResetHelperMode.KillVSJitDebugger);
 
                     DateTime startTime = DateTime.Now;
-                    Thread.Sleep(500);
+                    Thread.Sleep(1100);
 
                     string urlForUrlRewrite = testSite.URLRewriteApp.URL + "/Rewrite2/" + testSite.AspNetCoreApp.URL + "/GetProcessId";
                     string backendProcessId = await GetResponse(testSite.RootAppContext.GetUri(urlForUrlRewrite), HttpStatusCode.OK);
@@ -443,7 +452,7 @@ namespace AspNetCoreModule.Test
                     TestUtility.ResetHelper(ResetHelperMode.KillVSJitDebugger);
 
                     DateTime startTime = DateTime.Now;
-                    Thread.Sleep(500);
+                    Thread.Sleep(1100);
 
                     // verify 503 
                     string urlForUrlRewrite = testSite.URLRewriteApp.URL + "/Rewrite2/" + testSite.AspNetCoreApp.URL + "/GetProcessId";
@@ -1332,9 +1341,11 @@ namespace AspNetCoreModule.Test
                     Thread.Sleep(500);
 
                     VerifySendingWebSocketData(websocketClient, testData);
-
                     Thread.Sleep(500);
+
                     frameReturned = websocketClient.Close();
+                    Thread.Sleep(500);
+
                     Assert.True(frameReturned.FrameType == FrameType.Close, "Closing Handshake");
                 }
 

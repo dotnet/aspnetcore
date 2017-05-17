@@ -270,7 +270,7 @@ namespace AspNetCoreModule.Test.Framework
                     }
                 }
                 
-                if (InitializeTestMachine.UsePrivateAspNetCoreFile && IisServerType == ServerType.IISExpress)
+                if (InitializeTestMachine.UsePrivateAspNetCoreFile == true && IisServerType == ServerType.IISExpress)
                 {
                     iisConfig.AddModule("AspNetCoreModule", ("%IIS_BIN%\\" + InitializeTestMachine.PrivateFileName), null);
                 }
