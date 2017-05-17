@@ -29,7 +29,7 @@ test_script:
   - dotnet restore
   - npm install -g selenium-standalone
   - selenium-standalone install
-  - ps: Start-Process selenium-standalone 'start'
+  - ps: Start-Process selenium-standalone 'start','-Djna.nosys=true'
   - ps: Push-Location
   - cd test
   - npm install
