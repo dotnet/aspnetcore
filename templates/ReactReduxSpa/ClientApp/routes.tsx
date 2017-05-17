@@ -5,13 +5,8 @@ import Home from './components/Home';
 import FetchData from './components/FetchData';
 import Counter from './components/Counter';
 
-export default <Layout>
+export const routes = <Layout>
     <Route exact path='/' component={ Home } />
     <Route path='/counter' component={ Counter } />
     <Route path='/fetchdata/:startDateIndex?' component={ FetchData } />
 </Layout>;
-
-// Enable Hot Module Replacement (HMR)
-if (module.hot) {
-    module.hot.accept();
-}
