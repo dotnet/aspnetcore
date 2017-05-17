@@ -14,11 +14,11 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-MyModel __typeHelper = null;
+MyModel __typeHelper = default(MyModel);
         }
         ))();
         ((System.Action)(() => {
-MyApp __typeHelper = null;
+MyApp __typeHelper = default(MyApp);
         }
         ))();
         ((System.Action)(() => {
@@ -26,7 +26,7 @@ global::System.Object MyPropertyName = null;
         }
         ))();
         ((System.Action)(() => {
-MyService<TModel> __typeHelper = null;
+MyService<TModel> __typeHelper = default(MyService<TModel>);
         }
         ))();
         ((System.Action)(() => {

@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "225760ec3beca02a80469066fab66433e90ddc2e"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "c711078454f5b0e8d2cb77d9cb7fa88cca32b884"
 namespace AspNetCore
 {
     #line hidden
@@ -9,11 +9,6 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml"
-using MyNamespace;
-
-#line default
-#line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inject_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 1998

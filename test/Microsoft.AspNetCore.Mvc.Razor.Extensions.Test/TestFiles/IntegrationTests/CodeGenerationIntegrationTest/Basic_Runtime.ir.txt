@@ -16,29 +16,30 @@ Document -
                     RazorIRToken - (0:0,0 [4] Basic.cshtml) - Html - <div
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - EndContext();
-                HtmlAttribute - (4:0,4 [14] Basic.cshtml) -  class=" - "
-                    CSharpAttributeValue - (12:0,12 [5] Basic.cshtml) - 
-                        CSharpExpression - (13:0,13 [4] Basic.cshtml)
-                            RazorIRToken - (13:0,13 [4] Basic.cshtml) - CSharp - logo
+                HtmlAttribute - (4:0,4 [25] Basic.cshtml) -  class=" - "
+                    CSharpAttributeValue - (12:0,12 [16] Basic.cshtml) - 
+                        CSharpExpression - (13:0,13 [15] Basic.cshtml)
+                            RazorIRToken - (13:0,13 [15] Basic.cshtml) - CSharp - this.ToString()
                 CSharpStatement - 
-                    RazorIRToken -  - CSharp - BeginContext(18, 24, true);
-                HtmlContent - (18:0,18 [24] Basic.cshtml)
-                    RazorIRToken - (18:0,18 [1] Basic.cshtml) - Html - >
-                    RazorIRToken - (19:0,19 [19] Basic.cshtml) - Html - \n    Hello world\n
-                    RazorIRToken - (38:2,0 [4] Basic.cshtml) - Html -     
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
-                    RazorIRToken -  - CSharp - BeginContext(43, 21, false);
-                CSharpExpression - (43:2,5 [21] Basic.cshtml)
-                    RazorIRToken - (43:2,5 [21] Basic.cshtml) - CSharp - Html.Input("SomeKey")
+                    RazorIRToken -  - CSharp - BeginContext(29, 24, true);
+                HtmlContent - (29:0,29 [24] Basic.cshtml)
+                    RazorIRToken - (29:0,29 [1] Basic.cshtml) - Html - >
+                    RazorIRToken - (30:0,30 [19] Basic.cshtml) - Html - \n    Hello world\n
+                    RazorIRToken - (49:2,0 [4] Basic.cshtml) - Html -     
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - EndContext();
                 CSharpStatement - 
-                    RazorIRToken -  - CSharp - BeginContext(64, 8, true);
-                HtmlContent - (64:2,26 [8] Basic.cshtml)
-                    RazorIRToken - (64:2,26 [2] Basic.cshtml) - Html - \n
-                    RazorIRToken - (66:3,0 [6] Basic.cshtml) - Html - </div>
+                    RazorIRToken -  - CSharp - BeginContext(54, 29, false);
+                CSharpExpression - (54:2,5 [29] Basic.cshtml)
+                    RazorIRToken - (54:2,5 [29] Basic.cshtml) - CSharp - string.Format("{0}", "Hello")
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - EndContext();
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - BeginContext(83, 10, true);
+                HtmlContent - (83:2,34 [10] Basic.cshtml)
+                    RazorIRToken - (83:2,34 [2] Basic.cshtml) - Html - \n
+                    RazorIRToken - (85:3,0 [6] Basic.cshtml) - Html - </div>
+                    RazorIRToken - (91:3,6 [2] Basic.cshtml) - Html - \n
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - EndContext();
             InjectDirective - 

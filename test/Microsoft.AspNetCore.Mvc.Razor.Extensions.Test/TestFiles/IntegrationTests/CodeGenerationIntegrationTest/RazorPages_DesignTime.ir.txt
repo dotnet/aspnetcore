@@ -9,7 +9,7 @@ Document -
         UsingStatement - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
         UsingStatement - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingStatement - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        UsingStatement - (60:4,1 [41] RazorPages.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
+        UsingStatement - (55:4,1 [41] RazorPages.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
@@ -26,109 +26,109 @@ Document -
                 DirectiveToken - (729:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (16:2,7 [8] RazorPages.cshtml) - NewModel
-                DirectiveToken - (40:3,14 [17] RazorPages.cshtml) - "*, TestAssembly"
+                DirectiveToken - (40:3,14 [12] RazorPages.cshtml) - "*, AppCode"
             CSharpStatement - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - DivTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (7:1,0 [2] RazorPages.cshtml)
                     RazorIRToken - (7:1,0 [2] RazorPages.cshtml) - Html - \n
-                HtmlContent - (57:3,31 [2] RazorPages.cshtml)
-                    RazorIRToken - (57:3,31 [2] RazorPages.cshtml) - Html - \n
-                HtmlContent - (101:4,42 [4] RazorPages.cshtml)
-                    RazorIRToken - (101:4,42 [4] RazorPages.cshtml) - Html - \n\n
-                HtmlContent - (478:22,1 [78] RazorPages.cshtml)
-                    RazorIRToken - (478:22,1 [4] RazorPages.cshtml) - Html - \n\n
-                    RazorIRToken - (482:24,0 [4] RazorPages.cshtml) - Html - <h1>
-                    RazorIRToken - (486:24,4 [12] RazorPages.cshtml) - Html - New Customer
-                    RazorIRToken - (498:24,16 [5] RazorPages.cshtml) - Html - </h1>
-                    RazorIRToken - (503:24,21 [2] RazorPages.cshtml) - Html - \n
-                    RazorIRToken - (505:25,0 [5] RazorPages.cshtml) - Html - <form
-                    RazorIRToken - (510:25,5 [14] RazorPages.cshtml) - Html -  method="post"
-                    RazorIRToken - (524:25,19 [24] RazorPages.cshtml) - Html -  class="form-horizontal"
-                    RazorIRToken - (548:25,43 [2] RazorPages.cshtml) - Html -  >
-                    RazorIRToken - (550:25,45 [6] RazorPages.cshtml) - Html - \n    
-                TagHelper - (556:26,4 [31] RazorPages.cshtml)
+                HtmlContent - (52:3,26 [2] RazorPages.cshtml)
+                    RazorIRToken - (52:3,26 [2] RazorPages.cshtml) - Html - \n
+                HtmlContent - (96:4,42 [4] RazorPages.cshtml)
+                    RazorIRToken - (96:4,42 [4] RazorPages.cshtml) - Html - \n\n
+                HtmlContent - (473:22,1 [78] RazorPages.cshtml)
+                    RazorIRToken - (473:22,1 [4] RazorPages.cshtml) - Html - \n\n
+                    RazorIRToken - (477:24,0 [4] RazorPages.cshtml) - Html - <h1>
+                    RazorIRToken - (481:24,4 [12] RazorPages.cshtml) - Html - New Customer
+                    RazorIRToken - (493:24,16 [5] RazorPages.cshtml) - Html - </h1>
+                    RazorIRToken - (498:24,21 [2] RazorPages.cshtml) - Html - \n
+                    RazorIRToken - (500:25,0 [5] RazorPages.cshtml) - Html - <form
+                    RazorIRToken - (505:25,5 [14] RazorPages.cshtml) - Html -  method="post"
+                    RazorIRToken - (519:25,19 [24] RazorPages.cshtml) - Html -  class="form-horizontal"
+                    RazorIRToken - (543:25,43 [2] RazorPages.cshtml) - Html -  >
+                    RazorIRToken - (545:25,45 [6] RazorPages.cshtml) - Html - \n    
+                TagHelper - (551:26,4 [31] RazorPages.cshtml)
                     InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
                     CreateTagHelper -  - DivTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (568:26,16 [11] RazorPages.cshtml)
-                            RazorIRToken - (568:26,16 [11] RazorPages.cshtml) - Html - text-danger
+                        HtmlContent - (563:26,16 [11] RazorPages.cshtml)
+                            RazorIRToken - (563:26,16 [11] RazorPages.cshtml) - Html - text-danger
                     ExecuteTagHelpers - 
-                HtmlContent - (587:26,35 [6] RazorPages.cshtml)
-                    RazorIRToken - (587:26,35 [6] RazorPages.cshtml) - Html - \n    
-                TagHelper - (593:27,4 [237] RazorPages.cshtml)
+                HtmlContent - (582:26,35 [6] RazorPages.cshtml)
+                    RazorIRToken - (582:26,35 [6] RazorPages.cshtml) - Html - \n    
+                TagHelper - (588:27,4 [243] RazorPages.cshtml)
                     InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
-                        HtmlContent - (617:27,28 [48] RazorPages.cshtml)
-                            RazorIRToken - (617:27,28 [10] RazorPages.cshtml) - Html - \n        
-                            RazorIRToken - (627:28,8 [6] RazorPages.cshtml) - Html - <label
-                            RazorIRToken - (633:28,14 [31] RazorPages.cshtml) - Html -  class="col-md-2 control-label"
-                            RazorIRToken - (664:28,45 [1] RazorPages.cshtml) - Html - >
-                        CSharpExpression - (666:28,47 [4] RazorPages.cshtml)
-                            RazorIRToken - (666:28,47 [4] RazorPages.cshtml) - CSharp - Name
-                        HtmlContent - (670:28,51 [18] RazorPages.cshtml)
-                            RazorIRToken - (670:28,51 [8] RazorPages.cshtml) - Html - </label>
-                            RazorIRToken - (678:28,59 [10] RazorPages.cshtml) - Html - \n        
-                        TagHelper - (688:29,8 [130] RazorPages.cshtml)
+                        HtmlContent - (612:27,28 [48] RazorPages.cshtml)
+                            RazorIRToken - (612:27,28 [10] RazorPages.cshtml) - Html - \n        
+                            RazorIRToken - (622:28,8 [6] RazorPages.cshtml) - Html - <label
+                            RazorIRToken - (628:28,14 [31] RazorPages.cshtml) - Html -  class="col-md-2 control-label"
+                            RazorIRToken - (659:28,45 [1] RazorPages.cshtml) - Html - >
+                        CSharpExpression - (661:28,47 [10] RazorPages.cshtml)
+                            RazorIRToken - (661:28,47 [10] RazorPages.cshtml) - CSharp - Model.Name
+                        HtmlContent - (671:28,57 [18] RazorPages.cshtml)
+                            RazorIRToken - (671:28,57 [8] RazorPages.cshtml) - Html - </label>
+                            RazorIRToken - (679:28,65 [10] RazorPages.cshtml) - Html - \n        
+                        TagHelper - (689:29,8 [130] RazorPages.cshtml)
                             InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
-                                HtmlContent - (711:29,31 [101] RazorPages.cshtml)
-                                    RazorIRToken - (711:29,31 [14] RazorPages.cshtml) - Html - \n            
-                                    RazorIRToken - (725:30,12 [6] RazorPages.cshtml) - Html - <input
-                                    RazorIRToken - (731:30,18 [21] RazorPages.cshtml) - Html -  class="form-control"
-                                    RazorIRToken - (752:30,39 [3] RazorPages.cshtml) - Html -  />
-                                    RazorIRToken - (755:30,42 [14] RazorPages.cshtml) - Html - \n            
-                                    RazorIRToken - (769:31,12 [5] RazorPages.cshtml) - Html - <span
-                                    RazorIRToken - (774:31,17 [20] RazorPages.cshtml) - Html -  class="text-danger"
-                                    RazorIRToken - (794:31,37 [1] RazorPages.cshtml) - Html - >
-                                    RazorIRToken - (795:31,38 [7] RazorPages.cshtml) - Html - </span>
-                                    RazorIRToken - (802:31,45 [10] RazorPages.cshtml) - Html - \n        
+                                HtmlContent - (712:29,31 [101] RazorPages.cshtml)
+                                    RazorIRToken - (712:29,31 [14] RazorPages.cshtml) - Html - \n            
+                                    RazorIRToken - (726:30,12 [6] RazorPages.cshtml) - Html - <input
+                                    RazorIRToken - (732:30,18 [21] RazorPages.cshtml) - Html -  class="form-control"
+                                    RazorIRToken - (753:30,39 [3] RazorPages.cshtml) - Html -  />
+                                    RazorIRToken - (756:30,42 [14] RazorPages.cshtml) - Html - \n            
+                                    RazorIRToken - (770:31,12 [5] RazorPages.cshtml) - Html - <span
+                                    RazorIRToken - (775:31,17 [20] RazorPages.cshtml) - Html -  class="text-danger"
+                                    RazorIRToken - (795:31,37 [1] RazorPages.cshtml) - Html - >
+                                    RazorIRToken - (796:31,38 [7] RazorPages.cshtml) - Html - </span>
+                                    RazorIRToken - (803:31,45 [10] RazorPages.cshtml) - Html - \n        
                             CreateTagHelper -  - DivTagHelper
                             AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (700:29,20 [9] RazorPages.cshtml)
-                                    RazorIRToken - (700:29,20 [9] RazorPages.cshtml) - Html - col-md-10
+                                HtmlContent - (701:29,20 [9] RazorPages.cshtml)
+                                    RazorIRToken - (701:29,20 [9] RazorPages.cshtml) - Html - col-md-10
                             ExecuteTagHelpers - 
-                        HtmlContent - (818:32,14 [6] RazorPages.cshtml)
-                            RazorIRToken - (818:32,14 [6] RazorPages.cshtml) - Html - \n    
+                        HtmlContent - (819:32,14 [6] RazorPages.cshtml)
+                            RazorIRToken - (819:32,14 [6] RazorPages.cshtml) - Html - \n    
                     CreateTagHelper -  - DivTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (605:27,16 [10] RazorPages.cshtml)
-                            RazorIRToken - (605:27,16 [10] RazorPages.cshtml) - Html - form-group
+                        HtmlContent - (600:27,16 [10] RazorPages.cshtml)
+                            RazorIRToken - (600:27,16 [10] RazorPages.cshtml) - Html - form-group
                     ExecuteTagHelpers - 
-                HtmlContent - (830:33,10 [6] RazorPages.cshtml)
-                    RazorIRToken - (830:33,10 [6] RazorPages.cshtml) - Html - \n    
-                TagHelper - (836:34,4 [174] RazorPages.cshtml)
+                HtmlContent - (831:33,10 [6] RazorPages.cshtml)
+                    RazorIRToken - (831:33,10 [6] RazorPages.cshtml) - Html - \n    
+                TagHelper - (837:34,4 [174] RazorPages.cshtml)
                     InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
-                        HtmlContent - (860:34,28 [10] RazorPages.cshtml)
-                            RazorIRToken - (860:34,28 [10] RazorPages.cshtml) - Html - \n        
-                        TagHelper - (870:35,8 [128] RazorPages.cshtml)
+                        HtmlContent - (861:34,28 [10] RazorPages.cshtml)
+                            RazorIRToken - (861:34,28 [10] RazorPages.cshtml) - Html - \n        
+                        TagHelper - (871:35,8 [128] RazorPages.cshtml)
                             InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
-                                HtmlContent - (909:35,47 [83] RazorPages.cshtml)
-                                    RazorIRToken - (909:35,47 [14] RazorPages.cshtml) - Html - \n            
-                                    RazorIRToken - (923:36,12 [7] RazorPages.cshtml) - Html - <button
-                                    RazorIRToken - (930:36,19 [14] RazorPages.cshtml) - Html -  type="submit"
-                                    RazorIRToken - (944:36,33 [24] RazorPages.cshtml) - Html -  class="btn btn-primary"
-                                    RazorIRToken - (968:36,57 [1] RazorPages.cshtml) - Html - >
-                                    RazorIRToken - (969:36,58 [4] RazorPages.cshtml) - Html - Save
-                                    RazorIRToken - (973:36,62 [9] RazorPages.cshtml) - Html - </button>
-                                    RazorIRToken - (982:36,71 [10] RazorPages.cshtml) - Html - \n        
+                                HtmlContent - (910:35,47 [83] RazorPages.cshtml)
+                                    RazorIRToken - (910:35,47 [14] RazorPages.cshtml) - Html - \n            
+                                    RazorIRToken - (924:36,12 [7] RazorPages.cshtml) - Html - <button
+                                    RazorIRToken - (931:36,19 [14] RazorPages.cshtml) - Html -  type="submit"
+                                    RazorIRToken - (945:36,33 [24] RazorPages.cshtml) - Html -  class="btn btn-primary"
+                                    RazorIRToken - (969:36,57 [1] RazorPages.cshtml) - Html - >
+                                    RazorIRToken - (970:36,58 [4] RazorPages.cshtml) - Html - Save
+                                    RazorIRToken - (974:36,62 [9] RazorPages.cshtml) - Html - </button>
+                                    RazorIRToken - (983:36,71 [10] RazorPages.cshtml) - Html - \n        
                             CreateTagHelper -  - DivTagHelper
                             AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (882:35,20 [25] RazorPages.cshtml)
-                                    RazorIRToken - (882:35,20 [25] RazorPages.cshtml) - Html - col-md-offset-2 col-md-10
+                                HtmlContent - (883:35,20 [25] RazorPages.cshtml)
+                                    RazorIRToken - (883:35,20 [25] RazorPages.cshtml) - Html - col-md-offset-2 col-md-10
                             ExecuteTagHelpers - 
-                        HtmlContent - (998:37,14 [6] RazorPages.cshtml)
-                            RazorIRToken - (998:37,14 [6] RazorPages.cshtml) - Html - \n    
+                        HtmlContent - (999:37,14 [6] RazorPages.cshtml)
+                            RazorIRToken - (999:37,14 [6] RazorPages.cshtml) - Html - \n    
                     CreateTagHelper -  - DivTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (848:34,16 [10] RazorPages.cshtml)
-                            RazorIRToken - (848:34,16 [10] RazorPages.cshtml) - Html - form-group
+                        HtmlContent - (849:34,16 [10] RazorPages.cshtml)
+                            RazorIRToken - (849:34,16 [10] RazorPages.cshtml) - Html - form-group
                     ExecuteTagHelpers - 
-                HtmlContent - (1010:38,10 [11] RazorPages.cshtml)
-                    RazorIRToken - (1010:38,10 [2] RazorPages.cshtml) - Html - \n
-                    RazorIRToken - (1012:39,0 [7] RazorPages.cshtml) - Html - </form>
-                    RazorIRToken - (1019:39,7 [2] RazorPages.cshtml) - Html - \n
-            CSharpStatement - (117:6,12 [360] RazorPages.cshtml)
-                RazorIRToken - (117:6,12 [360] RazorPages.cshtml) - CSharp - \n    public class NewModel : PageModel\n    {\n        public IActionResult OnPost(Customer customer)\n        {\n            Name = customer.Name;\n            return Redirect("~/customers/inlinepagemodels/");\n        }\n\n        public string Name { get; set; }\n    }\n\n    public class Customer\n    {\n        public string Name { get; set; }\n    }\n
+                HtmlContent - (1011:38,10 [11] RazorPages.cshtml)
+                    RazorIRToken - (1011:38,10 [2] RazorPages.cshtml) - Html - \n
+                    RazorIRToken - (1013:39,0 [7] RazorPages.cshtml) - Html - </form>
+                    RazorIRToken - (1020:39,7 [2] RazorPages.cshtml) - Html - \n
+            CSharpStatement - (112:6,12 [360] RazorPages.cshtml)
+                RazorIRToken - (112:6,12 [360] RazorPages.cshtml) - CSharp - \n    public class NewModel : PageModel\n    {\n        public IActionResult OnPost(Customer customer)\n        {\n            Name = customer.Name;\n            return Redirect("~/customers/inlinepagemodels/");\n        }\n\n        public string Name { get; set; }\n    }\n\n    public class Customer\n    {\n        public string Name { get; set; }\n    }\n
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 

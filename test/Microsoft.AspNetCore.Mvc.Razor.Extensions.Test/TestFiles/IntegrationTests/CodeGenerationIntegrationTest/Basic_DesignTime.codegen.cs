@@ -20,12 +20,12 @@ namespace AspNetCore
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
-       __o = logo;
+       __o = this.ToString();
 
 #line default
 #line hidden
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
-__o = Html.Input("SomeKey");
+__o = string.Format("{0}", "Hello");
 
 #line default
 #line hidden

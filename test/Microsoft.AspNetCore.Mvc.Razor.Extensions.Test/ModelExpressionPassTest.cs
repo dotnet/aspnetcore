@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")
-                            .TypeName(typeof(ModelExpression).FullName))
+                            .TypeName("Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression"))
                     .TagMatchingRule(rule =>
                         rule.RequireTagName("p"))
                     .Build()
@@ -114,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .BindAttribute(attribute =>
                         attribute
                             .Name("Foo")
-                            .TypeName(typeof(ModelExpression).FullName))
+                            .TypeName("Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression"))
                     .TagMatchingRule(rule =>
                         rule.RequireTagName("p"))
                     .Build()

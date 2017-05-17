@@ -14,11 +14,11 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-ThisShouldBeGenerated __typeHelper = null;
+ThisShouldBeGenerated __typeHelper = default(ThisShouldBeGenerated);
         }
         ))();
         ((System.Action)(() => {
-System.Collections.IEnumerable __typeHelper = null;
+System.Collections.IEnumerable __typeHelper = default(System.Collections.IEnumerable);
         }
         ))();
         }
