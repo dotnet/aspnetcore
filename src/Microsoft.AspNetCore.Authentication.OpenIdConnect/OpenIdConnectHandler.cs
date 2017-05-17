@@ -13,12 +13,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -57,8 +55,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
         protected HtmlEncoder HtmlEncoder { get; }
 
-        public OpenIdConnectHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
-            : base(sharedOptions, options, dataProtection, logger, encoder, clock)
+        public OpenIdConnectHandler(IOptionsSnapshot<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
         {
             HtmlEncoder = htmlEncoder;
         }
@@ -74,76 +72,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         }
 
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new OpenIdConnectEvents());
-
-        protected override void InitializeOptions()
-        {
-            base.InitializeOptions();
-
-            if (string.IsNullOrEmpty(Options.SignOutScheme))
-            {
-                Options.SignOutScheme = SignInScheme;
-            }
-
-            if (Options.StateDataFormat == null)
-            {
-                var dataProtector = DataProtection.CreateProtector(
-                    GetType().FullName, Scheme.Name, "v1");
-                Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
-            }
-
-            if (Options.StringDataFormat == null)
-            {
-                var dataProtector = DataProtection.CreateProtector(
-                    GetType().FullName,
-                    typeof(string).FullName,
-                    Scheme.Name,
-                    "v1");
-
-                Options.StringDataFormat = new SecureDataFormat<string>(new StringSerializer(), dataProtector);
-            }
-
-            if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.ClientId))
-            {
-                Options.TokenValidationParameters.ValidAudience = Options.ClientId;
-            }
-
-            if (Options.Backchannel == null)
-            {
-                Options.Backchannel = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
-                Options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core OpenIdConnect handler");
-                Options.Backchannel.Timeout = Options.BackchannelTimeout;
-                Options.Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
-            }
-
-            if (Options.ConfigurationManager == null)
-            {
-                if (Options.Configuration != null)
-                {
-                    Options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(Options.Configuration);
-                }
-                else if (!(string.IsNullOrEmpty(Options.MetadataAddress) && string.IsNullOrEmpty(Options.Authority)))
-                {
-                    if (string.IsNullOrEmpty(Options.MetadataAddress) && !string.IsNullOrEmpty(Options.Authority))
-                    {
-                        Options.MetadataAddress = Options.Authority;
-                        if (!Options.MetadataAddress.EndsWith("/", StringComparison.Ordinal))
-                        {
-                            Options.MetadataAddress += "/";
-                        }
-
-                        Options.MetadataAddress += ".well-known/openid-configuration";
-                    }
-
-                    if (Options.RequireHttpsMetadata && !Options.MetadataAddress.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new InvalidOperationException("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.");
-                    }
-
-                    Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
-                        new HttpDocumentRetriever(Backchannel) { RequireHttps = Options.RequireHttpsMetadata });
-                }
-            }
-        }
 
         public override Task<bool> HandleRequestAsync()
         {
@@ -749,7 +677,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     var identity = (ClaimsIdentity)ticket.Principal.Identity;
                     foreach (var action in Options.ClaimActions)
                     {
-                        action.Run(null, identity, Options.ClaimsIssuer);
+                        action.Run(null, identity, ClaimsIssuer);
                     }
                 }
 
@@ -902,7 +830,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             foreach (var action in Options.ClaimActions)
             {
-                action.Run(user, identity, Options.ClaimsIssuer);
+                action.Run(user, identity, ClaimsIssuer);
             }
 
             return AuthenticateResult.Success(ticket);
@@ -1300,19 +1228,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 message.Error,
                 description,
                 errorUri));
-        }
-
-        private class StringSerializer : IDataSerializer<string>
-        {
-            public string Deserialize(byte[] data)
-            {
-                return Encoding.UTF8.GetString(data);
-            }
-
-            public byte[] Serialize(string model)
-            {
-                return Encoding.UTF8.GetBytes(model);
-            }
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -26,7 +27,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddOpenIdConnectAuthentication(this IServiceCollection services, string authenticationScheme, Action<OpenIdConnectOptions> configureOptions)
         {
-            return services.AddScheme<OpenIdConnectOptions, OpenIdConnectHandler>(authenticationScheme, authenticationScheme, configureOptions);
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<OpenIdConnectOptions>, OpenIdConnectInitializer>());
+            return services.AddRemoteScheme<OpenIdConnectOptions, OpenIdConnectHandler>(authenticationScheme, authenticationScheme, configureOptions);
         }
     }
 }

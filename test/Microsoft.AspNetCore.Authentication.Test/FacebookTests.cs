@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                 {"Facebook:BackchannelTimeout", "0.0:0:30"},
                 //{"Facebook:CallbackPath", "/callbackpath"}, // PathString doesn't convert
                 {"Facebook:ClaimsIssuer", "<issuer>"},
-                {"Facebook:DisplayName", "<display>"},
                 {"Facebook:RemoteAuthenticationTimeout", "0.0:0:30"},
                 {"Facebook:SaveTokens", "true"},
                 {"Facebook:SendAppSecretProof", "true"},
@@ -73,7 +72,6 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             Assert.Equal("<issuer>", options.ClaimsIssuer);
             Assert.Equal("<id>", options.ClientId);
             Assert.Equal("<secret>", options.ClientSecret);
-            Assert.Equal("<display>", options.DisplayName);
             Assert.Equal(new TimeSpan(0, 0, 0, 30), options.RemoteAuthenticationTimeout);
             Assert.True(options.SaveTokens);
             Assert.True(options.SendAppSecretProof);

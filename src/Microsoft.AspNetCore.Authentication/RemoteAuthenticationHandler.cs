@@ -5,9 +5,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -25,10 +23,6 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected string SignInScheme => Options.SignInScheme;
 
-        protected IDataProtectionProvider DataProtection { get; set; }
-
-        private readonly AuthenticationOptions _authOptions;
-
         /// <summary>
         /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
@@ -39,32 +33,14 @@ namespace Microsoft.AspNetCore.Authentication
             set { base.Events = value; }
         }
 
-        protected RemoteAuthenticationHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<TOptions> options, IDataProtectionProvider dataProtection, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        protected RemoteAuthenticationHandler(IOptionsSnapshot<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
-            _authOptions = sharedOptions.Value;
-            DataProtection = dataProtection;
-        }
-
-        protected override Task InitializeHandlerAsync()
-        {
-            DataProtection = Options.DataProtectionProvider ?? DataProtection;
-            return TaskCache.CompletedTask;
         }
 
         protected override Task<object> CreateEventsAsync()
         {
             return Task.FromResult<object>(new RemoteAuthenticationEvents());
-        }
-
-        protected override void InitializeOptions()
-        {
-            base.InitializeOptions();
-
-            if (Options.SignInScheme == null)
-            {
-                Options.SignInScheme = _authOptions.DefaultSignInScheme;
-            }
         }
 
         public virtual Task<bool> ShouldHandleRequestAsync()

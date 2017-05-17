@@ -59,39 +59,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <returns>A new instance of the events instance.</returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new CookieAuthenticationEvents());
 
-        protected override void InitializeOptions()
-        {
-            base.InitializeOptions();
-
-            if (String.IsNullOrEmpty(Options.CookieName))
-            {
-                Options.CookieName = CookieAuthenticationDefaults.CookiePrefix + Scheme.Name;
-            }
-            if (Options.TicketDataFormat == null)
-            {
-                var provider = Options.DataProtectionProvider ?? Context.RequestServices.GetRequiredService<IDataProtectionProvider>();
-                // Note: the purpose for the data protector must remain fixed for interop to work.
-                var dataProtector = provider.CreateProtector("Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", Scheme.Name, "v2");
-                Options.TicketDataFormat = new TicketDataFormat(dataProtector);
-            }
-            if (Options.CookieManager == null)
-            {
-                Options.CookieManager = new ChunkingCookieManager();
-            }
-            if (!Options.LoginPath.HasValue)
-            {
-                Options.LoginPath = CookieAuthenticationDefaults.LoginPath;
-            }
-            if (!Options.LogoutPath.HasValue)
-            {
-                Options.LogoutPath = CookieAuthenticationDefaults.LogoutPath;
-            }
-            if (!Options.AccessDeniedPath.HasValue)
-            {
-                Options.AccessDeniedPath = CookieAuthenticationDefaults.AccessDeniedPath;
-            }
-        }
-
         private Task<AuthenticateResult> EnsureCookieTicket()
         {
             // We only need to read the ticket once

@@ -75,7 +75,6 @@ namespace SocialSample
             // https://console.developers.google.com/project
             services.AddOAuthAuthentication("Google-AccessToken", o =>
             {
-                o.DisplayName = "Google-AccessToken";
                 o.ClientId = Configuration["google:clientid"];
                 o.ClientSecret = Configuration["google:clientsecret"];
                 o.CallbackPath = new PathString("/signin-google-token");
@@ -137,7 +136,6 @@ namespace SocialSample
             // https://apps.dev.microsoft.com/
             services.AddOAuthAuthentication("Microsoft-AccessToken", o =>
             {
-                o.DisplayName = "MicrosoftAccount-AccessToken";
                 o.ClientId = Configuration["microsoftaccount:clientid"];
                 o.ClientSecret = Configuration["microsoftaccount:clientsecret"];
                 o.CallbackPath = new PathString("/signin-microsoft-token");
@@ -160,7 +158,6 @@ namespace SocialSample
             // https://github.com/settings/applications/
             services.AddOAuthAuthentication("GitHub-AccessToken", o =>
             {
-                o.DisplayName = "Github-AccessToken";
                 o.ClientId = Configuration["github-token:clientid"];
                 o.ClientSecret = Configuration["github-token:clientsecret"];
                 o.CallbackPath = new PathString("/signin-github-token");
@@ -178,7 +175,6 @@ namespace SocialSample
             // https://github.com/settings/applications/
             services.AddOAuthAuthentication("GitHub", o =>
             {
-                o.DisplayName = "Github";
                 o.ClientId = Configuration["github:clientid"];
                 o.ClientSecret = Configuration["github:clientsecret"];
                 o.CallbackPath = new PathString("/signin-github");

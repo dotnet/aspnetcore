@@ -3,13 +3,24 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class OAuthExtensions
     {
-        public static IServiceCollection AddOAuthAuthentication(this IServiceCollection services, string authenticationScheme, Action<OAuthOptions> configureOptions) =>
-            services.AddScheme<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, authenticationScheme, configureOptions);
+        public static IServiceCollection AddOAuthAuthentication(this IServiceCollection services, string authenticationScheme, Action<OAuthOptions> configureOptions)
+        {
+            return services.AddScheme<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, authenticationScheme, configureOptions);
+        }
+
+        public static IServiceCollection AddOAuthAuthentication<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)
+            where TOptions : OAuthOptions, new()
+            where THandler : OAuthHandler<TOptions>
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<TOptions>, OAuthInitializer<TOptions, THandler>>());
+            return services.AddRemoteScheme<TOptions, THandler>(authenticationScheme, authenticationScheme, configureOptions);
+        }
     }
 }

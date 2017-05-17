@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 {"Twitter:BackchannelTimeout", "0.0:0:30"},
                 //{"Twitter:CallbackPath", "/callbackpath"}, // PathString doesn't convert
                 {"Twitter:ClaimsIssuer", "<issuer>"},
-                {"Twitter:DisplayName", "<display>"},
                 {"Twitter:RemoteAuthenticationTimeout", "0.0:0:30"},
                 {"Twitter:SaveTokens", "true"},
                 {"Twitter:SendAppSecretProof", "true"},
@@ -60,7 +59,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Assert.Equal("<issuer>", options.ClaimsIssuer);
             Assert.Equal("<key>", options.ConsumerKey);
             Assert.Equal("<secret>", options.ConsumerSecret);
-            Assert.Equal("<display>", options.DisplayName);
             Assert.Equal(new TimeSpan(0, 0, 0, 30), options.RemoteAuthenticationTimeout);
             Assert.True(options.SaveTokens);
             Assert.Equal("<signIn>", options.SignInScheme);

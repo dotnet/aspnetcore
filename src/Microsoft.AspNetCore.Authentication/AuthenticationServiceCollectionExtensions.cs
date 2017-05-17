@@ -74,5 +74,30 @@ namespace Microsoft.Extensions.DependencyInjection
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : AuthenticationHandler<TOptions>
             => services.AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureScheme: null, configureOptions: configureOptions);
+
+        public static IServiceCollection AddRemoteScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<TOptions> configureOptions)
+            where TOptions : RemoteAuthenticationOptions, new()
+            where THandler : RemoteAuthenticationHandler<TOptions>
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<TOptions>, EnsureSignInScheme<TOptions>>());
+            return services.AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureScheme: null, configureOptions: configureOptions);
+        }
+
+        // Used to ensure that there's always a default data protection provider
+        private class EnsureSignInScheme<TOptions> : IInitializeOptions<TOptions> where TOptions : RemoteAuthenticationOptions
+        {
+            private readonly AuthenticationOptions _authOptions;
+
+            public EnsureSignInScheme(IOptions<AuthenticationOptions> authOptions)
+            {
+                _authOptions = authOptions.Value;
+            }
+
+            public void Initialize(string name, TOptions options)
+            {
+                options.SignInScheme = options.SignInScheme ?? _authOptions.DefaultSignInScheme;
+            }
+        }
+
     }
 }

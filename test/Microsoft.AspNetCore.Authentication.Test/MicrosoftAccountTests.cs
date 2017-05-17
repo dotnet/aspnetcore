@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                 {"Microsoft:BackchannelTimeout", "0.0:0:30"},
                 //{"Microsoft:CallbackPath", "/callbackpath"}, // PathString doesn't convert
                 {"Microsoft:ClaimsIssuer", "<issuer>"},
-                {"Microsoft:DisplayName", "<display>"},
                 {"Microsoft:RemoteAuthenticationTimeout", "0.0:0:30"},
                 {"Microsoft:SaveTokens", "true"},
                 {"Microsoft:SendAppSecretProof", "true"},
@@ -71,7 +70,6 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
             Assert.Equal("<issuer>", options.ClaimsIssuer);
             Assert.Equal("<id>", options.ClientId);
             Assert.Equal("<secret>", options.ClientSecret);
-            Assert.Equal("<display>", options.DisplayName);
             Assert.Equal(new TimeSpan(0, 0, 0, 30), options.RemoteAuthenticationTimeout);
             Assert.True(options.SaveTokens);
             Assert.Equal("<signIn>", options.SignInScheme);

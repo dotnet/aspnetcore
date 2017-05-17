@@ -40,35 +40,11 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             set { base.Events = value; }
         }
 
-        public TwitterHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
-            : base(sharedOptions, options, dataProtection, logger, encoder, clock)
+        public TwitterHandler(IOptionsSnapshot<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
         { }
 
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new TwitterEvents());
-
-        protected override void InitializeOptions()
-        {
-            base.InitializeOptions();
-
-            if (Options.StateDataFormat == null)
-            {
-                var dataProtector = DataProtection.CreateProtector(
-                    GetType().FullName, Scheme.Name, "v1");
-                Options.StateDataFormat = new SecureDataFormat<RequestToken>(
-                    new RequestTokenSerializer(),
-                    dataProtector);
-            }
-
-            if (Options.Backchannel == null)
-            {
-                Options.Backchannel = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
-                Options.Backchannel.Timeout = Options.BackchannelTimeout;
-                Options.Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
-                Options.Backchannel.DefaultRequestHeaders.Accept.ParseAdd("*/*");
-                Options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core Twitter handler");
-                Options.Backchannel.DefaultRequestHeaders.ExpectContinue = false;
-            }
-        }
 
         protected override async Task<AuthenticateResult> HandleRemoteAuthenticateAsync()
         {
@@ -116,12 +92,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var identity = new ClaimsIdentity(new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
-                new Claim(ClaimTypes.Name, accessToken.ScreenName, ClaimValueTypes.String, Options.ClaimsIssuer),
-                new Claim("urn:twitter:userid", accessToken.UserId, ClaimValueTypes.String, Options.ClaimsIssuer),
-                new Claim("urn:twitter:screenname", accessToken.ScreenName, ClaimValueTypes.String, Options.ClaimsIssuer)
+                new Claim(ClaimTypes.NameIdentifier, accessToken.UserId, ClaimValueTypes.String, ClaimsIssuer),
+                new Claim(ClaimTypes.Name, accessToken.ScreenName, ClaimValueTypes.String, ClaimsIssuer),
+                new Claim("urn:twitter:userid", accessToken.UserId, ClaimValueTypes.String, ClaimsIssuer),
+                new Claim("urn:twitter:screenname", accessToken.ScreenName, ClaimValueTypes.String, ClaimsIssuer)
             },
-            Options.ClaimsIssuer);
+            ClaimsIssuer);
 
             JObject user = null;
             if (Options.RetrieveUserDetails)
@@ -145,7 +121,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             foreach (var action in Options.ClaimActions)
             {
-                action.Run(user, identity, Options.ClaimsIssuer);
+                action.Run(user, identity, ClaimsIssuer);
             }
 
             var context = new TwitterCreatingTicketContext(Context, Scheme, Options, properties, token.UserId, token.ScreenName, token.Token, token.TokenSecret, user)

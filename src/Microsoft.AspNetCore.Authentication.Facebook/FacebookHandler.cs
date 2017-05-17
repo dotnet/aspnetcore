@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,8 +18,8 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
 {
     internal class FacebookHandler : OAuthHandler<FacebookOptions>
     {
-        public FacebookHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
-            : base(sharedOptions, options, logger, encoder, dataProtection, clock)
+        public FacebookHandler(IOptionsSnapshot<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
         { }
 
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)

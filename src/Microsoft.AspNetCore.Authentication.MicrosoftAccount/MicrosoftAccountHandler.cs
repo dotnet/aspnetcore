@@ -7,7 +7,6 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
@@ -16,8 +15,8 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
     internal class MicrosoftAccountHandler : OAuthHandler<MicrosoftAccountOptions>
     {
-        public MicrosoftAccountHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<MicrosoftAccountOptions> options, ILoggerFactory logger, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
-            : base(sharedOptions, options, logger, encoder, dataProtection, clock)
+        public MicrosoftAccountHandler(IOptionsSnapshot<MicrosoftAccountOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
         { }
 
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)

@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         public CookieSecurePolicy CookieSecure { get; set; }
 
         /// <summary>
-        /// If set this will be used by the CookieAuthenticationMiddleware for data protection.
+        /// If set this will be used by the CookieAuthenticationHandler for data protection.
         /// </summary>
         public IDataProtectionProvider DataProtectionProvider { get; set; }
 
@@ -129,9 +130,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         /// <summary>
         /// The TicketDataFormat is used to protect and unprotect the identity and other properties which are stored in the
-        /// cookie value. If it is not provided a default data handler is created using the data protection service contained
-        /// in the IApplicationBuilder.Properties. The default data protection service is based on machine key when running on ASP.NET, 
-        /// and on DPAPI when running in a different process.
+        /// cookie value. If not provided one will be created using <see cref="DataProtectionProvider"/>.
         /// </summary>
         public ISecureDataFormat<AuthenticationTicket> TicketDataFormat { get; set; }
 

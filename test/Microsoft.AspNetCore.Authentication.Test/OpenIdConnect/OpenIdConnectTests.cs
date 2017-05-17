@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             {
                 {"OpenIdConnect:ClientId", "<id>"},
                 {"OpenIdConnect:ClientSecret", "<secret>"},
+                {"OpenIdConnect:RequireHttpsMetadata", "false"},
                 {"OpenIdConnect:Authority", "<auth>"}
             };
             var configurationBuilder = new ConfigurationBuilder();
@@ -48,6 +49,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal("<id>", options.ClientId);
             Assert.Equal("<secret>", options.ClientSecret);
             Assert.Equal("<auth>", options.Authority);
+            Assert.False(options.RequireHttpsMetadata);
         }
 
 

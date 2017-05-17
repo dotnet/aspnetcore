@@ -10,7 +10,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -33,29 +32,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             set { base.Events = value; }
         }
 
-        public OAuthHandler(IOptions<AuthenticationOptions> sharedOptions, IOptionsSnapshot<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, IDataProtectionProvider dataProtection, ISystemClock clock)
-            : base(sharedOptions, options, dataProtection, logger, encoder, clock)
+        public OAuthHandler(IOptionsSnapshot<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+            : base(options, logger, encoder, clock)
         { }
-
-        protected override void InitializeOptions()
-        {
-            base.InitializeOptions();
-
-            if (Options.Backchannel == null)
-            {
-                Options.Backchannel = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
-                Options.Backchannel.DefaultRequestHeaders.UserAgent.ParseAdd("Microsoft ASP.NET Core OAuth handler");
-                Options.Backchannel.Timeout = Options.BackchannelTimeout;
-                Options.Backchannel.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
-            }
-
-            if (Options.StateDataFormat == null)
-            {
-                var dataProtector = DataProtection.CreateProtector(
-                    GetType().FullName, Scheme.Name, "v1");
-                Options.StateDataFormat = new PropertiesDataFormat(dataProtector);
-            }
-        }
 
         /// <summary>
         /// Creates a new instance of the events instance.
@@ -119,7 +98,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 return AuthenticateResult.Fail("Failed to retrieve access token.");
             }
 
-            var identity = new ClaimsIdentity(Options.ClaimsIssuer);
+            var identity = new ClaimsIdentity(ClaimsIssuer);
 
             if (Options.SaveTokens)
             {

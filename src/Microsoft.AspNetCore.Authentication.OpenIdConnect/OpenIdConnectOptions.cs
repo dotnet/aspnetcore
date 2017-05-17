@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </remarks>
         public OpenIdConnectOptions()
         {
-            DisplayName = OpenIdConnectDefaults.Caption;
             CallbackPath = new PathString("/signin-oidc");
             SignedOutCallbackPath = new PathString("/signout-callback-oidc");
             RemoteSignOutPath = new PathString("/signout-oidc");

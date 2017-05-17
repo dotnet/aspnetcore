@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {"Google:BackchannelTimeout", "0.0:0:30"},
                 //{"Google:CallbackPath", "/callbackpath"}, // PathString doesn't convert
                 {"Google:ClaimsIssuer", "<issuer>"},
-                {"Google:DisplayName", "<display>"},
                 {"Google:RemoteAuthenticationTimeout", "0.0:0:30"},
                 {"Google:SaveTokens", "true"},
                 {"Google:SendAppSecretProof", "true"},
@@ -70,7 +69,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Equal("<issuer>", options.ClaimsIssuer);
             Assert.Equal("<id>", options.ClientId);
             Assert.Equal("<secret>", options.ClientSecret);
-            Assert.Equal("<display>", options.DisplayName);
             Assert.Equal(new TimeSpan(0, 0, 0, 30), options.RemoteAuthenticationTimeout);
             Assert.True(options.SaveTokens);
             Assert.Equal("<signIn>", options.SignInScheme);

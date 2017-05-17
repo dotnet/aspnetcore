@@ -40,49 +40,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new JwtBearerEvents());
 
-        protected override void InitializeOptions()
-        {
-            base.InitializeOptions();
-
-            if (string.IsNullOrEmpty(Options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(Options.Audience))
-            {
-                Options.TokenValidationParameters.ValidAudience = Options.Audience;
-            }
-
-            if (Options.ConfigurationManager == null)
-            {
-                if (Options.Configuration != null)
-                {
-                    Options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(Options.Configuration);
-                }
-                else if (!(string.IsNullOrEmpty(Options.MetadataAddress) && string.IsNullOrEmpty(Options.Authority)))
-                {
-                    if (string.IsNullOrEmpty(Options.MetadataAddress) && !string.IsNullOrEmpty(Options.Authority))
-                    {
-                        Options.MetadataAddress = Options.Authority;
-                        if (!Options.MetadataAddress.EndsWith("/", StringComparison.Ordinal))
-                        {
-                            Options.MetadataAddress += "/";
-                        }
-
-                        Options.MetadataAddress += ".well-known/openid-configuration";
-                    }
-
-                    if (Options.RequireHttpsMetadata && !Options.MetadataAddress.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new InvalidOperationException("The MetadataAddress or Authority must use HTTPS unless disabled for development by setting RequireHttpsMetadata=false.");
-                    }
-
-                    var httpClient = new HttpClient(Options.BackchannelHttpHandler ?? new HttpClientHandler());
-                    httpClient.Timeout = Options.BackchannelTimeout;
-                    httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
-
-                    Options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(Options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
-                        new HttpDocumentRetriever(httpClient) { RequireHttps = Options.RequireHttpsMetadata });
-                }
-            }
-        }
-
         /// <summary>
         /// Searches the 'Authorization' header for a 'Bearer' token. If the 'Bearer' token is found, it is validated using <see cref="TokenValidationParameters"/> set in the options.
         /// </summary>

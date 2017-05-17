@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             foreach (var action in Options.ClaimActions)
             {
-                action.Run(userData, Identity, Options.ClaimsIssuer);
+                action.Run(userData, Identity, Options.ClaimsIssuer ?? Scheme.Name);
             }
         }
     }

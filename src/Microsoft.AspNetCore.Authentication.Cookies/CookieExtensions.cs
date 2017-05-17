@@ -3,6 +3,10 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -15,7 +19,10 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddCookieAuthentication(this IServiceCollection services, Action<CookieAuthenticationOptions> configureOptions) =>
             services.AddCookieAuthentication(CookieAuthenticationDefaults.AuthenticationScheme, configureOptions);
 
-        public static IServiceCollection AddCookieAuthentication(this IServiceCollection services, string authenticationScheme, Action<CookieAuthenticationOptions> configureOptions) =>
-            services.AddScheme<CookieAuthenticationOptions, CookieAuthenticationHandler>(authenticationScheme, configureOptions);
+        public static IServiceCollection AddCookieAuthentication(this IServiceCollection services, string authenticationScheme, Action<CookieAuthenticationOptions> configureOptions)
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<CookieAuthenticationOptions>, CookieAuthenticationInitializer>());
+            return services.AddScheme<CookieAuthenticationOptions, CookieAuthenticationHandler>(authenticationScheme, configureOptions);
+        }
     }
 }
