@@ -7,7 +7,8 @@
     <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
     <TargetFramework>net451</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <PackageTags>aspnet;logging;aspnetcore</PackageTags>
+    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension</PackageTags>
+    <PackageType>AzureSiteExtension</PackageType>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- These need to be set manually because this is not marked as a shipping (to nuget.org) package. https://github.com/aspnet/AzureIntegration/issues/38 -->
@@ -22,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj"  PrivateAssets="All" />
+    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
