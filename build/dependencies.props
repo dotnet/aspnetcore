@@ -3,6 +3,8 @@
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
+    <SystemDiagnosticsDiagnosticSourceVersion>4.4.0-*</SystemDiagnosticsDiagnosticSourceVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <WindowsApiSetsVersion>1.0.1</WindowsApiSetsVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>

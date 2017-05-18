@@ -3,7 +3,6 @@
 
 using System;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -90,8 +89,7 @@ namespace Microsoft.AspNetCore.Hosting
                     done.Wait();
                 };
 
-                var assemblyLoadContext = AssemblyLoadContext.GetLoadContext(typeof(WebHostExtensions).GetTypeInfo().Assembly);
-                assemblyLoadContext.Unloading += context => shutdown();
+                AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => shutdown();
                 Console.CancelKeyPress += (sender, eventArgs) =>
                 {
                     shutdown();
