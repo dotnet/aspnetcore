@@ -47,11 +47,7 @@ namespace ClientSample
                 };
 
                 // Set up handler
-                connection.On("Send", new[] { typeof(string) }, a =>
-                {
-                    var message = (string)a[0];
-                    Console.WriteLine(message);
-                });
+                connection.On<string>("Send", Console.WriteLine);
 
                 while (!cts.Token.IsCancellationRequested)
                 {

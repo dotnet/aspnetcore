@@ -128,12 +128,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     var tcs = new TaskCompletionSource<string>();
-                    connection.On("Echo", new[] { typeof(string) }, a =>
-                    {
-                        tcs.TrySetResult((string)a[0]);
-                    });
+                    connection.On<string>("Echo", tcs.SetResult);
 
-                    await connection.Invoke<Task>("CallEcho", originalMessage).OrTimeout();
+                    await connection.Invoke("CallEcho", originalMessage).OrTimeout();
 
                     Assert.Equal(originalMessage, await tcs.Task.OrTimeout());
                 }
@@ -157,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync(TransportType.LongPolling, httpClient);
 
                     var ex = await Assert.ThrowsAnyAsync<Exception>(
-                        async () => await connection.Invoke<object>("!@#$%"));
+                        async () => await connection.Invoke("!@#$%"));
 
                     Assert.Equal("Unknown hub method '!@#$%'", ex.Message);
                 }

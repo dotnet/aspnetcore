@@ -109,18 +109,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         // TODO: Client return values/tasks?
-        // TODO: Overloads for void hub methods
-        // TODO: Overloads that use type parameters (like On<T1>, On<T1, T2>, etc.)
         public void On(string methodName, Type[] parameterTypes, Action<object[]> handler)
         {
             var invocationHandler = new InvocationHandler(parameterTypes, handler);
             _handlers.AddOrUpdate(methodName, invocationHandler, (_, __) => invocationHandler);
         }
 
-        public Task<T> Invoke<T>(string methodName, params object[] args) => Invoke<T>(methodName, CancellationToken.None, args);
-        public async Task<T> Invoke<T>(string methodName, CancellationToken cancellationToken, params object[] args) => ((T)(await Invoke(methodName, typeof(T), cancellationToken, args)));
-
-        public Task<object> Invoke(string methodName, Type returnType, params object[] args) => Invoke(methodName, returnType, CancellationToken.None, args);
         public async Task<object> Invoke(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
             ThrowIfConnectionTerminated();

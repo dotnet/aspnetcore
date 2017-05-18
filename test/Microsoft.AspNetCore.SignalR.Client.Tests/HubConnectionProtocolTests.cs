@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -22,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var invokeTask = hubConnection.Invoke("Foo", typeof(void));
+                var invokeTask = hubConnection.Invoke("Foo");
 
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
@@ -44,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var invokeTask = hubConnection.Invoke("Foo", typeof(void));
+                var invokeTask = hubConnection.Invoke("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
@@ -136,15 +139,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                hubConnection.On("Foo", new[] { typeof(int), typeof(string), typeof(float) }, (a) => handlerCalled.TrySetResult(a));
+                hubConnection.On<int, string, float>("Foo", (r1, r2, r3) => handlerCalled.TrySetResult(new object[] { r1, r2, r3 }));
 
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 1, target = "Foo", arguments = new object[] { 1, "Foo", 2.0f } }).OrTimeout();
+                var args = new object[] { 1, "Foo", 2.0f };
+                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 1, target = "Foo", arguments = args }).OrTimeout();
 
-                var results = await handlerCalled.Task.OrTimeout();
-                Assert.Equal(3, results.Length);
-                Assert.Equal(1, results[0]);
-                Assert.Equal("Foo", results[1]);
-                Assert.Equal(2.0f, results[2]);
+                Assert.Equal(args, await handlerCalled.Task.OrTimeout());
             }
             finally
             {

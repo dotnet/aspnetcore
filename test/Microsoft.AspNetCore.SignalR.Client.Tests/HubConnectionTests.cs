@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             await hubConnection.StartAsync(new TestTransportFactory(Mock.Of<ITransport>()), httpClient: null);
             await hubConnection.DisposeAsync();
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await hubConnection.Invoke("test", typeof(int)));
+                async () => await hubConnection.Invoke<int>("test"));
 
             Assert.Equal("Connection has been terminated.", exception.Message);
         }
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var hubConnection = new HubConnection(mockConnection.Object, new LoggerFactory());
 
             await hubConnection.StartAsync(new TestTransportFactory(Mock.Of<ITransport>()), httpClient: null);
-            var invokeTask = hubConnection.Invoke("testMethod", typeof(int));
+            var invokeTask = hubConnection.Invoke<int>("testMethod");
             await hubConnection.DisposeAsync();
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask);
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var hubConnection = new HubConnection(mockConnection.Object, new LoggerFactory());
 
             await hubConnection.StartAsync(new TestTransportFactory(Mock.Of<ITransport>()), httpClient: null);
-            var invokeTask = hubConnection.Invoke("testMethod", typeof(int));
+            var invokeTask = hubConnection.Invoke<int>("testMethod");
             await hubConnection.DisposeAsync();
 
             var thrown = await Assert.ThrowsAsync(exception.GetType(), async () => await invokeTask);
