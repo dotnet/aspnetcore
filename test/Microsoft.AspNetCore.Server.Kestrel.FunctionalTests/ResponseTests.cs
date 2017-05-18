@@ -2063,40 +2063,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionAdapterData))]
-        public async Task FailedWritesResultInAbortedRequest(ListenOptions listenOptions)
+        public async Task ThrowsOnWriteWithRequestAbortedTokenAfterRequestIsAborted(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext();
-
             // This should match _maxBytesPreCompleted in SocketOutput
             var maxBytesPreCompleted = 65536;
+
             // Ensure string is long enough to disable write-behind buffering
             var largeString = new string('a', maxBytesPreCompleted + 1);
 
             var writeTcs = new TaskCompletionSource<object>();
-            var registrationWh = new ManualResetEventSlim();
-            var connectionCloseWh = new ManualResetEventSlim();
+            var requestAbortedWh = new ManualResetEventSlim();
             var requestStartWh = new ManualResetEventSlim();
 
             using (var server = new TestServer(async httpContext =>
             {
                 requestStartWh.Set();
+
                 var response = httpContext.Response;
                 var request = httpContext.Request;
                 var lifetime = httpContext.Features.Get<IHttpRequestLifetimeFeature>();
 
-                lifetime.RequestAborted.Register(() => registrationWh.Set());
-
-                await request.Body.CopyToAsync(Stream.Null);
-                Assert.True(connectionCloseWh.Wait(10_000));
+                lifetime.RequestAborted.Register(() => requestAbortedWh.Set());
+                Assert.True(requestAbortedWh.Wait(TimeSpan.FromSeconds(10)));
 
                 try
                 {
-                    // Ensure write is long enough to disable write-behind buffering
-                    for (int i = 0; i < 100; i++)
-                    {
-                        await response.WriteAsync(largeString, lifetime.RequestAborted);
-                        registrationWh.Wait(1000);
-                    }
+                    await response.WriteAsync(largeString, lifetime.RequestAborted);
                 }
                 catch (Exception ex)
                 {
@@ -2105,26 +2097,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
 
                 writeTcs.SetException(new Exception("This shouldn't be reached."));
-            }, testContext, listenOptions))
+            }, new TestServiceContext(), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
                         "Host:",
-                        "Content-Length: 5",
+                        "Content-Length: 0",
                         "",
-                        "Hello");
+                        "");
 
-                    Assert.True(requestStartWh.Wait(10_000));
+                    Assert.True(requestStartWh.Wait(TimeSpan.FromSeconds(10)));
                 }
 
-                connectionCloseWh.Set();
+                // Write failed - can throw TaskCanceledException or OperationCanceledException,
+                // dependending on how far the canceled write goes.
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await writeTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(15));
 
-                // Write failed
-                await Assert.ThrowsAsync<TaskCanceledException>(async () => await writeTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(15));
                 // RequestAborted tripped
-                Assert.True(registrationWh.Wait(1000));
+                Assert.True(requestAbortedWh.Wait(TimeSpan.FromSeconds(1)));
             }
         }
 
