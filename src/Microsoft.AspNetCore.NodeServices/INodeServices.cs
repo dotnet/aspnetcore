@@ -50,26 +50,5 @@ namespace Microsoft.AspNetCore.NodeServices
         /// <param name="args">Any sequence of JSON-serializable arguments to be passed to the Node.js function.</param>
         /// <returns>A <see cref="Task{TResult}"/> representing the completion of the RPC call.</returns>
         Task<T> InvokeExportAsync<T>(CancellationToken cancellationToken, string moduleName, string exportedFunctionName, params object[] args);
-
-        /// <summary>
-        /// Asynchronously invokes code in the Node.js instance.
-        /// </summary>
-        /// <typeparam name="T">The JSON-serializable data type that the Node.js code will asynchronously return.</typeparam>
-        /// <param name="moduleName">The path to the Node.js module (i.e., JavaScript file) relative to your project root whose default CommonJS export is the function to be invoked.</param>
-        /// <param name="args">Any sequence of JSON-serializable arguments to be passed to the Node.js function.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the completion of the RPC call.</returns>
-        [Obsolete("Use InvokeAsync instead")]
-        Task<T> Invoke<T>(string moduleName, params object[] args);
-
-        /// <summary>
-        /// Asynchronously invokes code in the Node.js instance.
-        /// </summary>
-        /// <typeparam name="T">The JSON-serializable data type that the Node.js code will asynchronously return.</typeparam>
-        /// <param name="moduleName">The path to the Node.js module (i.e., JavaScript file) relative to your project root that contains the code to be invoked.</param>
-        /// <param name="exportedFunctionName">Specifies the CommonJS export to be invoked.</param>
-        /// <param name="args">Any sequence of JSON-serializable arguments to be passed to the Node.js function.</param>
-        /// <returns>A <see cref="Task{TResult}"/> representing the completion of the RPC call.</returns>
-        [Obsolete("Use InvokeExportAsync instead")]
-        Task<T> InvokeExport<T>(string moduleName, string exportedFunctionName, params object[] args);
     }
 }

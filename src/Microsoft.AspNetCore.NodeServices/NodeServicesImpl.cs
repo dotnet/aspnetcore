@@ -161,17 +161,5 @@ namespace Microsoft.AspNetCore.NodeServices
         {
             return _nodeInstanceFactory();
         }
-
-        // Obsolete method - will be removed soon
-        public Task<T> Invoke<T>(string moduleName, params object[] args)
-        {
-            return InvokeAsync<T>(moduleName, args);
-        }
-
-        // Obsolete method - will be removed soon
-        public Task<T> InvokeExport<T>(string moduleName, string exportedFunctionName, params object[] args)
-        {
-            return InvokeExportAsync<T>(moduleName, exportedFunctionName, args);
-        }
     }
 }

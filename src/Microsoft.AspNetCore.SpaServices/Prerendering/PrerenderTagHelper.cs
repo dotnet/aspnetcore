@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     {
         private const string PrerenderModuleAttributeName = "asp-prerender-module";
         private const string PrerenderExportAttributeName = "asp-prerender-export";
-        private const string PrerenderWebpackConfigAttributeName = "asp-prerender-webpack-config";
         private const string PrerenderDataAttributeName = "asp-prerender-data";
         private const string PrerenderTimeoutAttributeName = "asp-prerender-timeout";
         private static INodeServices _fallbackNodeServices; // Used only if no INodeServices was registered with DI
@@ -58,13 +57,6 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// </summary>
         [HtmlAttributeName(PrerenderExportAttributeName)]
         public string ExportName { get; set; }
-
-        /// <summary>
-        /// Obsolete. Do not use. Instead, configure Webpack to build a Node.js-compatible bundle and reference that directly.
-        /// </summary>
-        [Obsolete("Do not use. This feature will be removed. Instead, configure Webpack to build a Node.js-compatible bundle and reference that directly.")]
-        [HtmlAttributeName(PrerenderWebpackConfigAttributeName)]
-        public string WebpackConfigPath { get; set; }
 
         /// <summary>
         /// An optional JSON-serializable parameter to be supplied to the prerendering code.
@@ -111,10 +103,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 _nodeServices,
                 new JavaScriptModuleExport(ModuleName)
                 {
-                    ExportName = ExportName,
-#pragma warning disable CS0618 // Type or member is obsolete
-                    WebpackConfig = WebpackConfigPath
-#pragma warning restore CS0618 // Type or member is obsolete
+                    ExportName = ExportName
                 },
                 unencodedAbsoluteUrl,
                 unencodedPathAndQuery,

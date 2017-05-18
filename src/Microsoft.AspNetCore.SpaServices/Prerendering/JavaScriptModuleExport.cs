@@ -26,11 +26,5 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// If not set, the JavaScript module's default CommonJS export must itself be the prerendering function.
         /// </summary>
         public string ExportName { get; set; }
-
-        /// <summary>
-        /// Obsolete. Do not use. Instead, configure Webpack to build a Node.js-compatible bundle and reference that directly.
-        /// </summary>
-        [Obsolete("Do not use. This feature will be removed. Instead, configure Webpack to build a Node.js-compatible bundle and reference that directly.")]
-        public string WebpackConfig { get; set; }
     }
 }

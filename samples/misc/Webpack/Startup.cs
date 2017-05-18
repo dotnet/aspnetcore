@@ -32,7 +32,6 @@ namespace Webpack
             });
 
             app.UseStaticFiles();
-            loggerFactory.AddConsole();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -44,6 +43,11 @@ namespace Webpack
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddConsole();
+                    factory.AddDebug();
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseKestrel()
