@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     internal class StatementBlock : Block
     {
-        private const BlockKind ThisBlockKind = BlockKind.Statement;
+        private const BlockKindInternal ThisBlockKind = BlockKindInternal.Statement;
 
         public StatementBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockKind, children, chunkGenerator)
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     internal class DirectiveBlock : Block
     {
-        private const BlockKind ThisBlockKind = BlockKind.Directive;
+        private const BlockKindInternal ThisBlockKind = BlockKindInternal.Directive;
 
         public DirectiveBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockKind, children, chunkGenerator)
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     internal class ExpressionBlock : Block
     {
-        private const BlockKind ThisBlockKind = BlockKind.Expression;
+        private const BlockKindInternal ThisBlockKind = BlockKindInternal.Expression;
 
         public ExpressionBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockKind, children, chunkGenerator)
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     internal class MarkupTagBlock : Block
     {
-        private const BlockKind ThisBlockKind = BlockKind.Tag;
+        private const BlockKindInternal ThisBlockKind = BlockKindInternal.Tag;
 
         public MarkupTagBlock(params SyntaxTreeNode[] children)
             : base(ThisBlockKind, children, ParentChunkGenerator.Null)
@@ -79,10 +79,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     internal class MarkupBlock : Block
     {
-        private const BlockKind ThisBlockKind = BlockKind.Markup;
+        private const BlockKindInternal ThisBlockKind = BlockKindInternal.Markup;
 
         public MarkupBlock(
-            BlockKind BlockKind,
+            BlockKindInternal BlockKind,
             IParentChunkGenerator chunkGenerator,
             IReadOnlyList<SyntaxTreeNode> children)
             : base(BlockKind, children, chunkGenerator)
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     internal class TemplateBlock : Block
     {
-        private const BlockKind ThisBlockKind = BlockKind.Template;
+        private const BlockKindInternal ThisBlockKind = BlockKindInternal.Template;
 
         public TemplateBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockKind, children, chunkGenerator)
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     internal class CommentBlock : Block
     {
-        private const BlockKind ThisBlockKind = BlockKind.Comment;
+        private const BlockKindInternal ThisBlockKind = BlockKindInternal.Comment;
 
         public CommentBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockKind, children, chunkGenerator)

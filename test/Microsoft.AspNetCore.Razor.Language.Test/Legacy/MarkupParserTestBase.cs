@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return ParseHtmlBlock(document, designTime);
         }
 
-        internal virtual void SingleSpanDocumentTest(string document, BlockKind blockKind, SpanKind spanType)
+        internal virtual void SingleSpanDocumentTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType)
         {
             var b = CreateSimpleBlockAndSpan(document, blockKind, spanType);
             ParseDocumentTest(document, b);

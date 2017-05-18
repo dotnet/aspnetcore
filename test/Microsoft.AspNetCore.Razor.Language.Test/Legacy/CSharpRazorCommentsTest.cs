@@ -16,15 +16,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(
-                            SpanKind.Comment, 
+                            SpanKindInternal.Comment, 
                             new HtmlSymbol(
                                 string.Empty,
                                 HtmlSymbolType.Unknown))
-                               .Accepts(AcceptedCharacters.Any))),
+                               .Accepts(AcceptedCharactersInternal.Any))),
                 new RazorError(
                     LegacyResources.ParseError_RazorComment_Not_Terminated,
                     SourceLocation.Zero,
@@ -39,17 +39,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             string.Empty,
                             HtmlSymbolType.Unknown))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()));
         }
 
@@ -66,17 +66,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords),
                         new CommentBlock(
                             Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
-                                   .Accepts(AcceptedCharacters.None),
+                                   .Accepts(AcceptedCharactersInternal.None),
                             Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar)
-                                   .Accepts(AcceptedCharacters.None),
-                            Factory.Span(SpanKind.Comment, new CSharpSymbol(
+                                   .Accepts(AcceptedCharactersInternal.None),
+                            Factory.Span(SpanKindInternal.Comment, new CSharpSymbol(
                                 string.Empty,
                                 CSharpSymbolType.Unknown))
-                                   .Accepts(AcceptedCharacters.Any),
+                                   .Accepts(AcceptedCharactersInternal.Any),
                             Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar)
-                                   .Accepts(AcceptedCharacters.None),
+                                   .Accepts(AcceptedCharactersInternal.None),
                             Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
-                                   .Accepts(AcceptedCharacters.None)),
+                                   .Accepts(AcceptedCharactersInternal.None)),
                         Factory.Code(Environment.NewLine)
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords))),
                 new RazorError(
@@ -97,13 +97,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords),
                         new CommentBlock(
                             Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
-                                   .Accepts(AcceptedCharacters.None),
+                                   .Accepts(AcceptedCharactersInternal.None),
                             Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar)
-                                   .Accepts(AcceptedCharacters.None),
-                            Factory.Span(SpanKind.Comment, new CSharpSymbol(
+                                   .Accepts(AcceptedCharactersInternal.None),
+                            Factory.Span(SpanKindInternal.Comment, new CSharpSymbol(
                                 string.Empty,
                                 CSharpSymbolType.Unknown))
-                                    .Accepts(AcceptedCharacters.Any)))),
+                                    .Accepts(AcceptedCharactersInternal.Any)))),
                 new RazorError(
                     LegacyResources.ParseError_RazorComment_Not_Terminated,
                     new SourceLocation(5, 0, 5),
@@ -125,28 +125,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.Code(Environment.NewLine)
                             .AsStatement()
                             .AutoCompleteWith("}"),
                         new MarkupBlock(
                             new MarkupTagBlock(
-                                Factory.MarkupTransition("<text").Accepts(AcceptedCharacters.Any)),
-                            Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None),
+                                Factory.MarkupTransition("<text").Accepts(AcceptedCharactersInternal.Any)),
+                            Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None),
                             Factory.Markup("    ").With(SpanChunkGenerator.Null),
                             new CommentBlock(
                                 Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                                       .Accepts(AcceptedCharacters.None),
+                                       .Accepts(AcceptedCharactersInternal.None),
                                 Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                                       .Accepts(AcceptedCharacters.None),
-                                Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                                       .Accepts(AcceptedCharactersInternal.None),
+                                Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                                     string.Empty,
                                     HtmlSymbolType.Unknown))
-                                       .Accepts(AcceptedCharacters.Any),
+                                       .Accepts(AcceptedCharactersInternal.Any),
                                 Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                                       .Accepts(AcceptedCharacters.None),
+                                       .Accepts(AcceptedCharactersInternal.None),
                                 Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                                       .Accepts(AcceptedCharacters.None)),
+                                       .Accepts(AcceptedCharactersInternal.None)),
                             Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                             Factory.Markup("}")))),
                 new RazorError(
@@ -171,17 +171,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.EmptyCSharp()
                             .AsStatement()
                             .AutoCompleteWith("}"),
                         new CommentBlock(
                             Factory.CodeTransition(CSharpSymbolType.RazorCommentTransition)
-                                   .Accepts(AcceptedCharacters.None),
+                                   .Accepts(AcceptedCharactersInternal.None),
                             Factory.MetaCode("*", CSharpSymbolType.RazorCommentStar)
-                                   .Accepts(AcceptedCharacters.None),
-                            Factory.Span(SpanKind.Comment, new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown))
-                                   .Accepts(AcceptedCharacters.Any)))),
+                                   .Accepts(AcceptedCharactersInternal.None),
+                            Factory.Span(SpanKindInternal.Comment, new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown))
+                                   .Accepts(AcceptedCharactersInternal.Any)))),
                 new RazorError(
                     LegacyResources.ParseError_RazorComment_Not_Terminated,
                     new SourceLocation(2, 0, 2),
@@ -206,17 +206,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Markup(Environment.NewLine),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             string.Empty,
                             HtmlSymbolType.Unknown))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                     new MarkupTagBlock(
                         Factory.Markup("</p>"))
@@ -238,31 +238,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Markup("  ").With(SpanChunkGenerator.Null),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             string.Empty,
                             HtmlSymbolType.Unknown))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("  " + Environment.NewLine).With(SpanChunkGenerator.Null),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             string.Empty,
                             HtmlSymbolType.Unknown))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                     new MarkupTagBlock(
                         Factory.Markup("</p>"))
@@ -282,32 +282,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Markup(Environment.NewLine),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             string.Empty,
                             HtmlSymbolType.Unknown))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml(),
                     Factory.Markup("  ").With(SpanChunkGenerator.Null),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             string.Empty,
                             HtmlSymbolType.Unknown))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                     new MarkupTagBlock(
                         Factory.Markup("</p>"))
@@ -327,31 +327,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Markup(Environment.NewLine),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             " hello ",
                             HtmlSymbolType.RazorComment))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(" content "),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             " world ",
                             HtmlSymbolType.RazorComment))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(Environment.NewLine),
                     new MarkupTagBlock(
                         Factory.Markup("</p>"))
@@ -374,31 +374,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Markup(Environment.NewLine + Environment.NewLine),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             " content ",
                             HtmlSymbolType.RazorComment))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                     new CommentBlock(
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Comment, new HtmlSymbol(
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(
                             Environment.NewLine + "content" + Environment.NewLine,
                             HtmlSymbolType.RazorComment))
-                               .Accepts(AcceptedCharacters.Any),
+                               .Accepts(AcceptedCharactersInternal.Any),
                         Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar)
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition)
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                     Factory.Markup(Environment.NewLine),
                     new MarkupTagBlock(

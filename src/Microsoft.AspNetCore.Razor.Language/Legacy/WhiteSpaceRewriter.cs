@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         protected override bool CanRewrite(Block block)
         {
-            return block.Type == BlockKind.Expression && Parent != null;
+            return block.Type == BlockKindInternal.Expression && Parent != null;
         }
 
         protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("for(int i = 0; i++; i < length) { foo(); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("foreach(var foo in bar) { foo(); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("while(true) { foo(); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("switch(foo) { foo(); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("lock(baz) { foo(); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("if(true) { foo(); } else { foo(); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { A(); } catch(Exception) when (true) { B(); } finally { C(); }")
                                 .AsStatement()
-                                .Accepts(AcceptedCharacters.None))
+                                .Accepts(AcceptedCharactersInternal.None))
                     },
                     {
                         "@try { A(); } catch(Exception) when (true) { B(); } catch(IOException) when (false) { C(); }",
@@ -188,12 +188,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         "@{try { someMethod(); } catch(Exception) when (true) { handleIO(); }}",
                         new StatementBlock(
                             factory.CodeTransition(),
-                            factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                            factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (true) { handleIO(); }")
                                 .AsStatement()
                                 .AutoCompleteWith(autoCompleteString: null),
-                            factory.MetaCode("}").Accepts(AcceptedCharacters.None))
+                            factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None))
                     },
 
                     // Partial exception filter data
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("try { foo(); } finally { Dispose(); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.CodeTransition(),
                         factory.Code(code)
                             .AsNamespaceImport(import)
-                            .Accepts(AcceptedCharacters.AnyExceptNewline));
+                            .Accepts(AcceptedCharactersInternal.AnyExceptNewline));
 
                 // document, expectedResult
                 return new TheoryData<string, DirectiveBlock>
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("using(var foo = new Foo()) { foo.Bar(); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("using StringDictionary = System.Collections.Generic.Dictionary<string, string>")
                                    .AsNamespaceImport(" StringDictionary = System.Collections.Generic.Dictionary<string, string>")
-                                   .Accepts(AcceptedCharacters.AnyExceptNewline)
+                                   .Accepts(AcceptedCharactersInternal.AnyExceptNewline)
                                ));
         }
 
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("using System.Text.Encoding.ASCIIEncoding")
                                    .AsNamespaceImport(" System.Text.Encoding.ASCIIEncoding")
-                                   .Accepts(AcceptedCharacters.AnyExceptNewline)
+                                   .Accepts(AcceptedCharactersInternal.AnyExceptNewline)
                                ));
         }
 
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.Code("do { foo(); } while(true);")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                Factory.CodeTransition(),
                                                Factory.Code("is")
                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                   .Accepts(AcceptedCharacters.NonWhiteSpace)
+                                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                                ));
         }
     }

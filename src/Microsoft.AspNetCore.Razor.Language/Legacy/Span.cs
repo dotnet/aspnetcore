@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public ISpanChunkGenerator ChunkGenerator { get; private set; }
 
-        public SpanKind Kind { get; private set; }
+        public SpanKindInternal Kind { get; private set; }
         public IReadOnlyList<ISymbol> Symbols { get; private set; }
 
         // Allow test code to re-link spans

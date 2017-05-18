@@ -26,11 +26,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
         }
 
         [Fact]
@@ -49,11 +49,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "Some_Member", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "Some_Member", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
         }
 
         [Fact]
@@ -72,11 +72,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "BaseNamespace", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "BaseNamespace", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
         }
 
         [Fact]
@@ -95,11 +95,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "BaseNamespace.Foo.Bar", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "BaseNamespace.Foo.Bar", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
         }
 
         [Fact]
@@ -118,11 +118,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"AString\"", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"AString\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
         }
 
         [Fact]
@@ -146,8 +146,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)), expectedError);
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)), expectedError);
         }
 
         [Fact]
@@ -171,8 +171,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)), expectedError);
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)), expectedError);
         }
 
         [Fact]
@@ -196,8 +196,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)), expectedError);
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)), expectedError);
         }
 
         [Fact]
@@ -221,8 +221,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                 expectedError);
         }
 
@@ -242,22 +242,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
 
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "Some_Member", markup: false)
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "Some_Member", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[1]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"AString\"", markup: false)
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"AString\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[2]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
         }
 
         [Fact]
@@ -276,15 +276,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"Header\"", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"Header\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.AllWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{")
                         .AutoCompleteWith(null, atEndOfSpan: true)
-                        .Accepts(AcceptedCharacters.None),
+                        .Accepts(AcceptedCharactersInternal.None),
                     new MarkupBlock(
                         Factory.Markup(" "),
                         new MarkupTagBlock(
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagBlock(
                             Factory.Markup("</p>")),
                         Factory.Markup(" ")),
-                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -312,17 +312,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"Name\"", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"Name\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.AllWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{")
                         .AutoCompleteWith(null, atEndOfSpan: true)
-                        .Accepts(AcceptedCharacters.None),
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code(" foo(); bar(); ").AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -341,20 +341,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
 
-                    Factory.Span(SpanKind.Code, "    ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "    ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
-                    Factory.Span(SpanKind.Code, "       ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "Some_Member", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "       ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "Some_Member", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[1]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
-                    Factory.Span(SpanKind.Markup, "    ", markup: false)
-                        .Accepts(AcceptedCharacters.WhiteSpace)));
+                    Factory.Span(SpanKindInternal.Markup, "    ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -378,8 +378,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                 expectedErorr);
         }
 
@@ -399,12 +399,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"hello\"", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
-                    Factory.Span(SpanKind.Markup, " ;  ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, " ;  ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -428,13 +428,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"hello\"", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                 expectedErorr);
         }
 
@@ -459,13 +459,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"Hello\"", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.AllWhiteSpace)),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace)),
                 expectedErorr);
         }
 
@@ -490,11 +490,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"Hello\"", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                 expectedErorr);
         }
 
@@ -519,15 +519,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"Hello\"", markup: false)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.AllWhiteSpace),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{")
                         .AutoCompleteWith("}", atEndOfSpan: true)
-                        .Accepts(AcceptedCharacters.None)),
+                        .Accepts(AcceptedCharactersInternal.None)),
                 expectedErorr);
         }
 
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
                         .AsTagHelperPrefixDirective("\"\"")));
         }
@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
                         .AsTagHelperPrefixDirective("Foo")));
         }
@@ -565,7 +565,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
                         .AsTagHelperPrefixDirective("\"Foo\"")));
         }
@@ -578,10 +578,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
                         .AsTagHelperPrefixDirective(string.Empty)
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
                  new RazorError(
                     LegacyResources.FormatParseError_DirectiveMustHaveValue(
                         SyntaxConstants.CSharp.TagHelperPrefixKeyword),
@@ -596,7 +596,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
                         .AsTagHelperPrefixDirective("\"Foo")),
                 new RazorError(
@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo   \"")
                         .AsTagHelperPrefixDirective("Foo   \"")),
                 new RazorError(
@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
                         .AsRemoveTagHelper("\"\"")));
         }
@@ -647,7 +647,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
                         .AsRemoveTagHelper("Foo")));
         }
@@ -659,7 +659,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
                         .AsRemoveTagHelper("\"Foo\"")));
         }
@@ -671,10 +671,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + "     ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo,   Bar    ")
                         .AsRemoveTagHelper("Foo,   Bar")
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)));
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
         [Fact]
@@ -684,10 +684,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
                         .AsRemoveTagHelper(string.Empty)
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
                  new RazorError(
                     LegacyResources.FormatParseError_DirectiveMustHaveValue(
                         SyntaxConstants.CSharp.RemoveTagHelperKeyword),
@@ -701,7 +701,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
                         .AsRemoveTagHelper("\"Foo")),
                  new RazorError(
@@ -720,10 +720,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
                         .AsRemoveTagHelper("Foo\"")
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
                  new RazorError(
                      LegacyResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
@@ -740,7 +740,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
                         .AsAddTagHelper("\"\"")));
         }
@@ -752,7 +752,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
                         .AsAddTagHelper("Foo")));
         }
@@ -764,7 +764,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
                         .AsAddTagHelper("\"Foo\"")));
         }
@@ -776,7 +776,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "     ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo,   Bar    ")
                         .AsAddTagHelper("Foo,   Bar")));
         }
@@ -788,10 +788,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
                         .AsAddTagHelper(string.Empty)
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
                  new RazorError(
                     LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
                     absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12));
@@ -804,7 +804,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
                         .AsAddTagHelper("\"Foo")),
                  new RazorError(
@@ -823,10 +823,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
+                           .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
                         .AsAddTagHelper("Foo\"")
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
                  new RazorError(
                      LegacyResources.ParseError_Unterminated_String_Literal,
                      absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
@@ -842,10 +842,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@inherits System.Web.WebPages.WebPage",
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "System.Web.WebPages.WebPage", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "System.Web.WebPages.WebPage", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First()))));
         }
 
@@ -855,10 +855,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@inherits string[[]][]",
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "string[[]][]", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "string[[]][]", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First()))));
         }
 
@@ -868,10 +868,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@inherits System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>",
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First()))));
         }
 
@@ -881,10 +881,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@inherits string",
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "string", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "string", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First()))));
         }
 
@@ -894,11 +894,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@functions { foo(); bar(); }",
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("functions").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
-                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                     Factory.Code(" foo(); bar(); ").AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -907,11 +907,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@functions { }",
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("functions").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
-                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                     Factory.Code(" ").AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -920,13 +920,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@section Header { <p>F{o}o</p> }",
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("section").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "Header", CSharpSymbolType.Identifier)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "Header", CSharpSymbolType.Identifier)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First())),
-                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
-                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                     new MarkupBlock(
                         Factory.Markup(" "),
                         new MarkupTagBlock(
@@ -936,7 +936,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             Factory.Markup("</p>")),
                         Factory.Markup(" ")),
                     Factory.MetaCode("}")
-                           .Accepts(AcceptedCharacters.None)));
+                           .Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -955,8 +955,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -977,10 +977,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"simple-value\"", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"simple-value\"", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(chunkGenerator)));
         }
 
@@ -1002,10 +1002,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"{formaction}?/{id}?\"", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"{formaction}?/{id}?\"", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(chunkGenerator)));
         }
 
@@ -1025,14 +1025,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "\"{formaction}?/{id}?\"", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Markup, "\"{formaction}?/{id}?\"", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.First())),
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "System.String", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "System.String", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.Last()))));
         }
 
@@ -1052,8 +1052,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("TestDirective").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
+                    Factory.MetaCode("TestDirective").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -1072,10 +1072,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("TestDirective").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "PropertyName", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                    Factory.MetaCode("TestDirective").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "PropertyName", markup: false)
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.First()))));
         }
 
@@ -1094,7 +1094,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("class").Accepts(AcceptedCharacters.None)));
+                    Factory.MetaCode("class").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -1112,7 +1112,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("namespace").Accepts(AcceptedCharacters.None)));
+                    Factory.MetaCode("namespace").Accepts(AcceptedCharactersInternal.None)));
         }
 
 

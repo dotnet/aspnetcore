@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest(word,
                            new DirectiveBlock(
-                               Factory.MetaCode(word).Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(word).Accepts(AcceptedCharactersInternal.None)
                                ),
                            new RazorError(
                                LegacyResources.FormatParseError_ReservedWord(word),
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new ExpressionBlock(
                                Factory.Code(word)
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharacters.NonWhiteSpace)
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                                ));
         }
     }

@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public sealed class LineMapping : IEquatable<LineMapping>
     {
-        public LineMapping(SourceSpan originalSourceSpan, SourceSpan generatedSourceSpan)
+        public LineMapping(SourceSpan originalSpan, SourceSpan generatedSpan)
         {
-            OriginalSpan = originalSourceSpan;
-            GeneratedSpan = generatedSourceSpan;
+            OriginalSpan = originalSpan;
+            GeneratedSpan = generatedSpan;
         }
 
         public SourceSpan OriginalSpan { get; }

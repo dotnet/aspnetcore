@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             source.Reset();
         }
 
-        protected Block(BlockKind? type, IReadOnlyList<SyntaxTreeNode> children, IParentChunkGenerator generator)
+        protected Block(BlockKindInternal? type, IReadOnlyList<SyntaxTreeNode> children, IParentChunkGenerator generator)
         {
             if (type == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
         public IParentChunkGenerator ChunkGenerator { get; }
 
-        public BlockKind Type { get; }
+        public BlockKindInternal Type { get; }
 
         public IReadOnlyList<SyntaxTreeNode> Children { get; }
 

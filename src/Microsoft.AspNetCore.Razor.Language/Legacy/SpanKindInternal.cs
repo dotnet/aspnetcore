@@ -3,11 +3,12 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal interface ITextBuffer
+    public enum SpanKindInternal
     {
-        int Length { get; }
-        int Position { get; set; }
-        int Read();
-        int Peek();
+        Transition,
+        MetaCode,
+        Comment,
+        Code,
+        Markup
     }
 }

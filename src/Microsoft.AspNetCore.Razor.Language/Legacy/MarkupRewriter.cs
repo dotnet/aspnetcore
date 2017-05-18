@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected void FillSpan(SpanBuilder builder, SourceLocation start, string content)
         {
-            builder.Kind = SpanKind.Markup;
+            builder.Kind = SpanKindInternal.Markup;
             builder.ChunkGenerator = new MarkupChunkGenerator();
 
             foreach (ISymbol sym in HtmlLanguageCharacteristics.Instance.TokenizeString(start, content))

@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var childSpan = block.Children.First() as Span;
 
-            if (childSpan == null || childSpan.Kind != SpanKind.Markup)
+            if (childSpan == null || childSpan.Kind != SpanKindInternal.Markup)
             {
                 errorSink.OnError(
                     block.Start,
@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         // key="@int + @case" -> MyTagHelper.key = int + @case
                         // key="@(a + b) -> MyTagHelper.key = a + b
                         // key="4 + @(a + b)" -> MyTagHelper.key = 4 + @(a + b)
-                        if (isFirstSpan && span.Kind == SpanKind.Transition)
+                        if (isFirstSpan && span.Kind == SpanKindInternal.Transition)
                         {
                             // do nothing.
                         }
@@ -466,9 +466,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             var spanBuilder = new SpanBuilder(span);
 
-                            if (parentBlock.Type == BlockKind.Expression &&
-                                (spanBuilder.Kind == SpanKind.Transition ||
-                                spanBuilder.Kind == SpanKind.MetaCode))
+                            if (parentBlock.Type == BlockKindInternal.Expression &&
+                                (spanBuilder.Kind == SpanKindInternal.Transition ||
+                                spanBuilder.Kind == SpanKindInternal.MetaCode))
                             {
                                 // Change to a MarkupChunkGenerator so that the '@' \ parenthesis is generated as part of the output.
                                 spanBuilder.ChunkGenerator = new MarkupChunkGenerator();
@@ -722,13 +722,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private static void ConfigureNonStringAttribute(SpanBuilder builder, bool isDuplicateAttribute)
         {
-            builder.Kind = SpanKind.Code;
+            builder.Kind = SpanKindInternal.Code;
             builder.EditHandler = new ImplicitExpressionEditHandler(
                     builder.EditHandler.Tokenizer,
                     CSharpCodeParser.DefaultKeywords,
                     acceptTrailingDot: true)
             {
-                AcceptedCharacters = AcceptedCharacters.AnyExceptNewline
+                AcceptedCharacters = AcceptedCharactersInternal.AnyExceptNewline
             };
 
             if (!isDuplicateAttribute && builder.ChunkGenerator != SpanChunkGenerator.Null)

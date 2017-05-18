@@ -16,18 +16,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public Block EscapedMarkupTagBlock(string prefix, string suffix)
         {
-            return EscapedMarkupTagBlock(prefix, suffix, AcceptedCharacters.Any);
+            return EscapedMarkupTagBlock(prefix, suffix, AcceptedCharactersInternal.Any);
         }
 
         public Block EscapedMarkupTagBlock(string prefix, string suffix, params SyntaxTreeNode[] children)
         {
-            return EscapedMarkupTagBlock(prefix, suffix, AcceptedCharacters.Any, children);
+            return EscapedMarkupTagBlock(prefix, suffix, AcceptedCharactersInternal.Any, children);
         }
 
         public Block EscapedMarkupTagBlock(
             string prefix,
             string suffix,
-            AcceptedCharacters acceptedCharacters,
+            AcceptedCharactersInternal acceptedCharacters,
             params SyntaxTreeNode[] children)
         {
             var newChildren = new List<SyntaxTreeNode>(
@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public Block MarkupTagBlock(string content)
         {
-            return MarkupTagBlock(content, AcceptedCharacters.Any);
+            return MarkupTagBlock(content, AcceptedCharactersInternal.Any);
         }
 
-        public Block MarkupTagBlock(string content, AcceptedCharacters acceptedCharacters)
+        public Block MarkupTagBlock(string content, AcceptedCharactersInternal acceptedCharacters)
         {
             return new MarkupTagBlock(
                 _factory.Markup(content).Accepts(acceptedCharacters)

@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected override PartialParseResult CanAcceptChange(Span target, SourceChange change)
         {
-            if (AcceptedCharacters == AcceptedCharacters.Any)
+            if (AcceptedCharacters == AcceptedCharactersInternal.Any)
             {
                 return PartialParseResult.Rejected;
             }

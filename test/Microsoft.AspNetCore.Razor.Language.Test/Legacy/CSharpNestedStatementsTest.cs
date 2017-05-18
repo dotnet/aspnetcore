@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.Code("while(true) { foo(); }")
                            .AsStatement()
-                           .Accepts(AcceptedCharacters.None)));
+                           .Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.Code("while(true) { for(int i = 0; i < 10; i++) { foo(); } }")
                            .AsStatement()
-                           .Accepts(AcceptedCharacters.None)));
+                           .Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.Code("while(true) { { { { foo(); } } } }")
                            .AsStatement()
-                           .Accepts(AcceptedCharacters.None)));
+                           .Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -52,10 +52,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.CodeTransition(),
                         Factory.Code("foo")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                               .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     Factory.Code(" }")
                            .AsStatement()
-                           .Accepts(AcceptedCharacters.None)));
+                           .Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -69,14 +69,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new ExpressionBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("(")
-                               .Accepts(AcceptedCharacters.None),
+                               .Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("foo")
                                .AsExpression(),
                         Factory.MetaCode(")")
-                               .Accepts(AcceptedCharacters.None)),
+                               .Accepts(AcceptedCharactersInternal.None)),
                     Factory.Code(" }")
                            .AsStatement()
-                           .Accepts(AcceptedCharacters.None)));
+                           .Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -90,15 +90,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupBlock(
                         Factory.Markup(" "),
                         new MarkupTagBlock(
-                            Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                            Factory.Markup("<p>").Accepts(AcceptedCharactersInternal.None)),
                         Factory.Markup("Hello"),
                         new MarkupTagBlock(
-                            Factory.Markup("</p>").Accepts(AcceptedCharacters.None)),
-                        Factory.Markup(" ").Accepts(AcceptedCharacters.None)
+                            Factory.Markup("</p>").Accepts(AcceptedCharactersInternal.None)),
+                        Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)
                         ),
                     Factory.Code("}")
                            .AsStatement()
-                           .Accepts(AcceptedCharacters.None)));
+                           .Accepts(AcceptedCharactersInternal.None)));
         }
     }
 }

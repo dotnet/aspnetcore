@@ -25,16 +25,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             Factory.Code("if(false) {").AsStatement(),
                             new MarkupBlock(
                                 Factory.Markup(" "),
-                                BlockFactory.MarkupTagBlock("<div>", AcceptedCharacters.None),
+                                BlockFactory.MarkupTagBlock("<div>", AcceptedCharactersInternal.None),
                                 Factory.EmptyHtml(),
                                 new ExpressionBlock(
                                     Factory.CodeTransition(),
                                     Factory.Code("something")
                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
-                                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                                 Factory.Markup("."),
-                                BlockFactory.MarkupTagBlock("</div>", AcceptedCharacters.None),
-                                Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                                BlockFactory.MarkupTagBlock("</div>", AcceptedCharactersInternal.None),
+                                Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                             Factory.Code("}").AsStatement()),
                         Factory.Code(" }").AsStatement())));
         }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseDocumentOutputsWhitespaceOnlyContentAsSingleWhitespaceMarkupSpan()
         {
-            SingleSpanDocumentTest("          ", BlockKind.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("          ", BlockKindInternal.Markup, SpanKindInternal.Markup);
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.CodeTransition(),
                         Factory.EmptyCSharp()
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     Factory.EmptyHtml()),
                 new RazorError(
                     LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
@@ -111,26 +111,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
                         Factory.CodeTransition(),
-                        Factory.MetaCode("section").Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
-                        Factory.Span(SpanKind.Code, "Foo", CSharpSymbolType.Identifier)
-                            .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, "Foo", CSharpSymbolType.Identifier)
+                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                             .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First())),
-                        Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
-                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
+                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(
                             Factory.Markup(Environment.NewLine + "    "),
                             BlockFactory.MarkupTagBlock("<html>"),
                             BlockFactory.MarkupTagBlock("</html>"),
                             Factory.Markup(Environment.NewLine)),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()));
         }
 
         [Fact]
         public void ParseDocumentParsesWholeContentAsOneSpanIfNoSwapCharacterEncountered()
         {
-            SingleSpanDocumentTest("foo baz", BlockKind.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("foo baz", BlockKindInternal.Markup, SpanKindInternal.Markup);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.CodeTransition(),
                         Factory.Code("bar")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     Factory.Markup(" baz")));
         }
 
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.CodeTransition(),
                         Factory.EmptyCSharp()
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     Factory.EmptyHtml()),
                 new RazorError(
                     LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
@@ -175,14 +175,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.CodeTransition(),
                         Factory.Code("bar")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     Factory.EmptyHtml()));
         }
 
         [Fact]
         public void ParseDocumentDoesNotSwitchToCodeOnEmailAddressInText()
         {
-            SingleSpanDocumentTest("anurse@microsoft.com", BlockKind.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("anurse@microsoft.com", BlockKindInternal.Markup, SpanKindInternal.Markup);
         }
 
         [Fact]
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseDocumentReturnsOneMarkupSegmentIfNoCodeBlocksEncountered()
         {
-            SingleSpanDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux", BlockKind.Markup, SpanKind.Markup);
+            SingleSpanDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux", BlockKindInternal.Markup, SpanKindInternal.Markup);
         }
 
         [Fact]
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.CodeTransition(),
                         Factory.Code("boz")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
-                               .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     Factory.Markup("'>"),
                     BlockFactory.MarkupTagBlock("</script>")));
         }
@@ -276,9 +276,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
                     BlockFactory.MarkupTagBlock("<html>")));
         }
@@ -291,9 +291,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(" \t\r\n").With(SpanChunkGenerator.Null),
                     BlockFactory.MarkupTagBlock("<html>")));
         }
@@ -306,15 +306,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("<text>")),
-                            Factory.Markup("Blah").Accepts(AcceptedCharacters.None),
+                            Factory.Markup("Blah").Accepts(AcceptedCharactersInternal.None),
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("</text>"))),
                         Factory.Code("\r\n\r\n").AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     BlockFactory.MarkupTagBlock("<html>")));
         }
 
@@ -326,20 +326,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("<text>")),
-                            Factory.Markup("Blah").Accepts(AcceptedCharacters.None),
+                            Factory.Markup("Blah").Accepts(AcceptedCharactersInternal.None),
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("</text>")),
-                            Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                            Factory.Markup("\r\n").Accepts(AcceptedCharactersInternal.None)),
                         new MarkupBlock(
                             new MarkupTagBlock(
-                                Factory.Markup("<input/>").Accepts(AcceptedCharacters.None)),
-                            Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                                Factory.Markup("<input/>").Accepts(AcceptedCharactersInternal.None)),
+                            Factory.Markup("\r\n").Accepts(AcceptedCharactersInternal.None)),
                         Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     BlockFactory.MarkupTagBlock("<html>")));
         }
 
@@ -351,22 +351,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("<text>")),
-                            Factory.Markup("Blah").Accepts(AcceptedCharacters.None),
+                            Factory.Markup("Blah").Accepts(AcceptedCharactersInternal.None),
                             new MarkupTagBlock(
                                 Factory.MarkupTransition("</text>")),
-                            Factory.Markup("\r\n").Accepts(AcceptedCharacters.None)),
+                            Factory.Markup("\r\n").Accepts(AcceptedCharactersInternal.None)),
                         new MarkupBlock(
                             Factory.MarkupTransition(),
                             Factory.MetaMarkup(":", HtmlSymbolType.Colon),
                             Factory.Markup(" Bleh\r\n")
                                 .With(new SpanEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString))
-                                .Accepts(AcceptedCharacters.None)),
+                                .Accepts(AcceptedCharactersInternal.None)),
                         Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     BlockFactory.MarkupTagBlock("<html>")));
         }
 
@@ -378,9 +378,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
                     BlockFactory.MarkupTagBlock("<html>"),
                     Factory.Markup("\r\n")));
@@ -394,9 +394,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("   \t"),
                     BlockFactory.MarkupTagBlock("<html>"),
                     Factory.Markup("\r\n")));
@@ -410,13 +410,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
                         new StatementBlock(
                             Factory.CodeTransition(),
                             Factory.Code("if(true){\r\n}").AsStatement()),
                         Factory.Code(" \r\n").AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
                     BlockFactory.MarkupTagBlock("<html>")));
         }
@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
                         new StatementBlock(
                             Factory.CodeTransition(),
@@ -437,10 +437,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             Factory.Markup(" "),
                             new MarkupTagBlock(
-                                Factory.Markup("<input>").Accepts(AcceptedCharacters.None)),
-                            Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                                Factory.Markup("<input>").Accepts(AcceptedCharactersInternal.None)),
+                            Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                         Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()));
         }
 
@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new StatementBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
                         new StatementBlock(
                             Factory.CodeTransition(),
@@ -460,10 +460,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Code(" \r\n").AsStatement(),
                         new MarkupBlock(
                             new MarkupTagBlock(
-                                Factory.Markup("<input>").Accepts(AcceptedCharacters.None)),
-                            Factory.Markup(" \r\n").Accepts(AcceptedCharacters.None)),
+                                Factory.Markup("<input>").Accepts(AcceptedCharactersInternal.None)),
+                            Factory.Markup(" \r\n").Accepts(AcceptedCharactersInternal.None)),
                         Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     new MarkupTagBlock(
                         Factory.Markup("<html>"))));
         }
@@ -476,13 +476,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
                         Factory.CodeTransition(),
-                        Factory.MetaCode("section").Accepts(AcceptedCharacters.None),
-                        Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
-                        Factory.Span(SpanKind.Code, "Foo", CSharpSymbolType.Identifier)
-                            .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, "Foo", CSharpSymbolType.Identifier)
+                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                             .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First())),
-                        Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
-                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
+                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(
                             Factory.Markup(" "),
                             BlockFactory.MarkupTagBlock("<script>"),
@@ -491,11 +491,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 Factory.CodeTransition(),
                                 Factory.Code("boz")
                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
-                                       .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                             Factory.Markup("'>"),
                             BlockFactory.MarkupTagBlock("</script>"),
                             Factory.Markup(" ")),
-                        Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()));
         }
 
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     factory.CodeTransition(),
                     factory.Code("DateTime.Now")
                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace));
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace));
 
                 return new TheoryData<string, Block>
                 {
@@ -529,8 +529,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 13, 0, 13)),
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
@@ -545,8 +545,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
@@ -560,8 +560,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 16, 0, 16)),
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup("def").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), new LocationTagged<string>("def", 13, 0, 13))),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
@@ -577,8 +577,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 14, 0, 14), new LocationTagged<string>("@", 15, 0, 15))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 14, 0, 14), new LocationTagged<string>("@", 15, 0, 15))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup(" def").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 17, 0, 17), new LocationTagged<string>("def", 18, 0, 18))),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
@@ -593,8 +593,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     new MarkupBlock(
                                         new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
                                         factory.EmptyHtml().With(SpanChunkGenerator.Null),
@@ -614,8 +614,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
                                         datetimeBlock),
                                     new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 24, 0, 24), new LocationTagged<string>("@", 25, 0, 25))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 24, 0, 24), new LocationTagged<string>("@", 25, 0, 25))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
@@ -631,12 +631,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
                                         new ExpressionBlock(
                                             factory.CodeTransition(),
-                                            factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None),
+                                            factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None),
                                             factory.Code("2+3").AsExpression(),
-                                            factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None))),
+                                            factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None))),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 17, 0, 17), new LocationTagged<string>("@", 17, 0, 17))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 17, 0, 17), new LocationTagged<string>("@", 17, 0, 17))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     new MarkupBlock(
                                         new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 19, 0, 19), 19, 0, 19),
                                         factory.EmptyHtml().With(SpanChunkGenerator.Null),
@@ -653,16 +653,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 19, 0, 19)),
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     new MarkupBlock(
                                         new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
                                         factory.EmptyHtml().With(SpanChunkGenerator.Null),
                                         new ExpressionBlock(
                                             factory.CodeTransition(),
-                                            factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None),
+                                            factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None),
                                             factory.Code("2+3").AsExpression(),
-                                            factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None))),
+                                            factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None))),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                             factory.Markup(" />")))
                     },
@@ -678,8 +678,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
                                         datetimeBlock),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 24, 0, 24), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 24, 0, 24), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
@@ -694,8 +694,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     factory.Markup("abc@def.com").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc@def.com", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 22, 0, 22), new LocationTagged<string>("@", 23, 0, 23))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 22, 0, 22), new LocationTagged<string>("@", 23, 0, 23))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
@@ -709,12 +709,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup("def.com").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 16, 0, 16), new LocationTagged<string>("def.com", 16, 0, 16))),
                                     new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 23, 0, 23), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 23, 0, 23), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
                     },
@@ -728,8 +728,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>(string.Empty, 13, 0, 13)),
                                     factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)))),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)))),
                             factory.EmptyHtml())
                     },
                     {
@@ -743,8 +743,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup(" foo=\"").With(SpanChunkGenerator.Null),
                                     factory.Markup(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+", 11, 0, 11))),
                                     new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 43, 0, 43), new LocationTagged<string>("@", 43, 0, 43))).Accepts(AcceptedCharacters.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 43, 0, 43), new LocationTagged<string>("@", 43, 0, 43))).Accepts(AcceptedCharactersInternal.None),
+                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                     factory.Markup(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 45, 0, 45), new LocationTagged<string>(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i", 45, 0, 45))),
                                     factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(" />")))
@@ -777,13 +777,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
                             new ExpressionBlock(
                                 Factory.CodeTransition(),
-                                Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
                         new MarkupBlock(
                             new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(" ", 12, 0, 12), 12, 0, 12),
                             Factory.Markup(" ").With(SpanChunkGenerator.Null),
                             new ExpressionBlock(
-                                Factory.CodeTransition().Accepts(AcceptedCharacters.None).With(SpanChunkGenerator.Null),
-                                Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                Factory.CodeTransition().Accepts(AcceptedCharactersInternal.None).With(SpanChunkGenerator.Null),
+                                Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
                         Factory.Markup("'").With(SpanChunkGenerator.Null)),
                     Factory.Markup(" />")));
             var expectedErrors = new RazorError[]

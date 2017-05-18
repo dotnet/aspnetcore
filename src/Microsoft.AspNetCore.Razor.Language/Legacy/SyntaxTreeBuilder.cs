@@ -23,13 +23,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public Span LastSpan { get; private set; }
 
-        public AcceptedCharacters LastAcceptedCharacters
+        public AcceptedCharactersInternal LastAcceptedCharacters
         {
             get
             {
                 if (LastSpan == null)
                 {
-                    return AcceptedCharacters.None;
+                    return AcceptedCharactersInternal.None;
                 }
                 return LastSpan.EditHandler.AcceptedCharacters;
             }
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// Starts a block of the specified type
         /// </summary>
         /// <param name="blockType">The type of the block to start</param>
-        public IDisposable StartBlock(BlockKind blockType)
+        public IDisposable StartBlock(BlockKindInternal blockType)
         {
             var builder = new BlockBuilder() { Type = blockType };
             _blockStack.Push(builder);

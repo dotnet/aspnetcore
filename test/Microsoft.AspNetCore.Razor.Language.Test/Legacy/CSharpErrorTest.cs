@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(KeywordSet)
-                                   .Accepts(AcceptedCharacters.NonWhiteSpace)
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                                ),
                            new RazorError(
                                LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS('"'),
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.Code("helper")
                         .AsImplicitExpression(KeywordSet)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                 new RazorError(
                     LegacyResources.FormatParseError_HelperDirectiveNotAvailable(SyntaxConstants.CSharp.HelperKeyword),
                     new SourceLocation(1, 0, 1),
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("{",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.EmptyCSharp()
                                    .AsStatement()
                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
@@ -70,11 +70,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("{}",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.EmptyCSharp()
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
-                               Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                            new RazorError(
                                LegacyResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
                                new SourceLocation(1, 0, 1),
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                          + "    @   {}" + Environment.NewLine
                          + "}",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code(Environment.NewLine + "    ")
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
@@ -108,9 +108,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp()
                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                                Factory.Code("   {}" + Environment.NewLine).AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ),
                            new RazorError(
                                LegacyResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("{" + Environment.NewLine
                          + "    @",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code(Environment.NewLine + "    ")
                                    .AsStatement()
                                    .AutoCompleteWith("}"),
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    Factory.CodeTransition(),
                                    Factory.EmptyCSharp()
                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                                Factory.EmptyCSharp().AsStatement()
                                ),
                            new RazorError(
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.CodeTransition(),
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                            new RazorError(
                                LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("!"),
                                new SourceLocation(1, 0, 1),
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("(foo bar" + Environment.NewLine
                          + "baz",
                            new ExpressionBlock(
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code($"foo bar{Environment.NewLine}baz").AsExpression()
                                ),
                            new RazorError(
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                          + "baz" + Environment.NewLine
                          + "</html",
                            new ExpressionBlock(
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code($"foo bar{Environment.NewLine}").AsExpression()
                                ),
                            new RazorError(
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("{ var foo = bar; if(foo != null) { bar(); } ",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code(" var foo = bar; if(foo != null) { bar(); } ")
                                    .AsStatement()
                                    .AutoCompleteWith("}")),
@@ -300,9 +300,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("functions { var foo = bar; if(foo != null) { bar(); } ",
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
-                    Factory.MetaCode("functions").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
-                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                     Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsStatement()),
                 new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", '}', '{'),
@@ -438,21 +438,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("if(foo) ").AsStatement(),
                                new MarkupBlock(
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
                                     Factory.Markup("Bar"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("else if(bar) ").AsStatement(),
                                new MarkupBlock(
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
                                     Factory.Markup("Baz"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("else ").AsStatement(),
                                new MarkupBlock(
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
                                     Factory.Markup("Boz"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None)),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None)),
                                Factory.EmptyCSharp().AsStatement()
                                ),
                            new RazorError(expectedMessage, 8, 0, 8, 1),
@@ -482,10 +482,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                new MarkupBlock(
                                    Factory.Markup(" "),
                                    Factory.MarkupTransition(),
-                                   BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                   BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
                                     Factory.Markup("Bar"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("}").AsStatement()
                                ),
                            new RazorError(
@@ -559,11 +559,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code($"if({Environment.NewLine}else {{").AsStatement(),
                                new MarkupBlock(
                                    Factory.Markup(" "),
-                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
                                     Factory.Markup("Foo"),
-                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
-                                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)),
-                               Factory.Code("}").AsStatement().Accepts(AcceptedCharacters.None)
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
+                                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
+                               Factory.Code("}").AsStatement().Accepts(AcceptedCharactersInternal.None)
                                ),
                            new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                               + "    var p = \"foo bar baz" + Environment.NewLine
                               + ";" + Environment.NewLine
                               + "}",
-                                BlockKind.Statement, SpanKind.Code,
+                                BlockKindInternal.Statement, SpanKindInternal.Code,
                                 new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(21 + Environment.NewLine.Length, 1, 12),
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockTerminatesNormalStringAtEndOfFile()
         {
-            SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah", BlockKind.Statement, SpanKind.Code,
+            SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah", BlockKindInternal.Statement, SpanKindInternal.Code,
                                 new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(20, 0, 20),
@@ -607,7 +607,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                               + "<p>Foo</p>" + Environment.NewLine
                               + "blah " + Environment.NewLine
                               + "blah",
-                                BlockKind.Statement, SpanKind.Code,
+                                BlockKindInternal.Statement, SpanKindInternal.Code,
                                 new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(20, 0, 20),
@@ -628,15 +628,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code($"if(foo) {{{Environment.NewLine}    var foo = \"foo bar baz{Environment.NewLine}    ").AsStatement(),
                                new MarkupBlock(
-                                   BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                   BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
                                    Factory.Markup("Foo is "),
                                    new ExpressionBlock(
                                        Factory.CodeTransition(),
                                        Factory.Code("foo")
                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                           .Accepts(AcceptedCharacters.NonWhiteSpace)),
-                                   BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
-                                   Factory.Markup(Environment.NewLine).Accepts(AcceptedCharacters.None)),
+                                           .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                   BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None),
+                                   Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("}").AsStatement()
                                ),
                            new RazorError(
@@ -650,9 +650,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("(Request[\"description\"] ?? @photo.Description)",
                            new ExpressionBlock(
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("Request[\"description\"] ?? @photo.Description").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -661,15 +661,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest(@"{string.Format(<html></html>}",
                 new StatementBlock(
-                    Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("string.Format(")
                         .AsStatement()
                         .AutoCompleteWith(autoCompleteString: null),
                     new MarkupBlock(
-                        BlockFactory.MarkupTagBlock("<html>", AcceptedCharacters.None),
-                        BlockFactory.MarkupTagBlock("</html>", AcceptedCharacters.None)),
+                        BlockFactory.MarkupTagBlock("<html>", AcceptedCharactersInternal.None),
+                        BlockFactory.MarkupTagBlock("</html>", AcceptedCharactersInternal.None)),
                     Factory.EmptyCSharp().AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                 expectedErrors: new[]
                 {
                     new RazorError(
@@ -684,8 +684,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             SingleSpanBlockTest(
                 keyword + " (foo) { var foo = bar; if(foo != null) { bar(); } ",
-                BlockKind.Statement,
-                SpanKind.Code,
+                BlockKindInternal.Statement,
+                SpanKindInternal.Code,
                 new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(keyword, '}', '{'),
                     SourceLocation.Zero,

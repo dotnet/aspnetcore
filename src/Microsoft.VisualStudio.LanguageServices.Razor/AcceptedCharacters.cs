@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     [Flags]
     public enum AcceptedCharacters

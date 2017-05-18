@@ -60,14 +60,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
         {
-            span.Kind = SpanKind.Markup;
+            span.Kind = SpanKindInternal.Markup;
             span.ChunkGenerator = new MarkupChunkGenerator();
             base.BuildSpan(span, start, content);
         }
 
         protected override void OutputSpanBeforeRazorComment()
         {
-            Output(SpanKind.Markup);
+            Output(SpanKindInternal.Markup);
         }
 
         protected void SkipToAndParseCode(HtmlSymbolType type)
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         AcceptAndMoveNext();
                     }
 
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
                 }
                 else if (At(HtmlSymbolType.NewLine))
                 {
@@ -116,10 +116,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             Accept(last);
                             last = null;
                         }
-                        Output(SpanKind.Markup);
+                        Output(SpanKindInternal.Markup);
                         Accept(transition);
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKind.Markup);
+                        Output(SpanKindInternal.Markup);
                         AcceptAndMoveNext();
                         continue; // while
                     }
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             AddMarkerSymbolIfNecessary();
                             // Output the symbols that may have been accepted prior to the whitespace.
-                            Output(SpanKind.Markup);
+                            Output(SpanKindInternal.Markup);
 
                             Span.ChunkGenerator = SpanChunkGenerator.Null;
                         }
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
 
                     AddMarkerSymbolIfNecessary();
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
 
                     RazorComment();
 
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         AcceptWhile(IsSpacingToken(includeNewLines: false));
                         AcceptAndMoveNext();
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKind.Markup);
+                        Output(SpanKindInternal.Markup);
                     }
                 }
                 else
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void OtherParserBlock()
         {
             AddMarkerSymbolIfNecessary();
-            Output(SpanKind.Markup);
+            Output(SpanKindInternal.Markup);
 
             using (PushSpanConfig())
             {
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (IsBangEscape(lookahead: 0))
             {
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
 
                 // Accept the parser escape character '!'.
                 Assert(HtmlSymbolType.Bang);
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 // Setup the metacode span that we will be outputing.
                 Span.ChunkGenerator = SpanChunkGenerator.Null;
-                Output(SpanKind.MetaCode, AcceptedCharacters.None);
+                Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
             }
         }
 
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             using (PushSpanConfig(DefaultMarkupSpan))
             {
-                using (Context.Builder.StartBlock(BlockKind.Markup))
+                using (Context.Builder.StartBlock(BlockKindInternal.Markup))
                 {
                     Span.Start = CurrentLocation;
 
@@ -291,19 +291,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     else if (CurrentSymbol.Type == HtmlSymbolType.Transition)
                     {
                         // "@" => Explicit Tag/Single Line Block OR Template
-                        Output(SpanKind.Markup);
+                        Output(SpanKindInternal.Markup);
 
                         // Definitely have a transition span
                         Assert(HtmlSymbolType.Transition);
                         AcceptAndMoveNext();
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKind.Transition);
+                        Output(SpanKindInternal.Transition);
                         if (At(HtmlSymbolType.Transition))
                         {
                             Span.ChunkGenerator = SpanChunkGenerator.Null;
                             AcceptAndMoveNext();
-                            Output(SpanKind.MetaCode);
+                            Output(SpanKindInternal.MetaCode);
                         }
                         AfterTransition();
                     }
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             LegacyResources.ParseError_MarkupBlock_Must_Start_With_Tag,
                             CurrentSymbol.Content.Length);
                     }
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
                 }
             }
         }
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void DefaultMarkupSpan(SpanBuilder span)
         {
             span.ChunkGenerator = new MarkupChunkGenerator();
-            span.EditHandler = new SpanEditHandler(Language.TokenizeString, AcceptedCharacters.Any);
+            span.EditHandler = new SpanEditHandler(Language.TokenizeString, AcceptedCharactersInternal.Any);
         }
 
         private void AfterTransition()
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // The first part (left) is added to this span and we return a MetaCode span
                 Accept(split.Item1);
                 Span.ChunkGenerator = SpanChunkGenerator.Null;
-                Output(SpanKind.MetaCode);
+                Output(SpanKindInternal.MetaCode);
                 if (split.Item2 != null)
                 {
                     Accept(split.Item2);
@@ -361,11 +361,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (!EndOfFile && CurrentSymbol.Type == HtmlSymbolType.NewLine)
             {
                 AcceptAndMoveNext();
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             }
             PutCurrentBack();
             Context.WhiteSpaceIsSignificantToAncestorBlock = old;
-            Output(SpanKind.Markup);
+            Output(SpanKindInternal.Markup);
         }
 
         private void TagBlock(Stack<Tuple<HtmlSymbol, SourceLocation>> tags)
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 SkipToAndParseCode(HtmlSymbolType.OpenAngle);
 
                 // Output everything prior to the OpenAngle into a markup span
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
 
                 // Do not want to start a new tag block if we're at the end of the file.
                 IDisposable tagBlockWrapper = null;
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if (!EndOfFile && !atSpecialTag)
                     {
                         // Start a Block tag.  This is used to wrap things like <p> or <a class="btn"> etc.
-                        tagBlockWrapper = Context.Builder.StartBlock(BlockKind.Tag);
+                        tagBlockWrapper = Context.Builder.StartBlock(BlockKindInternal.Tag);
                     }
 
                     if (EndOfFile)
@@ -416,11 +416,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if (complete)
                     {
                         // Completed tags have no accepted characters inside of blocks.
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                     }
 
                     // Output the contents of the tag into its own markup span.
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
                 }
                 finally
                 {
@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     AcceptAndMoveNext();
 
-                    Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
+                    Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
                     while (!EndOfFile)
                     {
                         SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
@@ -638,17 +638,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     LegacyResources.ParseError_TextTagCannotContainAttributes,
                     length: 4 /* text */);
 
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
+                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
                 RecoverTextTag();
             }
             else
             {
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             }
 
             Span.ChunkGenerator = SpanChunkGenerator.Null;
 
-            CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKind.Transition);
+            CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKindInternal.Transition);
 
             return seenCloseAngle;
         }
@@ -765,13 +765,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // Output anything prior to the attribute, in most cases this will be the tag name:
                 // |<input| checked />. If in-between other attributes this will noop or output malformed attribute
                 // content (if the previous attribute was malformed).
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
 
-                using (Context.Builder.StartBlock(BlockKind.Markup))
+                using (Context.Builder.StartBlock(BlockKindInternal.Markup))
                 {
                     Accept(whitespace);
                     Accept(name);
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
                 }
 
                 return;
@@ -779,10 +779,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // Not a minimized attribute, parse as if it were well-formed (if attribute turns out to be malformed we
             // will go into recovery).
-            Output(SpanKind.Markup);
+            Output(SpanKindInternal.Markup);
 
             // Start a new markup block for the attribute
-            using (Context.Builder.StartBlock(BlockKind.Markup))
+            using (Context.Builder.StartBlock(BlockKindInternal.Markup))
             {
                 AttributePrefix(whitespace, name, whitespaceAfterAttributeName);
             }
@@ -828,7 +828,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (attributeCanBeConditional)
             {
                 Span.ChunkGenerator = SpanChunkGenerator.Null; // The block chunk generator will render the prefix
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
 
                 // Read the attribute value only if the value is quoted
                 // or if there is no whitespace between '=' and the unquoted value.
@@ -853,7 +853,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     // Again, block chunk generator will render the suffix
                     Span.ChunkGenerator = SpanChunkGenerator.Null;
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
                 }
 
                 // Create the block chunk generator
@@ -863,7 +863,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             else
             {
                 // Output the attribute name, the equals and optional quote. Ex: foo="
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
 
                 if (quote == HtmlSymbolType.Unknown && whitespaceAfterEquals.Any())
                 {
@@ -874,13 +874,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 SkipToAndParseCode(sym => IsEndOfAttributeValue(quote, sym));
 
                 // Output the attribute value (will include everything in-between the attribute's quotes).
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
 
                 if (quote != HtmlSymbolType.Unknown)
                 {
                     Optional(quote);
                 }
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
             }
         }
 
@@ -894,7 +894,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (NextIs(HtmlSymbolType.Transition))
                 {
                     // Wrapping this in a block so that the ConditionalAttributeCollapser doesn't rewrite it.
-                    using (Context.Builder.StartBlock(BlockKind.Markup))
+                    using (Context.Builder.StartBlock(BlockKindInternal.Markup))
                     {
                         Accept(prefix);
 
@@ -903,11 +903,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new LocationTagged<string>(string.Concat(prefix.Select(s => s.Content)), prefixStart),
                             new LocationTagged<string>(CurrentSymbol.Content, CurrentStart));
                         AcceptAndMoveNext();
-                        Output(SpanKind.Markup, AcceptedCharacters.None);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
 
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
                         AcceptAndMoveNext();
-                        Output(SpanKind.Markup, AcceptedCharacters.None);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
                     }
                 }
                 else
@@ -920,7 +920,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Span.ChunkGenerator = SpanChunkGenerator.Null;
 
                     // Dynamic value, start a new block and set the chunk generator
-                    using (Context.Builder.StartBlock(BlockKind.Markup))
+                    using (Context.Builder.StartBlock(BlockKindInternal.Markup))
                     {
                         Context.Builder.CurrentBlock.ChunkGenerator =
                             new DynamicAttributeBlockChunkGenerator(
@@ -952,7 +952,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new LocationTagged<string>(string.Concat(prefix.Select(s => s.Content)), prefixStart),
                     new LocationTagged<string>(string.Concat(value.Select(s => s.Content)), valueStart));
             }
-            Output(SpanKind.Markup);
+            Output(SpanKindInternal.Markup);
         }
 
         private bool IsEndOfAttributeValue(HtmlSymbolType quote, HtmlSymbol sym)
@@ -1063,7 +1063,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // <!text> tags are treated like any other escaped HTML start tag.
                 string.Equals(tag.Item1.Content, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase))
             {
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
                 Span.ChunkGenerator = SpanChunkGenerator.Null;
 
                 Accept(_bufferedOpenAngle);
@@ -1098,7 +1098,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 else
                 {
                     Accept(tokens);
-                    Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                    Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                 }
 
                 if (!empty)
@@ -1106,7 +1106,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     tags.Push(tag);
                 }
 
-                CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKind.Transition);
+                CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKindInternal.Transition);
 
                 return true;
             }
@@ -1154,7 +1154,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var tagName = tag.Item1.Content.Trim();
                     if (VoidElements.Contains(tagName))
                     {
-                        CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharacters.None, SpanKind.Markup);
+                        CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharactersInternal.None, SpanKindInternal.Markup);
 
                         // Technically, void elements like "meta" are not allowed to have end tags. Just in case they do,
                         // we need to look ahead at the next set of tokens. If we see "<", "/", tag name, accept it and the ">" following it
@@ -1176,9 +1176,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             {
                                 // Accept up to here
                                 Accept(whiteSpace);
-                                Output(SpanKind.Markup); // Output the whitespace
+                                Output(SpanKindInternal.Markup); // Output the whitespace
 
-                                using (Context.Builder.StartBlock(BlockKind.Tag))
+                                using (Context.Builder.StartBlock(BlockKindInternal.Tag))
                                 {
                                     Accept(openAngle);
                                     Accept(solidus);
@@ -1191,11 +1191,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                                     if (complete)
                                     {
-                                        Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                                     }
 
                                     // Output the closing void element
-                                    Output(SpanKind.Markup);
+                                    Output(SpanKindInternal.Markup);
 
                                     return complete;
                                 }
@@ -1210,9 +1210,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         if (!CurrentScriptTagExpectsHtml())
                         {
-                            CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharacters.None, SpanKind.Markup);
+                            CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharactersInternal.None, SpanKindInternal.Markup);
 
-                            SkipToEndScriptAndParseCode(endTagAcceptedCharacters: AcceptedCharacters.None);
+                            SkipToEndScriptAndParseCode(endTagAcceptedCharacters: AcceptedCharactersInternal.None);
                         }
                         else
                         {
@@ -1230,7 +1230,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return seenClose;
         }
 
-        private void SkipToEndScriptAndParseCode(AcceptedCharacters endTagAcceptedCharacters = AcceptedCharacters.Any)
+        private void SkipToEndScriptAndParseCode(AcceptedCharactersInternal endTagAcceptedCharacters = AcceptedCharactersInternal.Any)
         {
             // Special case for <script>: Skip to end of script tag and parse code
             var seenEndScript = false;
@@ -1265,9 +1265,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 if (seenEndScript)
                 {
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
 
-                    using (Context.Builder.StartBlock(BlockKind.Tag))
+                    using (Context.Builder.StartBlock(BlockKindInternal.Tag))
                     {
                         Span.EditHandler.AcceptedCharacters = endTagAcceptedCharacters;
 
@@ -1281,7 +1281,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 LegacyResources.FormatParseError_UnfinishedTag(ScriptTagName),
                                 ScriptTagName.Length);
                         }
-                        Output(SpanKind.Markup);
+                        Output(SpanKindInternal.Markup);
                     }
                 }
                 else
@@ -1292,8 +1292,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         private void CompleteTagBlockWithSpan(IDisposable tagBlockWrapper,
-                                              AcceptedCharacters acceptedCharacters,
-                                              SpanKind spanKind)
+                                              AcceptedCharactersInternal acceptedCharacters,
+                                              SpanKindInternal spanKind)
         {
             Debug.Assert(tagBlockWrapper != null,
                 "Tag block wrapper should not be null when attempting to complete a block");
@@ -1316,7 +1316,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
             Debug.Assert(EndOfFile);
-            Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
+            Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
             return false;
         }
 
@@ -1366,14 +1366,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else if (complete)
             {
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             }
             tags.Clear();
             if (!Context.DesignTimeMode)
             {
                 var shouldAcceptWhitespaceAndNewLine = true;
 
-                if (Context.Builder.LastSpan.Kind == SpanKind.Transition)
+                if (Context.Builder.LastSpan.Kind == SpanKindInternal.Transition)
                 {
                     var symbols = ReadWhile(
                         f => (f.Type == HtmlSymbolType.WhiteSpace) || (f.Type == HtmlSymbolType.NewLine));
@@ -1398,7 +1398,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Optional(HtmlSymbolType.NewLine);
                 }
             }
-            else if (Span.EditHandler.AcceptedCharacters == AcceptedCharacters.Any)
+            else if (Span.EditHandler.AcceptedCharacters == AcceptedCharactersInternal.Any)
             {
                 AcceptWhile(HtmlSymbolType.WhiteSpace);
                 Optional(HtmlSymbolType.NewLine);
@@ -1409,7 +1409,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 AddMarkerSymbolIfNecessary();
             }
-            Output(SpanKind.Markup);
+            Output(SpanKindInternal.Markup);
         }
 
         internal static bool IsValidAttributeNameSymbol(HtmlSymbol symbol)
@@ -1444,7 +1444,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             using (PushSpanConfig(DefaultMarkupSpan))
             {
-                using (Context.Builder.StartBlock(BlockKind.Markup))
+                using (Context.Builder.StartBlock(BlockKindInternal.Markup))
                 {
                     Span.Start = CurrentLocation;
 
@@ -1455,7 +1455,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         ScanTagInDocumentContext();
                     }
                     AddMarkerSymbolIfNecessary();
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
                 }
             }
         }
@@ -1488,10 +1488,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return;
                 }
 
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
 
                 // Start tag block
-                var tagBlock = Context.Builder.StartBlock(BlockKind.Tag);
+                var tagBlock = Context.Builder.StartBlock(BlockKindInternal.Tag);
 
                 AcceptAndMoveNext(); // Accept '<'
 
@@ -1511,7 +1511,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // the end script tag. Don't want to incorrectly parse a "var tag = '<input />';" as an HTML tag.
                     if (scriptTag && !CurrentScriptTagExpectsHtml())
                     {
-                        Output(SpanKind.Markup);
+                        Output(SpanKindInternal.Markup);
                         tagBlock.Dispose();
 
                         SkipToEndScriptAndParseCode();
@@ -1531,7 +1531,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Optional(HtmlSymbolType.CloseAngle);
                 }
 
-                Output(SpanKind.Markup);
+                Output(SpanKindInternal.Markup);
 
                 // End tag block
                 tagBlock.Dispose();
@@ -1598,7 +1598,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 Span.Start = CurrentLocation;
 
-                using (Context.Builder.StartBlock(BlockKind.Markup))
+                using (Context.Builder.StartBlock(BlockKindInternal.Markup))
                 {
                     NextToken();
                     CaseSensitive = caseSensitive;
@@ -1611,7 +1611,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         NestingSection(nestingSequences);
                     }
                     AddMarkerSymbolIfNecessary();
-                    Output(SpanKind.Markup);
+                    Output(SpanKindInternal.Markup);
                 }
             }
         }

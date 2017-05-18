@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             Assert.NotNull(syntaxTree);
             Assert.Equal(6, syntaxTree.Root.Children.Count);
             var block = Assert.IsType<Block>(syntaxTree.Root.Children[4]);
-            Assert.Equal(BlockKind.Directive, block.Type);
+            Assert.Equal(BlockKindInternal.Directive, block.Type);
             Assert.Empty(syntaxTree.Diagnostics);
         }
     }

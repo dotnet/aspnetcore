@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 Tuple<TSymbol, TSymbol> pair = Language.SplitSymbol(CurrentSymbol, 1, Language.GetKnownSymbolType(KnownSymbolType.WhiteSpace));
                 Accept(pair.Item1);
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
+                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                 NextToken();
                 return pair.Item2;
             }
@@ -329,25 +329,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected internal void AddMarkerSymbolIfNecessary()
         {
-            if (Span.Symbols.Count == 0 && Context.Builder.LastAcceptedCharacters != AcceptedCharacters.Any)
+            if (Span.Symbols.Count == 0 && Context.Builder.LastAcceptedCharacters != AcceptedCharactersInternal.Any)
             {
                 Accept(Language.CreateMarkerSymbol());
             }
         }
 
-        protected internal void Output(SpanKind kind)
+        protected internal void Output(SpanKindInternal kind)
         {
             Configure(kind, null);
             Output();
         }
 
-        protected internal void Output(SpanKind kind, AcceptedCharacters accepts)
+        protected internal void Output(SpanKindInternal kind, AcceptedCharactersInternal accepts)
         {
             Configure(kind, accepts);
             Output();
         }
 
-        protected internal void Output(AcceptedCharacters accepts)
+        protected internal void Output(AcceptedCharactersInternal accepts)
         {
             Configure(null, accepts);
             Output();
@@ -580,7 +580,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private void Configure(SpanKind? kind, AcceptedCharacters? accepts)
+        private void Configure(SpanKindInternal? kind, AcceptedCharactersInternal? accepts)
         {
             if (kind != null)
             {
@@ -614,20 +614,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             OutputSpanBeforeRazorComment();
             using (PushSpanConfig(CommentSpanConfig))
             {
-                using (Context.Builder.StartBlock(BlockKind.Comment))
+                using (Context.Builder.StartBlock(BlockKindInternal.Comment))
                 {
                     Context.Builder.CurrentBlock.ChunkGenerator = new RazorCommentChunkGenerator();
                     var start = CurrentStart;
 
                     Expected(KnownSymbolType.CommentStart);
-                    Output(SpanKind.Transition, AcceptedCharacters.None);
+                    Output(SpanKindInternal.Transition, AcceptedCharactersInternal.None);
 
                     Expected(KnownSymbolType.CommentStar);
-                    Output(SpanKind.MetaCode, AcceptedCharacters.None);
+                    Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
 
                     Optional(KnownSymbolType.CommentBody);
                     AddMarkerSymbolIfNecessary();
-                    Output(SpanKind.Comment);
+                    Output(SpanKindInternal.Comment);
 
                     var errorReported = false;
                     if (!Optional(KnownSymbolType.CommentStar))
@@ -640,7 +640,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     else
                     {
-                        Output(SpanKind.MetaCode, AcceptedCharacters.None);
+                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
                     }
 
                     if (!Optional(KnownSymbolType.CommentStart))
@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     else
                     {
-                        Output(SpanKind.Transition, AcceptedCharacters.None);
+                        Output(SpanKindInternal.Transition, AcceptedCharactersInternal.None);
                     }
                 }
             }

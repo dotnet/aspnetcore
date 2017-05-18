@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@()",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.EmptyCSharp().AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@(",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.EmptyCSharp().AsExpression()
                                ),
                            new RazorError(
@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@(\"\\\"\")",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("\"\\\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@(@\"\"\"\")",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("@\"\"\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@(@\"\"\"\"\"\")",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("@\"\"\"\"\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -82,9 +82,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                          + @""")",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code($"@\"{Environment.NewLine}Foo{Environment.NewLine}Bar{Environment.NewLine}Baz{Environment.NewLine}\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -94,9 +94,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@(\"\\\"hello, world\\\"\")",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("\"\\\"hello, world\\\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -106,9 +106,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@(@\"\"\"hello, world\"\"\")",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("@\"\"\"hello, world\"\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -118,9 +118,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@(\"\\\"\\\"\")",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("\"\\\"\\\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -130,9 +130,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@(@\"\"\"\"\"\")",
                            new ExpressionBlock(
                                Factory.CodeTransition(),
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("@\"\"\"\"\"\"").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
     }

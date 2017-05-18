@@ -42,9 +42,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         span.Parent.Start.LineIndex,
                         span.Parent.Start.CharacterIndex,
                         span.Parent.Length),
-                    span.Kind,
-                    span.Parent.Type,
-                    span.EditHandler.AcceptedCharacters);
+                    (SpanKind)span.Kind,
+                    (BlockKind)span.Parent.Type,
+                    (AcceptedCharacters)span.EditHandler.AcceptedCharacters);
             }
 
             return result;
@@ -176,7 +176,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             int? desiredIndentation = null;
 
-            if (owningSpan.Kind != SpanKind.Code)
+            if (owningSpan.Kind != SpanKindInternal.Code)
             {
                 SyntaxTreeNode owningChild = owningSpan;
                 while ((owningChild.Parent != null) && !desiredIndentation.HasValue)
@@ -189,7 +189,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         if (!curChild.IsBlock)
                         {
                             Span curSpan = curChild as Span;
-                            if (curSpan.Kind == SpanKind.MetaCode)
+                            if (curSpan.Kind == SpanKindInternal.MetaCode)
                             {
                                 // yay! We want to use the start of this span to determine the indent level.
                                 var startLine = line.Snapshot.GetLineFromLineNumber(curSpan.Start.LineIndex);
@@ -199,7 +199,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                                 if (i < children.Count - 1)
                                 {
                                     SyntaxTreeNode nextChild = children[i + 1];
-                                    if (nextChild.IsBlock && ((nextChild as Block).Type == BlockKind.Markup))
+                                    if (nextChild.IsBlock && ((nextChild as Block).Type == BlockKindInternal.Markup))
                                     {
                                         extraIndent = indentSize;
                                     }

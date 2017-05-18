@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SourceLocation End => _tracker.CurrentLocation;
 
-        public SpanKind Kind { get; set; }
+        public SpanKindInternal Kind { get; set; }
 
         public IReadOnlyList<ISymbol> Symbols
         {

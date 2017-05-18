@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Start = start;
             BindingResult = bindingResult;
             Attributes = new List<TagHelperAttributeNode>(attributes);
-            Type = BlockKind.Tag;
+            Type = BlockKindInternal.Tag;
             ChunkGenerator = new TagHelperChunkGenerator();
         }
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             TagName = tagName;
             TagMode = tagMode;
             Attributes = attributes;
-            Type = BlockKind.Tag;
+            Type = BlockKindInternal.Tag;
             ChunkGenerator = new TagHelperChunkGenerator();
 
             // Children is IList, no AddRange

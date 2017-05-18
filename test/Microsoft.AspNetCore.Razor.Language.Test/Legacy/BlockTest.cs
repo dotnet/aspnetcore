@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ConstructorWithBlockBuilderSetsParent()
         {
             // Arrange
-            var builder = new BlockBuilder() { Type = BlockKind.Comment };
-            var span = new SpanBuilder(SourceLocation.Undefined) { Kind = SpanKind.Code }.Build();
+            var builder = new BlockBuilder() { Type = BlockKindInternal.Comment };
+            var span = new SpanBuilder(SourceLocation.Undefined) { Kind = SpanKindInternal.Code }.Build();
             builder.Children.Add(span);
 
             // Act
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expected = new ExpressionChunkGenerator();
             var builder = new BlockBuilder()
             {
-                Type = BlockKind.Helper,
+                Type = BlockKindInternal.Helper,
                 ChunkGenerator = expected
             };
 
@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ConstructorTransfersChildrenFromBlockBuilder()
         {
             // Arrange
-            var expected = new SpanBuilder(SourceLocation.Undefined) { Kind = SpanKind.Code }.Build();
+            var expected = new SpanBuilder(SourceLocation.Undefined) { Kind = SpanKindInternal.Code }.Build();
             var builder = new BlockBuilder()
             {
-                Type = BlockKind.Functions
+                Type = BlockKindInternal.Functions
             };
             builder.Children.Add(expected);
 

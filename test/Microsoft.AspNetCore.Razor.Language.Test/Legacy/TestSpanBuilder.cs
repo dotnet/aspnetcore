@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             return new UnclassifiedCodeSpanConstructor(
                 self.Span(
-                    SpanKind.Code,
+                    SpanKindInternal.Code,
                     new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown)));
         }
 
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             return self
                 .Span(
-                    SpanKind.Markup,
+                    SpanKindInternal.Markup,
                     new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown))
                 .With(new MarkupChunkGenerator());
         }
@@ -29,109 +29,109 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public static UnclassifiedCodeSpanConstructor Code(this SpanFactory self, string content)
         {
             return new UnclassifiedCodeSpanConstructor(
-                self.Span(SpanKind.Code, content, markup: false));
+                self.Span(SpanKindInternal.Code, content, markup: false));
         }
 
         public static SpanConstructor CodeTransition(this SpanFactory self)
         {
             return self
-                .Span(SpanKind.Transition, SyntaxConstants.TransitionString, markup: false)
-                .Accepts(AcceptedCharacters.None);
+                .Span(SpanKindInternal.Transition, SyntaxConstants.TransitionString, markup: false)
+                .Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor CodeTransition(this SpanFactory self, string content)
         {
-            return self.Span(SpanKind.Transition, content, markup: false).Accepts(AcceptedCharacters.None);
+            return self.Span(SpanKindInternal.Transition, content, markup: false).Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor CodeTransition(this SpanFactory self, CSharpSymbolType type)
         {
             return self
-                .Span(SpanKind.Transition, SyntaxConstants.TransitionString, type)
-                .Accepts(AcceptedCharacters.None);
+                .Span(SpanKindInternal.Transition, SyntaxConstants.TransitionString, type)
+                .Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor CodeTransition(this SpanFactory self, string content, CSharpSymbolType type)
         {
-            return self.Span(SpanKind.Transition, content, type).Accepts(AcceptedCharacters.None);
+            return self.Span(SpanKindInternal.Transition, content, type).Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor MarkupTransition(this SpanFactory self)
         {
             return self
-                .Span(SpanKind.Transition, SyntaxConstants.TransitionString, markup: true)
-                .Accepts(AcceptedCharacters.None);
+                .Span(SpanKindInternal.Transition, SyntaxConstants.TransitionString, markup: true)
+                .Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor MarkupTransition(this SpanFactory self, string content)
         {
-            return self.Span(SpanKind.Transition, content, markup: true).Accepts(AcceptedCharacters.None);
+            return self.Span(SpanKindInternal.Transition, content, markup: true).Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor MarkupTransition(this SpanFactory self, HtmlSymbolType type)
         {
             return self
-                .Span(SpanKind.Transition, SyntaxConstants.TransitionString, type)
-                .Accepts(AcceptedCharacters.None);
+                .Span(SpanKindInternal.Transition, SyntaxConstants.TransitionString, type)
+                .Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor MarkupTransition(this SpanFactory self, string content, HtmlSymbolType type)
         {
-            return self.Span(SpanKind.Transition, content, type).Accepts(AcceptedCharacters.None);
+            return self.Span(SpanKindInternal.Transition, content, type).Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor MetaCode(this SpanFactory self, string content)
         {
-            return self.Span(SpanKind.MetaCode, content, markup: false);
+            return self.Span(SpanKindInternal.MetaCode, content, markup: false);
         }
 
         public static SpanConstructor MetaCode(this SpanFactory self, string content, CSharpSymbolType type)
         {
-            return self.Span(SpanKind.MetaCode, content, type);
+            return self.Span(SpanKindInternal.MetaCode, content, type);
         }
 
         public static SpanConstructor MetaMarkup(this SpanFactory self, string content)
         {
-            return self.Span(SpanKind.MetaCode, content, markup: true);
+            return self.Span(SpanKindInternal.MetaCode, content, markup: true);
         }
 
         public static SpanConstructor MetaMarkup(this SpanFactory self, string content, HtmlSymbolType type)
         {
-            return self.Span(SpanKind.MetaCode, content, type);
+            return self.Span(SpanKindInternal.MetaCode, content, type);
         }
 
         public static SpanConstructor Comment(this SpanFactory self, string content, CSharpSymbolType type)
         {
-            return self.Span(SpanKind.Comment, content, type);
+            return self.Span(SpanKindInternal.Comment, content, type);
         }
 
         public static SpanConstructor Comment(this SpanFactory self, string content, HtmlSymbolType type)
         {
-            return self.Span(SpanKind.Comment, content, type);
+            return self.Span(SpanKindInternal.Comment, content, type);
         }
 
         public static SpanConstructor BangEscape(this SpanFactory self)
         {
             return self
-                .Span(SpanKind.MetaCode, "!", markup: true)
+                .Span(SpanKindInternal.MetaCode, "!", markup: true)
                 .With(SpanChunkGenerator.Null)
-                .Accepts(AcceptedCharacters.None);
+                .Accepts(AcceptedCharactersInternal.None);
         }
 
         public static SpanConstructor Markup(this SpanFactory self, string content)
         {
-            return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupChunkGenerator());
+            return self.Span(SpanKindInternal.Markup, content, markup: true).With(new MarkupChunkGenerator());
         }
 
         public static SpanConstructor Markup(this SpanFactory self, params string[] content)
         {
-            return self.Span(SpanKind.Markup, content, markup: true).With(new MarkupChunkGenerator());
+            return self.Span(SpanKindInternal.Markup, content, markup: true).With(new MarkupChunkGenerator());
         }
 
         public static SpanConstructor CodeMarkup(this SpanFactory self, params string[] content)
         {
             return self
-                .Span(SpanKind.Code, content, markup: true)
+                .Span(SpanKindInternal.Code, content, markup: true)
                 .AsCodeMarkup();
         }
 
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     CSharpCodeParser.DefaultKeywords,
                     acceptTrailingDot: true))
                 .With(new MarkupChunkGenerator())
-                .Accepts(AcceptedCharacters.AnyExceptNewline);
+                .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
         public static SourceLocation GetLocationAndAdvance(this SourceLocationTracker self, string content)
@@ -176,27 +176,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public SourceLocationTracker LocationTracker { get; }
 
 
-        public SpanConstructor Span(SpanKind kind, string content, CSharpSymbolType type)
+        public SpanConstructor Span(SpanKindInternal kind, string content, CSharpSymbolType type)
         {
             return CreateSymbolSpan(kind, content, () => new CSharpSymbol(content, type));
         }
 
-        public SpanConstructor Span(SpanKind kind, string content, HtmlSymbolType type)
+        public SpanConstructor Span(SpanKindInternal kind, string content, HtmlSymbolType type)
         {
             return CreateSymbolSpan(kind, content, () => new HtmlSymbol(content, type));
         }
 
-        public SpanConstructor Span(SpanKind kind, string content, bool markup)
+        public SpanConstructor Span(SpanKindInternal kind, string content, bool markup)
         {
             return new SpanConstructor(kind, LocationTracker.CurrentLocation, Tokenize(new[] { content }, markup));
         }
 
-        public SpanConstructor Span(SpanKind kind, string[] content, bool markup)
+        public SpanConstructor Span(SpanKindInternal kind, string[] content, bool markup)
         {
             return new SpanConstructor(kind, LocationTracker.CurrentLocation, Tokenize(content, markup));
         }
 
-        public SpanConstructor Span(SpanKind kind, params ISymbol[] symbols)
+        public SpanConstructor Span(SpanKindInternal kind, params ISymbol[] symbols)
         {
             var start = LocationTracker.CurrentLocation;
             foreach (var symbol in symbols)
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new SpanConstructor(kind, start, symbols);
         }
 
-        private SpanConstructor CreateSymbolSpan(SpanKind kind, string content, Func<ISymbol> ctor)
+        private SpanConstructor CreateSymbolSpan(SpanKindInternal kind, string content, Func<ISymbol> ctor)
         {
             var start = LocationTracker.CurrentLocation;
             LocationTracker.UpdateLocation(content);
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
     internal static class SpanConstructorExtensions
     {
-        public static SpanConstructor Accepts(this SpanConstructor self, AcceptedCharacters accepted)
+        public static SpanConstructor Accepts(this SpanConstructor self, AcceptedCharactersInternal accepted)
         {
             return self.With(eh => eh.AcceptedCharacters = accepted);
         }
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SpanConstructor AsMetaCode()
         {
-            _self.Builder.Kind = SpanKind.MetaCode;
+            _self.Builder.Kind = SpanKindInternal.MetaCode;
             return _self;
         }
 
@@ -330,21 +330,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             return _self
                 .With(new AddTagHelperChunkGenerator(lookupText))
-                .Accepts(AcceptedCharacters.AnyExceptNewline);
+                .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
         public SpanConstructor AsRemoveTagHelper(string lookupText)
         {
             return _self
                 .With(new RemoveTagHelperChunkGenerator(lookupText))
-                .Accepts(AcceptedCharacters.AnyExceptNewline);
+                .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
         public SpanConstructor AsTagHelperPrefixDirective(string prefix)
         {
             return _self
                 .With(new TagHelperPrefixDirectiveChunkGenerator(prefix))
-                .Accepts(AcceptedCharacters.AnyExceptNewline);
+                .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
         public SpanConstructor As(ISpanChunkGenerator chunkGenerator)
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             yield return new RawTextSymbol(SourceLocation.Zero, str);
         }
 
-        public SpanConstructor(SpanKind kind, SourceLocation location, IEnumerable<ISymbol> symbols)
+        public SpanConstructor(SpanKindInternal kind, SourceLocation location, IEnumerable<ISymbol> symbols)
         {
             Builder = new SpanBuilder(location);
             Builder.Kind = kind;
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Builder.Build();
         }
 
-        public SpanConstructor As(SpanKind spanKind)
+        public SpanConstructor As(SpanKindInternal spanKind)
         {
             Builder.Kind = spanKind;
             return this;

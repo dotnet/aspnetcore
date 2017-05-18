@@ -15,20 +15,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                          + "}",
                            new MarkupBlock(
                                Factory.MarkupTransition()
-                                   .Accepts(AcceptedCharacters.None),
+                                   .Accepts(AcceptedCharactersInternal.None),
                                Factory.MetaMarkup(":", HtmlSymbolType.Colon),
                                Factory.Markup(" ")
                                    .With(new SpanEditHandler(
                                        CSharpLanguageCharacteristics.Instance.TokenizeString,
-                                       AcceptedCharacters.Any)),
+                                       AcceptedCharactersInternal.Any)),
                                new StatementBlock(
                                    Factory.CodeTransition()
-                                       .Accepts(AcceptedCharacters.None),
+                                       .Accepts(AcceptedCharactersInternal.None),
                                    Factory.Code("if (true) { }")
                                        .AsStatement()
                                    ),
                                Factory.Markup(Environment.NewLine)
-                                   .Accepts(AcceptedCharacters.None)));
+                                   .Accepts(AcceptedCharactersInternal.None)));
         }
     }
 }

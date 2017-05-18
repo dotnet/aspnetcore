@@ -12,17 +12,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static readonly int TypeHashCode = typeof(SpanEditHandler).GetHashCode();
 
         public SpanEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer)
-            : this(tokenizer, AcceptedCharacters.Any)
+            : this(tokenizer, AcceptedCharactersInternal.Any)
         {
         }
 
-        public SpanEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, AcceptedCharacters accepted)
+        public SpanEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, AcceptedCharactersInternal accepted)
         {
             AcceptedCharacters = accepted;
             Tokenizer = tokenizer;
         }
 
-        public AcceptedCharacters AcceptedCharacters { get; set; }
+        public AcceptedCharactersInternal AcceptedCharacters { get; set; }
 
         public Func<string, IEnumerable<ISymbol>> Tokenizer { get; set; }
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var end = target.Start.AbsoluteIndex + target.Length;
             var changeOldEnd = change.Span.AbsoluteIndex + change.Span.Length;
             return change.Span.AbsoluteIndex >= target.Start.AbsoluteIndex &&
-                   (changeOldEnd < end || (changeOldEnd == end && AcceptedCharacters != AcceptedCharacters.None));
+                   (changeOldEnd < end || (changeOldEnd == end && AcceptedCharacters != AcceptedCharactersInternal.None));
         }
 
         protected virtual PartialParseResult CanAcceptChange(Span target, SourceChange change)

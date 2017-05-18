@@ -16,16 +16,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupBlock(
                     Factory.MarkupTransition(),
                     new MarkupTagBlock(
-                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                        Factory.Markup("<p>").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("Foo #"),
                     new ExpressionBlock(
                         Factory.CodeTransition(),
                         Factory.Code("item")
                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                            .Accepts(AcceptedCharacters.NonWhiteSpace)
+                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         ),
                     new MarkupTagBlock(
-                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
+                        Factory.Markup("</p>").Accepts(AcceptedCharactersInternal.None))
                     )
                 );
         }
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupBlock(
                     Factory.MarkupTransition(),
                     new MarkupTagBlock(
-                        Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                        Factory.Markup("<p>").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("Foo #"),
                     new ExpressionBlock(
                         Factory.CodeTransition(),
@@ -48,24 +48,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupBlock(
                                 Factory.MarkupTransition(),
                                 new MarkupTagBlock(
-                                    Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
+                                    Factory.Markup("<p>").Accepts(AcceptedCharactersInternal.None)),
                                 Factory.EmptyHtml(),
                                 new ExpressionBlock(
                                     Factory.CodeTransition(),
                                     Factory.Code("item")
                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                                     ),
                                 new MarkupTagBlock(
-                                    Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
+                                    Factory.Markup("</p>").Accepts(AcceptedCharactersInternal.None))
                                 )
                             ),
                         Factory.Code(")")
                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                            .Accepts(AcceptedCharacters.NonWhiteSpace)
+                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         ),
                     new MarkupTagBlock(
-                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
+                        Factory.Markup("</p>").Accepts(AcceptedCharactersInternal.None))
                     )
                 );
         }
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("{ var foo = @: bar" + Environment.NewLine
                          + "; }",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code(" var foo = ")
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
@@ -86,11 +86,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                        Factory.MetaMarkup(":", HtmlSymbolType.Colon),
                                        Factory.Markup(" bar" + Environment.NewLine)
                                            .With(new SpanEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString))
-                                           .Accepts(AcceptedCharacters.None)
+                                           .Accepts(AcceptedCharactersInternal.None)
                                        )
                                    ),
                                Factory.Code("; ").AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("{i@: bar" + Environment.NewLine
                          + "}",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("i")
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
@@ -110,11 +110,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                        Factory.MetaMarkup(":", HtmlSymbolType.Colon),
                                        Factory.Markup(" bar" + Environment.NewLine)
                                            .With(new SpanEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString))
-                                           .Accepts(AcceptedCharacters.None)
+                                           .Accepts(AcceptedCharactersInternal.None)
                                        )
                                    ),
                                Factory.EmptyCSharp().AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -123,11 +123,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("(Html.Repeat(10," + TestTemplateCode + "))",
                            new ExpressionBlock(
-                               Factory.MetaCode("(").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code("Html.Repeat(10, ").AsExpression(),
                                TestTemplate(),
                                Factory.Code(")").AsExpression(),
-                               Factory.MetaCode(")").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode(")").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                TestTemplate(),
                                Factory.Code(")")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharacters.NonWhiteSpace)
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                                ));
         }
 
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords),
                                TestTemplate(),
                                Factory.Code(")")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)
+                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                                ));
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                TestNestedTemplate(),
                                Factory.Code(")")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharacters.NonWhiteSpace)
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                                ),
                            GetNestedTemplateError(42));
         }
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                TestTemplate(),
                                Factory.Code("); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                TestTemplate(),
                                Factory.Code("); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                TestNestedTemplate(),
                                Factory.Code("); }")
                                    .AsStatement()
-                                   .Accepts(AcceptedCharacters.None)
+                                   .Accepts(AcceptedCharactersInternal.None)
                                ),
                            GetNestedTemplateError(74));
         }
@@ -224,13 +224,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo," + TestTemplateCode + "); }",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ")
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
                                TestTemplate(),
                                Factory.Code("); ").AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo," + TestTemplateCode + "," + TestTemplateCode + "); }",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ")
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code(", ").AsStatement(),
                                TestTemplate(),
                                Factory.Code("); ").AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ));
         }
 
@@ -256,13 +256,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo," + TestNestedTemplateCode + "); }",
                            new StatementBlock(
-                               Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                               Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ")
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
                                TestNestedTemplate(),
                                Factory.Code("); ").AsStatement(),
-                               Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
+                               Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ),
                            GetNestedTemplateError(69));
         }
@@ -283,30 +283,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 46, 0, 46), new LocationTagged<string>("'", 54, 0, 54)),
                             Factory.Markup(" foo='").With(SpanChunkGenerator.Null),
                              new MarkupBlock(
-                                Factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 52, 0, 52), new LocationTagged<string>("@", 52, 0, 52))).Accepts(AcceptedCharacters.None),
-                                Factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                Factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 52, 0, 52), new LocationTagged<string>("@", 52, 0, 52))).Accepts(AcceptedCharactersInternal.None),
+                                Factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                             Factory.Markup("'").With(SpanChunkGenerator.Null)),
-                        Factory.Markup(">").Accepts(AcceptedCharacters.None)),
+                        Factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("Foo #"),
                     new ExpressionBlock(
                         Factory.CodeTransition(),
                         Factory.Code("item")
                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                            .Accepts(AcceptedCharacters.NonWhiteSpace)
+                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         ),
                     new MarkupTagBlock(
-                        Factory.Markup("</p>").Accepts(AcceptedCharacters.None))
+                        Factory.Markup("</p>").Accepts(AcceptedCharactersInternal.None))
                     )
                 );
 
             var expected = new StatementBlock(
-                    Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                     Factory.Code(" var foo = bar; Html.ExecuteTemplate(foo, ")
                         .AsStatement()
                         .AutoCompleteWith(autoCompleteString: null),
                     testTemplateWithDoubleTransition,
                     Factory.Code("); ").AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None));
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None));
 
             // Act & Assert
             ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo," + testTemplateWithDoubleTransitionCode + "); }", expected);

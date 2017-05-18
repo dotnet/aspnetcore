@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (_nestedLevel > 0)
                 {
-                    var directiveStart = block.Children.First(child => !child.IsBlock && ((Span)child).Kind == SpanKind.Transition).Start;
+                    var directiveStart = block.Children.First(child => !child.IsBlock && ((Span)child).Kind == SpanKindInternal.Transition).Start;
                     var errorLength = /* @ */ 1 + CSharpCodeParser.SectionDirectiveDescriptor.Name.Length;
                     _errorSink.OnError(
                         directiveStart,

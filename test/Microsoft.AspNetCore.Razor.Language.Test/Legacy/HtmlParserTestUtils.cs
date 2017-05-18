@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class HtmlParserTestUtils
     {
-        public static void RunSingleAtEscapeTest(Action<string, Block> testMethod, AcceptedCharacters lastSpanAcceptedCharacters = AcceptedCharacters.None)
+        public static void RunSingleAtEscapeTest(Action<string, Block> testMethod, AcceptedCharactersInternal lastSpanAcceptedCharacters = AcceptedCharactersInternal.None)
         {
             var factory = new SpanFactory();
             testMethod("<foo>@@bar</foo>",
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.Markup("</foo>").Accepts(lastSpanAcceptedCharacters))));
         }
 
-        public static void RunMultiAtEscapeTest(Action<string, Block> testMethod, AcceptedCharacters lastSpanAcceptedCharacters = AcceptedCharacters.None)
+        public static void RunMultiAtEscapeTest(Action<string, Block> testMethod, AcceptedCharactersInternal lastSpanAcceptedCharacters = AcceptedCharactersInternal.None)
         {
             var factory = new SpanFactory();
             testMethod("<foo>@@@@@bar</foo>",
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.CodeTransition(),
                         factory.Code("bar")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     new MarkupTagBlock(
                         factory.Markup("</foo>").Accepts(lastSpanAcceptedCharacters))));
         }

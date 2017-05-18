@@ -190,38 +190,38 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        internal virtual void SingleSpanBlockTest(string document, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
         {
             SingleSpanBlockTest(document, blockKind, spanType, acceptedCharacters, expectedError: null);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
         {
             SingleSpanBlockTest(document, spanContent, blockKind, spanType, acceptedCharacters, expectedErrors: null);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, BlockKind blockKind, SpanKind spanType, params RazorError[] expectedError)
+        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorError[] expectedError)
         {
             SingleSpanBlockTest(document, document, blockKind, spanType, expectedError);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKind blockKind, SpanKind spanType, params RazorError[] expectedErrors)
+        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorError[] expectedErrors)
         {
-            SingleSpanBlockTest(document, spanContent, blockKind, spanType, AcceptedCharacters.Any, expectedErrors ?? new RazorError[0]);
+            SingleSpanBlockTest(document, spanContent, blockKind, spanType, AcceptedCharactersInternal.Any, expectedErrors ?? new RazorError[0]);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedError)
+        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorError[] expectedError)
         {
             SingleSpanBlockTest(document, document, blockKind, spanType, acceptedCharacters, expectedError);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedErrors)
+        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorError[] expectedErrors)
         {
             var result = ParseBlock(document, designTime: false);
 
             var builder = new BlockBuilder();
             builder.Type = blockKind;
-            var expected = ConfigureAndAddSpanToBlock(builder, Factory.Span(spanType, spanContent, spanType == SpanKind.Markup).Accepts(acceptedCharacters));
+            var expected = ConfigureAndAddSpanToBlock(builder, Factory.Span(spanType, spanContent, spanType == SpanKindInternal.Markup).Accepts(acceptedCharacters));
 
             if (FixupSpans)
             {
@@ -552,9 +552,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Trace.WriteLine(string.Format(format, args));
         }
 
-        internal virtual Block CreateSimpleBlockAndSpan(string spanContent, BlockKind blockKind, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        internal virtual Block CreateSimpleBlockAndSpan(string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
         {
-            var span = Factory.Span(spanType, spanContent, spanType == SpanKind.Markup).Accepts(acceptedCharacters);
+            var span = Factory.Span(spanType, spanContent, spanType == SpanKindInternal.Markup).Accepts(acceptedCharacters);
             var b = new BlockBuilder()
             {
                 Type = blockKind
@@ -566,13 +566,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             switch (block.Type)
             {
-                case BlockKind.Markup:
+                case BlockKindInternal.Markup:
                     span.With(new MarkupChunkGenerator());
                     break;
-                case BlockKind.Statement:
+                case BlockKindInternal.Statement:
                     span.With(new StatementChunkGenerator());
                     break;
-                case BlockKind.Expression:
+                case BlockKindInternal.Expression:
                     block.ChunkGenerator = new ExpressionChunkGenerator();
                     span.With(new ExpressionChunkGenerator());
                     break;
@@ -583,7 +583,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private class IgnoreOutputBlock : Block
         {
-            public IgnoreOutputBlock() : base(BlockKind.Template, new SyntaxTreeNode[0], null) { }
+            public IgnoreOutputBlock() : base(BlockKindInternal.Template, new SyntaxTreeNode[0], null) { }
         }
 
         // Corrects the parents and previous/next information for spans

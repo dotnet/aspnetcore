@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     var childBlock = (Block)child;
 
-                    if (childBlock.Type == BlockKind.Tag)
+                    if (childBlock.Type == BlockKindInternal.Tag)
                     {
                         if (TryRewriteTagHelper(childBlock, errorSink))
                         {
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     var childBlock = (Block)child;
 
-                    if (childBlock.Type != BlockKind.Markup)
+                    if (childBlock.Type != BlockKindInternal.Markup)
                     {
                         // Anything other than markup blocks in the attribute area of tags mangles following attributes.
                         // It's also not supported by TagHelpers, bail early to avoid creating bad attribute value pairs.
@@ -614,7 +614,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var tagEnd = tagBlock.Children[tagBlock.Children.Count - 1] as Span;
 
             // If our tag end is not a markup span it means it's some sort of code SyntaxTreeNode (not a valid format)
-            if (tagEnd != null && tagEnd.Kind == SpanKind.Markup)
+            if (tagEnd != null && tagEnd.Kind == SpanKindInternal.Markup)
             {
                 var endSymbol = tagEnd.Symbols.Count > 0 ?
                     tagEnd.Symbols[tagEnd.Symbols.Count - 1] as HtmlSymbol :
@@ -684,7 +684,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // text tags that are labeled as transitions should be ignored aka they're not tag helpers.
             return !string.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) ||
-                   childSpan.Kind != SpanKind.Transition;
+                   childSpan.Kind != SpanKindInternal.Transition;
         }
 
         private void TrackBlock(BlockBuilder builder)
@@ -762,7 +762,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var child = tagBlock.Children[0];
 
-            if (tagBlock.Type != BlockKind.Tag || tagBlock.Children.Count == 0 || !(child is Span))
+            if (tagBlock.Type != BlockKindInternal.Tag || tagBlock.Children.Count == 0 || !(child is Span))
             {
                 return null;
             }
@@ -803,7 +803,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private static void EnsureTagBlock(Block tagBlock)
         {
-            Debug.Assert(tagBlock.Type == BlockKind.Tag);
+            Debug.Assert(tagBlock.Type == BlockKindInternal.Tag);
             Debug.Assert(tagBlock.Children.First() is Span);
         }
 

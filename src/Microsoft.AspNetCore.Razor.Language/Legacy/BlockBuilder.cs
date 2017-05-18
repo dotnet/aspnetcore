@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public IParentChunkGenerator ChunkGenerator { get; set; }
 
-        public BlockKind? Type { get; set; }
+        public BlockKindInternal? Type { get; set; }
 
         public List<SyntaxTreeNode> Children { get; private set; }
 

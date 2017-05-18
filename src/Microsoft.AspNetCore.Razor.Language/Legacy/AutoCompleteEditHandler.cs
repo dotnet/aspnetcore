@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             AutoCompleteAtEndOfSpan = autoCompleteAtEndOfSpan;
         }
 
-        public AutoCompleteEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, AcceptedCharacters accepted)
+        public AutoCompleteEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, AcceptedCharactersInternal accepted)
             : base(tokenizer, accepted)
         {
         }

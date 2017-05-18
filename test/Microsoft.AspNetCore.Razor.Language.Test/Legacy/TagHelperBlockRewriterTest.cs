@@ -664,7 +664,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                     factory.CodeTransition(),
                                                         factory.Code("DateTime.Now")
                                                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                            .Accepts(AcceptedCharacters.NonWhiteSpace)))),
+                                                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))),
                                         HtmlAttributeValueStyle.DoubleQuotes)
                                 })),
                         new []
@@ -956,7 +956,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.CodeTransition(),
                             factory.Code("DateTime.Now")
                                 .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                .Accepts(AcceptedCharacters.NonWhiteSpace)));
+                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
 
                 return new TheoryData<string, Block>
                 {
@@ -1074,9 +1074,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             factory.CodeMarkup(" ?").With(new ExpressionChunkGenerator()),
                                             new MarkupBlock(
                                                 factory.CodeMarkup(" @").With(new ExpressionChunkGenerator())
-                                                    .As(SpanKind.Code),
+                                                    .As(SpanKindInternal.Code),
                                                 factory.CodeMarkup("@").With(SpanChunkGenerator.Null)
-                                                    .As(SpanKind.Code)),
+                                                    .As(SpanKindInternal.Code)),
                                             factory.CodeMarkup("DateTime").With(new ExpressionChunkGenerator()),
                                             factory.CodeMarkup(" :").With(new ExpressionChunkGenerator()),
                                             new MarkupBlock(
@@ -1121,10 +1121,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(
                                             factory.Markup("Time:"),
                                              new MarkupBlock(
-                                                factory.Markup(" @").Accepts(AcceptedCharacters.None),
+                                                factory.Markup(" @").Accepts(AcceptedCharactersInternal.None),
                                                 factory.Markup("@")
                                                     .With(SpanChunkGenerator.Null)
-                                                    .Accepts(AcceptedCharacters.None)),
+                                                    .Accepts(AcceptedCharactersInternal.None)),
                                             dateTimeNow))
                                 }))
                     },
@@ -1143,10 +1143,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         "name",
                                         new MarkupBlock(
                                              new MarkupBlock(
-                                                factory.Markup("@").Accepts(AcceptedCharacters.None),
+                                                factory.Markup("@").Accepts(AcceptedCharactersInternal.None),
                                                 factory.Markup("@")
                                                     .With(SpanChunkGenerator.Null)
-                                                    .Accepts(AcceptedCharacters.None)),
+                                                    .Accepts(AcceptedCharactersInternal.None)),
                                             factory.Markup("BoundStringAttribute")))
                                 }))
                     },
@@ -1166,7 +1166,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             new MarkupBlock(
                                                 factory.EmptyHtml()
                                                     .AsCodeMarkup().With(new ExpressionChunkGenerator())
-                                                    .As(SpanKind.Code),
+                                                    .As(SpanKindInternal.Code),
                                                 new ExpressionBlock(
                                                     factory.CSharpCodeMarkup("@").With(new ExpressionChunkGenerator()),
                                                     factory.CSharpCodeMarkup("(").With(new ExpressionChunkGenerator()),
@@ -1252,7 +1252,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 factory.CodeTransition(),
                                                     factory.Code("DateTime.Now")
                                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))),
+                                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))),
                                     HtmlAttributeValueStyle.DoubleQuotes),
                                 new TagHelperAttributeNode("style", factory.Markup("color:red;"))
                             },
@@ -1439,7 +1439,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.CodeTransition(),
                                     factory.Code("DateTime.Now")
                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))));
+                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))));
                 var doWhileString = "@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);";
                 var doWhile = new Func<int, SyntaxTreeNode>(index =>
                     new MarkupBlock(
@@ -1455,13 +1455,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new MarkupBlock(
                                     new MarkupTagBlock(
                                         factory.MarkupTransition("<text>")),
-                                    factory.Markup("Foo").Accepts(AcceptedCharacters.None),
+                                    factory.Markup("Foo").Accepts(AcceptedCharactersInternal.None),
                                     new MarkupTagBlock(
                                         factory.MarkupTransition("</text>"))),
                                 factory
                                     .Code(" foo++; } while (foo<bar>);")
                                     .AsStatement()
-                                    .Accepts(AcceptedCharacters.None)))));
+                                    .Accepts(AcceptedCharactersInternal.None)))));
 
                 var currentFormattedString = "<p class=\"{0}\" style='{0}'></p>";
                 yield return new object[]
@@ -1579,7 +1579,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             factory.CodeTransition(),
                                             factory.Code("DateTime.Now")
                                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                   .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
                                     factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             factory.Markup("inside of strong tag"),
@@ -1608,7 +1608,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.CodeTransition(),
                                             factory.Code("DateTime.Now")
                                                 .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                .Accepts(AcceptedCharacters.NonWhiteSpace));
+                                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace));
                 var doWhileString = "@do { var foo = bar; <p>Foo</p> foo++; } while (foo<bar>);";
                 var doWhile = new StatementBlock(
                                factory.CodeTransition(),
@@ -1617,10 +1617,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup(" "),
                                     new MarkupTagHelperBlock("p",
                                         factory.Markup("Foo")),
-                                    factory.Markup(" ").Accepts(AcceptedCharacters.None)),
+                                    factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                                factory.Code("foo++; } while (foo<bar>);")
                                 .AsStatement()
-                                .Accepts(AcceptedCharacters.None));
+                                .Accepts(AcceptedCharactersInternal.None));
 
                 var currentFormattedString = "<p>{0}</p>";
                 yield return new object[]
@@ -1722,7 +1722,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     factory.CodeTransition(),
                         factory.Code("DateTime.Now")
                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                            .Accepts(AcceptedCharacters.NonWhiteSpace));
+                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace));
 
                 return new TheoryData<string, MarkupBlock>
                 {
@@ -2348,8 +2348,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         "class",
                                         new MarkupBlock(
                                             new MarkupBlock(
-                                                factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                                factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                                factory.Markup("@").Accepts(AcceptedCharactersInternal.None),
+                                                factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                             factory.Markup("foo@bar.com"))),
                                     new TagHelperAttributeNode("style", factory.Markup("color:red;"))
                                 }),
@@ -2458,7 +2458,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.CodeTransition(),
                                     factory.Code("DateTime.Now")
                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                        .Accepts(AcceptedCharacters.NonWhiteSpace)))));
+                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))));
 
                 yield return new object[]
                 {
@@ -2499,8 +2499,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new MarkupBlock(
                                         factory.Markup("color"),
                                          new MarkupBlock(
-                                            factory.Markup("@").Accepts(AcceptedCharacters.None),
-                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharacters.None)),
+                                            factory.Markup("@").Accepts(AcceptedCharactersInternal.None),
+                                            factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                         factory.Markup(":red;")),
                                     HtmlAttributeValueStyle.DoubleQuotes)
                             },
@@ -2709,7 +2709,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     factory.CodeTransition(),
                         factory.Code("DateTime.Now")
                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                            .Accepts(AcceptedCharacters.NonWhiteSpace));
+                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace));
 
                 // documentContent, expectedOutput
                 return new TheoryData<string, MarkupBlock>
@@ -2836,10 +2836,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.EmptyHtml(),
                         new StatementBlock(
                             factory.CodeTransition(),
-                            factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                            factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                             insideBuilder(),
                             factory.EmptyCSharp().AsStatement(),
-                            factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                            factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                         factory.EmptyHtml());
                 };
 
@@ -2889,7 +2889,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.CodeTransition(),
                                     factory.Code("DateTime.Now")
                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                        .Accepts(AcceptedCharacters.NonWhiteSpace))),
+                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
                         factory.Markup(" +")
                             .With(new LiteralAttributeChunkGenerator(
                                 prefix: new LocationTagged<string>(" ", index + 13, 0, index + 13),
@@ -3524,10 +3524,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.EmptyHtml(),
                         new StatementBlock(
                             factory.CodeTransition(),
-                            factory.MetaCode("{").Accepts(AcceptedCharacters.None),
+                            factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
                             insideBuilder(),
                             factory.EmptyCSharp().AsStatement(),
-                            factory.MetaCode("}").Accepts(AcceptedCharacters.None)),
+                            factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                         factory.EmptyHtml());
                 };
                 Action<MarkupBlock> updateDynamicChunkGenerators = (block) =>
