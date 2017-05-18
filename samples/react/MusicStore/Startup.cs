@@ -30,7 +30,7 @@ namespace MusicStore
             });
 
             // Add EF services to the service container
-            services.AddEntityFramework()
+            services
                 .AddEntityFrameworkSqlite()
                 .AddDbContext<MusicStoreContext>(options => {
                     options.UseSqlite("Data Source=music-db.sqlite");
