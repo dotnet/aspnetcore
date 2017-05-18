@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates a new instance of <see cref="SerializableError"/>.
         /// </summary>
-        /// <param name="modelState"><see cref="ModelStateEntry"/> containing the validation errors.</param>
+        /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
         public SerializableError(ModelStateDictionary modelState)
             : this()
         {
