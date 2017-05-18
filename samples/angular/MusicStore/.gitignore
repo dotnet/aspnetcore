@@ -1,9 +1,0 @@
-/node_modules/
-/wwwroot/lib/
-/wwwroot/ng-app/**/*.js
-/music-db.sqlite
-/Properties/launchSettings.json
-
-# Obviously you don't really want your DB to go in wwwroot, but due to https://github.com/aspnet/Microsoft.Data.Sqlite/issues/188
-# it currently does when run from IIS Express. Will resolve this once RC2 is out, which is supposed to eliminate the inconsistency.
-/wwwroot/music-db.sqlite
