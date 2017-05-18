@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
-    internal struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, IEquatable<HeaderSegmentCollection>
+    public struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, IEquatable<HeaderSegmentCollection>
     {
         private readonly StringValues _headers;
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             return GetEnumerator();
         }
 
-        internal struct Enumerator : IEnumerator<HeaderSegment>
+        public struct Enumerator : IEnumerator<HeaderSegment>
         {
             private readonly StringValues _headers;
             private int _index;

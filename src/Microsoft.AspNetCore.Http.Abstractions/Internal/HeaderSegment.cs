@@ -6,13 +6,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
-    internal struct HeaderSegment : IEquatable<HeaderSegment>
+    public struct HeaderSegment : IEquatable<HeaderSegment>
     {
         private readonly StringSegment _formatting;
         private readonly StringSegment _data;
 
         // <summary>
-        // Initializes a new instance of the <see cref="HeaderSegment/> structure.
+        // Initializes a new instance of the <see cref="HeaderSegment"/> structure.
         // </summary>
         public HeaderSegment(StringSegment formatting, StringSegment data)
         {
