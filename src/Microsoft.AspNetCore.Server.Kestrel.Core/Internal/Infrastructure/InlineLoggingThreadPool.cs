@@ -33,9 +33,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             action(state);
         }
 
-        public void Schedule(Action action)
+        public void Schedule(Action<object> action, object state)
         {
-            Run(action);
+            try
+            {
+                action(state);
+            }
+            catch (Exception e)
+            {
+                _log.LogError(0, e, "InlineLoggingThreadPool.Schedule");
+            }
         }
     }
 }

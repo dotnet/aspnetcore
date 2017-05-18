@@ -114,9 +114,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var thread = new LibuvThread(transport);
             var mockScheduler = new Mock<IScheduler>();
             Action backPressure = null;
-            mockScheduler.Setup(m => m.Schedule(It.IsAny<Action>())).Callback<Action>(a =>
+            mockScheduler.Setup(m => m.Schedule(It.IsAny<Action<object>>(), It.IsAny<object>())).Callback<Action<object>, object>((a, o) =>
             {
-                backPressure = a;
+                backPressure = () => a(o);
             });
             mockConnectionHandler.InputOptions.WriterScheduler = mockScheduler.Object;
             mockConnectionHandler.OutputOptions.ReaderScheduler = thread;

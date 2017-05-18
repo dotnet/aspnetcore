@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _log = log;
 
             // Curry and capture log in closures once
-            // The currying is done in functions of the same name to improve the 
+            // The currying is done in functions of the same name to improve the
             // call stack for exceptions and profiling else it shows up as LoggingThreadPool.ctor>b__4_0
             // and you aren't sure which of the 3 functions was called.
             RunAction();
@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             ThreadPool.QueueUserWorkItem(action, state);
         }
 
-        public void Schedule(Action action)
+        public void Schedule(Action<object> action, object state)
         {
-            Run(action);
+            Run(() => action(state));
         }
     }
 }

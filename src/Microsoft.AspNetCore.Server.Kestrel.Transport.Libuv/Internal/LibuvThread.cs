@@ -383,9 +383,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false) == task;
         }
 
-        public void Schedule(Action action)
+        public void Schedule(Action<object> action, object state)
         {
-            Post(state => state(), action);
+            Post(action, state);
         }
 
         private struct Work
