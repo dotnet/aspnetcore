@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Language;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNetCore.Razor.Language;
 using Xunit;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.CodeAnalysis.Razor.Workspaces
 {
@@ -21,6 +20,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
                 "__Generated__StringParameterViewComponentTagHelper",
                 typeof(StringParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
+                .DisplayName("StringParameterViewComponentTagHelper")
                 .TagMatchingRule(rule =>
                     rule
                     .RequireTagName("vc:string-parameter")
@@ -56,6 +56,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
                 "__Generated__VariousParameterViewComponentTagHelper",
                 typeof(VariousParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
+                .DisplayName("VariousParameterViewComponentTagHelper")
                 .TagMatchingRule(rule =>
                     rule
                     .RequireTagName("vc:various-parameter")
@@ -98,6 +99,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
                 "__Generated__GenericParameterViewComponentTagHelper",
                 typeof(GenericParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
+                .DisplayName("GenericParameterViewComponentTagHelper")
                 .TagMatchingRule(rule =>
                     rule
                     .RequireTagName("vc:generic-parameter")

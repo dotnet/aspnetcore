@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private static ICollection<char> InvalidNonWhitespaceAllowedChildCharacters { get; } = new HashSet<char>(
             new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
 
+        private string _displayName;
         private string _documentation;
         private string _tagOutputHint;
         private HashSet<string> _allowedChildTags;
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private TagHelperDescriptorBuilder(string typeName, string assemblyName)
         {
             _typeName = typeName;
+            _displayName = _typeName;
             _assemblyName = assemblyName;
             _metadata = new Dictionary<string, string>(StringComparer.Ordinal);
         }
@@ -133,6 +135,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
+        public TagHelperDescriptorBuilder DisplayName(string displayName)
+        {
+            if (displayName == null)
+            {
+                throw new ArgumentNullException(nameof(displayName));
+            }
+
+            _displayName = displayName;
+
+            return this;
+        }
+
         public TagHelperDescriptor Build()
         {
             var validationDiagnostics = Validate();
@@ -146,7 +160,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _typeName,
                 _assemblyName,
                 _typeName /* Name */,
-                _typeName /* DisplayName */,
+                _displayName,
                 _documentation,
                 _tagOutputHint,
                 _tagMatchingRules ?? Enumerable.Empty<TagMatchingRule>(),
