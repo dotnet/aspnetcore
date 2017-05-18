@@ -14,7 +14,7 @@ export class AlbumDeletePrompt {
     public show(album: models.Album) {
         this.album = album;
 
-        // Consider rewriting this using Angular 2's "Renderer" API so as to avoid direct DOM access
+        // Consider rewriting this using Angular's "Renderer" API so as to avoid direct DOM access
         (<any>window).jQuery(".modal", this._elementRef.nativeElement).modal();
     }
 }

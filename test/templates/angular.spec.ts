@@ -24,7 +24,7 @@ function testBasicNavigation() {
 
         it('should initially display the home page', () => {
             expect(browser.getText('h1')).to.eq('Hello, world!');
-            expect(browser.getText('li a[href="https://angular.io/"]')).to.eq('Angular 2');
+            expect(browser.getText('li a[href="https://angular.io/"]')).to.eq('Angular');
         });
 
         it('should be able to show the counter page', () => {

@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 namespace Microsoft.AspNetCore.AngularServices
 {
     /// <summary>
-    /// Helpers for prepopulating Angular 2's 'http' service with data.
+    /// Helpers for prepopulating Angular's 'http' service with data.
     /// </summary>
     public static class PrimeCacheHelper
     {

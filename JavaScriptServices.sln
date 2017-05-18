@@ -46,7 +46,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KnockoutSpa", "templates\KnockoutSpa\KnockoutSpa.csproj", "{F60248B1-940E-43FB-BEA0-589362AA6320}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Angular2Spa", "templates\Angular2Spa\Angular2Spa.csproj", "{4D4B84C9-13F7-40CA-B05A-DC98FD6019AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AngularSpa", "templates\AngularSpa\AngularSpa.csproj", "{4D4B84C9-13F7-40CA-B05A-DC98FD6019AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AureliaSpa", "templates\AureliaSpa\AureliaSpa.csproj", "{4D57B6E1-7141-48ED-959E-872BDD4A2F72}"
 EndProject

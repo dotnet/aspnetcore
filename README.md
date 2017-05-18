@@ -8,7 +8,7 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 `JavaScriptServices` is a set of client-side technologies for ASP.NET Core. It provides infrastructure that you'll find useful if you:
 
--  Use Angular 2 / React / Vue / Aurelia / Knockout / etc.
+-  Use Angular / React / Vue / Aurelia / Knockout / etc.
 -  Build your client-side resources using Webpack.
 -  Execute JavaScript on the server at runtime.
 
@@ -31,7 +31,7 @@ It's cross-platform (Windows, Linux, or macOS) and works with .NET Core 1.0.1 or
 
 ## Creating new applications
 
-If you want to build a brand-new ASP.NET Core app that uses Angular 2 / React / Knockout on the client, consider starting with the `aspnetcore-spa` generator. This lets you choose your client-side framework. It generates a starting point that includes applicable features such as Webpack dev middleware, server-side prerendering, and efficient production builds. It's much easier than configuring everything to work together manually!
+If you want to build a brand-new ASP.NET Core app that uses Angular / React / Knockout on the client, consider starting with the `aspnetcore-spa` generator. This lets you choose your client-side framework. It generates a starting point that includes applicable features such as Webpack dev middleware, server-side prerendering, and efficient production builds. It's much easier than configuring everything to work together manually!
 
 To do this, install Yeoman and these generator templates:
 
@@ -57,10 +57,10 @@ If you have an existing ASP.NET Core application, or if you just want to use the
    * Most applications developers don't need to use this directly, but you can do so if you want to implement your own functionality that involves calling Node.js code from .NET at runtime.
    * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.NodeServices#microsoftaspnetcorenodeservices).
  * `Microsoft.AspNetCore.SpaServices`
-   * This provides infrastructure that's generally useful when building Single Page Applications (SPAs) with technologies such as Angular 2 or React (for example, server-side prerendering and webpack middleware). Internally, it uses the `NodeServices` package to implement its features.
+   * This provides infrastructure that's generally useful when building Single Page Applications (SPAs) with technologies such as Angular or React (for example, server-side prerendering and webpack middleware). Internally, it uses the `NodeServices` package to implement its features.
    * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#microsoftaspnetcorespaservices).
  * `Microsoft.AspNetCore.AngularServices`
-   * This builds on the `SpaServices` package and includes features specific to Angular 2. Currently, this includes validation helpers.
+   * This builds on the `SpaServices` package and includes features specific to Angular. Currently, this includes validation helpers.
    * The code is [here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.AngularServices). You'll find a usage example for [the validation helper here](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/angular/MusicStore/wwwroot/ng-app/components/admin/album-edit/album-edit.ts).
 
 There was previously a `Microsoft.AspNetCore.ReactServices` but this is not currently needed - all applicable functionality is in `Microsoft.AspNetCore.SpaServices`, because it's sufficiently general. We might add a new `Microsoft.AspNetCore.ReactServices` package in the future if new React-specific requirements emerge.
@@ -73,7 +73,7 @@ Inside this repo, [the `templates` directory](https://github.com/aspnet/JavaScri
 
 The [`samples` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/samples) contains examples of:
 
-- Using the JavaScript services family of packages with Angular 2 and React.
+- Using the JavaScript services family of packages with Angular and React.
 - A standalone `NodeServices` usage for runtime code transpilation and image processing.
 
 **To run the samples:**
@@ -82,7 +82,7 @@ The [`samples` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/
  * At the repo's root directory (the one containing `src`, `samples`, etc.), run `dotnet restore`
  * Change directory to the sample you want to run (for example, `cd samples/angular/MusicStore`)
  * Restore Node dependencies by running `npm install`
-   * If you're trying to run the Angular 2 "Music Store" sample, then also run `gulp` (which you need to have installed globally). None of the other samples require this.
+   * If you're trying to run the Angular "Music Store" sample, then also run `gulp` (which you need to have installed globally). None of the other samples require this.
  * Run the application (`dotnet run`)
  * Browse to [http://localhost:5000](http://localhost:5000)
 
@@ -92,7 +92,7 @@ If you're interested in contributing to the various packages, samples, and proje
 
  * Clone the repo
  * Run `dotnet restore` at the repo root dir
- * Go to whatever sample or template you want to run (for example, `cd templates/Angular2Spa`)
+ * Go to whatever sample or template you want to run (for example, `cd templates/AngularSpa`)
  * Restore NPM dependencies (run `npm install`)
  * If the sample/template you're trying to run has a file called `webpack.config.vendor.js` at its root, run `webpack --config webpack.config.vendor.js`. It it has a file called `webpack.config.js`, run `webpack` (no args). You might need to install webpack first, by running `npm install -g webpack`.
  * Launch it (`dotnet run`)

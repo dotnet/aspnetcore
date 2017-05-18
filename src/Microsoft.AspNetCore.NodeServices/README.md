@@ -10,7 +10,7 @@ This NuGet package provides a fast and robust way to invoke Node.js code from a 
 It is the underlying mechanism supporting the following packages:
 
  * [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices) - builds on NodeServices, adding functionality commonly used in Single Page Applications, such as server-side prerendering, webpack middleware, and integration between server-side and client-side routing.
- * [`Microsoft.AspNetCore.AngularServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.AngularServices) and [`Microsoft.AspNetCore.ReactServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.ReactServices) - these build on `SpaServices`, adding helpers specific to Angular 2 and React, such as cache priming and integrating server-side and client-side validation
+ * [`Microsoft.AspNetCore.AngularServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.AngularServices) and [`Microsoft.AspNetCore.ReactServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.ReactServices) - these build on `SpaServices`, adding helpers specific to Angular and React, such as cache priming and integrating server-side and client-side validation
 
 ### Requirements
 
@@ -32,7 +32,7 @@ For .NET Framework apps:
 
  * `nuget install Microsoft.AspNetCore.NodeServices`
 
-### Do you just want to build an ASP.NET Core app with Angular 2 / React / Knockout / etc.?
+### Do you just want to build an ASP.NET Core app with Angular / React / Knockout / etc.?
 
 In that case, you don't need to use NodeServices directly (or install it manually). You can either:
 

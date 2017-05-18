@@ -23,7 +23,7 @@ const commonTemplatePrepublishSteps = [
 const commonForceInclusionRegex = /^(wwwroot|ClientApp)\/dist\//; // Files to be included in template, even though gitignored
 
 const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string, prepublish?: string[], forceInclusion?: RegExp } } = {
-    'angular': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular' },
+    'angular': { dir: '../../templates/AngularSpa/', dotNetNewId: 'Angular', displayName: 'Angular' },
     'aurelia': { dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
     'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
     'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },

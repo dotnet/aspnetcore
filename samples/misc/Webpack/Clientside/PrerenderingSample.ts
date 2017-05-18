@@ -2,8 +2,8 @@ export default function (params: any): Promise<{ html: string, globals?: any }> 
     return new Promise((resolve, reject) => {
 
         // Here, you could put any logic that synchronously or asynchronously prerenders
-        // your SPA components. For example, see the boot-server.ts files in the Angular2Spa
-        // and ReactReduxSpa templates for ways to prerender Angular 2 and React components.
+        // your SPA components. For example, see the boot-server.ts files in the AngularSpa
+        // and ReactReduxSpa templates for ways to prerender Angular and React components.
         //
         // If you wanted, you could use a property on the 'params.data' object to specify
         // which SPA component or template to render.
