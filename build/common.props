@@ -1,7 +1,6 @@
 <Project>
-
   <Import Project="dependencies.props" />
-  <Import Project="version.props" />
+  <Import Project="..\version.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -10,11 +9,14 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
+    <PackageReference Include="NETStandard.Library" Version="$(BundledNETStandardPackageVersion)" />
   </ItemGroup>
 </Project>

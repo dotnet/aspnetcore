@@ -1,14 +1,11 @@
 <Project>
   <PropertyGroup>
-    <AspNetCoreVersion>1.1.0</AspNetCoreVersion>
-    <AspNetCoreMvcVersion>1.1.1</AspNetCoreMvcVersion>
-    <AspNetCoreToolsVersion>1.0.0-msbuild3-final</AspNetCoreToolsVersion>
+    <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <AutoMapperVersion>5.0.2</AutoMapperVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
+    <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
-    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
-    <MicrosoftDataflowVersion>4.5.24</MicrosoftDataflowVersion>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <ThreadingDataflowVersion>4.7.0</ThreadingDataflowVersion>
   </PropertyGroup>
 </Project>

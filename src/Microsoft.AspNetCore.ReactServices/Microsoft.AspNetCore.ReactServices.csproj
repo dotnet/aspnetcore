@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Helpers for building React applications on ASP.NET Core.</Description>
-    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <PackageTags>aspnetcore;aspnetcoremvc;nodeservices</PackageTags>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>

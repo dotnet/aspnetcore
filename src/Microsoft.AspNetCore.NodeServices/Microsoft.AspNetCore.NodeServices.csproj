@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
-    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <PackageTags>aspnetcore;aspnetcoremvc;nodeservices</PackageTags>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
@@ -19,7 +19,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <PackageReference Include="System.Diagnostics.Process" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.IO.FileSystem.Watcher" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Runtime.Loader" Version="$(CoreFxVersion)" />
