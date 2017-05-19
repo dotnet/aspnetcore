@@ -44,15 +44,20 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var credentialsProvider = context.RequestServices.GetRequiredService<ISigningCredentialsPolicyProvider>();
-            var openIdOptionsCache = context.RequestServices.GetRequiredService<IOptionsCache<OpenIdConnectOptions>>();
 
+            var credentialsProvider = context.RequestServices.GetService<DeveloperCertificateSigningCredentialsSource>();
+            if (credentialsProvider == null)
+            {
+                await _next(context);
+                return;
+            }
+            var openIdOptionsCache = context.RequestServices.GetRequiredService<IOptionsCache<OpenIdConnectOptions>>();
             if (_environment.IsDevelopment() &&
                 context.Request.Path.Equals(_options.Value.ListeningEndpoint))
             {
                 if (context.Request.Method.Equals(HttpMethods.Get))
                 {
-                    var credentials = await credentialsProvider.GetAllCredentialsAsync();
+                    var credentials = await credentialsProvider.GetCredentials();
                     bool hasDevelopmentCertificate = await IsDevelopmentCertificateConfiguredAndValid();
                     var foundDeveloperCertificate = FoundDeveloperCertificate();
                     if (!foundDeveloperCertificate || !hasDevelopmentCertificate)
@@ -102,7 +107,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
                         store.Open(OpenFlags.ReadWrite);
                         store.Add(imported);
                         store.Close();
-                        _identityServiceOptionsCache.TryRemove(Options.DefaultName);
                         openIdOptionsCache.TryRemove(OpenIdConnectDefaults.AuthenticationScheme);
 
                         context.Response.StatusCode = StatusCodes.Status204NoContent;
@@ -131,7 +135,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
 
             async Task<bool> IsDevelopmentCertificateConfiguredAndValid()
             {
-                var certificates = await credentialsProvider.GetAllCredentialsAsync();
+                var certificates = await credentialsProvider.GetCredentials();
                 return certificates.Any(
                     c => _timeStampManager.IsValidPeriod(c.NotBefore, c.Expires) &&
                         c.Credentials.Key is X509SecurityKey key &&

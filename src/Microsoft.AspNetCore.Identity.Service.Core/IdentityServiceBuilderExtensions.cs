@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Identity.Service.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
@@ -52,6 +54,20 @@ namespace Microsoft.AspNetCore.Identity.Service
                     o.SigningKeys.Add(new SigningCredentials(new X509SecurityKey(certificate), algorithm));
                 }
             });
+
+            return builder;
+        }
+
+        public static IIdentityServiceBuilder DisableDeveloperCertificate(this IIdentityServiceBuilder builder)
+        {
+            var services = builder.Services;
+            foreach (var service in services.ToList())
+            {
+                if (service.ImplementationType == typeof(DeveloperCertificateSigningCredentialsSource))
+                {
+                    services.Remove(service);
+                }
+            }
 
             return builder;
         }

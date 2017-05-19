@@ -83,6 +83,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ITokenClaimsProvider, TimestampsTokenClaimsProvider>();
             services.AddSingleton<ITokenClaimsProvider, TokenHashTokenClaimsProvider>();
             services.AddSingleton<ProtocolErrorProvider>();
+            services.AddSingleton<ISigningCredentialsSource, DeveloperCertificateSigningCredentialsSource>();
+            services.AddSingleton<DeveloperCertificateSigningCredentialsSource>();
 
             services.AddSingleton<IPasswordHasher<TApplication>, PasswordHasher<TApplication>>();
             services.AddScoped<ISigningCredentialsPolicyProvider, DefaultSigningCredentialsPolicyProvider>();
