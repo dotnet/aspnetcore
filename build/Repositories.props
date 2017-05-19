@@ -29,6 +29,7 @@
     <Repository Include="HttpSysServer" Commit="" />
     <Repository Include="Identity" Commit="" />
     <Repository Include="IISIntegration" Commit="" />
+    <Repository Include="JavaScriptServices" Commit="" />
     <Repository Include="JsonPatch" Commit="" />
     <Repository Include="KestrelHttpServer" Commit="" />
     <Repository Include="Localization" Commit="" />
