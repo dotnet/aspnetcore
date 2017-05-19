@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Internal
         /// <summary>
         /// The default maximum size of characters in a cookie to send back to the client.
         /// </summary>
-        public const int DefaultChunkSize = 4070;
+        public const int DefaultChunkSize = 4050;
 
         private const string ChunkKeySuffix = "C";
         private const string ChunkCountPrefix = "chunks-";
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             // Lowest common denominator. Safari has the lowest known limit (4093), and we leave little extra just in case.
             // See http://browsercookielimits.x64.me/.
-            // Leave at least 20 in case CookiePolicy tries to add 'secure' and/or 'httponly'.
+            // Leave at least 40 in case CookiePolicy tries to add 'secure', 'samesite=strict' and/or 'httponly'.
             ChunkSize = DefaultChunkSize;
             ThrowForPartialCookies = true;
         }
@@ -166,6 +166,7 @@ namespace Microsoft.AspNetCore.Internal
             {
                 Domain = options.Domain,
                 Expires = options.Expires,
+                SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
                 HttpOnly = options.HttpOnly,
                 Path = options.Path,
                 Secure = options.Secure,
@@ -284,6 +285,7 @@ namespace Microsoft.AspNetCore.Internal
                 {
                     Path = options.Path,
                     Domain = options.Domain,
+                    SameSite = options.SameSite,
                     Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 });
 
@@ -297,6 +299,7 @@ namespace Microsoft.AspNetCore.Internal
                     {
                         Path = options.Path,
                         Domain = options.Domain,
+                        SameSite = options.SameSite,
                         Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                     });
             }

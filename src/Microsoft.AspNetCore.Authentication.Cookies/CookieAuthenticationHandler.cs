@@ -179,6 +179,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var cookieOptions = new CookieOptions
             {
                 Domain = Options.CookieDomain,
+                SameSite = Options.CookieSameSite,
                 HttpOnly = Options.CookieHttpOnly,
                 Path = Options.CookiePath ?? (OriginalPathBase.HasValue ? OriginalPathBase.ToString() : "/"),
             };

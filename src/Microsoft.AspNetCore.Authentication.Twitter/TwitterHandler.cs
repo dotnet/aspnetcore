@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
+                SameSite = SameSiteMode.Lax,
                 Secure = Request.IsHttps
             };
 
@@ -160,6 +161,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
+                SameSite = SameSiteMode.Lax,
                 Secure = Request.IsHttps,
                 Expires = Clock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
             };

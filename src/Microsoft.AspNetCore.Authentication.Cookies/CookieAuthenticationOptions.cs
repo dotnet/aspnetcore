@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
@@ -23,6 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
             ExpireTimeSpan = TimeSpan.FromDays(14);
             SlidingExpiration = true;
+            CookieSameSite = SameSiteMode.Strict;
             CookieHttpOnly = true;
             CookieSecure = CookieSecurePolicy.SameAsRequest;
             Events = new CookieAuthenticationEvents();
@@ -56,6 +56,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Determines the path used to create the cookie. The default value is "/" for highest browser compatibility.
         /// </summary>
         public string CookiePath { get; set; }
+
+        /// <summary>
+        /// Determines if the browser should allow the cookie to be attached to same-site or cross-site requests. The
+        /// default is Strict, which means the cookie is only allowed to be attached to same-site requests.
+        /// </summary>
+        public SameSiteMode CookieSameSite { get; set; }
 
         /// <summary>
         /// Determines if the browser should allow the cookie to be accessed by client-side javascript. The

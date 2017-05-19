@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Builder
     public class CookiePolicyOptions
     {
         /// <summary>
+        /// Affects the cookie's same site attribute.
+        /// </summary>
+        public SameSiteMode MinimumSameSitePolicy { get; set; } = SameSiteMode.Strict;
+
+        /// <summary>
         /// Affects whether cookies must be HttpOnly.
         /// </summary>
         public HttpOnlyPolicy HttpOnly { get; set; } = HttpOnlyPolicy.None;

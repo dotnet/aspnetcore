@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
 
             private bool PolicyRequiresCookieOptions()
             {
-                return Policy.HttpOnly != HttpOnlyPolicy.None || Policy.Secure != CookieSecurePolicy.None;
+                return Policy.MinimumSameSitePolicy != SameSiteMode.None || Policy.HttpOnly != HttpOnlyPolicy.None || Policy.Secure != CookieSecurePolicy.None;
             }
 
             public void Append(string key, string value)
@@ -151,6 +151,22 @@ namespace Microsoft.AspNetCore.CookiePolicy
                     default:
                         throw new InvalidOperationException();
                 }
+                switch (Policy.MinimumSameSitePolicy)
+                {
+                    case SameSiteMode.None:
+                        break;
+                    case SameSiteMode.Lax:
+                        if (options.SameSite == SameSiteMode.None)
+                        {
+                            options.SameSite = SameSiteMode.Lax;
+                        }
+                        break;
+                    case SameSiteMode.Strict:
+                        options.SameSite = SameSiteMode.Strict;
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unrecognized {nameof(SameSiteMode)} value {Policy.MinimumSameSitePolicy.ToString()}");
+                }
                 switch (Policy.HttpOnly)
                 {
                     case HttpOnlyPolicy.Always:
@@ -159,7 +175,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
                     case HttpOnlyPolicy.None:
                         break;
                     default:
-                        throw new InvalidOperationException();
+                        throw new InvalidOperationException($"Unrecognized {nameof(HttpOnlyPolicy)} value {Policy.HttpOnly.ToString()}");
                 }
             }
         }

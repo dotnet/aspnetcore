@@ -136,6 +136,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.StartsWith("TestCookie=", setCookie);
             Assert.Contains("; path=/", setCookie);
             Assert.Contains("; httponly", setCookie);
+            Assert.Contains("; samesite=", setCookie);
             Assert.DoesNotContain("; expires=", setCookie);
             Assert.DoesNotContain("; domain=", setCookie);
             Assert.DoesNotContain("; secure", setCookie);
@@ -206,6 +207,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 o.CookiePath = "/foo";
                 o.CookieDomain = "another.com";
                 o.CookieSecure = CookieSecurePolicy.Always;
+                o.CookieSameSite = SameSiteMode.None;
                 o.CookieHttpOnly = true;
             }, SignInAsAlice, baseAddress: new Uri("http://example.com/base"));
 
@@ -217,12 +219,14 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.Contains(" path=/foo", setCookie1);
             Assert.Contains(" domain=another.com", setCookie1);
             Assert.Contains(" secure", setCookie1);
+            Assert.DoesNotContain(" samesite", setCookie1);
             Assert.Contains(" httponly", setCookie1);
 
             var server2 = CreateServer(o =>
             {
                 o.CookieName = "SecondCookie";
                 o.CookieSecure = CookieSecurePolicy.None;
+                o.CookieSameSite = SameSiteMode.Strict;
                 o.CookieHttpOnly = false;
             }, SignInAsAlice, baseAddress: new Uri("http://example.com/base"));
 
@@ -232,6 +236,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             Assert.Contains("SecondCookie=", setCookie2);
             Assert.Contains(" path=/base", setCookie2);
+            Assert.Contains(" samesite=strict", setCookie2);
             Assert.DoesNotContain(" domain=", setCookie2);
             Assert.DoesNotContain(" secure", setCookie2);
             Assert.DoesNotContain(" httponly", setCookie2);

@@ -899,6 +899,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 new CookieOptions
                 {
                     HttpOnly = true,
+                    SameSite = Http.SameSiteMode.Lax,
                     Secure = Request.IsHttps,
                     Expires = Clock.UtcNow.Add(Options.ProtocolValidator.NonceLifetime)
                 });
@@ -930,6 +931,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                             var cookieOptions = new CookieOptions
                             {
                                 HttpOnly = true,
+                                SameSite = Http.SameSiteMode.Lax,
                                 Secure = Request.IsHttps
                             };
 
