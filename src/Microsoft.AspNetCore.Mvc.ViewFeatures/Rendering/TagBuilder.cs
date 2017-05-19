@@ -298,37 +298,69 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            switch (TagRenderMode)
+            WriteTo(this, writer, encoder, TagRenderMode);
+        }
+
+        /// <summary>
+        /// Returns an <see cref="IHtmlContent"/> that renders the body.
+        /// </summary>
+        /// <returns>An <see cref="IHtmlContent"/> that renders the body.</returns>
+        public IHtmlContent RenderBody() => _innerHtml;
+
+        /// <summary>
+        /// Returns an <see cref="IHtmlContent"/> that renders the start tag.
+        /// </summary>
+        /// <returns>An <see cref="IHtmlContent"/> that renders the start tag.</returns>
+        public IHtmlContent RenderStartTag() => new RenderTagHtmlContent(this, TagRenderMode.StartTag);
+
+        /// <summary>
+        /// Returns an <see cref="IHtmlContent"/> that renders the end tag.
+        /// </summary>
+        /// <returns>An <see cref="IHtmlContent"/> that renders the end tag.</returns>
+        public IHtmlContent RenderEndTag() => new RenderTagHtmlContent(this, TagRenderMode.EndTag);
+
+        /// <summary>
+        /// Returns an <see cref="IHtmlContent"/> that renders the self-closing tag.
+        /// </summary>
+        /// <returns>An <see cref="IHtmlContent"/> that renders the self-closing tag.</returns>
+        public IHtmlContent RenderSelfClosingTag() => new RenderTagHtmlContent(this, TagRenderMode.SelfClosing);
+
+        private static void WriteTo(
+            TagBuilder tagBuilder,
+            TextWriter writer,
+            HtmlEncoder encoder,
+            TagRenderMode tagRenderMode)
+        {
+            switch (tagRenderMode)
             {
                 case TagRenderMode.StartTag:
                     writer.Write("<");
-                    writer.Write(TagName);
-                    AppendAttributes(writer, encoder);
+                    writer.Write(tagBuilder.TagName);
+                    tagBuilder.AppendAttributes(writer, encoder);
                     writer.Write(">");
                     break;
                 case TagRenderMode.EndTag:
                     writer.Write("</");
-                    writer.Write(TagName);
+                    writer.Write(tagBuilder.TagName);
                     writer.Write(">");
                     break;
                 case TagRenderMode.SelfClosing:
                     writer.Write("<");
-                    writer.Write(TagName);
-                    AppendAttributes(writer, encoder);
+                    writer.Write(tagBuilder.TagName);
+                    tagBuilder.AppendAttributes(writer, encoder);
                     writer.Write(" />");
                     break;
                 default:
                     writer.Write("<");
-                    writer.Write(TagName);
-                    AppendAttributes(writer, encoder);
+                    writer.Write(tagBuilder.TagName);
+                    tagBuilder.AppendAttributes(writer, encoder);
                     writer.Write(">");
-                    if (_innerHtml != null)
+                    if (tagBuilder._innerHtml != null)
                     {
-                        _innerHtml.WriteTo(writer, encoder);
+                        tagBuilder._innerHtml.WriteTo(writer, encoder);
                     }
-
                     writer.Write("</");
-                    writer.Write(TagName);
+                    writer.Write(tagBuilder.TagName);
                     writer.Write(">");
                     break;
             }
@@ -340,6 +372,23 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             {
                 WriteTo(writer, HtmlEncoder.Default);
                 return writer.ToString();
+            }
+        }
+
+        private class RenderTagHtmlContent : IHtmlContent
+        {
+            private readonly TagBuilder _tagBuilder;
+            private readonly TagRenderMode _tagRenderMode;
+
+            public RenderTagHtmlContent(TagBuilder tagBuilder, TagRenderMode tagRenderMode)
+            {
+                _tagBuilder = tagBuilder;
+                _tagRenderMode = tagRenderMode;
+            }
+
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                TagBuilder.WriteTo(_tagBuilder, writer, encoder, _tagRenderMode);
             }
         }
 
