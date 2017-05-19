@@ -430,6 +430,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatDiagnostic_CodeTarget_UnsupportedExtension(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("Diagnostic_CodeTarget_UnsupportedExtension"), p0, p1);
 
+        /// <summary>
+        /// The '{0}` directive must appear at the start of the line.
+        /// </summary>
+        internal static string DirectiveMustAppearAtStartOfLine
+        {
+            get => GetString("DirectiveMustAppearAtStartOfLine");
+        }
+
+        /// <summary>
+        /// The '{0}` directive must appear at the start of the line.
+        /// </summary>
+        internal static string FormatDirectiveMustAppearAtStartOfLine(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveMustAppearAtStartOfLine"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

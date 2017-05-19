@@ -101,7 +101,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             foreach (var directive in directives)
             {
-                _directiveParsers.Add(directive, handler);
+                _directiveParsers.Add(directive, () =>
+                {
+                    EnsureDirectiveIsAtStartOfLine();
+                    handler();
+                });
                 Keywords.Add(directive);
 
                 // These C# keywords are reserved for use in directives. It's an error to use them outside of
@@ -1517,6 +1521,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             MapDirectives(TagHelperPrefixDirective, SyntaxConstants.CSharp.TagHelperPrefixKeyword);
             MapDirectives(AddTagHelperDirective, SyntaxConstants.CSharp.AddTagHelperKeyword);
             MapDirectives(RemoveTagHelperDirective, SyntaxConstants.CSharp.RemoveTagHelperKeyword);
+        }
+
+        private void EnsureDirectiveIsAtStartOfLine()
+        {
+            // 1 is the offset of the @ transition for the directive.
+            if (CurrentStart.CharacterIndex > 1)
+            {
+                var index = CurrentStart.AbsoluteIndex - 1;
+                var lineStart = CurrentStart.AbsoluteIndex - CurrentStart.CharacterIndex;
+                while (--index >= lineStart)
+                {
+                    var @char = Context.SourceDocument[index];
+
+                    if (!char.IsWhiteSpace(@char))
+                    {
+                        var currentDirective = CurrentSymbol.Content;
+                        Context.ErrorSink.OnError(
+                            CurrentStart,
+                            Resources.FormatDirectiveMustAppearAtStartOfLine(currentDirective),
+                            length: currentDirective.Length);
+                        break;
+                    }
+                }
+            }
         }
 
         private void HandleDirective(DirectiveDescriptor descriptor)

@@ -11,6 +11,104 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
+        public void ExtensibleDirectiveDoesNotErorrIfNotAtStartOfLineBecauseOfWhitespace()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddTypeToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(Environment.NewLine + "  @custom System.Text.Encoding.ASCIIEncoding",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.Code(Environment.NewLine + "  ").AsStatement(),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
+        }
+
+        [Fact]
+        public void BuiltInDirectiveDoesNotErorrIfNotAtStartOfLineBecauseOfWhitespace()
+        {
+            // Act & Assert
+            ParseCodeBlockTest(Environment.NewLine + "  @addTagHelper \"*, Foo\"",
+                Enumerable.Empty<DirectiveDescriptor>(),
+                new DirectiveBlock(
+                    Factory.Code(Environment.NewLine + "  ").AsStatement(),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
+                            .Accepts(AcceptedCharactersInternal.None),
+                    Factory.Code("\"*, Foo\"")
+                        .AsAddTagHelper("\"*, Foo\"")));
+        }
+
+        [Fact]
+        public void BuiltInDirectiveErorrsIfNotAtStartOfLine()
+        {
+            // Act & Assert
+            ParseCodeBlockTest("{  @addTagHelper \"*, Foo\"" + Environment.NewLine + "}",
+                Enumerable.Empty<DirectiveDescriptor>(),
+                new StatementBlock(
+                    Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Code("  ")
+                        .AsStatement()
+                        .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: false),
+                    new DirectiveBlock(
+                        Factory.CodeTransition(),
+                        Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
+                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory.Code("\"*, Foo\"")
+                            .AsAddTagHelper("\"*, Foo\"")),
+                    Factory.Code(Environment.NewLine).AsStatement(),
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
+                new RazorError(
+                        Resources.FormatDirectiveMustAppearAtStartOfLine("addTagHelper"),
+                        new SourceLocation(4, 0, 4),
+                        12));
+        }
+
+        [Fact]
+        public void ExtensibleDirectiveErorrsIfNotAtStartOfLine()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddTypeToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "{  @custom System.Text.Encoding.ASCIIEncoding" + Environment.NewLine + "}",
+                new[] { descriptor },
+                new StatementBlock(
+                    Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Code("  ")
+                        .AsStatement()
+                        .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: false),
+                    new DirectiveBlock(
+                        new DirectiveChunkGenerator(descriptor),
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
+                            .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
+                        Factory.Span(SpanKindInternal.Markup, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                    Factory.EmptyCSharp().AsStatement(),
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
+                new RazorError(
+                    Resources.FormatDirectiveMustAppearAtStartOfLine("custom"),
+                    new SourceLocation(4, 0, 4),
+                    6));
+        }
+
+        [Fact]
         public void DirectiveDescriptor_UnderstandsTypeTokens()
         {
             // Arrange

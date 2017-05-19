@@ -207,4 +207,7 @@
   <data name="Diagnostic_CodeTarget_UnsupportedExtension" xml:space="preserve">
     <value>The document type '{0}' does not support the extension '{1}'.</value>
   </data>
+  <data name="DirectiveMustAppearAtStartOfLine" xml:space="preserve">
+    <value>The '{0}` directive must appear at the start of the line.</value>
+  </data>
 </root>

@@ -165,6 +165,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()),
                 new RazorError(
+                    Resources.FormatDirectiveMustAppearAtStartOfLine("section"),
+                    new SourceLocation(16, 0, 16),
+                    7),
+                new RazorError(
                     LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
                     new SourceLocation(15, 0, 15),
                     8));
