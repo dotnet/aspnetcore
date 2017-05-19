@@ -80,19 +80,19 @@ namespace Microsoft.AspNetCore.ResponseCompression
                     // There will rarely be more than three providers, and there's only one by default
                     foreach (var provider in _providers)
                     {
-                        if (string.Equals(provider.EncodingName, encoding.Value, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(provider.EncodingName, encoding.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             return provider;
                         }
                     }
 
                     // Uncommon but valid options
-                    if (string.Equals("*", encoding.Value, StringComparison.Ordinal))
+                    if (StringSegment.Equals("*", encoding.Value, StringComparison.Ordinal))
                     {
                         // Any
                         return _providers[0];
                     }
-                    if (string.Equals("identity", encoding.Value, StringComparison.OrdinalIgnoreCase))
+                    if (StringSegment.Equals("identity", encoding.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         // No compression
                         return null;
