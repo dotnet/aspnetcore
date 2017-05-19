@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -13,7 +14,7 @@ namespace Microsoft.Net.Http.Headers
         private static readonly HttpHeaderParser<ContentRangeHeaderValue> Parser
             = new GenericHeaderParser<ContentRangeHeaderValue>(false, GetContentRangeLength);
 
-        private string _unit;
+        private StringSegment _unit;
         private long? _from;
         private long? _to;
         private long? _length;
@@ -77,7 +78,7 @@ namespace Microsoft.Net.Http.Headers
             _unit = HeaderUtilities.BytesUnit;
         }
 
-        public string Unit
+        public StringSegment Unit
         {
             get { return _unit; }
             set
@@ -122,12 +123,12 @@ namespace Microsoft.Net.Http.Headers
             }
 
             return ((_from == other._from) && (_to == other._to) && (_length == other._length) &&
-                (string.Compare(_unit, other._unit, StringComparison.OrdinalIgnoreCase) == 0));
+                StringSegment.Equals(_unit, other._unit, StringComparison.OrdinalIgnoreCase));
         }
 
         public override int GetHashCode()
         {
-            var result = StringComparer.OrdinalIgnoreCase.GetHashCode(_unit);
+            var result = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_unit);
 
             if (HasRange)
             {
@@ -144,7 +145,8 @@ namespace Microsoft.Net.Http.Headers
 
         public override string ToString()
         {
-            var sb = new StringBuilder(_unit);
+            var sb = new StringBuilder();
+            sb.Append(_unit);
             sb.Append(' ');
 
             if (HasRange)
@@ -171,25 +173,25 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
-        public static ContentRangeHeaderValue Parse(string input)
+        public static ContentRangeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return Parser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(string input, out ContentRangeHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out ContentRangeHeaderValue parsedValue)
         {
             var index = 0;
             return Parser.TryParseValue(input, ref index, out parsedValue);
         }
 
-        private static int GetContentRangeLength(string input, int startIndex, out ContentRangeHeaderValue parsedValue)
+        private static int GetContentRangeLength(StringSegment input, int startIndex, out ContentRangeHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (startIndex >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -202,7 +204,7 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            var unit = input.Substring(startIndex, unitLength);
+            var unit = input.Subsegment(startIndex, unitLength);
             var current = startIndex + unitLength;
             var separatorLength = HttpRuleParser.GetWhitespaceLength(input, current);
 
@@ -259,7 +261,7 @@ namespace Microsoft.Net.Http.Headers
             return current - startIndex;
         }
 
-        private static bool TryGetLengthLength(string input, ref int current, out int lengthLength)
+        private static bool TryGetLengthLength(StringSegment input, ref int current, out int lengthLength)
         {
             lengthLength = 0;
 
@@ -284,7 +286,7 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        private static bool TryGetRangeLength(string input, ref int current, out int fromLength, out int toStartIndex, out int toLength)
+        private static bool TryGetRangeLength(StringSegment input, ref int current, out int fromLength, out int toStartIndex, out int toLength)
         {
             fromLength = 0;
             toStartIndex = 0;
@@ -341,8 +343,8 @@ namespace Microsoft.Net.Http.Headers
         }
 
         private static bool TryCreateContentRange(
-            string input,
-            string unit,
+            StringSegment input,
+            StringSegment unit,
             int fromStartIndex,
             int fromLength,
             int toStartIndex,
@@ -354,13 +356,13 @@ namespace Microsoft.Net.Http.Headers
             parsedValue = null;
 
             long from = 0;
-            if ((fromLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Substring(fromStartIndex, fromLength), out from))
+            if ((fromLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Subsegment(fromStartIndex, fromLength), out from))
             {
                 return false;
             }
 
             long to = 0;
-            if ((toLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Substring(toStartIndex, toLength), out to))
+            if ((toLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Subsegment(toStartIndex, toLength), out to))
             {
                 return false;
             }
@@ -372,7 +374,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             long length = 0;
-            if ((lengthLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Substring(lengthStartIndex, lengthLength),
+            if ((lengthLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Subsegment(lengthStartIndex, lengthLength),
                 out length))
             {
                 return false;

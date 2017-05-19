@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -13,7 +14,7 @@ namespace Microsoft.Net.Http.Headers
         private static readonly HttpHeaderParser<RangeHeaderValue> Parser
             = new GenericHeaderParser<RangeHeaderValue>(false, GetRangeLength);
 
-        private string _unit;
+        private StringSegment _unit;
         private ICollection<RangeItemHeaderValue> _ranges;
 
         public RangeHeaderValue()
@@ -28,7 +29,7 @@ namespace Microsoft.Net.Http.Headers
             Ranges.Add(new RangeItemHeaderValue(from, to));
         }
 
-        public string Unit
+        public StringSegment Unit
         {
             get { return _unit; }
             set
@@ -52,7 +53,8 @@ namespace Microsoft.Net.Http.Headers
 
         public override string ToString()
         {
-            var sb = new StringBuilder(_unit);
+            var sb = new StringBuilder();
+            sb.Append(_unit);
             sb.Append('=');
 
             var first = true;
@@ -84,13 +86,13 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            return (string.Compare(_unit, other._unit, StringComparison.OrdinalIgnoreCase) == 0) &&
+            return StringSegment.Equals(_unit, other._unit, StringComparison.OrdinalIgnoreCase) &&
                 HeaderUtilities.AreEqualCollections(Ranges, other.Ranges);
         }
 
         public override int GetHashCode()
         {
-            var result = StringComparer.OrdinalIgnoreCase.GetHashCode(_unit);
+            var result = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_unit);
 
             foreach (var range in Ranges)
             {
@@ -100,25 +102,25 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public static RangeHeaderValue Parse(string input)
+        public static RangeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return Parser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(string input, out RangeHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out RangeHeaderValue parsedValue)
         {
             var index = 0;
             return Parser.TryParseValue(input, ref index, out parsedValue);
         }
 
-        private static int GetRangeLength(string input, int startIndex, out RangeHeaderValue parsedValue)
+        private static int GetRangeLength(StringSegment input, int startIndex, out RangeHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (startIndex >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -132,7 +134,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             RangeHeaderValue result = new RangeHeaderValue();
-            result._unit = input.Substring(startIndex, unitLength);
+            result._unit = input.Subsegment(startIndex, unitLength);
             var current = startIndex + unitLength;
             current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 

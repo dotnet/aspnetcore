@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -18,8 +19,8 @@ namespace Microsoft.Net.Http.Headers
         internal static readonly HttpHeaderParser<NameValueHeaderValue> MultipleValueParser
             = new GenericHeaderParser<NameValueHeaderValue>(true, GetNameValueLength);
 
-        private string _name;
-        private string _value;
+        private StringSegment _name;
+        private StringSegment _value;
         private bool _isReadOnly;
 
         private NameValueHeaderValue()
@@ -27,12 +28,12 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
-        public NameValueHeaderValue(string name)
+        public NameValueHeaderValue(StringSegment name)
             : this(name, null)
         {
         }
 
-        public NameValueHeaderValue(string name, string value)
+        public NameValueHeaderValue(StringSegment name, StringSegment value)
         {
             CheckNameValueFormat(name, value);
 
@@ -40,12 +41,12 @@ namespace Microsoft.Net.Http.Headers
             _value = value;
         }
 
-        public string Name
+        public StringSegment Name
         {
             get { return _name; }
         }
 
-        public string Value
+        public StringSegment Value
         {
             get { return _value; }
             set
@@ -90,9 +91,9 @@ namespace Microsoft.Net.Http.Headers
         {
             Contract.Assert(_name != null);
 
-            var nameHashCode = StringComparer.OrdinalIgnoreCase.GetHashCode(_name);
+            var nameHashCode = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_name);
 
-            if (!string.IsNullOrEmpty(_value))
+            if (!StringSegment.IsNullOrEmpty(_value))
             {
                 // If we have a quoted-string, then just use the hash code. If we have a token, convert to lowercase
                 // and retrieve the hash code.
@@ -101,7 +102,7 @@ namespace Microsoft.Net.Http.Headers
                     return nameHashCode ^ _value.GetHashCode();
                 }
 
-                return nameHashCode ^ StringComparer.OrdinalIgnoreCase.GetHashCode(_value);
+                return nameHashCode ^ StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_value);
             }
 
             return nameHashCode;
@@ -116,7 +117,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            if (string.Compare(_name, other._name, StringComparison.OrdinalIgnoreCase) != 0)
+            if (!_name.Equals(other._name, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -125,29 +126,29 @@ namespace Microsoft.Net.Http.Headers
             // case-sensitive comparison. The RFC doesn't mention how to compare quoted-strings outside the "Expect"
             // header. We treat all quoted-strings the same: case-sensitive comparison.
 
-            if (string.IsNullOrEmpty(_value))
+            if (StringSegment.IsNullOrEmpty(_value))
             {
-                return string.IsNullOrEmpty(other._value);
+                return StringSegment.IsNullOrEmpty(other._value);
             }
 
             if (_value[0] == '"')
             {
                 // We have a quoted string, so we need to do case-sensitive comparison.
-                return (string.CompareOrdinal(_value, other._value) == 0);
+                return (_value.Equals(other._value, StringComparison.Ordinal));
             }
             else
             {
-                return (string.Compare(_value, other._value, StringComparison.OrdinalIgnoreCase) == 0);
+                return (_value.Equals(other._value, StringComparison.OrdinalIgnoreCase));
             }
         }
 
-        public static NameValueHeaderValue Parse(string input)
+        public static NameValueHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return SingleValueParser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(string input, out NameValueHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out NameValueHeaderValue parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
@@ -175,11 +176,11 @@ namespace Microsoft.Net.Http.Headers
 
         public override string ToString()
         {
-            if (!string.IsNullOrEmpty(_value))
+            if (!StringSegment.IsNullOrEmpty(_value))
             {
                 return _name + "=" + _value;
             }
-            return _name;
+            return _name.ToString();
         }
 
         internal static void ToString(
@@ -202,7 +203,12 @@ namespace Microsoft.Net.Http.Headers
                     destination.Append(separator);
                     destination.Append(' ');
                 }
-                destination.Append(values[i].ToString());
+                destination.Append(values[i].Name);
+                if (!StringSegment.IsNullOrEmpty(values[i].Value))
+                {
+                    destination.Append('=');
+                    destination.Append(values[i].Value);
+                }
             }
         }
 
@@ -235,14 +241,14 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        private static int GetNameValueLength(string input, int startIndex, out NameValueHeaderValue parsedValue)
+        private static int GetNameValueLength(StringSegment input, int startIndex, out NameValueHeaderValue parsedValue)
         {
             Contract.Requires(input != null);
             Contract.Requires(startIndex >= 0);
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (startIndex >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -256,7 +262,7 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            var name = input.Substring(startIndex, nameLength);
+            var name = input.Subsegment(startIndex, nameLength);
             var current = startIndex + nameLength;
             current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
@@ -280,7 +286,7 @@ namespace Microsoft.Net.Http.Headers
             // Use parameterless ctor to avoid double-parsing of name and value, i.e. skip public ctor validation.
             parsedValue = new NameValueHeaderValue();
             parsedValue._name = name;
-            parsedValue._value = input.Substring(current, valueLength);
+            parsedValue._value = input.Subsegment(current, valueLength);
             current = current + valueLength;
             current = current + HttpRuleParser.GetWhitespaceLength(input, current); // skip whitespaces
             return current - startIndex;
@@ -289,7 +295,7 @@ namespace Microsoft.Net.Http.Headers
         // Returns the length of a name/value list, separated by 'delimiter'. E.g. "a=b, c=d, e=f" adds 3
         // name/value pairs to 'nameValueCollection' if 'delimiter' equals ','.
         internal static int GetNameValueListLength(
-            string input,
+            StringSegment input,
             int startIndex,
             char delimiter,
             IList<NameValueHeaderValue> nameValueCollection)
@@ -297,7 +303,7 @@ namespace Microsoft.Net.Http.Headers
             Contract.Requires(nameValueCollection != null);
             Contract.Requires(startIndex >= 0);
 
-            if ((string.IsNullOrEmpty(input)) || (startIndex >= input.Length))
+            if ((StringSegment.IsNullOrEmpty(input)) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -330,7 +336,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public static NameValueHeaderValue Find(IList<NameValueHeaderValue> values, string name)
+        public static NameValueHeaderValue Find(IList<NameValueHeaderValue> values, StringSegment name)
         {
             Contract.Requires((name != null) && (name.Length > 0));
 
@@ -342,7 +348,7 @@ namespace Microsoft.Net.Http.Headers
             for (var i = 0; i < values.Count; i++)
             {
                 var value = values[i];
-                if (string.Compare(value.Name, name, StringComparison.OrdinalIgnoreCase) == 0)
+                if (value.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                 {
                     return value;
                 }
@@ -350,7 +356,7 @@ namespace Microsoft.Net.Http.Headers
             return null;
         }
 
-        internal static int GetValueLength(string input, int startIndex)
+        internal static int GetValueLength(StringSegment input, int startIndex)
         {
             Contract.Requires(input != null);
 
@@ -373,16 +379,16 @@ namespace Microsoft.Net.Http.Headers
             return valueLength;
         }
 
-        private static void CheckNameValueFormat(string name, string value)
+        private static void CheckNameValueFormat(StringSegment name, StringSegment value)
         {
             HeaderUtilities.CheckValidToken(name, nameof(name));
             CheckValueFormat(value);
         }
 
-        private static void CheckValueFormat(string value)
+        private static void CheckValueFormat(StringSegment value)
         {
             // Either value is null/empty or a valid token/quoted string
-            if (!(string.IsNullOrEmpty(value) || (GetValueLength(value, 0) == value.Length)))
+            if (!(StringSegment.IsNullOrEmpty(value) || (GetValueLength(value, 0) == value.Length)))
             {
                 throw new FormatException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "The header value is invalid: '{0}'", value));
             }

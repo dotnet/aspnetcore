@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.Contracts;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Net.Http.Headers
         {
         }
 
-        public sealed override bool TryParseValue(string value, ref int index, out CookieHeaderValue parsedValue)
+        public sealed override bool TryParseValue(StringSegment value, ref int index, out CookieHeaderValue parsedValue)
         {
             parsedValue = null;
 
@@ -21,7 +22,7 @@ namespace Microsoft.Net.Http.Headers
             //  Accept: text/xml; q=1
             //  Accept:
             //  Accept: text/plain; q=0.2
-            if (string.IsNullOrEmpty(value) || (index == value.Length))
+            if (StringSegment.IsNullOrEmpty(value) || (index == value.Length))
             {
                 return SupportsMultipleValues;
             }
@@ -62,7 +63,7 @@ namespace Microsoft.Net.Http.Headers
             return true;
         }
 
-        private static int GetNextNonEmptyOrWhitespaceIndex(string input, int startIndex, bool skipEmptyValues, out bool separatorFound)
+        private static int GetNextNonEmptyOrWhitespaceIndex(StringSegment input, int startIndex, bool skipEmptyValues, out bool separatorFound)
         {
             Contract.Requires(input != null);
             Contract.Requires(startIndex <= input.Length); // it's OK if index == value.Length.

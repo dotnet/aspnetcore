@@ -7,6 +7,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Use a collection instead of a dictionary since we may have multiple parameters with the same name.
         private ObjectCollection<NameValueHeaderValue> _parameters;
-        private string _mediaType;
+        private StringSegment _mediaType;
         private bool _isReadOnly;
 
         private MediaTypeHeaderValue()
@@ -30,23 +31,23 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
-        public MediaTypeHeaderValue(string mediaType)
+        public MediaTypeHeaderValue(StringSegment mediaType)
         {
             CheckMediaTypeFormat(mediaType, "mediaType");
             _mediaType = mediaType;
         }
 
-        public MediaTypeHeaderValue(string mediaType, double quality)
+        public MediaTypeHeaderValue(StringSegment mediaType, double quality)
             : this(mediaType)
         {
             Quality = quality;
         }
 
-        public string Charset
+        public StringSegment Charset
         {
             get
             {
-                return NameValueHeaderValue.Find(_parameters, CharsetString)?.Value;
+                return NameValueHeaderValue.Find(_parameters, CharsetString)?.Value.Value;
             }
             set
             {
@@ -54,7 +55,7 @@ namespace Microsoft.Net.Http.Headers
                 // We don't prevent a user from setting whitespace-only charsets. Like we can't prevent a user from
                 // setting a non-existing charset.
                 var charsetParameter = NameValueHeaderValue.Find(_parameters, CharsetString);
-                if (string.IsNullOrEmpty(value))
+                if (StringSegment.IsNullOrEmpty(value))
                 {
                     // Remove charset parameter
                     if (charsetParameter != null)
@@ -81,11 +82,11 @@ namespace Microsoft.Net.Http.Headers
             get
             {
                 var charset = Charset;
-                if (!string.IsNullOrWhiteSpace(charset))
+                if (!StringSegment.IsNullOrEmpty(charset))
                 {
                     try
                     {
-                        return Encoding.GetEncoding(charset);
+                        return Encoding.GetEncoding(charset.Value);
                     }
                     catch (ArgumentException)
                     {
@@ -108,17 +109,17 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public string Boundary
+        public StringSegment Boundary
         {
             get
             {
-                return NameValueHeaderValue.Find(_parameters, BoundaryString)?.Value;
+                return NameValueHeaderValue.Find(_parameters, BoundaryString)?.Value ?? default(StringSegment);
             }
             set
             {
                 HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
                 var boundaryParameter = NameValueHeaderValue.Find(_parameters, BoundaryString);
-                if (string.IsNullOrEmpty(value))
+                if (StringSegment.IsNullOrEmpty(value))
                 {
                     // Remove charset parameter
                     if (boundaryParameter != null)
@@ -169,7 +170,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public string MediaType
+        public StringSegment MediaType
         {
             get { return _mediaType; }
             set
@@ -180,19 +181,19 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public string Type
+        public StringSegment Type
         {
             get
             {
-                return _mediaType.Substring(0, _mediaType.IndexOf('/'));
+                return _mediaType.Subsegment(0, _mediaType.IndexOf('/'));
             }
         }
 
-        public string SubType
+        public StringSegment SubType
         {
             get
             {
-                return _mediaType.Substring(_mediaType.IndexOf('/') + 1);
+                return _mediaType.Subsegment(_mediaType.IndexOf('/') + 1);
             }
         }
 
@@ -214,7 +215,7 @@ namespace Microsoft.Net.Http.Headers
         {
             get
             {
-                return string.Compare(_mediaType, _mediaType.IndexOf('/') + 1, "*", 0, 1, StringComparison.Ordinal) == 0;
+                return SubType.Equals("*", StringComparison.Ordinal);
             }
         }
 
@@ -245,31 +246,15 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            // PERF: Avoid doing anything here that allocates a substring, this is a very hot path
-            // for content-negotiation.
-            var indexOfSlash = _mediaType.IndexOf('/');
-
             // "text/plain" is a subset of "text/plain", "text/*" and "*/*". "*/*" is a subset only of "*/*".
-            if (string.Compare(
-                strA: _mediaType,
-                indexA: 0,
-                strB: otherMediaType._mediaType,
-                indexB: 0,
-                length: indexOfSlash,
-                comparisonType: StringComparison.OrdinalIgnoreCase) != 0)
+            if (!Type.Equals(otherMediaType.Type, comparisonType: StringComparison.OrdinalIgnoreCase))
             {
                 if (!otherMediaType.MatchesAllTypes)
                 {
                     return false;
                 }
             }
-            else if (string.Compare(
-                strA: MediaType,
-                indexA: indexOfSlash + 1,
-                strB: otherMediaType._mediaType,
-                indexB: indexOfSlash + 1, // We know the Type is equal, so the index of '/' is the same in both strings.
-                length: _mediaType.Length - indexOfSlash,
-                comparisonType: StringComparison.OrdinalIgnoreCase) != 0)
+            else if (!SubType.Equals(otherMediaType.SubType, comparisonType: StringComparison.OrdinalIgnoreCase))
             {
                 if (!otherMediaType.MatchesAllSubTypes)
                 {
@@ -285,7 +270,7 @@ namespace Microsoft.Net.Http.Headers
                 // parameters locally; they make this one more specific.
                 foreach (var parameter in otherMediaType._parameters)
                 {
-                    if (string.Equals(parameter.Name, "q", StringComparison.OrdinalIgnoreCase))
+                    if (parameter.Name.Equals("q", StringComparison.OrdinalIgnoreCase))
                     {
                         // "q" and later parameters are not involved in media type matching. Quoting the RFC: The first
                         // "q" parameter (if any) separates the media-range parameter(s) from the accept-params.
@@ -299,7 +284,7 @@ namespace Microsoft.Net.Http.Headers
                         return false;
                     }
 
-                    if (!string.Equals(parameter.Value, localParameter.Value, StringComparison.OrdinalIgnoreCase))
+                    if (!StringSegment.Equals(parameter.Value, localParameter.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -352,7 +337,10 @@ namespace Microsoft.Net.Http.Headers
 
         public override string ToString()
         {
-            return _mediaType + NameValueHeaderValue.ToString(_parameters, ';', true);
+            var builder = new StringBuilder();
+            builder.Append(_mediaType);
+            NameValueHeaderValue.ToString(_parameters, separator: ';', leadingSeparator: true, destination: builder);
+            return builder.ToString();
         }
 
         public override bool Equals(object obj)
@@ -364,23 +352,23 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            return (string.Compare(_mediaType, other._mediaType, StringComparison.OrdinalIgnoreCase) == 0) &&
+            return _mediaType.Equals(other._mediaType, StringComparison.OrdinalIgnoreCase) &&
                 HeaderUtilities.AreEqualCollections(_parameters, other._parameters);
         }
 
         public override int GetHashCode()
         {
             // The media-type string is case-insensitive.
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(_mediaType) ^ NameValueHeaderValue.GetHashCode(_parameters);
+            return StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_mediaType) ^ NameValueHeaderValue.GetHashCode(_parameters);
         }
 
-        public static MediaTypeHeaderValue Parse(string input)
+        public static MediaTypeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return SingleValueParser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(string input, out MediaTypeHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out MediaTypeHeaderValue parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
@@ -406,20 +394,19 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
-        private static int GetMediaTypeLength(string input, int startIndex, out MediaTypeHeaderValue parsedValue)
+        private static int GetMediaTypeLength(StringSegment input, int startIndex, out MediaTypeHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (startIndex >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex >= input.Length))
             {
                 return 0;
             }
 
             // Caller must remove leading whitespace. If not, we'll return 0.
-            string mediaType = null;
-            var mediaTypeLength = MediaTypeHeaderValue.GetMediaTypeExpressionLength(input, startIndex, out mediaType);
+            var mediaTypeLength = MediaTypeHeaderValue.GetMediaTypeExpressionLength(input, startIndex, out var mediaType);
 
             if (mediaTypeLength == 0)
             {
@@ -451,7 +438,7 @@ namespace Microsoft.Net.Http.Headers
             return current - startIndex;
         }
 
-        private static int GetMediaTypeExpressionLength(string input, int startIndex, out string mediaType)
+        private static int GetMediaTypeExpressionLength(StringSegment input, int startIndex, out StringSegment mediaType)
         {
             Contract.Requires((input != null) && (input.Length > 0) && (startIndex < input.Length));
 
@@ -490,7 +477,7 @@ namespace Microsoft.Net.Http.Headers
             var mediaTypeLength = current + subtypeLength - startIndex;
             if (typeLength + subtypeLength + 1 == mediaTypeLength)
             {
-                mediaType = input.Substring(startIndex, mediaTypeLength);
+                mediaType = input.Subsegment(startIndex, mediaTypeLength);
             }
             else
             {
@@ -500,17 +487,16 @@ namespace Microsoft.Net.Http.Headers
             return mediaTypeLength;
         }
 
-        private static void CheckMediaTypeFormat(string mediaType, string parameterName)
+        private static void CheckMediaTypeFormat(StringSegment mediaType, string parameterName)
         {
-            if (string.IsNullOrEmpty(mediaType))
+            if (StringSegment.IsNullOrEmpty(mediaType))
             {
                 throw new ArgumentException("An empty string is not allowed.", parameterName);
             }
 
             // When adding values using strongly typed objects, no leading/trailing LWS (whitespace) is allowed.
             // Also no LWS between type and subtype is allowed.
-            string tempMediaType;
-            var mediaTypeLength = GetMediaTypeExpressionLength(mediaType, 0, out tempMediaType);
+            var mediaTypeLength = GetMediaTypeExpressionLength(mediaType, 0, out var tempMediaType);
             if ((mediaTypeLength == 0) || (tempMediaType.Length != mediaType.Length))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid media type '{0}'.", mediaType));

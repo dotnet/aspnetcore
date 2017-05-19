@@ -45,7 +45,7 @@ namespace Microsoft.Net.Http.Headers
             var mediaType = new MediaTypeHeaderValue("text/plain");
             Assert.Equal("text/plain", mediaType.MediaType);
             Assert.Equal(0, mediaType.Parameters.Count);
-            Assert.Null(mediaType.Charset);
+            Assert.Null(mediaType.Charset.Value);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Microsoft.Net.Http.Headers
             var mediaType0 = new MediaTypeHeaderValue("text/plain");
             var mediaType1 = mediaType0.Copy();
             Assert.NotSame(mediaType0, mediaType1);
-            Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
+            Assert.Same(mediaType0.MediaType.Value, mediaType1.MediaType.Value);
             Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
             Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
         }
@@ -81,7 +81,7 @@ namespace Microsoft.Net.Http.Headers
             var mediaType0 = new MediaTypeHeaderValue("text/plain");
             var mediaType1 = mediaType0.CopyAsReadOnly();
             Assert.NotSame(mediaType0, mediaType1);
-            Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
+            Assert.Same(mediaType0.MediaType.Value, mediaType1.MediaType.Value);
             Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
             Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
 
@@ -97,14 +97,14 @@ namespace Microsoft.Net.Http.Headers
             mediaType0.Parameters.Add(new NameValueHeaderValue("name", "value"));
             var mediaType1 = mediaType0.Copy();
             Assert.NotSame(mediaType0, mediaType1);
-            Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
+            Assert.Same(mediaType0.MediaType.Value, mediaType1.MediaType.Value);
             Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
             Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
             var pair0 = mediaType0.Parameters.First();
             var pair1 = mediaType1.Parameters.First();
             Assert.NotSame(pair0, pair1);
-            Assert.Same(pair0.Name, pair1.Name);
-            Assert.Same(pair0.Value, pair1.Value);
+            Assert.Same(pair0.Name.Value, pair1.Name.Value);
+            Assert.Same(pair0.Value.Value, pair1.Value.Value);
         }
 
         [Fact]
@@ -116,7 +116,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.NotSame(mediaType0, mediaType1);
             Assert.False(mediaType0.IsReadOnly);
             Assert.True(mediaType1.IsReadOnly);
-            Assert.Same(mediaType0.MediaType, mediaType1.MediaType);
+            Assert.Same(mediaType0.MediaType.Value, mediaType1.MediaType.Value);
 
             Assert.NotSame(mediaType0.Parameters, mediaType1.Parameters);
             Assert.False(mediaType0.Parameters.IsReadOnly);
@@ -131,8 +131,8 @@ namespace Microsoft.Net.Http.Headers
             Assert.NotSame(pair0, pair1);
             Assert.False(pair0.IsReadOnly);
             Assert.True(pair1.IsReadOnly);
-            Assert.Same(pair0.Name, pair1.Name);
-            Assert.Same(pair0.Value, pair1.Value);
+            Assert.Same(pair0.Name.Value, pair1.Name.Value);
+            Assert.Same(pair0.Value.Value, pair1.Value.Value);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace Microsoft.Net.Http.Headers
             var mediaType2 = mediaType1.Copy();
 
             Assert.NotSame(mediaType2, mediaType1);
-            Assert.Same(mediaType2.MediaType, mediaType1.MediaType);
+            Assert.Same(mediaType2.MediaType.Value, mediaType1.MediaType.Value);
             Assert.True(mediaType1.IsReadOnly);
             Assert.False(mediaType2.IsReadOnly);
             Assert.NotSame(mediaType2.Parameters, mediaType1.Parameters);
@@ -154,8 +154,8 @@ namespace Microsoft.Net.Http.Headers
             Assert.NotSame(pair2, pair1);
             Assert.True(pair1.IsReadOnly);
             Assert.False(pair2.IsReadOnly);
-            Assert.Same(pair2.Name, pair1.Name);
-            Assert.Same(pair2.Value, pair1.Value);
+            Assert.Same(pair2.Name.Value, pair1.Name.Value);
+            Assert.Same(pair2.Value.Value, pair1.Value.Value);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("charset", mediaType.Parameters.First().Name);
 
             mediaType.Charset = null;
-            Assert.Null(mediaType.Charset);
+            Assert.Null(mediaType.Charset.Value);
             Assert.Equal(0, mediaType.Parameters.Count);
             mediaType.Charset = null; // It's OK to set it again to null; no exception.
         }
@@ -200,7 +200,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("CHARSET", mediaType.Parameters.First().Name);
 
             mediaType.Parameters.Remove(charset);
-            Assert.Null(mediaType.Charset);
+            Assert.Null(mediaType.Charset.Value);
         }
 
         [Fact]

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Primitives;
+
 namespace Microsoft.Net.Http.Headers
 {
     internal abstract class BaseHeaderParser<T> : HttpHeaderParser<T>
@@ -10,9 +12,9 @@ namespace Microsoft.Net.Http.Headers
         {
         }
 
-        protected abstract int GetParsedValueLength(string value, int startIndex, out T parsedValue);
+        protected abstract int GetParsedValueLength(StringSegment value, int startIndex, out T parsedValue);
 
-        public sealed override bool TryParseValue(string value, ref int index, out T parsedValue)
+        public sealed override bool TryParseValue(StringSegment value, ref int index, out T parsedValue)
         {
             parsedValue = default(T);
 
@@ -21,7 +23,7 @@ namespace Microsoft.Net.Http.Headers
             //  Accept: text/xml; q=1
             //  Accept:
             //  Accept: text/plain; q=0.2
-            if (string.IsNullOrEmpty(value) || (index == value.Length))
+            if (StringSegment.IsNullOrEmpty(value) || (index == value.Length))
             {
                 return SupportsMultipleValues;
             }

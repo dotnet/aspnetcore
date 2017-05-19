@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -64,13 +65,13 @@ namespace Microsoft.Net.Http.Headers
                 return 1;
             }
 
-            if (!string.Equals(stringWithQuality1.Value, stringWithQuality2.Value, StringComparison.OrdinalIgnoreCase))
+            if (!StringSegment.Equals(stringWithQuality1.Value, stringWithQuality2.Value, StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(stringWithQuality1.Value, "*", StringComparison.Ordinal))
+                if (StringSegment.Equals(stringWithQuality1.Value, "*", StringComparison.Ordinal))
                 {
                     return -1;
                 }
-                else if (string.Equals(stringWithQuality2.Value, "*", StringComparison.Ordinal))
+                else if (StringSegment.Equals(stringWithQuality2.Value, "*", StringComparison.Ordinal))
                 {
                     return 1;
                 }

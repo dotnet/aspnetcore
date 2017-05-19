@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             return header.DispositionType.Equals("form-data")
-                && (!string.IsNullOrEmpty(header.FileName) || !string.IsNullOrEmpty(header.FileNameStar));
+                && (!StringSegment.IsNullOrEmpty(header.FileName) || !StringSegment.IsNullOrEmpty(header.FileNameStar));
         }
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             return header.DispositionType.Equals("form-data")
-               && string.IsNullOrEmpty(header.FileName) && string.IsNullOrEmpty(header.FileNameStar);
+               && StringSegment.IsNullOrEmpty(header.FileName) && StringSegment.IsNullOrEmpty(header.FileNameStar);
         }
     }
 }

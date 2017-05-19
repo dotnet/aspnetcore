@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -26,9 +27,9 @@ namespace Microsoft.Net.Http.Headers
         // pointing to the next non-whitespace character after a delimiter. E.g. if called with a start index of 0
         // for string "value , second_value", then after the call completes, 'index' must point to 's', i.e. the first
         // non-whitespace after the separator ','.
-        public abstract bool TryParseValue(string value, ref int index, out T parsedValue);
+        public abstract bool TryParseValue(StringSegment value, ref int index, out T parsedValue);
 
-        public T ParseValue(string value, ref int index)
+        public T ParseValue(StringSegment value, ref int index)
         {
             // Index may be value.Length (e.g. both 0). This may be allowed for some headers (e.g. Accept but not
             // allowed by others (e.g. Content-Length). The parser has to decide if this is valid or not.
@@ -40,7 +41,7 @@ namespace Microsoft.Net.Http.Headers
             if (!TryParseValue(value, ref index, out result))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture,
-                    "The header contains invalid values at index {0}: '{1}'", index, value ?? "<null>"));
+                    "The header contains invalid values at index {0}: '{1}'", index, value.Value ?? "<null>"));
             }
             return result;
         }

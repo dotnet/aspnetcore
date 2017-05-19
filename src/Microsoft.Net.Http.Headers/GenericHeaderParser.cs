@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
     internal sealed class GenericHeaderParser<T> : BaseHeaderParser<T>
     {
-        internal delegate int GetParsedValueLengthDelegate(string value, int startIndex, out T parsedValue);
+        internal delegate int GetParsedValueLengthDelegate(StringSegment value, int startIndex, out T parsedValue);
 
         private GetParsedValueLengthDelegate _getParsedValueLength;
 
@@ -22,7 +23,7 @@ namespace Microsoft.Net.Http.Headers
             _getParsedValueLength = getParsedValueLength;
         }
 
-        protected override int GetParsedValueLength(string value, int startIndex, out T parsedValue)
+        protected override int GetParsedValueLength(StringSegment value, int startIndex, out T parsedValue)
         {
             return _getParsedValueLength(value, startIndex, out parsedValue);
         }

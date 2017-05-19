@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.Contracts;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -85,26 +86,26 @@ namespace Microsoft.Net.Http.Headers
             return _entityTag.GetHashCode();
         }
 
-        public static RangeConditionHeaderValue Parse(string input)
+        public static RangeConditionHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return Parser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(string input, out RangeConditionHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out RangeConditionHeaderValue parsedValue)
         {
             var index = 0;
             return Parser.TryParseValue(input, ref index, out parsedValue);
         }
 
-        private static int GetRangeConditionLength(string input, int startIndex, out RangeConditionHeaderValue parsedValue)
+        private static int GetRangeConditionLength(StringSegment input, int startIndex, out RangeConditionHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
             parsedValue = null;
 
             // Make sure we have at least 2 characters
-            if (string.IsNullOrEmpty(input) || (startIndex + 1 >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex + 1 >= input.Length))
             {
                 return 0;
             }
@@ -141,7 +142,7 @@ namespace Microsoft.Net.Http.Headers
             }
             else
             {
-                if (!HttpRuleParser.TryStringToDate(input.Substring(current), out date))
+                if (!HttpRuleParser.TryStringToDate(input.Subsegment(current), out date))
                 {
                     return 0;
                 }

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
             {
                 return string.Empty;
             }
-            return HeaderUtilities.RemoveQuotes(mediaType.Boundary);
+            return HeaderUtilities.RemoveQuotes(mediaType.Boundary).ToString();
         }
     }
 }

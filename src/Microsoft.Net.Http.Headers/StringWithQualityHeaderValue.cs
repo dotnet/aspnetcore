@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -15,7 +16,7 @@ namespace Microsoft.Net.Http.Headers
         private static readonly HttpHeaderParser<StringWithQualityHeaderValue> MultipleValueParser
             = new GenericHeaderParser<StringWithQualityHeaderValue>(true, GetStringWithQualityLength);
 
-        private string _value;
+        private StringSegment _value;
         private double? _quality;
 
         private StringWithQualityHeaderValue()
@@ -23,14 +24,14 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
-        public StringWithQualityHeaderValue(string value)
+        public StringWithQualityHeaderValue(StringSegment value)
         {
             HeaderUtilities.CheckValidToken(value, nameof(value));
 
             _value = value;
         }
 
-        public StringWithQualityHeaderValue(string value, double quality)
+        public StringWithQualityHeaderValue(StringSegment value, double quality)
         {
             HeaderUtilities.CheckValidToken(value, nameof(value));
 
@@ -43,7 +44,7 @@ namespace Microsoft.Net.Http.Headers
             _quality = quality;
         }
 
-        public string Value
+        public StringSegment Value
         {
             get { return _value; }
         }
@@ -60,7 +61,7 @@ namespace Microsoft.Net.Http.Headers
                 return _value + "; q=" + _quality.Value.ToString("0.0##", NumberFormatInfo.InvariantInfo);
             }
 
-            return _value;
+            return _value.ToString();
         }
 
         public override bool Equals(object obj)
@@ -72,7 +73,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            if (string.Compare(_value, other._value, StringComparison.OrdinalIgnoreCase) != 0)
+            if (!StringSegment.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -92,7 +93,7 @@ namespace Microsoft.Net.Http.Headers
 
         public override int GetHashCode()
         {
-            var result = StringComparer.OrdinalIgnoreCase.GetHashCode(_value);
+            var result = StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_value);
 
             if (_quality.HasValue)
             {
@@ -102,13 +103,13 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public static StringWithQualityHeaderValue Parse(string input)
+        public static StringWithQualityHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return SingleValueParser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(string input, out StringWithQualityHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out StringWithQualityHeaderValue parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
@@ -134,13 +135,13 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.TryParseStrictValues(input, out parsedValues);
         }
 
-        private static int GetStringWithQualityLength(string input, int startIndex, out StringWithQualityHeaderValue parsedValue)
+        private static int GetStringWithQualityLength(StringSegment input, int startIndex, out StringWithQualityHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (startIndex >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -154,7 +155,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             StringWithQualityHeaderValue result = new StringWithQualityHeaderValue();
-            result._value = input.Substring(startIndex, valueLength);
+            result._value = input.Subsegment(startIndex, valueLength);
             var current = startIndex + valueLength;
             current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
@@ -177,7 +178,7 @@ namespace Microsoft.Net.Http.Headers
             return current - startIndex;
         }
 
-        private static bool TryReadQuality(string input, StringWithQualityHeaderValue result, ref int index)
+        private static bool TryReadQuality(StringSegment input, StringWithQualityHeaderValue result, ref int index)
         {
             var current = index;
 

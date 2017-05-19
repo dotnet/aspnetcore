@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -32,10 +33,10 @@ namespace Microsoft.Net.Http.Headers
         private static readonly HttpHeaderParser<CacheControlHeaderValue> Parser
             = new GenericHeaderParser<CacheControlHeaderValue>(true, GetCacheControlLength);
 
-        private static readonly Action<string> CheckIsValidTokenAction = CheckIsValidToken;
+        private static readonly Action<StringSegment> CheckIsValidTokenAction = CheckIsValidToken;
 
         private bool _noCache;
-        private ICollection<string> _noCacheHeaders;
+        private ICollection<StringSegment> _noCacheHeaders;
         private bool _noStore;
         private TimeSpan? _maxAge;
         private TimeSpan? _sharedMaxAge;
@@ -46,7 +47,7 @@ namespace Microsoft.Net.Http.Headers
         private bool _onlyIfCached;
         private bool _public;
         private bool _private;
-        private ICollection<string> _privateHeaders;
+        private ICollection<StringSegment> _privateHeaders;
         private bool _mustRevalidate;
         private bool _proxyRevalidate;
         private IList<NameValueHeaderValue> _extensions;
@@ -62,13 +63,13 @@ namespace Microsoft.Net.Http.Headers
             set { _noCache = value; }
         }
 
-        public ICollection<string> NoCacheHeaders
+        public ICollection<StringSegment> NoCacheHeaders
         {
             get
             {
                 if (_noCacheHeaders == null)
                 {
-                    _noCacheHeaders = new ObjectCollection<string>(CheckIsValidTokenAction);
+                    _noCacheHeaders = new ObjectCollection<StringSegment>(CheckIsValidTokenAction);
                 }
                 return _noCacheHeaders;
             }
@@ -134,13 +135,13 @@ namespace Microsoft.Net.Http.Headers
             set { _private = value; }
         }
 
-        public ICollection<string> PrivateHeaders
+        public ICollection<StringSegment> PrivateHeaders
         {
             get
             {
                 if (_privateHeaders == null)
                 {
-                    _privateHeaders = new ObjectCollection<string>(CheckIsValidTokenAction);
+                    _privateHeaders = new ObjectCollection<StringSegment>(CheckIsValidTokenAction);
                 }
                 return _privateHeaders;
             }
@@ -259,13 +260,13 @@ namespace Microsoft.Net.Http.Headers
             }
 
             if (!HeaderUtilities.AreEqualCollections(_noCacheHeaders, other._noCacheHeaders,
-                StringComparer.OrdinalIgnoreCase))
+                StringSegmentComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
 
             if (!HeaderUtilities.AreEqualCollections(_privateHeaders, other._privateHeaders,
-                StringComparer.OrdinalIgnoreCase))
+                StringSegmentComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -299,7 +300,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 foreach (var noCacheHeader in _noCacheHeaders)
                 {
-                    result = result ^ StringComparer.OrdinalIgnoreCase.GetHashCode(noCacheHeader);
+                    result = result ^ StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(noCacheHeader);
                 }
             }
 
@@ -307,7 +308,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 foreach (var privateHeader in _privateHeaders)
                 {
-                    result = result ^ StringComparer.OrdinalIgnoreCase.GetHashCode(privateHeader);
+                    result = result ^ StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(privateHeader);
                 }
             }
 
@@ -322,7 +323,7 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public static CacheControlHeaderValue Parse(string input)
+        public static CacheControlHeaderValue Parse(StringSegment input)
         {
             int index = 0;
             // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
@@ -334,7 +335,7 @@ namespace Microsoft.Net.Http.Headers
             return result;
         }
 
-        public static bool TryParse(string input, out CacheControlHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out CacheControlHeaderValue parsedValue)
         {
             int index = 0;
             // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
@@ -346,13 +347,13 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        private static int GetCacheControlLength(string input, int startIndex, out CacheControlHeaderValue parsedValue)
+        private static int GetCacheControlLength(StringSegment input, int startIndex, out CacheControlHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (startIndex >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -403,7 +404,7 @@ namespace Microsoft.Net.Http.Headers
                 switch (name.Length)
                 {
                     case 6:
-                        if (string.Equals(PublicString, name, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(PublicString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTokenOnlyValue(nameValue, ref cc._public);
                         }
@@ -414,11 +415,11 @@ namespace Microsoft.Net.Http.Headers
                         break;
 
                     case 7:
-                        if (string.Equals(MaxAgeString, name, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(MaxAgeString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTimeSpan(nameValue, ref cc._maxAge);
                         }
-                        else if(string.Equals(PrivateString, name, StringComparison.OrdinalIgnoreCase))
+                        else if(StringSegment.Equals(PrivateString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetOptionalTokenList(nameValue, ref cc._private, ref cc._privateHeaders);
                         }
@@ -429,15 +430,15 @@ namespace Microsoft.Net.Http.Headers
                         break;
 
                     case 8:
-                        if (string.Equals(NoCacheString, name, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(NoCacheString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetOptionalTokenList(nameValue, ref cc._noCache, ref cc._noCacheHeaders);
                         }
-                        else if (string.Equals(NoStoreString, name, StringComparison.OrdinalIgnoreCase))
+                        else if (StringSegment.Equals(NoStoreString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTokenOnlyValue(nameValue, ref cc._noStore);
                         }
-                        else if (string.Equals(SharedMaxAgeString, name, StringComparison.OrdinalIgnoreCase))
+                        else if (StringSegment.Equals(SharedMaxAgeString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTimeSpan(nameValue, ref cc._sharedMaxAge);
                         }
@@ -448,7 +449,7 @@ namespace Microsoft.Net.Http.Headers
                         break;
 
                     case 9:
-                        if (string.Equals(MaxStaleString, name, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(MaxStaleString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = ((nameValue.Value == null) || TrySetTimeSpan(nameValue, ref cc._maxStaleLimit));
                             if (success)
@@ -456,7 +457,7 @@ namespace Microsoft.Net.Http.Headers
                                 cc._maxStale = true;
                             }
                         }
-                        else if (string.Equals(MinFreshString, name, StringComparison.OrdinalIgnoreCase))
+                        else if (StringSegment.Equals(MinFreshString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTimeSpan(nameValue, ref cc._minFresh);
                         }
@@ -467,7 +468,7 @@ namespace Microsoft.Net.Http.Headers
                         break;
 
                     case 12:
-                        if (string.Equals(NoTransformString, name, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(NoTransformString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTokenOnlyValue(nameValue, ref cc._noTransform);
                         }
@@ -478,7 +479,7 @@ namespace Microsoft.Net.Http.Headers
                         break;
 
                     case 14:
-                        if (string.Equals(OnlyIfCachedString, name, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(OnlyIfCachedString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTokenOnlyValue(nameValue, ref cc._onlyIfCached);
                         }
@@ -489,7 +490,7 @@ namespace Microsoft.Net.Http.Headers
                         break;
 
                     case 15:
-                        if (string.Equals(MustRevalidateString, name, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(MustRevalidateString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTokenOnlyValue(nameValue, ref cc._mustRevalidate);
                         }
@@ -500,7 +501,7 @@ namespace Microsoft.Net.Http.Headers
                         break;
 
                     case 16:
-                        if (string.Equals(ProxyRevalidateString, name, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(ProxyRevalidateString, name, StringComparison.OrdinalIgnoreCase))
                         {
                             success = TrySetTokenOnlyValue(nameValue, ref cc._proxyRevalidate);
                         }
@@ -538,7 +539,7 @@ namespace Microsoft.Net.Http.Headers
         private static bool TrySetOptionalTokenList(
             NameValueHeaderValue nameValue,
             ref bool boolField,
-            ref ICollection<string> destination)
+            ref ICollection<StringSegment> destination)
         {
             Contract.Requires(nameValue != null);
 
@@ -582,10 +583,10 @@ namespace Microsoft.Net.Http.Headers
 
                 if (destination == null)
                 {
-                    destination = new ObjectCollection<string>(CheckIsValidTokenAction);
+                    destination = new ObjectCollection<StringSegment>(CheckIsValidTokenAction);
                 }
 
-                destination.Add(valueString.Substring(current, tokenLength));
+                destination.Add(valueString.Subsegment(current, tokenLength));
 
                 current = current + tokenLength;
             }
@@ -637,10 +638,10 @@ namespace Microsoft.Net.Http.Headers
             sb.Append(value);
         }
 
-        private static void AppendValues(StringBuilder sb, IEnumerable<string> values)
+        private static void AppendValues(StringBuilder sb, IEnumerable<StringSegment> values)
         {
             var first = true;
-            foreach (string value in values)
+            foreach (var value in values)
             {
                 if (first)
                 {
@@ -655,7 +656,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        private static void CheckIsValidToken(string item)
+        private static void CheckIsValidToken(StringSegment item)
         {
             HeaderUtilities.CheckValidToken(item, nameof(item));
         }

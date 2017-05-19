@@ -72,9 +72,9 @@ namespace Microsoft.Net.Http.Headers
             return null;
         }
 
-        internal static void CheckValidToken(string value, string parameterName)
+        internal static void CheckValidToken(StringSegment value, string parameterName)
         {
-            if (string.IsNullOrEmpty(value))
+            if (StringSegment.IsNullOrEmpty(value))
             {
                 throw new ArgumentException("An empty string is not allowed.", parameterName);
             }
@@ -82,21 +82,6 @@ namespace Microsoft.Net.Http.Headers
             if (HttpRuleParser.GetTokenLength(value, 0) != value.Length)
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}.", value));
-            }
-        }
-
-        internal static void CheckValidQuotedString(string value, string parameterName)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException("An empty string is not allowed.", parameterName);
-            }
-
-            int length;
-            if ((HttpRuleParser.GetQuotedStringLength(value, 0, out length) != HttpParseResult.Parsed) ||
-                (length != value.Length)) // no trailing spaces allowed
-            {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid quoted string '{0}'.", value));
             }
         }
 
@@ -167,7 +152,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         internal static int GetNextNonEmptyOrWhitespaceIndex(
-            string input,
+            StringSegment input,
             int startIndex,
             bool skipEmptyValues,
             out bool separatorFound)
@@ -368,11 +353,6 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        internal static bool TryParseNonNegativeInt32(string value, out int result)
-        {
-            return TryParseNonNegativeInt32(new StringSegment(value), out result);
-        }
-
         /// <summary>
         /// Try to convert a string representation of a positive number to its 64-bit signed integer equivalent.
         /// A return value indicates whether the conversion succeeded or failed.
@@ -388,12 +368,7 @@ namespace Microsoft.Net.Http.Headers
         /// result will be overwritten.
         /// </param>
         /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
-        public static bool TryParseNonNegativeInt64(string value, out long result)
-        {
-            return TryParseNonNegativeInt64(new StringSegment(value), out result);
-        }
-
-        internal static unsafe bool TryParseNonNegativeInt32(StringSegment value, out int result)
+        public static unsafe bool TryParseNonNegativeInt32(StringSegment value, out int result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
             {
@@ -483,7 +458,7 @@ namespace Microsoft.Net.Http.Headers
         // Strict and fast RFC7231 5.3.1 Quality value parser (and without memory allocation)
         // See https://tools.ietf.org/html/rfc7231#section-5.3.1
         // Check is made to verify if the value is between 0 and 1 (and it returns False if the check fails).
-        internal static bool TryParseQualityDouble(string input, int startIndex, out double quality, out int length)
+        internal static bool TryParseQualityDouble(StringSegment input, int startIndex, out double quality, out int length)
         {
             quality = 0;
             length = 0;
@@ -602,7 +577,7 @@ namespace Microsoft.Net.Http.Headers
             return new string(charBuffer, position, _int64MaxStringLength - position);
         }
 
-        public static bool TryParseDate(string input, out DateTimeOffset result)
+        public static bool TryParseDate(StringSegment input, out DateTimeOffset result)
         {
             return HttpRuleParser.TryStringToDate(input, out result);
         }
@@ -617,11 +592,11 @@ namespace Microsoft.Net.Http.Headers
             return dateTime.ToRfc1123String(quoted);
         }
 
-        public static string RemoveQuotes(string input)
+        public static StringSegment RemoveQuotes(StringSegment input)
         {
-            if (!string.IsNullOrEmpty(input) && input.Length >= 2 && input[0] == '"' && input[input.Length - 1] == '"')
+            if (!StringSegment.IsNullOrEmpty(input) && input.Length >= 2 && input[0] == '"' && input[input.Length - 1] == '"')
             {
-                input = input.Substring(1, input.Length - 2);
+                input = input.Subsegment(1, input.Length - 2);
             }
             return input;
         }

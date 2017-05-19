@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -14,16 +15,16 @@ namespace Microsoft.Net.Http.Headers
         private static readonly CookieHeaderParser SingleValueParser = new CookieHeaderParser(supportsMultipleValues: false);
         private static readonly CookieHeaderParser MultipleValueParser = new CookieHeaderParser(supportsMultipleValues: true);
 
-        private string _name;
-        private string _value;
+        private StringSegment _name;
+        private StringSegment _value;
 
         private CookieHeaderValue()
         {
             // Used by the parser to create a new instance of this type.
         }
 
-        public CookieHeaderValue(string name)
-            : this(name, string.Empty)
+        public CookieHeaderValue(StringSegment name)
+            : this(name, StringSegment.Empty)
         {
             if (name == null)
             {
@@ -31,7 +32,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public CookieHeaderValue(string name, string value)
+        public CookieHeaderValue(StringSegment name, StringSegment value)
         {
             if (name == null)
             {
@@ -47,7 +48,7 @@ namespace Microsoft.Net.Http.Headers
             Value = value;
         }
 
-        public string Name
+        public StringSegment Name
         {
             get { return _name; }
             set
@@ -57,7 +58,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public string Value
+        public StringSegment Value
         {
             get { return _value; }
             set
@@ -79,24 +80,13 @@ namespace Microsoft.Net.Http.Headers
             return header.ToString();
         }
 
-        private static void AppendSegment(StringBuilder builder, string name, string value)
-        {
-            builder.Append("; ");
-            builder.Append(name);
-            if (value != null)
-            {
-                builder.Append("=");
-                builder.Append(value);
-            }
-        }
-
-        public static CookieHeaderValue Parse(string input)
+        public static CookieHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return SingleValueParser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(string input, out CookieHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out CookieHeaderValue parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
@@ -123,13 +113,13 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // name=value; name="value"
-        internal static bool TryGetCookieLength(string input, ref int offset, out CookieHeaderValue parsedValue)
+        internal static bool TryGetCookieLength(StringSegment input, ref int offset, out CookieHeaderValue parsedValue)
         {
             Contract.Requires(offset >= 0);
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (offset >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (offset >= input.Length))
             {
                 return false;
             }
@@ -146,7 +136,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 return false;
             }
-            result._name = input.Substring(offset, itemLength);
+            result._name = input.Subsegment(offset, itemLength);
             offset += itemLength;
 
             // = (no spaces)
@@ -166,7 +156,7 @@ namespace Microsoft.Net.Http.Headers
         // cookie-value      = *cookie-octet / ( DQUOTE* cookie-octet DQUOTE )
         // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
         //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
-        internal static string GetCookieValue(string input, ref int offset)
+        internal static StringSegment GetCookieValue(StringSegment input, ref int offset)
         {
             Contract.Requires(input != null);
             Contract.Requires(offset >= 0);
@@ -176,7 +166,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (offset >= input.Length)
             {
-                return string.Empty;
+                return StringSegment.Empty;
             }
             var inQuotes = false;
 
@@ -202,7 +192,7 @@ namespace Microsoft.Net.Http.Headers
                 if (offset == input.Length || input[offset] != '"')
                 {
                     // Missing final quote
-                    return string.Empty;
+                    return StringSegment.Empty;
                 }
                 offset++;
             }
@@ -210,13 +200,13 @@ namespace Microsoft.Net.Http.Headers
             int length = offset - startIndex;
             if (offset > startIndex)
             {
-                return input.Substring(startIndex, length);
+                return input.Subsegment(startIndex, length);
             }
 
-            return string.Empty;
+            return StringSegment.Empty;
         }
 
-        private static bool ReadEqualsSign(string input, ref int offset)
+        private static bool ReadEqualsSign(StringSegment input, ref int offset)
         {
             // = (no spaces)
             if (offset >= input.Length || input[offset] != '=')
@@ -238,7 +228,7 @@ namespace Microsoft.Net.Http.Headers
             return !(c == '"' || c == ',' || c == ';' || c == '\\');
         }
 
-        internal static void CheckNameFormat(string name, string parameterName)
+        internal static void CheckNameFormat(StringSegment name, string parameterName)
         {
             if (name == null)
             {
@@ -251,7 +241,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static void CheckValueFormat(string value, string parameterName)
+        internal static void CheckValueFormat(StringSegment value, string parameterName)
         {
             if (value == null)
             {
@@ -275,8 +265,8 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            return string.Equals(_name, other._name, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase);
+            return StringSegment.Equals(_name, other._name, StringComparison.OrdinalIgnoreCase)
+                && StringSegment.Equals(_value, other._value, StringComparison.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Net.Http.Headers
 
         private static EntityTagHeaderValue AnyType;
 
-        private string _tag;
+        private StringSegment _tag;
         private bool _isWeak;
 
         private EntityTagHeaderValue()
@@ -30,20 +31,20 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
-        public EntityTagHeaderValue(string tag)
+        public EntityTagHeaderValue(StringSegment tag)
             : this(tag, false)
         {
         }
 
-        public EntityTagHeaderValue(string tag, bool isWeak)
+        public EntityTagHeaderValue(StringSegment tag, bool isWeak)
         {
-            if (string.IsNullOrEmpty(tag))
+            if (StringSegment.IsNullOrEmpty(tag))
             {
                 throw new ArgumentException("An empty string is not allowed.", nameof(tag));
             }
 
             int length = 0;
-            if (!isWeak && string.Equals(tag, "*", StringComparison.Ordinal))
+            if (!isWeak && StringSegment.Equals(tag, "*", StringComparison.Ordinal))
             {
                 // * is valid, but W/* isn't.
                 _tag = tag;
@@ -74,7 +75,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public string Tag
+        public StringSegment Tag
         {
             get { return _tag; }
         }
@@ -88,9 +89,9 @@ namespace Microsoft.Net.Http.Headers
         {
             if (_isWeak)
             {
-                return "W/" + _tag;
+                return "W/" + _tag.ToString();
             }
-            return _tag;
+            return _tag.ToString();
         }
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // Since the tag is a quoted-string we treat it case-sensitive.
-            return _isWeak == other._isWeak && string.Equals(_tag, other._tag, StringComparison.Ordinal);
+            return _isWeak == other._isWeak && StringSegment.Equals(_tag, other._tag, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()
@@ -139,21 +140,21 @@ namespace Microsoft.Net.Http.Headers
 
             if (useStrongComparison)
             {
-                return !IsWeak && !other.IsWeak && string.Equals(Tag, other.Tag, StringComparison.Ordinal);
+                return !IsWeak && !other.IsWeak && StringSegment.Equals(Tag, other.Tag, StringComparison.Ordinal);
             }
             else
             {
-                return string.Equals(Tag, other.Tag, StringComparison.Ordinal);
+                return StringSegment.Equals(Tag, other.Tag, StringComparison.Ordinal);
             }
         }
 
-        public static EntityTagHeaderValue Parse(string input)
+        public static EntityTagHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return SingleValueParser.ParseValue(input, ref index);
         }
 
-        public static bool TryParse(string input, out EntityTagHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, out EntityTagHeaderValue parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
@@ -179,13 +180,13 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
-        internal static int GetEntityTagLength(string input, int startIndex, out EntityTagHeaderValue parsedValue)
+        internal static int GetEntityTagLength(StringSegment input, int startIndex, out EntityTagHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (startIndex >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -235,7 +236,7 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else
                 {
-                    parsedValue._tag = input.Substring(tagStartIndex, tagLength);
+                    parsedValue._tag = input.Subsegment(tagStartIndex, tagLength);
                     parsedValue._isWeak = isWeak;
                 }
 

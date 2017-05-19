@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -65,14 +65,14 @@ namespace Microsoft.Net.Http.Headers
             var pair0 = new NameValueHeaderValue("name");
             var pair1 = pair0.Copy();
             Assert.NotSame(pair0, pair1);
-            Assert.Same(pair0.Name, pair1.Name);
-            Assert.Null(pair0.Value);
-            Assert.Null(pair1.Value);
+            Assert.Same(pair0.Name.Value, pair1.Name.Value);
+            Assert.Null(pair0.Value.Value);
+            Assert.Null(pair1.Value.Value);
 
             // Change one value and verify the other is unchanged.
             pair0.Value = "othervalue";
             Assert.Equal("othervalue", pair0.Value);
-            Assert.Null(pair1.Value);
+            Assert.Null(pair1.Value.Value);
         }
 
         [Fact]
@@ -81,16 +81,16 @@ namespace Microsoft.Net.Http.Headers
             var pair0 = new NameValueHeaderValue("name");
             var pair1 = pair0.CopyAsReadOnly();
             Assert.NotSame(pair0, pair1);
-            Assert.Same(pair0.Name, pair1.Name);
-            Assert.Null(pair0.Value);
-            Assert.Null(pair1.Value);
+            Assert.Same(pair0.Name.Value, pair1.Name.Value);
+            Assert.Null(pair0.Value.Value);
+            Assert.Null(pair1.Value.Value);
             Assert.False(pair0.IsReadOnly);
             Assert.True(pair1.IsReadOnly);
 
             // Change one value and verify the other is unchanged.
             pair0.Value = "othervalue";
             Assert.Equal("othervalue", pair0.Value);
-            Assert.Null(pair1.Value);
+            Assert.Null(pair1.Value.Value);
             Assert.Throws<InvalidOperationException>(() => { pair1.Value = "othervalue"; });
         }
 
@@ -100,8 +100,8 @@ namespace Microsoft.Net.Http.Headers
             var pair0 = new NameValueHeaderValue("name", "value");
             var pair1 = pair0.Copy();
             Assert.NotSame(pair0, pair1);
-            Assert.Same(pair0.Name, pair1.Name);
-            Assert.Same(pair0.Value, pair1.Value);
+            Assert.Same(pair0.Name.Value, pair1.Name.Value);
+            Assert.Same(pair0.Value.Value, pair1.Value.Value);
 
             // Change one value and verify the other is unchanged.
             pair0.Value = "othervalue";
@@ -115,8 +115,8 @@ namespace Microsoft.Net.Http.Headers
             var pair0 = new NameValueHeaderValue("name", "value");
             var pair1 = pair0.CopyAsReadOnly();
             Assert.NotSame(pair0, pair1);
-            Assert.Same(pair0.Name, pair1.Name);
-            Assert.Same(pair0.Value, pair1.Value);
+            Assert.Same(pair0.Name.Value, pair1.Name.Value);
+            Assert.Same(pair0.Value.Value, pair1.Value.Value);
             Assert.False(pair0.IsReadOnly);
             Assert.True(pair1.IsReadOnly);
 
@@ -134,8 +134,8 @@ namespace Microsoft.Net.Http.Headers
             var pair1 = pair0.CopyAsReadOnly();
             var pair2 = pair1.Copy();
             Assert.NotSame(pair0, pair1);
-            Assert.Same(pair0.Name, pair1.Name);
-            Assert.Same(pair0.Value, pair1.Value);
+            Assert.Same(pair0.Name.Value, pair1.Name.Value);
+            Assert.Same(pair0.Value.Value, pair1.Value.Value);
 
             // Change one value and verify the other is unchanged.
             pair2.Value = "othervalue";

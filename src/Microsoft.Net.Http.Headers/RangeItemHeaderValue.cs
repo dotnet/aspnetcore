@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -87,7 +88,7 @@ namespace Microsoft.Net.Http.Headers
         // Returns the length of a range list. E.g. "1-2, 3-4, 5-6" adds 3 ranges to 'rangeCollection'. Note that empty
         // list segments are allowed, e.g. ",1-2, , 3-4,,".
         internal static int GetRangeItemListLength(
-            string input,
+            StringSegment input,
             int startIndex,
             ICollection<RangeItemHeaderValue> rangeCollection)
         {
@@ -96,7 +97,7 @@ namespace Microsoft.Net.Http.Headers
             Contract.Ensures((Contract.Result<int>() == 0) || (rangeCollection.Count > 0),
                 "If we can parse the string, then we expect to have at least one range item.");
 
-            if ((string.IsNullOrEmpty(input)) || (startIndex >= input.Length))
+            if ((StringSegment.IsNullOrEmpty(input)) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -140,7 +141,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static int GetRangeItemLength(string input, int startIndex, out RangeItemHeaderValue parsedValue)
+        internal static int GetRangeItemLength(StringSegment input, int startIndex, out RangeItemHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -148,7 +149,7 @@ namespace Microsoft.Net.Http.Headers
 
             parsedValue = null;
 
-            if (string.IsNullOrEmpty(input) || (startIndex >= input.Length))
+            if (StringSegment.IsNullOrEmpty(input) || (startIndex >= input.Length))
             {
                 return 0;
             }
@@ -202,14 +203,14 @@ namespace Microsoft.Net.Http.Headers
 
             // Try convert first value to int64
             long from = 0;
-            if ((fromLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Substring(fromStartIndex, fromLength), out from))
+            if ((fromLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Subsegment(fromStartIndex, fromLength), out from))
             {
                 return 0;
             }
 
             // Try convert second value to int64
             long to = 0;
-            if ((toLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Substring(toStartIndex, toLength), out to))
+            if ((toLength > 0) && !HeaderUtilities.TryParseNonNegativeInt64(input.Subsegment(toStartIndex, toLength), out to))
             {
                 return 0;
             }

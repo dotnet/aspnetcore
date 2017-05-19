@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -89,7 +90,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Pure]
-        internal static int GetTokenLength(string input, int startIndex)
+        internal static int GetTokenLength(StringSegment input, int startIndex)
         {
             Contract.Requires(input != null);
             Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
@@ -112,7 +113,7 @@ namespace Microsoft.Net.Http.Headers
             return input.Length - startIndex;
         }
 
-        internal static int GetWhitespaceLength(string input, int startIndex)
+        internal static int GetWhitespaceLength(StringSegment input, int startIndex)
         {
             Contract.Requires(input != null);
             Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
@@ -156,7 +157,7 @@ namespace Microsoft.Net.Http.Headers
             return input.Length - startIndex;
         }
 
-        internal static int GetNumberLength(string input, int startIndex, bool allowDecimal)
+        internal static int GetNumberLength(StringSegment input, int startIndex, bool allowDecimal)
         {
             Contract.Requires(input != null);
             Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
@@ -201,7 +202,7 @@ namespace Microsoft.Net.Http.Headers
             return current - startIndex;
         }
 
-        internal static HttpParseResult GetQuotedStringLength(string input, int startIndex, out int length)
+        internal static HttpParseResult GetQuotedStringLength(StringSegment input, int startIndex, out int length)
         {
             var nestedCount = 0;
             return GetExpressionLength(input, startIndex, '"', '"', false, ref nestedCount, out length);
@@ -209,7 +210,7 @@ namespace Microsoft.Net.Http.Headers
 
         // quoted-pair = "\" CHAR
         // CHAR = <any US-ASCII character (octets 0 - 127)>
-        internal static HttpParseResult GetQuotedPairLength(string input, int startIndex, out int length)
+        internal static HttpParseResult GetQuotedPairLength(StringSegment input, int startIndex, out int length)
         {
             Contract.Requires(input != null);
             Contract.Requires((startIndex >= 0) && (startIndex < input.Length));
@@ -237,8 +238,8 @@ namespace Microsoft.Net.Http.Headers
 
         // Try the various date formats in the order listed above.
         // We should accept a wide verity of common formats, but only output RFC 1123 style dates.
-        internal static bool TryStringToDate(string input, out DateTimeOffset result) =>
-            DateTimeOffset.TryParseExact(input, DateFormats, DateTimeFormatInfo.InvariantInfo,
+        internal static bool TryStringToDate(StringSegment input, out DateTimeOffset result) =>
+            DateTimeOffset.TryParseExact(input.ToString(), DateFormats, DateTimeFormatInfo.InvariantInfo,
                 DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal, out result);
 
         // TEXT = <any OCTET except CTLs, but including LWS>
@@ -253,7 +254,7 @@ namespace Microsoft.Net.Http.Headers
         // comments, resulting in a stack overflow exception. In addition having more than 1 nested comment (if any)
         // is unusual.
         private static HttpParseResult GetExpressionLength(
-            string input,
+            StringSegment input,
             int startIndex,
             char openChar,
             char closeChar,

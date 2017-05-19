@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             Section = section;
             _contentDispositionHeader = header;
-            Name = HeaderUtilities.RemoveQuotes(_contentDispositionHeader.Name);
+            Name = HeaderUtilities.RemoveQuotes(_contentDispositionHeader.Name).ToString();
         }
 
         /// <summary>

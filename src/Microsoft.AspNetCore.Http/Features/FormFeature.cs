@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -293,14 +294,14 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             // Content-Disposition: form-data; name="key";
             return contentDisposition != null && contentDisposition.DispositionType.Equals("form-data")
-                && string.IsNullOrEmpty(contentDisposition.FileName) && string.IsNullOrEmpty(contentDisposition.FileNameStar);
+                && StringSegment.IsNullOrEmpty(contentDisposition.FileName) && StringSegment.IsNullOrEmpty(contentDisposition.FileNameStar);
         }
 
         private bool HasFileContentDisposition(ContentDispositionHeaderValue contentDisposition)
         {
             // Content-Disposition: form-data; name="myfile1"; filename="Misc 002.jpg"
             return contentDisposition != null && contentDisposition.DispositionType.Equals("form-data")
-                && (!string.IsNullOrEmpty(contentDisposition.FileName) || !string.IsNullOrEmpty(contentDisposition.FileNameStar));
+                && (!StringSegment.IsNullOrEmpty(contentDisposition.FileName) || !StringSegment.IsNullOrEmpty(contentDisposition.FileNameStar));
         }
 
         // Content-Type: multipart/form-data; boundary="----WebKitFormBoundarymx2fSWqWSd0OxQqq"
@@ -308,7 +309,7 @@ namespace Microsoft.AspNetCore.Http.Features
         private static string GetBoundary(MediaTypeHeaderValue contentType, int lengthLimit)
         {
             var boundary = HeaderUtilities.RemoveQuotes(contentType.Boundary);
-            if (string.IsNullOrWhiteSpace(boundary))
+            if (StringSegment.IsNullOrEmpty(boundary))
             {
                 throw new InvalidDataException("Missing content-type boundary.");
             }
@@ -316,7 +317,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 throw new InvalidDataException($"Multipart boundary length limit {lengthLimit} exceeded.");
             }
-            return boundary;
+            return boundary.ToString();
         }
     }
 }

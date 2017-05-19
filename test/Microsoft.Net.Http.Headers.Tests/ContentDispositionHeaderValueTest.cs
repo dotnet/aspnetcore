@@ -46,8 +46,8 @@ namespace Microsoft.Net.Http.Headers
             var contentDisposition = new ContentDispositionHeaderValue("inline");
             Assert.Equal("inline", contentDisposition.DispositionType);
             Assert.Equal(0, contentDisposition.Parameters.Count);
-            Assert.Null(contentDisposition.Name);
-            Assert.Null(contentDisposition.FileName);
+            Assert.Null(contentDisposition.Name.Value);
+            Assert.Null(contentDisposition.FileName.Value);
             Assert.Null(contentDisposition.CreationDate);
             Assert.Null(contentDisposition.ModificationDate);
             Assert.Null(contentDisposition.ReadDate);
@@ -81,7 +81,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("name", contentDisposition.Parameters.First().Name);
 
             contentDisposition.Name = null;
-            Assert.Null(contentDisposition.Name);
+            Assert.Null(contentDisposition.Name.Value);
             Assert.Equal(0, contentDisposition.Parameters.Count);
             contentDisposition.Name = null; // It's OK to set it again to null; no exception.
         }
@@ -103,7 +103,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("NAME", contentDisposition.Parameters.First().Name);
 
             contentDisposition.Parameters.Remove(name);
-            Assert.Null(contentDisposition.Name);
+            Assert.Null(contentDisposition.Name.Value);
         }
 
         [Fact]
@@ -123,7 +123,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name);
 
             contentDisposition.Parameters.Remove(fileName);
-            Assert.Null(contentDisposition.FileName);
+            Assert.Null(contentDisposition.FileName.Value);
         }
 
         [Fact]
@@ -138,7 +138,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("\"=?utf-8?B?RmlsZcODTmFtZS5iYXQ=?=\"", contentDisposition.Parameters.First().Value);
 
             contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
-            Assert.Null(contentDisposition.FileName);
+            Assert.Null(contentDisposition.FileName.Value);
         }
 
         [Fact]
@@ -160,7 +160,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("FILENAME", contentDisposition.Parameters.First().Name);
 
             contentDisposition.Parameters.Remove(fileName);
-            Assert.Null(contentDisposition.FileName);
+            Assert.Null(contentDisposition.FileName.Value);
         }
 
         [Fact]
@@ -173,7 +173,7 @@ namespace Microsoft.Net.Http.Headers
             contentDisposition.Parameters.Add(fileNameStar);
             Assert.Equal(1, contentDisposition.Parameters.Count);
             Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name);
-            Assert.Null(contentDisposition.FileNameStar); // Decode failure
+            Assert.Null(contentDisposition.FileNameStar.Value); // Decode failure
 
             contentDisposition.FileNameStar = "new_name";
             Assert.Equal("new_name", contentDisposition.FileNameStar);
@@ -182,7 +182,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("UTF-8\'\'new_name", contentDisposition.Parameters.First().Value);
 
             contentDisposition.Parameters.Remove(fileNameStar);
-            Assert.Null(contentDisposition.FileNameStar);
+            Assert.Null(contentDisposition.FileNameStar.Value);
         }
 
         [Fact]
@@ -197,7 +197,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("UTF-8\'\'File%C3%83Name.bat", contentDisposition.Parameters.First().Value);
 
             contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
-            Assert.Null(contentDisposition.FileNameStar);
+            Assert.Null(contentDisposition.FileNameStar.Value);
         }
 
         [Fact]
@@ -211,7 +211,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(1, contentDisposition.Parameters.Count);
             Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name);
             Assert.Equal("utf-99'lang'File%CZName.bat", contentDisposition.Parameters.First().Value);
-            Assert.Null(contentDisposition.FileNameStar); // Decode failure
+            Assert.Null(contentDisposition.FileNameStar.Value); // Decode failure
 
             contentDisposition.FileNameStar = "new_name";
             Assert.Equal("new_name", contentDisposition.FileNameStar);
@@ -219,7 +219,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal("FILENAME*", contentDisposition.Parameters.First().Name);
 
             contentDisposition.Parameters.Remove(fileNameStar);
-            Assert.Null(contentDisposition.FileNameStar);
+            Assert.Null(contentDisposition.FileNameStar.Value);
         }
 
         [Fact]

@@ -75,8 +75,8 @@ namespace Microsoft.AspNetCore.Http.Internal
                 for (var i = 0; i < cookies.Count; i++)
                 {
                     var cookie = cookies[i];
-                    var name = Uri.UnescapeDataString(cookie.Name);
-                    var value = Uri.UnescapeDataString(cookie.Value);
+                    var name = Uri.UnescapeDataString(cookie.Name.Value);
+                    var value = Uri.UnescapeDataString(cookie.Value.Value);
                     store[name] = value;
                 }
 
