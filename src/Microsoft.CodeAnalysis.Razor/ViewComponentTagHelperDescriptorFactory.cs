@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             var assemblyName = type.ContainingAssembly.Name;
             var shortName = GetShortName(type);
-            var tagName = $"vc:{HtmlCase.ToHtmlCase(shortName)}";
+            var tagName = $"vc:{HtmlConventions.ToHtmlCase(shortName)}";
             var typeName = $"__Generated__{shortName}ViewComponentTagHelper";
             var displayName = shortName + "ViewComponentTagHelper";
             var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName)
@@ -141,7 +141,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     // because there are two ways of setting values for the attribute.
                     builder.RequireAttribute(attributeBuilder =>
                     {
-                        var lowerKebabName = HtmlCase.ToHtmlCase(parameter.Name);
+                        var lowerKebabName = HtmlConventions.ToHtmlCase(parameter.Name);
                         attributeBuilder.Name(lowerKebabName);
                     });
                 }
@@ -152,7 +152,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             foreach (var parameter in methodParameters)
             {
-                var lowerKebabName = HtmlCase.ToHtmlCase(parameter.Name);
+                var lowerKebabName = HtmlConventions.ToHtmlCase(parameter.Name);
                 var typeName = parameter.Type.ToDisplayString(FullNameTypeDisplayFormat);
                 builder.BindAttribute(attributeBuilder =>
                 {

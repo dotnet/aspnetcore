@@ -31,9 +31,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             [typeof(decimal).FullName] = "decimal",
         };
 
-        private static ICollection<char> InvalidNonWhitespaceAttributeNameCharacters { get; } = new HashSet<char>(
-            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
-
         private bool _isEnum;
         private bool _hasIndexer;
         private string _indexerValueTypeName;
@@ -191,7 +188,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 foreach (var character in _name)
                 {
-                    if (char.IsWhiteSpace(character) || InvalidNonWhitespaceAttributeNameCharacters.Contains(character))
+                    if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeName(
                             _containingTypeName,
@@ -227,7 +224,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     foreach (var character in _indexerNamePrefix)
                     {
-                        if (char.IsWhiteSpace(character) || InvalidNonWhitespaceAttributeNameCharacters.Contains(character))
+                        if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributePrefix(
                                 _containingTypeName,

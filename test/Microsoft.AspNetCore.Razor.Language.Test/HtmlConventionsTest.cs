@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class HtmlCaseTest
+    public class HtmlConventionsTest
     {
         public static TheoryData HtmlConversionData
         {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void ToHtmlCase_ReturnsExpectedConversions(string input, string expectedOutput)
         {
             // Arrange, Act
-            var output = HtmlCase.ToHtmlCase(input);
+            var output = HtmlConventions.ToHtmlCase(input);
 
             // Assert
             Assert.Equal(output, expectedOutput);

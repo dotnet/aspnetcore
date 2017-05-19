@@ -88,7 +88,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 descriptorBuilder.TagMatchingRule(ruleBuilder =>
                 {
-                    var htmlCasedName = HtmlCase.ToHtmlCase(name);
+                    var htmlCasedName = HtmlConventions.ToHtmlCase(name);
                     ruleBuilder.RequireTagName(htmlCasedName);
                 });
 
@@ -197,7 +197,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 string.IsNullOrEmpty((string)attributeNameAttribute.ConstructorArguments[0].Value))
             {
                 hasExplicitName = false;
-                attributeName = HtmlCase.ToHtmlCase(property.Name);
+                attributeName = HtmlConventions.ToHtmlCase(property.Name);
             }
             else
             {

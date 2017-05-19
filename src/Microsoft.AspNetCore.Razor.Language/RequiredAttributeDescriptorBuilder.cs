@@ -9,9 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public sealed class RequiredAttributeDescriptorBuilder
     {
-        private static ICollection<char> InvalidNonWhitespaceAttributeNameCharacters { get; } = new HashSet<char>(
-            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
-
         private string _name;
         private RequiredAttributeDescriptor.NameComparisonMode _nameComparison;
         private string _value;
@@ -105,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 foreach (var character in _name)
                 {
-                    if (char.IsWhiteSpace(character) || InvalidNonWhitespaceAttributeNameCharacters.Contains(character))
+                    if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName(_name, character);
 

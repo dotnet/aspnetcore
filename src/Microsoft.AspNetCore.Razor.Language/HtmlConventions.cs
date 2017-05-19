@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public static class HtmlCase
+    public static class HtmlConventions
     {
         private const string HtmlCaseRegexReplacement = "-$1$2";
 
@@ -19,6 +20,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 "(?<!^)((?<=[a-zA-Z0-9])[A-Z][a-z])|((?<=[a-z])[A-Z])",
                 RegexOptions.None,
                 TimeSpan.FromMilliseconds(500));
+
+        public static IReadOnlyCollection<char> InvalidNonWhitespaceHtmlCharacters { get; } = new HashSet<char>(
+            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
 
         /// <summary>
         /// Converts from pascal/camel case to lower kebab-case.

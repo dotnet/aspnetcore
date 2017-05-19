@@ -12,10 +12,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal const string DescriptorKind = "ITagHelper";
         internal const string TypeNameKey = "ITagHelper.TypeName";
 
-        private static ICollection<char> InvalidNonWhitespaceAllowedChildCharacters { get; } = new HashSet<char>(
-            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
-
-
         private string _displayName;
         private string _documentation;
         private string _tagOutputHint;
@@ -199,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         foreach (var character in name)
                         {
-                            if (char.IsWhiteSpace(character) || InvalidNonWhitespaceAllowedChildCharacters.Contains(character))
+                            if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                             {
                                 var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRestrictedChild(name, _typeName, character);
 

@@ -10,9 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public sealed class TagMatchingRuleBuilder
     {
-        private static ICollection<char> InvalidNonWhitespaceTagNameCharacters { get; } = new HashSet<char>(
-            new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
-
         private string _tagName;
         private string _parentTag;
         private TagStructure _tagStructure;
@@ -126,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 foreach (var character in _tagName)
                 {
-                    if (char.IsWhiteSpace(character) || InvalidNonWhitespaceTagNameCharacters.Contains(character))
+                    if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedTagName(_tagName, character);
 
@@ -147,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     foreach (var character in _parentTag)
                     {
-                        if (char.IsWhiteSpace(character) || InvalidNonWhitespaceTagNameCharacters.Contains(character))
+                        if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedParentTagName(_parentTag, character);
 
