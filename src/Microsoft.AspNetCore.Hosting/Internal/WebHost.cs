@@ -277,9 +277,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _logger?.Shutdown();
 
+            var timeoutToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
             if (!cancellationToken.CanBeCanceled)
             {
-                cancellationToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
+                cancellationToken = timeoutToken;
+            }
+            else
+            {
+                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutToken).Token;
             }
 
             // Fire IApplicationLifetime.Stopping

@@ -8,6 +8,7 @@
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <WindowsApiSetsVersion>1.0.1</WindowsApiSetsVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
+    <MoqVersion>4.7.1</MoqVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogFileSinkVersion>3.2.0</SerilogFileSinkVersion>
   </PropertyGroup>

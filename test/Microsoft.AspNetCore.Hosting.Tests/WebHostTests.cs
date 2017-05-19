@@ -20,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -184,6 +185,114 @@ namespace Microsoft.AspNetCore.Hosting
                 lifetime.ApplicationStopped.WaitHandle.WaitOne();
 
                 Assert.Equal(1, server.StartInstances[0].DisposeCalls);
+            }
+        }
+
+        [Fact]
+        public async Task WebHostStopAsyncUsesDefaultTimeoutIfGivenTokenDoesNotFire()
+        {
+            var data = new Dictionary<string, string>
+            {
+                { WebHostDefaults.ShutdownTimeoutKey, "1" }
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
+
+            var server = new Mock<IServer>();
+            server.Setup(s => s.StopAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask)
+                .Callback<CancellationToken>(token =>
+                {
+                    token.WaitHandle.WaitOne();
+                });
+
+            using (var host = CreateBuilder(config)
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(server.Object);
+                })
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .Build())
+            {
+                await host.StartAsync();
+
+                var cts = new CancellationTokenSource();
+
+                // Purposefully don't trigger cts
+                var task = host.StopAsync(cts.Token);
+
+                Assert.Equal(task, await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(10))));
+            }
+        }
+
+        [Fact]
+        public async Task WebHostStopAsyncUsesDefaultTimeoutIfNoTokenProvided()
+        {
+            var data = new Dictionary<string, string>
+            {
+                { WebHostDefaults.ShutdownTimeoutKey, "1" }
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
+
+            var server = new Mock<IServer>();
+            server.Setup(s => s.StopAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask)
+                .Callback<CancellationToken>(token =>
+                {
+                    token.WaitHandle.WaitOne();
+                });
+
+            using (var host = CreateBuilder(config)
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(server.Object);
+                })
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .Build())
+            {
+                await host.StartAsync();
+
+                var task = host.StopAsync();
+
+                Assert.Equal(task, await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(10))));
+            }
+        }
+
+        [Fact]
+        public async Task WebHostStopAsyncCanBeCancelledEarly()
+        {
+            var data = new Dictionary<string, string>
+            {
+                { WebHostDefaults.ShutdownTimeoutKey, "10" }
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
+
+            var server = new Mock<IServer>();
+            server.Setup(s => s.StopAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask)
+                .Callback<CancellationToken>(token =>
+                {
+                    token.WaitHandle.WaitOne();
+                });
+
+            using (var host = CreateBuilder(config)
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(server.Object);
+                })
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .Build())
+            {
+                await host.StartAsync();
+
+                var cts = new CancellationTokenSource();
+
+                var task = host.StopAsync(cts.Token);
+                cts.Cancel();
+
+                Assert.Equal(task, await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(8))));
             }
         }
 
