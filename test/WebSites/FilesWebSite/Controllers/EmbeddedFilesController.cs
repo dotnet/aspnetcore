@@ -17,5 +17,17 @@ namespace FilesWebSite
                 FileDownloadName = "downloadName.txt"
             };
         }
+
+        public IActionResult DownloadFileWithFileName_WithEtag()
+        {
+            var file = new VirtualFileResult("/Greetings.txt", "text/plain")
+            {
+                FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
+                FileDownloadName = "downloadName.txt"
+            };
+
+            file.EntityTag = new Microsoft.Net.Http.Headers.EntityTagHeaderValue("\"Etag\"");
+            return file;
+        }
     }
 }

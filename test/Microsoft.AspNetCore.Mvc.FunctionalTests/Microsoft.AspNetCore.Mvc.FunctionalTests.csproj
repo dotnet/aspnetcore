@@ -48,6 +48,7 @@
 
     <PackageReference Include="FSharp.Core" Version="$(FSharpCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" />

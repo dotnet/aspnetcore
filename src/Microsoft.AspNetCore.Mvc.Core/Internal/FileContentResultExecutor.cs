@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -26,11 +28,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(result));
             }
 
-            SetHeadersAndLog(context, result);
-            return WriteFileAsync(context, result);
+            var (range, rangeLength, serveBody) = SetHeadersAndLog(
+                context,
+                result,
+                result.FileContents.Length,
+                result.LastModified,
+                result.EntityTag);
+
+            if (!serveBody)
+            {
+                return Task.CompletedTask;
+            }
+
+            return WriteFileAsync(context, result, range, rangeLength);
         }
 
-        protected virtual Task WriteFileAsync(ActionContext context, FileContentResult result)
+        protected virtual Task WriteFileAsync(ActionContext context, FileContentResult result, RangeItemHeaderValue range, long rangeLength)
         {
             if (context == null)
             {
@@ -42,9 +55,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(result));
             }
 
-            var response = context.HttpContext.Response;
+            if (range != null && rangeLength == 0)
+            {
+                return Task.CompletedTask;
+            }
 
-            return response.Body.WriteAsync(result.FileContents, offset: 0, count: result.FileContents.Length);
+            var response = context.HttpContext.Response;
+            var outputStream = response.Body;
+            var fileContentsStream = new MemoryStream(result.FileContents);
+            return WriteFileAsync(context.HttpContext, fileContentsStream, range, rangeLength);
         }
     }
 }

@@ -25,6 +25,8 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.RangeHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
@@ -37,6 +39,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageReference Include="Microsoft.Extensions.PropertyActivator.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

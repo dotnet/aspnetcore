@@ -10,12 +10,12 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class VirtualFileResultExecutor : FileResultExecutorBase
     {
-        private const int DefaultBufferSize = 0x1000;
         private readonly IHostingEnvironment _hostingEnvironment;
 
         public VirtualFileResultExecutor(ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
@@ -41,11 +41,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(result));
             }
 
-            SetHeadersAndLog(context, result);
-            return WriteFileAsync(context, result);
+            var fileInfo = GetFileInformation(result);
+            if (!fileInfo.Exists)
+            {
+                throw new FileNotFoundException(
+                    Resources.FormatFileResult_InvalidPath(result.FileName), result.FileName);
+            }
+
+            var lastModified = result.LastModified ?? fileInfo.LastModified;
+            var (range, rangeLength, serveBody) = SetHeadersAndLog(
+                context,
+                result,
+                fileInfo.Length,
+                lastModified,
+                result.EntityTag);
+
+            if (serveBody)
+            {
+                return WriteFileAsync(context, result, fileInfo, range, rangeLength);
+            }
+
+            return Task.CompletedTask;
         }
 
-        protected virtual async Task WriteFileAsync(ActionContext context, VirtualFileResult result)
+        protected virtual Task WriteFileAsync(ActionContext context, VirtualFileResult result, IFileInfo fileInfo, RangeItemHeaderValue range, long rangeLength)
         {
             if (context == null)
             {
@@ -57,7 +76,37 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(result));
             }
 
+            if (range != null && rangeLength == 0)
+            {
+                return Task.CompletedTask;
+            }
+
             var response = context.HttpContext.Response;
+            var physicalPath = fileInfo.PhysicalPath;
+            var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
+            if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
+            {
+                if (range != null)
+                {
+                    return sendFile.SendFileAsync(
+                        physicalPath,
+                        offset: range.From ?? 0L,
+                        count: rangeLength,
+                        cancellation: default(CancellationToken));
+                }
+
+                return sendFile.SendFileAsync(
+                    physicalPath,
+                    offset: 0,
+                    count: null,
+                    cancellation: default(CancellationToken));
+            }
+
+            return WriteFileAsync(context.HttpContext, GetFileStream(fileInfo), range, rangeLength);
+        }
+
+        private IFileInfo GetFileInformation(VirtualFileResult result)
+        {
             var fileProvider = GetFileProvider(result);
 
             var normalizedPath = result.FileName;
@@ -67,32 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var fileInfo = fileProvider.GetFileInfo(normalizedPath);
-            if (fileInfo.Exists)
-            {
-                var physicalPath = fileInfo.PhysicalPath;
-                var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
-                if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
-                {
-                    await sendFile.SendFileAsync(
-                        physicalPath,
-                        offset: 0,
-                        count: null,
-                        cancellation: default(CancellationToken));
-                }
-                else
-                {
-                    var fileStream = GetFileStream(fileInfo);
-                    using (fileStream)
-                    {
-                        await fileStream.CopyToAsync(response.Body, DefaultBufferSize);
-                    }
-                }
-            }
-            else
-            {
-                throw new FileNotFoundException(
-                    Resources.FormatFileResult_InvalidPath(result.FileName), result.FileName);
-            }
+            return fileInfo;
         }
 
         private IFileProvider GetFileProvider(VirtualFileResult result)
@@ -103,7 +127,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             result.FileProvider = _hostingEnvironment.WebRootFileProvider;
-
             return result.FileProvider;
         }
 

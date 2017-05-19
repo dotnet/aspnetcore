@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -11,6 +13,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -47,6 +50,29 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public void Constructor_SetsLastModifiedAndEtag()
+        {
+            // Arrange
+            var fileContents = new byte[0];
+            var contentType = "text/plain";
+            var expectedMediaType = contentType;
+            var lastModified = new DateTimeOffset();
+            var entityTag = new EntityTagHeaderValue("\"Etag\"");
+
+            // Act
+            var result = new FileContentResult(fileContents, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag
+            };
+
+            // Assert
+            Assert.Equal(lastModified, result.LastModified);
+            Assert.Equal(entityTag, result.EntityTag);
+            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
+        }
+
+        [Fact]
         public async Task WriteFileAsync_CopiesBuffer_ToOutputStream()
         {
             // Arrange
@@ -66,6 +92,268 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             Assert.Equal(buffer, outStream.ToArray());
+        }
+
+        [Theory]
+        [InlineData(0, 4, "Hello", 5)]
+        [InlineData(6, 10, "World", 5)]
+        [InlineData(null, 5, "World", 5)]
+        [InlineData(6, null, "World", 5)]
+        public async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(long? start, long? end, string expectedString, long contentLength)
+        {
+            // Arrange
+            var contentType = "text/plain";
+            var lastModified = new DateTimeOffset();
+            var entityTag = new EntityTagHeaderValue("\"Etag\"");
+            var byteArray = Encoding.ASCII.GetBytes("Hello World");
+
+            var result = new FileContentResult(byteArray, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag
+            };
+
+            var httpContext = GetHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            requestHeaders.Range = new RangeHeaderValue(start, end);
+            requestHeaders.IfMatch = new[]
+            {
+                new EntityTagHeaderValue("\"Etag\""),
+            };
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            start = start ?? 11 - end;
+            end = start + contentLength - 1;
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
+            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            var contentRange = new ContentRangeHeaderValue(start.Value, end.Value, byteArray.Length);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(contentLength, httpResponse.ContentLength);
+            Assert.Equal(expectedString, body);
+        }
+
+        [Fact]
+        public async Task WriteFileAsync_IfRangeHeaderValid_WritesRequestedRange()
+        {
+            // Arrange
+            var contentType = "text/plain";
+            var lastModified = DateTimeOffset.MinValue;
+            var entityTag = new EntityTagHeaderValue("\"Etag\"");
+            var byteArray = Encoding.ASCII.GetBytes("Hello World");
+
+            var result = new FileContentResult(byteArray, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag
+            };
+
+            var httpContext = GetHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            requestHeaders.IfMatch = new[]
+            {
+                new EntityTagHeaderValue("\"Etag\""),
+            };
+            requestHeaders.Range = new RangeHeaderValue(0, 4);
+            requestHeaders.IfRange = new RangeConditionHeaderValue(DateTimeOffset.MinValue);
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
+            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            var contentRange = new ContentRangeHeaderValue(0, 4, byteArray.Length);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal(5, httpResponse.ContentLength);
+            Assert.Equal("Hello", body);
+        }
+
+        [Fact]
+        public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored()
+        {
+            // Arrange
+            var contentType = "text/plain";
+            var lastModified = DateTimeOffset.MinValue.AddDays(1);
+            var entityTag = new EntityTagHeaderValue("\"Etag\"");
+            var byteArray = Encoding.ASCII.GetBytes("Hello World");
+
+            var result = new FileContentResult(byteArray, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag
+            };
+
+            var httpContext = GetHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            requestHeaders.IfMatch = new[]
+            {
+                new EntityTagHeaderValue("\"Etag\""),
+            };
+            requestHeaders.Range = new RangeHeaderValue(0, 4);
+            requestHeaders.IfRange = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"NotEtag\""));
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
+            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal("Hello World", body);
+        }
+
+        [Theory]
+        [InlineData("0-5")]
+        [InlineData("bytes = 11-0")]
+        [InlineData("bytes = 1-4, 5-11")]
+        public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(string rangeString)
+        {
+            // Arrange
+            var contentType = "text/plain";
+            var lastModified = new DateTimeOffset();
+            var entityTag = new EntityTagHeaderValue("\"Etag\"");
+            var byteArray = Encoding.ASCII.GetBytes("Hello World");
+
+            var result = new FileContentResult(byteArray, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag
+            };
+
+            var httpContext = GetHttpContext();
+            httpContext.Request.Headers[HeaderNames.Range] = rangeString;
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            var contentRange = new ContentRangeHeaderValue(byteArray.Length);
+            Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
+            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Empty(body);
+        }
+
+        [Fact]
+        public async Task WriteFileAsync_RangeRequested_PreconditionFailed()
+        {
+            // Arrange
+            var contentType = "text/plain";
+            var lastModified = new DateTimeOffset();
+            var entityTag = new EntityTagHeaderValue("\"Etag\"");
+            var byteArray = Encoding.ASCII.GetBytes("Hello World");
+
+            var result = new FileContentResult(byteArray, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag
+            };
+
+            var httpContext = GetHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            requestHeaders.IfMatch = new[]
+            {
+                new EntityTagHeaderValue("\"NotEtag\""),
+            };
+            httpContext.Request.Headers[HeaderNames.Range] = "bytes = 0-6";
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
+            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Null(httpResponse.ContentLength);
+            Assert.Empty(body);
+        }
+
+        [Fact]
+        public async Task WriteFileAsync_RangeRequested_NotModified()
+        {
+            // Arrange       
+            var contentType = "text/plain";
+            var lastModified = new DateTimeOffset();
+            var entityTag = new EntityTagHeaderValue("\"Etag\"");
+            var byteArray = Encoding.ASCII.GetBytes("Hello World");
+
+            var result = new FileContentResult(byteArray, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag
+            };
+
+            var httpContext = GetHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            requestHeaders.IfNoneMatch = new[]
+            {
+                new EntityTagHeaderValue("\"Etag\""),
+            };
+            httpContext.Request.Headers[HeaderNames.Range] = "bytes = 0-6";
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
+            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Null(httpResponse.ContentLength);
+            Assert.Empty(body);
         }
 
         [Fact]

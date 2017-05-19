@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class PhysicalFileResultExecutor : FileResultExecutorBase
     {
-        private const int DefaultBufferSize = 0x1000;
-
         public PhysicalFileResultExecutor(ILoggerFactory loggerFactory)
             : base(CreateLogger<PhysicalFileResultExecutor>(loggerFactory))
         {
@@ -32,11 +31,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(result));
             }
 
-            SetHeadersAndLog(context, result);
-            return WriteFileAsync(context, result);
+            var fileInfo = GetFileInfo(result.FileName);
+            if (!fileInfo.Exists)
+            {
+                throw new FileNotFoundException(
+                    Resources.FormatFileResult_InvalidPath(result.FileName), result.FileName);
+            }
+
+            var lastModified = result.LastModified ?? fileInfo.LastModified;
+            var (range, rangeLength, serveBody) = SetHeadersAndLog(
+                context,
+                result,
+                fileInfo.Length,
+                lastModified,
+                result.EntityTag);
+
+            if (serveBody)
+            {
+                return WriteFileAsync(context, result, range, rangeLength);
+            }
+
+            return Task.CompletedTask;
         }
 
-        protected virtual async Task WriteFileAsync(ActionContext context, PhysicalFileResult result)
+        protected virtual Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue range, long rangeLength)
         {
             if (context == null)
             {
@@ -48,8 +66,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(result));
             }
 
-            var response = context.HttpContext.Response;
+            if (range != null && rangeLength == 0)
+            {
+                return Task.CompletedTask;
+            }
 
+            var response = context.HttpContext.Response;
             if (!Path.IsPathRooted(result.FileName))
             {
                 throw new NotSupportedException(Resources.FormatFileResult_PathNotRooted(result.FileName));
@@ -58,21 +80,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null)
             {
-                await sendFile.SendFileAsync(
+                if (range != null)
+                {
+                    return sendFile.SendFileAsync(
+                        result.FileName,
+                        offset: range.From ?? 0L,
+                        count: rangeLength,
+                        cancellation: default(CancellationToken));
+                }
+
+                return sendFile.SendFileAsync(
                     result.FileName,
                     offset: 0,
                     count: null,
                     cancellation: default(CancellationToken));
             }
-            else
-            {
-                var fileStream = GetFileStream(result.FileName);
 
-                using (fileStream)
-                {
-                    await fileStream.CopyToAsync(response.Body, DefaultBufferSize);
-                }
-            }
+            return WriteFileAsync(context.HttpContext, GetFileStream(result.FileName), range, rangeLength);
         }
 
         protected virtual Stream GetFileStream(string path)
@@ -87,8 +111,28 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     FileMode.Open,
                     FileAccess.Read,
                     FileShare.ReadWrite,
-                    DefaultBufferSize,
+                    BufferSize,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
+        }
+
+        protected virtual FileMetadata GetFileInfo(string path)
+        {
+            var fileInfo = new FileInfo(path);
+            return new FileMetadata
+            {
+                Exists = fileInfo.Exists,
+                Length = fileInfo.Length,
+                LastModified = fileInfo.LastWriteTimeUtc,
+            };
+        }
+
+        protected class FileMetadata
+        {
+            public bool Exists { get; set; }
+
+            public long Length { get; set; }
+
+            public DateTimeOffset LastModified { get; set; }
         }
     }
 }

@@ -1135,8 +1135,10 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Returns a file with the specified <paramref name="fileContents" /> as content
-        /// (<see cref="StatusCodes.Status200OK"/>) and the specified <paramref name="contentType" /> as the Content-Type.
+        /// Returns a file with the specified <paramref name="fileContents" /> as content (<see cref="StatusCodes.Status200OK"/>),
+        /// and the specified <paramref name="contentType" /> as the Content-Type.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
         /// <param name="fileContents">The file contents.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
@@ -1149,8 +1151,9 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Returns a file with the specified <paramref name="fileContents" /> as content (<see cref="StatusCodes.Status200OK"/>), the
-        /// specified <paramref name="contentType" /> as the Content-Type and the
-        /// specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// specified <paramref name="contentType" /> as the Content-Type and the specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
         /// <param name="fileContents">The file contents.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
@@ -1163,8 +1166,54 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Returns a file in the specified <paramref name="fileStream" /> (<see cref="StatusCodes.Status200OK"/>)
-        /// with the specified <paramref name="contentType" /> as the Content-Type.
+        /// Returns a file with the specified <paramref name="fileContents" /> as content (<see cref="StatusCodes.Status200OK"/>), 
+        /// and the specified <paramref name="contentType" /> as the Content-Type.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+        /// </summary>
+        /// <param name="fileContents">The file contents.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <returns>The created <see cref="FileContentResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FileContentResult File(byte[] fileContents, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        {
+            return new FileContentResult(fileContents, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+            };
+        }
+
+        /// <summary>
+        /// Returns a file with the specified <paramref name="fileContents" /> as content (<see cref="StatusCodes.Status200OK"/>), the 
+        /// specified <paramref name="contentType" /> as the Content-Type, and the specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+        /// </summary>
+        /// <param name="fileContents">The file contents.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <returns>The created <see cref="FileContentResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        {
+            return new FileContentResult(fileContents, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+                FileDownloadName = fileDownloadName,
+            };
+        }
+
+        /// <summary>
+        /// Returns a file in the specified <paramref name="fileStream" /> (<see cref="StatusCodes.Status200OK"/>), with the 
+        /// specified <paramref name="contentType" /> as the Content-Type.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
         /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
@@ -1179,6 +1228,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// Returns a file in the specified <paramref name="fileStream" /> (<see cref="StatusCodes.Status200OK"/>) with the
         /// specified <paramref name="contentType" /> as the Content-Type and the
         /// specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
         /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
@@ -1191,8 +1242,54 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Returns a file in the specified <paramref name="fileStream" /> (<see cref="StatusCodes.Status200OK"/>), 
+        /// and the specified <paramref name="contentType" /> as the Content-Type.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+        /// </summary>
+        /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FileStreamResult File(Stream fileStream, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        {
+            return new FileStreamResult(fileStream, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+            };
+        }
+
+        /// <summary>
+        /// Returns a file in the specified <paramref name="fileStream" /> (<see cref="StatusCodes.Status200OK"/>), the 
+        /// specified <paramref name="contentType" /> as the Content-Type, and the specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+        /// </summary>
+        /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        [NonAction]
+        public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        {
+            return new FileStreamResult(fileStream, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+                FileDownloadName = fileDownloadName,
+            };
+        }
+
+        /// <summary>
         /// Returns the file specified by <paramref name="virtualPath" /> (<see cref="StatusCodes.Status200OK"/>) with the
         /// specified <paramref name="contentType" /> as the Content-Type.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
         /// <param name="virtualPath">The virtual path of the file to be returned.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
@@ -1207,6 +1304,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// Returns the file specified by <paramref name="virtualPath" /> (<see cref="StatusCodes.Status200OK"/>) with the
         /// specified <paramref name="contentType" /> as the Content-Type and the
         /// specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
         /// <param name="virtualPath">The virtual path of the file to be returned.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
@@ -1219,8 +1318,54 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Returns the file specified by <paramref name="virtualPath" /> (<see cref="StatusCodes.Status200OK"/>), and the 
+        /// specified <paramref name="contentType" /> as the Content-Type.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+        /// </summary>
+        /// <param name="virtualPath">The virtual path of the file to be returned.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <returns>The created <see cref="VirtualFileResult"/> for the response.</returns>
+        [NonAction]
+        public virtual VirtualFileResult File(string virtualPath, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        {
+            return new VirtualFileResult(virtualPath, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+            };
+        }
+
+        /// <summary>
+        /// Returns the file specified by <paramref name="virtualPath" /> (<see cref="StatusCodes.Status200OK"/>), the 
+        /// specified <paramref name="contentType" /> as the Content-Type, and the specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+        /// </summary>
+        /// <param name="virtualPath">The virtual path of the file to be returned.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <returns>The created <see cref="VirtualFileResult"/> for the response.</returns>
+        [NonAction]
+        public virtual VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        {
+            return new VirtualFileResult(virtualPath, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+                FileDownloadName = fileDownloadName,
+            };
+        }
+
+        /// <summary>
         /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>) with the
         /// specified <paramref name="contentType" /> as the Content-Type.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
         /// <param name="physicalPath">The physical path of the file to be returned.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
@@ -1235,6 +1380,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>) with the
         /// specified <paramref name="contentType" /> as the Content-Type and the
         /// specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
         /// <param name="physicalPath">The physical path of the file to be returned.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
@@ -1247,6 +1394,50 @@ namespace Microsoft.AspNetCore.Mvc
             string fileDownloadName)
         {
             return new PhysicalFileResult(physicalPath, contentType) { FileDownloadName = fileDownloadName };
+        }
+
+        /// <summary>
+        /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>), and 
+        /// the specified <paramref name="contentType" /> as the Content-Type.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+        /// </summary>
+        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
+        [NonAction]
+        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        {
+            return new PhysicalFileResult(physicalPath, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+            };
+        }
+
+        /// <summary>
+        /// Returns the file specified by <paramref name="physicalPath" /> (<see cref="StatusCodes.Status200OK"/>), the 
+        /// specified <paramref name="contentType" /> as the Content-Type, and the specified <paramref name="fileDownloadName" /> as the suggested file name.
+        /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
+        /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
+        /// </summary>
+        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="contentType">The Content-Type of the file.</param>
+        /// <param name="fileDownloadName">The suggested file name.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
+        /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
+        /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
+        [NonAction]
+        public virtual PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
+        {
+            return new PhysicalFileResult(physicalPath, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+                FileDownloadName = fileDownloadName,
+            };
         }
 
         /// <summary>

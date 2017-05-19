@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -43,5 +42,15 @@ namespace Microsoft.AspNetCore.Mvc
             get { return _fileDownloadName ?? string.Empty; }
             set { _fileDownloadName = value; }
         }
+
+        /// <summary>
+        /// Gets or sets the last modified information associated with the <see cref="FileResult"/>.
+        /// </summary>
+        public DateTimeOffset? LastModified { get; set; }
+
+        /// <summary>
+        /// Gets or sets the etag associated with the <see cref="FileResult"/>.
+        /// </summary>
+        public EntityTagHeaderValue EntityTag { get; set; }
     }
 }

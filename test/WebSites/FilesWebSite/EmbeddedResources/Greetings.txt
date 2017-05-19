@@ -1,1 +1,1 @@
-﻿Sample text file as embedded resource.
+Sample text file as embedded resource.
