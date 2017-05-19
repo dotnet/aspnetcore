@@ -524,7 +524,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             // We require 'public' and 's-max-age' or 'max-age' or the Expires header.
             CacheControlHeaderValue cacheControl;
-            if (CacheControlHeaderValue.TryParse(cacheControlHeader, out cacheControl) && cacheControl.Public)
+            if (CacheControlHeaderValue.TryParse(cacheControlHeader.ToString(), out cacheControl) && cacheControl.Public)
             {
                 if (cacheControl.SharedMaxAge.HasValue)
                 {
