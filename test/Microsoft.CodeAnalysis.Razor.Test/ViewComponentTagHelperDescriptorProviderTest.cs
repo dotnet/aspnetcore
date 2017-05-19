@@ -39,6 +39,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
                 "__Generated__StringParameterViewComponentTagHelper",
                 TestCompilation.AssemblyName)
+                .DisplayName("StringParameterViewComponentTagHelper")
                 .TagMatchingRule(rule =>
                     rule
                     .RequireTagName("vc:string-parameter")
