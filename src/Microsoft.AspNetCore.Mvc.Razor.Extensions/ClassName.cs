@@ -4,9 +4,9 @@
 using System.Globalization;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Internal
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public static class ClassName
+    internal static class ClassName
     {
         public static string GetClassNameFromPath(string path)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Internal
                 category == UnicodeCategory.Format; // Cf
         }
 
-        private static string SanitizeClassName(string inputName)
+        public static string SanitizeClassName(string inputName)
         {
             if (!IsIdentifierStart(inputName[0]) && IsIdentifierPart(inputName[0]))
             {

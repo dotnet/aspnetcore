@@ -4,9 +4,9 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Internal
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public static class RazorCodeDocumentExtensions
+    internal static class RazorCodeDocumentExtensions
     {
         private const string RelativePathKey = "relative-path";
 

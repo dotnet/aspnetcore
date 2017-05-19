@@ -196,6 +196,44 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("AddUser_Page", @class.Name);
         }
 
+        // Handles cases where invalid characters appears in filenames. Note that we don't sanitize the part of
+        // the namespace that you put in an import, just the file-based-suffix. Garbage in, garbage out.
+        [Fact]
+        public void Pass_SetsNamespaceAndClassName_SanitizesClassAndNamespace()
+        {
+            // Arrange
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
+
+            builder.Push(new DirectiveIRNode()
+            {
+                Descriptor = NamespaceDirective.Directive,
+                Source = new SourceSpan("/Account/_ViewImports.cshtml", 0, 0, 0, 0),
+            });
+            builder.Add(new DirectiveTokenIRNode() { Content = "WebApplication.Account" });
+            builder.Pop();
+
+            var @namespace = new NamespaceDeclarationIRNode() { Content = "default" };
+            builder.Push(@namespace);
+
+            var @class = new ClassDeclarationIRNode() { Name = "default" };
+            builder.Add(@class);
+
+            document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
+
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("ignored", "/Account/Manage-Info/Add+User.cshtml"));
+
+            var pass = new NamespaceDirective.Pass();
+            pass.Engine = RazorEngine.CreateEmpty(b => { });
+
+            // Act
+            pass.Execute(codeDocument, document);
+
+            // Assert
+            Assert.Equal("WebApplication.Account.Manage_Info", @namespace.Content);
+            Assert.Equal("Add_User_Page", @class.Name);
+        }
+
         // This is the case where the source file sets the namespace.
         [Fact]
         public void Pass_SetsNamespaceAndClassName_ComputedFromSource_ForView()
