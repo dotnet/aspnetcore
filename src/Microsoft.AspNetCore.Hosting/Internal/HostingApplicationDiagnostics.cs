@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     {
                         if (NameValueHeaderValue.TryParse(item, out var baggageItem))
                         {
-                            activity.AddBaggage(baggageItem.Name, baggageItem.Value);
+                            activity.AddBaggage(baggageItem.Name.ToString(), baggageItem.Value.ToString());
                         }
                     }
                 }
