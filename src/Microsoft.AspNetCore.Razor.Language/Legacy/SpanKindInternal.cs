@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public enum SpanKindInternal
+    internal enum SpanKindInternal
     {
         Transition,
         MetaCode,
