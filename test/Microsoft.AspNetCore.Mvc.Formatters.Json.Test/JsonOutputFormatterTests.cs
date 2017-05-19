@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var headers = new HeaderDictionary();
             request.Setup(r => r.ContentType).Returns(contentType.ToString());
             request.SetupGet(r => r.Headers).Returns(headers);
-            headers[HeaderNames.AcceptCharset] = contentType.Charset;
+            headers[HeaderNames.AcceptCharset] = contentType.Charset.ToString();
             var response = new Mock<HttpResponse>();
             response.SetupGet(f => f.Body).Returns(responseStream ?? new MemoryStream());
             var httpContext = new Mock<HttpContext>();

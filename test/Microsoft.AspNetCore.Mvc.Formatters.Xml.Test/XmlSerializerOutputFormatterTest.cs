@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var request = new Mock<HttpRequest>();
 
             var headers = new HeaderDictionary();
-            headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset;
+            headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset.ToString();
             request.Setup(r => r.ContentType).Returns(contentType);
             request.SetupGet(r => r.Headers).Returns(headers);
 

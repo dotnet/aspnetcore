@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 for (var i = 0; i < acceptValues.Count; i++)
                 {
                     var charset = acceptValues[i].Value;
-                    if (!string.IsNullOrEmpty(charset))
+                    if (!StringSegment.IsNullOrEmpty(charset))
                     {
                         for (var j = 0; j < SupportedEncodings.Count; j++)
                         {
