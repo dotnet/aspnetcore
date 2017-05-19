@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             if (!StringValues.IsNullOrEmpty(ifNoneMatchHeader))
             {
-                if (ifNoneMatchHeader.Count == 1 && string.Equals(ifNoneMatchHeader[0], EntityTagHeaderValue.Any.Tag, StringComparison.OrdinalIgnoreCase))
+                if (ifNoneMatchHeader.Count == 1 && StringSegment.Equals(ifNoneMatchHeader[0], EntityTagHeaderValue.Any.Tag, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Logger.LogNotModifiedIfNoneMatchStar();
                     return true;
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 EntityTagHeaderValue eTag;
                 IList<EntityTagHeaderValue> ifNoneMatchEtags;
                 if (!StringValues.IsNullOrEmpty(cachedResponseHeaders[HeaderNames.ETag])
-                    && EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag], out eTag)
+                    && EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag].ToString(), out eTag)
                     && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out ifNoneMatchEtags))
                 {
                     for (var i = 0; i < ifNoneMatchEtags.Count; i++)
