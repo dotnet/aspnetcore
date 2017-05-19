@@ -158,8 +158,8 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        [Fact (Skip="https://github.com/aspnet/Hosting/issues/1024")]
-        public void WebHostShutsDownWhenTokenTriggers()
+        [Fact]
+        public async Task WebHostShutsDownWhenTokenTriggers()
         {
             using (var host = CreateBuilder()
                 .UseFakeServer()
@@ -183,6 +183,9 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // Wait on the host to shutdown
                 lifetime.ApplicationStopped.WaitHandle.WaitOne();
+
+                // Wait for RunAsync to finish to guarantee Disposal of WebHost
+                await runInBackground;
 
                 Assert.Equal(1, server.StartInstances[0].DisposeCalls);
             }
