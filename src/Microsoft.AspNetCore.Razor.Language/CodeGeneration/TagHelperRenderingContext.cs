@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private Dictionary<string, string> _renderedBoundAttributes;
         private HashSet<string> _verifiedPropertyDictionaries;
 
+        public string TagName { get; set; }
+
+        public TagMode TagMode { get; set; }
+
         public Dictionary<string, string> RenderedBoundAttributes
         {
             get

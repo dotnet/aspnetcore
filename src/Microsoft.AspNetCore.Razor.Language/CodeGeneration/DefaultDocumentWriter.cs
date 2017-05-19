@@ -226,15 +226,21 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitTagHelper(TagHelperIRNode node)
             {
-                using (Context.Push(new TagHelperRenderingContext()))
+                var tagHelperRenderingContext = new TagHelperRenderingContext()
                 {
-                    Context.RenderChildren(node);
+                    TagName = node.TagName,
+                    TagMode = node.TagMode
+                };
+
+                using (Context.Push(tagHelperRenderingContext))
+                {
+                    Context.TagHelperWriter.WriteTagHelper(Context, node);
                 }
             }
 
-            public override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+            public override void VisitTagHelperBody(TagHelperBodyIRNode node)
             {
-                Context.TagHelperWriter.WriteInitializeTagHelperStructure(Context, node);
+                Context.TagHelperWriter.WriteTagHelperBody(Context, node);
             }
 
             public override void VisitCreateTagHelper(CreateTagHelperIRNode node)
@@ -250,11 +256,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
             {
                 Context.TagHelperWriter.WriteSetTagHelperProperty(Context, node);
-            }
-
-            public override void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
-            {
-                Context.TagHelperWriter.WriteExecuteTagHelpers(Context, node);
             }
 
             public override void VisitDefault(RazorIRNode node)

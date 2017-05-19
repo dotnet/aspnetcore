@@ -216,21 +216,18 @@ namespace Microsoft.AspNetCore.Razor.Language
                     n,
                     v => DirectiveToken(DirectiveTokenKind.String, "*, TestAssembly", v)),
                 n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
-                n =>
-                {
-                    var tagHelperNode = Assert.IsType<TagHelperIRNode>(n);
-                    Children(
-                        tagHelperNode,
-                        c => TagHelperStructure("span", TagMode.StartTagAndEndTag, c),
-                        c => Assert.IsType<CreateTagHelperIRNode>(c),
-                        c => TagHelperHtmlAttribute(
-                            "val",
-                            HtmlAttributeValueStyle.DoubleQuotes,
-                            c,
-                            v => CSharpAttributeValue(string.Empty, "Hello", v),
-                            v => LiteralAttributeValue(" ", "World", v)),
-                        c => Assert.IsType<ExecuteTagHelpersIRNode>(c));
-                });
+                n => TagHelper(
+                    "span",
+                    TagMode.StartTagAndEndTag,
+                    n,
+                    c => Assert.IsType<TagHelperBodyIRNode>(c),
+                    c => Assert.IsType<CreateTagHelperIRNode>(c),
+                    c => TagHelperHtmlAttribute(
+                        "val",
+                        HtmlAttributeValueStyle.DoubleQuotes,
+                        c,
+                        v => CSharpAttributeValue(string.Empty, "Hello", v),
+                        v => LiteralAttributeValue(" ", "World", v))));
         }
 
         [Fact]
@@ -263,21 +260,18 @@ namespace Microsoft.AspNetCore.Razor.Language
                     n,
                     v => DirectiveToken(DirectiveTokenKind.String, "cool:", v)),
                 n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
-                n =>
-                {
-                    var tagHelperNode = Assert.IsType<TagHelperIRNode>(n);
-                    Children(
-                        tagHelperNode,
-                        c => TagHelperStructure("span", TagMode.StartTagAndEndTag, c), // Note: this is span not cool:span
-                        c => Assert.IsType<CreateTagHelperIRNode>(c),
-                        c => TagHelperHtmlAttribute(
-                            "val",
-                            HtmlAttributeValueStyle.DoubleQuotes,
-                            c,
-                            v => CSharpAttributeValue(string.Empty, "Hello", v),
-                            v => LiteralAttributeValue(" ", "World", v)),
-                        c => Assert.IsType<ExecuteTagHelpersIRNode>(c));
-                });
+                n => TagHelper(
+                    "span",  // Note: this is span not cool:span
+                    TagMode.StartTagAndEndTag,
+                    n,
+                    c => Assert.IsType<TagHelperBodyIRNode>(c),
+                    c => Assert.IsType<CreateTagHelperIRNode>(c),
+                    c => TagHelperHtmlAttribute(
+                        "val",
+                        HtmlAttributeValueStyle.DoubleQuotes,
+                        c,
+                        v => CSharpAttributeValue(string.Empty, "Hello", v),
+                        v => LiteralAttributeValue(" ", "World", v))));
         }
 
         [Fact]
@@ -290,11 +284,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 }");
             var tagHelpers = new[]
             {
-                CreateTagHelperDescriptor(
-                    tagName: "span",
-                    typeName: "SpanTagHelper",
-                    assemblyName: "TestAssembly")
-            };
+                        CreateTagHelperDescriptor(
+                            tagName: "span",
+                            typeName: "SpanTagHelper",
+                            assemblyName: "TestAssembly")
+                    };
 
             // Act
             var irDocument = Lower(codeDocument, tagHelpers: tagHelpers);
@@ -312,21 +306,18 @@ namespace Microsoft.AspNetCore.Razor.Language
                     n,
                     c1 => DirectiveToken(DirectiveTokenKind.Member, "test", c1),
                     c1 => Html(Environment.NewLine, c1),
-                    c1 =>
-                    {
-                        var tagHelperNode = Assert.IsType<TagHelperIRNode>(c1);
-                        Children(
-                            tagHelperNode,
-                            c2 => TagHelperStructure("span", TagMode.StartTagAndEndTag, c2),
-                            c2 => Assert.IsType<CreateTagHelperIRNode>(c2),
-                            c2 => TagHelperHtmlAttribute(
-                                "val",
-                                HtmlAttributeValueStyle.DoubleQuotes,
-                                c2,
-                                v => CSharpAttributeValue(string.Empty, "Hello", v),
-                                v => LiteralAttributeValue(" ", "World", v)),
-                            c2 => Assert.IsType<ExecuteTagHelpersIRNode>(c2));
-                    },
+                    c1 => TagHelper(
+                        "span",
+                        TagMode.StartTagAndEndTag,
+                        c1,
+                        c2 => Assert.IsType<TagHelperBodyIRNode>(c2),
+                        c2 => Assert.IsType<CreateTagHelperIRNode>(c2),
+                        c2 => TagHelperHtmlAttribute(
+                            "val",
+                            HtmlAttributeValueStyle.DoubleQuotes,
+                            c2,
+                            v => CSharpAttributeValue(string.Empty, "Hello", v),
+                            v => LiteralAttributeValue(" ", "World", v))),
                     c1 => Html(Environment.NewLine, c1)),
                 n => TagHelperFieldDeclaration(n, "SpanTagHelper"));
         }
@@ -339,18 +330,18 @@ namespace Microsoft.AspNetCore.Razor.Language
 <input bound='foo' />");
             var tagHelpers = new[]
             {
-                CreateTagHelperDescriptor(
-                    tagName: "input",
-                    typeName: "InputTagHelper",
-                    assemblyName: "TestAssembly",
-                    attributes: new Action<BoundAttributeDescriptorBuilder>[]
-                    {
-                        builder => builder
-                            .Name("bound")
-                            .PropertyName("FooProp")
-                            .TypeName("System.String"),
-                    })
-            };
+                        CreateTagHelperDescriptor(
+                            tagName: "input",
+                            typeName: "InputTagHelper",
+                            assemblyName: "TestAssembly",
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
+                            {
+                                builder => builder
+                                    .Name("bound")
+                                    .PropertyName("FooProp")
+                                    .TypeName("System.String"),
+                            })
+                    };
 
             // Act
             var irDocument = Lower(codeDocument, tagHelpers: tagHelpers);
@@ -364,20 +355,18 @@ namespace Microsoft.AspNetCore.Razor.Language
                     n,
                     v => DirectiveToken(DirectiveTokenKind.String, "*, TestAssembly", v)),
                 n => TagHelperFieldDeclaration(n, "InputTagHelper"),
-                n =>
-                {
-                    var tagHelperNode = Assert.IsType<TagHelperIRNode>(n);
-                    Children(tagHelperNode,
-                    c => TagHelperStructure("input", TagMode.SelfClosing, c),
+                n => TagHelper(
+                    "input",
+                    TagMode.SelfClosing,
+                    n,
+                    c => Assert.IsType<TagHelperBodyIRNode>(c),
                     c => Assert.IsType<CreateTagHelperIRNode>(c),
                     c => SetTagHelperProperty(
                         "bound",
                         "FooProp",
                         HtmlAttributeValueStyle.SingleQuotes,
                         c,
-                        v => Html("foo", v)),
-                    c => Assert.IsType<ExecuteTagHelpersIRNode>(c));
-                });
+                        v => Html("foo", v))));
         }
 
         [Fact]

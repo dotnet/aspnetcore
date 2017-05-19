@@ -36,8 +36,8 @@ Document -
                 HtmlContent - (186:5,33 [4] EscapedTagHelpers.cshtml)
                     RazorIRToken - (186:5,33 [3] EscapedTagHelpers.cshtml) - Html - em>
                     RazorIRToken - (189:5,36 [1] EscapedTagHelpers.cshtml) - Html -  
-                TagHelper - (190:5,37 [45] EscapedTagHelpers.cshtml)
-                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                TagHelper - (190:5,37 [45] EscapedTagHelpers.cshtml) - input - TagMode.SelfClosing
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
                     SetTagHelperProperty - (203:5,50 [13] EscapedTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
@@ -48,7 +48,6 @@ Document -
                             RazorIRToken - (204:5,51 [12] EscapedTagHelpers.cshtml) - CSharp - DateTime.Now
                     SetTagHelperProperty - (227:5,74 [4] EscapedTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (227:5,74 [4] EscapedTagHelpers.cshtml) - CSharp - true
-                    ExecuteTagHelpers - 
                 HtmlContent - (235:5,82 [8] EscapedTagHelpers.cshtml)
                     RazorIRToken - (235:5,82 [6] EscapedTagHelpers.cshtml) - Html - \n    
                     RazorIRToken - (241:6,4 [2] EscapedTagHelpers.cshtml) - Html - </

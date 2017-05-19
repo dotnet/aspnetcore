@@ -29,6 +29,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public override SourceSpan? Source { get; set; }
 
+        public string TagName { get; set; }
+
+        public TagMode TagMode { get; set; }
+
         public override void Accept(RazorIRNodeVisitor visitor)
         {
             if (visitor == null)

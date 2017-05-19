@@ -138,10 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Arrange
             var document = new DocumentIRNode();
             var builder = RazorIRBuilder.Create(document);
-            builder.Push(new TagHelperIRNode()
-            {
-                Source = CreateSource(3)
-            });
+            builder.Push(new TagHelperIRNode());
 
             builder.Push(new AddTagHelperHtmlAttributeIRNode());
 
@@ -188,10 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Arrange
             var document = new DocumentIRNode();
             var builder = RazorIRBuilder.Create(document);
-            builder.Push(new TagHelperIRNode()
-            {
-                Source = CreateSource(3)
-            });
+            builder.Push(new TagHelperIRNode());
 
             builder.Push(new SetTagHelperPropertyIRNode());
 
@@ -233,17 +227,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         [Fact]
-        public void InstrumentationPass_InstrumentsExecuteTagHelper_InsideTagHelper()
+        public void InstrumentationPass_InstrumentsTagHelper()
         {
             // Arrange
             var document = new DocumentIRNode();
             var builder = RazorIRBuilder.Create(document);
-            builder.Push(new TagHelperIRNode()
+            builder.Add(new TagHelperIRNode()
             {
                 Source = CreateSource(3),
             });
-
-            builder.Add(new ExecuteTagHelpersIRNode());
 
             var pass = new InstrumentationPass()
             {
@@ -256,27 +248,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Children(
                 document,
-                n =>
-                {
-                    Assert.IsType<TagHelperIRNode>(n);
-                    Children(
-                        n,
-                        c => BeginInstrumentation("3, 3, false", c),
-                        c => Assert.IsType<ExecuteTagHelpersIRNode>(c),
-                        c => EndInstrumentation(c));
-                });
+                n => BeginInstrumentation("3, 3, false", n),
+                n => Assert.IsType<TagHelperIRNode>(n),
+                n => EndInstrumentation(n));
         }
 
         [Fact]
-        public void InstrumentationPass_SkipsExecuteTagHelper_WithoutLocation()
+        public void InstrumentationPass_SkipsTagHelper_WithoutLocation()
         {
             // Arrange
             var document = new DocumentIRNode();
             var builder = RazorIRBuilder.Create(document);
             builder.Push(new TagHelperIRNode());
 
-            builder.Add(new ExecuteTagHelpersIRNode());
-
             var pass = new InstrumentationPass()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
@@ -288,46 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Children(
                 document,
-                n =>
-                {
-                    Assert.IsType<TagHelperIRNode>(n);
-                    Children(
-                        n,
-                        c => Assert.IsType<ExecuteTagHelpersIRNode>(c));
-                });
-        }
-
-        [Fact]
-        public void InstrumentationPass_SkipsExecuteTagHelper_MalformedTagHelper()
-        {
-            // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Push(new TagHelperIRNode()
-            {
-                Source = CreateSource(3),
-            });
-            builder.Push(new CSharpExpressionIRNode());
-            builder.Add(new ExecuteTagHelpersIRNode()); // Malformed
-
-            var pass = new InstrumentationPass()
-            {
-                Engine = RazorEngine.CreateEmpty(b => { }),
-            };
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
-
-            // Assert
-            Children(
-                document,
-                n =>
-                {
-                    Assert.IsType<TagHelperIRNode>(n);
-                    Children(
-                        n,
-                        c => SingleChild<ExecuteTagHelpersIRNode>(Assert.IsType<CSharpExpressionIRNode>(c)));
-                });
+                n => Assert.IsType<TagHelperIRNode>(n));
         }
 
         private SourceSpan CreateSource(int number)

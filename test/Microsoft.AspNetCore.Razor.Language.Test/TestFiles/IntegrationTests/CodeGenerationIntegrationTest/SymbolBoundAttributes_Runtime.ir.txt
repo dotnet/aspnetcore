@@ -52,28 +52,26 @@ Document -
                     RazorIRToken - (273:9,19 [1] SymbolBoundAttributes.cshtml) - Html - >
                     RazorIRToken - (274:9,20 [6] SymbolBoundAttributes.cshtml) - Html - </div>
                     RazorIRToken - (280:9,26 [4] SymbolBoundAttributes.cshtml) - Html - \n\n
-                TagHelper - (284:11,0 [45] SymbolBoundAttributes.cshtml)
-                    InitializeTagHelperStructure -  - ul - TagMode.StartTagAndEndTag
+                TagHelper - (284:11,0 [45] SymbolBoundAttributes.cshtml) - ul - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
                     SetTagHelperProperty - (302:11,18 [5] SymbolBoundAttributes.cshtml) - [item] - ListItems - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (302:11,18 [5] SymbolBoundAttributes.cshtml) - CSharp - items
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
-                    ExecuteTagHelpers - 
                 HtmlContent - (329:11,45 [2] SymbolBoundAttributes.cshtml)
                     RazorIRToken - (329:11,45 [2] SymbolBoundAttributes.cshtml) - Html - \n
-                TagHelper - (331:12,0 [49] SymbolBoundAttributes.cshtml)
-                    InitializeTagHelperStructure -  - ul - TagMode.StartTagAndEndTag
+                TagHelper - (331:12,0 [49] SymbolBoundAttributes.cshtml) - ul - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
                     SetTagHelperProperty - (351:12,20 [5] SymbolBoundAttributes.cshtml) - [(item)] - ArrayItems - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (351:12,20 [5] SymbolBoundAttributes.cshtml) - CSharp - items
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
-                    ExecuteTagHelpers - 
                 HtmlContent - (380:12,49 [2] SymbolBoundAttributes.cshtml)
                     RazorIRToken - (380:12,49 [2] SymbolBoundAttributes.cshtml) - Html - \n
-                TagHelper - (382:13,0 [79] SymbolBoundAttributes.cshtml)
-                    InitializeTagHelperStructure -  - button - TagMode.StartTagAndEndTag
+                TagHelper - (382:13,0 [79] SymbolBoundAttributes.cshtml) - button - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                         HtmlContent - (444:13,62 [8] SymbolBoundAttributes.cshtml)
                             RazorIRToken - (444:13,62 [8] SymbolBoundAttributes.cshtml) - Html - Click Me
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
@@ -81,11 +79,10 @@ Document -
                     SetTagHelperProperty - (405:13,23 [13] SymbolBoundAttributes.cshtml) - (click) - Event1 - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (405:13,23 [13] SymbolBoundAttributes.cshtml) - CSharp - doSomething()
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
-                    ExecuteTagHelpers - 
                 HtmlContent - (461:13,79 [2] SymbolBoundAttributes.cshtml)
                     RazorIRToken - (461:13,79 [2] SymbolBoundAttributes.cshtml) - Html - \n
-                TagHelper - (463:14,0 [81] SymbolBoundAttributes.cshtml)
-                    InitializeTagHelperStructure -  - button - TagMode.StartTagAndEndTag
+                TagHelper - (463:14,0 [81] SymbolBoundAttributes.cshtml) - button - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                         HtmlContent - (527:14,64 [8] SymbolBoundAttributes.cshtml)
                             RazorIRToken - (527:14,64 [8] SymbolBoundAttributes.cshtml) - Html - Click Me
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
@@ -93,32 +90,28 @@ Document -
                     SetTagHelperProperty - (487:14,24 [13] SymbolBoundAttributes.cshtml) - (^click) - Event2 - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (487:14,24 [13] SymbolBoundAttributes.cshtml) - CSharp - doSomething()
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
-                    ExecuteTagHelpers - 
                 HtmlContent - (544:14,81 [2] SymbolBoundAttributes.cshtml)
                     RazorIRToken - (544:14,81 [2] SymbolBoundAttributes.cshtml) - Html - \n
-                TagHelper - (546:15,0 [67] SymbolBoundAttributes.cshtml)
-                    InitializeTagHelperStructure -  - template - TagMode.StartTagAndEndTag
+                TagHelper - (546:15,0 [67] SymbolBoundAttributes.cshtml) - template - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                         HtmlContent - (600:15,54 [2] SymbolBoundAttributes.cshtml)
                             RazorIRToken - (600:15,54 [2] SymbolBoundAttributes.cshtml) - Html - \n
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_4 - *something - StringProperty1
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5
-                    ExecuteTagHelpers - 
                 HtmlContent - (613:16,11 [2] SymbolBoundAttributes.cshtml)
                     RazorIRToken - (613:16,11 [2] SymbolBoundAttributes.cshtml) - Html - \n
-                TagHelper - (615:17,0 [33] SymbolBoundAttributes.cshtml)
-                    InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
+                TagHelper - (615:17,0 [33] SymbolBoundAttributes.cshtml) - div - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
                     AddTagHelperHtmlAttribute -  - #localminimized - HtmlAttributeValueStyle.Minimized
-                    ExecuteTagHelpers - 
                 HtmlContent - (648:17,33 [2] SymbolBoundAttributes.cshtml)
                     RazorIRToken - (648:17,33 [2] SymbolBoundAttributes.cshtml) - Html - \n
-                TagHelper - (650:18,0 [47] SymbolBoundAttributes.cshtml)
-                    InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
+                TagHelper - (650:18,0 [47] SymbolBoundAttributes.cshtml) - div - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_6 - #local - StringProperty2
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7
-                    ExecuteTagHelpers - 

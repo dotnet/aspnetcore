@@ -21,8 +21,8 @@ Document -
                     RazorIRToken - (288:14,4 [36] PrefixedAttributeTagHelpers.cshtml) - Html -  class="randomNonTagHelperAttribute"
                     RazorIRToken - (324:14,40 [1] PrefixedAttributeTagHelpers.cshtml) - Html - >
                     RazorIRToken - (325:14,41 [6] PrefixedAttributeTagHelpers.cshtml) - Html - \n    
-                TagHelper - (331:15,4 [92] PrefixedAttributeTagHelpers.cshtml)
-                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                TagHelper - (331:15,4 [92] PrefixedAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper1
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
@@ -34,11 +34,10 @@ Document -
                         RazorIRToken - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - CSharp - stringDictionary
                     SetTagHelperProperty - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - string-dictionary - StringDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (404:15,77 [16] PrefixedAttributeTagHelpers.cshtml) - CSharp - stringDictionary
-                    ExecuteTagHelpers - 
                 HtmlContent - (423:15,96 [6] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (423:15,96 [6] PrefixedAttributeTagHelpers.cshtml) - Html - \n    
-                TagHelper - (429:16,4 [103] PrefixedAttributeTagHelpers.cshtml)
-                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                TagHelper - (429:16,4 [103] PrefixedAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper1
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
@@ -54,11 +53,10 @@ Document -
                         RazorIRToken - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 42
                     SetTagHelperProperty - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-grabber - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (526:16,101 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 42
-                    ExecuteTagHelpers - 
                 HtmlContent - (532:16,107 [6] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (532:16,107 [6] PrefixedAttributeTagHelpers.cshtml) - Html - \n    
-                TagHelper - (538:17,4 [257] PrefixedAttributeTagHelpers.cshtml)
-                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                TagHelper - (538:17,4 [257] PrefixedAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper1
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
@@ -95,11 +93,10 @@ Document -
                             RazorIRToken - (783:20,42 [8] PrefixedAttributeTagHelpers.cshtml) - CSharp - literate
                         HtmlContent - (791:20,50 [1] PrefixedAttributeTagHelpers.cshtml)
                             RazorIRToken - (791:20,50 [1] PrefixedAttributeTagHelpers.cshtml) - Html - ?
-                    ExecuteTagHelpers - 
                 HtmlContent - (795:20,54 [6] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (795:20,54 [6] PrefixedAttributeTagHelpers.cshtml) - Html - \n    
-                TagHelper - (801:21,4 [60] PrefixedAttributeTagHelpers.cshtml)
-                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                TagHelper - (801:21,4 [60] PrefixedAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
+                    TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper1
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
                     SetTagHelperProperty - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-value - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
@@ -108,7 +105,6 @@ Document -
                         RazorIRToken - (826:21,29 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 37
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_6 - string-prefix-thyme - StringDictionaryProperty
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_6 - string-prefix-thyme - StringDictionaryProperty
-                    ExecuteTagHelpers - 
                 HtmlContent - (861:21,64 [8] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (861:21,64 [2] PrefixedAttributeTagHelpers.cshtml) - Html - \n
                     RazorIRToken - (863:22,0 [6] PrefixedAttributeTagHelpers.cshtml) - Html - </div>

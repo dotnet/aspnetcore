@@ -91,20 +91,21 @@ private global::MyTagHelper __MyTagHelper = null;
         }
 
         [Fact]
-        public void WriteInitializeTagHelperStructure_RendersCorrectly_UsesTagNameAndModeFromIRNode()
+        public void WriteTagHelperBody_RendersCorrectly_UsesTagNameAndModeFromContext()
         {
             // Arrange
-            var node = new InitializeTagHelperStructureIRNode()
+            var node = new TagHelperBodyIRNode();
+            var writer = new RuntimeTagHelperWriter();
+            var context = GetCSharpRenderingContext(writer);
+            context.IdGenerator = () => "test";
+            context.TagHelperRenderingContext = new TagHelperRenderingContext()
             {
                 TagName = "p",
                 TagMode = TagMode.SelfClosing
             };
-            var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer);
-            context.IdGenerator = () => "test";
 
             // Act
-            writer.WriteInitializeTagHelperStructure(context, node);
+            writer.WriteTagHelperBody(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -143,20 +144,21 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
         }
 
         [Fact]
-        public void WriteExecuteTagHelpers_RendersCorrectly()
+        public void WriteTagHelper_RendersCorrectly_SetsTagNameAndModeInContext()
         {
             // Arrange
-            var node = new ExecuteTagHelpersIRNode();
+            var node = new TagHelperIRNode();
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer);
 
             // Act
-            writer.WriteExecuteTagHelpers(context, node);
+            writer.WriteTagHelper(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
-@"await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+@"Render Children
+await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 if (!__tagHelperExecutionContext.Output.IsContentModified)
 {
     await __tagHelperExecutionContext.SetOutputContentAsync();

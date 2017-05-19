@@ -13,39 +13,35 @@ Document -
                     RazorIRToken - (78:3,4 [36] BasicTagHelpers_RemoveTagHelper.cshtml) - Html -  class="randomNonTagHelperAttribute"
                     RazorIRToken - (114:3,40 [1] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - >
                     RazorIRToken - (115:3,41 [6] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n    
-                TagHelper - (121:4,4 [130] BasicTagHelpers_RemoveTagHelper.cshtml)
-                    InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                TagHelper - (121:4,4 [130] BasicTagHelpers_RemoveTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                         HtmlContent - (144:4,27 [10] BasicTagHelpers_RemoveTagHelper.cshtml)
                             RazorIRToken - (144:4,27 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n        
-                        TagHelper - (154:5,8 [7] BasicTagHelpers_RemoveTagHelper.cshtml)
-                            InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                        TagHelper - (154:5,8 [7] BasicTagHelpers_RemoveTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
+                            TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.PTagHelper
-                            ExecuteTagHelpers - 
                         HtmlContent - (161:5,15 [10] BasicTagHelpers_RemoveTagHelper.cshtml)
                             RazorIRToken - (161:5,15 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n        
-                        TagHelper - (171:6,8 [21] BasicTagHelpers_RemoveTagHelper.cshtml)
-                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                        TagHelper - (171:6,8 [21] BasicTagHelpers_RemoveTagHelper.cshtml) - input - TagMode.SelfClosing
+                            TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
-                            ExecuteTagHelpers - 
                         HtmlContent - (192:6,29 [10] BasicTagHelpers_RemoveTagHelper.cshtml)
                             RazorIRToken - (192:6,29 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n        
-                        TagHelper - (202:7,8 [39] BasicTagHelpers_RemoveTagHelper.cshtml)
-                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                        TagHelper - (202:7,8 [39] BasicTagHelpers_RemoveTagHelper.cshtml) - input - TagMode.SelfClosing
+                            TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - type - Type
                             SetTagHelperProperty - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 RazorIRToken - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - CSharp - true
-                            ExecuteTagHelpers - 
                         HtmlContent - (241:7,47 [6] BasicTagHelpers_RemoveTagHelper.cshtml)
                             RazorIRToken - (241:7,47 [6] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n    
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
-                    ExecuteTagHelpers - 
                 HtmlContent - (251:8,8 [8] BasicTagHelpers_RemoveTagHelper.cshtml)
                     RazorIRToken - (251:8,8 [2] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n
                     RazorIRToken - (253:9,0 [6] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - </div>

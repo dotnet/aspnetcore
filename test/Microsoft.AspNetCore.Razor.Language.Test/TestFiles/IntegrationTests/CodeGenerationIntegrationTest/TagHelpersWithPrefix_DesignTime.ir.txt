@@ -15,8 +15,8 @@ Document -
                     RazorIRToken - (53:1,22 [2] TagHelpersWithPrefix.cshtml) - Html - \n
                     RazorIRToken - (55:2,0 [6] TagHelpersWithPrefix.cshtml) - Html - <form>
                     RazorIRToken - (61:2,6 [6] TagHelpersWithPrefix.cshtml) - Html - \n    
-                TagHelper - (67:3,4 [39] TagHelpersWithPrefix.cshtml)
-                    InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                TagHelper - (67:3,4 [39] TagHelpersWithPrefix.cshtml) - input - TagMode.SelfClosing
+                    TagHelperBody - 
                     CreateTagHelper -  - InputTagHelper
                     SetTagHelperProperty - (85:3,22 [6] TagHelpersWithPrefix.cshtml) - bound - BoundProp - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (86:3,23 [5] TagHelpersWithPrefix.cshtml)
@@ -24,7 +24,6 @@ Document -
                     AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
                         HtmlContent - (98:3,35 [4] TagHelpersWithPrefix.cshtml)
                             RazorIRToken - (98:3,35 [4] TagHelpersWithPrefix.cshtml) - Html - text
-                    ExecuteTagHelpers - 
                 HtmlContent - (106:3,43 [9] TagHelpersWithPrefix.cshtml)
                     RazorIRToken - (106:3,43 [2] TagHelpersWithPrefix.cshtml) - Html - \n
                     RazorIRToken - (108:4,0 [7] TagHelpersWithPrefix.cshtml) - Html - </form>

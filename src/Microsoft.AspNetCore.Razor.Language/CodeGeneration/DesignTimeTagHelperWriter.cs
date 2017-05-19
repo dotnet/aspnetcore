@@ -28,7 +28,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIRNode node)
+        public override void WriteTagHelper(CSharpRenderingContext context, TagHelperIRNode node)
+        {
+            context.RenderChildren(node);
+        }
+
+        public override void WriteTagHelperBody(CSharpRenderingContext context, TagHelperBodyIRNode node)
         {
             context.RenderChildren(node);
         }
@@ -45,12 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteEndMethodInvocation();
         }
 
-        public override void WriteExecuteTagHelpers(CSharpRenderingContext context, ExecuteTagHelpersIRNode node)
-        {
-            // Do nothing
-        }
-
-        public override void WriteInitializeTagHelperStructure(CSharpRenderingContext context, InitializeTagHelperStructureIRNode node)
+        public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIRNode node)
         {
             context.RenderChildren(node);
         }

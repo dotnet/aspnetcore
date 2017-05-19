@@ -338,19 +338,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        internal static void TagHelperStructure(string tagName, TagMode tagMode, RazorIRNode node)
+        internal static void TagHelper(string tagName, TagMode tagMode, RazorIRNode node, params Action<RazorIRNode>[] childValidators)
         {
-            var tagHelperStructureNode = Assert.IsType<InitializeTagHelperStructureIRNode>(node);
+            var tagHelperNode = Assert.IsType<TagHelperIRNode>(node);
 
             try
             {
-                Assert.Equal(tagName, tagHelperStructureNode.TagName);
-                Assert.Equal(tagMode, tagHelperStructureNode.TagMode);
+                Assert.Equal(tagName, tagHelperNode.TagName);
+                Assert.Equal(tagMode, tagHelperNode.TagMode);
             }
             catch (XunitException e)
             {
-                throw new IRAssertException(tagHelperStructureNode, e.Message);
+                throw new IRAssertException(tagHelperNode, e.Message);
             }
+
+            Children(node, childValidators);
         }
 
         internal static void TagHelperHtmlAttribute(

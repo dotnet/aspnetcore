@@ -10,8 +10,8 @@ Document -
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml)
                     RazorIRToken - (31:0,31 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - Html - \n\n
-                TagHelper - (35:2,0 [53] SingleTagHelperWithNewlineBeforeAttributes.cshtml)
-                    InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                TagHelper - (35:2,0 [53] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - p - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                         HtmlContent - (73:3,34 [11] SingleTagHelperWithNewlineBeforeAttributes.cshtml)
                             RazorIRToken - (73:3,34 [11] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - Html - Body of Tag
                     CreateTagHelper -  - TestNamespace.PTagHelper
@@ -20,4 +20,3 @@ Document -
                             RazorIRToken - (49:3,10 [11] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - Html - Hello World
                     SetTagHelperProperty - (67:3,28 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (67:3,28 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - CSharp - 1337
-                    ExecuteTagHelpers - 

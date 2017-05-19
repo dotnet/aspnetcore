@@ -7,27 +7,24 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - SpanTagHelper - DivTagHelper - InputTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                TagHelper - (31:1,0 [26] NestedTagHelpers.cshtml)
-                    InitializeTagHelperStructure -  - span - TagMode.StartTagAndEndTag
+                TagHelper - (31:1,0 [26] NestedTagHelpers.cshtml) - span - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                         HtmlContent - (46:1,15 [4] NestedTagHelpers.cshtml)
                             RazorIRToken - (46:1,15 [4] NestedTagHelpers.cshtml) - Html - Hola
                     CreateTagHelper -  - SpanTagHelper
                     AddTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
-                    ExecuteTagHelpers - 
                 HtmlContent - (57:1,26 [2] NestedTagHelpers.cshtml)
                     RazorIRToken - (57:1,26 [2] NestedTagHelpers.cshtml) - Html - \n
-                TagHelper - (59:2,0 [66] NestedTagHelpers.cshtml)
-                    InitializeTagHelperStructure -  - div - TagMode.StartTagAndEndTag
+                TagHelper - (59:2,0 [66] NestedTagHelpers.cshtml) - div - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                         HtmlContent - (78:2,19 [6] NestedTagHelpers.cshtml)
                             RazorIRToken - (78:2,19 [6] NestedTagHelpers.cshtml) - Html - \n    
-                        TagHelper - (84:3,4 [33] NestedTagHelpers.cshtml)
-                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                        TagHelper - (84:3,4 [33] NestedTagHelpers.cshtml) - input - TagMode.SelfClosing
+                            TagHelperBody - 
                             CreateTagHelper -  - InputTagHelper
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
-                            ExecuteTagHelpers - 
                         HtmlContent - (117:3,37 [2] NestedTagHelpers.cshtml)
                             RazorIRToken - (117:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
                     CreateTagHelper -  - DivTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
-                    ExecuteTagHelpers - 

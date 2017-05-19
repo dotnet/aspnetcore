@@ -43,10 +43,12 @@ Write("Hello");
             BeginContext(69, 2, true);
             WriteLiteral("\r\n");
             EndContext();
+            BeginContext(71, 87, false);
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                 BeginContext(91, 6, true);
                 WriteLiteral("\r\n    ");
                 EndContext();
+                BeginContext(97, 52, false);
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
                 }
                 );
@@ -61,7 +63,6 @@ __InputTagHelper.BarProp = DateTime.Now;
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("date", __InputTagHelper.BarProp, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
-                BeginContext(97, 52, false);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
@@ -78,7 +79,6 @@ __InputTagHelper.BarProp = DateTime.Now;
             __FormTagHelper = CreateTagHelper<global::FormTagHelper>();
             __tagHelperExecutionContext.Add(__FormTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
-            BeginContext(71, 87, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {

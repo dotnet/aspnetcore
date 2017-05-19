@@ -101,14 +101,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 VisitDefault(node);
             }
 
-            public override void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
+            public override void VisitTagHelper(TagHelperIRNode node)
             {
-                // As a special case the TagHelperIRNode (which must be the parent) is the one that carries
-                // the location. The execute node won't have one, but the instrumentation goes around the call
-                // to execute.
-                if (node.Parent is TagHelperIRNode && node.Parent.Source != null)
+                if (node.Source != null)
                 {
-                    Items.Add(new InstrumentationItem(node, isLiteral: false, source: node.Parent.Source.Value));
+                    Items.Add(new InstrumentationItem(node, isLiteral: false, source: node.Source.Value));
                 }
 
                 VisitDefault(node);

@@ -16,18 +16,17 @@ Document -
                     RazorIRToken - (93:6,20 [6] TagHelpersInSection.cshtml) - Html - \n    
                     RazorIRToken - (99:7,4 [5] TagHelpersInSection.cshtml) - Html - <div>
                     RazorIRToken - (104:7,9 [10] TagHelpersInSection.cshtml) - Html - \n        
-                TagHelper - (114:8,8 [245] TagHelpersInSection.cshtml)
-                    InitializeTagHelperStructure -  - mytaghelper - TagMode.StartTagAndEndTag
+                TagHelper - (114:8,8 [245] TagHelpersInSection.cshtml) - mytaghelper - TagMode.StartTagAndEndTag
+                    TagHelperBody - 
                         HtmlContent - (217:8,111 [52] TagHelpersInSection.cshtml)
                             RazorIRToken - (217:8,111 [52] TagHelpersInSection.cshtml) - Html - \n            In None ContentBehavior.\n            
-                        TagHelper - (269:10,12 [66] TagHelpersInSection.cshtml)
-                            InitializeTagHelperStructure -  - nestedtaghelper - TagMode.StartTagAndEndTag
+                        TagHelper - (269:10,12 [66] TagHelpersInSection.cshtml) - nestedtaghelper - TagMode.StartTagAndEndTag
+                            TagHelperBody - 
                                 HtmlContent - (286:10,29 [26] TagHelpersInSection.cshtml)
                                     RazorIRToken - (286:10,29 [26] TagHelpersInSection.cshtml) - Html - Some buffered values with 
                                 CSharpExpression - (313:10,56 [4] TagHelpersInSection.cshtml)
                                     RazorIRToken - (313:10,56 [4] TagHelpersInSection.cshtml) - CSharp - code
                             CreateTagHelper -  - TestNamespace.NestedTagHelper
-                            ExecuteTagHelpers - 
                         HtmlContent - (335:10,78 [10] TagHelpersInSection.cshtml)
                             RazorIRToken - (335:10,78 [10] TagHelpersInSection.cshtml) - Html - \n        
                     CreateTagHelper -  - TestNamespace.MyTagHelper
@@ -44,7 +43,6 @@ Document -
                         CSharpAttributeValue - (201:8,95 [14] TagHelpersInSection.cshtml) -  
                             CSharpExpression - (203:8,97 [12] TagHelpersInSection.cshtml)
                                 RazorIRToken - (203:8,97 [12] TagHelpersInSection.cshtml) - CSharp - DateTime.Now
-                    ExecuteTagHelpers - 
                 HtmlContent - (359:11,22 [14] TagHelpersInSection.cshtml)
                     RazorIRToken - (359:11,22 [6] TagHelpersInSection.cshtml) - Html - \n    
                     RazorIRToken - (365:12,4 [6] TagHelpersInSection.cshtml) - Html - </div>
