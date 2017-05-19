@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             var logWarning = false;
             CacheControlHeaderValue cacheControlHeaderValue;
-            if (CacheControlHeaderValue.TryParse(response.Headers[HeaderNames.CacheControl], out cacheControlHeaderValue))
+            if (CacheControlHeaderValue.TryParse(response.Headers[HeaderNames.CacheControl].ToString(), out cacheControlHeaderValue))
             {
                 if (!cacheControlHeaderValue.NoCache)
                 {
