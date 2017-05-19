@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Localization
 {
@@ -131,7 +132,7 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         private static CultureInfo GetCultureInfo(
-            IList<string> cultureNames,
+            IList<StringSegment> cultureNames,
             IList<CultureInfo> supportedCultures,
             bool fallbackToParentCultures)
         {
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Localization
             return null;
         }
 
-        private static CultureInfo GetCultureInfo(string name, IList<CultureInfo> supportedCultures)
+        private static CultureInfo GetCultureInfo(StringSegment name, IList<CultureInfo> supportedCultures)
         {
             // Allow only known culture names as this API is called with input from users (HTTP requests) and
             // creating CultureInfo objects is expensive and we don't want it to throw either.
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Localization
                 return null;
             }
             var culture = supportedCultures.FirstOrDefault(
-                supportedCulture => string.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase));
+                supportedCulture => StringSegment.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase));
 
             if (culture == null)
             {
@@ -172,7 +173,7 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         private static CultureInfo GetCultureInfo(
-            string cultureName,
+            StringSegment cultureName,
             IList<CultureInfo> supportedCultures,
             bool fallbackToParentCultures,
             int currentDepth)
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.Localization
                 if (lastIndexOfHyphen > 0)
                 {
                     // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
-                    var parentCultureName = cultureName.Substring(0, lastIndexOfHyphen);
+                    var parentCultureName = cultureName.Subsegment(0, lastIndexOfHyphen);
 
                     culture = GetCultureInfo(parentCultureName, supportedCultures, fallbackToParentCultures, currentDepth + 1);
                 }

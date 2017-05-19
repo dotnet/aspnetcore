@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System.Collections.Generic;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Localization
 {
@@ -15,8 +16,8 @@ namespace Microsoft.AspNetCore.Localization
         /// <see cref="UICultures"/> properties set to the same culture value.
         /// </summary>
         /// <param name="culture">The name of the culture to be used for formatting, text, i.e. language.</param>
-        public ProviderCultureResult(string culture)
-            : this(new List<string> { culture }, new List<string> { culture })
+        public ProviderCultureResult(StringSegment culture)
+            : this(new List<StringSegment> { culture }, new List<StringSegment> { culture })
         {
         }
 
@@ -26,8 +27,8 @@ namespace Microsoft.AspNetCore.Localization
         /// </summary>
         /// <param name="culture">The name of the culture to be used for formatting.</param>
         /// <param name="uiCulture"> The name of the ui culture to be used for text, i.e. language.</param>
-        public ProviderCultureResult(string culture, string uiCulture)
-            : this(new List<string> { culture }, new List<string> { uiCulture })
+        public ProviderCultureResult(StringSegment culture, StringSegment uiCulture)
+            : this(new List<StringSegment> { culture }, new List<StringSegment> { uiCulture })
         {
         }
 
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Localization
         /// <see cref="UICultures"/> properties set to the same culture value.
         /// </summary>
         /// <param name="cultures">The list of cultures to be used for formatting, text, i.e. language.</param>
-        public ProviderCultureResult(IList<string> cultures)
+        public ProviderCultureResult(IList<StringSegment> cultures)
             : this(cultures, cultures)
         {
         }
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Localization
         /// </summary>
         /// <param name="cultures">The list of cultures to be used for formatting.</param>
         /// <param name="uiCultures">The list of ui cultures to be used for text, i.e. language.</param>
-        public ProviderCultureResult(IList<string> cultures, IList<string> uiCultures)
+        public ProviderCultureResult(IList<StringSegment> cultures, IList<StringSegment> uiCultures)
         {
             Cultures = cultures;
             UICultures = uiCultures;
@@ -56,11 +57,11 @@ namespace Microsoft.AspNetCore.Localization
         /// <summary>
         /// Gets the list of cultures to be used for formatting.
         /// </summary>
-        public IList<string> Cultures { get; }
+        public IList<StringSegment> Cultures { get; }
 
         /// <summary>
         /// Gets the list of ui cultures to be used for text, i.e. language;
         /// </summary>
-        public IList<string> UICultures { get; }
+        public IList<StringSegment> UICultures { get; }
     }
 }
