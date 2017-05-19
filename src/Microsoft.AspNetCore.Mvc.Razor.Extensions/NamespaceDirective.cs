@@ -63,14 +63,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     // Beautify the class name since we're using a hierarchy for namespaces.
                     var @class = visitor.FirstClass;
-                    var prefix = Path.GetFileNameWithoutExtension(codeDocument.Source.FileName);
+                    var prefix = CSharpIdentifier.SanitizeClassName(Path.GetFileNameWithoutExtension(codeDocument.Source.FileName));
                     if (@class != null && irDocument.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind)
                     {
-                        @class.Name = ClassName.SanitizeClassName(prefix + "_Page");
+                        @class.Name = prefix + "_Page";
                     }
                     else if (@class != null && irDocument.DocumentKind == MvcViewDocumentClassifierPass.MvcViewDocumentKind)
                     {
-                        @class.Name = ClassName.SanitizeClassName(prefix + "_View");
+                        @class.Name = prefix + "_View";
                     }
                 }
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             for (var i = 0; i < segments.Length - 1; i++)
             {
                 builder.Append('.');
-                builder.Append(ClassName.SanitizeClassName(segments[i]));
+                builder.Append(CSharpIdentifier.SanitizeClassName(segments[i]));
             }
 
             @namespace = builder.ToString();

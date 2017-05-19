@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    internal static class ClassName
+    internal static class CSharpIdentifier
     {
         public static string GetClassNameFromPath(string path)
         {
