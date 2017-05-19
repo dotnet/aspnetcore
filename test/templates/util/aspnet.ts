@@ -115,7 +115,11 @@ export class AspNetProcess {
 }
 
 export function publishProjectSync(sourceDir: string, outputDir: string) {
-    childProcess.execSync(`dotnet publish -c Release -o ${ outputDir }`, {
+    // Workaround for: MSB4018: The "ResolvePublishAssemblies" task failed unexpectedly
+    // TODO: Remove this when the framework issue is fixed
+    const aspNetCore20PublishWorkaround = '/p:TargetManifestFiles=';
+
+    childProcess.execSync(`dotnet publish -c Release -o ${ outputDir } ${ aspNetCore20PublishWorkaround }`, {
         cwd: sourceDir,
         stdio: 'inherit',
         encoding: 'utf8'
