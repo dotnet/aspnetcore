@@ -34,8 +34,10 @@ namespace Microsoft.CodeAnalysis.Razor
             var shortName = GetShortName(type);
             var tagName = $"vc:{HtmlCase.ToHtmlCase(shortName)}";
             var typeName = $"__Generated__{shortName}ViewComponentTagHelper";
-            var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
-
+            var displayName = shortName + "ViewComponentTagHelper";
+            var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName)
+                .DisplayName(displayName);
+            
             if (TryFindInvokeMethod(type, out var method, out var diagnostic))
             {
                 var methodParameters = method.Parameters;

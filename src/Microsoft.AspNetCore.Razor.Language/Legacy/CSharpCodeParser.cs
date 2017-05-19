@@ -1559,7 +1559,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return;
                 }
 
-                var outputKind = SpanKindInternal.Markup;
                 switch (tokenDescriptor.Kind)
                 {
                     case DirectiveTokenKind.Type:
@@ -1572,8 +1571,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                             return;
                         }
-
-                        outputKind = SpanKindInternal.Code;
                         break;
 
                     case DirectiveTokenKind.Namespace:
@@ -1586,8 +1583,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                             return;
                         }
-
-                        outputKind = SpanKindInternal.Code;
                         break;
 
                     case DirectiveTokenKind.Member:
@@ -1603,8 +1598,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 CurrentSymbol.Content.Length);
                             return;
                         }
-
-                        outputKind = SpanKindInternal.Code;
                         break;
 
                     case DirectiveTokenKind.String:
@@ -1624,7 +1617,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
-                Output(outputKind, AcceptedCharactersInternal.NonWhiteSpace);
+                Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
             }
 
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));

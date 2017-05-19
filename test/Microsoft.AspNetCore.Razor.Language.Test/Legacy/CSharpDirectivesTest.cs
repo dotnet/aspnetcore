@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"AString\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"AString\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
         }
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"AString\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"AString\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[2]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)));
         }
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"Header\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"Header\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"Name\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"Name\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"hello\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
                     Factory.Span(SpanKindInternal.Markup, " ;  ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
@@ -430,7 +430,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"hello\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"Hello\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
 
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"Hello\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                 expectedErorr);
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"Hello\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
@@ -979,7 +979,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"simple-value\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"simple-value\"", markup: false)
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(chunkGenerator)));
         }
@@ -1004,7 +1004,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"{formaction}?/{id}?\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"{formaction}?/{id}?\"", markup: false)
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(chunkGenerator)));
         }
@@ -1027,7 +1027,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "\"{formaction}?/{id}?\"", markup: false)
+                    Factory.Span(SpanKindInternal.Code, "\"{formaction}?/{id}?\"", markup: false)
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.First())),
                     Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
