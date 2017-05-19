@@ -181,7 +181,7 @@ public class MyService<TModel>
             RunRuntimeTest(references);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Razor/issues/1348")]
+        [Fact]
         public void ModelExpressionTagHelper_Runtime()
         {
             var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
@@ -402,8 +402,8 @@ public class ThisShouldBeGenerated
             var references = CreateCompilationReferences(CurrentMvcShim, appCode);
             RunDesignTimeTest(references);
         }
-
-        [Fact(Skip = "https://github.com/aspnet/Razor/issues/1348")]
+        
+        [Fact]
         public void ModelExpressionTagHelper_DesignTime()
         {
             var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"

@@ -1,20 +1,20 @@
-Source Location: (7:0,7 [8] /TestFiles/Input/ModelExpressionTagHelper.cshtml)
+Source Location: (7:0,7 [8] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml)
 |DateTime|
-Generated Location: (587:16,0 [8] )
+Generated Location: (640:16,0 [8] )
 |DateTime|
 
-Source Location: (33:2,14 [108] /TestFiles/Input/ModelExpressionTagHelper.cshtml)
-|Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Extensions.Test|
-Generated Location: (716:20,38 [108] )
-|Microsoft.AspNetCore.Mvc.Razor.Extensions.InputTestTagHelper, Microsoft.AspNetCore.Mvc.Razor.Extensions.Test|
+Source Location: (33:2,14 [29] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml)
+|"InputTestTagHelper, AppCode"|
+Generated Location: (781:20,37 [29] )
+|"InputTestTagHelper, AppCode"|
 
-Source Location: (162:4,17 [3] /TestFiles/Input/ModelExpressionTagHelper.cshtml)
-|Now|
-Generated Location: (1611:32,144 [3] )
-|Now|
+Source Location: (83:4,17 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml)
+|Date|
+Generated Location: (1426:32,102 [4] )
+|Date|
 
-Source Location: (189:5,18 [5] /TestFiles/Input/ModelExpressionTagHelper.cshtml)
+Source Location: (111:5,18 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml)
 |Model|
-Generated Location: (2012:38,136 [5] )
+Generated Location: (1742:38,94 [5] )
 |Model|
 
