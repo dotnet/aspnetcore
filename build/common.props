@@ -133,6 +133,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.NodeServices" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Owin" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Razor" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Razor.Language" />
@@ -148,6 +149,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Session" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.SpaServices" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.StaticFiles" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebSockets" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.WebUtilities" />
