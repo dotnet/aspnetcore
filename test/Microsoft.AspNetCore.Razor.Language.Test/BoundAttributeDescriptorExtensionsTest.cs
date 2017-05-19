@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var expectedPropertyName = "IntProperty";
-            var descriptor = TagHelperBoundAttributeDescriptorBuilder.Create("TestTagHelper")
+            var descriptor = BoundAttributeDescriptorBuilder.Create("TestTagHelper")
                 .Name("test")
                 .PropertyName(expectedPropertyName)
                 .TypeName(typeof(int).FullName)
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GetPropertyName_ReturnsNullIfNoPropertyName()
         {
             // Arrange
-            var descriptor = TagHelperBoundAttributeDescriptorBuilder.Create("TestTagHelper")
+            var descriptor = BoundAttributeDescriptorBuilder.Create("TestTagHelper")
                 .Name("test")
                 .TypeName(typeof(int).FullName)
                 .Build();
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void IsDefaultKind_ReturnsTrueIfFromDefaultBuilder()
         {
             // Arrange
-            var descriptor = TagHelperBoundAttributeDescriptorBuilder.Create("TestTagHelper")
+            var descriptor = BoundAttributeDescriptorBuilder.Create("TestTagHelper")
                 .Name("test")
                 .PropertyName("IntProperty")
                 .TypeName(typeof(int).FullName)

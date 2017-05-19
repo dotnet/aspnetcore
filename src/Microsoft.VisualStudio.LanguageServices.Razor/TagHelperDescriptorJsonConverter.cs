@@ -136,10 +136,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
         }
 
-        private void ReadBoundAttribute(TagHelperBoundAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
+        private void ReadBoundAttribute(BoundAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
         {
             var descriptorKind = attribute[nameof(BoundAttributeDescriptor.Kind)].Value<string>();
-            if (descriptorKind != TagHelperBoundAttributeDescriptorBuilder.DescriptorKind)
+            if (descriptorKind != BoundAttributeDescriptorBuilder.DescriptorKind)
             {
                 throw new NotSupportedException();
             }
@@ -182,7 +182,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 builder.AddMetadata(item.Key, item.Value);
             }
 
-            var propertyName = metadataValue[TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey];
+            var propertyName = metadataValue[BoundAttributeDescriptorBuilder.PropertyNameKey];
             builder.PropertyName(propertyName);
         }
     }

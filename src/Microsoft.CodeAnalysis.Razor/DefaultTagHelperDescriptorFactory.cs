@@ -181,7 +181,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         private void ConfigureBoundAttribute(
-            TagHelperBoundAttributeDescriptorBuilder builder,
+            BoundAttributeDescriptorBuilder builder,
             IPropertySymbol property,
             INamedTypeSymbol containingType)
         {
@@ -241,7 +241,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         private void ConfigureDictionaryBoundAttribute(
-            TagHelperBoundAttributeDescriptorBuilder builder, 
+            BoundAttributeDescriptorBuilder builder, 
             IPropertySymbol property, 
             INamedTypeSymbol containingType, 
             AttributeData attributeNameAttribute, 

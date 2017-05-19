@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public static string GetPropertyName(this BoundAttributeDescriptor descriptor)
         {
-            descriptor.Metadata.TryGetValue(TagHelperBoundAttributeDescriptorBuilder.PropertyNameKey, out var propertyName);
+            descriptor.Metadata.TryGetValue(BoundAttributeDescriptorBuilder.PropertyNameKey, out var propertyName);
 
             return propertyName;
         }
 
         public static bool IsDefaultKind(this BoundAttributeDescriptor descriptor)
-            => string.Equals(descriptor.Kind, TagHelperBoundAttributeDescriptorBuilder.DescriptorKind, StringComparison.Ordinal);
+            => string.Equals(descriptor.Kind, BoundAttributeDescriptorBuilder.DescriptorKind, StringComparison.Ordinal);
     }
 }

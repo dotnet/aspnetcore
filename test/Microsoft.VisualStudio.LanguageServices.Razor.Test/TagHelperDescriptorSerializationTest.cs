@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 tagName: "tag-name",
                 typeName: "type name",
                 assemblyName: "assembly name",
-                attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                attributes: new Action<BoundAttributeDescriptorBuilder>[]
                 {
                     builder => builder
                         .Name("test-attribute")
@@ -63,7 +63,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 tagName: "tag-name",
                 typeName: "type name",
                 assemblyName: "assembly name",
-                attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                attributes: new Action<BoundAttributeDescriptorBuilder>[]
                 {
                     builder => builder
                         .Name("test-attribute")
@@ -108,7 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 tagName: "tag-name",
                 typeName: "type name",
                 assemblyName: "assembly name",
-                attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                attributes: new Action<BoundAttributeDescriptorBuilder>[]
                 {
                     builder => builder
                         .Name("test-attribute")
@@ -149,7 +149,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             string tagName,
             string typeName,
             string assemblyName,
-            IEnumerable<Action<TagHelperBoundAttributeDescriptorBuilder>> attributes = null,
+            IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null,
             IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null,
             Action<TagHelperDescriptorBuilder> configureAction = null)
         {

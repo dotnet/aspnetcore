@@ -570,7 +570,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             tagName: "inherited-editor-browsable",
                             typeName: typeof(InheritedEditorBrowsableTagHelper).FullName,
                             assemblyName: AssemblyName,
-                            attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .Name("property")
@@ -586,7 +586,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             tagName: "editor-browsable",
                             typeName: typeof(EditorBrowsableTagHelper).FullName,
                             assemblyName: AssemblyName,
-                            attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .Name("property")
@@ -609,7 +609,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             tagName: "hidden-property-editor-browsable",
                             typeName: typeof(HiddenPropertyEditorBrowsableTagHelper).FullName,
                             assemblyName: AssemblyName,
-                            attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .Name("property")
@@ -624,7 +624,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             tagName: "overridden-editor-browsable",
                             typeName: typeof(OverriddenEditorBrowsableTagHelper).FullName,
                             assemblyName: AssemblyName,
-                            attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .Name("property")
@@ -639,7 +639,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             tagName: "multi-property-editor-browsable",
                             typeName: typeof(MultiPropertyEditorBrowsableTagHelper).FullName,
                             assemblyName: AssemblyName,
-                            attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .Name("property2")
@@ -654,7 +654,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             tagName: "multi-property-editor-browsable",
                             typeName: typeof(MultiPropertyEditorBrowsableTagHelper).FullName,
                             assemblyName: AssemblyName,
-                            attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .Name("property")
@@ -681,7 +681,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             tagName: "overridden-property-editor-browsable",
                             typeName: typeof(OverriddenPropertyEditorBrowsableTagHelper).FullName,
                             assemblyName: AssemblyName,
-                            attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .Name("property2")
@@ -700,7 +700,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             tagName: "default-editor-browsable",
                             typeName: typeof(DefaultEditorBrowsableTagHelper).FullName,
                             assemblyName: AssemblyName,
-                            attributes: new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .Name("property")
@@ -981,7 +981,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     "overridden-attribute",
                     typeof(OverriddenAttributeTagHelper).FullName,
                     AssemblyName,
-                    new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                    new Action<BoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("SomethingElse")
@@ -1015,7 +1015,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     "inherited-overridden-attribute",
                     typeof(InheritedOverriddenAttributeTagHelper).FullName,
                     AssemblyName,
-                    new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                    new Action<BoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("valid-attribute1")
@@ -1049,7 +1049,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     "inherited-not-overridden-attribute",
                     typeof(InheritedNotOverriddenAttributeTagHelper).FullName,
                     AssemblyName,
-                    new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                    new Action<BoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("SomethingElse")
@@ -1078,7 +1078,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 "inherited-single-attribute",
                 typeof(InheritedSingleAttributeTagHelper).FullName,
                 AssemblyName,
-                new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                new Action<BoundAttributeDescriptorBuilder>[]
                 {
                     builder => builder
                         .Name("int-attribute")
@@ -1104,7 +1104,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 "single-attribute",
                 typeof(SingleAttributeTagHelper).FullName,
                 AssemblyName,
-                new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                new Action<BoundAttributeDescriptorBuilder>[]
                 {
                     builder => builder
                         .Name("int-attribute")
@@ -1131,7 +1131,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 "missing-accessor",
                 typeof(MissingAccessorTagHelper).FullName,
                 AssemblyName,
-                new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                new Action<BoundAttributeDescriptorBuilder>[]
                 {
                     builder => builder
                         .Name("valid-attribute")
@@ -1158,7 +1158,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 "non-public-accessor",
                 typeof(NonPublicAccessorTagHelper).FullName,
                 AssemblyName,
-                new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                new Action<BoundAttributeDescriptorBuilder>[]
                 {
                     builder => builder
                         .Name("valid-attribute")
@@ -1183,7 +1183,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 "not-bound-attribute",
                 typeof(NotBoundAttributeTagHelper).FullName,
                 AssemblyName,
-                new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                new Action<BoundAttributeDescriptorBuilder>[]
                 {
                     builder => builder
                         .Name("bound-property")
@@ -1209,7 +1209,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     string.Empty,
                     typeof(MultiTagTagHelper).FullName,
                     AssemblyName,
-                    new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                    new Action<BoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("valid-attribute")
@@ -1240,7 +1240,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     "inherited-multi-tag",
                     typeof(InheritedMultiTagTagHelper).FullName,
                     AssemblyName,
-                    new Action<TagHelperBoundAttributeDescriptorBuilder>[]
+                    new Action<BoundAttributeDescriptorBuilder>[]
                     {
                         builder => builder
                             .Name("valid-attribute")
@@ -1382,7 +1382,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(InvalidBoundAttribute),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttribute).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttribute).FullName)
                                 .Name("data-something")
                                 .PropertyName(nameof(InvalidBoundAttribute.DataSomething))
                                 .TypeName(typeof(string).FullName)
@@ -1398,7 +1398,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(InvalidBoundAttributeWithValid),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttributeWithValid).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttributeWithValid).FullName)
                                 .Name("data-something")
                                 .PropertyName(nameof(InvalidBoundAttributeWithValid.DataSomething))
                                 .TypeName(typeof(string).FullName)
@@ -1408,7 +1408,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                         nameof(InvalidBoundAttributeWithValid.DataSomething),
                                         "data-something"))
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttributeWithValid).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttributeWithValid).FullName)
                                 .Name("int-attribute")
                                 .PropertyName(nameof(InvalidBoundAttributeWithValid.IntAttribute))
                                 .TypeName(typeof(int).FullName)
@@ -1419,7 +1419,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(OverriddenInvalidBoundAttributeWithValid),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(OverriddenInvalidBoundAttributeWithValid).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(OverriddenInvalidBoundAttributeWithValid).FullName)
                                 .Name("valid-something")
                                 .PropertyName(nameof(OverriddenInvalidBoundAttributeWithValid.DataSomething))
                                 .TypeName(typeof(string).FullName)
@@ -1430,7 +1430,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(OverriddenValidBoundAttributeWithInvalid),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(OverriddenValidBoundAttributeWithInvalid).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(OverriddenValidBoundAttributeWithInvalid).FullName)
                                 .Name("data-something")
                                 .PropertyName(nameof(OverriddenValidBoundAttributeWithInvalid.ValidSomething))
                                 .TypeName(typeof(string).FullName)
@@ -1446,7 +1446,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(OverriddenValidBoundAttributeWithInvalidUpperCase),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(OverriddenValidBoundAttributeWithInvalidUpperCase).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(OverriddenValidBoundAttributeWithInvalidUpperCase).FullName)
                                 .Name("DATA-SOMETHING")
                                 .PropertyName(nameof(OverriddenValidBoundAttributeWithInvalidUpperCase.ValidSomething))
                                 .TypeName(typeof(string).FullName)
@@ -1762,7 +1762,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(DefaultValidHtmlAttributePrefix),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(DefaultValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(DefaultValidHtmlAttributePrefix).FullName)
                                 .Name("dictionary-property")
                                 .PropertyName(nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
@@ -1775,7 +1775,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(SingleValidHtmlAttributePrefix),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(SingleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(SingleValidHtmlAttributePrefix).FullName)
                                 .Name("valid-name")
                                 .PropertyName(nameof(SingleValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
@@ -1788,47 +1788,47 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultipleValidHtmlAttributePrefix),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
                                 .Name("valid-name1")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{typeof(Dictionary<,>).Namespace}.Dictionary<System.String, System.Object>")
                                 .AsDictionary("valid-prefix1-", typeof(object).FullName)
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
                                 .Name("valid-name2")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty))
                                 .TypeName(typeof(DictionarySubclass).FullName)
                                 .AsDictionary("valid-prefix2-", typeof(string).FullName)
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
                                 .Name("valid-name3")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty))
                                 .TypeName(typeof(DictionaryWithoutParameterlessConstructor).FullName)
                                 .AsDictionary("valid-prefix3-", typeof(string).FullName)
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
                                 .Name("valid-name4")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty))
                                 .TypeName(typeof(GenericDictionarySubclass<object>).Namespace + ".GenericDictionarySubclass<System.Object>")
                                 .AsDictionary("valid-prefix4-", typeof(object).FullName)
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
                                 .Name("valid-name5")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty))
                                 .TypeName(typeof(SortedDictionary<string, int>).Namespace + ".SortedDictionary<System.String, System.Int32>")
                                 .AsDictionary("valid-prefix5-", typeof(int).FullName)
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
                                 .Name("valid-name6")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.StringProperty))
                                 .TypeName(typeof(string).FullName)
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GetOnlyDictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.Int32>")
                                 .AsDictionary("get-only-dictionary-property-", typeof(int).FullName)
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributePrefix))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
                                 .AsDictionary("valid-prefix6", typeof(string).FullName)
@@ -1840,7 +1840,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(SingleInvalidHtmlAttributePrefix),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(SingleInvalidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(SingleInvalidHtmlAttributePrefix).FullName)
                                 .Name("valid-name")
                                 .PropertyName(nameof(SingleInvalidHtmlAttributePrefix.StringProperty))
                                 .TypeName(typeof(string).FullName)
@@ -1860,12 +1860,12 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultipleInvalidHtmlAttributePrefix),
                         new[]
                         {
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
                                 .Name("valid-name1")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.LongProperty))
                                 .TypeName(typeof(long).FullName)
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
                                 .Name("valid-name2")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty))
                                 .TypeName($"{typeof(Dictionary<,>).Namespace}.Dictionary<System.Int32, System.String>")
@@ -1875,7 +1875,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty)))
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
                                 .Name("valid-name3")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.ReadOnlyDictionaryProperty))
                                 .TypeName($"{typeof(IReadOnlyDictionary<,>).Namespace}.IReadOnlyDictionary<System.String, System.Object>")
@@ -1884,7 +1884,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.ReadOnlyDictionaryProperty)))
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
                                 .Name("valid-name4")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.IntProperty))
                                 .TypeName(typeof(int).FullName)
@@ -1893,7 +1893,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.IntProperty)))
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
                                 .Name("valid-name5")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty))
                                 .TypeName(typeof(DictionaryOfIntSubclass).FullName)
@@ -1903,7 +1903,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty)))
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryAttributePrefix))
                                 .TypeName($"{dictionaryNamespace}<System.Int32, System.String>")
                                 .AsDictionary("valid-prefix6", typeof(string).FullName)
@@ -1912,7 +1912,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
                                         nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryAttributePrefix)))
                                 .Build(),
-                            TagHelperBoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributeName))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.Object>")
                                 .AsDictionary("invalid-name7-", typeof(object).FullName)
@@ -2262,7 +2262,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             string tagName,
             string typeName,
             string assemblyName,
-            IEnumerable<Action<TagHelperBoundAttributeDescriptorBuilder>> attributes = null,
+            IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null,
             IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
