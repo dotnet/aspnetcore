@@ -61,7 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             }
             else
             {
-                sslStream = new SslStream(context.ConnectionStream, leaveInnerStreamOpen: false,
+                sslStream = new SslStream(context.ConnectionStream,
+                    leaveInnerStreamOpen: false,
                     userCertificateValidationCallback: (sender, certificate, chain, sslPolicyErrors) =>
                     {
                         if (certificate == null)
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
                             }
                         }
 
-                        var certificate2 = (X509Certificate2)certificate;
+                        var certificate2 = ConvertToX509Certificate2(certificate);
                         if (certificate2 == null)
                         {
                             return false;
@@ -112,10 +113,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             // Always set the feature even though the cert might be null
             context.Features.Set<ITlsConnectionFeature>(new TlsConnectionFeature
             {
-                ClientCertificate = (X509Certificate2)sslStream.RemoteCertificate
+                ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate)
             });
 
             return new HttpsAdaptedConnection(sslStream);
+        }
+
+        private static X509Certificate2 ConvertToX509Certificate2(X509Certificate certificate)
+        {
+            if (certificate == null)
+            {
+                return null;
+            }
+
+            if (certificate is X509Certificate2 cert2)
+            {
+                return cert2;
+            }
+
+            return new X509Certificate2(certificate);
         }
 
         private class HttpsAdaptedConnection : IAdaptedConnection

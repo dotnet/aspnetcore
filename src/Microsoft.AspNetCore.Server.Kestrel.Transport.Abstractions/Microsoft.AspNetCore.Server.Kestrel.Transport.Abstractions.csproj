@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Transport abstractions for the ASP.NET Core Kestrel cross-platform web server.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <NoWarn>CS1570;CS1571;CS1572;CS1573;CS1574;CS1591;$(NoWarn)</NoWarn>
@@ -18,7 +18,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Internal.CoreFxLab.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
-    <PackageReference Condition="'$(UseSystemMemory)' == 'true'" Include="System.Memory" Version="$(SystemMemoryVersion)" />
+    <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Buffers" Version="$(CoreFxVersion)" />
+    <PackageReference Condition="'$(UseSystemMemory)' == 'true'" Include="System.Memory" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

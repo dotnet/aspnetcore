@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NETCOREAPP2_0
 using System.IO;
 using Xunit;
 
@@ -45,3 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
     }
 }
+#elif NET461
+#else
+#error Target framework needs to be updated
+#endif

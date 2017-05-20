@@ -3,14 +3,16 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
 
     <!--
-      Workaround for "Explicit RID still required for .NET Framework test projects" (https://github.com/dotnet/sdk/issues/909).
+      Workaround for "Use executable flags in Microsoft.NET.Test.Sdk" (https://github.com/Microsoft/vstest/issues/792).
       Remove when fixed.
     -->
-    <OutputType>exe</OutputType>
+    <HasRuntimeOutput>true</HasRuntimeOutput>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' != 'netcoreapp2.0'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,10 +21,13 @@
     <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.Kestrel\Microsoft.AspNetCore.Server.Kestrel.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.Kestrel.Https\Microsoft.AspNetCore.Server.Kestrel.Https.csproj" />
-    <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
