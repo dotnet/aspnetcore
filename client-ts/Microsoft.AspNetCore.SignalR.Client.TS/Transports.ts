@@ -22,7 +22,7 @@ export class WebSocketTransport implements ITransport {
     connect(url: string, queryString: string = ""): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
-            let connectUrl = url + "/ws?" + queryString;
+            let connectUrl = url + (queryString ? "?" + queryString : "");
 
             let webSocket = new WebSocket(connectUrl);
 
@@ -81,6 +81,7 @@ export class ServerSentEventsTransport implements ITransport {
     private eventSource: EventSource;
     private url: string;
     private queryString: string;
+    private fullUrl: string;
     private httpClient: IHttpClient;
 
     constructor(httpClient: IHttpClient) {
@@ -94,10 +95,10 @@ export class ServerSentEventsTransport implements ITransport {
 
         this.queryString = queryString;
         this.url = url;
-        let tmp = `${this.url}/sse?${this.queryString}`;
+        this.fullUrl = url + (queryString ? "?" + queryString : "");
 
         return new Promise<void>((resolve, reject) => {
-            let eventSource = new EventSource(`${this.url}/sse?${this.queryString}`);
+            let eventSource = new EventSource(this.fullUrl);
 
             try {
                 eventSource.onmessage = (e: MessageEvent) => {
@@ -139,7 +140,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, `${this.url}/send?${this.queryString}`, data);
+        return send(this.httpClient, this.fullUrl, data);
     }
 
     stop(): void {
@@ -156,6 +157,7 @@ export class ServerSentEventsTransport implements ITransport {
 export class LongPollingTransport implements ITransport {
     private url: string;
     private queryString: string;
+    private fullUrl: string;
     private httpClient: IHttpClient;
     private pollXhr: XMLHttpRequest;
     private shouldPoll: boolean;
@@ -168,7 +170,8 @@ export class LongPollingTransport implements ITransport {
         this.url = url;
         this.queryString = queryString;
         this.shouldPoll = true;
-        this.poll(url + "/poll?" + this.queryString)
+        this.fullUrl = url + (queryString ? "?" + queryString : "");
+        this.poll(this.fullUrl);
         return Promise.resolve();
     }
 
@@ -231,7 +234,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, `${this.url}/send?${this.queryString}`, data);
+        return send(this.httpClient, this.fullUrl, data);
     }
 
     stop(): void {

@@ -40,7 +40,8 @@ export class Connection implements IConnection {
 
     private async startInternal(transportType: TransportType | ITransport): Promise<void> {
         try {
-            this.connectionId = await this.httpClient.get(`${this.url}/negotiate?${this.queryString}`);
+            var negotiateUrl = this.url + (this.queryString ? "?" + this.queryString : "");
+            this.connectionId = await this.httpClient.options(negotiateUrl);
 
             // the user tries to stop the the connection when it is being started
             if (this.connectionState == ConnectionState.Disconnected) {

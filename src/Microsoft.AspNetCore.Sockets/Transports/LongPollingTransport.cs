@@ -37,10 +37,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                     return;
                 }
 
-                // REVIEW: We could also use the 'Accept' header, in theory...
-                var messageFormat = string.Equals(context.Request.Query["supportsBinary"], "true", StringComparison.OrdinalIgnoreCase) ?
-                    MessageFormat.Binary :
-                    MessageFormat.Text;
+                var headers = context.Request.GetTypedHeaders();
+                var messageFormat = headers.Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue(MessageFormatter.BinaryContentType)) == true ?
+                MessageFormat.Binary :
+                MessageFormat.Text;
                 context.Response.ContentType = MessageFormatter.GetContentType(messageFormat);
 
                 var writer = context.Response.Body.AsPipelineWriter();

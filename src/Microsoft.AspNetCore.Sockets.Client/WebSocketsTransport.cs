@@ -182,8 +182,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 uriBuilder.Scheme = "wss";
             }
 
-            uriBuilder.Path += "/ws";
-
             await _webSocket.ConnectAsync(uriBuilder.Uri, _cancellationToken);
         }
 

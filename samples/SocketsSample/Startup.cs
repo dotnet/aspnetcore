@@ -21,6 +21,16 @@ namespace SocketsSample
             services.AddSignalR();
             // .AddRedis();
 
+            services.AddCors(o =>
+            {
+                o.AddPolicy("Everything", p =>
+                {
+                    p.AllowAnyHeader()
+                     .AllowAnyMethod()
+                     .AllowAnyOrigin();
+                });
+            });
+
             services.AddEndPoint<MessagesEndPoint>();
         }
 
@@ -33,6 +43,8 @@ namespace SocketsSample
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors("Everything");
 
             app.UseSignalR(routes =>
             {

@@ -44,10 +44,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.LogInformation("Starting {transportName}", nameof(ServerSentEventsTransport));
 
             _application = application;
-            var sseUrl = Utils.AppendPath(url, "sse");
-            var sendUrl = Utils.AppendPath(url, "send");
-            var sendTask = SendUtils.SendMessages(sendUrl, _application, _httpClient, _transportCts, _logger);
-            var receiveTask = OpenConnection(_application, sseUrl, _transportCts.Token);
+            var sendTask = SendUtils.SendMessages(url, _application, _httpClient, _transportCts, _logger);
+            var receiveTask = OpenConnection(_application, url, _transportCts.Token);
 
             Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t =>
             {

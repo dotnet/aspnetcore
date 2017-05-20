@@ -50,11 +50,8 @@ namespace Microsoft.AspNetCore.Sockets.Transports
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
         {
             var feature = context.Features.Get<IHttpWebSocketConnectionFeature>();
-            if (feature == null || !feature.IsWebSocketRequest)
-            {
-                _logger.LogWarning("Unable to handle WebSocket request, there is no WebSocket feature available.");
-                return;
-            }
+
+            Debug.Assert(feature != null, $"The {nameof(IHttpWebSocketConnectionFeature)} feature is missing!");
 
             using (var ws = await feature.AcceptWebSocketConnectionAsync(_emptyContext))
             {

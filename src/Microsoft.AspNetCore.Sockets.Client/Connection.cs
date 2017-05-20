@@ -187,18 +187,20 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private static async Task<string> GetConnectionId(Uri url, HttpClient httpClient, ILogger logger)
         {
-            var negotiateUrl = Utils.AppendPath(url, "negotiate");
             try
             {
                 // Get a connection ID from the server
-                logger.LogDebug("Establishing Connection at: {0}", negotiateUrl);
-                var connectionId = await httpClient.GetStringAsync(negotiateUrl);
+                logger.LogDebug("Establishing Connection at: {0}", url);
+                var request = new HttpRequestMessage(HttpMethod.Options, url);
+                var response = await httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                var connectionId = await response.Content.ReadAsStringAsync();
                 logger.LogDebug("Connection Id: {0}", connectionId);
                 return connectionId;
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to start connection. Error getting connection id from '{0}': {1}", negotiateUrl, ex);
+                logger.LogError("Failed to start connection. Error getting connection id from '{0}': {1}", url, ex);
                 throw;
             }
         }

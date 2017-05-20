@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 const string message = "Hello, World!";
                 using (var ws = new ClientWebSocket())
                 {
-                    string socketUrl = _serverFixture.WebSocketsUrl + "/echo/ws";
+                    string socketUrl = _serverFixture.WebSocketsUrl + "/echo";
 
                     logger.LogInformation("Connecting WebSocket to {socketUrl}", socketUrl);
                     await ws.ConnectAsync(new Uri(socketUrl), CancellationToken.None).OrTimeout();

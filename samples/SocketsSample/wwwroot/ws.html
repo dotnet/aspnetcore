@@ -5,7 +5,7 @@
     <title></title>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            var ws = new WebSocket(`ws://${document.location.host}/chat/ws`);
+            var ws = new WebSocket(`ws://${document.location.host}/chat`);
 
             ws.onopen = function () {
                 console.log('Opened!');

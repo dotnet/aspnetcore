@@ -9,10 +9,10 @@ describe("Connection", () => {
     it("starting connection fails if getting id fails", async (done) => {
         let options: ISignalROptions = {
             httpClient: <IHttpClient>{
+                options(url: string): Promise<string> {
+                    return Promise.reject("error");
+                },
                 get(url: string): Promise<string> {
-                    if (url.indexOf("/negotiate") >= 0) {
-                        return Promise.reject("error");
-                    }
                     return Promise.resolve("");
                 }
             }
@@ -34,9 +34,8 @@ describe("Connection", () => {
     it("cannot start a running connection", async (done) => {
         let options: ISignalROptions = {
             httpClient: <IHttpClient>{
-                get(url: string): Promise<string> {
-                    if (url.indexOf("/negotiate") >= 0) {
-                        connection.start()
+                options(url: string): Promise<string> {
+                    connection.start()
                             .then(() => {
                                 fail();
                                 done();
@@ -47,7 +46,8 @@ describe("Connection", () => {
                             });
 
                         return Promise.reject("error");
-                    }
+                },
+                get(url: string): Promise<string> {
                     return Promise.resolve("");
                 }
             }
@@ -67,10 +67,10 @@ describe("Connection", () => {
     it("cannot start a stopped connection", async (done) => {
         let options: ISignalROptions = {
             httpClient: <IHttpClient>{
+                options(url: string): Promise<string> {
+                    return Promise.reject("error");
+                },
                 get(url: string): Promise<string> {
-                    if (url.indexOf("/negotiate") >= 0) {
-                        return Promise.reject("error");
-                    }
                     return Promise.resolve("");
                 }
             }
@@ -100,6 +100,10 @@ describe("Connection", () => {
     it("can stop a starting connection", async (done) => {
         let options: ISignalROptions = {
             httpClient: <IHttpClient>{
+                options(url: string): Promise<string> {
+                    connection.stop();
+                    return Promise.resolve("");
+                },
                 get(url: string): Promise<string> {
                     connection.stop();
                     return Promise.resolve("");
@@ -128,10 +132,10 @@ describe("Connection", () => {
     it("preserves users connection string", async done => {
         let options: ISignalROptions = {
             httpClient: <IHttpClient>{
+                options(url: string): Promise<string> {
+                    return Promise.resolve("42");
+                },
                 get(url: string): Promise<string> {
-                    if (url.includes("negotiate")) {
-                        return Promise.resolve("42");
-                    }
                     return Promise.resolve("");
                 }
             }

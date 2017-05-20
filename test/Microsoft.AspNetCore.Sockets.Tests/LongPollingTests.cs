@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.AspNetCore.Sockets.Transports;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             if (format == MessageFormat.Binary)
             {
-                context.Request.QueryString = QueryString.Create("supportsBinary", "true");
+                context.Request.Headers["Accept"] = MessageFormatter.BinaryContentType;
             }
             var poll = new LongPollingTransport(channel, new LoggerFactory());
             var ms = new MemoryStream();

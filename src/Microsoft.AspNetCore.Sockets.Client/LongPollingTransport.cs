@@ -45,9 +45,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _application = application;
 
             // Start sending and polling (ask for binary if the server supports it)
-            var pollUrl = Utils.AppendQueryString(Utils.AppendPath(url, "poll"), "supportsBinary=true");
-            _poller = Poll(pollUrl, _transportCts.Token);
-            _sender = SendUtils.SendMessages(Utils.AppendPath(url, "send"), _application, _httpClient, _transportCts, _logger);
+            _poller = Poll(url, _transportCts.Token);
+            _sender = SendUtils.SendMessages(url, _application, _httpClient, _transportCts, _logger);
 
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
             {
@@ -87,6 +86,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
                     request.Headers.UserAgent.Add(SendUtils.DefaultUserAgentHeader);
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MessageFormatter.BinaryContentType));
 
                     var response = await _httpClient.SendAsync(request, cancellationToken);
                     response.EnsureSuccessStatusCode();
