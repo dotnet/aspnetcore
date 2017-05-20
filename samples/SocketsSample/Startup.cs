@@ -48,12 +48,12 @@ namespace SocketsSample
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<Chat>("/hubs");
+                routes.MapHub<Chat>("hubs");
             });
 
             app.UseSockets(routes =>
             {
-                routes.MapEndpoint<MessagesEndPoint>("/chat");
+                routes.MapEndpoint<MessagesEndPoint>("chat");
             });
         }
     }

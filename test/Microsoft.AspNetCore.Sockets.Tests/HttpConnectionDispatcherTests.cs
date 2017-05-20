@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Request.Path = "/foo";
             context.Request.Method = "OPTIONS";
             context.Response.Body = ms;
-            await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+            await dispatcher.ExecuteAsync<TestEndPoint>(context);
 
             var id = Encoding.UTF8.GetString(ms.ToArray());
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Query = qs;
                 SetTransport(context, transportType);
 
-                await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+                await dispatcher.ExecuteAsync<TestEndPoint>(context);
 
                 Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
 
-                await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+                await dispatcher.ExecuteAsync<TestEndPoint>(context);
 
                 Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 SetTransport(context, transportType);
 
-                await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+                await dispatcher.ExecuteAsync<TestEndPoint>(context);
 
                 Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Path = "/foo";
                 context.Request.Method = "POST";
 
-                await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+                await dispatcher.ExecuteAsync<TestEndPoint>(context);
 
                 Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.ContentType = "text/plain";
                 context.Response.Body = strm;
 
-                await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+                await dispatcher.ExecuteAsync<TestEndPoint>(context);
 
                 Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = MakeRequest<ImmediatelyCompleteEndPoint>("/foo", state);
             SetTransport(context, TransportType.ServerSentEvents);
 
-            await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>("/foo", context);
+            await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>(context);
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = MakeRequest<SynchronusExceptionEndPoint>("/foo", state);
             SetTransport(context, TransportType.ServerSentEvents);
 
-            await dispatcher.ExecuteAsync<SynchronusExceptionEndPoint>("/foo", context);
+            await dispatcher.ExecuteAsync<SynchronusExceptionEndPoint>(context);
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var context = MakeRequest<SynchronusExceptionEndPoint>("/foo", state);
 
-            await dispatcher.ExecuteAsync<SynchronusExceptionEndPoint>("/foo", context);
+            await dispatcher.ExecuteAsync<SynchronusExceptionEndPoint>(context);
 
             Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
 
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var context = MakeRequest<ImmediatelyCompleteEndPoint>("/foo", state);
 
-            await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>("/foo", context);
+            await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>(context);
 
             Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
 
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = MakeRequest<ImmediatelyCompleteEndPoint>("/foo", state);
             SetTransport(context, TransportType.WebSockets);
 
-            var task = dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>("/foo", context);
+            var task = dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>(context);
 
             await task.OrTimeout();
         }
@@ -339,9 +339,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             SetTransport(context1, transportType);
             SetTransport(context2, transportType);
 
-            var request1 = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context1);
+            var request1 = dispatcher.ExecuteAsync<TestEndPoint>(context1);
 
-            await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context2);
+            await dispatcher.ExecuteAsync<TestEndPoint>(context2);
 
             Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
 
@@ -372,8 +372,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context1 = MakeRequest<TestEndPoint>("/foo", state);
             var context2 = MakeRequest<TestEndPoint>("/foo", state);
 
-            var request1 = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context1);
-            var request2 = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context2);
+            var request1 = dispatcher.ExecuteAsync<TestEndPoint>(context1);
+            var request2 = dispatcher.ExecuteAsync<TestEndPoint>(context2);
 
             await request1;
 
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = MakeRequest<TestEndPoint>("/foo", state);
             SetTransport(context, transportType);
 
-            await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+            await dispatcher.ExecuteAsync<TestEndPoint>(context);
 
             Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
         }
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var context = MakeRequest<TestEndPoint>("/foo", state);
 
-            var task = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+            var task = dispatcher.ExecuteAsync<TestEndPoint>(context);
 
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = MakeRequest<BlockingEndPoint>("/foo", state);
             SetTransport(context, TransportType.ServerSentEvents);
 
-            var task = dispatcher.ExecuteAsync<BlockingEndPoint>("/foo", context);
+            var task = dispatcher.ExecuteAsync<BlockingEndPoint>(context);
 
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var context = MakeRequest<BlockingEndPoint>("/foo", state);
 
-            var task = dispatcher.ExecuteAsync<BlockingEndPoint>("/foo", context);
+            var task = dispatcher.ExecuteAsync<BlockingEndPoint>(context);
 
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
@@ -491,9 +491,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
             var context1 = MakeRequest<TestEndPoint>("/foo", state);
-            var task1 = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context1);
+            var task1 = dispatcher.ExecuteAsync<TestEndPoint>(context1);
             var context2 = MakeRequest<TestEndPoint>("/foo", state);
-            var task2 = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context2);
+            var task2 = dispatcher.ExecuteAsync<TestEndPoint>(context2);
 
             // Task 1 should finish when request 2 arrives
             await task1.OrTimeout();
@@ -577,7 +577,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Features.Set<IHttpAuthenticationFeature>(authFeature);
 
             // would hang if EndPoint was running
-            await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context).OrTimeout();
+            await dispatcher.ExecuteAsync<TestEndPoint>(context).OrTimeout();
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
         }
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             // "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>(context);
             await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
 
             await endPointTask.OrTimeout();
@@ -665,14 +665,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
             // would hang if EndPoint was running
-            await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context).OrTimeout();
+            await dispatcher.ExecuteAsync<TestEndPoint>(context).OrTimeout();
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
 
             // fully "authorize" user
             context.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.StreetAddress, "12345 123rd St. NW") }));
 
-            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>(context);
             await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
 
             await endPointTask.OrTimeout();
@@ -718,7 +718,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             // "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>("/foo", context);
+            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>(context);
             await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
 
             await endPointTask.OrTimeout();
@@ -766,7 +766,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
             // would block if EndPoint was executed
-            await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context).OrTimeout();
+            await dispatcher.ExecuteAsync<TestEndPoint>(context).OrTimeout();
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
         }
@@ -842,7 +842,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 values["id"] = state.Connection.ConnectionId;
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
-                await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>("/foo", context);
+                await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>(context);
                 Assert.Equal(status, context.Response.StatusCode);
                 await strm.FlushAsync();
 
@@ -872,7 +872,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var messages = new List<Message>();
             using (context.Request.Body = new MemoryStream(buffer, writable: false))
             {
-                await dispatcher.ExecuteAsync<TestEndPoint>("/foo", context).OrTimeout();
+                await dispatcher.ExecuteAsync<TestEndPoint>(context).OrTimeout();
             }
 
             while (state.Connection.Transport.Input.TryRead(out var message))

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public void Configure(IApplicationBuilder app, IHostingEnvironment env)
             {
-                app.UseSockets(options => options.MapEndpoint<EchoEndPoint>("/echo"));
+                app.UseSockets(options => options.MapEndpoint<EchoEndPoint>("echo"));
             }
         }
 

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Builder
 
         public void MapEndpoint<TEndPoint>(string path) where TEndPoint : EndPoint
         {
-            _routes.AddPrefixRoute(path, new RouteHandler(c => _dispatcher.ExecuteAsync<TEndPoint>(path, c)));
+            _routes.MapRoute(path, _dispatcher.ExecuteAsync<TEndPoint>);
         }
     }
 }

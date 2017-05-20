@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Sockets
             _logger = _loggerFactory.CreateLogger<HttpConnectionDispatcher>();
         }
 
-        public async Task ExecuteAsync<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
+        public async Task ExecuteAsync<TEndPoint>(HttpContext context) where TEndPoint : EndPoint
         {
             var options = context.RequestServices.GetRequiredService<IOptions<EndPointOptions<TEndPoint>>>().Value;
             // TODO: Authorize attribute on EndPoint
@@ -43,38 +43,31 @@ namespace Microsoft.AspNetCore.Sockets
                 return;
             }
 
-            if (context.Request.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsOptions(context.Request.Method))
             {
-                if (HttpMethods.IsOptions(context.Request.Method))
-                {
-                    // OPTIONS /{path}
-                    await ProcessNegotiate(context, options);
-                }
-                else if (HttpMethods.IsPost(context.Request.Method))
-                {
-                    // POST /{path}
-                    await ProcessSend(context);
-                }
-                else if (HttpMethods.IsGet(context.Request.Method))
-                {
-                    // GET /{path}
+                // OPTIONS /{path}
+                await ProcessNegotiate(context, options);
+            }
+            else if (HttpMethods.IsPost(context.Request.Method))
+            {
+                // POST /{path}
+                await ProcessSend(context);
+            }
+            else if (HttpMethods.IsGet(context.Request.Method))
+            {
+                // GET /{path}
 
-                    // Get the end point mapped to this http connection
-                    var endpoint = (EndPoint)context.RequestServices.GetRequiredService<TEndPoint>();
-                    await ExecuteEndpointAsync(path, context, endpoint, options);
-                }
-                else
-                {
-                    context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
-                }
+                // Get the end point mapped to this http connection
+                var endpoint = (EndPoint)context.RequestServices.GetRequiredService<TEndPoint>();
+                await ExecuteEndpointAsync(context, endpoint, options);
             }
             else
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
             }
         }
 
-        private async Task ExecuteEndpointAsync<TEndPoint>(string path, HttpContext context, EndPoint endpoint, EndPointOptions<TEndPoint> options) where TEndPoint : EndPoint
+        private async Task ExecuteEndpointAsync<TEndPoint>(HttpContext context, EndPoint endpoint, EndPointOptions<TEndPoint> options) where TEndPoint : EndPoint
         {
             var supportedTransports = options.Transports;
 

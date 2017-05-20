@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     app.UseSignalR(routes =>
                     {
-                        routes.MapHub<TestHub>("/hubs");
+                        routes.MapHub<TestHub>("hubs");
                     });
                 });
             _testServer = new TestServer(webHostBuilder);
