@@ -505,9 +505,16 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
+#if NET461 // Flush not supported, compression disabled
+            Assert.NotNull(response.Content.Headers.GetValues(HeaderNames.ContentMD5));
+            Assert.Empty(response.Content.Headers.ContentEncoding);
+#elif NETCOREAPP2_0 // Flush supported, compression enabled
             IEnumerable<string> contentMD5 = null;
             Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
+#else
+#error Target frameworks need to be updated.
+#endif
 
             var body = await response.Content.ReadAsStreamAsync();
 
@@ -563,9 +570,16 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
+#if NET461 // Flush not supported, compression disabled
+            Assert.NotNull(response.Content.Headers.GetValues(HeaderNames.ContentMD5));
+            Assert.Empty(response.Content.Headers.ContentEncoding);
+#elif NETCOREAPP2_0 // Flush supported, compression enabled
             IEnumerable<string> contentMD5 = null;
             Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
+#else
+#error Target framework needs to be updated
+#endif
 
             var body = await response.Content.ReadAsStreamAsync();
 
