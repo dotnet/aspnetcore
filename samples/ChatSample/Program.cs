@@ -12,6 +12,7 @@ namespace ChatSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
                 .ConfigureLogging((context, factory) =>
                 {
                     factory.UseConfiguration(context.Configuration.GetSection("Logging"));

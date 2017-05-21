@@ -12,6 +12,7 @@ namespace SocialWeather
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole();

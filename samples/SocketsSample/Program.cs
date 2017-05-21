@@ -18,6 +18,7 @@ namespace SocketsSample
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
+                .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole();
