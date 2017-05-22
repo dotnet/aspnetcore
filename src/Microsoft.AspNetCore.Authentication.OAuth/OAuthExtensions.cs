@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddOAuthAuthentication(this IServiceCollection services, string authenticationScheme, Action<OAuthOptions> configureOptions)
         {
-            return services.AddScheme<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, authenticationScheme, configureOptions);
+            return services.AddOAuthAuthentication<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, configureOptions);
         }
 
         public static IServiceCollection AddOAuthAuthentication<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)

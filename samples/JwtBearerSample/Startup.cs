@@ -43,6 +43,13 @@ namespace JwtBearerSample
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // This can be removed after https://github.com/aspnet/IISIntegration/issues/371
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            });
+
             services.AddJwtBearerAuthentication(o =>
             {
                 // You also need to update /wwwroot/app/scripts/app.js

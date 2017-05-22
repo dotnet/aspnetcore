@@ -164,11 +164,6 @@ namespace SocialSample
                 o.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
                 o.TokenEndpoint = "https://github.com/login/oauth/access_token";
                 o.SaveTokens = true;
-                o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
-                o.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
-                o.ClaimActions.MapJsonKey("urn:github:name", "name");
-                o.ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
-                o.ClaimActions.MapJsonKey("urn:github:url", "url");
             });
 
             // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
@@ -184,6 +179,11 @@ namespace SocialSample
                 o.ClaimsIssuer = "OAuth2-Github";
                 o.SaveTokens = true;
                 // Retrieving user information is unique to each provider.
+                o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+                o.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
+                o.ClaimActions.MapJsonKey("urn:github:name", "name");
+                o.ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
+                o.ClaimActions.MapJsonKey("urn:github:url", "url");
                 o.Events = new OAuthEvents
                 {
                     OnCreatingTicket = async context =>

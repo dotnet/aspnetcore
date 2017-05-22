@@ -13,6 +13,13 @@ namespace CookieSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            // This can be removed after https://github.com/aspnet/IISIntegration/issues/371
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            });
+
             services.AddCookieAuthentication();
         }
 

@@ -21,16 +21,12 @@ namespace SocialSample
                 })
                 .UseKestrel(options =>
                 {
-                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
+                    options.Listen(IPAddress.Loopback, 44318, listenOptions =>
                     {
-                        // ANCM is not hosting the process
-                        options.Listen(IPAddress.Loopback, 44318, listenOptions =>
-                        {
-                            // Configure SSL
-                            var serverCertificate = LoadCertificate();
-                            listenOptions.UseHttps(serverCertificate);
-                        });
-                    }
+                        // Configure SSL
+                        var serverCertificate = LoadCertificate();
+                        listenOptions.UseHttps(serverCertificate);
+                    });
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
