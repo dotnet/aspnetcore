@@ -69,34 +69,34 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Debug.Assert(httpContext != null);
             Debug.Assert(token != null);
 
-            var options = new CookieOptions();
-            options.HttpOnly = true;
-            options.Domain = _options.CookieDomain;
-            // Note: don't use "newCookie.Secure = _options.RequireSSL;" since the default
-            // value of newCookie.Secure is populated out of band.
-            if (_options.RequireSsl)
+            var options = new CookieOptions
             {
-                options.Secure = true;
-            }
-            SetCookiePath(httpContext, options);
+                HttpOnly = true,
+#pragma warning disable 618
+                Domain = _options.CookieDomain,
+#pragma warning restore 618
+                SameSite = SameSiteMode.Strict,
+                Secure = _options.RequireSsl
+            };
 
-            httpContext.Response.Cookies.Append(_options.CookieName, token, options);
-        }
-
-        private void SetCookiePath(HttpContext httpContext, CookieOptions cookieOptions)
-        {
+#pragma warning disable 618
             if (_options.CookiePath != null)
             {
-                cookieOptions.Path = _options.CookiePath.ToString();
+                options.Path = _options.CookiePath.ToString();
             }
+#pragma warning restore 618
             else
             {
                 var pathBase = httpContext.Request.PathBase.ToString();
                 if (!string.IsNullOrEmpty(pathBase))
                 {
-                    cookieOptions.Path = pathBase;
+                    options.Path = pathBase;
                 }
             }
+
+            _options.ConfigureCookieOptions?.Invoke(httpContext, options);
+
+            httpContext.Response.Cookies.Append(_options.CookieName, token, options);
         }
     }
 }

@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public void SaveCookieToken_NonNullAntiforgeryOptionsCookiePath_UsesOptionsCookiePath()
+        public void SaveCookieToken_NonNullAntiforgeryOptionsConfigureCookieOptionsPath_UsesCookieOptionsPath()
         {
             // Arrange
             var expectedCookiePath = "/";
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 .Returns("/index.html");
             var options = new AntiforgeryOptions();
             options.CookieName = _cookieName;
-            options.CookiePath = expectedCookiePath;
+            options.ConfigureCookieOptions = (context, cookieOptions) => cookieOptions.Path = expectedCookiePath;
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
 
             // Act
@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public void SaveCookieToken_NonNullAntiforgeryOptionsCookieDomain_UsesOptionsCookieDomain()
+        public void SaveCookieToken_NonNullAntiforgeryOptionsConfigureCookieOptionsDomain_UsesCookieOptionsDomain()
         {
             // Arrange
             var expectedCookieDomain = "microsoft.com";
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 .Returns("/index.html");
             var options = new AntiforgeryOptions();
             options.CookieName = _cookieName;
-            options.CookieDomain = expectedCookieDomain;
+            options.ConfigureCookieOptions = (context, cookieOptions) => cookieOptions.Domain = expectedCookieDomain;
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
 
             // Act

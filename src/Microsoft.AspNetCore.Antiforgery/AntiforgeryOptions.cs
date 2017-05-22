@@ -47,17 +47,29 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         /// <summary>
+        /// This is obsolete and will be removed in a future version.
+        /// The recommended alternative is to use ConfigureCookieOptions.
         /// The path set on the cookie. If set to <c>null</c>, the "path" attribute on the cookie is set to the current
         /// request's <see cref="HttpRequest.PathBase"/> value. If the value of <see cref="HttpRequest.PathBase"/> is
         /// <c>null</c> or empty, then the "path" attribute is set to the value of <see cref="CookieOptions.Path"/>.
         /// </summary>
+        [Obsolete("This is obsolete and will be removed in a future version. The recommended alternative is to use ConfigureCookieOptions.")]
         public PathString? CookiePath { get; set; }
 
         /// <summary>
-        /// The domain set on the cookie. By default its <c>null</c> which results in the "domain" attribute not being
-        /// set.
+        /// This is obsolete and will be removed in a future version.
+        /// The recommended alternative is to use ConfigureCookieOptions.
+        /// The domain set on the cookie. By default its <c>null</c> which results in the "domain" attribute not being set.
         /// </summary>
+        [Obsolete("This is obsolete and will be removed in a future version. The recommended alternative is to use ConfigureCookieOptions.")]
         public string CookieDomain { get; set; }
+
+        /// <summary>
+        /// Configures the <see cref="CookieOptions"/> of the antiforgery cookies. Without additional configuration, the 
+        /// default values antiforgery cookie options are true for <see cref="CookieOptions.HttpOnly"/>, null for
+        /// <see cref="CookieOptions.Domain"/> and <see cref="SameSiteMode.Strict"/> for <see cref="CookieOptions.SameSite"/>.
+        /// </summary>
+        public Action<HttpContext, CookieOptions> ConfigureCookieOptions { get; set; }
 
         /// <summary>
         /// Specifies the name of the antiforgery token field that is used by the antiforgery system.
