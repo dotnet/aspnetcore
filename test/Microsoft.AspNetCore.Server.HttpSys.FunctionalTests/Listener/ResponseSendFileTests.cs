@@ -362,7 +362,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-
+#if NET461
+                // .NET HttpClient automatically retries a request if it does not get a response.
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                cts = new CancellationTokenSource();
+                cts.Cancel();
+                // First write sends headers
+                writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+                Assert.True(writeTask.IsCanceled);
+                context.Dispose();
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
+#endif
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -382,7 +394,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-
+#if NET461
+                // .NET HttpClient automatically retries a request if it does not get a response.
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                cts = new CancellationTokenSource();
+                cts.Cancel();
+                // First write sends headers
+                writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
+                Assert.True(writeTask.IsCanceled);
+                context.Dispose();
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
+#endif
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }

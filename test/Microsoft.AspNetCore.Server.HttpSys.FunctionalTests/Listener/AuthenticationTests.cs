@@ -41,7 +41,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalTheory(Skip = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationType.Digest)] // TODO: Not implemented
@@ -60,7 +61,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalTheory(Skip = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
@@ -85,7 +87,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact(Skip = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/aspnet/ServerTests/issues/82).")]
         public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
         {
             string address;
