@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Description>MSBuild target for generating HTTPS certificates for development cross-platform.</Description>
+    <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
+    <PackageTags>asp.net;ssl;certificates</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*.targets" Pack="true" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MsBuildPackageVersions)" />
+  </ItemGroup>
+  
+</Project>
