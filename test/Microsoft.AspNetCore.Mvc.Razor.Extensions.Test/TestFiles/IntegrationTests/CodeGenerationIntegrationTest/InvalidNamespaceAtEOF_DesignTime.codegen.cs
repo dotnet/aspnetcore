@@ -1,4 +1,5 @@
-namespace 
+[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InvalidNamespaceAtEOF_cshtml))]
+namespace AspNetCore
 {
     #line hidden
     using TModel = global::System.Object;

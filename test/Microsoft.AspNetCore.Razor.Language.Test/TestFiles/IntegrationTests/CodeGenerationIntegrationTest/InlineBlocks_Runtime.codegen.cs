@@ -7,8 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-            DefineSection("Link", async () => {
-            });
             WriteLiteral("(string link) {\r\n    <a");
             BeginWriteAttribute("href", " href=\"", 36, "\"", 94, 1);
             WriteAttributeValue("", 43, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {

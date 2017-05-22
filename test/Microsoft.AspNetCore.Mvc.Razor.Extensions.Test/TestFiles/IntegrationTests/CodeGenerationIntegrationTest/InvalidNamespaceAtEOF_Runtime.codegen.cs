@@ -1,5 +1,6 @@
 #pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InvalidNamespaceAtEOF.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "de132bd3e2a46a0d2ec953a168427c01e5829cde"
-namespace 
+[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InvalidNamespaceAtEOF_cshtml))]
+namespace AspNetCore
 {
     #line hidden
     using System;

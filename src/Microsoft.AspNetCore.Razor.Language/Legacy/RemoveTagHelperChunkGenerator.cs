@@ -2,18 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class RemoveTagHelperChunkGenerator : SpanChunkGenerator
     {
-        public RemoveTagHelperChunkGenerator(string lookupText)
+        public RemoveTagHelperChunkGenerator(string lookupText, List<RazorDiagnostic> diagnostics)
         {
             LookupText = lookupText;
+            Diagnostics = diagnostics;
         }
 
         public string LookupText { get; }
+
+        public List<RazorDiagnostic> Diagnostics { get; }
 
         public override void Accept(ParserVisitor visitor, Span span)
         {
@@ -25,6 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var other = obj as RemoveTagHelperChunkGenerator;
             return base.Equals(other) &&
+                Enumerable.SequenceEqual(Diagnostics, other.Diagnostics) &&
                 string.Equals(LookupText, other.LookupText, StringComparison.Ordinal);
         }
 

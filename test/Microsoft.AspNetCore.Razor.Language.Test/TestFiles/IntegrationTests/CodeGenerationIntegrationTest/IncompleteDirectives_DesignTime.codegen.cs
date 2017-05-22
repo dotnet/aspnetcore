@@ -47,12 +47,6 @@ global::System.Object __typeHelper = ";
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-            DefineSection("", async (__razor_section_writer) => {
-            });
-            DefineSection("", async (__razor_section_writer) => {
-            });
-            DefineSection("", async (__razor_section_writer) => {
-            });
         }
         #pragma warning restore 1998
     }

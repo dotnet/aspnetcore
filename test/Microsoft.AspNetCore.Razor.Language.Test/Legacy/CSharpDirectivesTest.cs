@@ -12,6 +12,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
+        public void DirectiveDescriptor_TokensMustBeSeparatedBySpace()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddStringToken().AddStringToken());
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        Resources.FormatDirectiveTokensMustBeSeparatedByWhitespace("custom"),
+                        17, 0, 17, 9)));
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom \"string1\"\"string2\"",
+                new[] { descriptor },
+                new DirectiveBlock(chunkGenerator,
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "\"string1\"", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+        }
+
+        [Fact]
         public void DirectiveDescriptor_CanHandleEOFIncompleteNamespaceTokens()
         {
             // Arrange
@@ -19,19 +45,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddNamespaceToken());
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsNamespace("custom"),
+                        8, 0, 8, 7)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System.",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                new RazorError(
-                    LegacyResources.FormatDirectiveExpectsNamespace("custom"),
-                    8, 0, 8, 7));
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -42,19 +70,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddNamespaceToken());
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsNamespace("custom"),
+                        8, 0, 8, 7)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System<",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                new RazorError(
-                    LegacyResources.FormatDirectiveExpectsNamespace("custom"),
-                    8, 0, 8, 7));
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
         [Fact]
         public void DirectiveDescriptor_CanHandleIncompleteNamespaceTokens()
@@ -64,19 +94,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddNamespaceToken());
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsNamespace("custom"),
+                        8, 0, 8, 7)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System." + Environment.NewLine,
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                new RazorError(
-                    LegacyResources.FormatDirectiveExpectsNamespace("custom"),
-                    8, 0, 8, 7));
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -87,19 +119,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddNamespaceToken());
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsNamespace("custom"),
+                        8, 0, 8, 7)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System<" + Environment.NewLine,
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                new RazorError(
-                    LegacyResources.FormatDirectiveExpectsNamespace("custom"),
-                    8, 0, 8, 7));
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
         
         [Fact]
@@ -154,13 +188,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                                .Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\"*, Foo\"")
-                            .AsAddTagHelper("\"*, Foo\"")),
+                            .AsAddTagHelper(
+                                "\"*, Foo\"", 
+                                new RazorError(Resources.FormatDirectiveMustAppearAtStartOfLine("addTagHelper"), new SourceLocation(4, 0, 4), 12))),
                     Factory.Code(Environment.NewLine).AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                new RazorError(
-                        Resources.FormatDirectiveMustAppearAtStartOfLine("addTagHelper"),
-                        new SourceLocation(4, 0, 4),
-                        12));
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -171,6 +203,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddTypeToken());
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        Resources.FormatDirectiveMustAppearAtStartOfLine("custom"),
+                        new SourceLocation(4, 0, 4),
+                        6)));
 
             // Act & Assert
             ParseCodeBlockTest(
@@ -181,19 +220,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Code("  ")
                         .AsStatement()
                         .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: false),
-                    new DirectiveBlock(
-                        new DirectiveChunkGenerator(descriptor),
+                    new DirectiveBlock(chunkGenerator,
                         Factory.CodeTransition(),
                         Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                         Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
                         Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.EmptyCSharp().AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                new RazorError(
-                    Resources.FormatDirectiveMustAppearAtStartOfLine("custom"),
-                    new SourceLocation(4, 0, 4),
-                    6));
+                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -309,21 +343,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-
-            var expectedError = new RazorError(
-                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
-                new SourceLocation(8, 0, 8),
-                length: 7);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
+                        new SourceLocation(8, 0, 8),
+                        length: 7)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom AString",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)), expectedError);
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -334,21 +369,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-
-            var expectedError = new RazorError(
-                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
-                new SourceLocation(8, 0, 8),
-                length: 1);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
+                        new SourceLocation(8, 0, 8),
+                        length: 1)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom {foo?}",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)), expectedError);
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -359,21 +395,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-
-            var expectedError = new RazorError(
-                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
-                new SourceLocation(8, 0, 8),
-                length: 9);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
+                        new SourceLocation(8, 0, 8),
+                        length: 9)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom 'AString'",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)), expectedError);
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -384,22 +421,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-
-            var expectedError = new RazorError(
-                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
-                new SourceLocation(8, 0, 8),
-                length: 7);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsQuotedStringLiteral("custom"),
+                        new SourceLocation(8, 0, 8),
+                        length: 7)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom AString\"",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                expectedError);
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -526,22 +563,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddMemberToken());
-
-            var expectedErorr = new RazorError(
-                LegacyResources.FormatDirectiveExpectsIdentifier("custom"),
-                new SourceLocation(8, 0, 8),
-                length: 1);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatDirectiveExpectsIdentifier("custom"),
+                        new SourceLocation(8, 0, 8),
+                        length: 1)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom -Some_Member",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                expectedErorr);
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -574,25 +611,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-
-            var expectedErorr = new RazorError(
-                LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "line break"),
-                new SourceLocation(16, 0, 16),
-                length: 7);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "line break"),
+                        new SourceLocation(16, 0, 16),
+                        length: 7)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"hello\" \"world\"",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "\"hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
 
-                    Factory.MetaCode(" ").Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                expectedErorr);
+                    Factory.MetaCode(" ").Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -603,25 +640,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.CodeBlock,
                 b => b.AddStringToken());
-
-            var expectedErorr = new RazorError(
-                LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "{"),
-                new SourceLocation(16, 0, 16),
-                length: 5);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "{"),
+                        new SourceLocation(16, 0, 16),
+                        length: 5)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"Hello\" World { foo(); bar(); }",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
 
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace)),
-                expectedErorr);
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace)));
         }
 
         [Fact]
@@ -632,23 +669,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.CodeBlock,
                 b => b.AddStringToken());
-
-            var expectedErorr = new RazorError(
-                LegacyResources.FormatUnexpectedEOFAfterDirective("custom", "{"),
-                new SourceLocation(15, 0, 15),
-                length: 1);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatUnexpectedEOFAfterDirective("custom", "{"),
+                        new SourceLocation(15, 0, 15),
+                        length: 1)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"Hello\"",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0])),
-                expectedErorr);
+                    Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
         }
 
         [Fact]
@@ -659,18 +696,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.CodeBlock,
                 b => b.AddStringToken());
-
-            var expectedErorr = new RazorError(
-                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("custom", "}", "{"),
-                new SourceLocation(16, 0, 16),
-                length: 1);
+            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("custom", "}", "{"),
+                        new SourceLocation(16, 0, 16),
+                        length: 1)));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"Hello\" {",
                 new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
+                new DirectiveBlock(chunkGenerator,
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
@@ -678,8 +716,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{")
                         .AutoCompleteWith("}", atEndOfSpan: true)
-                        .Accepts(AcceptedCharactersInternal.None)),
-                expectedErorr);
+                        .Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
@@ -724,6 +761,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void TagHelperPrefixDirective_RequiresValue()
         {
+            // Arrange 
+            var expectedError = new RazorError(
+                LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15);
+
+            // Act & Assert
             ParseBlockTest("@tagHelperPrefix ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -731,17 +774,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
-                        .AsTagHelperPrefixDirective(string.Empty)
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
-                 new RazorError(
-                    LegacyResources.FormatParseError_DirectiveMustHaveValue(
-                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15));
+                        .AsTagHelperPrefixDirective(string.Empty, expectedError)
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
         [Fact]
         public void TagHelperPrefixDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
+            // Arrange
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    LegacyResources.ParseError_Unterminated_String_Literal,
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
+                new RazorError(
+                    LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)
+            };
+
+            // Act & Assert
             ParseBlockTest("@tagHelperPrefix \"Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -749,19 +800,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
-                        .AsTagHelperPrefixDirective("\"Foo")),
-                new RazorError(
-                    LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                new RazorError(
-                    LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(
-                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
+                        .AsTagHelperPrefixDirective("\"Foo", expectedErrors)));
         }
 
         [Fact]
         public void TagHelperPrefixDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
+            // Arrange
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    LegacyResources.ParseError_Unterminated_String_Literal,
+                    absoluteIndex: 23, lineIndex: 0, columnIndex: 23, length: 1),
+                new RazorError(
+                    LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7)
+            };
+
+            // Act & Assert
             ParseBlockTest("@tagHelperPrefix Foo   \"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
@@ -769,14 +825,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo   \"")
-                        .AsTagHelperPrefixDirective("Foo   \"")),
-                new RazorError(
-                    LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 23, lineIndex: 0, columnIndex: 23, length: 1),
-                new RazorError(
-                    LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(
-                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7));
+                        .AsTagHelperPrefixDirective("Foo   \"", expectedErrors)));
         }
 
         [Fact]
@@ -831,57 +880,69 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void RemoveTagHelperDirective_RequiresValue()
         {
+            // Arrange
+            var expectedError = new RazorError(
+                LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
+                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15);
+
+            // Act & Assert
             ParseBlockTest("@removeTagHelper ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
-                        .AsRemoveTagHelper(string.Empty)
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
-                 new RazorError(
-                    LegacyResources.FormatParseError_DirectiveMustHaveValue(
-                        SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15));
+                        .AsRemoveTagHelper(string.Empty, expectedError)
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
         [Fact]
         public void RemoveTagHelperDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
+            // Arrange
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    LegacyResources.ParseError_Unterminated_String_Literal,
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
+                new RazorError(
+                    LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)
+            };
+
+            // Act & Assert
             ParseBlockTest("@removeTagHelper \"Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
-                        .AsRemoveTagHelper("\"Foo")),
-                 new RazorError(
-                     LegacyResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                 new RazorError(
-                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(
-                        SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
+                        .AsRemoveTagHelper("\"Foo", expectedErrors)));
         }
 
         [Fact]
         public void RemoveTagHelperDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
+            // Arrange
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    LegacyResources.ParseError_Unterminated_String_Literal,
+                    absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
+                new RazorError(
+                    LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)
+            };
+
+            // Act & Assert
             ParseBlockTest("@removeTagHelper Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
-                        .AsRemoveTagHelper("Foo\"")
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
-                 new RazorError(
-                     LegacyResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
-                 new RazorError(
-                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(
-                        SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
+                        .AsRemoveTagHelper("Foo\"", expectedErrors)
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
         [Fact]
@@ -935,56 +996,69 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void AddTagHelperDirectiveRequiresValue()
         {
+            // Arrange
+            var expectedError = new RazorError(
+                LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
+                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12);
+
+            // Act & Assert
             ParseBlockTest("@addTagHelper ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
-                        .AsAddTagHelper(string.Empty)
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
-                 new RazorError(
-                    LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
-                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12));
+                        .AsAddTagHelper(string.Empty, expectedError)
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
         [Fact]
         public void AddTagHelperDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
+            // Arrange
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    LegacyResources.ParseError_Unterminated_String_Literal,
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1),
+                new RazorError(
+                    LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.AddTagHelperKeyword),
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4)
+            };
+
+            // Act & Assert
             ParseBlockTest("@addTagHelper \"Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
-                        .AsAddTagHelper("\"Foo")),
-                 new RazorError(
-                     LegacyResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1),
-                 new RazorError(
-                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(
-                        SyntaxConstants.CSharp.AddTagHelperKeyword),
-                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4));
+                        .AsAddTagHelper("\"Foo", expectedErrors)));
         }
 
         [Fact]
         public void AddTagHelperDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
+            // Arrange
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    LegacyResources.ParseError_Unterminated_String_Literal,
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
+                new RazorError(
+                    LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.AddTagHelperKeyword),
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4)
+            };
+
+            // Act & Assert
             ParseBlockTest("@addTagHelper Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
-                        .AsAddTagHelper("Foo\"")
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)),
-                 new RazorError(
-                     LegacyResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                 new RazorError(
-                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(
-                        SyntaxConstants.CSharp.AddTagHelperKeyword),
-                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4));
+                        .AsAddTagHelper("Foo\"", expectedErrors)
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
         [Fact]

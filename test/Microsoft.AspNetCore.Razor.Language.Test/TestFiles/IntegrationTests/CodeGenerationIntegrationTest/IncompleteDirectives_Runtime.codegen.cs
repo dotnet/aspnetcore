@@ -13,14 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             WriteLiteral("\r\n");
             WriteLiteral("\r\n");
             WriteLiteral("\r\n\r\n");
-            DefineSection("", async () => {
-            });
             WriteLiteral("\r\n");
-            DefineSection("", async () => {
-            });
             WriteLiteral("\r\n\r\n");
-            DefineSection("", async () => {
-            });
             WriteLiteral("{\r\n");
         }
         #pragma warning restore 1998

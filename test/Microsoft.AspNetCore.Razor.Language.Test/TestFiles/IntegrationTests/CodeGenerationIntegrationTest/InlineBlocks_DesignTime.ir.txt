@@ -6,10 +6,8 @@ Document -
             CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpCode - 
-                    RazorIRToken -  - CSharp - DefineSection("Link", async (__razor_section_writer) => {
-                CSharpCode - 
-                    RazorIRToken -  - CSharp - });
+                MalformedDirective - (0:0,0 [13] InlineBlocks.cshtml)
+                    DirectiveToken - (9:0,9 [4] InlineBlocks.cshtml) - Link
                 HtmlContent - (13:0,13 [23] InlineBlocks.cshtml)
                     RazorIRToken - (13:0,13 [21] InlineBlocks.cshtml) - Html - (string link) {\n    
                     RazorIRToken - (34:1,4 [2] InlineBlocks.cshtml) - Html - <a

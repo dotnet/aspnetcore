@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml), null)]
+        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
@@ -10,7 +10,7 @@ Document -
         UsingStatement - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
         UsingStatement - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingStatement - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (294:7,71 [4] ) - Html
@@ -28,6 +28,7 @@ Document -
             CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+                MalformedDirective - (0:0,0 [6] MalformedPageDirective.cshtml)
                 HtmlContent - (6:0,6 [49] MalformedPageDirective.cshtml)
                     RazorIRToken - (6:0,6 [8] MalformedPageDirective.cshtml) - Html - "foo\n\n
                     RazorIRToken - (14:2,0 [4] MalformedPageDirective.cshtml) - Html - <h1>
@@ -42,7 +43,3 @@ Document -
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
-            CSharpCode - 
-                RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml>)PageContext?.ViewData;
-            CSharpCode - 
-                RazorIRToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml Model => ViewData.Model;

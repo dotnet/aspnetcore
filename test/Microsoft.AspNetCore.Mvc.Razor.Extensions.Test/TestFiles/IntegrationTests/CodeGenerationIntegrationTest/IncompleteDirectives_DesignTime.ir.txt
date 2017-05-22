@@ -1,5 +1,7 @@
 Document - 
-    NamespaceDeclaration -  - 
+    CSharpCode - 
+        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml), null)]
+    NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
         UsingStatement - (16:1,1 [32] ) - System.Collections.Generic
@@ -29,20 +31,29 @@ Document -
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                MalformedDirective - (102:4,0 [6] IncompleteDirectives.cshtml)
                 HtmlContent - (108:4,6 [5] IncompleteDirectives.cshtml)
                     RazorIRToken - (108:4,6 [5] IncompleteDirectives.cshtml) - Html - "\n\n
+                MalformedDirective - (113:6,0 [6] IncompleteDirectives.cshtml)
                 HtmlContent - (119:6,6 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (119:6,6 [2] IncompleteDirectives.cshtml) - Html - \n
+                MalformedDirective - (121:7,0 [7] IncompleteDirectives.cshtml)
                 HtmlContent - (128:7,7 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (128:7,7 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                MalformedDirective - (132:9,0 [7] IncompleteDirectives.cshtml)
                 HtmlContent - (139:9,7 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (139:9,7 [2] IncompleteDirectives.cshtml) - Html - \n
+                MalformedDirective - (141:10,0 [8] IncompleteDirectives.cshtml)
                 HtmlContent - (149:10,8 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (149:10,8 [2] IncompleteDirectives.cshtml) - Html - \n
+                MalformedDirective - (151:11,0 [25] IncompleteDirectives.cshtml)
+                    DirectiveToken - (159:11,8 [17] IncompleteDirectives.cshtml) - MyService<TModel>
                 HtmlContent - (176:11,25 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (176:11,25 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                MalformedDirective - (180:13,0 [10] IncompleteDirectives.cshtml)
                 HtmlContent - (190:13,10 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (190:13,10 [2] IncompleteDirectives.cshtml) - Html - \n
+                MalformedDirective - (192:14,0 [11] IncompleteDirectives.cshtml)
                 HtmlContent - (203:14,11 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (203:14,11 [2] IncompleteDirectives.cshtml) - Html - \n
             InjectDirective - 

@@ -334,24 +334,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return _self.With(SpanChunkGenerator.Null);
         }
 
-        public SpanConstructor AsAddTagHelper(string lookupText)
+        public SpanConstructor AsAddTagHelper(string lookupText, params RazorError[] legacyErrors)
         {
+            var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
             return _self
-                .With(new AddTagHelperChunkGenerator(lookupText))
+                .With(new AddTagHelperChunkGenerator(lookupText, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
-        public SpanConstructor AsRemoveTagHelper(string lookupText)
+        public SpanConstructor AsRemoveTagHelper(string lookupText, params RazorError[] legacyErrors)
         {
+            var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
             return _self
-                .With(new RemoveTagHelperChunkGenerator(lookupText))
+                .With(new RemoveTagHelperChunkGenerator(lookupText, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
-        public SpanConstructor AsTagHelperPrefixDirective(string prefix)
+        public SpanConstructor AsTagHelperPrefixDirective(string prefix, params RazorError[] legacyErrors)
         {
+            var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
             return _self
-                .With(new TagHelperPrefixDirectiveChunkGenerator(prefix))
+                .With(new TagHelperPrefixDirectiveChunkGenerator(prefix, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 

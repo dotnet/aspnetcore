@@ -1,5 +1,7 @@
 Document - 
-    NamespaceDeclaration -  - 
+    CSharpCode - 
+        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InvalidNamespaceAtEOF_cshtml))]
+    NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
         UsingStatement - (16:1,1 [32] ) - System.Collections.Generic
@@ -26,6 +28,7 @@ Document -
             CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+                MalformedDirective - (0:0,0 [11] InvalidNamespaceAtEOF.cshtml)
                 HtmlContent - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml)
                     RazorIRToken - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml) - Html - Test.
             InjectDirective - 

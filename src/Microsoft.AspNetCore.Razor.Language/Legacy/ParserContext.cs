@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SyntaxTreeBuilder Builder { get; }
 
-        public ErrorSink ErrorSink { get; }
+        public ErrorSink ErrorSink { get; set; }
 
         public ITextDocument Source { get; }
 

@@ -445,6 +445,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveMustAppearAtStartOfLine"), p0);
 
         /// <summary>
+        /// The '{0}' directives value(s) must be separated by whitespace.
+        /// </summary>
+        internal static string DirectiveTokensMustBeSeparatedByWhitespace
+        {
+            get => GetString("DirectiveTokensMustBeSeparatedByWhitespace");
+        }
+
+        /// <summary>
+        /// The '{0}' directives value(s) must be separated by whitespace.
+        /// </summary>
+        internal static string FormatDirectiveTokensMustBeSeparatedByWhitespace(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveTokensMustBeSeparatedByWhitespace"), p0);
+
+        /// <summary>
         /// The key must not be null.
         /// </summary>
         internal static string KeyMustNotBeNull

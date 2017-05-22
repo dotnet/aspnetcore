@@ -91,11 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             foreach (var directive in directives)
             {
-                _directiveParsers.Add(directive, () =>
-                {
-                    EnsureDirectiveIsAtStartOfLine();
-                    handler();
-                });
+                _directiveParsers.Add(directive, handler);
                 Keywords.Add(directive);
 
                 // These C# keywords are reserved for use in directives. It's an error to use them outside of
@@ -1576,166 +1572,198 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void HandleDirective(DirectiveDescriptor descriptor)
         {
-            Context.Builder.CurrentBlock.Type = BlockKindInternal.Directive;
-            Context.Builder.CurrentBlock.ChunkGenerator = new DirectiveChunkGenerator(descriptor);
             AssertDirective(descriptor.Directive);
 
-            AcceptAndMoveNext();
-            Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
+            var directiveErrorSink = new ErrorSink();
+            var savedErrorSink = Context.ErrorSink;
+            Context.ErrorSink = directiveErrorSink;
 
-            for (var i = 0; i < descriptor.Tokens.Count; i++)
+            var directiveChunkGenerator = new DirectiveChunkGenerator(descriptor);
+            try
             {
-                var tokenDescriptor = descriptor.Tokens[i];
-                AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                EnsureDirectiveIsAtStartOfLine();
 
-                if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
-                    tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
-                    tokenDescriptor.Kind == DirectiveTokenKind.Type)
+                Context.Builder.CurrentBlock.Type = BlockKindInternal.Directive;
+                Context.Builder.CurrentBlock.ChunkGenerator = directiveChunkGenerator;
+
+                AcceptAndMoveNext();
+                Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
+
+                for (var i = 0; i < descriptor.Tokens.Count; i++)
                 {
-                    Span.ChunkGenerator = SpanChunkGenerator.Null;
-                    Output(SpanKindInternal.Code, AcceptedCharactersInternal.WhiteSpace);
-                }
-                else
-                {
-                    Span.ChunkGenerator = SpanChunkGenerator.Null;
-                    Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
-                }
-
-                if (tokenDescriptor.Optional && (EndOfFile || At(CSharpSymbolType.NewLine)))
-                {
-                    break;
-                }
-                else if (EndOfFile)
-                {
-                    Context.ErrorSink.OnError(
-                        CurrentStart,
-                        LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Directive, tokenDescriptor.Kind.ToString().ToLowerInvariant()),
-                        length: 1);
-                    return;
-                }
-
-                switch (tokenDescriptor.Kind)
-                {
-                    case DirectiveTokenKind.Type:
-                        if (!NamespaceOrTypeName())
-                        {
-                            Context.ErrorSink.OnError(
-                                CurrentStart,
-                                LegacyResources.FormatDirectiveExpectsTypeName(descriptor.Directive),
-                                CurrentSymbol.Content.Length);
-
-                            return;
-                        }
-                        break;
-
-                    case DirectiveTokenKind.Namespace:
-                        if (!QualifiedIdentifier(out var identifierLength))
-                        {
-                            Context.ErrorSink.OnError(
-                                CurrentStart,
-                                LegacyResources.FormatDirectiveExpectsNamespace(descriptor.Directive),
-                                identifierLength);
-
-                            return;
-                        }
-                        break;
-
-                    case DirectiveTokenKind.Member:
-                        if (At(CSharpSymbolType.Identifier))
-                        {
-                            AcceptAndMoveNext();
-                        }
-                        else
-                        {
-                            Context.ErrorSink.OnError(
-                                CurrentStart,
-                                LegacyResources.FormatDirectiveExpectsIdentifier(descriptor.Directive),
-                                CurrentSymbol.Content.Length);
-                            return;
-                        }
-                        break;
-
-                    case DirectiveTokenKind.String:
-                        if (At(CSharpSymbolType.StringLiteral) && CurrentSymbol.Errors.Count == 0)
-                        {
-                            AcceptAndMoveNext();
-                        }
-                        else
-                        {
-                            Context.ErrorSink.OnError(
-                                CurrentStart,
-                                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral(descriptor.Directive),
-                                CurrentSymbol.Content.Length);
-                            return;
-                        }
-                        break;
-                }
-
-                Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
-                Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
-                Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
-            }
-
-            AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
-            Span.ChunkGenerator = SpanChunkGenerator.Null;
-
-            switch (descriptor.Kind)
-            {
-                case DirectiveKind.SingleLine:
-                    Optional(CSharpSymbolType.Semicolon);
-                    AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
-
-                    if (At(CSharpSymbolType.NewLine))
-                    {
-                        AcceptAndMoveNext();
-                    }
-                    else if (!EndOfFile)
+                    if (!At(CSharpSymbolType.WhiteSpace) &&
+                        !At(CSharpSymbolType.NewLine) && 
+                        !EndOfFile)
                     {
                         Context.ErrorSink.OnError(
                             CurrentStart,
-                            LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Directive, LegacyResources.ErrorComponent_Newline),
-                            CurrentSymbol.Content.Length);
+                            Resources.FormatDirectiveTokensMustBeSeparatedByWhitespace(descriptor.Directive),
+                            length: CurrentSymbol.Content.Length);
+                        return;
                     }
 
-                    Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.WhiteSpace);
-                    break;
-                case DirectiveKind.RazorBlock:
-                    AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                    Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhiteSpace);
+                    var tokenDescriptor = descriptor.Tokens[i];
+                    AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
-                    ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
+                    if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
+                        tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
+                        tokenDescriptor.Kind == DirectiveTokenKind.Type)
                     {
-                        // When transitioning to the HTML parser we no longer want to act as if we're in a nested C# state.
-                        // For instance, if <div>@hello.</div> is in a nested C# block we don't want the trailing '.' to be handled
-                        // as C#; it should be handled as a period because it's wrapped in markup.
-                        var wasNested = IsNested;
-                        IsNested = false;
+                        Span.ChunkGenerator = SpanChunkGenerator.Null;
+                        Output(SpanKindInternal.Code, AcceptedCharactersInternal.WhiteSpace);
+                    }
+                    else
+                    {
+                        Span.ChunkGenerator = SpanChunkGenerator.Null;
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+                    }
 
-                        using (PushSpanConfig())
+                    if (tokenDescriptor.Optional && (EndOfFile || At(CSharpSymbolType.NewLine)))
+                    {
+                        break;
+                    }
+                    else if (EndOfFile)
+                    {
+                        Context.ErrorSink.OnError(
+                            CurrentStart,
+                            LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Directive, tokenDescriptor.Kind.ToString().ToLowerInvariant()),
+                            length: 1);
+                        return;
+                    }
+
+                    switch (tokenDescriptor.Kind)
+                    {
+                        case DirectiveTokenKind.Type:
+                            if (!NamespaceOrTypeName())
+                            {
+                                Context.ErrorSink.OnError(
+                                    CurrentStart,
+                                    LegacyResources.FormatDirectiveExpectsTypeName(descriptor.Directive),
+                                    CurrentSymbol.Content.Length);
+
+                                return;
+                            }
+                            break;
+
+                        case DirectiveTokenKind.Namespace:
+                            if (!QualifiedIdentifier(out var identifierLength))
+                            {
+                                Context.ErrorSink.OnError(
+                                    CurrentStart,
+                                    LegacyResources.FormatDirectiveExpectsNamespace(descriptor.Directive),
+                                    identifierLength);
+
+                                return;
+                            }
+                            break;
+
+                        case DirectiveTokenKind.Member:
+                            if (At(CSharpSymbolType.Identifier))
+                            {
+                                AcceptAndMoveNext();
+                            }
+                            else
+                            {
+                                Context.ErrorSink.OnError(
+                                    CurrentStart,
+                                    LegacyResources.FormatDirectiveExpectsIdentifier(descriptor.Directive),
+                                    CurrentSymbol.Content.Length);
+                                return;
+                            }
+                            break;
+
+                        case DirectiveTokenKind.String:
+                            if (At(CSharpSymbolType.StringLiteral) && CurrentSymbol.Errors.Count == 0)
+                            {
+                                AcceptAndMoveNext();
+                            }
+                            else
+                            {
+                                Context.ErrorSink.OnError(
+                                    CurrentStart,
+                                    LegacyResources.FormatDirectiveExpectsQuotedStringLiteral(descriptor.Directive),
+                                    CurrentSymbol.Content.Length);
+                                return;
+                            }
+                            break;
+                    }
+
+                    Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
+                    Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
+                    Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
+                }
+
+                AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                Span.ChunkGenerator = SpanChunkGenerator.Null;
+
+                switch (descriptor.Kind)
+                {
+                    case DirectiveKind.SingleLine:
+                        Optional(CSharpSymbolType.Semicolon);
+                        AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+
+                        if (At(CSharpSymbolType.NewLine))
                         {
-                            HtmlParser.ParseRazorBlock(Tuple.Create("{", "}"), caseSensitive: true);
+                            AcceptAndMoveNext();
+                        }
+                        else if (!EndOfFile)
+                        {
+                            Context.ErrorSink.OnError(
+                                CurrentStart,
+                                LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Directive, LegacyResources.ErrorComponent_Newline),
+                                CurrentSymbol.Content.Length);
                         }
 
-                        Span.Start = CurrentLocation;
-                        Initialize(Span);
+                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.WhiteSpace);
+                        break;
+                    case DirectiveKind.RazorBlock:
+                        AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhiteSpace);
 
-                        IsNested = wasNested;
+                        ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
+                        {
+                            // When transitioning to the HTML parser we no longer want to act as if we're in a nested C# state.
+                            // For instance, if <div>@hello.</div> is in a nested C# block we don't want the trailing '.' to be handled
+                            // as C#; it should be handled as a period because it's wrapped in markup.
+                            var wasNested = IsNested;
+                            IsNested = false;
 
-                        NextToken();
-                    });
-                    break;
-                case DirectiveKind.CodeBlock:
-                    AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                    Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhiteSpace);
+                            using (PushSpanConfig())
+                            {
+                                HtmlParser.ParseRazorBlock(Tuple.Create("{", "}"), caseSensitive: true);
+                            }
 
-                    ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
-                    {
-                        NextToken();
-                        Balance(BalancingModes.NoErrorOnFailure, CSharpSymbolType.LeftBrace, CSharpSymbolType.RightBrace, startingBraceLocation);
-                        Span.ChunkGenerator = new StatementChunkGenerator();
-                        Output(SpanKindInternal.Code);
-                    });
-                    break;
+                            Span.Start = CurrentLocation;
+                            Initialize(Span);
+
+                            IsNested = wasNested;
+
+                            NextToken();
+                        });
+                        break;
+                    case DirectiveKind.CodeBlock:
+                        AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhiteSpace);
+
+                        ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
+                        {
+                            NextToken();
+                            Balance(BalancingModes.NoErrorOnFailure, CSharpSymbolType.LeftBrace, CSharpSymbolType.RightBrace, startingBraceLocation);
+                            Span.ChunkGenerator = new StatementChunkGenerator();
+                            Output(SpanKindInternal.Code);
+                        });
+                        break;
+                }
+            }
+            finally
+            {
+                if (directiveErrorSink.Errors.Count > 0)
+                {
+                    var directiveDiagnostics = directiveErrorSink.Errors.Select(error => RazorDiagnostic.Create(error));
+                    directiveChunkGenerator.Diagnostics.AddRange(directiveDiagnostics);
+                }
+
+                Context.ErrorSink = savedErrorSink;
             }
         }
 
@@ -1789,21 +1817,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TagHelperDirective(
                 SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                prefix => new TagHelperPrefixDirectiveChunkGenerator(prefix));
+                (prefix, errors) => new TagHelperPrefixDirectiveChunkGenerator(prefix, errors));
         }
 
         protected virtual void AddTagHelperDirective()
         {
             TagHelperDirective(
                 SyntaxConstants.CSharp.AddTagHelperKeyword,
-                lookupText => new AddTagHelperChunkGenerator(lookupText));
+                (lookupText, errors) => new AddTagHelperChunkGenerator(lookupText, errors));
         }
 
         protected virtual void RemoveTagHelperDirective()
         {
             TagHelperDirective(
                 SyntaxConstants.CSharp.RemoveTagHelperKeyword,
-                lookupText => new RemoveTagHelperChunkGenerator(lookupText));
+                (lookupText, errors) => new RemoveTagHelperChunkGenerator(lookupText, errors));
         }
 
         [Conditional("DEBUG")]
@@ -1866,62 +1894,85 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Output(SpanKindInternal.Code, AcceptedCharactersInternal.AnyExceptNewline);
         }
 
-        private void TagHelperDirective(string keyword, Func<string, ISpanChunkGenerator> chunkGeneratorFactory)
+        private void TagHelperDirective(string keyword, Func<string, List<RazorDiagnostic>, ISpanChunkGenerator> chunkGeneratorFactory)
         {
             AssertDirective(keyword);
-            var keywordStartLocation = CurrentStart;
 
-            // Accept the directive name
-            AcceptAndMoveNext();
+            var savedErrorSink = Context.ErrorSink;
+            var directiveErrorSink = new ErrorSink();
+            Context.ErrorSink = directiveErrorSink;
 
-            // Set the block type
-            Context.Builder.CurrentBlock.Type = BlockKindInternal.Directive;
-
-            var keywordLength = Span.End.AbsoluteIndex - Span.Start.AbsoluteIndex;
-
-            var foundWhitespace = At(CSharpSymbolType.WhiteSpace);
-            AcceptWhile(CSharpSymbolType.WhiteSpace);
-
-            // If we found whitespace then any content placed within the whitespace MAY cause a destructive change
-            // to the document.  We can't accept it.
-            Output(SpanKindInternal.MetaCode, foundWhitespace ? AcceptedCharactersInternal.None : AcceptedCharactersInternal.AnyExceptNewline);
-
-            ISpanChunkGenerator chunkGenerator;
-            if (EndOfFile || At(CSharpSymbolType.NewLine))
+            string directiveValue = null;
+            try
             {
-                Context.ErrorSink.OnError(
-                    keywordStartLocation,
-                    LegacyResources.FormatParseError_DirectiveMustHaveValue(keyword),
-                    keywordLength);
+                EnsureDirectiveIsAtStartOfLine();
 
-                chunkGenerator = chunkGeneratorFactory(string.Empty);
-            }
-            else
-            {
-                // Need to grab the current location before we accept until the end of the line.
-                var startLocation = CurrentStart;
+                var keywordStartLocation = CurrentStart;
 
-                // Parse to the end of the line. Essentially accepts anything until end of line, comments, invalid code
-                // etc.
-                AcceptUntil(CSharpSymbolType.NewLine);
+                // Accept the directive name
+                AcceptAndMoveNext();
 
-                // Pull out the value and remove whitespaces and optional quotes
-                var rawValue = string.Concat(Span.Symbols.Select(s => s.Content)).Trim();
+                // Set the block type
+                Context.Builder.CurrentBlock.Type = BlockKindInternal.Directive;
 
-                var startsWithQuote = rawValue.StartsWith("\"", StringComparison.Ordinal);
-                var endsWithQuote = rawValue.EndsWith("\"", StringComparison.Ordinal);
-                if (startsWithQuote != endsWithQuote)
+                var keywordLength = Span.End.AbsoluteIndex - Span.Start.AbsoluteIndex;
+
+                var foundWhitespace = At(CSharpSymbolType.WhiteSpace);
+                AcceptWhile(CSharpSymbolType.WhiteSpace);
+
+                // If we found whitespace then any content placed within the whitespace MAY cause a destructive change
+                // to the document.  We can't accept it.
+                Output(SpanKindInternal.MetaCode, foundWhitespace ? AcceptedCharactersInternal.None : AcceptedCharactersInternal.AnyExceptNewline);
+
+                if (EndOfFile || At(CSharpSymbolType.NewLine))
                 {
                     Context.ErrorSink.OnError(
-                        startLocation,
-                        LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(keyword),
-                        rawValue.Length);
+                        keywordStartLocation,
+                        LegacyResources.FormatParseError_DirectiveMustHaveValue(keyword),
+                        keywordLength);
+
+                    directiveValue = string.Empty;
+                }
+                else
+                {
+                    // Need to grab the current location before we accept until the end of the line.
+                    var startLocation = CurrentStart;
+
+                    // Parse to the end of the line. Essentially accepts anything until end of line, comments, invalid code
+                    // etc.
+                    AcceptUntil(CSharpSymbolType.NewLine);
+
+                    // Pull out the value and remove whitespaces and optional quotes
+                    var rawValue = string.Concat(Span.Symbols.Select(s => s.Content)).Trim();
+
+                    var startsWithQuote = rawValue.StartsWith("\"", StringComparison.Ordinal);
+                    var endsWithQuote = rawValue.EndsWith("\"", StringComparison.Ordinal);
+                    if (startsWithQuote != endsWithQuote)
+                    {
+                        Context.ErrorSink.OnError(
+                            startLocation,
+                            LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(keyword),
+                            rawValue.Length);
+                    }
+
+                    directiveValue = rawValue;
+                }
+            }
+            finally
+            {
+                List<RazorDiagnostic> directiveErrors;
+                if (directiveErrorSink.Errors.Count > 0)
+                {
+                    directiveErrors = directiveErrorSink.Errors.Select(RazorDiagnostic.Create).ToList();
+                }
+                else
+                {
+                    directiveErrors = new List<RazorDiagnostic>();
                 }
 
-                chunkGenerator = chunkGeneratorFactory(rawValue);
+                Span.ChunkGenerator = chunkGeneratorFactory(directiveValue, directiveErrors);
+                Context.ErrorSink = savedErrorSink;
             }
-
-            Span.ChunkGenerator = chunkGenerator;
 
             // Output the span and finish the block
             CompleteBlock();

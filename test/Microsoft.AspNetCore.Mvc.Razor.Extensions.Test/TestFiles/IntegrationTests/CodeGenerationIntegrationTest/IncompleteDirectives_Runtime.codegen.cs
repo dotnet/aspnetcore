@@ -1,5 +1,6 @@
 #pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "fec5cf763044f842fa2114e997bb07e0bf280cd6"
-namespace 
+[assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml), null)]
+namespace AspNetCore
 {
     #line hidden
     using System;

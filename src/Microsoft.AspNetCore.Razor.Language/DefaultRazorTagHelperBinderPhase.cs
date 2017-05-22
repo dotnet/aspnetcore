@@ -47,11 +47,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             var errorList = new List<RazorDiagnostic>();
             var descriptors = feature.GetDescriptors();
 
-            var errorSink = new ErrorSink();
             var directives = visitor.Directives;
-            descriptors = ProcessDirectives(directives, descriptors, errorSink);
+            descriptors = ProcessDirectives(directives, descriptors);
 
-            var tagHelperPrefix = ProcessTagHelperPrefix(directives, codeDocument, errorSink);
+            var tagHelperPrefix = ProcessTagHelperPrefix(directives, codeDocument);
             var root = syntaxTree.Root;
 
             var context = TagHelperDocumentContext.Create(tagHelperPrefix, descriptors);
@@ -59,17 +58,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (descriptors.Count == 0)
             {
-                if (errorSink.Errors.Count == 0 && errorList.Count == 0)
-                {
-                    // No TagHelpers and errors, no op.
-                    return;
-                }
+                // No descriptors, no-op.
+                return;
             }
-            else
-            { 
-                var rewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptors);
-                root = rewriter.Rewrite(root, errorSink);
-            }
+
+            var errorSink = new ErrorSink();
+            var rewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptors);
+            root = rewriter.Rewrite(root, errorSink);
 
             // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
             errorList.AddRange(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
@@ -83,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         // Internal for testing
-        internal string ProcessTagHelperPrefix(List<TagHelperDirectiveDescriptor> directives, RazorCodeDocument codeDocument, ErrorSink errorSink)
+        internal string ProcessTagHelperPrefix(List<TagHelperDirectiveDescriptor> directives, RazorCodeDocument codeDocument)
         {
             // We only support a single prefix directive.
             TagHelperDirectiveDescriptor prefixDirective = null;
@@ -97,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var prefix = prefixDirective?.DirectiveText;
-            if (prefix != null && !IsValidTagHelperPrefix(prefix, prefixDirective.Location, errorSink))
+            if (prefix != null && !IsValidTagHelperPrefix(prefix, prefixDirective.Location, prefixDirective.Diagnostics))
             {
                 prefix = null;
             }
@@ -112,8 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         internal IReadOnlyList<TagHelperDescriptor> ProcessDirectives(
             IReadOnlyList<TagHelperDirectiveDescriptor> directives,
-            IReadOnlyList<TagHelperDescriptor> tagHelpers,
-            ErrorSink errorSink)
+            IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
             var matches = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
 
@@ -126,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     case TagHelperDirectiveType.AddTagHelper:
 
-                        parsed = ParseAddOrRemoveDirective(directive, errorSink);
+                        parsed = ParseAddOrRemoveDirective(directive);
                         if (parsed == null)
                         {
                             // Skip this one, it's an error
@@ -152,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     case TagHelperDirectiveType.RemoveTagHelper:
 
-                        parsed = ParseAddOrRemoveDirective(directive, errorSink);
+                        parsed = ParseAddOrRemoveDirective(directive);
                         if (parsed == null)
                         {
                             // Skip this one, it's an error
@@ -196,7 +190,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         // Internal for testing
-        internal ParsedDirective ParseAddOrRemoveDirective(TagHelperDirectiveDescriptor directive, ErrorSink errorSink)
+        internal ParsedDirective ParseAddOrRemoveDirective(TagHelperDirectiveDescriptor directive)
         {
             var text = directive.DirectiveText;
             var lookupStrings = text?.Split(new[] { ',' });
@@ -206,10 +200,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 lookupStrings.Any(string.IsNullOrWhiteSpace) ||
                 lookupStrings.Length != 2)
             {
-                errorSink.OnError(
-                    directive.Location,
-                    Resources.FormatInvalidTagHelperLookupText(text),
-                    Math.Max(text.Length, 1));
+                directive.Diagnostics.Add(
+                    RazorDiagnostic.Create(
+                        new RazorError(
+                            Resources.FormatInvalidTagHelperLookupText(text),
+                            directive.Location,
+                            Math.Max(text.Length, 1))));
 
                 return null;
             }
@@ -238,20 +234,19 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal bool IsValidTagHelperPrefix(
             string prefix,
             SourceLocation directiveLocation,
-            ErrorSink errorSink)
+            List<RazorDiagnostic> diagnostics)
         {
             foreach (var character in prefix)
             {
                 // Prefixes are correlated with tag names, tag names cannot have whitespace.
                 if (char.IsWhiteSpace(character) ||  InvalidNonWhitespaceNameCharacters.Contains(character))
                 {
-                    errorSink.OnError(
-                        directiveLocation,
-                        Resources.FormatInvalidTagHelperPrefixValue(
-                            SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                            character,
-                            prefix),
-                        prefix.Length);
+                    diagnostics.Add(
+                        RazorDiagnostic.Create(
+                            new RazorError(
+                                Resources.FormatInvalidTagHelperPrefixValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword, character, prefix),
+                                directiveLocation,
+                                prefix.Length)));
 
                     return false;
                 }
@@ -323,23 +318,27 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
             {
-                Directives.Add(CreateDirective(span, chunkGenerator.LookupText, TagHelperDirectiveType.AddTagHelper));
+                var directive = CreateDirective(span, chunkGenerator.LookupText, TagHelperDirectiveType.AddTagHelper, chunkGenerator.Diagnostics);
+                Directives.Add(directive);
             }
 
             public override void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunkGenerator, Span span)
             {
-                Directives.Add(CreateDirective(span, chunkGenerator.LookupText, TagHelperDirectiveType.RemoveTagHelper));
+                var directive = CreateDirective(span, chunkGenerator.LookupText, TagHelperDirectiveType.RemoveTagHelper, chunkGenerator.Diagnostics);
+                Directives.Add(directive);
             }
 
             public override void VisitTagHelperPrefixDirectiveSpan(TagHelperPrefixDirectiveChunkGenerator chunkGenerator, Span span)
             {
-                Directives.Add(CreateDirective(span, chunkGenerator.Prefix, TagHelperDirectiveType.TagHelperPrefix));
+                var directive = CreateDirective(span, chunkGenerator.Prefix, TagHelperDirectiveType.TagHelperPrefix, chunkGenerator.Diagnostics);
+                Directives.Add(directive);
             }
 
             private TagHelperDirectiveDescriptor CreateDirective(
                 Span span,
                 string directiveText,
-                TagHelperDirectiveType directiveType)
+                TagHelperDirectiveType directiveType,
+                List<RazorDiagnostic> diagnostics)
             {
                 directiveText = directiveText.Trim();
                 if (directiveText.Length >= 2 &&
@@ -375,6 +374,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     DirectiveText = directiveText,
                     Location = directiveStart,
                     DirectiveType = directiveType,
+                    Diagnostics = diagnostics,
                 };
 
                 return directiveDescriptor;

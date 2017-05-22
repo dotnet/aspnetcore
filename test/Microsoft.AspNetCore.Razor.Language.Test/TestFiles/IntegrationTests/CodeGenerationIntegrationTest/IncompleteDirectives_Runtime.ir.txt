@@ -4,31 +4,45 @@ Document -
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                MalformedDirective - (100:2,13 [2] IncompleteDirectives.cshtml)
+                    DirectiveToken - (100:2,13 [2] IncompleteDirectives.cshtml) - 
+                MalformedDirective - (116:3,14 [2] IncompleteDirectives.cshtml)
+                    DirectiveToken - (116:3,14 [2] IncompleteDirectives.cshtml) - 
+                MalformedDirective - (132:4,14 [3] IncompleteDirectives.cshtml)
+                    DirectiveToken - (132:4,14 [3] IncompleteDirectives.cshtml) - "
                 HtmlContent - (135:5,0 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (135:5,0 [2] IncompleteDirectives.cshtml) - Html - \n
+                MalformedDirective - (153:6,16 [2] IncompleteDirectives.cshtml)
+                    DirectiveToken - (153:6,16 [2] IncompleteDirectives.cshtml) - 
+                MalformedDirective - (172:7,17 [2] IncompleteDirectives.cshtml)
+                    DirectiveToken - (172:7,17 [2] IncompleteDirectives.cshtml) - 
+                MalformedDirective - (191:8,17 [3] IncompleteDirectives.cshtml)
+                    DirectiveToken - (191:8,17 [3] IncompleteDirectives.cshtml) - "
                 HtmlContent - (194:9,0 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (194:9,0 [2] IncompleteDirectives.cshtml) - Html - \n
+                MalformedDirective - (212:10,16 [2] IncompleteDirectives.cshtml)
+                    DirectiveToken - (212:10,16 [2] IncompleteDirectives.cshtml) - 
+                MalformedDirective - (231:11,17 [2] IncompleteDirectives.cshtml)
+                    DirectiveToken - (231:11,17 [2] IncompleteDirectives.cshtml) - 
+                MalformedDirective - (250:12,17 [3] IncompleteDirectives.cshtml)
+                    DirectiveToken - (250:12,17 [3] IncompleteDirectives.cshtml) - "
                 HtmlContent - (253:13,0 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (253:13,0 [2] IncompleteDirectives.cshtml) - Html - \n
+                MalformedDirective - (255:14,0 [9] IncompleteDirectives.cshtml)
                 HtmlContent - (264:14,9 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (264:14,9 [2] IncompleteDirectives.cshtml) - Html - \n
+                MalformedDirective - (266:15,0 [10] IncompleteDirectives.cshtml)
                 HtmlContent - (276:15,10 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (276:15,10 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpCode - 
-                    RazorIRToken -  - CSharp - DefineSection("", async () => {
-                CSharpCode - 
-                    RazorIRToken -  - CSharp - });
+                MalformedDirective - (280:17,0 [12] IncompleteDirectives.cshtml)
+                MalformedDirective - (292:18,0 [15] IncompleteDirectives.cshtml)
+                MalformedDirective - (307:20,0 [8] IncompleteDirectives.cshtml)
                 HtmlContent - (315:20,8 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (315:20,8 [2] IncompleteDirectives.cshtml) - Html - \n
-                CSharpCode - 
-                    RazorIRToken -  - CSharp - DefineSection("", async () => {
-                CSharpCode - 
-                    RazorIRToken -  - CSharp - });
+                MalformedDirective - (317:21,0 [9] IncompleteDirectives.cshtml)
                 HtmlContent - (326:21,9 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (326:21,9 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpCode - 
-                    RazorIRToken -  - CSharp - DefineSection("", async () => {
-                CSharpCode - 
-                    RazorIRToken -  - CSharp - });
+                MalformedDirective - (330:23,0 [9] IncompleteDirectives.cshtml)
                 HtmlContent - (339:23,9 [3] IncompleteDirectives.cshtml)
                     RazorIRToken - (339:23,9 [3] IncompleteDirectives.cshtml) - Html - {\n
+                MalformedDirective - (342:24,0 [12] IncompleteDirectives.cshtml)

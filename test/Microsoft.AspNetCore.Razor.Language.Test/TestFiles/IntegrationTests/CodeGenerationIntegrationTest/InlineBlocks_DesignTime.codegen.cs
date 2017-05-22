@@ -15,8 +15,6 @@ global::System.Object Link = null;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-            DefineSection("Link", async (__razor_section_writer) => {
-            });
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml"
               if(link != null) { 
 

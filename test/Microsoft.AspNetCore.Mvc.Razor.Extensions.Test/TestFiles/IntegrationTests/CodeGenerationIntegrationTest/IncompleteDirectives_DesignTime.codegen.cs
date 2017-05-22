@@ -1,4 +1,5 @@
-namespace 
+[assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml), null)]
+namespace AspNetCore
 {
     #line hidden
     using TModel = global::System.Object;

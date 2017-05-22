@@ -28,10 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         public void InvalidNamespaceAtEOF_Runtime()
         {
             var references = CreateCompilationReferences(CurrentMvcShim);
-            RunRuntimeTest(references, expectedErrors: new[]
-            {
-                "Identifier expected"
-            });
+            RunRuntimeTest(references);
         }
 
         [Fact]
@@ -44,10 +41,7 @@ public class MyService<TModel>
 }";
             var compilationReferences = CreateCompilationReferences(CurrentMvcShim, appCode);
 
-            RunRuntimeTest(compilationReferences, expectedErrors: new[]
-            {
-                "Identifier expected"
-            });
+            RunRuntimeTest(compilationReferences);
         }
 
         [Fact]
@@ -267,7 +261,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
         public void InvalidNamespaceAtEOF_DesignTime()
         {
             var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references, expectedErrors: new[] { "Identifier expected" });
+            RunDesignTimeTest(references);
         }
 
         [Fact]
@@ -281,12 +275,7 @@ public class MyService<TModel>
 ";
 
             var references = CreateCompilationReferences(CurrentMvcShim, appCode);
-            RunDesignTimeTest(
-                references,
-                expectedErrors: new[]
-                {
-                    "Identifier expected"
-                });
+            RunDesignTimeTest(references);
         }
 
         [Fact]

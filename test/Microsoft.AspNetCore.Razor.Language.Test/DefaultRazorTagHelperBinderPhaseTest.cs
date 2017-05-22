@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
-using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         new SourceLocation(14 + Environment.NewLine.Length, 1, 14),
                         length: 1))
             };
-                
+
 
             var content =
             @"
@@ -54,7 +53,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
-            Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
+            var directiveValue = rewrittenTree.Root.Children.OfType<Block>().First().Children.Last() as Span;
+            var chunkGenerator = Assert.IsType<AddTagHelperChunkGenerator>(directiveValue.ChunkGenerator);
+            Assert.Equal(expectedDiagnostics, chunkGenerator.Diagnostics);
         }
 
         [Fact]
@@ -98,7 +99,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
-            Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
+            var directiveValue = rewrittenTree.Root.Children.OfType<Block>().First().Children.Last() as Span;
+            var chunkGenerator = Assert.IsType<RemoveTagHelperChunkGenerator>(directiveValue.ChunkGenerator);
+            Assert.Equal(expectedDiagnostics, chunkGenerator.Diagnostics);
         }
 
         [Fact]
@@ -142,7 +145,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
-            Assert.Equal(expectedDiagnostics, rewrittenTree.Diagnostics);
+            var directiveValue = rewrittenTree.Root.Children.OfType<Block>().First().Children.Last() as Span;
+            var chunkGenerator = Assert.IsType<TagHelperPrefixDirectiveChunkGenerator>(directiveValue.ChunkGenerator);
+            Assert.Equal(expectedDiagnostics, chunkGenerator.Diagnostics);
         }
 
         [Fact]
@@ -464,7 +469,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void ParseAddOrRemoveDirective_CalculatesAssemblyLocationInLookupText(string text, int assemblyLocation)
         {
             // Arrange
-            var errorSink = new ErrorSink();
             var phase = new DefaultRazorTagHelperBinderPhase();
 
             var directive = new TagHelperDirectiveDescriptor()
@@ -472,15 +476,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                 DirectiveText = text,
                 DirectiveType = TagHelperDirectiveType.AddTagHelper,
                 Location = SourceLocation.Zero,
+                Diagnostics = new List<RazorDiagnostic>(),
             };
 
             var expected = new SourceLocation(assemblyLocation, 0, assemblyLocation);
 
             // Act
-            var result = phase.ParseAddOrRemoveDirective(directive, errorSink);
+            var result = phase.ParseAddOrRemoveDirective(directive);
 
             // Assert
-            Assert.Empty(errorSink.Errors);
+            Assert.Empty(directive.Diagnostics);
             Assert.Equal("foo", result.TypePattern);
             Assert.Equal("assemblyName", result.AssemblyName);
             Assert.Equal(expected, result.AssemblyNameLocation);
@@ -505,7 +510,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 DirectiveText = "th ",
                                 Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
+                                Diagnostics = new List<RazorDiagnostic>(),
                             },
                         },
                         new[]
@@ -527,7 +533,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 DirectiveText = "th\t",
                                 Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
+                                Diagnostics = new List<RazorDiagnostic>(),
                             }
                         },
                         new[]
@@ -549,7 +556,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 DirectiveText = "th" + Environment.NewLine,
                                 Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
+                                Diagnostics = new List<RazorDiagnostic>(),
                             }
                         },
                         new[]
@@ -571,7 +579,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 DirectiveText = " th ",
                                 Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
+                                Diagnostics = new List<RazorDiagnostic>(),
                             }
                         },
                         new[]
@@ -593,7 +602,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 DirectiveText = "@",
                                 Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
+                                Diagnostics = new List<RazorDiagnostic>(),
                             }
                         },
                         new[]
@@ -615,7 +625,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 DirectiveText = "t@h",
                                 Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
+                                Diagnostics = new List<RazorDiagnostic>(),
                             }
                         },
                         new[]
@@ -637,7 +648,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 DirectiveText = "!",
                                 Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
+                                Diagnostics = new List<RazorDiagnostic>(),
                             }
                         },
                         new[]
@@ -659,7 +671,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 DirectiveText = "!th",
                                 Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix
+                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
+                                Diagnostics = new List<RazorDiagnostic>(),
                             }
                         },
                         new[]
@@ -685,18 +698,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             object expectedErrors)
         {
             // Arrange
-            var errorSink = new ErrorSink();
-
+            var expectedDiagnostics = ((IEnumerable<RazorError>)expectedErrors).Select(RazorDiagnostic.Create);
+            var tagHelperDirectives = (IEnumerable<TagHelperDirectiveDescriptor>)directives;
             var phase = new DefaultRazorTagHelperBinderPhase();
 
             // Act
-            foreach (var directive in ((IEnumerable<TagHelperDirectiveDescriptor>)directives))
+            foreach (var directive in tagHelperDirectives)
             {
-                Assert.False(phase.IsValidTagHelperPrefix(directive.DirectiveText, directive.Location, errorSink));
+                Assert.False(phase.IsValidTagHelperPrefix(directive.DirectiveText, directive.Location, directive.Diagnostics));
             }
 
             // Assert
-            Assert.Equal(((IEnumerable<RazorError>)expectedErrors).ToArray(), errorSink.Errors.ToArray());
+            Assert.Equal(expectedDiagnostics, tagHelperDirectives.SelectMany(directive => directive.Diagnostics));
         }
 
         private static string AssemblyA => "TestAssembly";
@@ -836,15 +849,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             string expectedPrefix)
         {
             // Arrange
-            var errorSink = new ErrorSink();
             var phase = new DefaultRazorTagHelperBinderPhase();
             var document = RazorCodeDocument.Create(new StringSourceDocument("Test content", encoding: Encoding.UTF8, filePath: "TestFile"));
+            var tagHelperDirectives = (IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors;
 
             // Act
-            var prefix = phase.ProcessTagHelperPrefix(((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors).ToList(), document, errorSink);
+            var prefix = phase.ProcessTagHelperPrefix(((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors).ToList(), document);
 
             // Assert
-            Assert.Empty(errorSink.Errors);
+            Assert.Empty(tagHelperDirectives.SelectMany(directive => directive.Diagnostics));
             Assert.Equal(expectedPrefix, prefix);
         }
 
@@ -1056,20 +1069,17 @@ namespace Microsoft.AspNetCore.Razor.Language
             object expectedDescriptors)
         {
             // Arrange
-            var errorSink = new ErrorSink();
-
             var phase = new DefaultRazorTagHelperBinderPhase();
-
+            var tagHelperDirectives = (IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors;
             var expected = (IEnumerable<TagHelperDescriptor>)expectedDescriptors;
 
             // Act
             var results = phase.ProcessDirectives(
-                new List<TagHelperDirectiveDescriptor>((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors),
-                new List<TagHelperDescriptor>((IEnumerable<TagHelperDescriptor>)tagHelpers),
-                errorSink);
+                new List<TagHelperDirectiveDescriptor>(tagHelperDirectives),
+                new List<TagHelperDescriptor>((IEnumerable<TagHelperDescriptor>)tagHelpers));
 
             // Assert
-            Assert.Empty(errorSink.Errors);
+            Assert.Empty(tagHelperDirectives.SelectMany(directive => directive.Diagnostics));
             Assert.Equal(expected.Count(), results.Count());
 
             foreach (var expectedDescriptor in expected)
@@ -1224,15 +1234,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             object directiveDescriptors)
         {
             // Arrange
-            var errorSink = new ErrorSink();
-
+            var tagHelperDirectives = (IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors;
             var phase = new DefaultRazorTagHelperBinderPhase();
 
             // Act
             var results = phase.ProcessDirectives(
-                new List<TagHelperDirectiveDescriptor>((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors),
-                new List<TagHelperDescriptor>((IEnumerable<TagHelperDescriptor>)tagHelpers),
-                errorSink);
+                new List<TagHelperDirectiveDescriptor>(tagHelperDirectives),
+                new List<TagHelperDescriptor>((IEnumerable<TagHelperDescriptor>)tagHelpers));
 
             // Assert
             Assert.Empty(results);
@@ -1264,26 +1272,24 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void ProcessDirectives_IgnoresSpaces(string directiveText)
         {
             // Arrange
-            var errorSink = new ErrorSink();
             var phase = new DefaultRazorTagHelperBinderPhase();
-
             var directives = new[]
             {
-                        new TagHelperDirectiveDescriptor()
-                        {
-                            DirectiveText = directiveText,
-                            DirectiveType = TagHelperDirectiveType.AddTagHelper,
-                        }
-                    };
+                new TagHelperDirectiveDescriptor()
+                {
+                    DirectiveText = directiveText,
+                    DirectiveType = TagHelperDirectiveType.AddTagHelper,
+                    Diagnostics = new List<RazorDiagnostic>(),
+                }
+            };
 
             // Act
             var results = phase.ProcessDirectives(
                 directives,
-                new[] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor },
-                errorSink);
+                new[] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor });
 
             // Assert
-            Assert.Empty(errorSink.Errors);
+            Assert.Empty(directives[0].Diagnostics);
 
             var single = Assert.Single(results);
             Assert.Equal(Valid_PlainTagHelperDescriptor, single, TagHelperDescriptorComparer.Default);
@@ -1305,7 +1311,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void DescriptorResolver_CreatesErrorIfInvalidLookupText_DoesNotThrow(string directiveText, int errorLength)
         {
             // Arrange
-            var errorSink = new ErrorSink();
             var phase = new DefaultRazorTagHelperBinderPhase();
 
             var directive = new TagHelperDirectiveDescriptor()
@@ -1313,6 +1318,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 DirectiveText = directiveText,
                 DirectiveType = TagHelperDirectiveType.AddTagHelper,
                 Location = new SourceLocation(1, 2, 3),
+                Diagnostics = new List<RazorDiagnostic>(),
             };
 
             var expectedErrorMessage = string.Format(
@@ -1320,16 +1326,21 @@ namespace Microsoft.AspNetCore.Razor.Language
                 "format is: \"typeName, assemblyName\".",
                 directiveText);
 
+            var expectedError = RazorDiagnostic.Create(
+                new RazorError(
+                    expectedErrorMessage,
+                    new SourceLocation(1, 2, 3),
+                    errorLength));
+
+
             // Act
-            var result = phase.ParseAddOrRemoveDirective(directive, errorSink);
+            var result = phase.ParseAddOrRemoveDirective(directive);
 
             // Assert
             Assert.Null(result);
 
-            var error = Assert.Single(errorSink.Errors);
-            Assert.Equal(errorLength, error.Length);
-            Assert.Equal(new SourceLocation(1, 2, 3), error.Location);
-            Assert.Equal(expectedErrorMessage, error.Message);
+            var error = Assert.Single(directive.Diagnostics);
+            Assert.Equal(expectedError, error);
         }
 
         private static TagHelperDescriptor CreatePrefixedValidPlainDescriptor(string prefix)
@@ -1367,7 +1378,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 DirectiveText = directiveText,
                 Location = SourceLocation.Zero,
-                DirectiveType = directiveType
+                DirectiveType = directiveType,
+                Diagnostics = new List<RazorDiagnostic>(),
             };
         }
 
@@ -1404,7 +1416,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 foreach (var ruleBuilder in ruleBuilders)
                 {
-                    builder.TagMatchingRule(innerRuleBuilder => {
+                    builder.TagMatchingRule(innerRuleBuilder =>
+                    {
                         innerRuleBuilder.RequireTagName(tagName);
                         ruleBuilder(innerRuleBuilder);
                     });
