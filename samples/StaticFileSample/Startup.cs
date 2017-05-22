@@ -14,12 +14,9 @@ namespace StaticFilesSample
             services.AddDirectoryBrowser();
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory factory, IHostingEnvironment host)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment host)
         {
             Console.WriteLine("webroot: " + host.WebRootPath);
-
-            // Displays all log levels
-            factory.AddConsole(LogLevel.Debug);
 
             app.UseFileServer(new FileServerOptions
             {
@@ -30,6 +27,11 @@ namespace StaticFilesSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory =>
+                {
+                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                    factory.AddConsole();
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseKestrel()
                 .UseIISIntegration()
