@@ -346,8 +346,8 @@ namespace Microsoft.AspNetCore.Routing.Template
                         {
                             // The optional parameter is preceded by something that is not a literal.
                             // Example of error message:
-                            // "In the segment '{RouteValue}-{param?}', the optional parameter 'param' is preceded
-                            // by an invalid segment '-'. Only a period (.) can precede an optional parameter.
+                            // "In the segment '{RouteValue}{param?}', the optional parameter 'param' is preceded
+                            // by an invalid segment '{RouteValue}'. Only a period (.) can precede an optional parameter.
                             context.Error = string.Format(
                                 Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
                                 segment.DebuggerToString(),
