@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
-        [Fact(Skip = "Fails")]
+        [Fact]
         public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_LastSegment()
         {
             // Arrange
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[1].Parts.Add(TemplatePart.CreateParameter("p2",
                                                                         false,
-                                                                        true,
+                                                                        false,
                                                                         defaultValue: null,
                                                                         inlineConstraints: null));
             expected.Segments[1].Parts.Add(TemplatePart.CreateLiteral("."));
