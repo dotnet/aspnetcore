@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity.Service;
 using Microsoft.AspNetCore.Identity.Service.Claims;
 using Microsoft.AspNetCore.Identity.Service.Configuration;
 using Microsoft.AspNetCore.Identity.Service.Core;
+using Microsoft.AspNetCore.Identity.Service.Core.Claims;
 using Microsoft.AspNetCore.Identity.Service.Metadata;
 using Microsoft.AspNetCore.Identity.Service.Serialization;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -82,6 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ITokenClaimsProvider, ScopesTokenClaimsProvider>();
             services.AddSingleton<ITokenClaimsProvider, TimestampsTokenClaimsProvider>();
             services.AddSingleton<ITokenClaimsProvider, TokenHashTokenClaimsProvider>();
+            services.AddSingleton<ITokenClaimsProvider, ProofOfKeyForCodeExchangeTokenClaimsProvider>();
             services.AddSingleton<ProtocolErrorProvider>();
             services.AddSingleton<ISigningCredentialsSource, DeveloperCertificateSigningCredentialsSource>();
             services.AddSingleton<DeveloperCertificateSigningCredentialsSource>();

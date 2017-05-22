@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 Mock.Of<IClientIdValidator>(),
                 Mock.Of<IRedirectUriResolver>(), Mock.Of<IScopeResolver>(),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken()),
+                GetTestTokenManager(GetValidAuthorizationCode()),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.MissingRequiredParameter(OpenIdConnectParameterNames.ClientId);
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: true),
                 Mock.Of<IRedirectUriResolver>(), Mock.Of<IScopeResolver>(),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken()),
+                GetTestTokenManager(GetValidAuthorizationCode()),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.InvalidGrant();
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 GetClientIdValidator(isClientIdValid: false),
                 Mock.Of<IRedirectUriResolver>(), Mock.Of<IScopeResolver>(),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken()),
+                GetTestTokenManager(GetValidAuthorizationCode()),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.InvalidClientId("clientId");
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: false),
                 Mock.Of<IRedirectUriResolver>(), Mock.Of<IScopeResolver>(),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken()),
+                GetTestTokenManager(GetValidAuthorizationCode()),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.InvalidClientCredentials();
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 Mock.Of<IRedirectUriResolver>(),
                 Mock.Of<IScopeResolver>(),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken()),
+                GetTestTokenManager(GetValidAuthorizationCode()),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.TooManyParameters(OpenIdConnectParameterNames.Scope);
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 Mock.Of<IRedirectUriResolver>(),
                 GetScopeResolver(hasInvalidScopes: true),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken(),null,null,Enumerable.Empty<string>(), new[] { "openid" }),
+                GetTestTokenManager(GetValidAuthorizationCode(), null, null, Enumerable.Empty<string>(), new[] { "openid" }),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.InvalidScope("invalid");
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 Mock.Of<IRedirectUriResolver>(),
                 GetScopeResolver(hasInvalidScopes: false),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken(), null, null, Enumerable.Empty<string>(), new[] { "openid" }),
+                GetTestTokenManager(GetValidAuthorizationCode(), null, null, Enumerable.Empty<string>(), new[] { "openid" }),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.UnauthorizedScope();
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 GetRedirectUriValidator(isRedirectUriValid: false),
                 Mock.Of<IScopeResolver>(),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken()),
+                GetTestTokenManager(GetValidAuthorizationCode()),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.MissingRequiredParameter(OpenIdConnectParameterNames.RedirectUri);
@@ -362,6 +362,214 @@ namespace Microsoft.AspNetCore.Identity.Service
             Assert.NotNull(tokenRequest);
             Assert.False(tokenRequest.IsValid);
             Assert.Equal(expectedError, tokenRequest.Error, IdentityServiceErrorComparer.Instance);
+        }
+
+        [Fact]
+        public async Task CreateTokenRequestAsyncFails_IfCodeVerifierIsMissing()
+        {
+            // Arrange
+            var requestParameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.GrantType] = new[] { "authorization_code" },
+                [OpenIdConnectParameterNames.Code] = new[] { "valid" },
+                [OpenIdConnectParameterNames.ClientId] = new[] { "clientId" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "https://www.example.com" },
+            };
+
+            var tokenRequestFactory = new TokenRequestFactory(
+                GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: true),
+                GetRedirectUriValidator(isRedirectUriValid: true),
+                Mock.Of<IScopeResolver>(),
+                Enumerable.Empty<ITokenRequestValidator>(),
+                GetTestTokenManager(GetValidAuthorizationCode(new[] {
+                    new Claim(IdentityServiceClaimTypes.CodeChallenge,"challenge"),
+                    new Claim(IdentityServiceClaimTypes.CodeChallengeMethod, ProofOfKeyForCodeExchangeChallengeMethods.SHA256),
+                })),
+                new TimeStampManager(), new ProtocolErrorProvider());
+
+            var expectedError = ProtocolErrorProvider.MissingRequiredParameter(ProofOfKeyForCodeExchangeParameterNames.CodeVerifier);
+
+            // Act
+            var tokenRequest = await tokenRequestFactory.CreateTokenRequestAsync(requestParameters);
+
+            // Assert
+            Assert.NotNull(tokenRequest);
+            Assert.False(tokenRequest.IsValid);
+            Assert.Equal(expectedError, tokenRequest.Error, IdentityServiceErrorComparer.Instance);
+        }
+
+        [Fact]
+        public async Task CreateTokenRequestAsyncFails_IfCodeVerifier_HasMultipleValues()
+        {
+            // Arrange
+            var requestParameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.GrantType] = new[] { "authorization_code" },
+                [OpenIdConnectParameterNames.Code] = new[] { "valid" },
+                [OpenIdConnectParameterNames.ClientId] = new[] { "clientId" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "https://www.example.com" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeVerifier] = new[] { "value1", "value2" },
+            };
+
+            var tokenRequestFactory = new TokenRequestFactory(
+                GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: true),
+                GetRedirectUriValidator(isRedirectUriValid: true),
+                Mock.Of<IScopeResolver>(),
+                Enumerable.Empty<ITokenRequestValidator>(),
+                GetTestTokenManager(GetValidAuthorizationCode(new[] {
+                    new Claim(IdentityServiceClaimTypes.CodeChallenge,"challenge"),
+                    new Claim(IdentityServiceClaimTypes.CodeChallengeMethod, ProofOfKeyForCodeExchangeChallengeMethods.SHA256),
+                })),
+                new TimeStampManager(), new ProtocolErrorProvider());
+
+            var expectedError = ProtocolErrorProvider.TooManyParameters(ProofOfKeyForCodeExchangeParameterNames.CodeVerifier);
+
+            // Act
+            var tokenRequest = await tokenRequestFactory.CreateTokenRequestAsync(requestParameters);
+
+            // Assert
+            Assert.NotNull(tokenRequest);
+            Assert.False(tokenRequest.IsValid);
+            Assert.Equal(expectedError, tokenRequest.Error, IdentityServiceErrorComparer.Instance);
+        }
+
+        [Fact]
+        public async Task CreateTokenRequestAsyncFails_IfCodeVerifierIsInvalid()
+        {
+            // Arrange
+            var requestParameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.GrantType] = new[] { "authorization_code" },
+                [OpenIdConnectParameterNames.Code] = new[] { "valid" },
+                [OpenIdConnectParameterNames.ClientId] = new[] { "clientId" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "https://www.example.com" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeVerifier] = new[] { "@" }
+            };
+
+            var tokenRequestFactory = new TokenRequestFactory(
+                GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: true),
+                GetRedirectUriValidator(isRedirectUriValid: true),
+                Mock.Of<IScopeResolver>(),
+                Enumerable.Empty<ITokenRequestValidator>(),
+                GetTestTokenManager(GetValidAuthorizationCode(new[] {
+                    new Claim(IdentityServiceClaimTypes.CodeChallenge,"challenge"),
+                    new Claim(IdentityServiceClaimTypes.CodeChallengeMethod, ProofOfKeyForCodeExchangeChallengeMethods.SHA256),
+                })),
+                new TimeStampManager(), new ProtocolErrorProvider());
+
+            var expectedError = ProtocolErrorProvider.InvalidCodeVerifier();
+
+            // Act
+            var tokenRequest = await tokenRequestFactory.CreateTokenRequestAsync(requestParameters);
+
+            // Assert
+            Assert.NotNull(tokenRequest);
+            Assert.False(tokenRequest.IsValid);
+            Assert.Equal(expectedError, tokenRequest.Error, IdentityServiceErrorComparer.Instance);
+        }
+
+        [Theory]
+        [InlineData("tooShort")]
+        [InlineData("tooLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong")]
+        public async Task CreateTokenRequestAsyncFails_IfTooShortOrTooLong(string verifier)
+        {
+            // Arrange
+            var requestParameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.GrantType] = new[] { "authorization_code" },
+                [OpenIdConnectParameterNames.Code] = new[] { "valid" },
+                [OpenIdConnectParameterNames.ClientId] = new[] { "clientId" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "https://www.example.com" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeVerifier] = new[] { verifier }
+            };
+
+            var tokenRequestFactory = new TokenRequestFactory(
+                GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: true),
+                GetRedirectUriValidator(isRedirectUriValid: true),
+                Mock.Of<IScopeResolver>(),
+                Enumerable.Empty<ITokenRequestValidator>(),
+                GetTestTokenManager(GetValidAuthorizationCode(new[] {
+                    new Claim(IdentityServiceClaimTypes.CodeChallenge,"challenge"),
+                    new Claim(IdentityServiceClaimTypes.CodeChallengeMethod, ProofOfKeyForCodeExchangeChallengeMethods.SHA256),
+                })),
+                new TimeStampManager(), new ProtocolErrorProvider());
+
+            var expectedError = ProtocolErrorProvider.InvalidCodeVerifier();
+
+            // Act
+            var tokenRequest = await tokenRequestFactory.CreateTokenRequestAsync(requestParameters);
+
+            // Assert
+            Assert.NotNull(tokenRequest);
+            Assert.False(tokenRequest.IsValid);
+            Assert.Equal(expectedError, tokenRequest.Error, IdentityServiceErrorComparer.Instance);
+        }
+
+        [Fact]
+        public async Task CreateTokenRequestAsyncFails_IfCodeVerifierDoesNotMatchChallenge()
+        {
+            // Arrange
+            var requestParameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.GrantType] = new[] { "authorization_code" },
+                [OpenIdConnectParameterNames.Code] = new[] { "valid" },
+                [OpenIdConnectParameterNames.ClientId] = new[] { "clientId" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "https://www.example.com" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeVerifier] = new[] { "0123456789012345678901234567890123456789012" }
+            };
+
+            var tokenRequestFactory = new TokenRequestFactory(
+                GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: true),
+                GetRedirectUriValidator(isRedirectUriValid: true),
+                Mock.Of<IScopeResolver>(),
+                Enumerable.Empty<ITokenRequestValidator>(),
+                GetTestTokenManager(GetValidAuthorizationCode(new[] {
+                    new Claim(IdentityServiceClaimTypes.CodeChallenge,"challenge"),
+                    new Claim(IdentityServiceClaimTypes.CodeChallengeMethod, ProofOfKeyForCodeExchangeChallengeMethods.SHA256),
+                })),
+                new TimeStampManager(), new ProtocolErrorProvider());
+
+            var expectedError = ProtocolErrorProvider.InvalidCodeVerifier();
+
+            // Act
+            var tokenRequest = await tokenRequestFactory.CreateTokenRequestAsync(requestParameters);
+
+            // Assert
+            Assert.NotNull(tokenRequest);
+            Assert.False(tokenRequest.IsValid);
+            Assert.Equal(expectedError, tokenRequest.Error, IdentityServiceErrorComparer.Instance);
+        }
+
+        [Fact]
+        public async Task CreateTokenRequestSucceeds_IfCodeVerifier_MatchesChallenge()
+        {
+            // Arrange
+            var requestParameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.GrantType] = new[] { "authorization_code" },
+                [OpenIdConnectParameterNames.Code] = new[] { "valid" },
+                [OpenIdConnectParameterNames.ClientId] = new[] { "clientId" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "https://www.example.com" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeVerifier] = new[] { "0123456789012345678901234567890123456789012" }
+            };
+
+            var tokenRequestFactory = new TokenRequestFactory(
+                GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: true),
+                GetRedirectUriValidator(isRedirectUriValid: true),
+                Mock.Of<IScopeResolver>(),
+                Enumerable.Empty<ITokenRequestValidator>(),
+                GetTestTokenManager(GetValidAuthorizationCode(new[] {
+                    new Claim(IdentityServiceClaimTypes.CodeChallenge,"_RpfHqw8pAZIomzVUE7sjRmHSM543WVdC4o-Kc4_3C0"),
+                    new Claim(IdentityServiceClaimTypes.CodeChallengeMethod, ProofOfKeyForCodeExchangeChallengeMethods.SHA256),
+                })),
+                new TimeStampManager(), new ProtocolErrorProvider());
+
+            // Act
+            var tokenRequest = await tokenRequestFactory.CreateTokenRequestAsync(requestParameters);
+
+            // Assert
+            Assert.NotNull(tokenRequest);
+            Assert.True(tokenRequest.IsValid);
         }
 
         private IRedirectUriResolver GetRedirectUriValidator(bool isRedirectUriValid)
@@ -390,7 +598,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 GetClientIdValidator(isClientIdValid: true, areClientCredentialsValid: true),
                 Mock.Of<IRedirectUriResolver>(), Mock.Of<IScopeResolver>(),
                 Enumerable.Empty<ITokenRequestValidator>(),
-                GetTestTokenManager(GetValidToken()),
+                GetTestTokenManager(GetValidAuthorizationCode()),
                 new TimeStampManager(), new ProtocolErrorProvider());
 
             var expectedError = ProtocolErrorProvider.MissingRequiredParameter(OpenIdConnectParameterNames.RedirectUri);
@@ -419,21 +627,25 @@ namespace Microsoft.AspNetCore.Identity.Service
             return clientIdValidator.Object;
         }
 
-        private Token GetValidToken()
+        private Token GetValidAuthorizationCode(IEnumerable<Claim> additionalClaims = null)
         {
             var notBefore = EpochTime.GetIntDate(DateTime.UtcNow - TimeSpan.FromMinutes(20)).ToString();
             var expires = EpochTime.GetIntDate(DateTime.UtcNow + TimeSpan.FromMinutes(10)).ToString();
             var issuedAt = EpochTime.GetIntDate(DateTime.UtcNow).ToString();
-            var authorizedParty = "clientId";
-            return new TestToken(new Claim[]
+
+            return new AuthorizationCode(new Claim[]
             {
                 new Claim(IdentityServiceClaimTypes.TokenUniqueId, Guid.NewGuid().ToString()),
-                new Claim(IdentityServiceClaimTypes.RedirectUri, "https://www.example.com"),
                 new Claim(IdentityServiceClaimTypes.NotBefore,notBefore),
                 new Claim(IdentityServiceClaimTypes.Expires,expires),
                 new Claim(IdentityServiceClaimTypes.IssuedAt,issuedAt),
-                new Claim(IdentityServiceClaimTypes.AuthorizedParty, authorizedParty)
-            });
+                new Claim(IdentityServiceClaimTypes.UserId,"userId"),
+                new Claim(IdentityServiceClaimTypes.ClientId,"clientId"),
+                new Claim(IdentityServiceClaimTypes.RedirectUri, "https://www.example.com"),
+                new Claim(IdentityServiceClaimTypes.Scope, "openid"),
+                new Claim(IdentityServiceClaimTypes.GrantedToken, "id_token")
+            }
+            .Concat(additionalClaims ?? Enumerable.Empty<Claim>()));
         }
 
         private ITokenManager GetTestTokenManager(

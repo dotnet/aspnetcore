@@ -719,6 +719,165 @@ namespace Microsoft.AspNetCore.Identity.Service
         }
 
         [Fact]
+        public async Task FailsToCreateAuthorizationRequest_CodeChallenge_HasMultipleValues()
+        {
+            // Arrange
+            var parameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.ClientId] = new[] { "a" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "http://www.example.com/callback" },
+                [OpenIdConnectParameterNames.ResponseType] = new[] { "code" },
+                [OpenIdConnectParameterNames.ResponseMode] = new[] { "form_post" },
+                [OpenIdConnectParameterNames.Nonce] = new[] { "asdf" },
+                [OpenIdConnectParameterNames.Scope] = new[] { "  openid   profile   " },
+                [OpenIdConnectParameterNames.State] = new[] { "state" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeChallenge] = new[] { "challenge1", "challenge2" }
+            };
+
+            var expectedError = new AuthorizationRequestError(ProtocolErrorProvider.TooManyParameters(ProofOfKeyForCodeExchangeParameterNames.CodeChallenge), null, null);
+            expectedError.Message.State = "state";
+
+            var factory = CreateAuthorizationRequestFactory();
+
+            // Act
+            var result = await factory.CreateAuthorizationRequestAsync(parameters);
+
+            // Assert
+            Assert.False(result.IsValid);
+            Assert.Equal(expectedError, result.Error, IdentityServiceErrorComparer.Instance);
+            Assert.Equal("http://www.example.com/callback", result.Error.RedirectUri);
+            Assert.Equal(OpenIdConnectResponseMode.FormPost, result.Error.ResponseMode);
+        }
+
+        [Theory]
+        [InlineData("tooshort")]
+        [InlineData("toolong_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
+        public async Task FailsToCreateAuthorizationRequest_CodeChallenge_DoesNotHave43Characters(string challenge)
+        {
+            // Arrange
+            var parameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.ClientId] = new[] { "a" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "http://www.example.com/callback" },
+                [OpenIdConnectParameterNames.ResponseType] = new[] { "code" },
+                [OpenIdConnectParameterNames.ResponseMode] = new[] { "form_post" },
+                [OpenIdConnectParameterNames.Nonce] = new[] { "asdf" },
+                [OpenIdConnectParameterNames.Scope] = new[] { "  openid   profile   " },
+                [OpenIdConnectParameterNames.State] = new[] { "state" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeChallenge] = new[] { challenge }
+            };
+
+            var expectedError = new AuthorizationRequestError(ProtocolErrorProvider.InvalidCodeChallenge(), "http://www.example.com/callback", "form_post");
+            expectedError.Message.State = "state";
+
+            var factory = CreateAuthorizationRequestFactory();
+
+            // Act
+            var result = await factory.CreateAuthorizationRequestAsync(parameters);
+
+            // Assert
+            Assert.False(result.IsValid);
+            Assert.Equal(expectedError, result.Error, IdentityServiceErrorComparer.Instance);
+            Assert.Equal("http://www.example.com/callback", result.Error.RedirectUri);
+            Assert.Equal(OpenIdConnectResponseMode.FormPost, result.Error.ResponseMode);
+        }
+
+        [Fact]
+        public async Task FailsToCreateAuthorizationRequest_CodeChallengeMethod_IsMissing()
+        {
+            // Arrange
+            var parameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.ClientId] = new[] { "a" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "http://www.example.com/callback" },
+                [OpenIdConnectParameterNames.ResponseType] = new[] { "code" },
+                [OpenIdConnectParameterNames.ResponseMode] = new[] { "form_post" },
+                [OpenIdConnectParameterNames.Nonce] = new[] { "asdf" },
+                [OpenIdConnectParameterNames.Scope] = new[] { "  openid   profile   " },
+                [OpenIdConnectParameterNames.State] = new[] { "state" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeChallenge] = new[] { "0123456789012345678901234567890123456789012" }
+            };
+
+            var expectedError = new AuthorizationRequestError(ProtocolErrorProvider.MissingRequiredParameter(ProofOfKeyForCodeExchangeParameterNames.CodeChallengeMethod), "http://www.example.com/callback", "form_post");
+            expectedError.Message.State = "state";
+
+            var factory = CreateAuthorizationRequestFactory();
+
+            // Act
+            var result = await factory.CreateAuthorizationRequestAsync(parameters);
+
+            // Assert
+            Assert.False(result.IsValid);
+            Assert.Equal(expectedError, result.Error, IdentityServiceErrorComparer.Instance);
+            Assert.Equal("http://www.example.com/callback", result.Error.RedirectUri);
+            Assert.Equal(OpenIdConnectResponseMode.FormPost, result.Error.ResponseMode);
+        }
+
+        [Fact]
+        public async Task FailsToCreateAuthorizationRequest_CodeChallengeMethod_HasMultipleValues()
+        {
+            // Arrange
+            var parameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.ClientId] = new[] { "a" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "http://www.example.com/callback" },
+                [OpenIdConnectParameterNames.ResponseType] = new[] { "code" },
+                [OpenIdConnectParameterNames.ResponseMode] = new[] { "form_post" },
+                [OpenIdConnectParameterNames.Nonce] = new[] { "asdf" },
+                [OpenIdConnectParameterNames.Scope] = new[] { "  openid   profile   " },
+                [OpenIdConnectParameterNames.State] = new[] { "state" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeChallenge] = new[] { "0123456789012345678901234567890123456789012" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeChallengeMethod] = new[] { "S256", "plain" }
+            };
+
+            var expectedError = new AuthorizationRequestError(ProtocolErrorProvider.TooManyParameters(ProofOfKeyForCodeExchangeParameterNames.CodeChallengeMethod), "http://www.example.com/callback", "form_post");
+            expectedError.Message.State = "state";
+
+            var factory = CreateAuthorizationRequestFactory();
+
+            // Act
+            var result = await factory.CreateAuthorizationRequestAsync(parameters);
+
+            // Assert
+            Assert.False(result.IsValid);
+            Assert.Equal(expectedError, result.Error, IdentityServiceErrorComparer.Instance);
+            Assert.Equal("http://www.example.com/callback", result.Error.RedirectUri);
+            Assert.Equal(OpenIdConnectResponseMode.FormPost, result.Error.ResponseMode);
+        }
+
+        [Fact]
+        public async Task FailsToCreateAuthorizationRequest_CodeChallengeMethod_IsNotSHA256()
+        {
+            // Arrange
+            var parameters = new Dictionary<string, string[]>
+            {
+                [OpenIdConnectParameterNames.ClientId] = new[] { "a" },
+                [OpenIdConnectParameterNames.RedirectUri] = new[] { "http://www.example.com/callback" },
+                [OpenIdConnectParameterNames.ResponseType] = new[] { "code" },
+                [OpenIdConnectParameterNames.ResponseMode] = new[] { "form_post" },
+                [OpenIdConnectParameterNames.Nonce] = new[] { "asdf" },
+                [OpenIdConnectParameterNames.Scope] = new[] { "  openid   profile   " },
+                [OpenIdConnectParameterNames.State] = new[] { "state" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeChallenge] = new[] { "0123456789012345678901234567890123456789012" },
+                [ProofOfKeyForCodeExchangeParameterNames.CodeChallengeMethod] = new[] { "plain" }
+            };
+
+            var expectedError = new AuthorizationRequestError(ProtocolErrorProvider.InvalidCodeChallengeMethod("plain"), null, null);
+            expectedError.Message.State = "state";
+
+            var factory = CreateAuthorizationRequestFactory();
+
+            // Act
+            var result = await factory.CreateAuthorizationRequestAsync(parameters);
+
+            // Assert
+            Assert.False(result.IsValid);
+            Assert.Equal(expectedError, result.Error, IdentityServiceErrorComparer.Instance);
+            Assert.Equal("http://www.example.com/callback", result.Error.RedirectUri);
+            Assert.Equal(OpenIdConnectResponseMode.FormPost, result.Error.ResponseMode);
+        }
+
+        [Fact]
         public async Task CreatesAnAuthorizationRequest_IfAllParameters_AreCorrect()
         {
             // Arrange

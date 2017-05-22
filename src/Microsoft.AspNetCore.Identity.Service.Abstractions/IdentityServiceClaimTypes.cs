@@ -29,5 +29,7 @@ namespace Microsoft.AspNetCore.Identity.Service
         public const string GrantedToken = "g_token";
         public const string TenantId = "tid";
         public const string Resource = "rid";
+        public const string CodeChallenge = "c_chall";
+        public const string CodeChallengeMethod = "c_chall_m";
     }
 }

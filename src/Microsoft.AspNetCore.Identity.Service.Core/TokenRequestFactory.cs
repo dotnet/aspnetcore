@@ -4,13 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Identity.Service
 {
     public class TokenRequestFactory : ITokenRequestFactory
     {
+        private static bool[] ValidCodeVerifierCharacters = CreateCodeVerifierValidCharacters();
+
         private readonly IClientIdValidator _clientIdValidator;
         private readonly ITokenManager _tokenManager;
         private readonly IRedirectUriResolver _redirectUriValidator;
@@ -185,16 +189,18 @@ namespace Microsoft.AspNetCore.Identity.Service
             string clientId,
             AuthorizationGrant consentGrant)
         {
+            if (!(consentGrant.Token is AuthorizationCode code))
+            {
+                throw new InvalidOperationException("Granted token must be an authorization code.");
+            }
+
             var (redirectUri, redirectUriError) = RequestParametersHelper.ValidateOptionalParameterIsUnique(requestParameters, OpenIdConnectParameterNames.RedirectUri, _errorProvider);
             if (redirectUriError != null)
             {
                 return redirectUriError;
             }
 
-            var tokenRedirectUri = consentGrant
-                .Token.SingleOrDefault(c =>
-                    string.Equals(c.Type, IdentityServiceClaimTypes.RedirectUri, StringComparison.Ordinal))?.Value;
-
+            var tokenRedirectUri = code.RedirectUri;
             if (redirectUri == null && tokenRedirectUri != null)
             {
                 return _errorProvider.MissingRequiredParameter(OpenIdConnectParameterNames.RedirectUri);
@@ -211,7 +217,47 @@ namespace Microsoft.AspNetCore.Identity.Service
                 return _errorProvider.InvalidRedirectUri(redirectUri);
             }
 
+            if (code.CodeChallenge != null)
+            {
+                if (!ProofOfKeyForCodeExchangeChallengeMethods.SHA256.Equals(code.CodeChallengeMethod, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException("Unsupported code challenge method.");
+                }
+
+                var (verifier, verifierError) = RequestParametersHelper.ValidateParameterIsUnique(requestParameters, ProofOfKeyForCodeExchangeParameterNames.CodeVerifier, _errorProvider);
+                if (verifierError != null)
+                {
+                    return verifierError;
+                }
+
+                // code-verifier = [a-zA-Z0-9\-._~]{43,128}
+                if (verifier.Length < 43 || verifier.Length > 128)
+                {
+                    return _errorProvider.InvalidCodeVerifier();
+                }
+
+                for (var i = 0; i < verifier.Length; i++)
+                {
+                    if (verifier[i] > 127 || !ValidCodeVerifierCharacters[verifier[i]])
+                    {
+                        return _errorProvider.InvalidCodeVerifier();
+                    }
+                }
+
+                if (!string.Equals(code.CodeChallenge, GetComputedChallenge(verifier), StringComparison.Ordinal))
+                {
+                    return _errorProvider.InvalidCodeVerifier();
+                }
+            }
+
             return null;
+        }
+        private string GetComputedChallenge(string verifier)
+        {
+            using (var hash = CryptographyHelpers.CreateSHA256())
+            {
+                return Base64UrlEncoder.Encode(hash.ComputeHash(Encoding.ASCII.GetBytes(verifier)));
+            }
         }
 
         private string GetGrantTypeParameter(IDictionary<string, string[]> parameters, string grantType)
@@ -225,6 +271,33 @@ namespace Microsoft.AspNetCore.Identity.Service
                 default:
                     return null;
             }
+        }
+
+        // "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~-._"
+        private static bool[] CreateCodeVerifierValidCharacters()
+        {
+            var result = new bool[128];
+            for (var i = 0x41; i <= 0x5A; i++)
+            {
+                result[i] = true;
+            }
+
+            for (var i = 0x61; i <= 0x7A; i++)
+            {
+                result[i] = true;
+            }
+
+            for (var i = 0x30; i <= 0x39; i++)
+            {
+                result[i] = true;
+            }
+
+            result['-'] = true;
+            result['.'] = true;
+            result['_'] = true;
+            result['~'] = true;
+
+            return result;
         }
     }
 }

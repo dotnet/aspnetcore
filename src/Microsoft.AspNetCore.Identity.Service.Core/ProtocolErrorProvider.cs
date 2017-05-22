@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Identity.Service
@@ -78,6 +79,13 @@ namespace Microsoft.AspNetCore.Identity.Service
                 $"The token is not yet active or it has expired.");
         }
 
+        public virtual OpenIdConnectMessage InvalidCodeVerifier()
+        {
+            return CreateError(
+                IdentityServiceErrorCodes.InvalidRequest,
+                $"The code_verifier is missing or invalid.");
+        }
+
         public virtual OpenIdConnectMessage MultipleResourcesNotSupported(string resourceName, string name)
         {
             return CreateError(
@@ -141,6 +149,20 @@ namespace Microsoft.AspNetCore.Identity.Service
             return CreateError(
                 IdentityServiceErrorCodes.InvalidRequest,
                 $"The prompt value 'none' can't be used in conjunction with other prompt values '{promptValue}'");
+        }
+
+        public virtual OpenIdConnectMessage InvalidCodeChallengeMethod(string challengeMethod)
+        {
+            return CreateError(
+                IdentityServiceErrorCodes.InvalidRequest,
+                $"The code challenge method '{challengeMethod ?? "plain"}' is invalid. Only S256 is supported.");
+        }
+
+        public virtual OpenIdConnectMessage InvalidCodeChallenge()
+        {
+            return CreateError(
+                IdentityServiceErrorCodes.InvalidRequest,
+                $"The provided code challenge must be 43 characters long.");
         }
 
         private OpenIdConnectMessage CreateError(string code, string description, string uri = null) =>

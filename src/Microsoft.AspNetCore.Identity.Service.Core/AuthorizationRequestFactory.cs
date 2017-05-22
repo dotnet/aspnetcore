@@ -192,6 +192,43 @@ namespace Microsoft.AspNetCore.Identity.Service
                 }
             }
 
+            var (codeChallenge, codeChallengeError) = RequestParametersHelper.ValidateOptionalParameterIsUnique(requestParameters, ProofOfKeyForCodeExchangeParameterNames.CodeChallenge, _errorProvider);
+            if (codeChallengeError != null)
+            {
+                codeChallengeError.State = state;
+                return AuthorizationRequest.Invalid(new AuthorizationRequestError(codeChallengeError, redirectUri, responseMode));
+            }
+
+            if (codeChallenge != null)
+            {
+                // The code challenge needs to be 43 characters long as its the result of Base64URLEncode(SHA256(code_verifier)).
+                // We do this check here because the code challenge might get saved in the serialized authorization code and we
+                // want to prevent it from getting unnecessarily big.
+                if (codeChallenge.Length != 43)
+                {
+                    var invalidCodeChallenge = _errorProvider.InvalidCodeChallenge();
+                    invalidCodeChallenge.State = state;
+                    return AuthorizationRequest.Invalid(new AuthorizationRequestError(
+                        invalidCodeChallenge,
+                        redirectUri,
+                        responseMode));
+                }
+
+                var (codeChallengeMethod, codeChallengeMethodError) = RequestParametersHelper.ValidateParameterIsUnique(requestParameters, ProofOfKeyForCodeExchangeParameterNames.CodeChallengeMethod, _errorProvider);
+                if (codeChallengeMethodError != null)
+                {
+                    codeChallengeMethodError.State = state;
+                    return AuthorizationRequest.Invalid(new AuthorizationRequestError(codeChallengeMethodError, redirectUri, responseMode));
+                }
+
+                if (!codeChallengeMethod.Equals(ProofOfKeyForCodeExchangeChallengeMethods.SHA256, StringComparison.Ordinal))
+                {
+                    var invalidChallengeMethod = _errorProvider.InvalidCodeChallengeMethod(codeChallengeMethod);
+                    invalidChallengeMethod.State = state;
+                    return AuthorizationRequest.Invalid(new AuthorizationRequestError(invalidChallengeMethod, redirectUri, responseMode));
+                }
+            }
+
             var result = new OpenIdConnectMessage(requestParameters);
             result.RequestType = OpenIdConnectRequestType.Authentication;
 
@@ -394,5 +431,6 @@ namespace Microsoft.AspNetCore.Identity.Service
 
             return (clientId, resolvedUriResult.Uri, null);
         }
+
     }
 }

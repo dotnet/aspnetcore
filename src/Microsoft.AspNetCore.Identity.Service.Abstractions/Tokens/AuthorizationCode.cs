@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Identity.Service
         public string ClientId => GetClaimValue(IdentityServiceClaimTypes.ClientId);
         public string Resource => GetClaimValue(IdentityServiceClaimTypes.Resource);
         public string RedirectUri => GetClaimValue(IdentityServiceClaimTypes.RedirectUri);
+        public string CodeChallenge => GetClaimValue(IdentityServiceClaimTypes.CodeChallenge);
+        public string CodeChallengeMethod => GetClaimValue(IdentityServiceClaimTypes.CodeChallengeMethod);
         public IEnumerable<string> Scopes => GetClaimValuesOrEmpty(IdentityServiceClaimTypes.Scope);
         public IEnumerable<string> GrantedTokens => GetClaimValuesOrEmpty(IdentityServiceClaimTypes.GrantedToken);
         public string Nonce => GetClaimValue(IdentityServiceClaimTypes.Nonce);
