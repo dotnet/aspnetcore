@@ -181,6 +181,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal(ConnectionState.ConnectionStatus.Disposed, state.Status);
         }
 
+        [Fact]
+        public void ScanAfterDisposeNoops()
+        {
+            var connectionManager = CreateConnectionManager();
+            var state = connectionManager.CreateConnection();
+
+            connectionManager.CloseConnections();
+
+            connectionManager.Scan();
+        }
+
         private static ConnectionManager CreateConnectionManager()
         {
             return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()));

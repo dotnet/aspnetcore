@@ -66,8 +66,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         public void RemoveConnection(string id)
         {
-            ConnectionState state;
-            if (_connections.TryRemove(id, out state))
+            if (_connections.TryRemove(id, out _))
             {
                 // Remove the connection completely
                 _logger.LogDebug("Removing {connectionId} from the list of connections", id);
@@ -85,9 +84,9 @@ namespace Microsoft.AspNetCore.Sockets
             ((ConnectionManager)state).Scan();
         }
 
-        private void Scan()
+        public void Scan()
         {
-            // If we couldn't get the lock it means one of 2 things is true:
+            // If we couldn't get the lock it means one of 2 things are true:
             // - We're about to dispose so we don't care to run the scan callback anyways.
             // - The previous Scan took long enough that the next scan tried to run in parallel
             // In either case just do nothing and end the timer callback as soon as possible
@@ -132,12 +131,12 @@ namespace Microsoft.AspNetCore.Sockets
                         var ignore = DisposeAndRemoveAsync(c.Value);
                     }
                 }
+
+                // Resume once we finished processing all connections
+                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
             }
             finally
             {
-                // Resume once we finished processing all connections
-                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-
                 // Exit the lock now
                 Monitor.Exit(_executionLock);
             }
