@@ -104,12 +104,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         if (e != null)
                         {
                             receiveTcs.TrySetException(e);
+                            closeTcs.TrySetException(e);
                         }
                         else
                         {
                             receiveTcs.TrySetResult(null);
+                            closeTcs.TrySetResult(null);
                         }
-                        closeTcs.TrySetResult(null);
                     };
 
                     logger.LogInformation("Starting connection to {url}", url);

@@ -207,13 +207,35 @@ namespace Microsoft.AspNetCore.Sockets
 
                 var resultTask = await Task.WhenAny(state.ApplicationTask, state.TransportTask);
 
-                // If the application ended before the transport task then we need to end the connection completely
-                // so there is no future polling
+                var pollAgain = true;
+
+                // If the application ended before the transport task then we need to potentially need to end the 
+                // connection
                 if (resultTask == state.ApplicationTask)
                 {
-                    await _manager.DisposeAndRemoveAsync(state);
+                    // Complete the transport (notifying it of the application error if there is one)
+                    state.Connection.Transport.Output.TryComplete(state.ApplicationTask.Exception);
+
+                    // Wait for the transport to run
+                    await state.TransportTask;
+
+                    // If the status code is a 204 it means we didn't write anything
+                    if (context.Response.StatusCode == StatusCodes.Status204NoContent)
+                    {
+                        // We should be able to safely dispose because there's no more data being written
+                        await _manager.DisposeAndRemoveAsync(state);
+
+                        // Don't poll again if we've removed the connection completely
+                        pollAgain = false;
+                    }
                 }
-                else if (!resultTask.IsCanceled)
+                else if (resultTask.IsCanceled)
+                {
+                    // Don't poll if the transport task was cancelled
+                    pollAgain = false;
+                }
+
+                if (pollAgain)
                 {
                     // Otherwise, we update the state to inactive again and wait for the next poll
                     try
