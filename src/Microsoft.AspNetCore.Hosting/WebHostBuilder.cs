@@ -285,12 +285,6 @@ namespace Microsoft.AspNetCore.Hosting
                 if (exceptions.Count > 0)
                 {
                     hostingStartupErrors = new AggregateException(exceptions);
-
-                    // Throw directly if we're not capturing startup errors
-                    if (!_options.CaptureStartupErrors)
-                    {
-                        throw hostingStartupErrors;
-                    }
                 }
             }
 

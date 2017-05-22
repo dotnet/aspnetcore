@@ -975,7 +975,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void Build_ThrowsIfUnloadableAssemblyNameInHostingStartupAssemblies()
+        public void Build_DoesntThrowIfUnloadableAssemblyNameInHostingStartupAssemblies()
         {
             var builder = CreateWebHostBuilder()
                 .CaptureStartupErrors(false)
@@ -983,9 +983,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(app => { })
                 .UseServer(new TestServer());
 
-            var ex = Assert.Throws<AggregateException>(() => builder.Build());
-            Assert.IsType<InvalidOperationException>(ex.InnerExceptions[0]);
-            Assert.IsType<FileNotFoundException>(ex.InnerExceptions[0].InnerException);
+            using (builder.Build())
+            {
+                Assert.Equal("0", builder.GetSetting("testhostingstartup"));
+            }
         }
 
         [Fact]
