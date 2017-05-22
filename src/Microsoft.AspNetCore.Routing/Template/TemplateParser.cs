@@ -342,20 +342,26 @@ namespace Microsoft.AspNetCore.Routing.Template
                     // This optional parameter is the last part in the segment
                     if (i == segment.Parts.Count - 1)
                     {
-                        Debug.Assert(segment.Parts[i - 1].IsLiteral);
-
-                        // the optional parameter is preceded by a period
-                        if (segment.Parts[i - 1].Text == PeriodString)
+                        if(!segment.Parts[i - 1].IsLiteral)
                         {
-                            segment.Parts[i - 1].IsOptionalSeperator = true;
-                        }
-                        else
-                        {
-                            // The optional parameter is preceded by a literal other than period
+                            // The optional parameter is preceded by something that is not a literal.
                             // Example of error message:
-                            // "In the complex segment {RouteValue}-{param?}, the optional parameter 'param'is preceded
-                            // by an invalid segment "-". Only valid literal to precede an optional parameter is a 
-                            // period (.).
+                            // "In the segment '{RouteValue}-{param?}', the optional parameter 'param' is preceded
+                            // by an invalid segment '-'. Only a period (.) can precede an optional parameter.
+                            context.Error = string.Format(
+                                Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
+                                segment.DebuggerToString(),
+                                part.Name,
+                                segment.Parts[i - 1].DebuggerToString());
+
+                            return false;
+                        }
+                        if(segment.Parts[i - 1].Text != PeriodString)
+                        {
+                            // The optional parameter is preceded by a literal other than period.
+                            // Example of error message:
+                            // "In the segment '{RouteValue}-{param?}', the optional parameter 'param' is preceded
+                            // by an invalid segment '-'. Only a period (.) can precede an optional parameter.
                             context.Error = string.Format(
                                 Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
                                 segment.DebuggerToString(),
@@ -364,6 +370,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
                             return false;
                         }
+                        segment.Parts[i - 1].IsOptionalSeperator = true;
                     }
                     else
                     {

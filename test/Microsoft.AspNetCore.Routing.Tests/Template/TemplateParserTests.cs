@@ -545,19 +545,19 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                  + Environment.NewLine + "Parameter name: routeTemplate");
         }
 
-        [Theory(Skip = "Skipped because it causes the test framework to crash")]
+        [Theory]
         [InlineData("{p1}-{p2?}", "-")]
         [InlineData("{p1}..{p2?}", "..")]
         [InlineData("..{p2?}", "..")]
         [InlineData("{p1}.abc.{p2?}", ".abc.")]
-        [InlineData("{p1}{p2?}", "p1")]
+        [InlineData("{p1}{p2?}", "{p1}")]
         public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template, string parameter)
         {
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
-                "In the complex segment '"+ template +"',  the optional parameter 'p2' is preceded by an invalid " +
-                "segment '" + parameter +"'. Only valid literal to precede an optional parameter is a period (.)." +
+                "In the segment '"+ template +"', the optional parameter 'p2' is preceded by an invalid " +
+                "segment '" + parameter +"'. Only a period (.) can precede an optional parameter." +
                 Environment.NewLine + "Parameter name: routeTemplate");
         }
 
