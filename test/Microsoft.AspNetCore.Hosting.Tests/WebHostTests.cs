@@ -203,10 +203,12 @@ namespace Microsoft.AspNetCore.Hosting
 
             var server = new Mock<IServer>();
             server.Setup(s => s.StopAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Callback<CancellationToken>(token =>
+                .Returns<CancellationToken>(token =>
                 {
-                    token.WaitHandle.WaitOne();
+                    return Task.Run(() =>
+                    {
+                        token.WaitHandle.WaitOne();
+                    });
                 });
 
             using (var host = CreateBuilder(config)
@@ -240,10 +242,12 @@ namespace Microsoft.AspNetCore.Hosting
 
             var server = new Mock<IServer>();
             server.Setup(s => s.StopAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Callback<CancellationToken>(token =>
+                .Returns<CancellationToken>(token =>
                 {
-                    token.WaitHandle.WaitOne();
+                    return Task.Run(() =>
+                    {
+                        token.WaitHandle.WaitOne();
+                    });
                 });
 
             using (var host = CreateBuilder(config)
@@ -274,10 +278,12 @@ namespace Microsoft.AspNetCore.Hosting
 
             var server = new Mock<IServer>();
             server.Setup(s => s.StopAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Callback<CancellationToken>(token =>
+                .Returns<CancellationToken>(token =>
                 {
-                    token.WaitHandle.WaitOne();
+                    return Task.Run(() =>
+                    {
+                        token.WaitHandle.WaitOne();
+                    });
                 });
 
             using (var host = CreateBuilder(config)
