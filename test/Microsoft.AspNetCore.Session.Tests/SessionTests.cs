@@ -728,9 +728,9 @@ namespace Microsoft.AspNetCore.Session
                 }
                 return _cache.Get(key);
             }
-            public Task<byte[]> GetAsync(string key) => _cache.GetAsync(key);
+            public Task<byte[]> GetAsync(string key, CancellationToken token = default(CancellationToken)) => _cache.GetAsync(key);
             public void Refresh(string key) => _cache.Refresh(key);
-            public Task RefreshAsync(string key)
+            public Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
             {
                 if (DisableRefreshAsync)
                 {
@@ -739,9 +739,9 @@ namespace Microsoft.AspNetCore.Session
                 return _cache.RefreshAsync(key);
             }
             public void Remove(string key) => _cache.Remove(key);
-            public Task RemoveAsync(string key) => _cache.RemoveAsync(key);
+            public Task RemoveAsync(string key, CancellationToken token = default(CancellationToken)) => _cache.RemoveAsync(key);
             public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => _cache.Set(key, value, options);
-            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
+            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
             {
                 if (DisableSetAsync)
                 {
