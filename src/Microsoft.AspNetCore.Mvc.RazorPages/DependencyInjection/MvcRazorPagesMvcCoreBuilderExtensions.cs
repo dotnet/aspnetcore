@@ -93,8 +93,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Options
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<RazorPagesOptions>, RazorPagesOptionsSetup>());
-            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorPagesRazorViewEngineOptionsSetup>());
 
             // Action description and invocation
@@ -105,6 +103,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, RazorProjectPageApplicationModelProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, CompiledPageApplicationModelProvider>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPageApplicationModelProvider, PageFilterApplicationModelProvider>());
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionInvokerProvider, PageActionInvokerProvider>());

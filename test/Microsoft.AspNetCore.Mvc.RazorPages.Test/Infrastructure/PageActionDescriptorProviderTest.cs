@@ -186,8 +186,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Arrange
             var options = new MvcOptions();
             var applicationModelProvider = new TestPageApplicationModelProvider(CreateModel());
+            var filterProvider = new PageFilterApplicationModelProvider();
             var provider = new PageActionDescriptorProvider(
-                new[] { applicationModelProvider },
+                new IPageApplicationModelProvider[] { applicationModelProvider, filterProvider },
                 GetAccessor(options),
                 GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
@@ -222,8 +223,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             options.Filters.Add(filter1);
             options.Filters.Add(filter2);
             var applicationModelProvider = new TestPageApplicationModelProvider(CreateModel());
+            var filterProvider = new PageFilterApplicationModelProvider();
             var provider = new PageActionDescriptorProvider(
-                new[] { applicationModelProvider },
+                new IPageApplicationModelProvider[] { applicationModelProvider, filterProvider },
                 GetAccessor(options),
                 GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
@@ -275,8 +277,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var razorOptions = GetRazorPagesOptions();
             razorOptions.Value.Conventions.Add(convention.Object);
             var applicationModelProvider = new TestPageApplicationModelProvider(CreateModel());
+            var filterProvider = new PageFilterApplicationModelProvider();
             var provider = new PageActionDescriptorProvider(
-                new[] { applicationModelProvider },
+                new IPageApplicationModelProvider[] { applicationModelProvider, filterProvider },
                 GetAccessor(options),
                 razorOptions);
             var context = new ActionDescriptorProviderContext();
@@ -337,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private static IOptions<RazorPagesOptions> GetRazorPagesOptions()
         {
-            return new OptionsManager<RazorPagesOptions>(new[] { new RazorPagesOptionsSetup() });
+            return new TestOptionsManager<RazorPagesOptions>();
         }
 
         private static RazorProjectItem GetProjectItem(string basePath, string path, string content)
@@ -359,7 +362,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 _models = models ?? Array.Empty<PageApplicationModel>();
             }
 
-            public int Order => 0;
+            public int Order => -1000;
 
             public void OnProvidersExecuted(PageApplicationModelProviderContext context)
             {

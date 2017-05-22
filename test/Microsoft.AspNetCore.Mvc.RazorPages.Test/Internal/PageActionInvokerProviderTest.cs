@@ -182,7 +182,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
                 razorPageFactoryProvider: razorPageFactoryProvider.Object,
-                razorProject: defaultRazorProject);
+                razorProject: defaultRazorProject,
+                razorPagesOptions: new RazorPagesOptions { RootDirectory = "/" });
 
             var context = new ActionInvokerProviderContext(new ActionContext()
             {
@@ -346,7 +347,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 pageProvider: null,
                 modelProvider: null,
                 razorPageFactoryProvider: razorPageFactoryProvider,
-                razorProject: razorProject);
+                razorProject: razorProject,
+                razorPagesOptions: new RazorPagesOptions { RootDirectory = "/" });
 
             var compiledDescriptor = CreateCompiledPageActionDescriptor(descriptor);
 
@@ -458,7 +460,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 pageProvider: null,
                 modelProvider: null,
                 razorPageFactoryProvider: pageFactory.Object,
-                razorProject: razorProject);
+                razorProject: razorProject,
+                razorPagesOptions: new RazorPagesOptions { RootDirectory = "/" });
 
             var compiledDescriptor = CreateCompiledPageActionDescriptor(descriptor);
 

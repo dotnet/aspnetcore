@@ -365,13 +365,6 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
-                        typeof(IConfigureOptions<RazorPagesOptions>),
-                        new[]
-                        {
-                            typeof(RazorPagesOptionsSetup),
-                        }
-                    },
-                    {
                         typeof(IActionConstraintProvider),
                         new Type[]
                         {
@@ -433,6 +426,7 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             typeof(CompiledPageApplicationModelProvider),
                             typeof(RazorProjectPageApplicationModelProvider),
+                            typeof(PageFilterApplicationModelProvider),
                         }
                     },
                 };

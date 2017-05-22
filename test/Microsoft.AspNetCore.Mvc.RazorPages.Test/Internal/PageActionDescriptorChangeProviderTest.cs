@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var changeToken = changeProvider.GetChangeToken();
 
             // Assert
-            fileProvider.Verify(f => f.Watch("/**/*.cshtml"));
+            fileProvider.Verify(f => f.Watch("/Pages/**/*.cshtml"));
         }
 
         [Theory]

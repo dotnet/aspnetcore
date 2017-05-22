@@ -31,16 +31,51 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 result =>
                 {
                     Assert.Equal("/Pages/About.cshtml", result.RelativePath);
-                    Assert.Equal("/Pages/About", result.ViewEnginePath);
+                    Assert.Equal("/About", result.ViewEnginePath);
                     Assert.Collection(result.Selectors,
-                        selector => Assert.Equal("Pages/About", selector.AttributeRouteModel.Template));
+                        selector => Assert.Equal("About", selector.AttributeRouteModel.Template));
                 },
                 result =>
                 {
                     Assert.Equal("/Pages/Home.cshtml", result.RelativePath);
-                    Assert.Equal("/Pages/Home", result.ViewEnginePath);
+                    Assert.Equal("/Home", result.ViewEnginePath);
                     Assert.Collection(result.Selectors,
-                        selector => Assert.Equal("Pages/Home/some-prefix", selector.AttributeRouteModel.Template));
+                        selector => Assert.Equal("Home/some-prefix", selector.AttributeRouteModel.Template));
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AddsMultipleSelectorsForIndexPage_WithIndexAtRoot()
+        {
+            // Arrange
+            var info = new[]
+            {
+                new CompiledPageInfo("/Pages/Index.cshtml", typeof(object), routePrefix: string.Empty),
+                new CompiledPageInfo("/Pages/Admin/Index.cshtml", typeof(object), "some-template"),
+            };
+            var provider = new TestCompiledPageApplicationModelProvider(info, new RazorPagesOptions { RootDirectory = "/" });
+            var context = new PageApplicationModelProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.Results,
+                result =>
+                {
+                    Assert.Equal("/Pages/Index.cshtml", result.RelativePath);
+                    Assert.Equal("/Pages/Index", result.ViewEnginePath);
+                    Assert.Collection(result.Selectors,
+                        selector => Assert.Equal("Pages/Index", selector.AttributeRouteModel.Template),
+                        selector => Assert.Equal("Pages", selector.AttributeRouteModel.Template));
+                },
+                result =>
+                {
+                    Assert.Equal("/Pages/Admin/Index.cshtml", result.RelativePath);
+                    Assert.Equal("/Pages/Admin/Index", result.ViewEnginePath);
+                    Assert.Collection(result.Selectors,
+                        selector => Assert.Equal("Pages/Admin/Index/some-template", selector.AttributeRouteModel.Template),
+                        selector => Assert.Equal("Pages/Admin/some-template", selector.AttributeRouteModel.Template));
                 });
         }
 
@@ -64,18 +99,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 result =>
                 {
                     Assert.Equal("/Pages/Index.cshtml", result.RelativePath);
-                    Assert.Equal("/Pages/Index", result.ViewEnginePath);
+                    Assert.Equal("/Index", result.ViewEnginePath);
                     Assert.Collection(result.Selectors,
-                        selector => Assert.Equal("Pages/Index", selector.AttributeRouteModel.Template),
-                        selector => Assert.Equal("Pages", selector.AttributeRouteModel.Template));
+                        selector => Assert.Equal("Index", selector.AttributeRouteModel.Template),
+                        selector => Assert.Equal("", selector.AttributeRouteModel.Template));
                 },
                 result =>
                 {
                     Assert.Equal("/Pages/Admin/Index.cshtml", result.RelativePath);
-                    Assert.Equal("/Pages/Admin/Index", result.ViewEnginePath);
+                    Assert.Equal("/Admin/Index", result.ViewEnginePath);
                     Assert.Collection(result.Selectors,
-                        selector => Assert.Equal("Pages/Admin/Index/some-template", selector.AttributeRouteModel.Template),
-                        selector => Assert.Equal("Pages/Admin/some-template", selector.AttributeRouteModel.Template));
+                        selector => Assert.Equal("Admin/Index/some-template", selector.AttributeRouteModel.Template),
+                        selector => Assert.Equal("Admin/some-template", selector.AttributeRouteModel.Template));
                 });
         }
 
