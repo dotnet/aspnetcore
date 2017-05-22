@@ -2,13 +2,13 @@
 param(
     [string]$server,
     [string]$username,
-    [SecureString]$password
+    [string]$password
 )
 function Invoke-HTTPPostCommand() {
     param(
         [string] $url,
         [string] $username,
-        [SecureString] $password
+        [string] $password
     )
  
     $authInfo = $username + ":" + $password
@@ -44,7 +44,7 @@ function Invoke-TeamCityBackup() {
         [string] $includePersonalChanges,
         [string] $fileName,
   	    [string] $userName,
-		[SecureString] $password
+		[string] $password
     )
     $TeamCityURL = [System.String]::Format("{0}/httpAuth/app/rest/server/backup?addTimestamp={1}&includeConfigs={2}&includeDatabase={3}&includeBuildLogs={4}&includePersonalChanges={5}&fileName={6}",
                                             $server,
