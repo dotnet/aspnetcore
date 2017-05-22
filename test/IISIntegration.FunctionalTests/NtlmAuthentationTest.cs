@@ -24,15 +24,27 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task NtlmAuthentication(RuntimeArchitecture architecture, ApplicationType applicationType)
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return NtlmAuthentication(ServerType.IISExpress, architecture, applicationType);
+            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
         }
 
-        private async Task NtlmAuthentication(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [ConditionalTheory(Skip = "No test configuration enabled")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone)]
+        // TODO reenable when https://github.com/aspnet/IISIntegration/issues/373 is resolved
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+         Task NtlmAuthentication_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            var testName = $"NtlmAuthentication_{serverType}_{architecture}";
+            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
+        }
+
+        private async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        {
+            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
@@ -41,14 +53,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     ? "win7-x64"
                     : "win7-x86";
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, RuntimeFlavor.CoreClr, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType,
-                    AdditionalPublishParameters = ApplicationType.Standalone == applicationType
+                    AdditionalPublishParameters = ApplicationType.Standalone == applicationType && RuntimeFlavor.CoreClr == runtimeFlavor
                         ? "-r " + windowsRid
                         : null
                 };
@@ -76,7 +88,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                         Assert.Equal("Anonymous?True", responseText);
 
-                        /* Disabled for due to https://github.com/aspnet/ServerTests/issues/82
                         response = await httpClient.GetAsync("/Restricted");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -93,7 +104,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         response = await httpClient.GetAsync("/Forbidden");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-                        */
 
                         var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
                         httpClient = deploymentResult.CreateHttpClient(httpClientHandler);

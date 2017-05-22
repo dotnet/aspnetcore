@@ -25,29 +25,40 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [ConditionalTheory(Skip = "No test configuration enabled")]
+        [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        //[InlineData(RuntimeArchitecture.x86, "https://localhost:44394/", ApplicationType.Portable)]
-        [InlineData(RuntimeArchitecture.x64, "https://localhost:44395/", ApplicationType.Standalone)]
-        public Task Https_HelloWorld(RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44396/", ApplicationType.Portable)]
+        public Task Https_HelloWorld(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            return HttpsHelloWorld(ServerType.IISExpress, architecture, applicationBaseUrl, applicationType);
+            return HttpsHelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
         }
 
-        private async Task HttpsHelloWorld(ServerType serverType, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [ConditionalTheory(Skip = "No test configuration enabled")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44394/", ApplicationType.Portable)]
+        // TODO reenable when https://github.com/aspnet/IISIntegration/issues/373 is resolved
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44395/", ApplicationType.Standalone)]
+        public Task Https_HelloWorld_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            var testName = $"HttpsHelloWorld_{serverType}_{architecture}";
+            return HttpsHelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
+        }
+
+        private async Task HttpsHelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        {
+            var testName = $"HttpsHelloWorld_{serverType}_{runtimeFlavor}_{architecture}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HttpsHelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, RuntimeFlavor.CoreClr, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 
@@ -80,37 +91,58 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
+        [ConditionalTheory(Skip = "No test configuration enabled")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "https://localhost:44399/", ApplicationType.Standalone)]
+        public Task Https_HelloWorld_NoClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        {
+            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: false);
+        }
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        //[InlineData(RuntimeArchitecture.x86, "https://localhost:44399/", ApplicationType.Standalone)]
-        [InlineData(RuntimeArchitecture.x64, "https://localhost:44398/", ApplicationType.Portable)]
-        public Task Https_HelloWorld_NoClientCert(RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        // TODO reenable when https://github.com/aspnet/IISIntegration/issues/373 is resolved
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44397/", ApplicationType.Standalone)]
+        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44398/", ApplicationType.Portable)]
+        public Task Https_HelloWorld_NoClientCert_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            return HttpsHelloWorldCerts(ServerType.IISExpress, architecture, applicationBaseUrl, applicationType, sendClientCert: false);
+            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: false);
         }
 
         [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(RuntimeArchitecture.x64, "https://localhost:44301/", ApplicationType.Portable)]
-        public Task Https_HelloWorld_ClientCert(RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44301/", ApplicationType.Portable)]
+        public Task Https_HelloWorld_ClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            return HttpsHelloWorldCerts(ServerType.IISExpress, architecture, applicationBaseUrl, applicationType, sendClientCert: true);
+            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: true);
         }
 
-        private async Task HttpsHelloWorldCerts(ServerType serverType, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType, bool sendClientCert)
+        [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44302/", ApplicationType.Standalone)]
+        public Task Https_HelloWorld_ClientCert_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            var testName = $"HttpsHelloWorldCerts_{serverType}_{architecture}";
+            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: true);
+        }
+
+        private async Task HttpsHelloWorldCerts(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType, bool sendClientCert)
+        {
+            var testName = $"HttpsHelloWorldCerts_{serverType}_{runtimeFlavor}_{architecture}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HttpsHelloWorldTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, RuntimeFlavor.CoreClr, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 
