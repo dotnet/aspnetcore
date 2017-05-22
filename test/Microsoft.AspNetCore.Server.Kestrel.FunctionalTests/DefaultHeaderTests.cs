@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Server: Kestrel",

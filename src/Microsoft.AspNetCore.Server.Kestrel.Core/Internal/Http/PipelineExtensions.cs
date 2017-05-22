@@ -18,67 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [ThreadStatic]
         private static byte[] _numericBytesScratch;
 
-        public static ValueTask<ArraySegment<byte>> PeekAsync(this IPipeReader pipelineReader)
-        {
-            var input = pipelineReader.ReadAsync();
-            while (input.IsCompleted)
-            {
-                var result = input.GetResult();
-                try
-                {
-                    if (!result.Buffer.IsEmpty)
-                    {
-                        var segment = result.Buffer.First;
-                        var data = segment.GetArray();
-
-                        return new ValueTask<ArraySegment<byte>>(data);
-                    }
-                    else if (result.IsCompleted)
-                    {
-                        return default(ValueTask<ArraySegment<byte>>);
-                    }
-                }
-                finally
-                {
-                    pipelineReader.Advance(result.Buffer.Start, result.Buffer.IsEmpty
-                        ? result.Buffer.End
-                        : result.Buffer.Start);
-                }
-                input = pipelineReader.ReadAsync();
-            }
-
-            return new ValueTask<ArraySegment<byte>>(pipelineReader.PeekAsyncAwaited(input));
-        }
-
-        private static async Task<ArraySegment<byte>> PeekAsyncAwaited(this IPipeReader pipelineReader, ReadableBufferAwaitable readingTask)
-        {
-            while (true)
-            {
-                var result = await readingTask;
-
-                try
-                {
-                    if (!result.Buffer.IsEmpty)
-                    {
-                        var segment = result.Buffer.First;
-                        return segment.GetArray();
-                    }
-                    else if (result.IsCompleted)
-                    {
-                        return default(ArraySegment<byte>);
-                    }
-                }
-                finally
-                {
-                    pipelineReader.Advance(result.Buffer.Start, result.Buffer.IsEmpty
-                        ? result.Buffer.End
-                        : result.Buffer.Start);
-                }
-
-                readingTask = pipelineReader.ReadAsync();
-            }
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Span<byte> ToSpan(this ReadableBuffer buffer)
         {

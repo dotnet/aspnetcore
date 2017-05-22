@@ -54,7 +54,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var pipe = _pipeFactory.Create(pipeOptions);
             var serviceContext = new TestServiceContext();
-            var frame = new Frame<object>(null, new FrameContext { ServiceContext = serviceContext });
+            var frameContext = new FrameContext
+            {
+                ServiceContext = serviceContext,
+                ConnectionInformation = new MockConnectionInformation
+                {
+                    PipeFactory = _pipeFactory
+                }
+            };
+            var frame = new Frame<object>(null, frameContext);
             var socketOutput = new OutputProducer(pipe, "0", serviceContext.Log);
 
             return socketOutput;

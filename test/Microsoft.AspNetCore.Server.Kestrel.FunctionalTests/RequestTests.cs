@@ -1270,6 +1270,153 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task ServerConsumesKeepAliveContentLengthRequest()
+        {
+            // The app doesn't read the request body, so it should be consumed by the server
+            using (var server = new TestServer(context => Task.CompletedTask))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "hello");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    // If the server consumed the previous request properly, the
+                    // next request should be successful
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "world");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ServerConsumesKeepAliveChunkedRequest()
+        {
+            // The app doesn't read the request body, so it should be consumed by the server
+            using (var server = new TestServer(context => Task.CompletedTask))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "5",
+                        "hello",
+                        "5",
+                        "world",
+                        "0",
+                        "Trailer: value",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    // If the server consumed the previous request properly, the
+                    // next request should be successful
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "world");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task NonKeepAliveRequestNotConsumedByAppCompletes()
+        {
+            // The app doesn't read the request body, so it should be consumed by the server
+            using (var server = new TestServer(context => Task.CompletedTask))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.0",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "hello");
+
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UpgradedRequestNotConsumedByAppCompletes()
+        {
+            // The app doesn't read the request body, so it should be consumed by the server
+            using (var server = new TestServer(async context =>
+            {
+                var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
+                var duplexStream = await upgradeFeature.UpgradeAsync();
+
+                var response = Encoding.ASCII.GetBytes("goodbye");
+                await duplexStream.WriteAsync(response, 0, response.Length);
+            }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Connection: upgrade",
+                        "",
+                        "hello");
+
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 101 Switching Protocols",
+                        "Connection: Upgrade",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "goodbye");
+                }
+            }
+        }
+
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)
         {
             var builder = new WebHostBuilder()

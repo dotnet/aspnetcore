@@ -62,7 +62,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameContext = new FrameContext
             {
                 ServiceContext = _serviceContext,
-                ConnectionInformation = Mock.Of<IConnectionInformation>(),
+                ConnectionInformation = new MockConnectionInformation
+                {
+                    PipeFactory = _pipelineFactory
+                },
                 TimeoutControl = _timeoutControl.Object,
                 Input = _input.Reader,
                 Output = output
