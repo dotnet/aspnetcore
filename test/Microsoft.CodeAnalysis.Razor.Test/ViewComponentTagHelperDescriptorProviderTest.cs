@@ -1,10 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -49,12 +46,14 @@ namespace Microsoft.CodeAnalysis.Razor
                     attribute
                     .Name("foo")
                     .PropertyName("foo")
-                    .TypeName(typeof(string).FullName))
+                    .TypeName(typeof(string).FullName)
+                    .DisplayName("string StringParameterViewComponentTagHelper.foo"))
                 .BindAttribute(attribute =>
                     attribute
                     .Name("bar")
                     .PropertyName("bar")
-                    .TypeName(typeof(string).FullName))
+                    .TypeName(typeof(string).FullName)
+                    .DisplayName("string StringParameterViewComponentTagHelper.bar"))
                 .AddMetadata(ViewComponentTypes.ViewComponentNameKey, "StringParameter")
                 .Build();
 

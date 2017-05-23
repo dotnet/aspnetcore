@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             [typeof(decimal).FullName] = "decimal",
         };
 
+        private string _displayName;
         private bool _isEnum;
         private bool _hasIndexer;
         private string _indexerValueTypeName;
@@ -113,6 +114,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
+        public BoundAttributeDescriptorBuilder DisplayName(string displayName)
+        {
+            if (displayName == null)
+            {
+                throw new ArgumentNullException(nameof(displayName));
+            }
+
+            _displayName = displayName;
+
+            return this;
+        }
+
         public BoundAttributeDescriptor Build()
         {
             var validationDiagnostics = Validate();
@@ -122,12 +135,17 @@ namespace Microsoft.AspNetCore.Razor.Language
                 diagnostics.UnionWith(_diagnostics);
             }
 
-            if (!PrimitiveDisplayTypeNameLookups.TryGetValue(_typeName, out var simpleName))
+            var displayName = _displayName;
+            if (displayName == null)
             {
-                simpleName = _typeName;
+                if (!PrimitiveDisplayTypeNameLookups.TryGetValue(_typeName, out var simpleName))
+                {
+                    simpleName = _typeName;
+                }
+
+                displayName = $"{simpleName} {_containingTypeName}.{_propertyName}";
             }
 
-            var displayName = $"{simpleName} {_containingTypeName}.{_propertyName}";
             var descriptor = new ITagHelperBoundAttributeDescriptor(
                 _isEnum,
                 _name,

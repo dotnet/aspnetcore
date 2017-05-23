@@ -31,12 +31,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     attribute
                     .Name("foo")
                     .PropertyName("foo")
-                    .TypeName(typeof(string).FullName))
+                    .TypeName(typeof(string).FullName)
+                    .DisplayName("string StringParameterViewComponentTagHelper.foo"))
                 .BindAttribute(attribute =>
                     attribute
                     .Name("bar")
                     .PropertyName("bar")
-                    .TypeName(typeof(string).FullName))
+                    .TypeName(typeof(string).FullName)
+                    .DisplayName("string StringParameterViewComponentTagHelper.bar"))
                 .AddMetadata(ViewComponentTypes.ViewComponentNameKey, "StringParameter")
                 .Build();
 
@@ -69,17 +71,20 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     .Name("test-enum")
                     .PropertyName("testEnum")
                     .TypeName(typeof(VariousParameterViewComponent).FullName + "." + nameof(VariousParameterViewComponent.TestEnum))
-                    .AsEnum())
+                    .AsEnum()
+                    .DisplayName(typeof(VariousParameterViewComponent).FullName + "." + nameof(VariousParameterViewComponent.TestEnum) + " VariousParameterViewComponentTagHelper.testEnum"))
                 .BindAttribute(attribute =>
                     attribute
                     .Name("test-string")
                     .PropertyName("testString")
-                    .TypeName(typeof(string).FullName))
+                    .TypeName(typeof(string).FullName)
+                    .DisplayName("string VariousParameterViewComponentTagHelper.testString"))
                 .BindAttribute(attribute =>
                     attribute
                     .Name("baz")
                     .PropertyName("baz")
-                    .TypeName(typeof(int).FullName))
+                    .TypeName(typeof(int).FullName)
+                    .DisplayName("int VariousParameterViewComponentTagHelper.baz"))
                 .AddMetadata(ViewComponentTypes.ViewComponentNameKey, "VariousParameter")
                 .Build();
 
@@ -109,13 +114,15 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     attribute
                     .Name("foo")
                     .PropertyName("Foo")
-                    .TypeName("System.Collections.Generic.List<System.String>"))
+                    .TypeName("System.Collections.Generic.List<System.String>")
+                    .DisplayName("System.Collections.Generic.List<System.String> GenericParameterViewComponentTagHelper.Foo"))
                 .BindAttribute(attribute =>
                     attribute
                     .Name("bar")
                     .PropertyName("Bar")
                     .TypeName("System.Collections.Generic.Dictionary<System.String, System.Int32>")
-                    .AsDictionary("bar-", typeof(int).FullName))
+                    .AsDictionary("bar-", typeof(int).FullName)
+                    .DisplayName("System.Collections.Generic.Dictionary<System.String, System.Int32> GenericParameterViewComponentTagHelper.Bar"))
                 .AddMetadata(ViewComponentTypes.ViewComponentNameKey, "GenericParameter")
                 .Build();
 

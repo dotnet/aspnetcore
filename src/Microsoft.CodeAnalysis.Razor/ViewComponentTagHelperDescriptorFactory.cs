@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -19,6 +20,25 @@ namespace Microsoft.CodeAnalysis.Razor
             SymbolDisplayFormat.FullyQualifiedFormat
                 .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
                 .WithMiscellaneousOptions(SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions & (~SymbolDisplayMiscellaneousOptions.UseSpecialTypes));
+
+        private static readonly IReadOnlyDictionary<string, string> PrimitiveDisplayTypeNameLookups = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [typeof(byte).FullName] = "byte",
+            [typeof(sbyte).FullName] = "sbyte",
+            [typeof(int).FullName] = "int",
+            [typeof(uint).FullName] = "uint",
+            [typeof(short).FullName] = "short",
+            [typeof(ushort).FullName] = "ushort",
+            [typeof(long).FullName] = "long",
+            [typeof(ulong).FullName] = "ulong",
+            [typeof(float).FullName] = "float",
+            [typeof(double).FullName] = "double",
+            [typeof(char).FullName] = "char",
+            [typeof(bool).FullName] = "bool",
+            [typeof(object).FullName] = "object",
+            [typeof(string).FullName] = "string",
+            [typeof(decimal).FullName] = "decimal",
+        };
 
         public ViewComponentTagHelperDescriptorFactory(Compilation compilation)
         {
@@ -47,7 +67,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     AddRequiredAttributes(methodParameters, ruleBuilder);
                 });
 
-                AddBoundAttributes(methodParameters, descriptorBuilder);
+                AddBoundAttributes(methodParameters, displayName, descriptorBuilder);
             }
             else
             {
@@ -148,18 +168,25 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void AddBoundAttributes(ImmutableArray<IParameterSymbol> methodParameters, TagHelperDescriptorBuilder builder)
+        private void AddBoundAttributes(ImmutableArray<IParameterSymbol> methodParameters, string containingDisplayName, TagHelperDescriptorBuilder builder)
         {
             foreach (var parameter in methodParameters)
             {
                 var lowerKebabName = HtmlConventions.ToHtmlCase(parameter.Name);
                 var typeName = parameter.Type.ToDisplayString(FullNameTypeDisplayFormat);
+
+                if (!PrimitiveDisplayTypeNameLookups.TryGetValue(typeName, out var simpleName))
+                {
+                    simpleName = typeName;
+                }
+
                 builder.BindAttribute(attributeBuilder =>
                 {
                     attributeBuilder
                         .Name(lowerKebabName)
                         .PropertyName(parameter.Name)
-                        .TypeName(typeName);
+                        .TypeName(typeName)
+                        .DisplayName($"{simpleName} {containingDisplayName}.{parameter.Name}");
 
                     if (parameter.Type.TypeKind == TypeKind.Enum)
                     {
