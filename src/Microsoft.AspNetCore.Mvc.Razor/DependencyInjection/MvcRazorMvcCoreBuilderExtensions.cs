@@ -67,6 +67,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 builder.PartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
             }
 
+            if (!builder.PartManager.FeatureProviders.OfType<TagHelperFeatureProvider>().Any())
+            {
+                builder.PartManager.FeatureProviders.Add(new TagHelperFeatureProvider());
+            }
+
             if (!builder.PartManager.FeatureProviders.OfType<ViewsFeatureProvider>().Any())
             {
                 builder.PartManager.FeatureProviders.Add(new ViewsFeatureProvider());

@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
                 typeof(TestTagHelperOne),
                 typeof(TestTagHelperTwo)));
 
-            manager.FeatureProviders.Add(new TestFeatureProvider());
+            manager.FeatureProviders.Add(new TagHelperFeatureProvider());
 
             var builder = new MvcBuilder(services, manager);
 
@@ -77,17 +77,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
 
         private class TestTagHelperTwo : TagHelper
         {
-        }
-
-        private class TestFeatureProvider : IApplicationFeatureProvider<TagHelperFeature>
-        {
-            public void PopulateFeature(IEnumerable<ApplicationPart> parts, TagHelperFeature feature)
-            {
-                foreach (var type in parts.OfType<IApplicationPartTypeProvider>().SelectMany(tp => tp.Types))
-                {
-                    feature.TagHelpers.Add(type);
-                }
-            }
         }
     }
 }

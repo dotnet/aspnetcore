@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [Fact(Skip = "Workaround for https://github.com/aspnet/Mvc/issues/5768.")]
+        [Fact]
         public async Task TagHelpersWithConstructorInjectionAreCreatedAndActivated()
         {
             // Arrange
