@@ -12,10 +12,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
         where TUser : IdentityUser
         where TApplication : IdentityServiceApplication
     {
-        public IdentityServiceDbContext(DbContextOptions options)
-            : base(options)
-        {
-        }
+        public IdentityServiceDbContext(DbContextOptions options) : base(options) { }
     }
 
     public abstract class IdentityServiceDbContext<TUser,TRole,TUserKey,TApplication,TApplicationKey>
@@ -39,10 +36,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
         where TApplication : IdentityServiceApplication<TApplicationKey,TUserKey>
         where TApplicationKey : IEquatable<TApplicationKey>
     {
-        public IdentityServiceDbContext(DbContextOptions options) 
-            : base(options)
-        {
-        }
+        public IdentityServiceDbContext(DbContextOptions options) : base(options) { }
     }
 
     public abstract class IdentityServiceDbContext<
@@ -76,8 +70,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
     {
         public IdentityServiceDbContext(DbContextOptions options)
             : base(options)
-        {
-        }
+        { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

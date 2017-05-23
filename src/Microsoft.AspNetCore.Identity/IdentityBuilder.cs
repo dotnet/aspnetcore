@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             if (!typeof(IUserTwoFactorTokenProvider<>).MakeGenericType(UserType).GetTypeInfo().IsAssignableFrom(provider.GetTypeInfo()))
             {
-                throw new InvalidOperationException(Resources.FormatInvalidManagerType(provider.Name, "IUserTokenProvider", UserType.Name));
+                throw new InvalidOperationException(AspNetIdentityResources.FormatInvalidManagerType(provider.Name, "IUserTokenProvider", UserType.Name));
             }
             Services.Configure<IdentityOptions>(options =>
             {
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Identity
             if (userManagerType == customType ||
                 !userManagerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
             {
-                throw new InvalidOperationException(Resources.FormatInvalidManagerType(customType.Name, "UserManager", UserType.Name));
+                throw new InvalidOperationException(AspNetIdentityResources.FormatInvalidManagerType(customType.Name, "UserManager", UserType.Name));
             }
             Services.AddScoped(customType, services => services.GetRequiredService(userManagerType));
             return AddScoped(userManagerType, customType);
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Identity
             if (managerType == customType ||
                 !managerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
             {
-                throw new InvalidOperationException(Resources.FormatInvalidManagerType(customType.Name, "RoleManager", RoleType.Name));
+                throw new InvalidOperationException(AspNetIdentityResources.FormatInvalidManagerType(customType.Name, "RoleManager", RoleType.Name));
             }
             Services.AddScoped(typeof(TRoleManager), services => services.GetRequiredService(managerType));
             return AddScoped(managerType, typeof(TRoleManager));
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Identity
             if (managerType == customType ||
                 !managerType.GetTypeInfo().IsAssignableFrom(customType.GetTypeInfo()))
             {
-                throw new InvalidOperationException(Resources.FormatInvalidManagerType(customType.Name, "SignInManager", UserType.Name));
+                throw new InvalidOperationException(AspNetIdentityResources.FormatInvalidManagerType(customType.Name, "SignInManager", UserType.Name));
             }
             Services.AddScoped(typeof(TSignInManager), services => services.GetRequiredService(managerType));
             return AddScoped(managerType, typeof(TSignInManager));

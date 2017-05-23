@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = userManager.Object;
             Assert.NotNull(identity);
             Assert.Equal(1, principal.Identities.Count());
-            Assert.Equal(identityOptions.Cookies.ApplicationCookieAuthenticationScheme, identity.AuthenticationType);
+            Assert.Equal(IdentityConstants.ApplicationScheme, identity.AuthenticationType);
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
             Assert.True(

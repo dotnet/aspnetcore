@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Identity.Service.Configuration
                 .AddSingle(IdentityServiceClaimTypes.Name, _options.Value.ClaimsIdentity.UserNameClaimType);
 
             options.LoginPolicy = new AuthorizationPolicyBuilder(options.LoginPolicy)
-                .AddAuthenticationSchemes(IdentityCookieOptions.ApplicationScheme)
+                .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme)
                 .Build();
         }
     }

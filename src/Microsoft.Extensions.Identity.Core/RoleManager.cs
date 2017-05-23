@@ -7,7 +7,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Identity
@@ -19,8 +18,11 @@ namespace Microsoft.AspNetCore.Identity
     public class RoleManager<TRole> : IDisposable where TRole : class
     {
         private bool _disposed;
-        private readonly HttpContext _context;
-        private CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
+
+        /// <summary>
+        /// The cancellation token used to cancel operations.
+        /// </summary>
+        protected virtual CancellationToken CancellationToken => CancellationToken.None;
 
         /// <summary>
         /// Constructs a new instance of <see cref="RoleManager{TRole}"/>.
@@ -30,22 +32,19 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="keyNormalizer">The normalizer to use when normalizing role names to keys.</param>
         /// <param name="errors">The <see cref="IdentityErrorDescriber"/> used to provider error messages.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>
-        /// <param name="contextAccessor">The accessor used to access the <see cref="HttpContext"/>.</param>
         public RoleManager(IRoleStore<TRole> store,
             IEnumerable<IRoleValidator<TRole>> roleValidators,
             ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors,
-            ILogger<RoleManager<TRole>> logger,
-            IHttpContextAccessor contextAccessor)
+            ILogger<RoleManager<TRole>> logger)
         {
             if (store == null)
             {
                 throw new ArgumentNullException(nameof(store));
             }
             Store = store;
-            KeyNormalizer = keyNormalizer ?? new UpperInvariantLookupNormalizer();
-            ErrorDescriber = errors ?? new IdentityErrorDescriber();
-            _context = contextAccessor?.HttpContext;
+            KeyNormalizer = keyNormalizer;
+            ErrorDescriber = errors;
             Logger = logger;
 
             if (roleValidators != null)

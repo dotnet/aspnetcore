@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Identity
     public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser : class
     {
         private readonly SignInManager<TUser> _signInManager;
-        private readonly IdentityOptions _options;
+        private readonly SecurityStampValidatorOptions _options;
         private ISystemClock _clock;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
         /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
         /// <param name="clock">The system clock.</param>
-        public SecurityStampValidator(IOptions<IdentityOptions> options, SignInManager<TUser> signInManager, ISystemClock clock)
+        public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock)
         {
             if (options == null)
             {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Identity
             if (issuedUtc != null)
             {
                 var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
-                validate = timeElapsed > _options.SecurityStampValidationInterval;
+                validate = timeElapsed > _options.ValidationInterval;
             }
             if (validate)
             {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Identity
                 {
                     var newPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
 
-                    if (_options.OnSecurityStampRefreshingPrincipal != null)
+                    if (_options.OnRefreshingPrincipal != null)
                     {
                         var replaceContext = new SecurityStampRefreshingPrincipalContext
                         {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Identity
                         };
 
                         // Note: a null principal is allowed and results in a failed authentication.
-                        await _options.OnSecurityStampRefreshingPrincipal(replaceContext);
+                        await _options.OnRefreshingPrincipal(replaceContext);
                         newPrincipal = replaceContext.NewPrincipal;
                     }
 

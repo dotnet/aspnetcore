@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task RoleManagerPublicNullChecks()
         {
             Assert.Throws<ArgumentNullException>("store",
-                () => new RoleManager<TestRole>(null, null, null, null, null, null));
+                () => new RoleManager<TestRole>(null, null, null, null, null));
             var manager = CreateRoleManager(new NotImplementedStore());
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.CreateAsync(null));
             await Assert.ThrowsAsync<ArgumentNullException>("role", async () => await manager.UpdateAsync(null));

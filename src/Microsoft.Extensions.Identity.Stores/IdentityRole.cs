@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
+namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
     /// The default implementation of <see cref="IdentityRole{TKey}"/> which uses a string as the primary key.
@@ -81,16 +81,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             Name = roleName;
         }
-
-        /// <summary>
-        /// Navigation property for the users in this role.
-        /// </summary>
-        public virtual ICollection<TUserRole> Users { get; } = new List<TUserRole>();
-
-        /// <summary>
-        /// Navigation property for claims in this role.
-        /// </summary>
-        public virtual ICollection<TRoleClaim> Claims { get; } = new List<TRoleClaim>();
 
         /// <summary>
         /// Gets or sets the primary key for this role.

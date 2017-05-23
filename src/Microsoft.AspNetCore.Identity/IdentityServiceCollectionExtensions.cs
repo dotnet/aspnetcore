@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configure">An action to configure the <see cref="CookieAuthenticationOptions"/>.</param>
         /// <returns>The services.</returns>
         public static IServiceCollection ConfigureApplicationCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
-            => services.Configure(IdentityCookieOptions.ApplicationScheme, configure);
+            => services.Configure(IdentityConstants.ApplicationScheme, configure);
 
         /// <summary>
         /// Configure the external cookie.
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configure">An action to configure the <see cref="CookieAuthenticationOptions"/>.</param>
         /// <returns>The services.</returns>
         public static IServiceCollection ConfigureExternalCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
-            => services.Configure(IdentityCookieOptions.ExternalScheme, configure);
+            => services.Configure(IdentityConstants.ExternalScheme, configure);
 
         /// <summary>
         /// Adds and configures the identity system for the specified User and Role types.
@@ -74,12 +74,12 @@ namespace Microsoft.Extensions.DependencyInjection
             // Services used by identity
             services.AddAuthenticationCore(options =>
             {
-                options.DefaultAuthenticateScheme = IdentityCookieOptions.ApplicationScheme;
-                options.DefaultChallengeScheme = IdentityCookieOptions.ApplicationScheme;
-                options.DefaultSignInScheme = IdentityCookieOptions.ExternalScheme;
+                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
             });
 
-            services.AddCookieAuthentication(IdentityCookieOptions.ApplicationScheme, o =>
+            services.AddCookieAuthentication(IdentityConstants.ApplicationScheme, o =>
             {
                 o.LoginPath = new PathString("/Account/Login");
                 o.Events = new CookieAuthenticationEvents
@@ -88,18 +88,18 @@ namespace Microsoft.Extensions.DependencyInjection
                 };
             });
 
-            services.AddCookieAuthentication(IdentityCookieOptions.ExternalScheme, o =>
+            services.AddCookieAuthentication(IdentityConstants.ExternalScheme, o =>
             {
-                o.CookieName = IdentityCookieOptions.ExternalScheme;
+                o.CookieName = IdentityConstants.ExternalScheme;
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
             });
 
-            services.AddCookieAuthentication(IdentityCookieOptions.TwoFactorRememberMeScheme, 
-                o => o.CookieName = IdentityCookieOptions.TwoFactorRememberMeScheme);
+            services.AddCookieAuthentication(IdentityConstants.TwoFactorRememberMeScheme, 
+                o => o.CookieName = IdentityConstants.TwoFactorRememberMeScheme);
 
-            services.AddCookieAuthentication(IdentityCookieOptions.TwoFactorUserIdScheme, o =>
+            services.AddCookieAuthentication(IdentityConstants.TwoFactorUserIdScheme, o =>
             {
-                o.CookieName = IdentityCookieOptions.TwoFactorUserIdScheme;
+                o.CookieName = IdentityConstants.TwoFactorUserIdScheme;
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
             });
 
@@ -115,9 +115,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<IdentityErrorDescriber>();
             services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
             services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
-            services.TryAddScoped<UserManager<TUser>, UserManager<TUser>>();
+            services.TryAddScoped<UserManager<TUser>, AspNetUserManager<TUser>>();
             services.TryAddScoped<SignInManager<TUser>, SignInManager<TUser>>();
-            services.TryAddScoped<RoleManager<TRole>, RoleManager<TRole>>();
+            services.TryAddScoped<RoleManager<TRole>, AspNetRoleManager<TRole>>();
 
             services.AddSingleton<IConfigureOptions<IdentityOptions>, IdentityConfigureOptions>();
             if (setupAction != null)

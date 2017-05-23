@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Identity\Microsoft.AspNetCore.Identity.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Identity.Stores\Microsoft.Extensions.Identity.Stores.csproj" />
   </ItemGroup>
 
   <ItemGroup>

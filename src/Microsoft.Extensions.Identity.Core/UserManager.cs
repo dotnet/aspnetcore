@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,6 +29,11 @@ namespace Microsoft.AspNetCore.Identity
         protected const string ResetPasswordTokenPurpose = "ResetPassword";
 
         /// <summary>
+        /// The data protection purpose used for the change phone number methods.
+        /// </summary>
+        protected const string ChangePhoneNumberTokenPurpose = "ChangePhoneNumber";
+
+        /// <summary>
         /// The data protection purpose used for the email confirmation related methods.
         /// </summary>
         protected const string ConfirmEmailTokenPurpose = "EmailConfirmation";
@@ -38,12 +43,13 @@ namespace Microsoft.AspNetCore.Identity
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
-        private readonly HttpContext _context;
+        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+
 
         /// <summary>
-        /// The cancellation token assocated with the current HttpContext.RequestAborted or CancellationToken.None if unavailable.
+        /// The cancellation token used to cancel operations.
         /// </summary>
-        protected CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
+        protected virtual CancellationToken CancellationToken => CancellationToken.None;
 
         /// <summary>
         /// Constructs a new instance of <see cref="UserManager{TUser}"/>.
@@ -95,7 +101,6 @@ namespace Microsoft.AspNetCore.Identity
 
             if (services != null)
             {
-                _context = services.GetService<IHttpContextAccessor>()?.HttpContext;
                 foreach (var providerName in Options.Tokens.ProviderMap.Keys)
                 {
                     var description = Options.Tokens.ProviderMap[providerName];
@@ -1575,12 +1580,10 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the telephone change number token.
         /// </returns>
-        public virtual async Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber)
+        public virtual Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber)
         {
             ThrowIfDisposed();
-            return Rfc6238AuthenticationService.GenerateCode(
-                await CreateSecurityTokenAsync(user), phoneNumber)
-                    .ToString(CultureInfo.InvariantCulture);
+            return GenerateUserTokenAsync(user, Options.Tokens.ChangePhoneNumberTokenProvider, ChangePhoneNumberTokenPurpose + ":" + phoneNumber);
         }
 
         /// <summary>
@@ -1594,21 +1597,16 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="Task"/> that represents the asynchronous operation, returning true if the <paramref name="token"/>
         /// is valid, otherwise false.
         /// </returns>
-        public virtual async Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber)
+        public virtual Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber)
         {
             ThrowIfDisposed();
-
-            var securityToken = await CreateSecurityTokenAsync(user);
-            int code;
-            if (securityToken != null && Int32.TryParse(token, out code))
+            if (user == null)
             {
-                if (Rfc6238AuthenticationService.ValidateCode(securityToken, code, phoneNumber))
-                {
-                    return true;
-                }
+                throw new ArgumentNullException(nameof(user));
             }
-            Logger.LogWarning(8, "VerifyChangePhoneNumberTokenAsync() failed for user {userId}.", await GetUserIdAsync(user));
-            return false;
+
+            // Make sure the token is valid and the stamp matches
+            return VerifyUserTokenAsync(user, Options.Tokens.ChangePhoneNumberTokenProvider, ChangePhoneNumberTokenPurpose+":"+ phoneNumber, token);
         }
 
         /// <summary>
@@ -2159,7 +2157,9 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The new security secret.</returns>
         public virtual string GenerateNewAuthenticatorKey()
         {
-            return Base32.ToBase32(Rfc6238AuthenticationService.GenerateRandomKey());
+            byte[] bytes = new byte[20];
+            _rng.GetBytes(bytes);
+            return Base32.ToBase32(bytes);
         }
 
         /// <summary>
@@ -2278,7 +2278,12 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-        internal async Task<byte[]> CreateSecurityTokenAsync(TUser user)
+        /// <summary>
+        /// Creates bytes to use as a security token from the user's security stamp.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>The security token bytes.</returns>
+        public virtual async Task<byte[]> CreateSecurityTokenAsync(TUser user)
         {
             return Encoding.Unicode.GetBytes(await GetSecurityStampAsync(user));
         }

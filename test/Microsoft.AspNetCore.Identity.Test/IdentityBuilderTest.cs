@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         private class MyRoleManager : RoleManager<TestRole>
         {
             public MyRoleManager(IRoleStore<TestRole> store,
-                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store, null, null, null, null, null)
+                IEnumerable<IRoleValidator<TestRole>> roleValidators) : base(store, null, null, null, null)
             {
 
             }

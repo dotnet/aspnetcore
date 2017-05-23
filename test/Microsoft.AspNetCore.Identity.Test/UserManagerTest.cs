@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +29,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             services.AddLogging();
             var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
             Assert.NotNull(manager.PasswordHasher);
-            Assert.NotNull(manager.Store);
             Assert.NotNull(manager.Options);
         }
 
@@ -64,7 +61,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         public class CustomRoleManager : RoleManager<TestRole>
         {
-            public CustomRoleManager() : base(new Mock<IRoleStore<TestRole>>().Object, null, null, null, null, null)
+            public CustomRoleManager() : base(new Mock<IRoleStore<TestRole>>().Object, null, null, null, null)
             { }
         }
 
@@ -639,9 +636,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateSecurityStampAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetSecurityStampAsync(null));
             await Assert.ThrowsAsync<NotSupportedException>(
-                    () => manager.VerifyChangePhoneNumberTokenAsync(null, "1", "111-111-1111"));
+                    () => manager.VerifyChangePhoneNumberTokenAsync(new TestUser(), "1", "111-111-1111"));
             await Assert.ThrowsAsync<NotSupportedException>(
-                    () => manager.GenerateChangePhoneNumberTokenAsync(null, "111-111-1111"));
+                    () => manager.GenerateChangePhoneNumberTokenAsync(new TestUser(), "111-111-1111"));
         }
 
         [Fact]
