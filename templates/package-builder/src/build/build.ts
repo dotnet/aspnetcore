@@ -167,6 +167,20 @@ function buildDotNetNewNuGetPackage() {
                 }
             },
             tags: { language: 'C#', type: 'project' },
+            postActions: [{
+                condition: '(!skipRestore)',
+                description: 'Restores NuGet packages required by this project.',
+                manualInstructions: [{ text: 'Run \'dotnet restore\'' }],
+                actionId: '210D431B-A78B-4D2F-B762-4ED3E3EA9025',
+                continueOnError: true
+            }, {
+                condition: '(!skipRestore)',
+                description: 'Restores NPM packages required by this project.',
+                manualInstructions: [{ text: 'Run \'npm install\'' }],
+                actionId: '3A7C4B45-1F5D-4A30-959A-51B88E82B5D2',
+                args: { executable: 'npm', args: 'install' },
+                continueOnError: false
+            }],
         }, null, 2));
 
         fs.writeFileSync(path.join(templateConfigDir, 'dotnetcli.host.json'), JSON.stringify({
