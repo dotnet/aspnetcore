@@ -95,8 +95,7 @@ function buildYeomanNpmPackage(outputRoot: string) {
         { from: /.*\.csproj$/, to: 'tokenreplace-namePascalCase.csproj' }
     ];
     const contentReplacements = [
-        // global.json items
-        { from: /sdkVersionInjectedHere/, to: '<%= sdkVersion %>' }
+        // Currently, there are none
     ];
     _.forEach(templates, (templateConfig, templateName) => {
         const outputDir = path.join(outputTemplatesRoot, templateName);
@@ -148,11 +147,6 @@ function buildDotNetNewNuGetPackage() {
                 exclude: ['.template.config/**']
             }],
             symbols: {
-                sdkVersion: {
-                    type: 'bind',
-                    binding: 'dotnet-cli-version',
-                    replaces: 'sdkVersionInjectedHere'
-                },
                 Framework: {
                     type: 'parameter',
                     description: 'The target framework for the project.',
