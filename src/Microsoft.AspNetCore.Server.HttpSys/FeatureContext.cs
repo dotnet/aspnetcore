@@ -536,7 +536,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
 
                 DateTimeOffset expirationDate;
-                if (HeaderUtilities.TryParseDate(response.Headers[HeaderNames.Expires], out expirationDate))
+                if (HeaderUtilities.TryParseDate(response.Headers[HeaderNames.Expires].ToString(), out expirationDate))
                 {
                     var expiresOffset = expirationDate - DateTimeOffset.UtcNow;
                     if (expiresOffset > TimeSpan.Zero)
