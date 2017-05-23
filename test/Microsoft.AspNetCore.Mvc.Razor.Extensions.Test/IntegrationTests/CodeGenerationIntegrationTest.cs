@@ -232,6 +232,27 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             var references = CreateCompilationReferences(CurrentMvcShim);
             RunRuntimeTest(references);
         }
+
+        [Fact]
+        public void ViewComponentTagHelper_Runtime()
+        {
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+public class TestViewComponent
+{{
+    public string Invoke(string firstName)
+    {{
+        return firstName;
+    }}
+}}
+
+[{typeof(HtmlTargetElementAttribute).FullName}]
+public class AllTagHelper : {typeof(TagHelper).FullName}
+{{
+    public string Bar {{ get; set; }}
+}}
+");
+            RunRuntimeTest(references);
+        }
         #endregion
 
         #region DesignTime
@@ -454,6 +475,27 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             var references = CreateCompilationReferences(CurrentMvcShim);
             RunDesignTimeTest(references);
         }
+
+        [Fact]
+        public void ViewComponentTagHelper_DesignTime()
+        {
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+public class TestViewComponent
+{{
+    public string Invoke(string firstName)
+    {{
+        return firstName;
+    }}
+}}
+
+[{typeof(HtmlTargetElementAttribute).FullName}]
+public class AllTagHelper : {typeof(TagHelper).FullName}
+{{
+    public string Bar {{ get; set; }}
+}}
+");
+            RunDesignTimeTest(references);
+        }
         #endregion
 
         private void RunRuntimeTest(
@@ -538,7 +580,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
                 b.Features.Add(GetMetadataReferenceFeature(references));
                 b.Features.Add(new CompilationTagHelperFeature());
                 b.Features.Add(new DefaultTagHelperDescriptorProvider() { DesignTime = true });
-                b.Features.Add(new ViewComponentTagHelperDescriptorProvider());
+                b.Features.Add(new ViewComponentTagHelperDescriptorProvider() { ForceEnabled = true });
             });
         }
 
@@ -551,7 +593,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
                 b.Features.Add(GetMetadataReferenceFeature(references));
                 b.Features.Add(new CompilationTagHelperFeature());
                 b.Features.Add(new DefaultTagHelperDescriptorProvider() { DesignTime = true });
-                b.Features.Add(new ViewComponentTagHelperDescriptorProvider());
+                b.Features.Add(new ViewComponentTagHelperDescriptorProvider() { ForceEnabled = true });
             });
         }
 

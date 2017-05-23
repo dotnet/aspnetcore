@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -66,13 +67,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             ClassDeclarationIRNode @class,
             CreateTagHelperIRNode node)
         {
-            var originalTypeName = node.TagHelperTypeName;
-
             var newTypeName = GetVCTHFullName(@namespace, @class, node.Descriptor);
             for (var i = 0; i < node.Parent.Children.Count; i++)
             {
-                var setProperty = node.Parent.Children[i] as SetTagHelperPropertyIRNode;
-                if (setProperty != null)
+                if (node.Parent.Children[i] is SetTagHelperPropertyIRNode setProperty &&
+                    node.Descriptor.BoundAttributes.Contains(setProperty.Descriptor))
                 {
                     setProperty.TagHelperTypeName = newTypeName;
                 }

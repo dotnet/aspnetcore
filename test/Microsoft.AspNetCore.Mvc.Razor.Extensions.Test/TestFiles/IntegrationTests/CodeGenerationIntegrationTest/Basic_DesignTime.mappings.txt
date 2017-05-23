@@ -8,3 +8,27 @@ Source Location: (54:2,5 [29] TestFiles/IntegrationTests/CodeGenerationIntegrati
 Generated Location: (1045:27,6 [29] )
 |string.Format("{0}", "Hello")|
 
+Source Location: (95:4,2 [25] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+| 
+    var cls = "foo";
+|
+Generated Location: (1191:32,2 [25] )
+| 
+    var cls = "foo";
+|
+
+Source Location: (134:7,11 [18] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+|if(cls != null) { |
+Generated Location: (1339:38,11 [18] )
+|if(cls != null) { |
+
+Source Location: (153:7,30 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+|cls|
+Generated Location: (1501:43,30 [3] )
+|cls|
+
+Source Location: (156:7,33 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml)
+| }|
+Generated Location: (1652:48,33 [2] )
+| }|
+

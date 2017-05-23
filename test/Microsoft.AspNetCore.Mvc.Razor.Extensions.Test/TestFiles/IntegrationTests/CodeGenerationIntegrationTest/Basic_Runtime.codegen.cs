@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "fd421120502bfd80d21169d04fd6ba54b5cc7f12"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "4120ddad9d4353ed260e0585fe71080d78ff8ab3"
 namespace AspNetCore
 {
     #line hidden
@@ -36,6 +36,40 @@ Write(string.Format("{0}", "Hello"));
             EndContext();
             BeginContext(83, 10, true);
             WriteLiteral("\r\n</div>\r\n");
+            EndContext();
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+   
+    var cls = "foo";
+
+#line default
+#line hidden
+            BeginContext(123, 2, true);
+            WriteLiteral("<p");
+            EndContext();
+            BeginWriteAttribute("class", " class=\"", 125, "\"", 158, 1);
+            WriteAttributeValue("", 133, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
+                PushWriter(__razor_attribute_value_writer);
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+           if(cls != null) { 
+
+#line default
+#line hidden
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+                        Write(cls);
+
+#line default
+#line hidden
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+                                  }
+
+#line default
+#line hidden
+                PopWriter();
+            }
+            ), 133, 25, false);
+            EndWriteAttribute();
+            BeginContext(159, 5, true);
+            WriteLiteral(" />\r\n");
             EndContext();
         }
         #pragma warning restore 1998

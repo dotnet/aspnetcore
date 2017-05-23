@@ -29,6 +29,27 @@ __o = string.Format("{0}", "Hello");
 
 #line default
 #line hidden
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+   
+    var cls = "foo";
+
+#line default
+#line hidden
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+           if(cls != null) { 
+
+#line default
+#line hidden
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+                        __o = cls;
+
+#line default
+#line hidden
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
+                                  }
+
+#line default
+#line hidden
         }
         #pragma warning restore 1998
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

@@ -2,3 +2,7 @@
     Hello world
     @string.Format("{0}", "Hello")
 </div>
+@{ 
+    var cls = "foo";
+}
+<p class="@if(cls != null) { @cls }" />

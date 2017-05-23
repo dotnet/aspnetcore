@@ -8,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Razor
     /// <summary>
     /// A library of methods used to generate <see cref="TagHelperDescriptor"/>s for view components.
     /// </summary>
-    internal static class ViewComponentTagHelperDescriptorConventions
+    public static class ViewComponentTagHelperDescriptorConventions
     {
         /// <summary>
         /// The key in a <see cref="TagHelperDescriptor.Metadata"/>  containing 

@@ -51,6 +51,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             throw new NotImplementedException();
         }
 
+        protected virtual void PushWriter(TextWriter writer)
+        {
+        }
+
+        protected virtual TextWriter PopWriter()
+        {
+            throw new NotImplementedException();
+        }
+
         public void StartTagHelperWritingScope(HtmlEncoder encoder)
         {
         }
@@ -82,46 +91,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
         }
 
-        public virtual void WriteTo(TextWriter writer, object value)
-        {
-        }
-
-        public static void WriteTo(TextWriter writer, HtmlEncoder encoder, object value)
-        {
-        }
-
-        public virtual void WriteTo(TextWriter writer, string value)
-        {
-        }
-
-        private static void WriteTo(TextWriter writer, HtmlEncoder encoder, string value)
-        {
-        }
-
         public virtual void WriteLiteral(object value)
         {
         }
 
-        public virtual void WriteLiteralTo(TextWriter writer, object value)
-        {
-        }
-
-        public virtual void WriteLiteralTo(TextWriter writer, string value)
-        {
-        }
-
         public virtual void BeginWriteAttribute(
-            string name,
-            string prefix,
-            int prefixOffset,
-            string suffix,
-            int suffixOffset,
-            int attributeValuesCount)
-        {
-        }
-
-        public virtual void BeginWriteAttributeTo(
-            TextWriter writer,
             string name,
             string prefix,
             int prefixOffset,
@@ -141,22 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
         }
 
-        public void WriteAttributeValueTo(
-            TextWriter writer,
-            string prefix,
-            int prefixOffset,
-            object value,
-            int valueOffset,
-            int valueLength,
-            bool isLiteral)
-        {
-        }
-
         public virtual void EndWriteAttribute()
-        {
-        }
-
-        public virtual void EndWriteAttributeTo(TextWriter writer)
         {
         }
 

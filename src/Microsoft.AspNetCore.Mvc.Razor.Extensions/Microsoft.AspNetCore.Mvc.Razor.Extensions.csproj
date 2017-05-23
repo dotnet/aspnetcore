@@ -11,9 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.CodeAnalysis.Razor\ViewComponentTagHelperDescriptorConventions.cs">
-      <Link>ViewComponentTagHelperDescriptorConventions.cs</Link>
-    </Compile>
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
