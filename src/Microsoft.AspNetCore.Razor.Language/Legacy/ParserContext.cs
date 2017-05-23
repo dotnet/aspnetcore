@@ -9,14 +9,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal partial class ParserContext
     {
-        public ParserContext(ITextDocument source, RazorParserOptions options)
+        public ParserContext(RazorSourceDocument source, RazorParserOptions options)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            Source = source;
+            SourceDocument = source;
+            var chars = new char[source.Length];
+            source.CopyTo(0, chars, 0, source.Length);
+
+            Source = new SeekableTextReader(chars, source.FileName);
             DesignTimeMode = options.DesignTime;
             ParseOnlyLeadingDirectives = options.ParseOnlyLeadingDirectives;
             Builder = new SyntaxTreeBuilder();
@@ -28,6 +32,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public ErrorSink ErrorSink { get; }
 
         public ITextDocument Source { get; }
+
+        public RazorSourceDocument SourceDocument { get; }
 
         public bool DesignTimeMode { get; }
 

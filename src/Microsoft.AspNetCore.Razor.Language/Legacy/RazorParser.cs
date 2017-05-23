@@ -32,13 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var chars = new char[source.Length];
-            source.CopyTo(0, chars, 0, source.Length);
-
-            var reader = new SeekableTextReader(chars, source.FileName);
-
-            var context = new ParserContext(reader, Options);
-
+            var context = new ParserContext(source, Options);
             var codeParser = new CSharpCodeParser(Options.Directives, context);
             var markupParser = new HtmlMarkupParser(context);
 

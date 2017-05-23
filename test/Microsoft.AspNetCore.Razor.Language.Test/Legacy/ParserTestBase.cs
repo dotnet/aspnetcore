@@ -34,11 +34,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual RazorSyntaxTree ParseDocument(string document, bool designTime = false)
         {
-            var source = TestRazorSourceDocument.Create(document);
-            var reader = new SeekableTextReader(document, filePath: null);
-
+            var source = TestRazorSourceDocument.Create(document, fileName: null);
             var options = RazorParserOptions.Create(Array.Empty<DirectiveDescriptor>(), designTime);
-            var context = new ParserContext(reader, options);
+            var context = new ParserContext(source, options);
 
             var codeParser = new CSharpCodeParser(context);
             var markupParser = new HtmlMarkupParser(context);
@@ -64,26 +62,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual RazorSyntaxTree ParseHtmlBlock(string document, bool designTime = false)
         {
-            var source = TestRazorSourceDocument.Create(document);
+            var source = TestRazorSourceDocument.Create(document, fileName: null);
+            var options = RazorParserOptions.Create(Array.Empty<DirectiveDescriptor>(), designTime);
+            var context = new ParserContext(source, options);
 
-            using (var reader = new SeekableTextReader(document, filePath: null))
+            var parser = new HtmlMarkupParser(context);
+            parser.CodeParser = new CSharpCodeParser(context)
             {
-                var options = RazorParserOptions.Create(Array.Empty<DirectiveDescriptor>(), designTime);
-                var context = new ParserContext(reader, options);
+                HtmlParser = parser,
+            };
 
-                var parser = new HtmlMarkupParser(context);
-                parser.CodeParser = new CSharpCodeParser(context)
-                {
-                    HtmlParser = parser,
-                };
+            parser.ParseBlock();
 
-                parser.ParseBlock();
+            var root = context.Builder.Build();
+            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
 
-                var root = context.Builder.Build();
-                var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
-
-                return RazorSyntaxTree.Create(root, source, diagnostics, options);
-            }
+            return RazorSyntaxTree.Create(root, source, diagnostics, options);
         }
 
         internal virtual RazorSyntaxTree ParseCodeBlock(string document, bool designTime = false)
@@ -96,26 +90,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             IEnumerable<DirectiveDescriptor> descriptors,
             bool designTime)
         {
-            var source = TestRazorSourceDocument.Create(document);
+            var source = TestRazorSourceDocument.Create(document, fileName: null);
+            var options = RazorParserOptions.Create(descriptors, designTime);
+            var context = new ParserContext(source, options);
 
-            using (var reader = new SeekableTextReader(document, filePath: null))
+            var parser = new CSharpCodeParser(descriptors, context);
+            parser.HtmlParser = new HtmlMarkupParser(context)
             {
-                var options = RazorParserOptions.Create(descriptors, designTime);
-                var context = new ParserContext(reader, options);
+                CodeParser = parser,
+            };
 
-                var parser = new CSharpCodeParser(descriptors, context);
-                parser.HtmlParser = new HtmlMarkupParser(context)
-                {
-                    CodeParser = parser,
-                };
+            parser.ParseBlock();
 
-                parser.ParseBlock();
+            var root = context.Builder.Build();
+            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
 
-                var root = context.Builder.Build();
-                var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
-
-                return RazorSyntaxTree.Create(root, source, diagnostics, options);
-            }
+            return RazorSyntaxTree.Create(root, source, diagnostics, options);
         }
 
         internal SpanFactory CreateSpanFactory()
