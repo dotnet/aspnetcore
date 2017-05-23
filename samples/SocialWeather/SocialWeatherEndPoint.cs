@@ -23,14 +23,14 @@ namespace SocialWeather
             _logger = logger;
         }
 
-        public async override Task OnConnectedAsync(Connection connection)
+        public async override Task OnConnectedAsync(ConnectionContext connection)
         {
             _lifetimeManager.OnConnectedAsync(connection);
             await ProcessRequests(connection);
             _lifetimeManager.OnDisconnectedAsync(connection);
         }
 
-        public async Task ProcessRequests(Connection connection)
+        public async Task ProcessRequests(ConnectionContext connection)
         {
             var formatter = _formatterResolver.GetFormatter<WeatherReport>(
                 connection.Metadata.Get<string>("formatType"));

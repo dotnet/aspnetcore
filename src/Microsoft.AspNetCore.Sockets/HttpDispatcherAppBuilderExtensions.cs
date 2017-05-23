@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,9 +35,23 @@ namespace Microsoft.AspNetCore.Builder
             _dispatcher = dispatcher;
         }
 
-        public void MapEndpoint<TEndPoint>(string path) where TEndPoint : EndPoint
+        public void MapSocket(string path, Action<ISocketBuilder> socketConfig) =>
+            MapSocket(path, new HttpSocketOptions(), socketConfig);
+
+        public void MapSocket(string path, HttpSocketOptions options, Action<ISocketBuilder> socketConfig)
         {
-            _routes.MapRoute(path, _dispatcher.ExecuteAsync<TEndPoint>);
+            var socketBuilder = new SocketBuilder(_routes.ServiceProvider);
+            socketConfig(socketBuilder);
+            var socket = socketBuilder.Build();
+            _routes.MapRoute(path, c => _dispatcher.ExecuteAsync(c, options, socket));
+        }
+
+        public void MapEndPoint<TEndPoint>(string path) where TEndPoint : EndPoint
+        {
+            MapSocket(path, builder =>
+            {
+                builder.UseEndPoint<TEndPoint>();
+            });
         }
     }
 }

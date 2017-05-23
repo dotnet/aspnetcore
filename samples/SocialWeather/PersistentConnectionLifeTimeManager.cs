@@ -20,13 +20,13 @@ namespace SocialWeather
             _formatterResolver = formatterResolver;
         }
 
-        public void OnConnectedAsync(Connection connection)
+        public void OnConnectedAsync(ConnectionContext connection)
         {
             connection.Metadata[ConnectionMetadataNames.Format] = "json";
             _connectionList.Add(connection);
         }
 
-        public void OnDisconnectedAsync(Connection connection)
+        public void OnDisconnectedAsync(ConnectionContext connection)
         {
             _connectionList.Remove(connection);
         }
@@ -64,7 +64,7 @@ namespace SocialWeather
             throw new NotImplementedException();
         }
 
-        public void AddGroupAsync(Connection connection, string groupName)
+        public void AddGroupAsync(ConnectionContext connection, string groupName)
         {
             var groups = connection.Metadata.GetOrAdd("groups", _ => new HashSet<string>());
             lock (groups)
@@ -73,7 +73,7 @@ namespace SocialWeather
             }
         }
 
-        public void RemoveGroupAsync(Connection connection, string groupName)
+        public void RemoveGroupAsync(ConnectionContext connection, string groupName)
         {
             var groups = connection.Metadata.Get<HashSet<string>>("groups");
             if (groups != null)

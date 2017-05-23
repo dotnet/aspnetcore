@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
 {
     public class EchoEndPoint : EndPoint
     {
-        public async override Task OnConnectedAsync(Connection connection)
+        public async override Task OnConnectedAsync(ConnectionContext connection)
         {
             await connection.Transport.Output.WriteAsync(await connection.Transport.Input.ReadAsync());
         }

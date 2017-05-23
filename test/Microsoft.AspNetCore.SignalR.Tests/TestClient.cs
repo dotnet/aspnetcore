@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private IHubProtocol _protocol;
         private CancellationTokenSource _cts;
 
-        public Connection Connection;
+        public ConnectionContext Connection;
         public IChannelConnection<Message> Application { get; }
         public Task Connected => Connection.Metadata.Get<TaskCompletionSource<bool>>("ConnectedTask").Task;
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Application = ChannelConnection.Create<Message>(input: applicationToTransport, output: transportToApplication);
             var transport = ChannelConnection.Create<Message>(input: transportToApplication, output: applicationToTransport);
 
-            Connection = new Connection(Guid.NewGuid().ToString(), transport);
+            Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), transport);
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Interlocked.Increment(ref _id).ToString()) }));
             Connection.Metadata["ConnectedTask"] = new TaskCompletionSource<bool>();
 

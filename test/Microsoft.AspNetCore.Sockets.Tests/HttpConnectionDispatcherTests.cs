@@ -37,12 +37,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var services = new ServiceCollection();
             services.AddEndPoint<TestEndPoint>();
             services.AddOptions();
-            context.RequestServices = services.BuildServiceProvider();
             var ms = new MemoryStream();
             context.Request.Path = "/foo";
             context.Request.Method = "OPTIONS";
             context.Response.Body = ms;
-            await dispatcher.ExecuteAsync<TestEndPoint>(context);
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
             var id = Encoding.UTF8.GetString(ms.ToArray());
 
@@ -68,7 +70,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
                 services.AddOptions();
-                context.RequestServices = services.BuildServiceProvider();
                 context.Request.Path = "/foo";
                 context.Request.Method = "GET";
                 var values = new Dictionary<string, StringValues>();
@@ -77,7 +78,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Query = qs;
                 SetTransport(context, transportType);
 
-                await dispatcher.ExecuteAsync<TestEndPoint>(context);
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
                 Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -100,7 +104,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
                 services.AddOptions();
-                context.RequestServices = services.BuildServiceProvider();
                 context.Request.Path = "/foo";
                 context.Request.Method = "POST";
                 var values = new Dictionary<string, StringValues>();
@@ -108,7 +111,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
 
-                await dispatcher.ExecuteAsync<TestEndPoint>(context);
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
                 Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -130,13 +136,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var services = new ServiceCollection();
                 services.AddOptions();
                 services.AddEndPoint<TestEndPoint>();
-                context.RequestServices = services.BuildServiceProvider();
                 context.Request.Path = "/foo";
                 context.Request.Method = "GET";
 
                 SetTransport(context, transportType);
 
-                await dispatcher.ExecuteAsync<TestEndPoint>(context);
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
                 Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -156,11 +164,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var services = new ServiceCollection();
                 services.AddOptions();
                 services.AddEndPoint<TestEndPoint>();
-                context.RequestServices = services.BuildServiceProvider();
                 context.Request.Path = "/foo";
                 context.Request.Method = "POST";
 
-                await dispatcher.ExecuteAsync<TestEndPoint>(context);
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
                 Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -180,14 +190,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var services = new ServiceCollection();
                 services.AddOptions();
                 services.AddEndPoint<TestEndPoint>();
-                context.RequestServices = services.BuildServiceProvider();
                 context.Request.Path = "/foo";
                 context.Request.Method = "POST";
                 context.Request.QueryString = new QueryString($"?id={connectionState.Connection.ConnectionId}");
                 context.Request.ContentType = "text/plain";
                 context.Response.Body = strm;
 
-                await dispatcher.ExecuteAsync<TestEndPoint>(context);
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
                 Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
                 await strm.FlushAsync();
@@ -237,10 +249,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest<ImmediatelyCompleteEndPoint>("/foo", state);
+            var context = MakeRequest("/foo", state);
             SetTransport(context, TransportType.ServerSentEvents);
 
-            await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+            var app = builder.Build();
+            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
@@ -256,11 +273,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var state = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-
-            var context = MakeRequest<SynchronusExceptionEndPoint>("/foo", state);
+            var context = MakeRequest("/foo", state);
             SetTransport(context, TransportType.ServerSentEvents);
 
-            await dispatcher.ExecuteAsync<SynchronusExceptionEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<SynchronusExceptionEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<SynchronusExceptionEndPoint>();
+            var app = builder.Build();
+            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
@@ -276,10 +297,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var state = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = MakeRequest("/foo", state);
 
-            var context = MakeRequest<SynchronusExceptionEndPoint>("/foo", state);
-
-            await dispatcher.ExecuteAsync<SynchronusExceptionEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<SynchronusExceptionEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<SynchronusExceptionEndPoint>();
+            var app = builder.Build();
+            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
             Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
 
@@ -296,9 +321,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest<ImmediatelyCompleteEndPoint>("/foo", state);
+            var context = MakeRequest("/foo", state);
 
-            await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+            var app = builder.Build();
+            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
             Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
 
@@ -315,10 +345,18 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest<ImmediatelyCompleteEndPoint>("/foo", state);
+            var context = MakeRequest("/foo", state);
             SetTransport(context, TransportType.WebSockets);
 
-            var task = dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
+
+            var task = dispatcher.ExecuteAsync(context, options, app);
 
             await task.OrTimeout();
         }
@@ -333,15 +371,21 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context1 = MakeRequest<TestEndPoint>("/foo", state);
-            var context2 = MakeRequest<TestEndPoint>("/foo", state);
+            var context1 = MakeRequest("/foo", state);
+            var context2 = MakeRequest("/foo", state);
 
             SetTransport(context1, transportType);
             SetTransport(context2, transportType);
 
-            var request1 = dispatcher.ExecuteAsync<TestEndPoint>(context1);
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            var request1 = dispatcher.ExecuteAsync(context1, options, app);
 
-            await dispatcher.ExecuteAsync<TestEndPoint>(context2);
+            await dispatcher.ExecuteAsync(context2, options, app);
 
             Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
 
@@ -369,11 +413,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context1 = MakeRequest<TestEndPoint>("/foo", state);
-            var context2 = MakeRequest<TestEndPoint>("/foo", state);
+            var context1 = MakeRequest("/foo", state);
+            var context2 = MakeRequest("/foo", state);
 
-            var request1 = dispatcher.ExecuteAsync<TestEndPoint>(context1);
-            var request2 = dispatcher.ExecuteAsync<TestEndPoint>(context2);
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            var request1 = dispatcher.ExecuteAsync(context1, options, app);
+            var request2 = dispatcher.ExecuteAsync(context2, options, app);
 
             await request1;
 
@@ -398,10 +448,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest<TestEndPoint>("/foo", state);
+            var context = MakeRequest("/foo", state);
             SetTransport(context, transportType);
 
-            await dispatcher.ExecuteAsync<TestEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            await dispatcher.ExecuteAsync(context, options, app);
+
 
             Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
         }
@@ -414,9 +471,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest<TestEndPoint>("/foo", state);
+            var context = MakeRequest("/foo", state);
 
-            var task = dispatcher.ExecuteAsync<TestEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            var task = dispatcher.ExecuteAsync(context, options, app);
 
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
@@ -439,10 +502,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest<BlockingEndPoint>("/foo", state);
+            var context = MakeRequest("/foo", state);
             SetTransport(context, TransportType.ServerSentEvents);
 
-            var task = dispatcher.ExecuteAsync<BlockingEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<BlockingEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<BlockingEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            var task = dispatcher.ExecuteAsync(context, options, app);
 
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
@@ -465,9 +534,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest<BlockingEndPoint>("/foo", state);
+            var context = MakeRequest("/foo", state);
 
-            var task = dispatcher.ExecuteAsync<BlockingEndPoint>(context);
+            var services = new ServiceCollection();
+            services.AddEndPoint<BlockingEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<BlockingEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            var task = dispatcher.ExecuteAsync(context, options, app);
 
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
@@ -490,10 +565,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context1 = MakeRequest<TestEndPoint>("/foo", state);
-            var task1 = dispatcher.ExecuteAsync<TestEndPoint>(context1);
-            var context2 = MakeRequest<TestEndPoint>("/foo", state);
-            var task2 = dispatcher.ExecuteAsync<TestEndPoint>(context2);
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+
+            var context1 = MakeRequest("/foo", state);
+            var task1 = dispatcher.ExecuteAsync(context1, options, app);
+            var context2 = MakeRequest("/foo", state);
+            var task2 = dispatcher.ExecuteAsync(context2, options, app);
 
             // Task 1 should finish when request 2 arrives
             await task1.OrTimeout();
@@ -555,19 +637,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddOptions();
-            services.AddEndPoint<TestEndPoint>(options =>
+            services.AddEndPoint<TestEndPoint>();
+            services.AddAuthorization(o =>
             {
-                options.AuthorizationPolicyNames.Add("test");
-            });
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
+                o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
             });
             services.AddLogging();
-
-            context.RequestServices = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
+            context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
             values["id"] = state.Connection.ConnectionId;
             var qs = new QueryCollection(values);
@@ -576,8 +655,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             authFeature.Handler = new TestAuthenticationHandler(context);
             context.Features.Set<IHttpAuthenticationFeature>(authFeature);
 
+            var builder = new SocketBuilder(sp);
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.AuthorizationPolicyNames.Add("test");
+
             // would hang if EndPoint was running
-            await dispatcher.ExecuteAsync<TestEndPoint>(context).OrTimeout();
+            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
         }
@@ -591,22 +676,19 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddOptions();
-            services.AddEndPoint<TestEndPoint>(options =>
+            services.AddEndPoint<TestEndPoint>();
+            services.AddAuthorization(o =>
             {
-                options.AuthorizationPolicyNames.Add("test");
-            });
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("test", policy =>
+                o.AddPolicy("test", policy =>
                 {
                     policy.RequireClaim(ClaimTypes.NameIdentifier);
                 });
             });
             services.AddLogging();
-
-            context.RequestServices = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
+            context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
             values["id"] = state.Connection.ConnectionId;
             var qs = new QueryCollection(values);
@@ -616,10 +698,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             authFeature.Handler = new TestAuthenticationHandler(context);
             context.Features.Set<IHttpAuthenticationFeature>(authFeature);
 
+            var builder = new SocketBuilder(sp);
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.AuthorizationPolicyNames.Add("test");
+
             // "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>(context);
+            var endPointTask = dispatcher.ExecuteAsync(context, options, app);
             await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
 
             await endPointTask.OrTimeout();
@@ -637,21 +725,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddOptions();
-            services.AddEndPoint<TestEndPoint>(options =>
+            services.AddEndPoint<TestEndPoint>();
+            services.AddAuthorization(o =>
             {
-                options.AuthorizationPolicyNames.Add("test");
-                options.AuthorizationPolicyNames.Add("secondPolicy");
-            });
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
-                options.AddPolicy("secondPolicy", policy => policy.RequireClaim(ClaimTypes.StreetAddress));
+                o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
+                o.AddPolicy("secondPolicy", policy => policy.RequireClaim(ClaimTypes.StreetAddress));
             });
             services.AddLogging();
-
-            context.RequestServices = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
+            context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
             values["id"] = state.Connection.ConnectionId;
             var qs = new QueryCollection(values);
@@ -661,18 +745,25 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             authFeature.Handler = new TestAuthenticationHandler(context);
             context.Features.Set<IHttpAuthenticationFeature>(authFeature);
 
+            var builder = new SocketBuilder(sp);
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.AuthorizationPolicyNames.Add("test");
+            options.AuthorizationPolicyNames.Add("secondPolicy");
+
             // partialy "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
             // would hang if EndPoint was running
-            await dispatcher.ExecuteAsync<TestEndPoint>(context).OrTimeout();
+            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
 
             // fully "authorize" user
             context.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.StreetAddress, "12345 123rd St. NW") }));
 
-            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>(context);
+            var endPointTask = dispatcher.ExecuteAsync(context, options, app);
             await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
 
             await endPointTask.OrTimeout();
@@ -689,23 +780,20 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddOptions();
-            services.AddEndPoint<TestEndPoint>(options =>
+            services.AddEndPoint<TestEndPoint>();
+            services.AddAuthorization(o =>
             {
-                options.AuthorizationPolicyNames.Add("test");
-            });
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("test", policy =>
+                o.AddPolicy("test", policy =>
                 {
                     policy.RequireClaim(ClaimTypes.NameIdentifier);
                     policy.AddAuthenticationSchemes("Default");
                 });
             });
             services.AddLogging();
-
-            context.RequestServices = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
+            context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
             values["id"] = state.Connection.ConnectionId;
             var qs = new QueryCollection(values);
@@ -715,10 +803,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             authFeature.Handler = new TestAuthenticationHandler(context);
             context.Features.Set<IHttpAuthenticationFeature>(authFeature);
 
+            var builder = new SocketBuilder(sp);
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.AuthorizationPolicyNames.Add("test");
+
             // "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-            var endPointTask = dispatcher.ExecuteAsync<TestEndPoint>(context);
+            var endPointTask = dispatcher.ExecuteAsync(context, options, app);
             await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
 
             await endPointTask.OrTimeout();
@@ -736,23 +830,20 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
             services.AddOptions();
-            services.AddEndPoint<TestEndPoint>(options =>
+            services.AddEndPoint<TestEndPoint>();
+            services.AddAuthorization(o =>
             {
-                options.AuthorizationPolicyNames.Add("test");
-            });
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("test", policy =>
+                o.AddPolicy("test", policy =>
                 {
                     policy.RequireClaim(ClaimTypes.NameIdentifier);
                     policy.AddAuthenticationSchemes("Default");
                 });
             });
             services.AddLogging();
-
-            context.RequestServices = services.BuildServiceProvider();
+            var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
+            context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
             values["id"] = state.Connection.ConnectionId;
             var qs = new QueryCollection(values);
@@ -762,11 +853,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             authFeature.Handler = new TestAuthenticationHandler(context, acceptScheme: false);
             context.Features.Set<IHttpAuthenticationFeature>(authFeature);
 
+            var builder = new SocketBuilder(sp);
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.AuthorizationPolicyNames.Add("test");
+
             // "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
             // would block if EndPoint was executed
-            await dispatcher.ExecuteAsync<TestEndPoint>(context).OrTimeout();
+            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
         }
@@ -829,20 +926,22 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Response.Body = strm;
                 var services = new ServiceCollection();
                 services.AddOptions();
-                services.AddEndPoint<ImmediatelyCompleteEndPoint>(options =>
-                {
-                    options.Transports = supportedTransports;
-                });
-
+                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
                 SetTransport(context, transportType);
-                context.RequestServices = services.BuildServiceProvider();
                 context.Request.Path = "/foo";
                 context.Request.Method = "GET";
                 var values = new Dictionary<string, StringValues>();
                 values["id"] = state.Connection.ConnectionId;
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
-                await dispatcher.ExecuteAsync<ImmediatelyCompleteEndPoint>(context);
+
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.Transports = supportedTransports;
+
+                await dispatcher.ExecuteAsync(context, options, app);
                 Assert.Equal(status, context.Response.StatusCode);
                 await strm.FlushAsync();
 
@@ -861,10 +960,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest<TestEndPoint>("/foo", state, format);
+            var context = MakeRequest("/foo", state, format);
             context.Request.Method = "POST";
             context.Request.ContentType = contentType;
-            var endPoint = context.RequestServices.GetRequiredService<TestEndPoint>();
+
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
 
             var buffer = contentType == BinaryContentType ?
                 Convert.FromBase64String(encoded) :
@@ -872,7 +976,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var messages = new List<Message>();
             using (context.Request.Body = new MemoryStream(buffer, writable: false))
             {
-                await dispatcher.ExecuteAsync<TestEndPoint>(context).OrTimeout();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app).OrTimeout();
             }
 
             while (state.Connection.Transport.Input.TryRead(out var message))
@@ -883,18 +987,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             return messages;
         }
 
-        private static DefaultHttpContext MakeRequest<TEndPoint>(string path, ConnectionState state, string format = null) where TEndPoint : EndPoint
+        private static DefaultHttpContext MakeRequest(string path, ConnectionState state, string format = null)
         {
             var context = new DefaultHttpContext();
-            var services = new ServiceCollection();
-            services.AddEndPoint<TEndPoint>(o =>
-            {
-                // Make the close timeout less than the default for OrTimeout() test helper
-                o.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
-            });
-
-            services.AddOptions();
-            context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = path;
             context.Request.Method = "GET";
             var values = new Dictionary<string, StringValues>();
@@ -942,7 +1037,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
     public class NerverEndingEndPoint : EndPoint
     {
-        public override Task OnConnectedAsync(Connection connection)
+        public override Task OnConnectedAsync(ConnectionContext connection)
         {
             var tcs = new TaskCompletionSource<object>();
             return tcs.Task;
@@ -951,7 +1046,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
     public class BlockingEndPoint : EndPoint
     {
-        public override Task OnConnectedAsync(Connection connection)
+        public override Task OnConnectedAsync(ConnectionContext connection)
         {
             connection.Transport.Input.WaitToReadAsync().Wait();
             return Task.CompletedTask;
@@ -960,7 +1055,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
     public class SynchronusExceptionEndPoint : EndPoint
     {
-        public override Task OnConnectedAsync(Connection connection)
+        public override Task OnConnectedAsync(ConnectionContext connection)
         {
             throw new InvalidOperationException();
         }
@@ -968,7 +1063,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
     public class ImmediatelyCompleteEndPoint : EndPoint
     {
-        public override Task OnConnectedAsync(Connection connection)
+        public override Task OnConnectedAsync(ConnectionContext connection)
         {
             return Task.CompletedTask;
         }
@@ -976,7 +1071,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
     public class TestEndPoint : EndPoint
     {
-        public override async Task OnConnectedAsync(Connection connection)
+        public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             while (await connection.Transport.Input.WaitToReadAsync())
             {

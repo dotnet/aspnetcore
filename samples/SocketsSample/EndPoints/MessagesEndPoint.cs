@@ -13,7 +13,7 @@ namespace SocketsSample.EndPoints
     {
         public ConnectionList Connections { get; } = new ConnectionList();
 
-        public override async Task OnConnectedAsync(Connection connection)
+        public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             Connections.Add(connection);
 

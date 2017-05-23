@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class EndPointOptions<TEndPoint> where TEndPoint : EndPoint
+    public class HttpSocketOptions
     {
         public IList<string> AuthorizationPolicyNames { get; } = new List<string>();
 

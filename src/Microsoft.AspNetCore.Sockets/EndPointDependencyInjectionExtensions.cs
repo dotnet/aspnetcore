@@ -14,15 +14,5 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return services;
         }
-
-        public static IServiceCollection AddEndPoint<TEndPoint>(this IServiceCollection services,
-            Action<EndPointOptions<TEndPoint>> setupAction) where TEndPoint : EndPoint
-        {
-            services.AddEndPoint<TEndPoint>();
-
-            services.Configure(setupAction);
-
-            return services;
-        }
     }
 }

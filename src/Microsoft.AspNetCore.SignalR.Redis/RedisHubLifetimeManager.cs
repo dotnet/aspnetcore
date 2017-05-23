@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await _bus.PublishAsync(channel, payload);
         }
 
-        public override Task OnConnectedAsync(Connection connection)
+        public override Task OnConnectedAsync(ConnectionContext connection)
         {
             var redisSubscriptions = connection.Metadata.GetOrAdd(RedisSubscriptionsMetadataName, _ => new HashSet<string>());
             var connectionTask = Task.CompletedTask;
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(connectionTask, userTask);
         }
 
-        public override Task OnDisconnectedAsync(Connection connection)
+        public override Task OnDisconnectedAsync(ConnectionContext connection)
         {
             _connections.Remove(connection);
 
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(tasks);
         }
 
-        public override async Task AddGroupAsync(Connection connection, string groupName)
+        public override async Task AddGroupAsync(ConnectionContext connection, string groupName)
         {
             var groupChannel = typeof(THub).FullName + ".group." + groupName;
 
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
         }
 
-        public override async Task RemoveGroupAsync(Connection connection, string groupName)
+        public override async Task RemoveGroupAsync(ConnectionContext connection, string groupName)
         {
             var groupChannel = typeof(THub).FullName + ".group." + groupName;
 
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _redisServerConnection.Dispose();
         }
 
-        private async Task WriteAsync(Connection connection, HubMessage hubMessage)
+        private async Task WriteAsync(ConnectionContext connection, HubMessage hubMessage)
         {
             var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
             var data = await protocol.WriteToArrayAsync(hubMessage);

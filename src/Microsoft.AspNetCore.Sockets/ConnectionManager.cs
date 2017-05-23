@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Sockets
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
             var state = new ConnectionState(
-                new Connection(id, applicationSide),
+                new DefaultConnectionContext(id, applicationSide),
                 transportSide);
 
             _connections.TryAdd(id, state);

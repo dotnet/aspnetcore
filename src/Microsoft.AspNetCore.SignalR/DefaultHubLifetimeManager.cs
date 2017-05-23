@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.SignalR
         private long _nextInvocationId = 0;
         private readonly ConnectionList _connections = new ConnectionList();
 
-        public override Task AddGroupAsync(Connection connection, string groupName)
+        public override Task AddGroupAsync(ConnectionContext connection, string groupName)
         {
             var groups = connection.Metadata.GetOrAdd(HubConnectionMetadataNames.Groups, _ => new HashSet<string>());
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task RemoveGroupAsync(Connection connection, string groupName)
+        public override Task RemoveGroupAsync(ConnectionContext connection, string groupName)
         {
             var groups = connection.Metadata.Get<HashSet<string>>(HubConnectionMetadataNames.Groups);
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.SignalR
             return InvokeAllWhere(methodName, args, c => true);
         }
 
-        private Task InvokeAllWhere(string methodName, object[] args, Func<Connection, bool> include)
+        private Task InvokeAllWhere(string methodName, object[] args, Func<ConnectionContext, bool> include)
         {
             var tasks = new List<Task>(_connections.Count);
             var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
@@ -94,19 +94,19 @@ namespace Microsoft.AspNetCore.SignalR
             });
         }
 
-        public override Task OnConnectedAsync(Connection connection)
+        public override Task OnConnectedAsync(ConnectionContext connection)
         {
             _connections.Add(connection);
             return Task.CompletedTask;
         }
 
-        public override Task OnDisconnectedAsync(Connection connection)
+        public override Task OnDisconnectedAsync(ConnectionContext connection)
         {
             _connections.Remove(connection);
             return Task.CompletedTask;
         }
 
-        private async Task WriteAsync(Connection connection, HubMessage hubMessage)
+        private async Task WriteAsync(ConnectionContext connection, HubMessage hubMessage)
         {
             var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
             var payload = await protocol.WriteToArrayAsync(hubMessage);

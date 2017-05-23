@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         // on the same task
         private TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>();
 
-        public Connection Connection { get; set; }
+        public ConnectionContext Connection { get; set; }
         public IChannelConnection<Message> Application { get; }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         public DateTime LastSeenUtc { get; set; }
         public ConnectionStatus Status { get; set; } = ConnectionStatus.Inactive;
 
-        public ConnectionState(Connection connection, IChannelConnection<Message> application)
+        public ConnectionState(ConnectionContext connection, IChannelConnection<Message> application)
         {
             Connection = connection;
             Application = application;

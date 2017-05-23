@@ -22,10 +22,9 @@ namespace Microsoft.AspNetCore.SignalR
         public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
                            IHubProtocolResolver protocolResolver,
                            IHubContext<THub> hubContext,
-                           IOptions<EndPointOptions<HubEndPoint<THub, IClientProxy>>> endPointOptions,
                            ILogger<HubEndPoint<THub>> logger,
                            IServiceScopeFactory serviceScopeFactory)
-            : base(lifetimeManager, protocolResolver, hubContext, endPointOptions, logger, serviceScopeFactory)
+            : base(lifetimeManager, protocolResolver, hubContext, logger, serviceScopeFactory)
         {
         }
     }
@@ -43,7 +42,6 @@ namespace Microsoft.AspNetCore.SignalR
         public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
                            IHubProtocolResolver protocolResolver,
                            IHubContext<THub, TClient> hubContext,
-                           IOptions<EndPointOptions<HubEndPoint<THub, TClient>>> endPointOptions,
                            ILogger<HubEndPoint<THub, TClient>> logger,
                            IServiceScopeFactory serviceScopeFactory)
         {
@@ -56,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR
             DiscoverHubMethods();
         }
 
-        public override async Task OnConnectedAsync(Connection connection)
+        public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             try
             {
@@ -74,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task RunHubAsync(Connection connection)
+        private async Task RunHubAsync(ConnectionContext connection)
         {
             await HubOnConnectedAsync(connection);
 
@@ -92,7 +90,7 @@ namespace Microsoft.AspNetCore.SignalR
             await HubOnDisconnectedAsync(connection, null);
         }
 
-        private async Task HubOnConnectedAsync(Connection connection)
+        private async Task HubOnConnectedAsync(ConnectionContext connection)
         {
             try
             {
@@ -118,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task HubOnDisconnectedAsync(Connection connection, Exception exception)
+        private async Task HubOnDisconnectedAsync(ConnectionContext connection, Exception exception)
         {
             try
             {
@@ -144,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task DispatchMessagesAsync(Connection connection)
+        private async Task DispatchMessagesAsync(ConnectionContext connection)
         {
             // We use these for error handling. Since we dispatch multiple hub invocations
             // in parallel, we need a way to communicate failure back to the main processing loop. The
@@ -190,7 +188,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task ProcessInvocation(Connection connection,
+        private async Task ProcessInvocation(ConnectionContext connection,
                                              IHubProtocol protocol,
                                              InvocationMessage invocationMessage,
                                              CancellationTokenSource dispatcherCancellation,
@@ -212,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task Execute(Connection connection, IHubProtocol protocol, InvocationMessage invocationMessage)
+        private async Task Execute(ConnectionContext connection, IHubProtocol protocol, InvocationMessage invocationMessage)
         {
             HubMethodDescriptor descriptor;
             if (!_methods.TryGetValue(invocationMessage.Target, out descriptor))
@@ -228,7 +226,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task SendMessageAsync(Connection connection, IHubProtocol protocol, HubMessage hubMessage)
+        private async Task SendMessageAsync(ConnectionContext connection, IHubProtocol protocol, HubMessage hubMessage)
         {
             var payload = await protocol.WriteToArrayAsync(hubMessage);
             var message = new Message(payload, protocol.MessageType, endOfMessage: true);
@@ -246,7 +244,7 @@ namespace Microsoft.AspNetCore.SignalR
             throw new OperationCanceledException("Outbound channel was closed while trying to write hub message");
         }
 
-        private async Task<CompletionMessage> Invoke(HubMethodDescriptor descriptor, Connection connection, InvocationMessage invocationMessage)
+        private async Task<CompletionMessage> Invoke(HubMethodDescriptor descriptor, ConnectionContext connection, InvocationMessage invocationMessage)
         {
             var methodExecutor = descriptor.MethodExecutor;
 
@@ -295,7 +293,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private void InitializeHub(THub hub, Connection connection)
+        private void InitializeHub(THub hub, ConnectionContext connection)
         {
             hub.Clients = _hubContext.Clients;
             hub.Context = new HubCallerContext(connection);

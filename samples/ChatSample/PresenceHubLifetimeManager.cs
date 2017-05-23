@@ -57,14 +57,14 @@ namespace ChatSample
             _wrappedHubLifetimeManager = serviceProvider.GetRequiredService<THubLifetimeManager>();
         }
 
-        public override async Task OnConnectedAsync(Connection connection)
+        public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             await _wrappedHubLifetimeManager.OnConnectedAsync(connection);
             _connections.Add(connection);
             await _userTracker.AddUser(connection, new UserDetails(connection.ConnectionId, connection.User.Identity.Name));
         }
 
-        public override async Task OnDisconnectedAsync(Connection connection)
+        public override async Task OnDisconnectedAsync(ConnectionContext connection)
         {
             await _wrappedHubLifetimeManager.OnDisconnectedAsync(connection);
             _connections.Remove(connection);
@@ -157,12 +157,12 @@ namespace ChatSample
             return _wrappedHubLifetimeManager.InvokeUserAsync(userId, methodName, args);
         }
 
-        public override Task AddGroupAsync(Connection connection, string groupName)
+        public override Task AddGroupAsync(ConnectionContext connection, string groupName)
         {
             return _wrappedHubLifetimeManager.AddGroupAsync(connection, groupName);
         }
 
-        public override Task RemoveGroupAsync(Connection connection, string groupName)
+        public override Task RemoveGroupAsync(ConnectionContext connection, string groupName)
         {
             return _wrappedHubLifetimeManager.RemoveGroupAsync(connection, groupName);
         }

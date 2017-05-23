@@ -53,7 +53,7 @@ namespace SocketsSample
 
             app.UseSockets(routes =>
             {
-                routes.MapEndpoint<MessagesEndPoint>("chat");
+                routes.MapEndPoint<MessagesEndPoint>("chat");
             });
         }
     }

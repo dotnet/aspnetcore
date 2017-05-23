@@ -129,7 +129,7 @@ namespace ChatSample
             }
         }
 
-        public async Task AddUser(Connection connection, UserDetails userDetails)
+        public async Task AddUser(ConnectionContext connection, UserDetails userDetails)
         {
             var key = GetUserRedisKey(connection);
             var user = SerializeUser(connection);
@@ -156,7 +156,7 @@ namespace ChatSample
             }
         }
 
-        public async Task RemoveUser(Connection connection)
+        public async Task RemoveUser(ConnectionContext connection)
         {
             await _userSyncSempaphore.WaitAsync();
             try
@@ -180,7 +180,7 @@ namespace ChatSample
             }
         }
 
-        private static string GetUserRedisKey(Connection connection) => $"user:{connection.ConnectionId}";
+        private static string GetUserRedisKey(ConnectionContext connection) => $"user:{connection.ConnectionId}";
 
         private static void Scan(object state)
         {
@@ -319,7 +319,7 @@ namespace ChatSample
             }
         }
 
-        private static string SerializeUser(Connection connection) =>
+        private static string SerializeUser(ConnectionContext connection) =>
             $"{{ \"ConnectionID\": \"{connection.ConnectionId}\", \"Name\": \"{connection.User.Identity.Name}\" }}";
 
         private static UserDetails DeserializerUser(string userJson) =>

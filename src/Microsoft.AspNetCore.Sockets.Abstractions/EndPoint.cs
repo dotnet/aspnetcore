@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Sockets
         /// <summary>
         /// Called when a new connection is accepted to the endpoint
         /// </summary>
-        /// <param name="connection">The new <see cref="Connection"/></param>
+        /// <param name="connection">The new <see cref="ConnectionContext"/></param>
         /// <returns>A <see cref="Task"/> that represents the connection lifetime. When the task completes, the connection is complete.</returns>
-        public abstract Task OnConnectedAsync(Connection connection);
+        public abstract Task OnConnectedAsync(ConnectionContext connection);
     }
 }

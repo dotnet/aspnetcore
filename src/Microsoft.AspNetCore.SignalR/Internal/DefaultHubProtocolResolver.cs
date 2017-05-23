@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     public class DefaultHubProtocolResolver : IHubProtocolResolver
     {
-        public IHubProtocol GetProtocol(Connection connection)
+        public IHubProtocol GetProtocol(ConnectionContext connection)
         {
             // TODO: Allow customization of this serializer!
             return new JsonHubProtocol(new JsonSerializer());
