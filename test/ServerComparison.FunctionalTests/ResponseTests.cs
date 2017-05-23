@@ -27,151 +27,151 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task ResponseFormats_Windows_ContentLength(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task ResponseFormats_Windows_ContentLength(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckContentLengthAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckContentLengthAsync, applicationType);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Kestrel_ContentLength(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Kestrel_ContentLength(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckContentLengthAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckContentLengthAsync, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Nginx_ContentLength(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Nginx_ContentLength(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckContentLengthAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckContentLengthAsync, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         // IIS will remove the "Connection: close" header https://github.com/aspnet/IISIntegration/issues/7
-        public Task ResponseFormats_Windows_Http10ConnectionClose(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        public Task ResponseFormats_Windows_Http10ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckHttp10ConnectionCloseAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp10ConnectionCloseAsync, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)] // https://github.com/aspnet/WebListener/issues/259
         // IIS will remove the "Connection: close" header https://github.com/aspnet/IISIntegration/issues/7
-        public Task ResponseFormats_Windows_Http11ConnectionClose(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        public Task ResponseFormats_Windows_Http11ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckHttp11ConnectionCloseAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp11ConnectionCloseAsync, applicationType);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Kestrel_Http10ConnectionClose(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Kestrel_Http10ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckHttp10ConnectionCloseAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp10ConnectionCloseAsync, applicationType);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Kestrel_Http11ConnectionClose(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Kestrel_Http11ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckHttp11ConnectionCloseAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp11ConnectionCloseAsync, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task ResponseFormats_Windows_Chunked(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task ResponseFormats_Windows_Chunked(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckChunkedAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckChunkedAsync, applicationType);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Kestrel_Chunked(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Kestrel_Chunked(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckChunkedAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckChunkedAsync, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Nginx_Chunked(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Nginx_Chunked(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckChunkedAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckChunkedAsync, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task ResponseFormats_Windows_ManuallyChunk(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task ResponseFormats_Windows_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckManuallyChunkedAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAsync, applicationType);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Kestrel_ManuallyChunk(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Kestrel_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckManuallyChunkedAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAsync, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Nginx_ManuallyChunk(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Nginx_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckManuallyChunkedAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAsync, applicationType);
         }
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable, Skip = "https://github.com/aspnet/IISIntegration/issues/7")]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task ResponseFormats_Windows_ManuallyChunkAndClose(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)] // https://github.com/aspnet/IISIntegration/issues/7
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        public Task ResponseFormats_Windows_ManuallyChunkAndClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckManuallyChunkedAndCloseAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAndCloseAsync, applicationType);
         }
 
         [Theory]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public Task ResponseFormats_Kestrel_ManuallyChunkAndClose(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
+        public Task ResponseFormats_Kestrel_ManuallyChunkAndClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, architecture, CheckManuallyChunkedAndCloseAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAndCloseAsync, applicationType);
         }
 
-        private async Task ResponseFormats(ServerType serverType, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, [CallerMemberName] string testName = null)
+        private async Task ResponseFormats(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, [CallerMemberName] string testName = null)
         {
-            testName = $"{testName}_{serverType}_{architecture}_{applicationType}";
+            testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("ResponseFormats");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "Responses",
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),
                     SiteName = "HttpTestSite", // This is configured in the Http.config
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType
                 };
 

@@ -3,7 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
     <RuntimeIdentifiers>win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
 

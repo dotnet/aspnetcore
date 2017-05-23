@@ -1,10 +1,13 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.26510.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{49AB8AAA-8160-48DF-A18B-78F51E54E02A}"
 	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
 		NuGet.config = NuGet.config
+		build\repo.props = build\repo.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{FA91F388-F4AF-4850-9D68-D4D128E6B1A6}"
