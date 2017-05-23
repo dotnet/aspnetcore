@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -156,6 +157,17 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHostBuilder PreferHostingUrls(this IWebHostBuilder hostBuilder, bool preferHostingUrls)
         {
             return hostBuilder.UseSetting(WebHostDefaults.PreferHostingUrlsKey, preferHostingUrls ? "true" : "false");
+        }
+
+        /// <summary>
+        /// Specify the amount of time to wait for the web host to shutdown.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="timeout">The amount of time to wait for server shutdown.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseShutdownTimeout(this IWebHostBuilder hostBuilder, TimeSpan timeout)
+        {
+            return hostBuilder.UseSetting(WebHostDefaults.ShutdownTimeoutKey, ((int)timeout.TotalSeconds).ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
