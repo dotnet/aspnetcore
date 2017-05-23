@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core web socket middleware for use on top of opaque servers.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -14,6 +14,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
