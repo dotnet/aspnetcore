@@ -67,5 +67,29 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
+
+        [Fact]
+        public async Task AddTestTagHelperComponent_FromController()
+        {
+            // Arrange
+            var url = "http://localhost/AddTagHelperComponent/AddComponent";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var outputFile = "compiler/resources/RazorWebSite.AddTagHelperComponent.AddComponent.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            var response = await Client.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+#endif
+        }
     }
 }

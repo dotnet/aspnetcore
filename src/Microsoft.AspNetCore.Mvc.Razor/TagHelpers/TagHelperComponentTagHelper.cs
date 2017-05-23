@@ -11,6 +11,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
 {
+    /// <summary>
+    /// Initializes and processes the <see cref="ITagHelperComponent"/>s added to the 
+    /// <see cref="ITagHelperComponentManager.Components"/> in the specified order.
+    /// </summary>
     public abstract class TagHelperComponentTagHelper : TagHelper
     {
         private readonly ILogger _logger;
@@ -18,16 +22,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         private IEnumerable<ITagHelperComponent> _components;
 
         /// <summary>
-        /// Creates a new <see cref="TagHelperComponentTagHelper"/>.
+        /// Creates a new <see cref="TagHelperComponentTagHelper"/> and orders the 
+        /// the collection of <see cref="ITagHelperComponent"/>s in <see cref="ITagHelperComponentManager.Components"/>.
         /// </summary>
-        /// <param name="components">The list of <see cref="ITagHelperComponent"/>.</param>
+        /// <param name="manager">The <see cref="ITagHelperComponentManager"/> which contains the collection
+        /// of <see cref="ITagHelperComponent"/>s.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public TagHelperComponentTagHelper(IEnumerable<ITagHelperComponent> components,
+        /// <remarks>The <see cref="ITagHelperComponentManager.Components"/> are ordered after the 
+        /// creation of the <see cref="ITagHelperComponentManager"/> to position the <see cref="ITagHelperComponent"/>s
+        /// added from controllers and views correctly.</remarks>
+        public TagHelperComponentTagHelper(ITagHelperComponentManager manager,
             ILoggerFactory loggerFactory)
         {
-            if (components == null)
+            if (manager == null)
             {
-                throw new ArgumentNullException(nameof(components));
+                throw new ArgumentNullException(nameof(manager));
             }
 
             if (loggerFactory == null)
@@ -35,14 +44,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _components = components;
+            _components = manager.Components.OrderBy(p => p.Order).ToArray();
             _logger = loggerFactory.CreateLogger(GetType());
         }
 
         /// <inheritdoc />
         public override void Init(TagHelperContext context)
         {
-            _components = _components.OrderBy(p => p.Order);
             foreach (var component in _components)
             {
                 component.Init(context);

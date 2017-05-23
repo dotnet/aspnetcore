@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Logging;
@@ -18,10 +17,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         /// <summary>
         /// Creates a new <see cref="BodyTagHelper"/>.
         /// </summary>
-        /// <param name="components">The list of <see cref="ITagHelperComponent"/>.</param>
+        /// <param name="manager">The <see cref="ITagHelperComponentManager"/> which contains the collection
+        /// of <see cref="ITagHelperComponent"/>s.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public BodyTagHelper(IEnumerable<ITagHelperComponent> components, ILoggerFactory loggerFactory)
-            : base(components, loggerFactory)
+        public BodyTagHelper(ITagHelperComponentManager manager, ILoggerFactory loggerFactory)
+            : base(manager, loggerFactory)
         {
         }
     }
