@@ -54,7 +54,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitCSharpAttributeValue(CSharpAttributeValueIRNode node)
+        public virtual void VisitCSharpExpressionAttributeValue(CSharpExpressionAttributeValueIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitCSharpStatementAttributeValue(CSharpStatementAttributeValueIRNode node)
         {
             VisitDefault(node);
         }

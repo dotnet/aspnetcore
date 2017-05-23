@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
@@ -153,9 +154,115 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             context.RenderChildren(node);
         }
 
-        public override void WriteCSharpAttributeValue(CSharpRenderingContext context, CSharpAttributeValueIRNode node)
+        public override void WriteCSharpExpressionAttributeValue(CSharpRenderingContext context, CSharpExpressionAttributeValueIRNode node)
         {
-            context.RenderChildren(node);
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            if (node.Children.Count == 0)
+            {
+                return;
+            }
+
+            var firstChild = node.Children[0];
+            if (firstChild.Source != null)
+            {
+                using (context.Writer.BuildLinePragma(firstChild.Source.Value))
+                {
+                    var offset = RazorDesignTimeIRPass.DesignTimeVariable.Length + " = ".Length;
+                    context.Writer.WritePadding(offset, firstChild.Source, context);
+                    context.Writer.WriteStartAssignment(RazorDesignTimeIRPass.DesignTimeVariable);
+
+                    for (var i = 0; i < node.Children.Count; i++)
+                    {
+                        if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                        {
+                            context.AddLineMappingFor(token);
+                            context.Writer.Write(token.Content);
+                        }
+                        else
+                        {
+                            // There may be something else inside the expression like a Template or another extension node.
+                            context.RenderNode(node.Children[i]);
+                        }
+                    }
+
+                    context.Writer.WriteLine(";");
+                }
+            }
+            else
+            {
+                context.Writer.WriteStartAssignment(RazorDesignTimeIRPass.DesignTimeVariable);
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                    {
+                        if (token.Source != null)
+                        {
+                            context.AddLineMappingFor(token);
+                        }
+
+                        context.Writer.Write(token.Content);
+                    }
+                    else
+                    {
+                        // There may be something else inside the expression like a Template or another extension node.
+                        context.RenderNode(node.Children[i]);
+                    }
+                }
+                context.Writer.WriteLine(";");
+            }
+        }
+
+        public override void WriteCSharpStatementAttributeValue(CSharpRenderingContext context, CSharpStatementAttributeValueIRNode node)
+        {
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                {
+                    IDisposable linePragmaScope = null;
+                    var isWhitespaceStatement = string.IsNullOrWhiteSpace(token.Content);
+
+                    if (token.Source != null)
+                    {
+                        if (!isWhitespaceStatement)
+                        {
+                            linePragmaScope = context.Writer.BuildLinePragma(token.Source.Value);
+                        }
+
+                        context.Writer.WritePadding(0, token.Source.Value, context);
+                    }
+                    else if (isWhitespaceStatement)
+                    {
+                        // Don't write whitespace if there is no line mapping for it.
+                        continue;
+                    }
+
+                    context.AddLineMappingFor(token);
+                    context.Writer.Write(token.Content);
+
+                    if (linePragmaScope != null)
+                    {
+                        linePragmaScope.Dispose();
+                    }
+                    else
+                    {
+                        context.Writer.WriteLine();
+                    }
+                }
+                else
+                {
+                    // There may be something else inside the statement like an extension node.
+                    context.RenderNode(node.Children[i]);
+                }
+            }
         }
 
         public override void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIRNode node)

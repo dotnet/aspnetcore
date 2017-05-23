@@ -38,11 +38,12 @@ Document -
                         CSharpExpression - (157:8,51 [12] TagHelpersInSection.cshtml)
                             RazorIRToken - (157:8,51 [12] TagHelpersInSection.cshtml) - CSharp - DateTime.Now
                     AddTagHelperHtmlAttribute -  - unboundproperty - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlAttributeValue - (188:8,82 [7] TagHelpersInSection.cshtml) -  - Current
-                        HtmlAttributeValue - (195:8,89 [6] TagHelpersInSection.cshtml) -   - Time:
-                        CSharpAttributeValue - (201:8,95 [14] TagHelpersInSection.cshtml) -  
-                            CSharpExpression - (203:8,97 [12] TagHelpersInSection.cshtml)
-                                RazorIRToken - (203:8,97 [12] TagHelpersInSection.cshtml) - CSharp - DateTime.Now
+                        HtmlAttributeValue - (188:8,82 [7] TagHelpersInSection.cshtml) - 
+                            RazorIRToken - (188:8,82 [7] TagHelpersInSection.cshtml) - Html - Current
+                        HtmlAttributeValue - (195:8,89 [6] TagHelpersInSection.cshtml) -  
+                            RazorIRToken - (196:8,90 [5] TagHelpersInSection.cshtml) - Html - Time:
+                        CSharpExpressionAttributeValue - (201:8,95 [14] TagHelpersInSection.cshtml) -  
+                            RazorIRToken - (203:8,97 [12] TagHelpersInSection.cshtml) - CSharp - DateTime.Now
                 HtmlContent - (359:11,22 [14] TagHelpersInSection.cshtml)
                     RazorIRToken - (359:11,22 [6] TagHelpersInSection.cshtml) - Html - \n    
                     RazorIRToken - (365:12,4 [6] TagHelpersInSection.cshtml) - Html - </div>

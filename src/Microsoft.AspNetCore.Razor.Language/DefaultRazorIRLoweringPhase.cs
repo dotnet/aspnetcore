@@ -295,11 +295,23 @@ namespace Microsoft.AspNetCore.Razor.Language
             //  Children will contain a token for @false.
             public override void VisitDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                _builder.Push(new CSharpAttributeValueIRNode()
+                var firstChild = block.Children.FirstOrDefault(c => c.IsBlock) as Block;
+                if (firstChild == null || firstChild.Type == BlockKindInternal.Expression)
                 {
-                    Prefix = chunkGenerator.Prefix,
-                    Source = BuildSourceSpanFromNode(block),
-                });
+                    _builder.Push(new CSharpExpressionAttributeValueIRNode()
+                    {
+                        Prefix = chunkGenerator.Prefix,
+                        Source = BuildSourceSpanFromNode(block),
+                    });
+                }
+                else
+                {
+                    _builder.Push(new CSharpStatementAttributeValueIRNode()
+                    {
+                        Prefix = chunkGenerator.Prefix,
+                        Source = BuildSourceSpanFromNode(block),
+                    });
+                }
 
                 VisitDefault(block);
 
@@ -308,12 +320,32 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitLiteralAttributeSpan(LiteralAttributeChunkGenerator chunkGenerator, Span span)
             {
-                _builder.Add(new HtmlAttributeValueIRNode()
+                _builder.Push(new HtmlAttributeValueIRNode()
                 {
                     Prefix = chunkGenerator.Prefix,
-                    Content = chunkGenerator.Value,
                     Source = BuildSourceSpanFromNode(span),
                 });
+
+                var location = chunkGenerator.Value.Location;
+                SourceSpan? valueSpan = null;
+                if (location != SourceLocation.Undefined)
+                {
+                    valueSpan = new SourceSpan(
+                        location.FilePath ?? FileName,
+                        location.AbsoluteIndex,
+                        location.LineIndex,
+                        location.CharacterIndex,
+                        chunkGenerator.Value.Value.Length);
+                }
+
+                _builder.Add(new RazorIRToken()
+                {
+                    Content = chunkGenerator.Value,
+                    Kind = RazorIRToken.TokenKind.Html,
+                    Source = valueSpan
+                });
+
+                _builder.Pop();
             }
 
             public override void VisitTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
@@ -354,7 +386,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             // We need to capture this in the IR so that we can give each piece the correct source mappings
             public override void VisitExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
             {
+                if (_builder.Current is CSharpExpressionAttributeValueIRNode)
+                {
+                    VisitDefault(block);
+                    return;
+                }
+
                 var expressionNode = new CSharpExpressionIRNode();
+
                 _builder.Push(expressionNode);
 
                 VisitDefault(block);
@@ -394,11 +433,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
             {
-                var statementNode = new CSharpStatementIRNode()
+                var isAttributeValue = _builder.Current is CSharpStatementAttributeValueIRNode;
+
+                if (!isAttributeValue)
                 {
-                    Source = BuildSourceSpanFromNode(span)
-                };
-                _builder.Push(statementNode);
+                    var statementNode = new CSharpStatementIRNode()
+                    {
+                        Source = BuildSourceSpanFromNode(span)
+                    };
+                    _builder.Push(statementNode);
+                }
 
                 _builder.Add(new RazorIRToken()
                 {
@@ -407,7 +451,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = BuildSourceSpanFromNode(span),
                 });
 
-                _builder.Pop();
+                if (!isAttributeValue)
+                {
+                    _builder.Pop();
+                }
             }
 
             public override void VisitMarkupSpan(MarkupChunkGenerator chunkGenerator, Span span)

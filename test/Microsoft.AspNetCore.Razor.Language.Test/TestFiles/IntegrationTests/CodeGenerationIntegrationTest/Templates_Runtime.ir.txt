@@ -28,9 +28,8 @@ Document -
                     HtmlContent - (409:16,33 [2] Templates.cshtml)
                         RazorIRToken - (409:16,33 [2] Templates.cshtml) - Html - <p
                     HtmlAttribute - (411:16,35 [14] Templates.cshtml) -  class=" - "
-                        CSharpAttributeValue - (419:16,43 [5] Templates.cshtml) - 
-                            CSharpExpression - (420:16,44 [4] Templates.cshtml)
-                                RazorIRToken - (420:16,44 [4] Templates.cshtml) - CSharp - item
+                        CSharpExpressionAttributeValue - (419:16,43 [5] Templates.cshtml) - 
+                            RazorIRToken - (420:16,44 [4] Templates.cshtml) - CSharp - item
                     HtmlContent - (425:16,49 [10] Templates.cshtml)
                         RazorIRToken - (425:16,49 [1] Templates.cshtml) - Html - >
                         RazorIRToken - (426:16,50 [5] Templates.cshtml) - Html - Hello

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         [Fact]
-        public void WriteCSharpAttributeValue_RendersCorrectly()
+        public void WriteCSharpExpressionAttributeValue_RendersCorrectly()
         {
             var writer = new TagHelperHtmlAttributeRuntimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
@@ -43,10 +43,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpExpressionAttributeValueIRNode;
 
             // Act
-            writer.WriteCSharpAttributeValue(context, node);
+            writer.WriteCSharpExpressionAttributeValue(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -62,7 +62,7 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
         }
 
         [Fact]
-        public void WriteCSharpAttributeValue_NonExpression_BuffersResult()
+        public void WriteCSharpStatementAttributeValue_BuffersResult()
         {
             var writer = new TagHelperHtmlAttributeRuntimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
@@ -70,18 +70,23 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
             var content = "<input checked=\"hello-world @if(@true){ }\" />";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            context.CodeDocument = codeDocument;
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpStatementAttributeValueIRNode;
 
             // Act
-            writer.WriteCSharpAttributeValue(context, node);
+            writer.WriteCSharpStatementAttributeValue(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
 @"AddHtmlAttributeValue("" "", 27, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
     PushWriter(__razor_attribute_value_writer);
-    Render Children
+#line 1 ""test.cshtml""
+                             if(@true){ }
+
+#line default
+#line hidden
     PopWriter();
 }
 ), 28, 13, false);

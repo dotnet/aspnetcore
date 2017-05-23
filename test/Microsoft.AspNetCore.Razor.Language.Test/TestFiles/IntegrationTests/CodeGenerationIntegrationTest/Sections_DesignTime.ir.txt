@@ -21,10 +21,10 @@ Document -
                     RazorIRToken - (99:6,19 [6] Sections.cshtml) - Html - \n    
                     RazorIRToken - (105:7,4 [4] Sections.cshtml) - Html - <div
                 HtmlAttribute - (109:7,8 [20] Sections.cshtml) -  class=" - "
-                    HtmlAttributeValue - (117:7,16 [4] Sections.cshtml) -  - some
-                    CSharpAttributeValue - (121:7,20 [7] Sections.cshtml) -  
-                        CSharpExpression - (123:7,22 [5] Sections.cshtml)
-                            RazorIRToken - (123:7,22 [5] Sections.cshtml) - CSharp - thing
+                    HtmlAttributeValue - (117:7,16 [4] Sections.cshtml) - 
+                        RazorIRToken - (117:7,16 [4] Sections.cshtml) - Html - some
+                    CSharpExpressionAttributeValue - (121:7,20 [7] Sections.cshtml) -  
+                        RazorIRToken - (123:7,22 [5] Sections.cshtml) - CSharp - thing
                 HtmlContent - (129:7,28 [29] Sections.cshtml)
                     RazorIRToken - (129:7,28 [1] Sections.cshtml) - Html - >
                     RazorIRToken - (130:7,29 [20] Sections.cshtml) - Html - This is in Section 2

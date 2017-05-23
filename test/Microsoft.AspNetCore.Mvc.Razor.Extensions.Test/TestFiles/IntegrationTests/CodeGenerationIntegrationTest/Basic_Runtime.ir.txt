@@ -17,9 +17,8 @@ Document -
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - EndContext();
                 HtmlAttribute - (4:0,4 [25] Basic.cshtml) -  class=" - "
-                    CSharpAttributeValue - (12:0,12 [16] Basic.cshtml) - 
-                        CSharpExpression - (13:0,13 [15] Basic.cshtml)
-                            RazorIRToken - (13:0,13 [15] Basic.cshtml) - CSharp - this.ToString()
+                    CSharpExpressionAttributeValue - (12:0,12 [16] Basic.cshtml) - 
+                        RazorIRToken - (13:0,13 [15] Basic.cshtml) - CSharp - this.ToString()
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - BeginContext(29, 24, true);
                 HtmlContent - (29:0,29 [24] Basic.cshtml)
@@ -51,13 +50,15 @@ Document -
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - EndContext();
                 HtmlAttribute - (125:7,2 [34] Basic.cshtml) -  class=" - "
-                    CSharpAttributeValue - (133:7,10 [25] Basic.cshtml) - 
-                        CSharpStatement - (134:7,11 [18] Basic.cshtml)
-                            RazorIRToken - (134:7,11 [18] Basic.cshtml) - CSharp - if(cls != null) { 
+                    CSharpStatementAttributeValue - (133:7,10 [25] Basic.cshtml) - 
+                        RazorIRToken - (134:7,11 [18] Basic.cshtml) - CSharp - if(cls != null) { 
+                        CSharpStatement - 
+                            RazorIRToken -  - CSharp - BeginContext(153, 3, false);
                         CSharpExpression - (153:7,30 [3] Basic.cshtml)
                             RazorIRToken - (153:7,30 [3] Basic.cshtml) - CSharp - cls
-                        CSharpStatement - (156:7,33 [2] Basic.cshtml)
-                            RazorIRToken - (156:7,33 [2] Basic.cshtml) - CSharp -  }
+                        CSharpStatement - 
+                            RazorIRToken -  - CSharp - EndContext();
+                        RazorIRToken - (156:7,33 [2] Basic.cshtml) - CSharp -  }
                 CSharpStatement - 
                     RazorIRToken -  - CSharp - BeginContext(159, 5, true);
                 HtmlContent - (159:7,36 [5] Basic.cshtml)

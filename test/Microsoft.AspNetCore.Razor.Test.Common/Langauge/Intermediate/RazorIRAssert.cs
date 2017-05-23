@@ -199,14 +199,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public static void CSharpAttributeValue(string prefix, string expected, RazorIRNode node)
+        public static void CSharpExpressionAttributeValue(string prefix, string expected, RazorIRNode node)
         {
-            var attributeValue = Assert.IsType<CSharpAttributeValueIRNode>(node);
+            var attributeValue = Assert.IsType<CSharpExpressionAttributeValueIRNode>(node);
 
             try
             {
+                var content = new StringBuilder();
+                for (var i = 0; i < attributeValue.Children.Count; i++)
+                {
+                    var token = Assert.IsType<RazorIRToken>(attributeValue.Children[i]);
+                    Assert.True(token.IsCSharp);
+                    content.Append(token.Content);
+                }
+
                 Assert.Equal(prefix, attributeValue.Prefix);
-                Children(attributeValue, n => CSharpExpression(expected, n));
+                Assert.Equal(expected, content.ToString());
             }
             catch (XunitException e)
             {
@@ -217,11 +225,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public static void LiteralAttributeValue(string prefix, string expected, RazorIRNode node)
         {
             var attributeValue = Assert.IsType<HtmlAttributeValueIRNode>(node);
-
+            
             try
             {
+                var content = new StringBuilder();
+                for (var i = 0; i < attributeValue.Children.Count; i++)
+                {
+                    var token = Assert.IsType<RazorIRToken>(attributeValue.Children[i]);
+                    Assert.True(token.IsHtml);
+                    content.Append(token.Content);
+                }
+
                 Assert.Equal(prefix, attributeValue.Prefix);
-                Assert.Equal(expected, attributeValue.Content);
+                Assert.Equal(expected, content.ToString());
             }
             catch (XunitException e)
             {
@@ -272,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 for (var i = 0; i < beginNode.Children.Count; i++)
                 {
                     var token = Assert.IsType<RazorIRToken>(beginNode.Children[i]);
-                    Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
+                    Assert.True(token.IsCSharp);
                     content.Append(token.Content);
                 }
 

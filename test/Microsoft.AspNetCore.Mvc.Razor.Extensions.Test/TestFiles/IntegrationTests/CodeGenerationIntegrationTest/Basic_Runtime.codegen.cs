@@ -54,11 +54,13 @@ Write(string.Format("{0}", "Hello"));
 
 #line default
 #line hidden
+                BeginContext(153, 3, false);
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
                         Write(cls);
 
 #line default
 #line hidden
+                EndContext();
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
                                   }
 

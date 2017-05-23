@@ -31,7 +31,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.AccessModifier, node.Name, node.BaseType, string.Join(", ", node.Interfaces ?? new List<string>()));
         }
 
-        public override void VisitCSharpAttributeValue(CSharpAttributeValueIRNode node)
+        public override void VisitCSharpExpressionAttributeValue(CSharpExpressionAttributeValueIRNode node)
+        {
+            WriteContentNode(node, node.Prefix);
+        }
+
+        public override void VisitCSharpStatementAttributeValue(CSharpStatementAttributeValueIRNode node)
         {
             WriteContentNode(node, node.Prefix);
         }
@@ -58,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitHtmlAttributeValue(HtmlAttributeValueIRNode node)
         {
-            WriteContentNode(node, node.Prefix, node.Content);
+            WriteContentNode(node, node.Prefix);
         }
 
         public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)

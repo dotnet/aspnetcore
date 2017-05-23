@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     node: n,
                     valueValidators: new Action<RazorIRNode>[]
                     {
-                        value => CSharpAttributeValue(string.Empty, "Hello", value),
+                        value => CSharpExpressionAttributeValue(string.Empty, "Hello", value),
                         value => LiteralAttributeValue(" ",  "World", value)
                     }),
                 n => Html(@" />
@@ -226,7 +225,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         "val",
                         HtmlAttributeValueStyle.DoubleQuotes,
                         c,
-                        v => CSharpAttributeValue(string.Empty, "Hello", v),
+                        v => CSharpExpressionAttributeValue(string.Empty, "Hello", v),
                         v => LiteralAttributeValue(" ", "World", v))));
         }
 
@@ -270,7 +269,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         "val",
                         HtmlAttributeValueStyle.DoubleQuotes,
                         c,
-                        v => CSharpAttributeValue(string.Empty, "Hello", v),
+                        v => CSharpExpressionAttributeValue(string.Empty, "Hello", v),
                         v => LiteralAttributeValue(" ", "World", v))));
         }
 
@@ -316,7 +315,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                             "val",
                             HtmlAttributeValueStyle.DoubleQuotes,
                             c2,
-                            v => CSharpAttributeValue(string.Empty, "Hello", v),
+                            v => CSharpExpressionAttributeValue(string.Empty, "Hello", v),
                             v => LiteralAttributeValue(" ", "World", v))),
                     c1 => Html(Environment.NewLine, c1)),
                 n => TagHelperFieldDeclaration(n, "SpanTagHelper"));

@@ -140,11 +140,12 @@ Document -
                             RazorIRToken - (707:20,0 [8] ComplexTagHelpers.cshtml) - Html -         
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddTagHelperHtmlAttribute -  - time - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlAttributeValue - (197:8,17 [7] ComplexTagHelpers.cshtml) -  - Current
-                        HtmlAttributeValue - (204:8,24 [6] ComplexTagHelpers.cshtml) -   - Time:
-                        CSharpAttributeValue - (210:8,30 [14] ComplexTagHelpers.cshtml) -  
-                            CSharpExpression - (212:8,32 [12] ComplexTagHelpers.cshtml)
-                                RazorIRToken - (212:8,32 [12] ComplexTagHelpers.cshtml) - CSharp - DateTime.Now
+                        HtmlAttributeValue - (197:8,17 [7] ComplexTagHelpers.cshtml) - 
+                            RazorIRToken - (197:8,17 [7] ComplexTagHelpers.cshtml) - Html - Current
+                        HtmlAttributeValue - (204:8,24 [6] ComplexTagHelpers.cshtml) -  
+                            RazorIRToken - (205:8,25 [5] ComplexTagHelpers.cshtml) - Html - Time:
+                        CSharpExpressionAttributeValue - (210:8,30 [14] ComplexTagHelpers.cshtml) -  
+                            RazorIRToken - (212:8,32 [12] ComplexTagHelpers.cshtml) - CSharp - DateTime.Now
                 HtmlContent - (719:20,12 [10] ComplexTagHelpers.cshtml)
                     RazorIRToken - (719:20,12 [10] ComplexTagHelpers.cshtml) - Html - \n        
                 TagHelper - (729:21,8 [181] ComplexTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag

@@ -242,7 +242,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIRNode node)
         {
             var attributeValueStyleParameter = $"{HtmlAttributeValueStyleTypeName}.{node.ValueStyle}";
-            var isConditionalAttributeValue = node.Children.Any(child => child is CSharpAttributeValueIRNode);
+            var isConditionalAttributeValue = node.Children.Any(
+                child => child is CSharpExpressionAttributeValueIRNode || child is CSharpStatementAttributeValueIRNode);
 
             // All simple text and minimized attributes will be pre-allocated.
             if (isConditionalAttributeValue)
@@ -253,7 +254,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 // TagHelper attribute rendering is buffered by default. We do not want to write to the current
                 // writer.
                 var valuePieceCount = node.Children.Count(
-                    child => child is HtmlAttributeValueIRNode || child is CSharpAttributeValueIRNode);
+                    child =>
+                        child is HtmlAttributeValueIRNode ||
+                        child is CSharpExpressionAttributeValueIRNode ||
+                        child is CSharpStatementAttributeValueIRNode ||
+                        child is ExtensionIRNode);
 
                 context.Writer
                     .WriteStartMethodInvocation(BeginAddHtmlAttributeValuesMethodName)

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class HtmlAttributeValueIRNode : RazorIRNode
+    public sealed class CSharpExpressionAttributeValueIRNode : RazorIRNode
     {
         public override ItemCollection Annotations => ReadOnlyItemCollection.Empty;
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitHtmlAttributeValue(this);
+            visitor.VisitCSharpExpressionAttributeValue(this);
         }
     }
 }

@@ -28,9 +28,8 @@ Document -
                     CreateTagHelper -  - TestNamespace.InputTagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
-                        CSharpAttributeValue - (130:7,14 [21] EnumTagHelpers.cshtml) - 
-                            CSharpExpression - (131:7,15 [20] EnumTagHelpers.cshtml)
-                                RazorIRToken - (131:7,15 [20] EnumTagHelpers.cshtml) - CSharp - MyEnum.MySecondValue
+                        CSharpExpressionAttributeValue - (130:7,14 [21] EnumTagHelpers.cshtml) - 
+                            RazorIRToken - (131:7,15 [20] EnumTagHelpers.cshtml) - CSharp - MyEnum.MySecondValue
                 HtmlContent - (155:7,39 [2] EnumTagHelpers.cshtml)
                     RazorIRToken - (155:7,39 [2] EnumTagHelpers.cshtml) - Html - \n
                 TagHelper - (157:8,0 [25] EnumTagHelpers.cshtml) - input - TagMode.SelfClosing

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public override void VisitCSharpExpression(CSharpExpressionIRNode node)
             {
-                if (node.Source != null && !(node.Parent is CSharpAttributeValueIRNode))
+                if (node.Source != null)
                 {
                     Items.Add(new InstrumentationItem(node, isLiteral: false, source: node.Source.Value));
                 }
