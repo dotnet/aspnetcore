@@ -159,11 +159,11 @@ function buildDotNetNewNuGetPackage() {
                     datatype: 'choice',
                     choices: [
                         {
-                            choice: 'netcoreapp1.1',
-                            description: 'Target netcoreapp1.1'
+                            choice: 'netcoreapp2.0',
+                            description: 'Target netcoreapp2.0'
                         }
                     ],
-                    defaultValue: 'netcoreapp1.1'
+                    defaultValue: 'netcoreapp2.0'
                 },
                 skipRestore: {
                     type: 'parameter',
