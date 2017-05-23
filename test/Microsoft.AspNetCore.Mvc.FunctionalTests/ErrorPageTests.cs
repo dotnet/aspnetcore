@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains(expectedCompilationContent, content);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/6120")]
+        [Fact]
         public async Task RuntimeErrorAreListedByErrorPageMiddleware()
         {
             // Arrange
