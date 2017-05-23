@@ -464,14 +464,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 if (!StringValues.IsNullOrEmpty(ifModifiedSince))
                 {
                     DateTimeOffset modified;
-                    if (!HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.LastModified], out modified) &&
-                        !HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.Date], out modified))
+                    if (!HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.LastModified].ToString(), out modified) &&
+                        !HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.Date].ToString(), out modified))
                     {
                         return false;
                     }
 
                     DateTimeOffset modifiedSince;
-                    if (HeaderUtilities.TryParseDate(ifModifiedSince, out modifiedSince) &&
+                    if (HeaderUtilities.TryParseDate(ifModifiedSince.ToString(), out modifiedSince) &&
                         modified <= modifiedSince)
                     {
                         context.Logger.LogNotModifiedIfModifiedSinceSatisfied(modified, modifiedSince);

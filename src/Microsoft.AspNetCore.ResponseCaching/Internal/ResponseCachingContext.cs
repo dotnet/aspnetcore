@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 {
                     _parsedResponseDate = true;
                     DateTimeOffset date;
-                    if (HeaderUtilities.TryParseDate(HttpContext.Response.Headers[HeaderNames.Date], out date))
+                    if (HeaderUtilities.TryParseDate(HttpContext.Response.Headers[HeaderNames.Date].ToString(), out date))
                     {
                         _responseDate = date;
                     }
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 {
                     _parsedResponseExpires = true;
                     DateTimeOffset expires;
-                    if (HeaderUtilities.TryParseDate(HttpContext.Response.Headers[HeaderNames.Expires], out expires))
+                    if (HeaderUtilities.TryParseDate(HttpContext.Response.Headers[HeaderNames.Expires].ToString(), out expires))
                     {
                         _responseExpires = expires;
                     }

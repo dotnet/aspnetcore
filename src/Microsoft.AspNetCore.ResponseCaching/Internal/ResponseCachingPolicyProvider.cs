@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 {
                     // Validate expiration
                     DateTimeOffset expires;
-                    if (HeaderUtilities.TryParseDate(context.CachedResponseHeaders[HeaderNames.Expires], out expires) &&
+                    if (HeaderUtilities.TryParseDate(context.CachedResponseHeaders[HeaderNames.Expires].ToString(), out expires) &&
                         context.ResponseTime.Value >= expires)
                     {
                         context.Logger.LogExpirationExpiresExceeded(context.ResponseTime.Value, expires);
