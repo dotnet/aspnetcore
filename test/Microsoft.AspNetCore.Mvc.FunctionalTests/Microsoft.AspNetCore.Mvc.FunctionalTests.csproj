@@ -31,7 +31,7 @@
     <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FiltersWebSite\FiltersWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
-    <!--<ProjectReference Include="..\WebSites\FSharpWebSite\FSharpWebSite.fsproj" />-->
+    <ProjectReference Include="..\WebSites\FSharpWebSite\FSharpWebSite.fsproj" />
     <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
     <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
