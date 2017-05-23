@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly DeveloperExceptionPageOptions _options;
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
-        private readonly System.Diagnostics.DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticSource _diagnosticSource;
         private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
 
         /// <summary>
