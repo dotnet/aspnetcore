@@ -43,9 +43,24 @@ namespace Microsoft.AspNetCore.Identity.Service
             return;
         }
 
-        public static RSA CreateRsaAlgorithm() => RSA.Create(2048);
+        public static SHA256 CreateSHA256()
+        {
+            SHA256 sha256 = null;
+            try
+            {
+                sha256 = SHA256.Create();
+                return sha256;
+            }
+            // SHA256.Create is documented to throw this exception on FIPS compliant machines.
+            // See: https://msdn.microsoft.com/enus/library/z08hz7ad%28v=vs.110%29.aspx?f=255&MSPPError=2147217396
+            catch (System.Reflection.TargetInvocationException)
+            {
+                // Fallback to a FIPS compliant SHA256 algorithm.
+                sha256 = new SHA256CryptoServiceProvider();
+            }
 
-        public static SHA256 CreateSHA256() => SHA256.Create();
+            return sha256;
+        }
 
         public static RSAParameters GetRSAParameters(SigningCredentials credentials)
         {
@@ -82,7 +97,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             var rsaSecurityKey = credentials.Key as RsaSecurityKey;
             // Check that the key has either an Asymetric Algorithm assigned or that at least
             // one of the RSA parameters are initialized to consider the key "valid".
-            if (rsaSecurityKey != null && 
+            if (rsaSecurityKey != null &&
                 (rsaSecurityKey.Rsa != null || rsaSecurityKey.Parameters.Modulus != null))
             {
                 return JsonWebAlgorithmsKeyTypes.RSA;

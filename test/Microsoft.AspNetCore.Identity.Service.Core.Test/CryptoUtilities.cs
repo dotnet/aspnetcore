@@ -10,14 +10,24 @@ namespace Microsoft.AspNetCore.Identity.Service
     {
         internal static SecurityKey CreateTestKey(string id = "Test")
         {
-            using (var rsa = RSA.Create(2048))
+            var rsa = RSA.Create();
+            if (rsa.KeySize < 2048)
             {
-                SecurityKey key;
-                var parameters = rsa.ExportParameters(includePrivateParameters: true);
-                key = new RsaSecurityKey(parameters);
-                key.KeyId = id;
-                return key;
+                rsa.KeySize = 2048;
+                if (rsa.KeySize < 2048 && rsa is RSACryptoServiceProvider)
+                {
+                    rsa.Dispose();
+                    rsa = new RSACryptoServiceProvider(2048);
+                }
             }
+
+            SecurityKey key;
+            var parameters = rsa.ExportParameters(includePrivateParameters: true);
+            rsa.Dispose();
+
+            key = new RsaSecurityKey(parameters);
+            key.KeyId = id;
+            return key;
         }
     }
 }

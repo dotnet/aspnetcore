@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity Service implementation based on ASP.NET Core Identity.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>

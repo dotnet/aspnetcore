@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
             await _next(context);
             void CreateDevelopmentCertificate()
             {
+#if NETCOREAPP2_0
                 using (var rsa = RSA.Create(2048))
                 {
                     var signingRequest = new CertificateRequest(
@@ -107,6 +108,10 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
                         context.Response.StatusCode = StatusCodes.Status204NoContent;
                     };
                 }
+#elif NETSTANDARD2_0
+#else
+#error The target frameworks need to be updated.
+#endif
             }
 
             bool FoundDeveloperCertificate()

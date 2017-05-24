@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Shared test suite for Asp.Net Identity Core as a service store implementations.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity</PackageTags>
   </PropertyGroup>
