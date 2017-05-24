@@ -1,0 +1,12 @@
+[
+      {
+        "TypeId": "public abstract class Microsoft.AspNetCore.Http.ConnectionInfo",
+        "MemberId": "public abstract System.String get_Id()",
+        "Kind": "Addition"
+      },
+      {
+        "TypeId": "public abstract class Microsoft.AspNetCore.Http.ConnectionInfo",
+        "MemberId": "public abstract System.Void set_Id(System.String value)",
+        "Kind": "Addition"
+      }
+    ]
