@@ -15,32 +15,28 @@ namespace Microsoft.AspNetCore.Routing.Abstractions
         /// </summary>
         internal static string RouteValueDictionary_DuplicateKey
         {
-            get { return GetString("RouteValueDictionary_DuplicateKey"); }
+            get => GetString("RouteValueDictionary_DuplicateKey");
         }
 
         /// <summary>
         /// An element with the key '{0}' already exists in the {1}.
         /// </summary>
         internal static string FormatRouteValueDictionary_DuplicateKey(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RouteValueDictionary_DuplicateKey"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("RouteValueDictionary_DuplicateKey"), p0, p1);
 
         /// <summary>
         /// The type '{0}' defines properties '{1}' and '{2}' which differ only by casing. This is not supported by {3} which uses case-insensitive comparisons.
         /// </summary>
         internal static string RouteValueDictionary_DuplicatePropertyName
         {
-            get { return GetString("RouteValueDictionary_DuplicatePropertyName"); }
+            get => GetString("RouteValueDictionary_DuplicatePropertyName");
         }
 
         /// <summary>
         /// The type '{0}' defines properties '{1}' and '{2}' which differ only by casing. This is not supported by {3} which uses case-insensitive comparisons.
         /// </summary>
         internal static string FormatRouteValueDictionary_DuplicatePropertyName(object p0, object p1, object p2, object p3)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RouteValueDictionary_DuplicatePropertyName"), p0, p1, p2, p3);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("RouteValueDictionary_DuplicatePropertyName"), p0, p1, p2, p3);
 
         private static string GetString(string name, params string[] formatterNames)
         {
