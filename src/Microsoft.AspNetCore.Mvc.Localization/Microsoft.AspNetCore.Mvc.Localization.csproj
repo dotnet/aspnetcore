@@ -7,7 +7,7 @@
 Commonly used types:
 Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer&lt;TResource&gt;
 Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;localization</PackageTags>

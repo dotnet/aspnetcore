@@ -6,7 +6,7 @@
     <Description>Provides compatibility in ASP.NET Core MVC with ASP.NET Web API 2 to simplify migration of existing Web API implementations.
 Commonly used types:
 System.Web.Http.ApiController</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetwebapi</PackageTags>

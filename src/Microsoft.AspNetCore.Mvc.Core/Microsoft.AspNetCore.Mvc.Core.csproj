@@ -12,7 +12,7 @@ Microsoft.AspNetCore.Mvc.FromBodyAttribute
 Microsoft.AspNetCore.Mvc.FromFormAttribute
 Microsoft.AspNetCore.Mvc.RequireHttpsAttribute
 Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>

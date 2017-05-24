@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC formatters for XML input and output using DataContractSerializer and XmlSerializer.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;xml</PackageTags>
