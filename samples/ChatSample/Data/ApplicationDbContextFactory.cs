@@ -10,7 +10,7 @@ namespace ChatSample.Data
 {
     public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
     {
-        public ApplicationDbContext Create(string[] args)
+        public ApplicationDbContext CreateDbContext(string[] args)
         {
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(Path.Combine(Directory.GetCurrentDirectory()))
