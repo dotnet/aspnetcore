@@ -154,7 +154,7 @@ function buildDotNetNewNuGetPackage(packageId: string) {
             classifications: ['Web', 'MVC', 'SPA'],
             groupIdentity: `${packageId}.${templateConfig.dotNetNewId}`,
             identity: `${packageId}.${templateConfig.dotNetNewId}.CSharp`,
-            name: `MVC ASP.NET Core with ${templateConfig.displayName}`,
+            name: `ASP.NET Core with ${templateConfig.displayName}`,
             preferNameDirectory: true,
             primaryOutputs: [{ path: `${sourceProjectName}.csproj` }],
             shortName: `${templateConfig.dotNetNewId.toLowerCase()}`,
