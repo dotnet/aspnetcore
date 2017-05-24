@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -16,8 +16,8 @@ namespace E2ETests
 {
     public partial class Validator
     {
-        private static readonly string IdentityCookieName = CookieAuthenticationDefaults.CookiePrefix + new IdentityCookieOptions().ApplicationCookieAuthenticationScheme;
-        private static readonly string ExternalLoginCookieName = CookieAuthenticationDefaults.CookiePrefix + new IdentityCookieOptions().ExternalCookieAuthenticationScheme;
+        private static readonly string IdentityCookieName = CookieAuthenticationDefaults.CookiePrefix + IdentityConstants.ApplicationScheme;
+        private static readonly string ExternalLoginCookieName = CookieAuthenticationDefaults.CookiePrefix + IdentityConstants.ExternalScheme;
         private HttpClient _httpClient;
 
         private HttpClientHandler _httpClientHandler;
