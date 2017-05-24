@@ -3,12 +3,12 @@
 
 using System.IO;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
 namespace ChatSample.Data
 {
-    public class ApplicationDbContextFactory : IDbContextFactory<ApplicationDbContext>
+    public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
     {
         public ApplicationDbContext Create(string[] args)
         {
