@@ -4,6 +4,7 @@
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
