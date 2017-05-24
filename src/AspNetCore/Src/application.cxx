@@ -5,6 +5,12 @@
 
 APPLICATION::~APPLICATION()
 {
+    if (m_pAppOfflineHtm != NULL)
+    {
+        m_pAppOfflineHtm->DereferenceAppOfflineHtm();
+        m_pAppOfflineHtm = NULL;
+    }
+
     if (m_pFileWatcherEntry != NULL)
     {
         // Mark the entry as invalid,
@@ -109,6 +115,7 @@ APPLICATION::UpdateAppOfflineFileHandle()
     STRU strFilePath;
     PATH::ConvertPathToFullPath(L".\\app_offline.htm", m_strAppPhysicalPath.QueryStr(), &strFilePath);
     APP_OFFLINE_HTM *pOldAppOfflineHtm = NULL;
+    APP_OFFLINE_HTM *pNewAppOfflineHtm = NULL;
 
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFilePath.QueryStr()) && GetLastError() == ERROR_FILE_NOT_FOUND)
     {
@@ -117,30 +124,41 @@ APPLICATION::UpdateAppOfflineFileHandle()
     else
     {
         m_fAppOfflineFound = TRUE;
-        APP_OFFLINE_HTM *pNewAppOfflineHtm = new APP_OFFLINE_HTM(strFilePath.QueryStr());
         
-        DBG_ASSERT(pNewAppOfflineHtm != NULL);
+        //
+        // send shutdown signal
+        //
 
-        if (pNewAppOfflineHtm->Load())
+        // The reason why we send the shutdown signal before loading the new app_offline file is because we want to make some delay 
+        // before reading the appoffline.htm so that the file change can be done on time.
+        if (m_pProcessManager != NULL)
         {
-            //
-            // loaded new app offline htm
-            //
-            pOldAppOfflineHtm = (APP_OFFLINE_HTM *)InterlockedExchangePointer((VOID**)&m_pAppOfflineHtm, pNewAppOfflineHtm);
+            m_pProcessManager->SendShutdownSignal();
+        }
 
-            //
-            // send shutdown signal to the app
-            //
-            if (m_pProcessManager != NULL)
+        pNewAppOfflineHtm = new APP_OFFLINE_HTM(strFilePath.QueryStr());
+
+        if ( pNewAppOfflineHtm != NULL )
+        {
+            if (pNewAppOfflineHtm->Load())
             {
-                m_pProcessManager->SendShutdownSignal();
+                //
+                // loaded the new app_offline.htm
+                //
+                pOldAppOfflineHtm = (APP_OFFLINE_HTM *)InterlockedExchangePointer((VOID**)&m_pAppOfflineHtm, pNewAppOfflineHtm);
+
+                if (pOldAppOfflineHtm != NULL)
+                {
+                    pOldAppOfflineHtm->DereferenceAppOfflineHtm();
+                    pOldAppOfflineHtm = NULL;
+                }
+            }
+            else
+            {
+                // ignored the new app_offline file because the file does not exist.
+                pNewAppOfflineHtm->DereferenceAppOfflineHtm(); 
+                pNewAppOfflineHtm = NULL;
             }
         }
-    }
-
-    if (pOldAppOfflineHtm != NULL)
-    {
-        pOldAppOfflineHtm->DereferenceAppOfflineHtm();
-        pOldAppOfflineHtm = NULL;
     }
 }

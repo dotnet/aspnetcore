@@ -6,14 +6,21 @@
 #define MIN_PORT                                    1025
 #define MAX_PORT                                    48000
 #define MAX_RETRY                                   10
+#define MAX_ACTIVE_CHILD_PROCESSES                  16
 #define LOCALHOST                                   "127.0.0.1"
 #define ASPNETCORE_PORT_STR                         L"ASPNETCORE_PORT"
-#define ASPNETCORE_PORT_PLACEHOLDER                 L"%ASPNETCORE_PORT%"
-#define ASPNETCORE_PORT_PLACEHOLDER_CCH             17        
-#define ASPNETCORE_DEBUG_PORT_STR                   L"ASPNETCORE_DEBUG_PORT"
-#define ASPNETCORE_DEBUG_PORT_PLACEHOLDER           L"%ASPNETCORE_DEBUG_PORT%"
-#define ASPNETCORE_DEBUG_PORT_PLACEHOLDER_CCH       23
-#define MAX_ACTIVE_CHILD_PROCESSES                  16
+#define ASPNETCORE_PORT_ENV_STR                     L"ASPNETCORE_PORT="
+#define ASPNETCORE_APP_PATH_ENV_STR                 L"ASPNETCORE_APPL_PATH="
+#define ASPNETCORE_APP_TOKEN_ENV_STR                L"ASPNETCORE_TOKEN="
+#define ASPNETCORE_APP_PATH_ENV_STR                 L"ASPNETCORE_APPL_PATH="
+#define HOSTING_STARTUP_ASSEMBLIES_ENV_STR          L"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"
+#define HOSTING_STARTUP_ASSEMBLIES_NAME             L"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES="
+#define HOSTING_STARTUP_ASSEMBLIES_VALUE            L"Microsoft.AspNetCore.Server.IISIntegration"
+#define ASPNETCORE_IIS_AUTH_ENV_STR                 L"ASPNETCORE_IIS_HTTPAUTH="
+#define ASPNETCORE_IIS_AUTH_WINDOWS                 L"windows;"
+#define ASPNETCORE_IIS_AUTH_BASIC                   L"basic;"
+#define ASPNETCORE_IIS_AUTH_ANONYMOUS               L"anonymous;"
+#define ASPNETCORE_IIS_AUTH_NONE                    L"none"
 
 class PROCESS_MANAGER;
 class FORWARDER_CONNECTION;
@@ -25,14 +32,17 @@ public:
 
     HRESULT
         Initialize(
-        _In_ PROCESS_MANAGER    *pProcessManager,
-        _In_ STRU               *pszProcessExePath,
-        _In_ STRU               *pszArguments,
-        _In_ DWORD               dwStartupTimeLimitInMS,
-        _In_ DWORD               dwShtudownTimeLimitInMS,
-        _In_ MULTISZ            *pszEnvironment,
-        _In_ BOOL                fStdoutLogEnabled,
-        _In_ STRU               *pstruStdoutLogFile
+        _In_ PROCESS_MANAGER      *pProcessManager,
+        _In_ STRU                 *pszProcessExePath,
+        _In_ STRU                 *pszArguments,
+        _In_ DWORD                 dwStartupTimeLimitInMS,
+        _In_ DWORD                 dwShtudownTimeLimitInMS,
+        _In_ BOOL                  fWindowsAuthEnabled,
+        _In_ BOOL                  fBasicAuthEnabled,
+        _In_ BOOL                  fAnonymousAuthEnabled,
+        _In_ ENVIRONMENT_VAR_HASH* pEnvironmentVariables,
+        _In_ BOOL                  fStdoutLogEnabled,
+        _In_ STRU                 *pstruStdoutLogFile
         );
 
 
@@ -64,12 +74,6 @@ public:
     GetPort()
     {
         return m_dwPort;
-    }
-
-    DWORD 
-    GetDebugPort()
-    {
-        return m_dwDebugPort;
     }
 
     VOID
@@ -119,6 +123,12 @@ public:
     );
 
     LPCWSTR
+    QueryPortStr()
+    {
+        return m_struPort.QueryStr();
+    }
+
+    LPCWSTR
     QueryFullLogPath()
     {
         return m_struFullLogFile.QueryStr();
@@ -161,12 +171,6 @@ private:
 
     HRESULT
     CheckIfServerIsUp(
-        _In_  DWORD      dwPort,
-        _Out_ BOOL      *pfReady
-    );
-
-    HRESULT
-    CheckIfServerIsUp(
         _In_  DWORD       dwPort,
         _Out_ DWORD     * pdwProcessId,
         _Out_ BOOL      * pfReady
@@ -182,13 +186,49 @@ private:
     GetChildProcessHandles(
     );
 
-    DWORD 
-    GenerateRandomPort(
-        VOID
-    )
-    {
-        return (rand() % (MAX_PORT - MIN_PORT)) + MIN_PORT + 1;
-    }
+    HRESULT
+    SetupListenPort(
+        ENVIRONMENT_VAR_HASH    *pEnvironmentVarTable
+    );
+
+    HRESULT
+    SetupAppPath(
+        IHttpContext*           pContext,
+        ENVIRONMENT_VAR_HASH*   pEnvironmentVarTable
+    );
+
+    HRESULT
+    SetupAppToken(
+        ENVIRONMENT_VAR_HASH*   pEnvironmentVarTable
+    );
+
+    HRESULT
+    InitEnvironmentVariablesTable(
+        ENVIRONMENT_VAR_HASH**   pEnvironmentVarTable
+    );
+
+    HRESULT
+    OutputEnvironmentVariables(
+        MULTISZ*                pmszOutput,
+        ENVIRONMENT_VAR_HASH*   pEnvironmentVarTable
+    );
+
+    HRESULT
+    SetupCommandLine(
+        STRU*    pstrCommandLine
+    );
+
+    HRESULT
+    PostStartCheck(
+        const STRU* const pStruCommandline,
+        STRU*             pStruErrorMessage
+    );
+
+    HRESULT
+    GetRandomPort(
+        DWORD*    pdwPickedPort,
+        DWORD     dwExcludedPort
+    );
 
     DWORD
     GetNumberOfDigits( 
@@ -213,44 +253,51 @@ private:
     }
 
     FORWARDER_CONNECTION   *m_pForwarderConnection;
-    HANDLE                  m_hJobObject;
     BOOL                    m_fStdoutLogEnabled;
+    BOOL                    m_fWindowsAuthEnabled;
+    BOOL                    m_fBasicAuthEnabled;
+    BOOL                    m_fAnonymousAuthEnabled;
+
+    STTIMER                 m_Timer;
+    SOCKET                  m_socket;
+
     STRU                    m_struLogFile;
     STRU                    m_struFullLogFile;
-    STTIMER                 m_Timer;
-    HANDLE                  m_hStdoutHandle;
-    volatile LONG           m_lStopping;
-    volatile BOOL           m_fReady;
-    CRITICAL_SECTION        m_csLock;
-    SOCKET                  m_socket;
-    DWORD                   m_dwPort;
-    DWORD                   m_dwDebugPort;
     STRU                    m_ProcessPath;
     STRU                    m_Arguments;
+    STRU                    m_struAppPath;
+    STRU                    m_struAppFullPath;
+    STRU                    m_struPort;
+    STRU                    m_pszRootApplicationPath;
+    volatile LONG           m_lStopping;
+    volatile BOOL           m_fReady;
+    mutable LONG            m_cRefs;
+
+    DWORD                   m_dwPort;
     DWORD                   m_dwStartupTimeLimitInMS;
     DWORD                   m_dwShutdownTimeLimitInMS;
-    MULTISZ                 m_Environment;
-    mutable LONG            m_cRefs;
-    HANDLE                  m_hProcessWaitHandle;
     DWORD                   m_cChildProcess;
-    HANDLE                  m_hChildProcessWaitHandles[MAX_ACTIVE_CHILD_PROCESSES];
+    DWORD                   m_dwChildProcessIds[MAX_ACTIVE_CHILD_PROCESSES];
     DWORD                   m_dwProcessId;
     DWORD                   m_dwListeningProcessId;
+
     STRA                    m_straGuid;
 
+    HANDLE                  m_hJobObject;
+    HANDLE                  m_hStdoutHandle;
     //
     // m_hProcessHandle is the handle to process this object creates.
     //
-
     HANDLE                  m_hProcessHandle;
     HANDLE                  m_hListeningProcessHandle;
-
+    HANDLE                  m_hProcessWaitHandle;
     //
     // m_hChildProcessHandle is the handle to process created by 
     // m_hProcessHandle process if it does.
     //
-
     HANDLE                  m_hChildProcessHandles[MAX_ACTIVE_CHILD_PROCESSES];
-    DWORD                   m_dwChildProcessIds[MAX_ACTIVE_CHILD_PROCESSES];
+    HANDLE                  m_hChildProcessWaitHandles[MAX_ACTIVE_CHILD_PROCESSES];
+
     PROCESS_MANAGER         *m_pProcessManager;
+    ENVIRONMENT_VAR_HASH    *m_pEnvironmentVarTable ;
 };

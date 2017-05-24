@@ -1,18 +1,7 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
 #pragma once
-
-/*++
-
-Copyright (c) 2013 Microsoft Corporation
-
-Module Name:
-
-    forwardinghandler.h
-
-Abstract:
-
-    Handler for handling URLs from out-of-box.
-
---*/
 
 #include "forwarderconnection.h"
 #include "protocolconfig.h"
@@ -109,7 +98,13 @@ public:
         DWORD       dwStatusInformationLength
     )
     {
+
         FORWARDING_HANDLER * pThis = static_cast<FORWARDING_HANDLER *>(reinterpret_cast<PVOID>(dwContext));
+        if (pThis == NULL)
+        {
+            //error happened, nothing can be done here
+            return;
+        }
         DBG_ASSERT(pThis->m_Signature == FORWARDING_HANDLER_SIGNATURE);
         pThis->OnWinHttpCompletionInternal(hRequest,
                                            dwInternetStatus,
@@ -186,7 +181,6 @@ private:
         __in const PROTOCOL_CONFIG *    pProtocol,
         __in HINTERNET                  hConnect,
         __inout STRU *                  pstrUrl,
-        const STRU&                     strDestination,
         ASPNETCORE_CONFIG*              pAspNetCoreConfig,
         SERVER_PROCESS*                 pServerProcess
     );
@@ -201,7 +195,6 @@ private:
     HRESULT
     GetHeaders(
         const PROTOCOL_CONFIG * pProtocol,
-        PCWSTR                  pszDestination,
         PCWSTR *                ppszHeaders,
         DWORD *                 pcchHeaders,
         ASPNETCORE_CONFIG*      pAspNetCoreConfig,
@@ -325,6 +318,10 @@ private:
     bool                                m_fHandleClosedDueToClient;
     bool                                m_fResponseHeadersReceivedAndSet;
     BOOL                                m_fDoReverseRewriteHeaders;
+    BOOL                                m_fErrorHandled;
+    BOOL                                m_fWebSocketUpgrade;
+    BOOL                                m_fFinishRequest;
+    BOOL                                m_fClientDisconnected;
     DWORD                               m_msStartTime;
         
     DWORD                               m_BytesToReceive;

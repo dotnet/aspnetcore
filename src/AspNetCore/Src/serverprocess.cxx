@@ -11,14 +11,17 @@ extern BOOL g_fNsiApiNotSupported;
 
 HRESULT
 SERVER_PROCESS::Initialize(
-    PROCESS_MANAGER    *pProcessManager,
-    STRU               *pszProcessExePath,
-    STRU               *pszArguments,
-    DWORD               dwStartupTimeLimitInMS,
-    DWORD               dwShtudownTimeLimitInMS,
-    MULTISZ            *pszEnvironment,
-    BOOL                fStdoutLogEnabled,
-    STRU               *pstruStdoutLogFile
+    PROCESS_MANAGER      *pProcessManager,
+    STRU                 *pszProcessExePath,
+    STRU                 *pszArguments,
+    DWORD                 dwStartupTimeLimitInMS,
+    DWORD                 dwShtudownTimeLimitInMS,
+    BOOL                  fWindowsAuthEnabled,
+    BOOL                  fBasicAuthEnabled,
+    BOOL                  fAnonymousAuthEnabled,
+    ENVIRONMENT_VAR_HASH *pEnvironmentVariables,
+    BOOL                  fStdoutLogEnabled,
+    STRU                  *pstruStdoutLogFile
 )
 {
     HRESULT                                 hr = S_OK;
@@ -28,29 +31,14 @@ SERVER_PROCESS::Initialize(
     m_dwStartupTimeLimitInMS = dwStartupTimeLimitInMS;
     m_dwShutdownTimeLimitInMS = dwShtudownTimeLimitInMS;
     m_fStdoutLogEnabled = fStdoutLogEnabled;
-
+    m_fWindowsAuthEnabled = fWindowsAuthEnabled;
+    m_fBasicAuthEnabled = fBasicAuthEnabled;
+    m_fAnonymousAuthEnabled = fAnonymousAuthEnabled;
     m_pProcessManager->ReferenceProcessManager();
 
-    hr = m_ProcessPath.Copy(*pszProcessExePath);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    hr = m_struLogFile.Copy(*pstruStdoutLogFile);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    hr = m_Arguments.Copy(*pszArguments);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    hr = m_Environment.Copy(*pszEnvironment);
-    if (FAILED(hr))
+    if (FAILED (hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
+        FAILED (hr = m_struLogFile.Copy(*pstruStdoutLogFile))||
+        FAILED (hr = m_Arguments.Copy(*pszArguments)))
     {
         goto Finished;
     }
@@ -60,7 +48,7 @@ SERVER_PROCESS::Initialize(
         m_hJobObject = CreateJobObject(NULL,   // LPSECURITY_ATTRIBUTES
             NULL); // LPCTSTR lpName
 #pragma warning( disable : 4312)
-                   // 0xdeadbeef is used by Antares
+		// 0xdeadbeef is used by Antares
         if (m_hJobObject == NULL || m_hJobObject == (HANDLE)0xdeadbeef)
         {
             m_hJobObject = NULL;
@@ -81,104 +69,32 @@ SERVER_PROCESS::Initialize(
                 goto Finished;
             }
         }
+
+        m_pEnvironmentVarTable = pEnvironmentVariables;
     }
 
 Finished:
     return hr;
 }
 
-
 HRESULT
-SERVER_PROCESS::StartProcess(
-    IHttpContext *context
+SERVER_PROCESS::GetRandomPort
+(
+    DWORD* pdwPickedPort,
+    DWORD  dwExcludedPort = 0
 )
 {
-    HRESULT                 hr = S_OK;
-    PROCESS_INFORMATION     processInformation = { 0 };
-    STARTUPINFOW            startupInfo = { 0 };
-    WCHAR                  *pszCommandLine = NULL;
-    DWORD                   dwCommandLineLen = 0;
-    DWORD                   dwNumDigitsInPort = 0;
-    DWORD                   dwNumDigitsInDebugPort = 0;
-    LPWSTR                  pszCurrentEnvironment = NULL;
-    DWORD                   dwCurrentEnvSize = 0;
-    DWORD                   dwCreationFlags = 0;
-    BOOL                    fReady = FALSE;
-    DWORD                   dwTickCount = 0;
-    STACK_STRU(strAspNetCorePortEnvVar, 32);
-    STACK_STRU(strAspNetCoreDebugPortEnvVar, 32);
-    MULTISZ                 mszNewEnvironment;
-    MULTISZ                 mszEnvCopy;
-    DWORD                   cChildProcess = 0;
-    DWORD                   dwTimeDifference = 0;
-    STACK_STRU(strEventMsg, 256);
-    BOOL                    fDebugPortEnvSet = FALSE;
-    BOOL                    fReplacedEnv = FALSE;
-    BOOL                    fPortInUse = FALSE;
-    LPCWSTR                 pszRootApplicationPath = NULL;
-    BOOL                    fDebuggerAttachedToChildProcess = FALSE;
-    STRU                    strFullProcessPath;
-    STRU                    struRelativePath;
-    STRU                    struApplicationId;
-    RPC_STATUS              rpcStatus;
-    UUID                    logUuid;
-    PSTR                    pszLogUuid = NULL;
-    BOOL                    fRpcStringAllocd = FALSE;
-    STRU                    struGuidEnv;
-    STRU                    finalCommandLine;
-    BOOL                    fDonePrepareCommandLine = FALSE;
-    //
-    // process id of the process listening on port we randomly generated.
-    //
-    DWORD                   dwActualProcessId = 0;
-    WCHAR*                  pszPath = NULL;
-    WCHAR*                  pszFullPath = NULL;
-    LPCWSTR                 apsz[1];
-    PCWSTR                  pszAppPath = NULL;
-    DWORD                   dwBufferSize = 0;
-
-    GetStartupInfoW(&startupInfo);
-
-    //
-    // setup stdout and stderr handles to our stdout handle only if
-    // the handle is valid.
-    //
-
-    SetupStdHandles(context, &startupInfo);
-
-    //
-    // generate new guid for each process
-    //
-
-    rpcStatus = UuidCreate(&logUuid);
-    if (rpcStatus != RPC_S_OK)
-    {
-        hr = rpcStatus;
-        goto Finished;
-    }
-
-    rpcStatus = UuidToStringA(&logUuid, (BYTE **)&pszLogUuid);
-    if (rpcStatus != RPC_S_OK)
-    {
-        hr = rpcStatus;
-        goto Finished;
-    }
-
-    fRpcStringAllocd = true;
-
-    hr = m_straGuid.Copy(pszLogUuid);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    //
-    // Generate random port that the new process will listen on.
-    //
+    HRESULT hr = S_OK;
+    BOOL    fPortInUse = FALSE;
+    DWORD   dwActualProcessId = 0;
 
     if (g_fNsiApiNotSupported)
     {
-        m_dwPort = GenerateRandomPort();
+        //
+        // the default value for optional parameter dwExcludedPort is 0 which is reserved
+        // a random number between MIN_PORT and MAX_PORT
+        //
+        while ((*pdwPickedPort = (rand() % (MAX_PORT - MIN_PORT)) + MIN_PORT + 1) == dwExcludedPort);
     }
     else
     {
@@ -190,75 +106,123 @@ SERVER_PROCESS::StartProcess(
             // determing whether the randomly generated port is
             // in use by any other process.
             //
-
-            m_dwPort = GenerateRandomPort();
-            hr = CheckIfServerIsUp(m_dwPort, &dwActualProcessId, &fPortInUse);
+            while ((*pdwPickedPort = (rand() % (MAX_PORT - MIN_PORT)) + MIN_PORT + 1) == dwExcludedPort);
+            hr = CheckIfServerIsUp(*pdwPickedPort, &dwActualProcessId, &fPortInUse);
         } while (fPortInUse && ++cRetry < MAX_RETRY);
 
-        if (cRetry > MAX_RETRY)
+        if (cRetry >= MAX_RETRY)
         {
             hr = HRESULT_FROM_WIN32(ERROR_PORT_NOT_SET);
-            goto Finished;
         }
     }
 
-    dwNumDigitsInPort = GetNumberOfDigits(m_dwPort);
-    hr = strAspNetCorePortEnvVar.SafeSnwprintf(L"%s=%u", ASPNETCORE_PORT_STR, m_dwPort);
-    if (FAILED(hr))
+    return hr;
+}
+
+HRESULT
+SERVER_PROCESS::SetupListenPort(
+    ENVIRONMENT_VAR_HASH    *pEnvironmentVarTable
+)
+{
+    HRESULT hr = S_OK;
+    ENVIRONMENT_VAR_ENTRY *pEntry = NULL;
+    pEnvironmentVarTable->FindKey(ASPNETCORE_PORT_ENV_STR, &pEntry);
+    if (pEntry != NULL)
+    {
+        pEntry->Dereference();
+        if (pEntry->QueryValue() != NULL || pEntry->QueryValue()[0] != L'\0')
+        {
+            m_dwPort = (DWORD)_wtoi(pEntry->QueryValue());
+            if(m_dwPort >MAX_PORT || m_dwPort < MIN_PORT)
+            {
+                hr = E_INVALIDARG;
+                goto Finished;
+                // need add log for this one
+            }
+            hr = m_struPort.Copy(pEntry->QueryValue());
+            goto Finished;
+        }
+        else
+        {
+            //
+            // user set the env variable but did not give value, let's set it up
+            // 
+            pEnvironmentVarTable->DeleteKey(ASPNETCORE_PORT_ENV_STR);
+        }
+    }
+
+    WCHAR buffer[15];
+    if (FAILED(hr = GetRandomPort(&m_dwPort)))
     {
         goto Finished;
     }
 
-    //
-    // Generate random debug port that the new process will listen on.
-    // this will only be used if ASPNETCORE_DEBUG_PORT placeholder is found
-    // in the aspNetCore config.
-    //
-
-    if (g_fNsiApiNotSupported)
+    if (swprintf_s(buffer, 15, L"%d", m_dwPort) <= 0)
     {
-        while ((m_dwDebugPort = GenerateRandomPort()) == m_dwPort);
-    }
-    else
-    {
-        DWORD cRetry = 0;
-        do
-        {
-            while ((m_dwDebugPort = GenerateRandomPort()) == m_dwPort);
-            hr = CheckIfServerIsUp(m_dwDebugPort, &dwActualProcessId, &fPortInUse);
-        } while (fPortInUse && ++cRetry < MAX_RETRY);
-
-        if (cRetry > MAX_RETRY)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_PORT_NOT_SET);
-            goto Finished;
-        }
+        hr = E_INVALIDARG;
+        goto Finished;
     }
 
-    dwNumDigitsInDebugPort = GetNumberOfDigits(m_dwDebugPort);
-    hr = strAspNetCoreDebugPortEnvVar.SafeSnwprintf(L"%s=%u",
-        ASPNETCORE_DEBUG_PORT_STR,
-        m_dwDebugPort);
-    if (FAILED(hr))
+    pEntry = new ENVIRONMENT_VAR_ENTRY();
+    if (pEntry == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
+
+    if (FAILED(hr = pEntry->Initialize(ASPNETCORE_PORT_ENV_STR, buffer)) || 
+        FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry)) ||
+        FAILED(hr = m_struPort.Copy(buffer)))
     {
         goto Finished;
     }
 
-    //
-    // Create environment for new process
-    //
+Finished:
+    if (pEntry != NULL)
+    {
+        pEntry->Dereference();
+        pEntry = NULL;
+    }
+    return hr;
+}
 
-    struApplicationId.Copy(L"ASPNETCORE_APPL_PATH=");
+HRESULT
+SERVER_PROCESS::SetupAppPath(
+    IHttpContext*            pContext,
+    ENVIRONMENT_VAR_HASH*    pEnvironmentVarTable
+)
+{
+    HRESULT      hr = S_OK;
+    DWORD        dwCounter = 0;
+    DWORD        dwPosition = 0;
+    WCHAR*       pszPath = NULL;
+    ENVIRONMENT_VAR_ENTRY*  pEntry = NULL;
+
+    pEnvironmentVarTable->FindKey(ASPNETCORE_APP_PATH_ENV_STR, &pEntry);
+    if (pEntry != NULL)
+    {
+        // user should not set this environment variable in configuration
+        pEnvironmentVarTable->DeleteKey(ASPNETCORE_APP_PATH_ENV_STR);
+        pEntry->Dereference();
+        pEntry = NULL;
+    }
+
+    if (m_struAppPath.IsEmpty())
+    {
+        if (FAILED(hr = m_pszRootApplicationPath.Copy(pContext->GetApplication()->GetApplicationPhysicalPath())) ||
+            FAILED(hr = m_struAppFullPath.Copy(pContext->GetApplication()->GetAppConfigPath())))
+        {
+            goto Finished;
+        }
+    }
 
     // let's find the app path. IIS does not support nested sites
     // we can seek for the fourth '/' if it exits
     // MACHINE/WEBROOT/APPHOST/<site>/<app>. 
-    pszAppPath = context->GetApplication()->GetAppConfigPath();
-    DWORD dwCounter = 0;
-    DWORD dwPosition = 0;
-    while (pszAppPath[dwPosition] != NULL)
+    pszPath = m_struAppFullPath.QueryStr();
+    while (pszPath[dwPosition] != NULL)
     {
-        if (pszAppPath[dwPosition] == '/')
+        if (pszPath[dwPosition] == '/')
         {
             dwCounter++;
             if (dwCounter == 4)
@@ -266,49 +230,395 @@ SERVER_PROCESS::StartProcess(
         }
         dwPosition++;
     }
+
     if (dwCounter == 4)
     {
-        struApplicationId.Append(pszAppPath + dwPosition);
+        hr = m_struAppPath.Copy(pszPath + dwPosition);
     }
     else
     {
-        struApplicationId.Append(L"/");
+        hr = m_struAppPath.Copy(L"/");
     }
 
-    mszNewEnvironment.Append(struApplicationId);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
 
-    struGuidEnv.Copy(L"ASPNETCORE_TOKEN=");
-    struGuidEnv.AppendA(m_straGuid.QueryStr(), m_straGuid.QueryCCH());
-
-    mszNewEnvironment.Append(struGuidEnv);
-
-    pszRootApplicationPath = context->GetApplication()->GetApplicationPhysicalPath();
-
-    //
-    // generate process command line.
-    //
-    dwCommandLineLen = (DWORD)wcslen(pszRootApplicationPath) + m_ProcessPath.QueryCCH() + m_Arguments.QueryCCH() + 4;
-
-    pszCommandLine = new WCHAR[dwCommandLineLen];
-    if (pszCommandLine == NULL)
+    pEntry = new ENVIRONMENT_VAR_ENTRY();
+    if (pEntry == NULL)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
+    if (FAILED (hr = pEntry->Initialize(ASPNETCORE_APP_PATH_ENV_STR, m_struAppPath.QueryStr())) ||
+        FAILED (hr = pEnvironmentVarTable->InsertRecord(pEntry)))
+    {
+        goto Finished;
+    }
+
+Finished:
+    if (pEntry!= NULL)
+    {
+        pEntry->Dereference();
+        pEntry = NULL;
+    }
+    return hr;
+}
+
+HRESULT
+SERVER_PROCESS::SetupAppToken(
+    ENVIRONMENT_VAR_HASH    *pEnvironmentVarTable
+)
+{
+    HRESULT     hr = S_OK;
+    UUID        logUuid;
+    PSTR        pszLogUuid = NULL;
+    BOOL        fRpcStringAllocd = FALSE;
+    RPC_STATUS  rpcStatus;
+    STRU        strAppToken;
+    ENVIRONMENT_VAR_ENTRY*  pEntry = NULL;
+
+    pEnvironmentVarTable->FindKey(ASPNETCORE_APP_TOKEN_ENV_STR, &pEntry);
+    if (pEntry != NULL)
+    {
+        // user sets the environment variable
+        m_straGuid.Reset();
+        hr = m_straGuid.CopyW(pEntry->QueryValue());
+        pEntry->Dereference();
+        pEntry = NULL;
+        goto Finished;
+    }
+    else
+    {
+        if (m_straGuid.IsEmpty())
+        {
+            // the GUID has not been set yet
+            rpcStatus = UuidCreate(&logUuid);
+            if (rpcStatus != RPC_S_OK)
+            {
+                hr = rpcStatus;
+                goto Finished;
+            }
+
+            rpcStatus = UuidToStringA(&logUuid, (BYTE **)&pszLogUuid);
+            if (rpcStatus != RPC_S_OK)
+            {
+                hr = rpcStatus;
+                goto Finished;
+            }
+
+            fRpcStringAllocd = TRUE;
+
+            if (FAILED (hr = m_straGuid.Copy(pszLogUuid)))
+            {
+                goto Finished;
+            }
+        }
+
+        pEntry = new ENVIRONMENT_VAR_ENTRY();
+        if (pEntry == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            goto Finished;
+        }
+
+        if (FAILED(strAppToken.CopyA(m_straGuid.QueryStr())) ||
+            FAILED(hr = pEntry->Initialize(ASPNETCORE_APP_TOKEN_ENV_STR, strAppToken.QueryStr())) ||
+            FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry)))
+        {
+            goto Finished;
+        }
+    }
+
+Finished:
+
+    if (fRpcStringAllocd)
+    {
+        RpcStringFreeA((BYTE **)&pszLogUuid);
+        pszLogUuid = NULL;
+    }
+    if (pEntry != NULL)
+    {
+        pEntry->Dereference();
+        pEntry = NULL;
+    }
+    return hr;
+}
+
+
+HRESULT
+SERVER_PROCESS::InitEnvironmentVariablesTable(
+    ENVIRONMENT_VAR_HASH**   ppEnvironmentVarTable
+)
+{
+    HRESULT hr = S_OK;
+    BOOL    fFound = FALSE;
+    DWORD   dwResult, dwError;
+    STRU    strIisAuthEnvValue;
+    STACK_STRU(strStartupAssemblyEnv, 1024);
+    ENVIRONMENT_VAR_ENTRY* pHostingEntry = NULL;
+    ENVIRONMENT_VAR_ENTRY* pIISAuthEntry = NULL;
+    ENVIRONMENT_VAR_HASH* pEnvironmentVarTable = NULL;
+
+    pEnvironmentVarTable = new ENVIRONMENT_VAR_HASH();
+    if (pEnvironmentVarTable == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
+
+    //
+    // few environment variables expected, small bucket size for hash table
+    //
+    if (FAILED(hr = pEnvironmentVarTable->Initialize(37 /*prime*/)))
+    {
+        goto Finished;
+    }
+
+    // copy the envirable hash table (from configuration) to a temp one as we may need to remove elements 
+    m_pEnvironmentVarTable->Apply(ENVIRONMENT_VAR_HASH::CopyToTable, pEnvironmentVarTable);
+    if (pEnvironmentVarTable->Count() != m_pEnvironmentVarTable->Count())
+    {
+        // hash table copy failed
+        hr = E_UNEXPECTED;
+        goto Finished;
+    }
+
+    pEnvironmentVarTable->FindKey(ASPNETCORE_IIS_AUTH_ENV_STR, &pIISAuthEntry);
+    if (pIISAuthEntry != NULL)
+    {
+        // user defined ASPNETCORE_IIS_HTTPAUTH in configuration, wipe it off
+        pIISAuthEntry->Dereference();
+        pEnvironmentVarTable->DeleteKey(ASPNETCORE_IIS_AUTH_ENV_STR);
+    }
+
+    if (m_fWindowsAuthEnabled)
+    {
+        strIisAuthEnvValue.Copy(ASPNETCORE_IIS_AUTH_WINDOWS);
+    }
+
+    if (m_fBasicAuthEnabled)
+    {
+        strIisAuthEnvValue.Append(ASPNETCORE_IIS_AUTH_BASIC);
+    }
+
+    if (m_fAnonymousAuthEnabled)
+    {
+        strIisAuthEnvValue.Append(ASPNETCORE_IIS_AUTH_ANONYMOUS);
+    }
+
+    if (strIisAuthEnvValue.IsEmpty())
+    {
+        strIisAuthEnvValue.Copy(ASPNETCORE_IIS_AUTH_NONE);
+    }
+
+    pIISAuthEntry = new ENVIRONMENT_VAR_ENTRY();
+    if (pIISAuthEntry == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
+    if (FAILED(hr = pIISAuthEntry->Initialize(ASPNETCORE_IIS_AUTH_ENV_STR, strIisAuthEnvValue.QueryStr())) ||
+        FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISAuthEntry)))
+    {
+        goto Finished;
+    }
+
+
+    pEnvironmentVarTable->FindKey(HOSTING_STARTUP_ASSEMBLIES_NAME, &pHostingEntry);
+    if (pHostingEntry !=NULL )
+    {
+        // user defined ASPNETCORE_HOSTINGSTARTUPASSEMBLIES in configuration
+        // the value will be used in OutputEnvironmentVariables. Do nothing here
+        pHostingEntry->Dereference();
+        pHostingEntry = NULL;
+        goto Skipped;
+    }
+
+    //check whether ASPNETCORE_HOSTINGSTARTUPASSEMBLIES is defined in system
+    dwResult = GetEnvironmentVariable(HOSTING_STARTUP_ASSEMBLIES_ENV_STR,
+        strStartupAssemblyEnv.QueryStr(),
+        strStartupAssemblyEnv.QuerySizeCCH());
+    if (dwResult == 0)
+    {
+        dwError = GetLastError();
+        if (dwError != ERROR_ENVVAR_NOT_FOUND)
+        {
+            hr = HRESULT_FROM_WIN32(dwError);
+            goto Finished;
+        }
+    }
+    else if (dwResult > strStartupAssemblyEnv.QuerySizeCCH())
+    {
+        // have to increase the buffer and try get environment var again
+        strStartupAssemblyEnv.Reset();
+        strStartupAssemblyEnv.Resize(dwResult + (DWORD)wcslen(HOSTING_STARTUP_ASSEMBLIES_VALUE) +1);
+        dwResult = GetEnvironmentVariable(HOSTING_STARTUP_ASSEMBLIES_ENV_STR,
+            strStartupAssemblyEnv.QueryStr(),
+            strStartupAssemblyEnv.QuerySizeCCH());
+        if (strStartupAssemblyEnv.IsEmpty())
+        {
+            hr = E_UNEXPECTED;
+            goto Finished;
+        }
+        fFound = TRUE;
+    }
+    else
+    {
+        fFound = TRUE;
+    }
+
+    strStartupAssemblyEnv.SyncWithBuffer();
+    if (fFound) 
+    {
+        strStartupAssemblyEnv.Append(L";");
+    }
+    strStartupAssemblyEnv.Append(HOSTING_STARTUP_ASSEMBLIES_VALUE);
+
+    // the environment variable was not defined, create it and add to hashtable
+    pHostingEntry = new ENVIRONMENT_VAR_ENTRY();
+    if (pHostingEntry == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
+    if (FAILED(hr = pHostingEntry->Initialize(HOSTING_STARTUP_ASSEMBLIES_NAME, strStartupAssemblyEnv.QueryStr())) ||
+        FAILED(hr = pEnvironmentVarTable->InsertRecord(pHostingEntry)))
+    {
+        goto Finished;
+    }
+
+Skipped:
+    *ppEnvironmentVarTable = pEnvironmentVarTable;
+    pEnvironmentVarTable = NULL;
+
+Finished:
+    if (pHostingEntry != NULL)
+    {
+        pHostingEntry->Dereference();
+        pHostingEntry = NULL;
+    }
+
+    if (pIISAuthEntry != NULL)
+    {
+        pIISAuthEntry->Dereference();
+        pIISAuthEntry = NULL;
+    }
+
+    if (pEnvironmentVarTable != NULL)
+    {
+        pEnvironmentVarTable->Clear();
+        delete pEnvironmentVarTable;
+        pEnvironmentVarTable = NULL;
+    }
+    return hr;
+}
+
+HRESULT
+SERVER_PROCESS::OutputEnvironmentVariables
+(
+    MULTISZ*                pmszOutput,
+    ENVIRONMENT_VAR_HASH*   pEnvironmentVarTable
+)
+{
+    HRESULT    hr = S_OK;
+    LPWSTR     pszEnvironmentVariables = NULL;
+    LPWSTR     pszCurrentVariable = NULL;
+    LPWSTR     pszNextVariable = NULL;
+    LPWSTR     pszEqualChar = NULL;
+    STRU       strEnvVar;
+    ENVIRONMENT_VAR_ENTRY* pEntry = NULL;
+
+    DBG_ASSERT(pmszOutput);
+    DBG_ASSERT(pEnvironmentVarTable); // We added some startup variables 
+    DBG_ASSERT(pEnvironmentVarTable->Count() >0);
+
+    pszEnvironmentVariables = GetEnvironmentStringsW();
+    if (pszEnvironmentVariables == NULL)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_ENVIRONMENT);
+        goto Finished;
+    }
+    pszCurrentVariable = pszEnvironmentVariables;
+    while (*pszCurrentVariable != L'\0')
+    {
+        pszNextVariable = pszCurrentVariable + wcslen(pszCurrentVariable) + 1;
+        pszEqualChar = wcschr(pszCurrentVariable, L'=');
+        if (pszEqualChar != NULL)
+        {
+            if (FAILED(hr = strEnvVar.Copy(pszCurrentVariable, (DWORD)(pszEqualChar - pszCurrentVariable) + 1)))
+            {
+                goto Finished;
+            }
+            pEnvironmentVarTable->FindKey(strEnvVar.QueryStr(), &pEntry);
+            if (pEntry != NULL)
+            {
+                // same env variable is defined in configuration, use it
+                if (FAILED(hr = strEnvVar.Append(pEntry->QueryValue())))
+                {
+                    goto Finished;
+                }
+                pmszOutput->Append(strEnvVar);  //should we check the returned bool
+                // remove the record from hash table as we already output it
+                pEntry->Dereference();
+                pEnvironmentVarTable->DeleteKey(pEntry->QueryName());
+                strEnvVar.Reset();
+                pEntry = NULL;
+            }
+            else
+            {
+                pmszOutput->Append(pszCurrentVariable);
+            }
+        }
+        else
+        {
+            // env varaible is not well formated
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_ENVIRONMENT);
+            goto Finished;
+        }
+        // move to next env variable
+        pszCurrentVariable = pszNextVariable;
+    }
+    // append the remaining env variable in hash table
+    pEnvironmentVarTable->Apply(ENVIRONMENT_VAR_HASH::CopyToMultiSz, pmszOutput);
+
+Finished: 
+    if (pszEnvironmentVariables != NULL)
+    {
+        FreeEnvironmentStringsW(pszEnvironmentVariables);
+        pszEnvironmentVariables = NULL;
+    }
+    return hr;
+}
+
+HRESULT
+SERVER_PROCESS::SetupCommandLine(
+    STRU*      pstrCommandLine
+)
+{
+    HRESULT    hr = S_OK;
+    LPWSTR     pszPath = NULL;
+    LPWSTR     pszFullPath = NULL;
+    STRU       strRelativePath;
+    DWORD      dwBufferSize = 0;
+    FILE       *file = NULL;
+
+    DBG_ASSERT(pstrCommandLine);
 
     pszPath = m_ProcessPath.QueryStr();
 
     if ((wcsstr(pszPath, L":") == NULL) && (wcsstr(pszPath, L"%") == NULL))
     {
         // let's check whether it is a relative path
-        if (FAILED(hr = struRelativePath.Copy(pszRootApplicationPath)) ||
-            FAILED(hr = struRelativePath.Append(L"\\")) ||
-            FAILED(hr = struRelativePath.Append(pszPath)))
+        if (FAILED(hr = strRelativePath.Copy(m_pszRootApplicationPath.QueryStr())) ||
+            FAILED(hr = strRelativePath.Append(L"\\")) ||
+            FAILED(hr = strRelativePath.Append(pszPath)))
         {
             goto Finished;
         }
 
-        dwBufferSize = struRelativePath.QueryCCH() + 1;
+        dwBufferSize = strRelativePath.QueryCCH() + 1;
         pszFullPath = new WCHAR[dwBufferSize];
         if (pszFullPath == NULL)
         {
@@ -317,259 +627,81 @@ SERVER_PROCESS::StartProcess(
         }
 
         if (_wfullpath(pszFullPath,
-            struRelativePath.QueryStr(),
+            strRelativePath.QueryStr(),
             dwBufferSize) == NULL)
         {
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
             goto Finished;
         }
 
-        FILE *file = NULL;
         if ((file = _wfsopen(pszFullPath, L"r", _SH_DENYNO)) != NULL)
         {
             fclose(file);
             pszPath = pszFullPath;
         }
     }
-
-    if (swprintf_s(pszCommandLine,
-        dwCommandLineLen,
-        L"\"%s\" %s",
-        pszPath,
-        m_Arguments.QueryStr()) == -1)
-    {
-        hr = HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-        goto Finished;
-    }
-
-    //
-    // replace %ASPNETCORE_PORT% with port number
-    //
-
-    hr = ASPNETCORE_UTILS::ReplacePlaceHolderWithValue(
-        pszCommandLine,
-        ASPNETCORE_PORT_PLACEHOLDER,
-        ASPNETCORE_PORT_PLACEHOLDER_CCH,
-        m_dwPort,
-        dwNumDigitsInPort,
-        &fReplacedEnv);
-    if (FAILED(hr))
+    if (FAILED(hr = pstrCommandLine->Copy(pszPath)) ||
+        FAILED(hr = pstrCommandLine->Append(L" ")) ||
+        FAILED(hr = pstrCommandLine->Append(m_Arguments.QueryStr())))
     {
         goto Finished;
     }
 
-    //
-    // append AspNetCorePort to env variables.
-    //
 
-    mszNewEnvironment.Append(strAspNetCorePortEnvVar);
-
-    hr = ASPNETCORE_UTILS::ReplacePlaceHolderWithValue(
-        pszCommandLine,
-        ASPNETCORE_DEBUG_PORT_PLACEHOLDER,
-        ASPNETCORE_DEBUG_PORT_PLACEHOLDER_CCH,
-        m_dwDebugPort,
-        dwNumDigitsInDebugPort,
-        &fReplacedEnv);
-    if (FAILED(hr))
+Finished:
+    if (pszFullPath != NULL)
     {
-        goto Finished;
+        delete pszFullPath;
     }
-
-    if (fReplacedEnv)
-    {
-        //
-        // append debug port to environment only if 
-        // ASPNETCORE_DEBUG_PORT placeholder is present.
-        //
-
-        mszNewEnvironment.Append(strAspNetCoreDebugPortEnvVar);
-        fDebugPortEnvSet = TRUE;
-    }
-
-    //
-    // append the environment variables from web.config/aspNetCore section.
-    // append takes in length of string without the last null char
-    // this allows user to override current environment variables
-    //
-
-    if (!mszEnvCopy.Copy(m_Environment))
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
-
-    LPWSTR multisz = mszEnvCopy.QueryStr();
-
-    while (*multisz != '\0')
-    {
-        //
-        // replace %ASPNETCORE_PORT% placeholder if present.
-        //
-
-        hr = ASPNETCORE_UTILS::ReplacePlaceHolderWithValue(
-            multisz,
-            ASPNETCORE_PORT_PLACEHOLDER,
-            ASPNETCORE_PORT_PLACEHOLDER_CCH,
-            m_dwPort,
-            dwNumDigitsInPort,
-            &fReplacedEnv);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-
-        //
-        // replace %ASPNETCORE_DEBUG_PORT% placeholder if present.
-        // if this placeholder is present, add this placeholder=value as
-        // an environment variable as well.
-        //
-
-        hr = ASPNETCORE_UTILS::ReplacePlaceHolderWithValue(
-            multisz,
-            ASPNETCORE_DEBUG_PORT_PLACEHOLDER,
-            ASPNETCORE_DEBUG_PORT_PLACEHOLDER_CCH,
-            m_dwDebugPort,
-            dwNumDigitsInDebugPort,
-            &fReplacedEnv);
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-
-        if (fReplacedEnv && !fDebugPortEnvSet)
-        {
-            mszNewEnvironment.Append(strAspNetCoreDebugPortEnvVar);
-        }
-
-        mszNewEnvironment.Append(multisz);
-        multisz += wcslen(multisz) + 1;
-    }
-
-    //
-    // Append the current env.
-    // copy takes in number of bytes including the double null terminator
-    //
-    pszCurrentEnvironment = GetEnvironmentStringsW();
-    if (pszCurrentEnvironment == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(ERROR_INVALID_ENVIRONMENT);
-        goto Finished;
-    }
-
-    //
-    // determine length of current environment block
-    //
-
-    do
-    {
-        while (*(pszCurrentEnvironment + dwCurrentEnvSize++) != 0);
-    } while (*(pszCurrentEnvironment + dwCurrentEnvSize++) != 0);
-
-    DBG_ASSERT(dwCurrentEnvSize > 0);
-    //
-    // environment block ends with  \0\0, we don't want include the last \0 for appending
-    //
-    mszNewEnvironment.Append(pszCurrentEnvironment, dwCurrentEnvSize - 1);
-
-    dwCreationFlags = CREATE_NO_WINDOW |
-        CREATE_UNICODE_ENVIRONMENT |
-        CREATE_SUSPENDED |
-        CREATE_NEW_PROCESS_GROUP;
+    return hr;
+}
 
 
-    finalCommandLine.Copy(pszCommandLine);
-    fDonePrepareCommandLine = TRUE;
+HRESULT
+SERVER_PROCESS::PostStartCheck(
+    const STRU* const pStruCommandline,
+    STRU*             pStruErrorMessage)
+{
+    HRESULT hr = S_OK;
 
-    if (!CreateProcessW(
-        NULL,                   // applicationName     
-        finalCommandLine.QueryStr(),
-        NULL,                   // processAttr
-        NULL,                   // threadAttr
-        TRUE,                   // inheritHandles
-        dwCreationFlags,
-        mszNewEnvironment.QueryStr(),
-        pszRootApplicationPath, // currentDir
-        &startupInfo,
-        &processInformation))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        // don't check return code as we already in error report
-        strEventMsg.SafeSnwprintf(
-            ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
-            pszAppPath,
-            pszRootApplicationPath,
-            finalCommandLine.QueryStr(),
-            hr,
-            0);
-        goto Finished;
-    }
+    BOOL    fReady = FALSE;
+    BOOL    fProcessMatch = FALSE;
+    BOOL    fDebuggerAttached = FALSE;
+    DWORD   dwTickCount = 0;
+    DWORD   dwTimeDifference = 0;
+    DWORD   dwActualProcessId = 0;
+    INT     iChildProcessIndex = -1;
 
-    m_hProcessHandle = processInformation.hProcess;
-    m_dwProcessId = processInformation.dwProcessId;
-
-    if (m_hJobObject != NULL)
-    {
-        if (!AssignProcessToJobObject(m_hJobObject,
-            processInformation.hProcess))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            if (hr != HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
-            {
-                goto Finished;
-            }
-        }
-    }
-
-    if (ResumeThread(processInformation.hThread) == -1)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
-
-    if (CheckRemoteDebuggerPresent(processInformation.hProcess, &fDebuggerAttachedToChildProcess) == 0)
+    if (CheckRemoteDebuggerPresent(m_hProcessHandle, &fDebuggerAttached) == 0)
     {
         // some error occurred  - assume debugger is not attached;
-        fDebuggerAttachedToChildProcess = FALSE;
+        fDebuggerAttached = FALSE;
     }
-
-    //
-    // since servers like tomcat would startup even if there was a port 
-    // collision, need to make sure the server is up and listening on
-    // the port specified.
-    //
 
     dwTickCount = GetTickCount();
     do
     {
         DWORD processStatus;
-
         if (GetExitCodeProcess(m_hProcessHandle, &processStatus))
         {
+            // make sure the process is still running
             if (processStatus != STILL_ACTIVE)
             {
                 hr = E_FAIL;
-                strEventMsg.SafeSnwprintf(
+                pStruErrorMessage->SafeSnwprintf(
                     ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
-                    pszAppPath,
-                    pszRootApplicationPath,
-                    finalCommandLine.QueryStr(),
+                    m_struAppFullPath.QueryStr(),
+                    m_pszRootApplicationPath.QueryStr(),
+                    pStruCommandline->QueryStr(),
                     hr,
                     processStatus);
                 goto Finished;
             }
         }
 
-        if (g_fNsiApiNotSupported)
-        {
-            hr = CheckIfServerIsUp(m_dwPort, &fReady);
-        }
-        else
-        {
-            hr = CheckIfServerIsUp(m_dwPort, &dwActualProcessId, &fReady);
-        }
+        hr = CheckIfServerIsUp(m_dwPort, &dwActualProcessId, &fReady);
 
-        fDebuggerAttachedToChildProcess = IsDebuggerIsAttached();
+        fDebuggerAttached = IsDebuggerIsAttached();
 
         if (!fReady)
         {
@@ -578,12 +710,10 @@ SERVER_PROCESS::StartProcess(
 
         dwTimeDifference = (GetTickCount() - dwTickCount);
     } while (fReady == FALSE &&
-        ((dwTimeDifference < m_dwStartupTimeLimitInMS) || fDebuggerAttachedToChildProcess));
+        ((dwTimeDifference < m_dwStartupTimeLimitInMS) || fDebuggerAttached));
 
-    hr = RegisterProcessWait(&m_hProcessWaitHandle,
-        m_hProcessHandle);
-
-    if (FAILED(hr))
+    // register call back with the created process
+    if (FAILED(hr = RegisterProcessWait(&m_hProcessWaitHandle, m_hProcessHandle)))
     {
         goto Finished;
     }
@@ -591,50 +721,53 @@ SERVER_PROCESS::StartProcess(
     //
     // check if debugger is attached after startupTimeout.
     //
-    if (!fDebuggerAttachedToChildProcess &&
-        CheckRemoteDebuggerPresent(processInformation.hProcess, &fDebuggerAttachedToChildProcess) == 0)
+    if (!fDebuggerAttached &&
+        CheckRemoteDebuggerPresent(m_hProcessHandle, &fDebuggerAttached) == 0)
     {
         // some error occurred  - assume debugger is not attached;
-        fDebuggerAttachedToChildProcess = FALSE;
+        fDebuggerAttached = FALSE;
     }
 
-    hr = GetChildProcessHandles();
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    BOOL processMatch = FALSE;
     if (dwActualProcessId == m_dwProcessId)
     {
         m_dwListeningProcessId = m_dwProcessId;
-        processMatch = TRUE;
+        fProcessMatch = TRUE;
     }
 
-    for (DWORD i = 0; i < m_cChildProcess; ++i)
+    if (!fProcessMatch)
     {
-        if (!processMatch && dwActualProcessId == m_dwChildProcessIds[i])
+        // could be the scenario that backend creates child process
+        if (FAILED(hr = GetChildProcessHandles()))
         {
-            m_dwListeningProcessId = m_dwChildProcessIds[i];
-            processMatch = TRUE;
+            goto Finished;
         }
 
-        if (m_hChildProcessHandles[i] != NULL)
+        for (DWORD i = 0; i < m_cChildProcess; ++i)
         {
-            if (fDebuggerAttachedToChildProcess == FALSE && CheckRemoteDebuggerPresent(m_hChildProcessHandles[i], &fDebuggerAttachedToChildProcess) == 0)
+            // a child process listen on the assigned port
+            if (dwActualProcessId == m_dwChildProcessIds[i])
             {
-                // some error occurred  - assume debugger is not attached;
-                fDebuggerAttachedToChildProcess = FALSE;
-            }
+                m_dwListeningProcessId = m_dwChildProcessIds[i];
+                fProcessMatch = TRUE;
 
-            hr = RegisterProcessWait(&m_hChildProcessWaitHandles[i],
-                m_hChildProcessHandles[i]);
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
+                if (m_hChildProcessHandles[i] != NULL)
+                {
+                    if (fDebuggerAttached == FALSE &&
+                        CheckRemoteDebuggerPresent(m_hChildProcessHandles[i], &fDebuggerAttached) == 0)
+                    {
+                        // some error occurred  - assume debugger is not attached;
+                        fDebuggerAttached = FALSE;
+                    }
 
-            cChildProcess++;
+                    if (FAILED(hr = RegisterProcessWait(&m_hChildProcessWaitHandles[i],
+                        m_hChildProcessHandles[i])))
+                    {
+                        goto Finished;
+                    }
+                    iChildProcessIndex = i;
+                }
+                break;
+            }
         }
     }
 
@@ -643,15 +776,14 @@ SERVER_PROCESS::StartProcess(
         //
         // hr is already set by CheckIfServerIsUp
         //
-
         if (dwTimeDifference >= m_dwStartupTimeLimitInMS)
         {
             hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
-            strEventMsg.SafeSnwprintf(
+            pStruErrorMessage->SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG,
-                pszAppPath,
-                pszRootApplicationPath,
-                finalCommandLine.QueryStr(),
+                m_struAppFullPath.QueryStr(),
+                m_pszRootApplicationPath.QueryStr(),
+                pStruCommandline->QueryStr(),
                 m_dwPort,
                 hr);
         }
@@ -659,25 +791,25 @@ SERVER_PROCESS::StartProcess(
         goto Finished;
     }
 
-    if (!g_fNsiApiNotSupported && !processMatch)
+    if (!g_fNsiApiNotSupported && !fProcessMatch)
     {
         //
         // process that we created is not listening 
         // on the port we specified.
         //
         fReady = FALSE;
-        strEventMsg.SafeSnwprintf(
+        pStruErrorMessage->SafeSnwprintf(
             ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
-            pszAppPath,
-            pszRootApplicationPath,
-            finalCommandLine.QueryStr(),
+            m_struAppFullPath.QueryStr(),
+            m_pszRootApplicationPath.QueryStr(),
+            pStruCommandline->QueryStr(),
             m_dwPort,
             hr);
         hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
         goto Finished;
     }
 
-    if (cChildProcess > 0)
+    if (iChildProcessIndex >= 0)
     {
         //
         // final check to make sure child process listening on HTTP is still UP
@@ -686,22 +818,15 @@ SERVER_PROCESS::StartProcess(
         // and we would not know about it.
         // 
 
-        if (g_fNsiApiNotSupported)
-        {
-            hr = CheckIfServerIsUp(m_dwPort, &fReady);
-        }
-        else
-        {
-            hr = CheckIfServerIsUp(m_dwPort, &dwActualProcessId, &fReady);
-        }
+        hr = CheckIfServerIsUp(m_dwPort, &dwActualProcessId, &fReady);
 
         if ((FAILED(hr) || fReady == FALSE))
         {
-            strEventMsg.SafeSnwprintf(
+            pStruErrorMessage->SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG,
-                pszAppPath,
-                pszRootApplicationPath,
-                finalCommandLine.QueryStr(),
+                m_struAppFullPath.QueryStr(),
+                m_pszRootApplicationPath,
+                pStruCommandline->QueryStr(),
                 m_dwPort,
                 hr);
             goto Finished;
@@ -736,18 +861,159 @@ SERVER_PROCESS::StartProcess(
 
     if (!g_fNsiApiNotSupported)
     {
-        m_hListeningProcessHandle = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE, FALSE, m_dwListeningProcessId);
+        m_hListeningProcessHandle = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
+                                                FALSE, 
+                                                m_dwListeningProcessId);
     }
 
     //
     // mark server process as Ready
     //
-
     m_fReady = TRUE;
+
+Finished:
+    return hr;
+}
+
+HRESULT
+SERVER_PROCESS::StartProcess(
+    IHttpContext *context
+)
+{
+    HRESULT                 hr = S_OK;
+    PROCESS_INFORMATION     processInformation = {0};
+    STARTUPINFOW            startupInfo = {0};
+    BOOL                    fDonePrepareCommandLine = FALSE;
+    DWORD                   dwCreationFlags = 0;
+
+    STACK_STRU(             strEventMsg, 256);
+    STRU                    strFullProcessPath;
+    STRU                    struRelativePath;
+    STRU                    struApplicationId;
+    STRU                    struCommandLine;
+
+    LPCWSTR                 apsz[1];
+    
+    MULTISZ                 mszNewEnvironment;
+    ENVIRONMENT_VAR_HASH    *pHashTable = NULL;
+
+    GetStartupInfoW(&startupInfo);
+
+    //
+    // setup stdout and stderr handles to our stdout handle only if
+    // the handle is valid.
+    //
+    SetupStdHandles(context, &startupInfo);
+    
+    if (FAILED(hr = InitEnvironmentVariablesTable(&pHashTable)))
+    {
+        goto Finished;
+    }
+
+    //
+    // setup the the port that the backend process will listen on
+    //
+    if (FAILED (hr= SetupListenPort(pHashTable)))
+    {
+        goto Finished;
+    }
+
+    //
+    // get app path
+    //
+    if (FAILED(hr = SetupAppPath(context, pHashTable)))
+    {
+        goto Finished;
+    }
+
+    //
+    // generate new guid for each process
+    //
+    if (FAILED(hr = SetupAppToken(pHashTable)))
+    {
+        goto Finished;
+    }
+
+    //
+    // setup environment variables for new process
+    //
+    if (FAILED(hr = OutputEnvironmentVariables(&mszNewEnvironment, pHashTable)))
+    {
+        goto Finished;
+    }
+
+    //
+    // generate process command line.
+    //
+    if (FAILED(hr = SetupCommandLine(&struCommandLine)))
+    {
+        goto Finished;
+    }
+
+    fDonePrepareCommandLine = TRUE;
+
+    dwCreationFlags = CREATE_NO_WINDOW |
+        CREATE_UNICODE_ENVIRONMENT |
+        CREATE_SUSPENDED  |
+        CREATE_NEW_PROCESS_GROUP;
+
+    if (!CreateProcessW(
+            NULL,                   // applicationName     
+            struCommandLine.QueryStr(),
+            NULL,                   // processAttr
+            NULL,                   // threadAttr
+            TRUE,                   // inheritHandles
+            dwCreationFlags,
+            mszNewEnvironment.QueryStr(),
+            m_pszRootApplicationPath.QueryStr(), // currentDir
+            &startupInfo,
+            &processInformation) )
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        // don't the check return code as we already in error report
+        strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
+            m_struAppFullPath.QueryStr(),
+            m_pszRootApplicationPath.QueryStr(),
+            struCommandLine.QueryStr(),
+            hr,
+            0);
+        goto Finished;
+    }
+
+    m_hProcessHandle = processInformation.hProcess;
+    m_dwProcessId = processInformation.dwProcessId;
+
+    if (m_hJobObject != NULL)
+    {
+        if (!AssignProcessToJobObject(m_hJobObject, m_hProcessHandle))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            if (hr != HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
+            {
+                goto Finished;
+            }
+        }
+    }
+
+    if (ResumeThread( processInformation.hThread ) == -1)
+    {
+        hr = HRESULT_FROM_WIN32( GetLastError() );
+        goto Finished;
+    }    
+
+    //
+    // need to make sure the server is up and listening on the port specified.
+    //
+    if (FAILED(hr = PostStartCheck(&struCommandLine, &strEventMsg)))
+    {
+        goto Finished;
+    }
+
 
     if (SUCCEEDED(strEventMsg.SafeSnwprintf(
         ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG,
-        pszAppPath,
+        m_struAppFullPath.QueryStr(),
         m_dwProcessId,
         m_dwPort)))
     {
@@ -772,22 +1038,35 @@ SERVER_PROCESS::StartProcess(
     }
 
 Finished:
-    if (FAILED(hr))
+    if (processInformation.hThread != NULL)
+    {
+        CloseHandle(processInformation.hThread);
+        processInformation.hThread = NULL;
+    }
+
+    if (pHashTable != NULL)
+    {
+        pHashTable->Clear();
+        delete pHashTable;
+        pHashTable = NULL;
+    }
+
+    if ( FAILED(hr) )
     {
         if (strEventMsg.IsEmpty())
         {
             if (!fDonePrepareCommandLine)
                 strEventMsg.SafeSnwprintf(
-                    pszAppPath,
-                    ASPNETCORE_EVENT_PROCESS_START_INTERNAL_ERROR_MSG,
-                    hr);
+                m_struAppFullPath.QueryStr(),
+                ASPNETCORE_EVENT_PROCESS_START_INTERNAL_ERROR_MSG,
+                hr);
             else
                 strEventMsg.SafeSnwprintf(
-                    ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG,
-                    pszAppPath,
-                    pszRootApplicationPath,
-                    finalCommandLine.QueryStr(),
-                    hr);
+                ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG,
+                m_struAppFullPath.QueryStr(),
+                m_pszRootApplicationPath,
+                struCommandLine.QueryStr(),
+                hr);
         }
 
         apsz[0] = strEventMsg.QueryStr();
@@ -809,81 +1088,41 @@ Finished:
         }
     }
 
-    if (fRpcStringAllocd)
-    {
-        RpcStringFreeA((BYTE **)&pszLogUuid);
-        pszLogUuid = NULL;
-    }
-
-    if (processInformation.hThread != NULL)
-    {
-        CloseHandle(processInformation.hThread);
-        processInformation.hThread = NULL;
-    }
-
-    if (pszCurrentEnvironment != NULL)
-    {
-        FreeEnvironmentStringsW(pszCurrentEnvironment);
-        pszCurrentEnvironment = NULL;
-    }
-
-    if (pszCommandLine != NULL)
-    {
-        delete[] pszCommandLine;
-        pszCommandLine = NULL;
-    }
-
-    if (pszFullPath != NULL)
-    {
-        delete[] pszFullPath;
-        pszFullPath = NULL;
-    }
-
-    if (FAILED(hr) || m_fReady == FALSE)
+    if ( FAILED( hr ) || m_fReady == FALSE)
     {
         if (m_hStdoutHandle != NULL)
         {
-            if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
+            if ( m_hStdoutHandle != INVALID_HANDLE_VALUE )
             {
-                CloseHandle(m_hStdoutHandle);
+                CloseHandle( m_hStdoutHandle );
             }
             m_hStdoutHandle = NULL;
         }
 
-        if (m_fStdoutLogEnabled)
+        if ( m_fStdoutLogEnabled )
         {
             m_Timer.CancelTimer();
         }
 
         if (m_hListeningProcessHandle != NULL)
         {
-            if (m_hListeningProcessHandle != INVALID_HANDLE_VALUE)
+            if( m_hListeningProcessHandle != INVALID_HANDLE_VALUE )
             {
-                CloseHandle(m_hListeningProcessHandle);
+                CloseHandle( m_hListeningProcessHandle );
             }
             m_hListeningProcessHandle = NULL;
         }
 
-        if (m_hProcessWaitHandle != NULL)
+        if ( m_hProcessWaitHandle != NULL )
         {
-            UnregisterWait(m_hProcessWaitHandle);
+            UnregisterWait( m_hProcessWaitHandle );
             m_hProcessWaitHandle = NULL;
-        }
-
-        for (DWORD i = 0; i<m_cChildProcess; ++i)
-        {
-            if (m_hChildProcessWaitHandles[i] != NULL)
-            {
-                UnregisterWait(m_hChildProcessWaitHandles[i]);
-                m_hChildProcessWaitHandles[i] = NULL;
-            }
         }
 
         StopProcess();
 
         StopAllProcessesInJobObject();
     }
-
     return hr;
 }
 
@@ -895,15 +1134,15 @@ SERVER_PROCESS::SetWindowsAuthToken(
 {
     HRESULT hr = S_OK;
 
-    if (m_hListeningProcessHandle != NULL && m_hListeningProcessHandle != INVALID_HANDLE_VALUE)
+    if ( m_hListeningProcessHandle != NULL && m_hListeningProcessHandle != INVALID_HANDLE_VALUE )
     {
-        if (!DuplicateHandle(GetCurrentProcess(),
-            hToken,
-            m_hListeningProcessHandle,
-            pTargetTokenHandle,
-            0,
-            FALSE,
-            DUPLICATE_SAME_ACCESS))
+        if (!DuplicateHandle( GetCurrentProcess(),
+                             hToken,
+                             m_hListeningProcessHandle,
+                             pTargetTokenHandle,
+                             0,
+                             FALSE,
+                             DUPLICATE_SAME_ACCESS ))
         {
             hr = HRESULT_FROM_GETLASTERROR();
             goto Finished;
@@ -921,7 +1160,7 @@ SERVER_PROCESS::SetupStdHandles(
     LPSTARTUPINFOW pStartupInfo
 )
 {
-    SECURITY_ATTRIBUTES     saAttr = { 0 };
+    SECURITY_ATTRIBUTES     saAttr = {0};
     HRESULT                 hr = S_OK;
     SYSTEMTIME              systemTime;
     STRU                    struLogFileName;
@@ -932,15 +1171,15 @@ SERVER_PROCESS::SetupStdHandles(
 
     DBG_ASSERT(pStartupInfo);
 
-    if (m_fStdoutLogEnabled)
+    if ( m_fStdoutLogEnabled )
     {
         saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-        saAttr.bInheritHandle = TRUE;
+        saAttr.bInheritHandle = TRUE; 
         saAttr.lpSecurityDescriptor = NULL;
 
         if (m_hStdoutHandle != NULL)
         {
-            if (!CloseHandle(m_hStdoutHandle))
+            if(!CloseHandle( m_hStdoutHandle ))
             {
                 hr = HRESULT_FROM_GETLASTERROR();
                 goto Finished;
@@ -949,45 +1188,45 @@ SERVER_PROCESS::SetupStdHandles(
             m_hStdoutHandle = NULL;
         }
 
-        hr = PATH::ConvertPathToFullPath(m_struLogFile.QueryStr(),
-            context->GetApplication()->GetApplicationPhysicalPath(),
-            &struAbsLogFilePath);
+        hr = PATH::ConvertPathToFullPath( m_struLogFile.QueryStr(), 
+                                          context->GetApplication()->GetApplicationPhysicalPath(),
+                                          &struAbsLogFilePath );
         if (FAILED(hr))
         {
             goto Finished;
         }
 
         GetSystemTime(&systemTime);
-        hr = struLogFileName.SafeSnwprintf(L"%s_%d_%d%d%d%d%d%d.log",
-            struAbsLogFilePath.QueryStr(),
-            GetCurrentProcessId(),
-            systemTime.wYear,
-            systemTime.wMonth,
-            systemTime.wDay,
-            systemTime.wHour,
-            systemTime.wMinute,
-            systemTime.wSecond);
+        hr = struLogFileName.SafeSnwprintf( L"%s_%d_%d%d%d%d%d%d.log", 
+                                            struAbsLogFilePath.QueryStr(), 
+                                            GetCurrentProcessId(),
+                                            systemTime.wYear,
+                                            systemTime.wMonth,
+                                            systemTime.wDay,
+                                            systemTime.wHour,
+                                            systemTime.wMinute,
+                                            systemTime.wSecond );
         if (FAILED(hr))
         {
             goto Finished;
         }
 
-        m_hStdoutHandle = CreateFileW(struLogFileName.QueryStr(),
-            FILE_WRITE_DATA,
-            FILE_SHARE_READ,
-            &saAttr,
-            CREATE_ALWAYS,
-            FILE_ATTRIBUTE_NORMAL,
-            NULL);
-        if (m_hStdoutHandle == INVALID_HANDLE_VALUE)
+        m_hStdoutHandle = CreateFileW( struLogFileName.QueryStr(),
+                                       FILE_WRITE_DATA,
+                                       FILE_SHARE_READ,
+                                       &saAttr,
+                                       CREATE_ALWAYS,
+                                       FILE_ATTRIBUTE_NORMAL,
+                                       NULL );
+        if ( m_hStdoutHandle == INVALID_HANDLE_VALUE )
         {
             fStdoutLoggingFailed = TRUE;
             m_hStdoutHandle = NULL;
 
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
-                struLogFileName.QueryStr(),
-                HRESULT_FROM_GETLASTERROR())))
+            if( SUCCEEDED( strEventMsg.SafeSnwprintf( 
+                           ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
+                           struLogFileName.QueryStr(), 
+                           HRESULT_FROM_GETLASTERROR() ) ) )
             {
                 apsz[0] = strEventMsg.QueryStr();
 
@@ -1010,23 +1249,23 @@ SERVER_PROCESS::SetupStdHandles(
             }
         }
 
-        if (!fStdoutLoggingFailed)
+        if( !fStdoutLoggingFailed )
         {
             pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
             pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
             pStartupInfo->hStdError = m_hStdoutHandle;
             pStartupInfo->hStdOutput = m_hStdoutHandle;
 
-            m_struFullLogFile.Copy(struLogFileName);
+            m_struFullLogFile.Copy( struLogFileName );
 
             // start timer to open and close handles regularly.
             m_Timer.InitializeTimer(SERVER_PROCESS::TimerCallback, this, 3000, 3000);
         }
     }
 
-    if ((!m_fStdoutLogEnabled || fStdoutLoggingFailed) &&
+    if( (!m_fStdoutLogEnabled || fStdoutLoggingFailed) && 
         m_pProcessManager->QueryNULHandle() != NULL &&
-        m_pProcessManager->QueryNULHandle() != INVALID_HANDLE_VALUE)
+        m_pProcessManager->QueryNULHandle() != INVALID_HANDLE_VALUE )
     {
         pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
         pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
@@ -1049,103 +1288,28 @@ SERVER_PROCESS::TimerCallback(
 {
     Instance;
     Timer;
-    SERVER_PROCESS*         pServerProcess = (SERVER_PROCESS*)Context;
+    SERVER_PROCESS*         pServerProcess = (SERVER_PROCESS*) Context;
     HANDLE                  hStdoutHandle = NULL;
-    SECURITY_ATTRIBUTES     saAttr = { 0 };
+    SECURITY_ATTRIBUTES     saAttr = {0};
     HRESULT                 hr = S_OK;
 
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saAttr.bInheritHandle = TRUE;
+    saAttr.bInheritHandle = TRUE; 
     saAttr.lpSecurityDescriptor = NULL;
 
-    hStdoutHandle = CreateFileW(pServerProcess->QueryFullLogPath(),
-        FILE_READ_DATA,
-        FILE_SHARE_WRITE,
-        &saAttr,
-        OPEN_ALWAYS,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-    if (hStdoutHandle == INVALID_HANDLE_VALUE)
+    hStdoutHandle = CreateFileW( pServerProcess->QueryFullLogPath(),
+                                 FILE_READ_DATA,
+                                 FILE_SHARE_WRITE,
+                                 &saAttr,
+                                 OPEN_ALWAYS,
+                                 FILE_ATTRIBUTE_NORMAL,
+                                 NULL );
+    if( hStdoutHandle == INVALID_HANDLE_VALUE )
     {
         hr = HRESULT_FROM_GETLASTERROR();
     }
 
-    CloseHandle(hStdoutHandle);
-}
-
-HRESULT
-SERVER_PROCESS::CheckIfServerIsUp(
-    _In_  DWORD      dwPort,
-    _Out_ BOOL      *fReady
-)
-{
-    HRESULT         hr = S_OK;
-    int             iResult = 0;
-    SOCKADDR_IN     sockAddr;
-    BOOL            fLocked = FALSE;
-
-    _ASSERT(fReady != NULL);
-
-    *fReady = FALSE;
-
-    EnterCriticalSection(&m_csLock);
-    fLocked = TRUE;
-
-    if (m_socket == INVALID_SOCKET || m_socket == NULL)
-    {
-        m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (m_socket == INVALID_SOCKET)
-        {
-            hr = HRESULT_FROM_WIN32(WSAGetLastError());
-            goto Finished;
-        }
-    }
-
-    sockAddr.sin_family = AF_INET;
-    if (!inet_pton(AF_INET, LOCALHOST, &(sockAddr.sin_addr)))
-    {
-        hr = HRESULT_FROM_WIN32(WSAGetLastError());
-        goto Finished;
-    }
-    //sockAddr.sin_addr.s_addr = inet_addr( LOCALHOST );
-    sockAddr.sin_port = htons((u_short)dwPort);
-
-    //
-    // Connect to server.
-    // if connection fails, socket is not closed, we reuse the same socket
-    // while retrying
-    //
-
-    iResult = connect(m_socket, (SOCKADDR *)&sockAddr, sizeof(sockAddr));
-    if (iResult == SOCKET_ERROR)
-    {
-        hr = HRESULT_FROM_WIN32(WSAGetLastError());
-        goto Finished;
-    }
-
-    //
-    // Connected successfully, close socket.
-    //
-
-    iResult = closesocket(m_socket);
-    if (iResult == SOCKET_ERROR)
-    {
-        hr = HRESULT_FROM_WIN32(WSAGetLastError());
-        goto Finished;
-    }
-
-    m_socket = NULL;
-    *fReady = TRUE;
-
-Finished:
-
-    if (fLocked)
-    {
-        LeaveCriticalSection(&m_csLock);
-        fLocked = FALSE;
-    }
-
-    return hr;
+    CloseHandle( hStdoutHandle );
 }
 
 HRESULT
@@ -1161,40 +1325,40 @@ SERVER_PROCESS::CheckIfServerIsUp(
     MIB_TCPROW_OWNER_PID   *pOwner = NULL;
     DWORD                   dwSize = 0;
 
-    DBG_ASSERT(pfReady);
-    DBG_ASSERT(pdwProcessId);
+    DBG_ASSERT( pfReady );
+    DBG_ASSERT( pdwProcessId );
 
     *pfReady = FALSE;
     *pdwProcessId = 0;
-
-    dwResult = GetExtendedTcpTable(NULL,
-        &dwSize,
-        FALSE,
-        AF_INET,
-        TCP_TABLE_OWNER_PID_LISTENER,
-        0);
+    
+    dwResult = GetExtendedTcpTable(NULL, 
+                                   &dwSize, 
+                                   FALSE, 
+                                   AF_INET, 
+                                   TCP_TABLE_OWNER_PID_LISTENER, 
+                                   0);
     if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
     {
-        hr = HRESULT_FROM_WIN32(dwResult);
+        hr = HRESULT_FROM_WIN32( dwResult );
         goto Finished;
     }
 
     pTCPInfo = (MIB_TCPTABLE_OWNER_PID*)HeapAlloc(GetProcessHeap(), 0, dwSize);
-    if (pTCPInfo == NULL)
+    if(pTCPInfo == NULL)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
-
-    dwResult = GetExtendedTcpTable(pTCPInfo,
-        &dwSize,
-        FALSE,
-        AF_INET,
-        TCP_TABLE_OWNER_PID_LISTENER,
-        0);
+    
+    dwResult = GetExtendedTcpTable(pTCPInfo, 
+                                   &dwSize, 
+                                   FALSE, 
+                                   AF_INET, 
+                                   TCP_TABLE_OWNER_PID_LISTENER, 
+                                   0);
     if (dwResult != NO_ERROR)
     {
-        hr = HRESULT_FROM_WIN32(dwResult);
+        hr = HRESULT_FROM_WIN32( dwResult );
         goto Finished;
     }
 
@@ -1202,7 +1366,7 @@ SERVER_PROCESS::CheckIfServerIsUp(
     for (DWORD dwLoop = 0; dwLoop < pTCPInfo->dwNumEntries; dwLoop++)
     {
         pOwner = &pTCPInfo->table[dwLoop];
-        if (ntohs((USHORT)pOwner->dwLocalPort) == dwPort)
+        if( ntohs((USHORT)pOwner->dwLocalPort) == dwPort )
         {
             *pdwProcessId = pOwner->dwOwningPid;
             *pfReady = TRUE;
@@ -1212,9 +1376,9 @@ SERVER_PROCESS::CheckIfServerIsUp(
 
 Finished:
 
-    if (pTCPInfo != NULL)
+    if( pTCPInfo != NULL )
     {
-        HeapFree(GetProcessHeap(), 0, pTCPInfo);
+        HeapFree( GetProcessHeap(), 0, pTCPInfo );
         pTCPInfo = NULL;
     }
 
@@ -1251,20 +1415,20 @@ SERVER_PROCESS::SendSignal(
             FreeConsole();
         }
 
-        if (fFreeConsole)
+        if(fFreeConsole)
         {
             // IISExpress and hostedwebcore w3wp run as background process
             // have to attach console back to ensure post app_offline scenario still work
             AttachConsole(ATTACH_PARENT_PROCESS);
         }
     }
-
+       
     if (!fIsSuccess || (WaitForSingleObject(hProc, m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0))
     {
-        if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L)
+        if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L) 
         {
             //Backend process will be terminated, remove the waitcallback
-            if (m_hProcessWaitHandle != NULL)
+            if (m_hProcessWaitHandle != NULL) 
             {
                 UnregisterWait(m_hProcessWaitHandle);
                 m_hProcessWaitHandle = NULL;
@@ -1327,32 +1491,32 @@ SERVER_PROCESS::StopProcess(
 
     m_pProcessManager->IncrementRapidFailCount();
 
-    for (INT i = 0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
+    for(INT i=0;i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
     {
-        if (m_hChildProcessHandles[i] != NULL)
+        if(m_hChildProcessHandles[i] != NULL)
         {
-            if (m_hChildProcessHandles[i] != INVALID_HANDLE_VALUE)
+            if( m_hChildProcessHandles[i] != INVALID_HANDLE_VALUE )
             {
-                TerminateProcess(m_hChildProcessHandles[i], 0);
-                CloseHandle(m_hChildProcessHandles[i]);
+                TerminateProcess( m_hChildProcessHandles[i], 0 );
+                CloseHandle( m_hChildProcessHandles[i] );
             }
             m_hChildProcessHandles[i] = NULL;
             m_dwChildProcessIds[i] = 0;
         }
     }
 
-    if (m_hProcessHandle != NULL)
+    if( m_hProcessHandle != NULL )
     {
-        if (m_hProcessHandle != INVALID_HANDLE_VALUE)
+        if( m_hProcessHandle != INVALID_HANDLE_VALUE )
         {
-            TerminateProcess(m_hProcessHandle, 0);
-            CloseHandle(m_hProcessHandle);
+            TerminateProcess( m_hProcessHandle, 0 );
+            CloseHandle( m_hProcessHandle );
         }
         m_hProcessHandle = NULL;
     }
 }
 
-BOOL
+BOOL 
 SERVER_PROCESS::IsDebuggerIsAttached(
     VOID
 )
@@ -1372,7 +1536,7 @@ SERVER_PROCESS::IsDebuggerIsAttached(
     {
         dwError = NO_ERROR;
 
-        if (processList != NULL)
+        if( processList != NULL )
         {
             HeapFree(GetProcessHeap(), 0, processList);
             processList = NULL;
@@ -1381,78 +1545,78 @@ SERVER_PROCESS::IsDebuggerIsAttached(
             cbNumBytes = cbNumBytes * 2;
         }
 
-        processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST)HeapAlloc(
-            GetProcessHeap(),
-            0,
-            cbNumBytes
-        );
-        if (processList == NULL)
+        processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST) HeapAlloc(
+                            GetProcessHeap(), 
+                            0, 
+                            cbNumBytes
+                            );
+        if( processList == NULL )
         {
             hr = E_OUTOFMEMORY;
             goto Finished;
         }
 
-        RtlZeroMemory(processList, cbNumBytes);
+        RtlZeroMemory( processList, cbNumBytes );
 
-        if (!QueryInformationJobObject(
-            m_hJobObject,
-            JobObjectBasicProcessIdList,
-            processList,
-            cbNumBytes,
-            NULL))
+        if( !QueryInformationJobObject( 
+                m_hJobObject, 
+                JobObjectBasicProcessIdList, 
+                processList, 
+                cbNumBytes, 
+                NULL) )
         {
             dwError = GetLastError();
-            if (dwError != ERROR_MORE_DATA)
+            if( dwError != ERROR_MORE_DATA )
             {
                 hr = HRESULT_FROM_WIN32(dwError);
                 goto Finished;
             }
         }
 
-    } while (dwRetries++ < 5 &&
-        processList != NULL &&
-        (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList ||
-            processList->NumberOfProcessIdsInList == 0));
+    } while( dwRetries++ < 5 && 
+             processList != NULL && 
+             ( processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || 
+               processList->NumberOfProcessIdsInList == 0 ) );
 
-    if (dwError == ERROR_MORE_DATA)
+    if( dwError == ERROR_MORE_DATA )
     {
         hr = E_OUTOFMEMORY;
         // some error
         goto Finished;
     }
 
-    if (processList == NULL ||
-        (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList ||
-            processList->NumberOfProcessIdsInList == 0))
+    if( processList == NULL || 
+        ( processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || 
+        processList->NumberOfProcessIdsInList == 0 ) )
     {
         hr = HRESULT_FROM_WIN32(ERROR_PROCESS_ABORTED);
         // some error
         goto Finished;
     }
 
-    if (processList->NumberOfProcessIdsInList > MAX_ACTIVE_CHILD_PROCESSES)
+    if( processList->NumberOfProcessIdsInList > MAX_ACTIVE_CHILD_PROCESSES )
     {
-        hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
+        hr = HRESULT_FROM_WIN32( ERROR_CREATE_FAILED );
         goto Finished;
     }
-
-    for (DWORD i = 0; i<processList->NumberOfProcessIdsInList; i++)
+ 
+    for( DWORD i=0; i<processList->NumberOfProcessIdsInList; i++ )
     {
         dwPid = (DWORD)processList->ProcessIdList[i];
-        if (dwPid != dwWorkerProcessPid)
+        if( dwPid != dwWorkerProcessPid )
         {
-            HANDLE hProcess = OpenProcess(
-                PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
-                FALSE,
-                dwPid
-            );
-            BOOL returnValue = CheckRemoteDebuggerPresent(hProcess, &fDebuggerPresent);
-            if (!returnValue)
+            HANDLE hProcess = OpenProcess( 
+                                            PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
+                                            FALSE, 
+                                            dwPid 
+                                        );
+            BOOL returnValue = CheckRemoteDebuggerPresent( hProcess, &fDebuggerPresent );
+            if( ! returnValue )
             {
                 goto Finished;
             }
 
-            if (fDebuggerPresent)
+            if( fDebuggerPresent )
             {
                 break;
             }
@@ -1461,7 +1625,7 @@ SERVER_PROCESS::IsDebuggerIsAttached(
 
 Finished:
 
-    if (processList != NULL)
+    if( processList != NULL )
     {
         HeapFree(GetProcessHeap(), 0, processList);
     }
@@ -1469,7 +1633,7 @@ Finished:
     return fDebuggerPresent;
 }
 
-HRESULT
+HRESULT 
 SERVER_PROCESS::GetChildProcessHandles(
     VOID
 )
@@ -1488,7 +1652,7 @@ SERVER_PROCESS::GetChildProcessHandles(
     {
         dwError = NO_ERROR;
 
-        if (processList != NULL)
+        if( processList != NULL )
         {
             HeapFree(GetProcessHeap(), 0, processList);
             processList = NULL;
@@ -1497,77 +1661,77 @@ SERVER_PROCESS::GetChildProcessHandles(
             cbNumBytes = cbNumBytes * 2;
         }
 
-        processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST)HeapAlloc(
-            GetProcessHeap(),
-            0,
-            cbNumBytes
-        );
-        if (processList == NULL)
+        processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST) HeapAlloc(
+                            GetProcessHeap(), 
+                            0, 
+                            cbNumBytes
+                            );
+        if( processList == NULL )
         {
             hr = E_OUTOFMEMORY;
             goto Finished;
         }
 
-        RtlZeroMemory(processList, cbNumBytes);
+        RtlZeroMemory( processList, cbNumBytes );
 
-        if (!QueryInformationJobObject(
-            m_hJobObject,
-            JobObjectBasicProcessIdList,
-            processList,
-            cbNumBytes,
-            NULL))
+        if( !QueryInformationJobObject( 
+                m_hJobObject, 
+                JobObjectBasicProcessIdList, 
+                processList, 
+                cbNumBytes, 
+                NULL) )
         {
             dwError = GetLastError();
-            if (dwError != ERROR_MORE_DATA)
+            if( dwError != ERROR_MORE_DATA )
             {
                 hr = HRESULT_FROM_WIN32(dwError);
                 goto Finished;
             }
         }
 
-    } while (dwRetries++ < 5 &&
-        processList != NULL &&
-        (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0));
+    } while( dwRetries++ < 5 && 
+             processList != NULL && 
+             ( processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0 ) );
 
-    if (dwError == ERROR_MORE_DATA)
+    if( dwError == ERROR_MORE_DATA )
     {
         hr = E_OUTOFMEMORY;
         // some error
         goto Finished;
     }
 
-    if (processList == NULL || (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0))
+    if( processList == NULL || ( processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0 ) )
     {
         hr = HRESULT_FROM_WIN32(ERROR_PROCESS_ABORTED);
         // some error
         goto Finished;
     }
 
-    if (processList->NumberOfProcessIdsInList > MAX_ACTIVE_CHILD_PROCESSES)
+    if( processList->NumberOfProcessIdsInList > MAX_ACTIVE_CHILD_PROCESSES )
     {
-        hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
+        hr = HRESULT_FROM_WIN32( ERROR_CREATE_FAILED );
         goto Finished;
     }
-
-    for (DWORD i = 0; i<processList->NumberOfProcessIdsInList; i++)
+ 
+    for( DWORD i=0; i<processList->NumberOfProcessIdsInList; i++ )
     {
         dwPid = (DWORD)processList->ProcessIdList[i];
-        if (dwPid != m_dwProcessId &&
-            dwPid != dwWorkerProcessPid)
+        if( dwPid != m_dwProcessId &&
+            dwPid != dwWorkerProcessPid )
         {
-            m_hChildProcessHandles[m_cChildProcess] = OpenProcess(
-                PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
-                FALSE,
-                dwPid
-            );
+            m_hChildProcessHandles[m_cChildProcess] = OpenProcess( 
+                                            PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
+                                            FALSE, 
+                                            dwPid 
+                                        );
             m_dwChildProcessIds[m_cChildProcess] = dwPid;
-            m_cChildProcess++;
+            m_cChildProcess ++;
         }
     }
 
 Finished:
 
-    if (processList != NULL)
+    if( processList != NULL )
     {
         HeapFree(GetProcessHeap(), 0, processList);
     }
@@ -1577,7 +1741,7 @@ Finished:
 
 HRESULT
 SERVER_PROCESS::StopAllProcessesInJobObject(
-    VOID
+        VOID
 )
 {
     HRESULT                             hr = S_OK;
@@ -1591,7 +1755,7 @@ SERVER_PROCESS::StopAllProcessesInJobObject(
 
     do
     {
-        if (processList != NULL)
+        if( processList != NULL )
         {
             HeapFree(GetProcessHeap(), 0, processList);
             processList = NULL;
@@ -1600,66 +1764,66 @@ SERVER_PROCESS::StopAllProcessesInJobObject(
             cbNumBytes = cbNumBytes * 2;
         }
 
-        processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST)HeapAlloc(
-            GetProcessHeap(),
-            0,
-            cbNumBytes
-        );
-        if (processList == NULL)
+        processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST) HeapAlloc(
+                            GetProcessHeap(), 
+                            0, 
+                            cbNumBytes
+                            );
+        if( processList == NULL )
         {
             hr = E_OUTOFMEMORY;
             goto Finished;
         }
 
-        RtlZeroMemory(processList, cbNumBytes);
+        RtlZeroMemory( processList, cbNumBytes );
 
-        if (!QueryInformationJobObject(
-            m_hJobObject,
-            JobObjectBasicProcessIdList,
-            processList,
-            cbNumBytes,
-            NULL))
+        if( !QueryInformationJobObject( 
+                m_hJobObject, 
+                JobObjectBasicProcessIdList, 
+                processList, 
+                cbNumBytes, 
+                NULL) )
         {
             DWORD dwError = GetLastError();
-            if (dwError != ERROR_MORE_DATA)
+            if( dwError != ERROR_MORE_DATA )
             {
                 hr = HRESULT_FROM_WIN32(dwError);
                 goto Finished;
             }
         }
 
-    } while (dwRetries++ < 5 &&
-        processList != NULL &&
-        (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0));
+    } while( dwRetries++ < 5 && 
+             processList != NULL && 
+             ( processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0 ) );
 
-    if (processList == NULL || (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0))
+    if( processList == NULL || ( processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0 ) )
     {
         hr = HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY);
         // some error
         goto Finished;
     }
-
-    for (DWORD i = 0; i<processList->NumberOfProcessIdsInList; i++)
+ 
+    for( DWORD i=0; i<processList->NumberOfProcessIdsInList; i++ )
     {
-        if (dwWorkerProcessPid != (DWORD)processList->ProcessIdList[i])
+        if( dwWorkerProcessPid != (DWORD)processList->ProcessIdList[i] )
         {
-            hProcess = OpenProcess(PROCESS_TERMINATE,
-                FALSE,
-                (DWORD)processList->ProcessIdList[i]);
-            if (hProcess != NULL)
+            hProcess = OpenProcess( PROCESS_TERMINATE, 
+                                    FALSE, 
+                                    (DWORD)processList->ProcessIdList[i] );
+            if( hProcess != NULL )
             {
-                if (!TerminateProcess(hProcess, 1))
+                if( !TerminateProcess(hProcess, 1) )
                 {
                     hr = HRESULT_FROM_GETLASTERROR();
                 }
                 else
                 {
-                    WaitForSingleObject(hProcess, INFINITE);
+                    WaitForSingleObject( hProcess, INFINITE );
                 }
 
-                if (hProcess != NULL)
+                if( hProcess != NULL )
                 {
-                    CloseHandle(hProcess);
+                    CloseHandle( hProcess );
                     hProcess = NULL;
                 }
             }
@@ -1668,7 +1832,7 @@ SERVER_PROCESS::StopAllProcessesInJobObject(
 
 Finished:
 
-    if (processList != NULL)
+    if( processList != NULL )
     {
         HeapFree(GetProcessHeap(), 0, processList);
     }
@@ -1676,27 +1840,26 @@ Finished:
     return hr;
 }
 
-SERVER_PROCESS::SERVER_PROCESS() :
-    m_cRefs(1),
-    m_hProcessHandle(NULL),
-    m_hProcessWaitHandle(NULL),
-    m_dwProcessId(0),
-    m_cChildProcess(0),
-    m_socket(INVALID_SOCKET),
-    m_fReady(FALSE),
-    m_lStopping(0L),
-    m_hStdoutHandle(NULL),
-    m_fStdoutLogEnabled(FALSE),
-    m_hJobObject(NULL),
-    m_pForwarderConnection(NULL),
-    m_dwListeningProcessId(0),
-    m_hListeningProcessHandle(NULL)
+SERVER_PROCESS::SERVER_PROCESS() : 
+    m_cRefs( 1 ),
+    m_hProcessHandle( NULL ),
+    m_hProcessWaitHandle( NULL ),
+    m_dwProcessId( 0 ),
+    m_cChildProcess( 0 ),
+    m_socket( INVALID_SOCKET ),
+    m_fReady( FALSE ),
+    m_lStopping( 0L ),
+    m_hStdoutHandle( NULL ),
+    m_fStdoutLogEnabled( FALSE ),
+    m_hJobObject( NULL ),
+    m_pForwarderConnection( NULL ),
+    m_dwListeningProcessId( 0 ),
+    m_hListeningProcessHandle( NULL )
 {
     InterlockedIncrement(&g_dwActiveServerProcesses);
-    srand((unsigned int)time(NULL));
-    InitializeCriticalSection(&m_csLock);
+    srand(GetTickCount());
 
-    for (INT i = 0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
+    for(INT i=0;i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
     {
         m_dwChildProcessIds[i] = 0;
         m_hChildProcessHandles[i] = NULL;
@@ -1706,105 +1869,108 @@ SERVER_PROCESS::SERVER_PROCESS() :
 
 SERVER_PROCESS::~SERVER_PROCESS()
 {
-    if (m_socket != NULL)
+    if(m_socket != NULL)
     {
-        closesocket(m_socket);
+        closesocket( m_socket );
         m_socket = NULL;
     }
 
-    if (m_hProcessWaitHandle != NULL)
+    if(m_hProcessWaitHandle != NULL)
     {
-        UnregisterWait(m_hProcessWaitHandle);
+        UnregisterWait( m_hProcessWaitHandle );
         m_hProcessWaitHandle = NULL;
     }
 
-    for (INT i = 0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
+    for(INT i=0;i<MAX_ACTIVE_CHILD_PROCESSES;++i)
     {
-        if (m_hChildProcessWaitHandles[i] != NULL)
+        if(m_hChildProcessWaitHandles[i] != NULL)
         {
-            UnregisterWait(m_hChildProcessWaitHandles[i]);
+            UnregisterWait( m_hChildProcessWaitHandles[i] );
             m_hChildProcessWaitHandles[i] = NULL;
         }
     }
 
-    if (m_hProcessHandle != NULL)
+    if(m_hProcessHandle != NULL)
     {
-        if (m_hProcessHandle != INVALID_HANDLE_VALUE)
+        if(m_hProcessHandle != INVALID_HANDLE_VALUE)
         {
-            CloseHandle(m_hProcessHandle);
+            CloseHandle( m_hProcessHandle );
         }
         m_hProcessHandle = NULL;
     }
 
-    if (m_hListeningProcessHandle != NULL)
+    if(m_hListeningProcessHandle != NULL)
     {
-        if (m_hListeningProcessHandle != INVALID_HANDLE_VALUE)
+        if(m_hListeningProcessHandle != INVALID_HANDLE_VALUE)
         {
-            CloseHandle(m_hListeningProcessHandle);
+            CloseHandle( m_hListeningProcessHandle );
         }
         m_hListeningProcessHandle = NULL;
     }
 
-    for (INT i = 0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
+    for(INT i=0;i<MAX_ACTIVE_CHILD_PROCESSES;++i)
     {
-        if (m_hChildProcessHandles[i] != NULL)
+        if(m_hChildProcessHandles[i] != NULL)
         {
-            if (m_hChildProcessHandles[i] != INVALID_HANDLE_VALUE)
+            if(m_hChildProcessHandles[i] != INVALID_HANDLE_VALUE)
             {
-                CloseHandle(m_hChildProcessHandles[i]);
+                CloseHandle( m_hChildProcessHandles[i] );
             }
             m_hChildProcessHandles[i] = NULL;
             m_dwChildProcessIds[i] = 0;
         }
     }
 
-    if (m_hStdoutHandle != NULL)
+    if( m_hStdoutHandle != NULL )
     {
-        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
+        if(m_hStdoutHandle != INVALID_HANDLE_VALUE)
         {
-            CloseHandle(m_hStdoutHandle);
+            CloseHandle( m_hStdoutHandle );
         }
         m_hStdoutHandle = NULL;
     }
 
-    if (m_fStdoutLogEnabled)
+    if( m_fStdoutLogEnabled )
     {
         m_Timer.CancelTimer();
     }
 
-    if (m_hJobObject != NULL)
+    if( m_hJobObject != NULL )
     {
-        if (m_hJobObject != INVALID_HANDLE_VALUE)
+        if(m_hJobObject != INVALID_HANDLE_VALUE)
         {
-            CloseHandle(m_hJobObject);
+            CloseHandle( m_hJobObject );
         }
         m_hJobObject = NULL;
     }
 
-    if (m_pProcessManager != NULL)
+    if( m_pProcessManager != NULL )
     {
         m_pProcessManager->DereferenceProcessManager();
         m_pProcessManager = NULL;
     }
 
-    if (m_pForwarderConnection != NULL)
+    if(m_pForwarderConnection != NULL)
     {
         m_pForwarderConnection->DereferenceForwarderConnection();
         m_pForwarderConnection = NULL;
     }
 
-    DeleteCriticalSection(&m_csLock);
+    m_pEnvironmentVarTable = NULL;
+    // no need to free m_pEnvironmentVarTable, as it references to
+    // the same hash table hold by configuration.
+    // the hashtable memory will be freed once onfiguration got recycled 
 
     InterlockedDecrement(&g_dwActiveServerProcesses);
 }
 
-VOID
+VOID 
 ProcessHandleCallback(
     _In_ PVOID  pContext,
     _In_ BOOL
 )
 {
-    SERVER_PROCESS *pServerProcess = (SERVER_PROCESS*)pContext;
+    SERVER_PROCESS *pServerProcess = (SERVER_PROCESS*) pContext;
     pServerProcess->HandleProcessExit();
 }
 
@@ -1817,31 +1983,31 @@ SERVER_PROCESS::RegisterProcessWait(
     HRESULT     hr = S_OK;
     NTSTATUS    status = 0;
 
-    _ASSERT(phWaitHandle != NULL && *phWaitHandle == NULL);
+    _ASSERT( phWaitHandle != NULL && *phWaitHandle == NULL );
 
     *phWaitHandle = NULL;
 
     // wait thread will dereference.
     ReferenceServerProcess();
 
-    status = RegisterWaitForSingleObject(
-        phWaitHandle,
-        hProcessToWaitOn,
-        (WAITORTIMERCALLBACK)&ProcessHandleCallback,
-        this,
-        INFINITE,
-        WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD
-    );
+    status = RegisterWaitForSingleObject( 
+                phWaitHandle,
+                hProcessToWaitOn,
+                (WAITORTIMERCALLBACK)&ProcessHandleCallback,
+                this,
+                INFINITE,
+                WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD 
+                );
 
-    if (status < 0)
+    if( status < 0 )
     {
-        hr = HRESULT_FROM_NT(status);
+        hr = HRESULT_FROM_NT( status );
         goto Finished;
     }
 
 Finished:
 
-    if (FAILED(hr))
+    if( FAILED( hr ) ) 
     {
         *phWaitHandle = NULL;
         DereferenceServerProcess();
@@ -1855,9 +2021,10 @@ SERVER_PROCESS::HandleProcessExit()
 {
     HRESULT     hr = S_OK;
     BOOL        fReady = FALSE;
+    DWORD       dwProcessId = 0;
     if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L)
     {
-        CheckIfServerIsUp(m_dwPort, &fReady);
+        CheckIfServerIsUp(m_dwPort, &dwProcessId, &fReady);
 
         if (!fReady)
         {

@@ -212,7 +212,10 @@ WEBSOCKET_HANDLER::IndicateCompletionToIIS(
 
     _pHandler->SetStatus(FORWARDER_DONE);
 
-    _pHttpContext->IndicateCompletion(RQ_NOTIFICATION_PENDING);
+    // do not call IndicateCompletion here
+    // wait for handle close callback and then call IndicateCompletion
+    // otherwise we may release W3Context too early and cause AV
+    //_pHttpContext->IndicateCompletion(RQ_NOTIFICATION_PENDING);
 }
 
 HRESULT
@@ -744,18 +747,25 @@ Routine Description:
 ++*/
 {
     HRESULT                 hr = S_OK;
+    BOOL                    fLocked = FALSE;
     CleanupReason           cleanupReason = CleanupReasonUnknown;
 
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
         "WEBSOCKET_HANDLER::OnWinHttpSendComplete");
-
-    EnterCriticalSection (&_RequestLock);
 
     if (_fCleanupInProgress)
     {
         goto Finished;
     }
 
+    EnterCriticalSection (&_RequestLock);
+
+    fLocked = TRUE;
+
+    if (_fCleanupInProgress)
+    {
+        goto Finished;
+    }
     //
     // Data was successfully sent to backend.
     // Initiate next receive from IIS.
@@ -768,8 +778,10 @@ Routine Description:
     }
 
 Finished:
-
-    LeaveCriticalSection(&_RequestLock);
+    if (fLocked) 
+    {
+        LeaveCriticalSection(&_RequestLock);
+    }
 
     if (FAILED (hr))
     {
@@ -840,18 +852,24 @@ Routine Description:
 --*/
 {
     HRESULT  hr = S_OK;
+    BOOL     fLocked = FALSE;
     CleanupReason cleanupReason = CleanupReasonUnknown;
 
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
         "WEBSOCKET_HANDLER::OnWinHttpReceiveComplete");
-
-    EnterCriticalSection(&_RequestLock);
 
     if (_fCleanupInProgress)
     {
         goto Finished;
     }
 
+    EnterCriticalSection(&_RequestLock);
+
+    fLocked = TRUE;
+    if (_fCleanupInProgress)
+    {
+        goto Finished;
+    }
     hr = DoIisWebSocketSend(
             pCompletionStatus->dwBytesTransferred,
             pCompletionStatus->eBufferType
@@ -864,9 +882,10 @@ Routine Description:
     }
 
 Finished:
-
-    LeaveCriticalSection(&_RequestLock);
-
+    if (fLocked) 
+    {
+        LeaveCriticalSection(&_RequestLock);
+    }
     if (FAILED (hr))
     {
         Cleanup (cleanupReason);
@@ -902,21 +921,26 @@ Routine Description:
 --*/
 {
     HRESULT         hr = S_OK;
+    BOOL            fLocked = FALSE;
     CleanupReason   cleanupReason = CleanupReasonUnknown;
 
     UNREFERENCED_PARAMETER(cbIo);
 
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::OnIisSendComplete");
 
-    EnterCriticalSection(&_RequestLock);
-
-    if (FAILED (hrCompletion))
+    if (FAILED(hrCompletion))
     {
         hr = hrCompletion;
         cleanupReason = ClientDisconnect;
         goto Finished;
     }
 
+    if (_fCleanupInProgress)
+    {
+        goto Finished;
+    }
+    EnterCriticalSection(&_RequestLock);
+    fLocked = TRUE;
     if (_fCleanupInProgress)
     {
         goto Finished;
@@ -934,9 +958,10 @@ Routine Description:
     }
 
 Finished:
-
-    LeaveCriticalSection(&_RequestLock);
-
+    if (fLocked)
+    {
+        LeaveCriticalSection(&_RequestLock);
+    }
     if (FAILED (hr))
     {
         Cleanup (cleanupReason);
@@ -977,15 +1002,14 @@ Routine Description:
 --*/
 {
     HRESULT    hr = S_OK;
+    BOOL       fLocked = FALSE;
     CleanupReason cleanupReason = CleanupReasonUnknown;
     WINHTTP_WEB_SOCKET_BUFFER_TYPE  BufferType;
 
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
         "WEBSOCKET_HANDLER::OnIisReceiveComplete");
 
-    EnterCriticalSection(&_RequestLock);
-
-    if (FAILED (hrCompletion))
+    if (FAILED(hrCompletion))
     {
         cleanupReason = ClientDisconnect;
         hr = hrCompletion;
@@ -997,6 +1021,13 @@ Routine Description:
         goto Finished;
     }
 
+    EnterCriticalSection(&_RequestLock);
+    
+    fLocked = TRUE;
+    if (_fCleanupInProgress)
+    {
+        goto Finished;
+    }
     //
     // Get Buffer Type from flags.
     //
@@ -1018,9 +1049,10 @@ Routine Description:
     }
 
 Finished:
-
-    LeaveCriticalSection(&_RequestLock);
-
+    if (fLocked)
+    {
+        LeaveCriticalSection(&_RequestLock);
+    }
     if (FAILED (hr))
     {
         Cleanup (cleanupReason);
@@ -1042,7 +1074,7 @@ Finished:
 VOID
 WEBSOCKET_HANDLER::Cleanup(
     CleanupReason reason
-    )
+)
 /*++
 
 Routine Description:
@@ -1056,11 +1088,18 @@ Arguments:
     CleanupReason
 --*/
 {
-    DebugPrintf (ASPNETCORE_DEBUG_FLAG_INFO,
-            "WEBSOCKET_HANDLER::Cleanup Initiated with reason %d", reason);
+    BOOL    fLocked = FALSE;
+    DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
+        "WEBSOCKET_HANDLER::Cleanup Initiated with reason %d", reason);
+
+    if (_fCleanupInProgress)
+    {
+        goto Finished;
+    }
 
     EnterCriticalSection(&_RequestLock);
 
+    fLocked = TRUE;
     if (_fCleanupInProgress)
     {
         goto Finished;
@@ -1080,5 +1119,8 @@ Arguments:
     _pHttpContext->CancelIo();
 
 Finished:
-    LeaveCriticalSection(&_RequestLock);
+    if (fLocked)
+    {
+        LeaveCriticalSection(&_RequestLock);
+    }
 }

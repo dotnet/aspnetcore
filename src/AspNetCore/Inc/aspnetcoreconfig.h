@@ -5,6 +5,10 @@
 #define CS_ROOTWEB_CONFIG                                L"MACHINE/WEBROOT/APPHOST/"
 #define CS_ROOTWEB_CONFIG_LEN                            _countof(CS_ROOTWEB_CONFIG)-1
 #define CS_ASPNETCORE_SECTION                            L"system.webServer/aspNetCore"
+#define CS_WINDOWS_AUTHENTICATION_SECTION                L"system.webServer/security/authentication/windowsAuthentication"
+#define CS_BASIC_AUTHENTICATION_SECTION                  L"system.webServer/security/authentication/basicAuthentication"
+#define CS_ANONYMOUS_AUTHENTICATION_SECTION              L"system.webServer/security/authentication/anonymousAuthentication"
+#define CS_AUTHENTICATION_ENABLED                        L"enabled"
 #define CS_ASPNETCORE_PROCESS_EXE_PATH                   L"processPath"
 #define CS_ASPNETCORE_PROCESS_ARGUMENTS                  L"arguments"
 #define CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT         L"startupTimeLimit"
@@ -34,7 +38,6 @@
 extern HTTP_MODULE_ID   g_pModuleId;
 extern IHttpServer *    g_pHttpServer;
 
-
 class ASPNETCORE_CONFIG : IHttpStoredContext
 {
 public:
@@ -54,13 +57,13 @@ public:
         _In_  IHttpContext           *pHttpContext,
         _Out_ ASPNETCORE_CONFIG  **ppAspNetCoreConfig
     );
-
-    MULTISZ*
+    
+    ENVIRONMENT_VAR_HASH*
     QueryEnvironmentVariables(
         VOID
     )
     {
-        return &m_mszEnvironment;
+        return m_pEnvironmentVariables;
     }
 
     DWORD
@@ -140,6 +143,24 @@ public:
     }
 
     BOOL
+    QueryWindowsAuthEnabled()
+    {
+        return m_fWindowsAuthEnabled;
+    }
+
+    BOOL
+    QueryBasicAuthEnabled()
+    {
+        return m_fBasicAuthEnabled;
+    }
+
+    BOOL
+    QueryAnonymousAuthEnabled()
+    {
+        return m_fAnonymousAuthEnabled;
+    }
+
+    BOOL
     QueryDisableStartUpErrorPage()
     {
         return m_fDisableStartUpErrorPage;
@@ -155,10 +176,10 @@ private:
 
     //
     // private constructor
-    //
-    
+    //    
     ASPNETCORE_CONFIG():
-        m_fStdoutLogEnabled( FALSE )
+        m_fStdoutLogEnabled( FALSE ),
+        m_pEnvironmentVariables( NULL )
     {
     }
 
@@ -167,18 +188,20 @@ private:
         IHttpContext *pHttpContext
     );
 
-    DWORD           m_dwRequestTimeoutInMS;
-    DWORD           m_dwStartupTimeLimitInMS;
-    DWORD           m_dwShutdownTimeLimitInMS;
-    MULTISZ         m_mszEnvironment;
-    DWORD           m_dwRapidFailsPerMinute;
-    STRU            m_struApplication;
-    STRU            m_struArguments;
-    STRU            m_struProcessPath;
-    BOOL            m_fStdoutLogEnabled;
-    STRU            m_struStdoutLogFile;
-    DWORD           m_dwProcessesPerApplication;
-    BOOL            m_fForwardWindowsAuthToken;
-    BOOL            m_fDisableStartUpErrorPage;
-    MULTISZ         m_mszRecycleOnFileChangeFiles;
+    DWORD                  m_dwRequestTimeoutInMS;
+    DWORD                  m_dwStartupTimeLimitInMS;
+    DWORD                  m_dwShutdownTimeLimitInMS;
+    DWORD                  m_dwRapidFailsPerMinute;
+    DWORD                  m_dwProcessesPerApplication;
+    STRU                   m_struApplication;
+    STRU                   m_struArguments;
+    STRU                   m_struProcessPath;
+    STRU                   m_struStdoutLogFile;
+    BOOL                   m_fStdoutLogEnabled;
+    BOOL                   m_fForwardWindowsAuthToken;
+    BOOL                   m_fDisableStartUpErrorPage;
+    BOOL                   m_fWindowsAuthEnabled;
+    BOOL                   m_fBasicAuthEnabled;
+    BOOL                   m_fAnonymousAuthEnabled;
+    ENVIRONMENT_VAR_HASH*  m_pEnvironmentVariables;
 };

@@ -70,10 +70,12 @@ public:
         VOID
     )
     {
-        BOOL            fResult = FALSE;
+        BOOL            fResult = TRUE;
         LARGE_INTEGER   li = {0};
         CHAR           *pszBuff = NULL;
-        HANDLE          handle = CreateFile( m_Path.QueryStr(),
+        HANDLE         handle = INVALID_HANDLE_VALUE;
+
+        handle = CreateFile( m_Path.QueryStr(),
                                      GENERIC_READ,
                                      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                                      NULL,
@@ -81,8 +83,15 @@ public:
                                      FILE_ATTRIBUTE_NORMAL,
                                      NULL );
 
-        if( handle == NULL )
+        if( handle == INVALID_HANDLE_VALUE )
         {
+            if ( GetLastError() == ERROR_FILE_NOT_FOUND )
+            {
+                fResult = FALSE;
+            }
+
+            // This Load() member function is supposed be called only when the change notification event of file creation or file modification happens.
+            // If file is currenlty locked exclusively by other processes, we might get INVALID_HANDLE_VALUE even though the file exists. In that case, we should return TRUE here.
             goto Finished;
         }
 
@@ -90,8 +99,6 @@ public:
         {
             goto Finished;
         }
-
-        fResult = TRUE;
 
         if( li.HighPart != 0 )
         {
@@ -113,10 +120,10 @@ public:
         }
 
 Finished:
-        if( handle )
+        if( handle != INVALID_HANDLE_VALUE )
         {
             CloseHandle(handle);
-            handle = NULL;
+            handle = INVALID_HANDLE_VALUE;
         }
 
         if( pszBuff != NULL )

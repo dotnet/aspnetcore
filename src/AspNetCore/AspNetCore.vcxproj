@@ -157,7 +157,7 @@
     <ClInclude Include="Inc\application.h" />
     <ClInclude Include="Inc\applicationmanager.h" />
     <ClInclude Include="Inc\aspnetcoreconfig.h" />
-    <ClInclude Include="Inc\aspnetcoreutils.h" />
+    <ClInclude Include="Inc\environmentvariablehash.h" />
     <ClInclude Include="Inc\debugutil.h" />
     <ClInclude Include="Inc\filewatcher.h" />
     <ClInclude Include="Inc\forwarderconnection.h" />
@@ -177,7 +177,6 @@
     <ClCompile Include="Src\application.cxx" />
     <ClCompile Include="Src\applicationmanager.cxx" />
     <ClCompile Include="Src\aspnetcoreconfig.cxx" />
-    <ClCompile Include="Src\aspnetcoreutils.cxx" />
     <ClCompile Include="Src\dllmain.cpp" />
     <ClCompile Include="Src\filewatcher.cxx" />
     <ClCompile Include="Src\forwarderconnection.cxx" />

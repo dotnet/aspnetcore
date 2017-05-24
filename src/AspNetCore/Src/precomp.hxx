@@ -86,7 +86,7 @@ inline bool IsSpace(char ch)
 #include <acache.h>
 #include <time.h>
 
-#include "aspnetcoreutils.h"
+#include "environmentvariablehash.h"
 #include "..\aspnetcore_msg.h"
 #include "aspnetcoreconfig.h"
 #include "serverprocess.h"

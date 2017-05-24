@@ -238,6 +238,9 @@ PROCESS_MANAGER::GetProcess(
                                     pConfig->QueryArguments(),
                                     pConfig->QueryStartupTimeLimitInMS(),
                                     pConfig->QueryShutdownTimeLimitInMS(),
+                                    pConfig->QueryWindowsAuthEnabled(),
+                                    pConfig->QueryBasicAuthEnabled(),
+                                    pConfig->QueryAnonymousAuthEnabled(),
                                     pConfig->QueryEnvironmentVariables(),
                                     pConfig->QueryStdoutLogEnabled(),
                                     pConfig->QueryStdoutLogFile()

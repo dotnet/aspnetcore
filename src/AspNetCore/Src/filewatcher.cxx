@@ -318,7 +318,7 @@ FILE_WATCHER_ENTRY::Monitor(VOID)
         _buffDirectoryChanges.QueryPtr(),
         _buffDirectoryChanges.QuerySize(),
         FALSE,        // Watching sub dirs. Set to False now as only monitoring app_offline
-        FILE_NOTIFY_VALID_MASK & ~FILE_NOTIFY_CHANGE_LAST_ACCESS & ~FILE_NOTIFY_CHANGE_ATTRIBUTES,
+        FILE_NOTIFY_VALID_MASK & ~FILE_NOTIFY_CHANGE_LAST_ACCESS,
         &cbRead,
         &_overlapped,
         NULL))

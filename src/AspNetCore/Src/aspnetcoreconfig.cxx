@@ -12,6 +12,12 @@ ASPNETCORE_CONFIG::~ASPNETCORE_CONFIG()
     {
         APPLICATION_MANAGER::GetInstance()->RecycleApplication(m_struApplication.QueryStr());
     }
+    if(m_pEnvironmentVariables != NULL)
+    {
+        m_pEnvironmentVariables->Clear();
+        delete m_pEnvironmentVariables;
+        m_pEnvironmentVariables = NULL;
+    }
 }
 
 HRESULT
@@ -24,7 +30,7 @@ ASPNETCORE_CONFIG::GetConfig(
     IHttpApplication       *pHttpApplication = pHttpContext->GetApplication();
     ASPNETCORE_CONFIG      *pAspNetCoreConfig = NULL;
 
-    if( ppAspNetCoreConfig == NULL)
+    if (ppAspNetCoreConfig == NULL)
     {
         hr = E_INVALIDARG;
         goto Finished;
@@ -33,10 +39,10 @@ ASPNETCORE_CONFIG::GetConfig(
     *ppAspNetCoreConfig = NULL;
 
     // potential bug if user sepcific config at virtual dir level
-    pAspNetCoreConfig = (ASPNETCORE_CONFIG*) 
+    pAspNetCoreConfig = (ASPNETCORE_CONFIG*)
         pHttpApplication->GetModuleContextContainer()->GetModuleContext(g_pModuleId);
 
-    if( pAspNetCoreConfig != NULL )
+    if (pAspNetCoreConfig != NULL)
     {
         *ppAspNetCoreConfig = pAspNetCoreConfig;
         pAspNetCoreConfig = NULL;
@@ -44,31 +50,31 @@ ASPNETCORE_CONFIG::GetConfig(
     }
 
     pAspNetCoreConfig = new ASPNETCORE_CONFIG;
-    if( pAspNetCoreConfig == NULL )
+    if (pAspNetCoreConfig == NULL)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
 
-    hr = pAspNetCoreConfig->Populate( pHttpContext );
-    if( FAILED( hr ) )
+    hr = pAspNetCoreConfig->Populate(pHttpContext);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
     hr = pHttpApplication->GetModuleContextContainer()->
-            SetModuleContext( pAspNetCoreConfig, g_pModuleId );
-    if( FAILED( hr ) )
+        SetModuleContext(pAspNetCoreConfig, g_pModuleId);
+    if (FAILED(hr))
     {
-        if( hr == HRESULT_FROM_WIN32( ERROR_ALREADY_ASSIGNED ) )
+        if (hr == HRESULT_FROM_WIN32(ERROR_ALREADY_ASSIGNED))
         {
             delete pAspNetCoreConfig;
 
-            pAspNetCoreConfig = (ASPNETCORE_CONFIG*) pHttpApplication->
-                                GetModuleContextContainer()->
-                                GetModuleContext( g_pModuleId );
+            pAspNetCoreConfig = (ASPNETCORE_CONFIG*)pHttpApplication->
+                                 GetModuleContextContainer()->
+                                 GetModuleContext(g_pModuleId);
 
-            _ASSERT( pAspNetCoreConfig != NULL );
+            _ASSERT(pAspNetCoreConfig != NULL);
 
             hr = S_OK;
         }
@@ -79,8 +85,8 @@ ASPNETCORE_CONFIG::GetConfig(
     }
     else
     {
-		// set appliction info here instead of inside Populate()
-		// as the destructor will delete the backend process 
+        // set appliction info here instead of inside Populate()
+        // as the destructor will delete the backend process 
         hr = pAspNetCoreConfig->QueryApplicationPath()->Copy(pHttpApplication->GetApplicationId());
         if (FAILED(hr))
         {
@@ -93,7 +99,7 @@ ASPNETCORE_CONFIG::GetConfig(
 
 Finished:
 
-    if( pAspNetCoreConfig != NULL )
+    if (pAspNetCoreConfig != NULL)
     {
         delete pAspNetCoreConfig;
         pAspNetCoreConfig = NULL;
@@ -102,82 +108,134 @@ Finished:
     return hr;
 }
 
-VOID ReverseMultisz( MULTISZ     * pmszInput,
-                     LPCWSTR       pszStr,
-                     MULTISZ     * pmszOutput )
-{
-    if(pszStr == NULL) return;
-
-    ReverseMultisz( pmszInput, pmszInput->Next( pszStr ), pmszOutput );
-
-    pmszOutput->Append( pszStr );
-}
-
 HRESULT
 ASPNETCORE_CONFIG::Populate(
     IHttpContext   *pHttpContext
 )
 {
     HRESULT                         hr = S_OK;
-    STACK_STRU (                    strSiteConfigPath, 256); 
+    STACK_STRU(strSiteConfigPath, 256);
     STRU                            strEnvName;
     STRU                            strEnvValue;
-    STRU                            strFullEnvVar;
+    STRU                            strExpandedEnvValue;
     IAppHostAdminManager           *pAdminManager = NULL;
     IAppHostElement                *pAspNetCoreElement = NULL;
+    IAppHostElement                *pWindowsAuthenticationElement = NULL;
+    IAppHostElement                *pBasicAuthenticationElement = NULL;
+    IAppHostElement                *pAnonymousAuthenticationElement = NULL;
     IAppHostElement                *pEnvVarList = NULL;
-    IAppHostElementCollection      *pEnvVarCollection = NULL;
     IAppHostElement                *pEnvVar = NULL;
-    //IAppHostElement                *pRecycleOnFileChangeFileList = NULL;
-    //IAppHostElementCollection      *pRecycleOnFileChangeFileCollection = NULL;
-    //IAppHostElement                *pRecycleOnFileChangeFile = NULL;
+    IAppHostElementCollection      *pEnvVarCollection = NULL;
     ULONGLONG                       ullRawTimeSpan = 0;
     ENUM_INDEX                      index;
-    STRU                            strExpandedEnvValue;
-    MULTISZ                         mszEnvironment;
-    MULTISZ                         mszEnvironmentListReverse;
-    MULTISZ                         mszEnvNames;
-    LPWSTR                          pszEnvName;
-    LPCWSTR                         pcszEnvName;
-    LPCWSTR                         pszEnvString;
-    STRU                            strFilePath;
+    ENVIRONMENT_VAR_ENTRY*          pEntry = NULL;
+
+    m_pEnvironmentVariables = new ENVIRONMENT_VAR_HASH();
+    if (m_pEnvironmentVariables == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
+    if (FAILED(hr = m_pEnvironmentVariables->Initialize(37 /*prime*/)))
+    {
+        delete m_pEnvironmentVariables;
+        m_pEnvironmentVariables = NULL;
+        goto Finished;
+    }
 
     pAdminManager = g_pHttpServer->GetAdminManager();
 
-    hr = strSiteConfigPath.Copy( pHttpContext->GetApplication()->GetAppConfigPath() );
-    if( FAILED( hr ) )
+    hr = strSiteConfigPath.Copy(pHttpContext->GetApplication()->GetAppConfigPath());
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = pAdminManager->GetAdminSection( CS_ASPNETCORE_SECTION,
-                                         strSiteConfigPath.QueryStr(),
-                                         &pAspNetCoreElement );
-    if( FAILED( hr ) )
+    hr = pAdminManager->GetAdminSection(CS_WINDOWS_AUTHENTICATION_SECTION,
+        strSiteConfigPath.QueryStr(),
+        &pWindowsAuthenticationElement);
+    if (FAILED(hr))
+    {
+        // assume the corresponding authen was not enabled
+        // as the section may get deleted by user in some HWC case
+        // ToDo: log a warning to event log
+        m_fWindowsAuthEnabled = FALSE;
+    }
+    else
+    {
+        hr = GetElementBoolProperty(pWindowsAuthenticationElement,
+            CS_AUTHENTICATION_ENABLED,
+            &m_fWindowsAuthEnabled);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+    }
+
+    hr = pAdminManager->GetAdminSection(CS_BASIC_AUTHENTICATION_SECTION,
+        strSiteConfigPath.QueryStr(),
+        &pBasicAuthenticationElement);
+    if (FAILED(hr))
+    {
+        m_fBasicAuthEnabled = FALSE;
+    }
+    else
+    {
+        hr = GetElementBoolProperty(pBasicAuthenticationElement,
+            CS_AUTHENTICATION_ENABLED,
+            &m_fBasicAuthEnabled);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+    }
+
+    hr = pAdminManager->GetAdminSection(CS_ANONYMOUS_AUTHENTICATION_SECTION,
+        strSiteConfigPath.QueryStr(),
+        &pAnonymousAuthenticationElement);
+    if (FAILED(hr))
+    {
+        m_fAnonymousAuthEnabled = FALSE;
+    }
+    else
+    {
+        hr = GetElementBoolProperty(pAnonymousAuthenticationElement,
+            CS_AUTHENTICATION_ENABLED,
+            &m_fAnonymousAuthEnabled);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+    }
+
+    hr = pAdminManager->GetAdminSection(CS_ASPNETCORE_SECTION,
+        strSiteConfigPath.QueryStr(),
+        &pAspNetCoreElement);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = GetElementStringProperty( pAspNetCoreElement, 
-                                   CS_ASPNETCORE_PROCESS_EXE_PATH, 
-                                   &m_struProcessPath );
-    if( FAILED( hr ) )
+    hr = GetElementStringProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_PROCESS_EXE_PATH,
+        &m_struProcessPath);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = GetElementStringProperty( pAspNetCoreElement, 
-                                   CS_ASPNETCORE_PROCESS_ARGUMENTS, 
-                                   &m_struArguments );
-    if( FAILED( hr ) )
+    hr = GetElementStringProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_PROCESS_ARGUMENTS,
+        &m_struArguments);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = GetElementDWORDProperty( pAspNetCoreElement,
-                                  CS_ASPNETCORE_RAPID_FAILS_PER_MINUTE,
-                                  &m_dwRapidFailsPerMinute );
-    if( FAILED( hr ) )
+    hr = GetElementDWORDProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_RAPID_FAILS_PER_MINUTE,
+        &m_dwRapidFailsPerMinute);
+    if (FAILED(hr))
     {
         goto Finished;
     }
@@ -185,298 +243,173 @@ ASPNETCORE_CONFIG::Populate(
     //
     // rapidFailsPerMinute cannot be greater than 100.
     //
-
-    if(m_dwRapidFailsPerMinute > MAX_RAPID_FAILS_PER_MINUTE)
+    if (m_dwRapidFailsPerMinute > MAX_RAPID_FAILS_PER_MINUTE)
     {
         m_dwRapidFailsPerMinute = MAX_RAPID_FAILS_PER_MINUTE;
     }
 
-    hr = GetElementDWORDProperty( pAspNetCoreElement,
-                                  CS_ASPNETCORE_PROCESSES_PER_APPLICATION,
-                                  &m_dwProcessesPerApplication );
-    if( FAILED( hr ) )
+    hr = GetElementDWORDProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_PROCESSES_PER_APPLICATION,
+        &m_dwProcessesPerApplication);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = GetElementDWORDProperty( 
-            pAspNetCoreElement,
-            CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT,
-            &m_dwStartupTimeLimitInMS 
-            );
-    if( FAILED( hr ) )
+    hr = GetElementDWORDProperty(
+        pAspNetCoreElement,
+        CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT,
+        &m_dwStartupTimeLimitInMS
+    );
+    if (FAILED(hr))
     {
         goto Finished;
     }
-    
+
     m_dwStartupTimeLimitInMS *= MILLISECONDS_IN_ONE_SECOND;
 
     hr = GetElementDWORDProperty(
         pAspNetCoreElement,
         CS_ASPNETCORE_PROCESS_SHUTDOWN_TIME_LIMIT,
         &m_dwShutdownTimeLimitInMS
-        );
+    );
     if (FAILED(hr))
     {
         goto Finished;
     }
     m_dwShutdownTimeLimitInMS *= MILLISECONDS_IN_ONE_SECOND;
 
-    hr = GetElementBoolProperty( pAspNetCoreElement,
-                                 CS_ASPNETCORE_FORWARD_WINDOWS_AUTH_TOKEN,
-                                 &m_fForwardWindowsAuthToken );
-    if( FAILED( hr ) )
+    hr = GetElementBoolProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_FORWARD_WINDOWS_AUTH_TOKEN,
+        &m_fForwardWindowsAuthToken);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
     hr = GetElementBoolProperty(pAspNetCoreElement,
-                                CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE,
-                                &m_fDisableStartUpErrorPage);
+        CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE,
+        &m_fDisableStartUpErrorPage);
     if (FAILED(hr))
     {
         goto Finished;
     }
-    
-    hr = GetElementRawTimeSpanProperty( 
-            pAspNetCoreElement,
-            CS_ASPNETCORE_WINHTTP_REQUEST_TIMEOUT,
-            &ullRawTimeSpan 
-            );
-    if( FAILED( hr ) )
+
+    hr = GetElementRawTimeSpanProperty(
+        pAspNetCoreElement,
+        CS_ASPNETCORE_WINHTTP_REQUEST_TIMEOUT,
+        &ullRawTimeSpan
+    );
+    if (FAILED(hr))
     {
         goto Finished;
     }
-    
+
     m_dwRequestTimeoutInMS = (DWORD)TIMESPAN_IN_MILLISECONDS(ullRawTimeSpan);
 
-    hr = GetElementBoolProperty( pAspNetCoreElement,
-                                 CS_ASPNETCORE_STDOUT_LOG_ENABLED,
-                                 &m_fStdoutLogEnabled );
-    if( FAILED( hr ) )
+    hr = GetElementBoolProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_STDOUT_LOG_ENABLED,
+        &m_fStdoutLogEnabled);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = GetElementStringProperty( pAspNetCoreElement, 
-                                   CS_ASPNETCORE_STDOUT_LOG_FILE, 
-                                   &m_struStdoutLogFile );
-    if( FAILED( hr ) )
+    hr = GetElementStringProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_STDOUT_LOG_FILE,
+        &m_struStdoutLogFile);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = GetElementChildByName( pAspNetCoreElement,
-                                CS_ASPNETCORE_ENVIRONMENT_VARIABLES,
-                                &pEnvVarList );
-    if( FAILED( hr ) )
+    hr = GetElementChildByName(pAspNetCoreElement,
+        CS_ASPNETCORE_ENVIRONMENT_VARIABLES,
+        &pEnvVarList);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    hr = pEnvVarList->get_Collection( &pEnvVarCollection );
-    if( FAILED( hr ) )
+    hr = pEnvVarList->get_Collection(&pEnvVarCollection);
+    if (FAILED(hr))
     {
         goto Finished;
     }
 
-    for( hr = FindFirstElement( pEnvVarCollection, &index, &pEnvVar ) ;
-         SUCCEEDED( hr ) ;
-         hr = FindNextElement( pEnvVarCollection, &index, &pEnvVar ) )
+    for (hr = FindFirstElement(pEnvVarCollection, &index, &pEnvVar);
+        SUCCEEDED(hr);
+        hr = FindNextElement(pEnvVarCollection, &index, &pEnvVar))
     {
-        if( hr == S_FALSE )
+        if (hr == S_FALSE)
         {
             hr = S_OK;
             break;
         }
 
-        hr = GetElementStringProperty( pEnvVar, 
-                CS_ASPNETCORE_ENVIRONMENT_VARIABLE_NAME, 
-                &strEnvName);
-        if( FAILED( hr ) )
+        if (FAILED(hr = GetElementStringProperty(pEnvVar,
+            CS_ASPNETCORE_ENVIRONMENT_VARIABLE_NAME,
+            &strEnvName)) ||
+            FAILED(hr = GetElementStringProperty(pEnvVar,
+                CS_ASPNETCORE_ENVIRONMENT_VARIABLE_VALUE,
+                &strEnvValue)) ||
+            FAILED(hr = strEnvName.Append(L"=")) ||
+            FAILED(hr = STRU::ExpandEnvironmentVariables(strEnvValue.QueryStr(), &strExpandedEnvValue)))
         {
             goto Finished;
         }
 
-        hr = GetElementStringProperty( pEnvVar, 
-                CS_ASPNETCORE_ENVIRONMENT_VARIABLE_VALUE, 
-                &strEnvValue);
-        if( FAILED( hr ) )
-        {
-            goto Finished;
-        }
-
-        hr = strFullEnvVar.Append(strEnvName);
-        if( FAILED( hr ) )
-        {
-            goto Finished;
-        }
-
-        hr = strFullEnvVar.Append(L"=");
-        if( FAILED( hr ) )
-        {
-            goto Finished;
-        }
-
-        pszEnvName = strFullEnvVar.QueryStr();
-        while( pszEnvName != NULL && *pszEnvName != '\0')
-        {
-            *pszEnvName = towupper( *pszEnvName );
-            pszEnvName++;
-        }
-
-        if( !mszEnvNames.FindString( strFullEnvVar ) )
-        {
-            if( !mszEnvNames.Append( strFullEnvVar ) )
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
-        }
-
-        hr = STRU::ExpandEnvironmentVariables( strEnvValue.QueryStr(), &strExpandedEnvValue );
-        if( FAILED( hr ) )
-        {
-            goto Finished;
-        }
-
-        hr = strFullEnvVar.Append(strExpandedEnvValue);
-        if( FAILED( hr ) )
-        {
-            goto Finished;
-        }
-
-        if( !mszEnvironment.Append(strFullEnvVar) )
+        pEntry = new ENVIRONMENT_VAR_ENTRY();
+        if (pEntry == NULL)
         {
             hr = E_OUTOFMEMORY;
             goto Finished;
         }
 
+        if (FAILED(hr = pEntry->Initialize(strEnvName.QueryStr(), strExpandedEnvValue.QueryStr())) ||
+            FAILED(hr = m_pEnvironmentVariables->InsertRecord(pEntry)))
+        {
+            goto Finished;
+        }
+        strEnvName.Reset();
+        strEnvValue.Reset();
         strExpandedEnvValue.Reset();
-        strFullEnvVar.Reset();
-
         pEnvVar->Release();
         pEnvVar = NULL;
+        pEntry = NULL;
     }
-
-    // basically the following logic is to select
-
-    ReverseMultisz( &mszEnvironment, 
-                    mszEnvironment.First(), 
-                    &mszEnvironmentListReverse );
-
-    pcszEnvName = mszEnvNames.First();
-    while(pcszEnvName != NULL)
-    {
-        pszEnvString = mszEnvironmentListReverse.First();
-        while( pszEnvString != NULL )
-        {
-            if(wcsstr(pszEnvString, pcszEnvName) != NULL)
-            {
-                if(!m_mszEnvironment.Append(pszEnvString))
-                {
-                    hr = E_OUTOFMEMORY;
-                    goto Finished;
-                }
-                break;
-            }
-            pszEnvString = mszEnvironmentListReverse.Next(pszEnvString);
-        }
-        pcszEnvName = mszEnvNames.Next(pcszEnvName);
-    }
-
-    //
-    // let's disable this feature for now
-    //
-    // get all files listed in recycleOnFileChange
-    /*
-    hr = GetElementChildByName( pAspNetCoreElement,
-                                CS_ASPNETCORE_RECYCLE_ON_FILE_CHANGE,
-                                &pRecycleOnFileChangeFileList );
-    if( FAILED( hr ) )
-    {
-        goto Finished;
-    }
-
-    hr = pRecycleOnFileChangeFileList->get_Collection( &pRecycleOnFileChangeFileCollection );
-    if( FAILED( hr ) )
-    {
-        goto Finished;
-    }
-
-    for( hr = FindFirstElement( pRecycleOnFileChangeFileCollection, &index, &pRecycleOnFileChangeFile ) ;
-         SUCCEEDED( hr ) ;
-         hr = FindNextElement( pRecycleOnFileChangeFileCollection, &index, &pRecycleOnFileChangeFile ) )
-    {
-        if( hr == S_FALSE )
-        {
-            hr = S_OK;
-            break;
-        }
-
-        hr = GetElementStringProperty( pRecycleOnFileChangeFile, 
-                CS_ASPNETCORE_RECYCLE_ON_FILE_CHANGE_FILE_PATH, 
-                &strFilePath);
-        if( FAILED( hr ) )
-        {
-            goto Finished;
-        }
-
-        if(!m_mszRecycleOnFileChangeFiles.Append( strFilePath ))
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
-
-        strFilePath.Reset();
-        pRecycleOnFileChangeFile->Release();
-        pRecycleOnFileChangeFile = NULL;
-    }
-    */
 
 Finished:
 
-    if( pAspNetCoreElement != NULL )
+    if (pAspNetCoreElement != NULL)
     {
         pAspNetCoreElement->Release();
         pAspNetCoreElement = NULL;
     }
 
-    if( pEnvVarList != NULL )
+    if (pEnvVarList != NULL)
     {
         pEnvVarList->Release();
         pEnvVarList = NULL;
     }
 
-    if( pEnvVar != NULL )
+    if (pEnvVar != NULL)
     {
         pEnvVar->Release();
         pEnvVar = NULL;
     }
 
-    if( pEnvVarCollection != NULL )
+    if (pEnvVarCollection != NULL)
     {
         pEnvVarCollection->Release();
         pEnvVarCollection = NULL;
     }
 
- /*   if( pRecycleOnFileChangeFileCollection != NULL )
+    if (pEntry != NULL)
     {
-        pRecycleOnFileChangeFileCollection->Release();
-        pRecycleOnFileChangeFileCollection = NULL;
+        pEntry->Dereference();
+        pEntry = NULL;
     }
-
-    if( pRecycleOnFileChangeFileList != NULL )
-    {
-        pRecycleOnFileChangeFileList->Release();
-        pRecycleOnFileChangeFileList = NULL;
-    }
-
-    if( pRecycleOnFileChangeFile != NULL )
-    {
-        pRecycleOnFileChangeFile->Release();
-        pRecycleOnFileChangeFile = NULL;
-    }*/
 
     return hr;
 }
