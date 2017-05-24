@@ -107,6 +107,7 @@ export class ServerSentEventsTransport implements ITransport {
                         let message;
                         try {
                             message = Formatters.ServerSentEventsFormat.parse(e.data);
+                            console.log(`(SSE transport) data received: ${message.content}`);
                         } catch (error) {
                             if (this.onClosed) {
                                 this.onClosed(error);
@@ -129,6 +130,7 @@ export class ServerSentEventsTransport implements ITransport {
                 }
 
                 eventSource.onopen = () => {
+                    console.log(`SSE connected to ${this.fullUrl}`);
                     this.eventSource = eventSource;
                     resolve();
                 }
@@ -197,6 +199,7 @@ export class LongPollingTransport implements ITransport {
                     }
 
                     messages.forEach((message) => {
+                        console.log(`(LongPolling transport) data received: ${message.content}`);
                         // TODO: pass the whole message object along
                         this.onDataReceived(message.content)
                     });
