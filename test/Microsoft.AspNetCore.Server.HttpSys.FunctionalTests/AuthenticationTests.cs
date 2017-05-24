@@ -333,50 +333,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
         // [InlineData(AuthenticationSchemes.Basic)] // Can't log in with UseDefaultCredentials
-        public async Task AuthTypes_ChallengeAuthenticatedAuthType_Forbidden(AuthenticationSchemes authType)
-        {
-            using (var server = Utilities.CreateDynamicHost(authType, DenyAnoymous, out var address, httpContext =>
-            {
-                Assert.NotNull(httpContext.User);
-                Assert.NotNull(httpContext.User.Identity);
-                Assert.True(httpContext.User.Identity.IsAuthenticated);
-                return httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme);
-            }))
-            {
-                var response = await SendRequestAsync(address, useDefaultCredentials: true);
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-                // for some reason Kerberos and Negotiate include a 2nd stage challenge.
-                // Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
-            }
-        }
-
-        [ConditionalTheory]
-        [InlineData(AuthenticationSchemes.Negotiate)]
-        [InlineData(AuthenticationSchemes.NTLM)]
-        // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
-        // [InlineData(AuthenticationSchemes.Basic)] // Can't log in with UseDefaultCredentials
-        public async Task AuthTypes_ChallengeAuthenticatedAuthTypeWithEmptyChallenge_Forbidden(AuthenticationSchemes authType)
-        {
-            using (var server = Utilities.CreateDynamicHost(authType, DenyAnoymous, out var address, httpContext =>
-            {
-                Assert.NotNull(httpContext.User);
-                Assert.NotNull(httpContext.User.Identity);
-                Assert.True(httpContext.User.Identity.IsAuthenticated);
-                return httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme);
-            }))
-            {
-                var response = await SendRequestAsync(address, useDefaultCredentials: true);
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-                // for some reason Kerberos and Negotiate include a 2nd stage challenge.
-                // Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
-            }
-        }
-
-        [ConditionalTheory]
-        [InlineData(AuthenticationSchemes.Negotiate)]
-        [InlineData(AuthenticationSchemes.NTLM)]
-        // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
-        // [InlineData(AuthenticationSchemes.Basic)] // Can't log in with UseDefaultCredentials
         public async Task AuthTypes_UnathorizedAuthenticatedAuthType_Unauthorized(AuthenticationSchemes authType)
         {
             using (var server = Utilities.CreateDynamicHost(authType, DenyAnoymous, out var address, httpContext =>
@@ -384,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.NotNull(httpContext.User);
                 Assert.NotNull(httpContext.User.Identity);
                 Assert.True(httpContext.User.Identity.IsAuthenticated);
-                return httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme, null, ChallengeBehavior.Unauthorized);
+                return httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme, null);
             }))
             {
                 var response = await SendRequestAsync(address, useDefaultCredentials: true);

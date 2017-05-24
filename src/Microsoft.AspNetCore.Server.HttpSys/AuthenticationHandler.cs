@@ -26,31 +26,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Task.FromResult(AuthenticateResult.None());
         }
 
-        public Task ChallengeAsync(ChallengeContext context)
+        public Task ChallengeAsync(AuthenticationProperties properties)
         {
-            switch (context.Behavior)
-            {
-                case ChallengeBehavior.Forbidden:
-                    _requestContext.Response.StatusCode = 403;
-                    break;
-                case ChallengeBehavior.Unauthorized:
-                    _requestContext.Response.StatusCode = 401;
-                    break;
-                case ChallengeBehavior.Automatic:
-                    var identity = (ClaimsIdentity)_requestContext.User?.Identity;
-                    if (identity != null && identity.IsAuthenticated)
-                    {
-                        _requestContext.Response.StatusCode = 403;
-                    }
-                    else
-                    {
-                        _requestContext.Response.StatusCode = 401;
-                    }
-                    break;
-                default:
-                    throw new NotSupportedException(context.Behavior.ToString());
-            }
+            _requestContext.Response.StatusCode = 401;
+            return TaskCache.CompletedTask;
+        }
 
+        public Task ForbidAsync(AuthenticationProperties properties)
+        {
+            _requestContext.Response.StatusCode = 403;
             return TaskCache.CompletedTask;
         }
 
@@ -67,12 +51,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return TaskCache.CompletedTask;
         }
 
-        public Task SignInAsync(SignInContext context)
+        public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
             throw new NotSupportedException();
         }
 
-        public Task SignOutAsync(SignOutContext context)
+        public Task SignOutAsync(AuthenticationProperties properties)
         {
             return TaskCache.CompletedTask;
         }
