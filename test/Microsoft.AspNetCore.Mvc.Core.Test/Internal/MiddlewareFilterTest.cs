@@ -248,15 +248,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (actionThrows)
             {
-                actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod(
-                    nameof(ControllerActionInvokerTest.ThrowingActionMethod));
+                actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest.TestController).GetMethod(
+                    nameof(ControllerActionInvokerTest.TestController.ThrowingActionMethod));
             }
             else
             {
-                actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest).GetMethod(
-                    nameof(ControllerActionInvokerTest.ActionMethod));
+                actionDescriptor.MethodInfo = typeof(ControllerActionInvokerTest.TestController).GetMethod(
+                    nameof(ControllerActionInvokerTest.TestController.ActionMethod));
             }
-            actionDescriptor.ControllerTypeInfo = typeof(ControllerActionInvokerTest).GetTypeInfo();
+            actionDescriptor.ControllerTypeInfo = typeof(ControllerActionInvokerTest.TestController).GetTypeInfo();
 
             return CreateInvoker(filters, actionDescriptor, _controller);
         }

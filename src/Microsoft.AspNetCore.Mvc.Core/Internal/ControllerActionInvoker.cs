@@ -47,6 +47,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _controllerContext = controllerContext;
         }
 
+        // Internal for testing
+        internal ControllerContext ControllerContext => _controllerContext;
+
         protected override void ReleaseResources()
         {
             if (_controller != null && _cacheEntry.ControllerReleaser != null)
