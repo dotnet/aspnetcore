@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -300,7 +301,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     disposedTcs.TrySetResult(c.Response.StatusCode);
                 });
 
-            using (var server = new TestServer(handler, new TestServiceContext(), mockHttpContextFactory.Object))
+            using (var server = new TestServer(handler, new TestServiceContext(), new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
+                                               services => services.AddSingleton(mockHttpContextFactory.Object)))
             {
                 if (!sendMalformedRequest)
                 {

@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Testing
         // Application errors are logged using 13 as the eventId.
         private const int ApplicationErrorEventId = 13;
 
-        private TaskCompletionSource<object> _messageLoggedTcs = new TaskCompletionSource<object>();
-
         public bool ThrowOnCriticalErrors { get; set; } = true;
 
         public ConcurrentBag<LogMessage> Messages { get; } = new ConcurrentBag<LogMessage>();
@@ -26,8 +24,6 @@ namespace Microsoft.AspNetCore.Testing
         public int CriticalErrorsLogged => Messages.Count(message => message.LogLevel == LogLevel.Critical);
 
         public int ApplicationErrorsLogged => Messages.Count(message => message.EventId.Id == ApplicationErrorEventId);
-
-        public Task MessageLoggedTask => _messageLoggedTcs.Task;
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -60,8 +56,6 @@ namespace Microsoft.AspNetCore.Testing
                 Exception = exception,
                 Message = formatter(state, exception)
             });
-
-            _messageLoggedTcs.TrySetResult(null);
         }
 
         public class LogMessage

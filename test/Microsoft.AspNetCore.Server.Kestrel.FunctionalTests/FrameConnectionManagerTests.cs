@@ -5,11 +5,9 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class FrameConnectionManagerTests
     {
-        private const int _applicationNeverCompletedId = 23;
 
         [ConditionalFact]
         [NoDebuggerCondition]
@@ -31,45 +28,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var logWh = new SemaphoreSlim(0);
             var appStartedWh = new SemaphoreSlim(0);
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(LogLevel.Critical, _applicationNeverCompletedId, It.IsAny<object>(), null,
-                    It.IsAny<Func<object, Exception, string>>()))
+            var mockTrace = new Mock<IKestrelTrace>();
+            mockTrace
+                .Setup(trace => trace.ApplicationNeverCompleted(It.IsAny<string>()))
                 .Callback(() =>
                 {
                     logWh.Release();
                 });
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"))
-                .Returns(mockLogger.Object);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsNotIn("Microsoft.AspNetCore.Server.Kestrel")))
-                .Returns(Mock.Of<ILogger>());
-
-            var builder = new WebHostBuilder()
-                .UseLoggerFactory(mockLoggerFactory.Object)
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0")
-                .Configure(app =>
+            using (var server = new TestServer(context =>
                 {
-                    app.Run(context =>
-                    {
-                        appStartedWh.Release();
-                        var tcs = new TaskCompletionSource<object>();
-                        return tcs.Task;
-                    });
-                });
-
-            using (var host = builder.Build())
+                    appStartedWh.Release();
+                    var tcs = new TaskCompletionSource<object>();
+                    return tcs.Task;
+                },
+                new TestServiceContext(new KestrelTestLoggerFactory(), mockTrace.Object)))
             {
-                host.Start();
-
-                using (var connection = new TestConnection(host.GetPort()))
+                using (var connection = server.CreateConnection())
                 {
                     await connection.Send("GET / HTTP/1.1",
                         "Host:",

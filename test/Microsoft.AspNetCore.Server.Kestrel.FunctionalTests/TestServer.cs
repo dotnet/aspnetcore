@@ -34,21 +34,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context)
-            : this(app, context, httpContextFactory: null)
-        {
-        }
-
-        public TestServer(RequestDelegate app, TestServiceContext context, IHttpContextFactory httpContextFactory)
-            : this(app, context, new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)), httpContextFactory)
+            : this(app, context, new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)))
         {
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions)
-            : this(app, context, listenOptions, null)
+            : this(app, context, listenOptions, _ => { })
         {
         }
 
-        public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions, IHttpContextFactory httpContextFactory)
+        public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions, Action<IServiceCollection> configureServices)
         {
             _app = app;
             _listenOptions = listenOptions;
@@ -61,13 +56,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                      })
                      .ConfigureServices(services =>
                      {
-                         if (httpContextFactory != null)
-                         {
-                             services.AddSingleton(httpContextFactory);
-                         }
-
                          services.AddSingleton<IStartup>(this);
-                         services.AddSingleton<ILoggerFactory>(new KestrelTestLoggerFactory(context.ErrorLogger));
+                         services.AddSingleton(context.LoggerFactory);
                          services.AddSingleton<IServer>(sp =>
                          {
                              // Manually configure options on the TestServiceContext.
@@ -79,6 +69,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                              }
                              return new KestrelServer(sp.GetRequiredService<ITransportFactory>(), context);
                          });
+
+                         configureServices(services);
                      })
                      .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
                      .Build();

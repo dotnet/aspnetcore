@@ -10,6 +10,11 @@ namespace Microsoft.AspNetCore.Testing
     {
         private readonly ILogger _testLogger;
 
+        public KestrelTestLoggerFactory()
+            : this(new TestApplicationErrorLogger())
+        {
+        }
+
         public KestrelTestLoggerFactory(ILogger testLogger)
         {
             _testLogger = testLogger;
