@@ -7,6 +7,6 @@
 
     <Message Text="Restoring NPM modules for: %0A - @(NpmModules -> '%(FullPath)','%0A - ')" Importance="high" />
 
-    <Exec Command="npm install" WorkingDirectory="%(NpmModules.RootDir)%(Directory)" />
+    <Exec Command="npm install --silent" WorkingDirectory="%(NpmModules.RootDir)%(Directory)" />
   </Target>
 </Project>
