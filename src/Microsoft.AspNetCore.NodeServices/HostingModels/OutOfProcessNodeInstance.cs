@@ -405,6 +405,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             return message.StartsWith("Debugger attached", StringComparison.OrdinalIgnoreCase) ||
                 message.StartsWith("Debugger listening ", StringComparison.OrdinalIgnoreCase) ||
                 message.StartsWith("To start debugging", StringComparison.OrdinalIgnoreCase) ||
+                message.Equals("Warning: This is an experimental feature and could change at any time.", StringComparison.OrdinalIgnoreCase) ||
                 message.Contains("chrome-devtools:");
         }
 
