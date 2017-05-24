@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                     // This optional parameter is the last part in the segment
                     if (i == segment.Parts.Count - 1)
                     {
-                        if(!segment.Parts[i - 1].IsLiteral)
+                        if (!segment.Parts[i - 1].IsLiteral)
                         {
                             // The optional parameter is preceded by something that is not a literal.
                             // Example of error message:
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
                             return false;
                         }
-                        if(segment.Parts[i - 1].Text != PeriodString)
+                        else if (segment.Parts[i - 1].Text != PeriodString)
                         {
                             // The optional parameter is preceded by a literal other than period.
                             // Example of error message:
@@ -370,6 +370,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
                             return false;
                         }
+
                         segment.Parts[i - 1].IsOptionalSeperator = true;
                     }
                     else
@@ -385,8 +386,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                             Resources.TemplateRoute_OptionalParameterHasTobeTheLast,
                             segment.DebuggerToString(),
                             segment.Parts[i].Name,
-                            invalidPartText
-                            );
+                            invalidPartText);
 
                         return false;
                     }
