@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         public static Assembly LoadAssembly(MemoryStream assemblyStream, MemoryStream pdbStream)
         {
-            var assembly = AssemblyLoadContext.Default.LoadFromStream(assemblyStream, pdbStream);
+            var assembly = Assembly.Load(assemblyStream.ToArray(), pdbStream.ToArray());
             return assembly;
         }
 

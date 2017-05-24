@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             {
                 try
                 {
-                    AssemblyLoadContext.Default.LoadFromAssemblyPath(precompiledAssemblyFilePath);
+                    Assembly.LoadFile(precompiledAssemblyFilePath);
                 }
                 catch (FileLoadException)
                 {
