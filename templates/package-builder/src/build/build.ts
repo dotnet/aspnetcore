@@ -12,25 +12,28 @@ const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx'];
 const yeomanGeneratorSource = './src/yeoman';
 
-// To support the "dotnet new" templates, we want to bundle prebuilt dist dev-mode files, because "dotnet new" can't auto-run
-// webpack on project creation. Note that these script entries are *not* the same as the project's usual prepublish
-// scripts, because here we want dev-mode builds (e.g., to support HMR), not prod-mode builds.
-const commonTemplatePrepublishSteps = [
-    'npm install',
-    'node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js',
-    'node node_modules/webpack/bin/webpack.js'
-];
-const commonForceInclusionRegex = /^(wwwroot|ClientApp)\/dist\//; // Files to be included in template, even though gitignored
-
-const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string, prepublish?: string[], forceInclusion?: RegExp } } = {
-    'angular': { dir: '../../templates/AngularSpa/', dotNetNewId: 'Angular', displayName: 'Angular' },
-    'aurelia': { dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
-    'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
-    'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
-    'react': { dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' },
-    'vue': { dir: '../../templates/VueSpa/', dotNetNewId: 'Vue', displayName: 'Vue.js' }
+const dotNetPackages = {
+    builtIn: 'Microsoft.DotNet.Web.Spa.ProjectTemplates',
+    extra: 'Microsoft.AspNetCore.SpaTemplates'
 };
 
+const commonForceInclusionRegex = /^(wwwroot|ClientApp)\/dist\//; // Files to be included in template, even though gitignored
+
+interface TemplateConfig {
+    dir: string;
+    dotNetNewId: string;
+    dotNetPackageId: string;
+    displayName: string;
+}
+
+const templates: { [key: string]: TemplateConfig } = {
+    'angular': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/AngularSpa/', dotNetNewId: 'Angular', displayName: 'Angular' },
+    'aurelia': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
+    'knockout': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
+    'react-redux': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
+    'react': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' },
+    'vue': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/VueSpa/', dotNetNewId: 'Vue', displayName: 'Vue.js' }
+};
 
 function isTextFile(filename: string): boolean {
     return textFileExtensions.indexOf(path.extname(filename).toLowerCase()) >= 0
@@ -111,7 +114,17 @@ function buildYeomanNpmPackage(outputRoot: string) {
     rimraf.sync(tempRoot);
 }
 
-function buildDotNetNewNuGetPackage() {
+function buildDotNetNewNuGetPackages(outputDir: string) {
+    const dotNetPackageIds = _.values(dotNetPackages);
+    dotNetPackageIds.forEach(packageId => {
+        const dotNetNewNupkgPath = buildDotNetNewNuGetPackage(packageId);
+
+        // Move the .nupkg file to the output dir
+        fs.renameSync(dotNetNewNupkgPath, path.join(outputDir, path.basename(dotNetNewNupkgPath)));
+    });
+}
+
+function buildDotNetNewNuGetPackage(packageId: string) {
     const outputRoot = './dist/dotnetnew';
     rimraf.sync(outputRoot);
 
@@ -124,6 +137,11 @@ function buildDotNetNewNuGetPackage() {
     ];
     const contentReplacements = [];
     _.forEach(templates, (templateConfig, templateName) => {
+        // Only include templates matching the output package ID
+        if (templateConfig.dotNetPackageId !== packageId) {
+            return;
+        }
+
         const templateOutputDir = path.join(outputRoot, 'Content', templateName);
         writeTemplate(templateConfig.dir, templateOutputDir, contentReplacements, filenameReplacements, commonForceInclusionRegex);
 
@@ -134,8 +152,8 @@ function buildDotNetNewNuGetPackage() {
         fs.writeFileSync(path.join(templateConfigDir, 'template.json'), JSON.stringify({
             author: 'Microsoft',
             classifications: ['Web', 'MVC', 'SPA'],
-            groupIdentity: `Microsoft.AspNetCore.SpaTemplates.${templateConfig.dotNetNewId}`,
-            identity: `Microsoft.AspNetCore.SpaTemplates.${templateConfig.dotNetNewId}.CSharp`,
+            groupIdentity: `${packageId}.${templateConfig.dotNetNewId}`,
+            identity: `${packageId}.${templateConfig.dotNetNewId}.CSharp`,
             name: `MVC ASP.NET Core with ${templateConfig.displayName}`,
             preferNameDirectory: true,
             primaryOutputs: [{ path: `${sourceProjectName}.csproj` }],
@@ -213,8 +231,11 @@ function buildDotNetNewNuGetPackage() {
     // Invoke NuGet to create the final package
     const yeomanPackageVersion = JSON.parse(fs.readFileSync(path.join(yeomanGeneratorSource, 'package.json'), 'utf8')).version;
     writeTemplate('./src/dotnetnew', outputRoot, [
+        { from: /\{packageId\}/g, to: packageId },
         { from: /\{version\}/g, to: yeomanPackageVersion },
-    ], [], null);
+    ], [
+        { from: /.*\.nuspec$/, to: `${packageId}.nuspec` },
+    ], null);
     const nugetExe = path.join(process.cwd(), './bin/NuGet.exe');
     const nugetStartInfo = { cwd: outputRoot, stdio: 'inherit' };
     if (isWindows) {
@@ -233,19 +254,18 @@ function buildDotNetNewNuGetPackage() {
 
 function runAllPrepublishScripts() {
     Object.getOwnPropertyNames(templates).forEach(templateKey => {
-        const templateInfo = templates[templateKey];
-
-        // First run standard prepublish steps
-        runScripts(templateInfo.dir, commonTemplatePrepublishSteps);
-
-        // Second, run any template-specific prepublish steps
-        if (templateInfo.prepublish) {
-            runScripts(templateInfo.dir, templateInfo.prepublish);
-        }
+        // To support the "dotnet new" templates, we want to bundle prebuilt dist dev-mode files, because "dotnet new" can't auto-run
+        // webpack on project creation. Note that these script entries are *not* the same as the project's usual prepublish
+        // scripts, because here we want dev-mode builds (e.g., to support HMR), not prod-mode builds.
+        runPrepublishScripts(templates[templateKey].dir, [
+            'npm install',
+            'node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js',
+            'node node_modules/webpack/bin/webpack.js'
+        ]);
     });
 }
 
-function runScripts(rootDir: string, scripts: string[]) {
+function runPrepublishScripts(rootDir: string, scripts: string[]) {
     console.log(`[Prepublish] In directory: ${ rootDir }`);
     scripts.forEach(script => {
         console.log(`[Prepublish] Running: ${ script }`);
@@ -262,10 +282,7 @@ rimraf.sync(distDir);
 mkdirp.sync(artifactsDir);
 runAllPrepublishScripts();
 buildYeomanNpmPackage(yeomanOutputRoot);
-const dotNetNewNupkgPath = buildDotNetNewNuGetPackage();
-
-// Move the .nupkg file to the artifacts dir
-fs.renameSync(dotNetNewNupkgPath, path.join(artifactsDir, path.basename(dotNetNewNupkgPath)));
+buildDotNetNewNuGetPackages(artifactsDir);
 
 // Finally, create a .tar.gz file containing the built generator-aspnetcore-spa.
 // The CI system can treat this as the final built artifact.
