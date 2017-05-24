@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class HubEndPoint<THub, TClient> : EndPoint, IInvocationBinder where THub : Hub<TClient>
+    public class HubEndPoint<THub, TClient> : IInvocationBinder where THub : Hub<TClient>
     {
         private readonly Dictionary<string, HubMethodDescriptor> _methods = new Dictionary<string, HubMethodDescriptor>(StringComparer.OrdinalIgnoreCase);
 
@@ -54,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR
             DiscoverHubMethods();
         }
 
-        public override async Task OnConnectedAsync(ConnectionContext connection)
+        public async Task OnConnectedAsync(ConnectionContext connection)
         {
             try
             {

@@ -8,15 +8,13 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class SignalRDependencyInjectionExtensions
     {
-        public static ISignalRBuilder AddSignalR(this IServiceCollection services)
+        public static ISignalRBuilder AddSignalRCore(this IServiceCollection services)
         {
-            services.AddSockets();
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
             services.AddSingleton(typeof(IHubProtocolResolver), typeof(DefaultHubProtocolResolver));
             services.AddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
             services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
             services.AddScoped(typeof(IHubActivator<,>), typeof(DefaultHubActivator<,>));
-            services.AddRouting();
 
             return new SignalRBuilder(services);
         }

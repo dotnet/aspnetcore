@@ -16,8 +16,7 @@ namespace Microsoft.AspNetCore.Sockets
         {
             get
             {
-                ConnectionContext connection;
-                if (_connections.TryGetValue(connectionId, out connection))
+                if (_connections.TryGetValue(connectionId, out var connection))
                 {
                     return connection;
                 }
@@ -34,8 +33,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         public void Remove(ConnectionContext connection)
         {
-            ConnectionContext dummy;
-            _connections.TryRemove(connection.ConnectionId, out dummy);
+            _connections.TryRemove(connection.ConnectionId, out var dummy);
         }
 
         public IEnumerator<ConnectionContext> GetEnumerator()

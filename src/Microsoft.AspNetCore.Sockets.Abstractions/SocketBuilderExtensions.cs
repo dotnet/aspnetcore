@@ -19,5 +19,16 @@ namespace Microsoft.AspNetCore.Sockets
                 };
             });
         }
+
+        public static ISocketBuilder Run(this ISocketBuilder socketBuilder, Func<ConnectionContext, Task> middleware)
+        {
+            return socketBuilder.Use(next =>
+            {
+                return context =>
+                {
+                    return middleware(context);
+                };
+            });
+        }
     }
 }

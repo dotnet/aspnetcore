@@ -10,28 +10,12 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static IApplicationBuilder UseSignalR(this IApplicationBuilder app, Action<HubRouteBuilder> configure)
         {
-            // REVIEW: Should we discover hubs?
             app.UseSockets(routes =>
             {
                 configure(new HubRouteBuilder(routes));
             });
 
             return app;
-        }
-    }
-
-    public class HubRouteBuilder
-    {
-        private readonly SocketRouteBuilder _routes;
-
-        public HubRouteBuilder(SocketRouteBuilder routes)
-        {
-            _routes = routes;
-        }
-
-        public void MapHub<THub>(string path) where THub : Hub<IClientProxy>
-        {
-            _routes.MapEndPoint<HubEndPoint<THub>>(path);
         }
     }
 }

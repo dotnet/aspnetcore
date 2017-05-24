@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Sockets
     /// <summary>
     /// Represents an end point that multiple connections connect to. For HTTP, endpoints are URLs, for non HTTP it can be a TCP listener (or similar)
     /// </summary>
-    // REVIEW: This doesn't have any members any more... marker interface? Still even necessary?
     public abstract class EndPoint
     {
         /// <summary>

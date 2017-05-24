@@ -78,6 +78,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Sockets.Abstractions", "src\Microsoft.AspNetCore.Sockets.Abstractions\Microsoft.AspNetCore.Sockets.Abstractions.csproj", "{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Http", "src\Microsoft.AspNetCore.SignalR.Http\Microsoft.AspNetCore.SignalR.Http.csproj", "{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Sockets.Http", "src\Microsoft.AspNetCore.Sockets.Http\Microsoft.AspNetCore.Sockets.Http.csproj", "{9E403E93-3284-486F-9A5F-1E15FCE426A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -192,6 +196,14 @@ Global
 		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E403E93-3284-486F-9A5F-1E15FCE426A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E403E93-3284-486F-9A5F-1E15FCE426A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E403E93-3284-486F-9A5F-1E15FCE426A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E403E93-3284-486F-9A5F-1E15FCE426A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -225,5 +237,7 @@ Global
 		{96771B3F-4D18-41A7-A75B-FF38E76AAC89} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{75E342F6-5445-4E7E-9143-6D9AE62C2B1E} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{FD80BB0F-0876-4F11-8D84-6657C8EF84CA} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{9E403E93-3284-486F-9A5F-1E15FCE426A5} = {DA69F624-5398-4884-87E4-B816698CDE65}
 	EndGlobalSection
 EndGlobal
