@@ -1,0 +1,10 @@
+﻿@page
+@{ 
+    Layout = "_Layout";
+}
+@functions {
+    public int MyValue { get; set; } = 17;
+}
+@section mysection {
+    Value is @Model.MyValue
+}

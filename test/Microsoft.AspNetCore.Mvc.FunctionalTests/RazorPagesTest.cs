@@ -1011,6 +1011,19 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.StartsWith(expected, response.Trim());
         }
 
+        [Fact]
+        public async Task Page_WithSection_CanAccessModel()
+        {
+            // Arrange
+            var expected = "Value is 17";
+
+            // Act
+            var response = await Client.GetStringAsync("/Pages/Section");
+
+            // Assert
+            Assert.StartsWith(expected, response.Trim());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);
