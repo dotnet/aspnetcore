@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
-    public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler 
+    public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler
         where TOptions : RemoteAuthenticationOptions, new()
     {
         private const string CorrelationPrefix = ".AspNetCore.Correlation.";
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authentication
         protected string SignInScheme => Options.SignInScheme;
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new RemoteAuthenticationEvents Events
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Authentication
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                SameSite = SameSiteMode.Lax,
+                SameSite = SameSiteMode.None,
                 Secure = Request.IsHttps,
                 Expires = Clock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
             };
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Authentication
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                SameSite = SameSiteMode.Lax,
+                SameSite = SameSiteMode.None,
                 Secure = Request.IsHttps
             };
             Response.Cookies.Delete(cookieName, cookieOptions);

@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     transaction =>
                     {
                         Assert.NotNull(transaction.SetCookie);
-                        Assert.Equal("A=A; path=/; secure; samesite=strict", transaction.SetCookie[0]);
-                        Assert.Equal("B=B; path=/; secure; samesite=strict", transaction.SetCookie[1]);
-                        Assert.Equal("C=C; path=/; secure; samesite=strict", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; secure; samesite=strict", transaction.SetCookie[3]);
+                        Assert.Equal("A=A; path=/; secure; samesite=lax", transaction.SetCookie[0]);
+                        Assert.Equal("B=B; path=/; secure; samesite=lax", transaction.SetCookie[1]);
+                        Assert.Equal("C=C; path=/; secure; samesite=lax", transaction.SetCookie[2]);
+                        Assert.Equal("D=D; path=/; secure; samesite=lax", transaction.SetCookie[3]);
                     }));
         }
 
@@ -79,10 +79,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     transaction =>
                     {
                         Assert.NotNull(transaction.SetCookie);
-                        Assert.Equal("A=A; path=/; samesite=strict", transaction.SetCookie[0]);
-                        Assert.Equal("B=B; path=/; samesite=strict", transaction.SetCookie[1]);
-                        Assert.Equal("C=C; path=/; samesite=strict", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; secure; samesite=strict", transaction.SetCookie[3]);
+                        Assert.Equal("A=A; path=/; samesite=lax", transaction.SetCookie[0]);
+                        Assert.Equal("B=B; path=/; samesite=lax", transaction.SetCookie[1]);
+                        Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
+                        Assert.Equal("D=D; path=/; secure; samesite=lax", transaction.SetCookie[3]);
                     }));
         }
 
@@ -99,19 +99,19 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     transaction =>
                     {
                         Assert.NotNull(transaction.SetCookie);
-                        Assert.Equal("A=A; path=/; samesite=strict", transaction.SetCookie[0]);
-                        Assert.Equal("B=B; path=/; samesite=strict", transaction.SetCookie[1]);
-                        Assert.Equal("C=C; path=/; samesite=strict", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; samesite=strict", transaction.SetCookie[3]);
+                        Assert.Equal("A=A; path=/; samesite=lax", transaction.SetCookie[0]);
+                        Assert.Equal("B=B; path=/; samesite=lax", transaction.SetCookie[1]);
+                        Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
+                        Assert.Equal("D=D; path=/; samesite=lax", transaction.SetCookie[3]);
                     }),
                 new RequestTest("https://example.com/secureSame",
                     transaction =>
                     {
                         Assert.NotNull(transaction.SetCookie);
-                        Assert.Equal("A=A; path=/; secure; samesite=strict", transaction.SetCookie[0]);
-                        Assert.Equal("B=B; path=/; secure; samesite=strict", transaction.SetCookie[1]);
-                        Assert.Equal("C=C; path=/; secure; samesite=strict", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; secure; samesite=strict", transaction.SetCookie[3]);
+                        Assert.Equal("A=A; path=/; secure; samesite=lax", transaction.SetCookie[0]);
+                        Assert.Equal("B=B; path=/; secure; samesite=lax", transaction.SetCookie[1]);
+                        Assert.Equal("C=C; path=/; secure; samesite=lax", transaction.SetCookie[2]);
+                        Assert.Equal("D=D; path=/; secure; samesite=lax", transaction.SetCookie[3]);
                     }));
         }
 
@@ -128,10 +128,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 transaction =>
                 {
                     Assert.NotNull(transaction.SetCookie);
-                    Assert.Equal("A=A; path=/; samesite=strict; httponly", transaction.SetCookie[0]);
-                    Assert.Equal("B=B; path=/; samesite=strict; httponly", transaction.SetCookie[1]);
-                    Assert.Equal("C=C; path=/; samesite=strict; httponly", transaction.SetCookie[2]);
-                    Assert.Equal("D=D; path=/; samesite=strict; httponly", transaction.SetCookie[3]);
+                    Assert.Equal("A=A; path=/; samesite=lax; httponly", transaction.SetCookie[0]);
+                    Assert.Equal("B=B; path=/; samesite=lax; httponly", transaction.SetCookie[1]);
+                    Assert.Equal("C=C; path=/; samesite=lax; httponly", transaction.SetCookie[2]);
+                    Assert.Equal("D=D; path=/; samesite=lax; httponly", transaction.SetCookie[3]);
                 }));
         }
 
@@ -148,10 +148,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 transaction =>
                 {
                     Assert.NotNull(transaction.SetCookie);
-                    Assert.Equal("A=A; path=/; samesite=strict", transaction.SetCookie[0]);
-                    Assert.Equal("B=B; path=/; samesite=strict", transaction.SetCookie[1]);
-                    Assert.Equal("C=C; path=/; samesite=strict", transaction.SetCookie[2]);
-                    Assert.Equal("D=D; path=/; samesite=strict; httponly", transaction.SetCookie[3]);
+                    Assert.Equal("A=A; path=/; samesite=lax", transaction.SetCookie[0]);
+                    Assert.Equal("B=B; path=/; samesite=lax", transaction.SetCookie[1]);
+                    Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
+                    Assert.Equal("D=D; path=/; samesite=lax; httponly", transaction.SetCookie[3]);
                 }));
         }
 
@@ -242,10 +242,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var transaction = await server.SendAsync("http://example.com/login");
 
             Assert.NotNull(transaction.SetCookie);
-            Assert.Equal("Hao=Hao; path=/; samesite=strict", transaction.SetCookie[0]);
-            Assert.Equal("Hao=Hao; path=/; samesite=strict", transaction.SetCookie[1]);
-            Assert.Equal("Hao=Hao; path=/; samesite=strict", transaction.SetCookie[2]);
-            Assert.Equal("Hao=Hao; path=/; secure; samesite=strict", transaction.SetCookie[3]);
+            Assert.Equal("Hao=Hao; path=/; samesite=lax", transaction.SetCookie[0]);
+            Assert.Equal("Hao=Hao; path=/; samesite=lax", transaction.SetCookie[1]);
+            Assert.Equal("Hao=Hao; path=/; samesite=lax", transaction.SetCookie[2]);
+            Assert.Equal("Hao=Hao; path=/; secure; samesite=lax", transaction.SetCookie[3]);
         }
 
         [Fact]

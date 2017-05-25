@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new OpenIdConnectEvents Events
@@ -892,7 +892,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    SameSite = Http.SameSiteMode.Lax,
+                    SameSite = Http.SameSiteMode.None,
                     Secure = Request.IsHttps,
                     Expires = Clock.UtcNow.Add(Options.ProtocolValidator.NonceLifetime)
                 });
@@ -924,7 +924,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                             var cookieOptions = new CookieOptions
                             {
                                 HttpOnly = true,
-                                SameSite = Http.SameSiteMode.Lax,
+                                SameSite = Http.SameSiteMode.None,
                                 Secure = Request.IsHttps
                             };
 

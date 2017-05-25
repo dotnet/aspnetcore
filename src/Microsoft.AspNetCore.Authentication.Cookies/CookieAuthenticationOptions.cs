@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
             ExpireTimeSpan = TimeSpan.FromDays(14);
             SlidingExpiration = true;
-            CookieSameSite = SameSiteMode.Strict;
+            // To support OAuth authentication, a lax mode is required, see https://github.com/aspnet/Security/issues/1231.
+            CookieSameSite = SameSiteMode.Lax;
             CookieHttpOnly = true;
             CookieSecure = CookieSecurePolicy.SameAsRequest;
             Events = new CookieAuthenticationEvents();
@@ -59,7 +60,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         /// <summary>
         /// Determines if the browser should allow the cookie to be attached to same-site or cross-site requests. The
-        /// default is Strict, which means the cookie is only allowed to be attached to same-site requests.
+        /// default is Lax, which means the cookie is only allowed to be attached to cross-site requests using safe
+        /// HTTP methods and same-site requests.
         /// </summary>
         public SameSiteMode CookieSameSite { get; set; }
 
@@ -84,8 +86,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         /// <summary>
         /// Controls how much time the cookie will remain valid from the point it is created. The expiration
-        /// information is in the protected cookie ticket. Because of that an expired cookie will be ignored 
-        /// even if it is passed to the server after the browser should have purged it 
+        /// information is in the protected cookie ticket. Because of that an expired cookie will be ignored
+        /// even if it is passed to the server after the browser should have purged it
         /// </summary>
         public TimeSpan ExpireTimeSpan { get; set; }
 
@@ -99,7 +101,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// The LoginPath property informs the handler that it should change an outgoing 401 Unauthorized status
         /// code into a 302 redirection onto the given login path. The current url which generated the 401 is added
         /// to the LoginPath as a query string parameter named by the ReturnUrlParameter. Once a request to the
-        /// LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect the browser back  
+        /// LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect the browser back
         /// to the url which caused the original unauthorized status code.
         /// </summary>
         public PathString LoginPath { get; set; }
@@ -117,15 +119,15 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         /// <summary>
         /// The ReturnUrlParameter determines the name of the query string parameter which is appended by the handler
-        /// when a 401 Unauthorized status code is changed to a 302 redirect onto the login path. This is also the query 
-        /// string parameter looked for when a request arrives on the login path or logout path, in order to return to the 
+        /// when a 401 Unauthorized status code is changed to a 302 redirect onto the login path. This is also the query
+        /// string parameter looked for when a request arrives on the login path or logout path, in order to return to the
         /// original url after the action is performed.
         /// </summary>
         public string ReturnUrlParameter { get; set; }
 
         /// <summary>
         /// The Provider may be assigned to an instance of an object created by the application at startup time. The handler
-        /// calls methods on the provider which give the application control at certain points where processing is occurring. 
+        /// calls methods on the provider which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         public new CookieAuthenticationEvents Events

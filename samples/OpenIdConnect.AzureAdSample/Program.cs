@@ -15,6 +15,7 @@ namespace OpenIdConnect.AzureAdSample
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                 })
                 .UseKestrel()
+                .UseUrls("http://localhost:42023")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()

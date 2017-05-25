@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         private HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new TwitterEvents Events
