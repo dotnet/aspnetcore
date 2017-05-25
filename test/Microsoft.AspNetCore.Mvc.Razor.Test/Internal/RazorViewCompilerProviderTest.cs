@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var accessor = new Mock<IRazorViewEngineFileProviderAccessor>();
             var applicationManager = new ApplicationPartManager();
             var options = new TestOptionsManager<RazorViewEngineOptions>();
-            var referenceManager = new RazorReferenceManager(applicationManager, options);
+            var referenceManager = new DefaultRazorReferenceManager(applicationManager, options);
             accessor.Setup(a => a.FileProvider).Returns(fileProvider);
             var provider = new RazorViewCompilerProvider(
                 applicationManager,

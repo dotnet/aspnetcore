@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
 {
-    public class ReferenceManagerTest
+    public class DefaultRazorReferenceManagerTest
     {
         [Fact]
         public void GetCompilationReferences_CombinesApplicationPartAndOptionMetadataReferences()
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
             var expectedReferenceDisplays = partReferences
                 .Concat(new[] { objectAssemblyMetadataReference })
                 .Select(r => r.Display);
-            var referenceManager = new RazorReferenceManager(
+            var referenceManager = new DefaultRazorReferenceManager(
                 applicationPartManager,
                 new TestOptionsManager<RazorViewEngineOptions>(options));
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
         private static ApplicationPartManager GetApplicationPartManager()
         {
             var applicationPartManager = new ApplicationPartManager();
-            var assembly = typeof(ReferenceManagerTest).GetTypeInfo().Assembly;
+            var assembly = typeof(DefaultRazorReferenceManagerTest).GetTypeInfo().Assembly;
             applicationPartManager.ApplicationParts.Add(new AssemblyPart(assembly));
             applicationPartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
 

@@ -440,7 +440,7 @@ this should fail";
             };
 
             var applicationPartManager = new ApplicationPartManager();
-            var referenceManager = new RazorReferenceManager(
+            var referenceManager = new DefaultRazorReferenceManager(
                 applicationPartManager,
                 new TestOptionsManager<RazorViewEngineOptions>());
             var compiler = GetViewCompiler(
@@ -472,7 +472,7 @@ this should fail";
                 applicationPartManager.ApplicationParts.Add(new AssemblyPart(assembly));
                 applicationPartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
 
-                referenceManager = new RazorReferenceManager(applicationPartManager, options);
+                referenceManager = new DefaultRazorReferenceManager(applicationPartManager, options);
             }
 
             precompiledViews = precompiledViews ?? Array.Empty<CompiledViewDescriptor>();

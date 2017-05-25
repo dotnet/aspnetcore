@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var define = "MY_CUSTOM_DEFINE";
             var options = new TestOptionsManager<RazorViewEngineOptions>();
             options.Value.ParseOptions = options.Value.ParseOptions.WithPreprocessorSymbols(define);
-            var razorReferenceManager = new RazorReferenceManager(GetApplicationPartManager(), options);
+            var razorReferenceManager = new DefaultRazorReferenceManager(GetApplicationPartManager(), options);
             var compiler = new CSharpCompiler(razorReferenceManager, options);
 
             // Act

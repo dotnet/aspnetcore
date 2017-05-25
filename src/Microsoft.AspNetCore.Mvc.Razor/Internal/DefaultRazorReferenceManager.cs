@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
-    public class RazorReferenceManager
+    public class DefaultRazorReferenceManager : RazorReferenceManager
     {
         private readonly ApplicationPartManager _partManager;
         private readonly IList<MetadataReference> _additionalMetadataReferences;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private bool _compilationReferencesInitialized;
         private IReadOnlyList<MetadataReference> _compilationReferences;
 
-        public RazorReferenceManager(
+        public DefaultRazorReferenceManager(
             ApplicationPartManager partManager,
             IOptions<RazorViewEngineOptions> optionsAccessor)
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _additionalMetadataReferences = optionsAccessor.Value.AdditionalCompilationReferences;
         }
 
-        public IReadOnlyList<MetadataReference> CompilationReferences
+        public override IReadOnlyList<MetadataReference> CompilationReferences
         {
             get
             {

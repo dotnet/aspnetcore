@@ -132,8 +132,7 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static void AddRazorViewEngineServices(IServiceCollection services)
         {
             services.TryAddSingleton<CSharpCompiler>();
-            services.TryAddSingleton<RazorReferenceManager>();
-            // This caches compilation related details that are valid across the lifetime of the application.
+            services.TryAddSingleton<RazorReferenceManager, DefaultRazorReferenceManager>();
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcRazorMvcViewOptionsSetup>());
