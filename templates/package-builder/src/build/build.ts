@@ -17,8 +17,6 @@ const dotNetPackages = {
     extra: 'Microsoft.AspNetCore.SpaTemplates'
 };
 
-const commonForceInclusionRegex = /^(wwwroot|ClientApp)\/dist\//; // Files to be included in template, even though gitignored
-
 interface TemplateConfig {
     dir: string;
     dotNetNewId: string;
@@ -46,7 +44,7 @@ function writeFileEnsuringDirExists(root: string, filename: string, contents: st
     fs.writeFileSync(fullPath, contents);
 }
 
-function listFilesExcludingGitignored(root: string, forceInclusion: RegExp): string[] {
+function listFilesExcludingGitignored(root: string): string[] {
     // Note that the gitignore files, prior to be written by the generator, are called 'template_gitignore'
     // instead of '.gitignore'. This is a workaround for Yeoman doing strange stuff with .gitignore files
     // (it renames them to .npmignore, which is not helpful).
@@ -55,11 +53,11 @@ function listFilesExcludingGitignored(root: string, forceInclusion: RegExp): str
         ? gitignore.compile(fs.readFileSync(gitIgnorePath, 'utf8'))
         : { accepts: () => true };
     return glob.sync('**/*', { cwd: root, dot: true, nodir: true })
-        .filter(fn => gitignoreEvaluator.accepts(fn) || (forceInclusion && forceInclusion.test(fn)));
+        .filter(fn => gitignoreEvaluator.accepts(fn));
 }
 
-function writeTemplate(sourceRoot: string, destRoot: string, contentReplacements: { from: RegExp, to: string }[], filenameReplacements: { from: RegExp, to: string }[], forceInclusion: RegExp) {
-    listFilesExcludingGitignored(sourceRoot, forceInclusion).forEach(fn => {
+function writeTemplate(sourceRoot: string, destRoot: string, contentReplacements: { from: RegExp, to: string }[], filenameReplacements: { from: RegExp, to: string }[]) {
+    listFilesExcludingGitignored(sourceRoot).forEach(fn => {
         let sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
 
         // For text files, replace hardcoded values with template tags
@@ -102,7 +100,7 @@ function buildYeomanNpmPackage(outputRoot: string) {
     ];
     _.forEach(templates, (templateConfig, templateName) => {
         const outputDir = path.join(outputTemplatesRoot, templateName);
-        writeTemplate(templateConfig.dir, outputDir, contentReplacements, filenameReplacements, commonForceInclusionRegex);
+        writeTemplate(templateConfig.dir, outputDir, contentReplacements, filenameReplacements);
     });
 
     // Also copy the generator files (that's the compiled .js files, plus all other non-.ts files)
@@ -143,7 +141,7 @@ function buildDotNetNewNuGetPackage(packageId: string) {
         }
 
         const templateOutputDir = path.join(outputRoot, 'Content', templateName);
-        writeTemplate(templateConfig.dir, templateOutputDir, contentReplacements, filenameReplacements, commonForceInclusionRegex);
+        writeTemplate(templateConfig.dir, templateOutputDir, contentReplacements, filenameReplacements);
 
         // Add the .template.config dir and its contents
         const templateConfigDir = path.join(templateOutputDir, '.template.config');
@@ -235,7 +233,7 @@ function buildDotNetNewNuGetPackage(packageId: string) {
         { from: /\{version\}/g, to: yeomanPackageVersion },
     ], [
         { from: /.*\.nuspec$/, to: `${packageId}.nuspec` },
-    ], null);
+    ]);
     const nugetExe = path.join(process.cwd(), './bin/NuGet.exe');
     const nugetStartInfo = { cwd: outputRoot, stdio: 'inherit' };
     if (isWindows) {
@@ -250,19 +248,6 @@ function buildDotNetNewNuGetPackage(packageId: string) {
     rimraf.sync('./tmp');
 
     return glob.sync(path.join(outputRoot, './*.nupkg'))[0];
-}
-
-function runAllPrepublishScripts() {
-    Object.getOwnPropertyNames(templates).forEach(templateKey => {
-        // To support the "dotnet new" templates, we want to bundle prebuilt dist dev-mode files, because "dotnet new" can't auto-run
-        // webpack on project creation. Note that these script entries are *not* the same as the project's usual prepublish
-        // scripts, because here we want dev-mode builds (e.g., to support HMR), not prod-mode builds.
-        runPrepublishScripts(templates[templateKey].dir, [
-            'npm install',
-            'node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js',
-            'node node_modules/webpack/bin/webpack.js'
-        ]);
-    });
 }
 
 function runPrepublishScripts(rootDir: string, scripts: string[]) {
@@ -280,7 +265,6 @@ const yeomanOutputRoot = path.join(distDir, 'generator-aspnetcore-spa');
 
 rimraf.sync(distDir);
 mkdirp.sync(artifactsDir);
-runAllPrepublishScripts();
 buildYeomanNpmPackage(yeomanOutputRoot);
 buildDotNetNewNuGetPackages(artifactsDir);
 
