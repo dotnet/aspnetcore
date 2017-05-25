@@ -17,26 +17,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public Frame<object> Frame { get; set; }
 
-        public PipeFactory PipelineFactory { get; set; }
+        public PipeFactory PipeFactory { get; set; }
 
         [Setup]
         public void Setup()
         {
+            PipeFactory = new PipeFactory();
+            Pipe = PipeFactory.Create();
+
             var serviceContext = new ServiceContext
             {
                 HttpParserFactory = f => new HttpParser<FrameAdapter>(),
-                ServerOptions = new KestrelServerOptions()
+                ServerOptions = new KestrelServerOptions(),
             };
             var frameContext = new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation(),
+                ConnectionInformation = new MockConnectionInformation
+                {
+                    PipeFactory = PipeFactory
+                },
                 TimeoutControl = new MockTimeoutControl()
             };
 
             Frame = new Frame<object>(application: null, frameContext: frameContext);
-            PipelineFactory = new PipeFactory();
-            Pipe = PipelineFactory.Create();
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]

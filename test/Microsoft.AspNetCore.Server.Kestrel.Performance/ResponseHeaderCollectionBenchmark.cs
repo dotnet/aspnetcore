@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -176,7 +177,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frameContext = new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation()
+                ConnectionInformation = new MockConnectionInformation
+                {
+                    PipeFactory = new PipeFactory()
+                }
             };
 
             var frame = new Frame<object>(application: null, frameContext: frameContext);

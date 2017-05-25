@@ -75,9 +75,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private TestFrame<object> MakeFrame()
         {
-            var factory = new PipeFactory();
-            var input = factory.Create();
-            var output = factory.Create();
+            var pipeFactory = new PipeFactory();
+            var input = pipeFactory.Create();
+            var output = pipeFactory.Create();
 
             var serviceContext = new ServiceContext
             {
@@ -90,7 +90,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frame = new TestFrame<object>(application: null, context: new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation(),
+                ConnectionInformation = new MockConnectionInformation
+                {
+                    PipeFactory = pipeFactory
+                },
                 Input = input.Reader,
                 Output = output
             });

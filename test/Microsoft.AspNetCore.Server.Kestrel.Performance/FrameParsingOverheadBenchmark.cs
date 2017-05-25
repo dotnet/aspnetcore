@@ -29,7 +29,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frameContext = new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation(),
+                ConnectionInformation = new MockConnectionInformation
+                {
+                    PipeFactory = new PipeFactory()
+                },
                 TimeoutControl = new MockTimeoutControl()
             };
 
