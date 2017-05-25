@@ -89,9 +89,20 @@ function copyRecursive(sourceRoot: string, destRoot: string, matchGlob: string) 
         });
 }
 
-function getBuildNumber() {
-    return process.env.APPVEYOR_BUILD_NUMBER
-        || ('t-' + Math.floor((new Date().valueOf() - new Date(2017, 0, 1).valueOf()) / (60*1000)));
+function leftPad(str: string, minLength: number, padChar: string) {
+    while (str.length < minLength) {
+        str = padChar + str;
+    }
+    return str;
+}
+
+function getBuildNumber(): string {
+    if (process.env.APPVEYOR_BUILD_NUMBER) {
+        return leftPad(process.env.APPVEYOR_BUILD_NUMBER, 6, '0');
+    }
+
+    // For local builds, use timestamp
+    return 't-' + Math.floor((new Date().valueOf() - new Date(2017, 0, 1).valueOf()) / (60*1000));
 }
 
 function buildYeomanNpmPackage(outputRoot: string) {
