@@ -56,18 +56,20 @@ function listFilesExcludingGitignored(root: string): string[] {
         .filter(fn => gitignoreEvaluator.accepts(fn));
 }
 
+function applyContentReplacements(sourceContent: Buffer, contentReplacements: { from: RegExp, to: string }[]) {
+    let sourceText = sourceContent.toString('utf8');
+    contentReplacements.forEach(replacement => {
+        sourceText = sourceText.replace(replacement.from, replacement.to);
+    });
+
+    return new Buffer(sourceText, 'utf8');
+}
+
 function writeTemplate(sourceRoot: string, destRoot: string, contentReplacements: { from: RegExp, to: string }[], filenameReplacements: { from: RegExp, to: string }[]) {
     listFilesExcludingGitignored(sourceRoot).forEach(fn => {
         let sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
-
-        // For text files, replace hardcoded values with template tags
         if (isTextFile(fn)) {
-            let sourceText = sourceContent.toString('utf8');
-            contentReplacements.forEach(replacement => {
-                sourceText = sourceText.replace(replacement.from, replacement.to);
-            });
-
-            sourceContent = new Buffer(sourceText, 'utf8');
+            sourceContent = applyContentReplacements(sourceContent, contentReplacements);
         }
 
         // Also apply replacements in filenames
@@ -85,6 +87,11 @@ function copyRecursive(sourceRoot: string, destRoot: string, matchGlob: string) 
             const sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
             writeFileEnsuringDirExists(destRoot, fn, sourceContent);
         });
+}
+
+function getBuildNumber() {
+    return process.env.APPVEYOR_BUILD_NUMBER
+        || ('t-' + Math.floor((new Date().valueOf() - new Date(2017, 0, 1).valueOf()) / (60*1000)));
 }
 
 function buildYeomanNpmPackage(outputRoot: string) {
@@ -226,14 +233,18 @@ function buildDotNetNewNuGetPackage(packageId: string) {
         }, null, 2));
     });
 
-    // Invoke NuGet to create the final package
+    // Create the .nuspec file
     const yeomanPackageVersion = JSON.parse(fs.readFileSync(path.join(yeomanGeneratorSource, 'package.json'), 'utf8')).version;
-    writeTemplate('./src/dotnetnew', outputRoot, [
-        { from: /\{packageId\}/g, to: packageId },
-        { from: /\{version\}/g, to: yeomanPackageVersion },
-    ], [
-        { from: /.*\.nuspec$/, to: `${packageId}.nuspec` },
-    ]);
+    const nuspecContentTemplate = fs.readFileSync(`./src/dotnetnew/${ packageId }.nuspec`);
+    writeFileEnsuringDirExists(outputRoot,
+        `${ packageId }.nuspec`,
+        applyContentReplacements(nuspecContentTemplate, [
+            { from: /\{yeomanversion\}/g, to: yeomanPackageVersion },
+            { from: /\{buildnumber\}/g, to: getBuildNumber() },
+        ])
+    );
+
+    // Invoke NuGet to create the final package
     const nugetExe = path.join(process.cwd(), './bin/NuGet.exe');
     const nugetStartInfo = { cwd: outputRoot, stdio: 'inherit' };
     if (isWindows) {
