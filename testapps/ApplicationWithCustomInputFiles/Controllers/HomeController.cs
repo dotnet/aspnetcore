@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -17,7 +18,7 @@ namespace ApplicationWithCustomInputFiles.Controllers
         {
             var feature = new ViewsFeature();
             applicationManager.PopulateFeature(feature);
-            return string.Join(Environment.NewLine, feature.Views.Keys);
+            return string.Join(Environment.NewLine, feature.ViewDescriptors.Select(v => v.RelativePath));
         }
     }
 }
