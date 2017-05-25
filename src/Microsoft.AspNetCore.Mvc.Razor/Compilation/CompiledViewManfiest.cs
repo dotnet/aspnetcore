@@ -15,19 +15,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 
         public static Type GetManifestType(AssemblyPart assemblyPart, string typeName)
         {
-            EnsureFeatureAssembly(assemblyPart);
-
-            var precompiledAssemblyName = new AssemblyName(assemblyPart.Assembly.FullName);
-            precompiledAssemblyName.Name = precompiledAssemblyName.Name + PrecompiledViewsAssemblySuffix;
-
-            return Type.GetType($"{typeName},{precompiledAssemblyName}");
+            var assembly = GetFeatureAssembly(assemblyPart);
+            return assembly?.GetType(typeName);
         }
 
-        private static void EnsureFeatureAssembly(AssemblyPart assemblyPart)
+        private static Assembly GetFeatureAssembly(AssemblyPart assemblyPart)
         {
             if (assemblyPart.Assembly.IsDynamic || string.IsNullOrEmpty(assemblyPart.Assembly.Location))
             {
-                return;
+                return null;
             }
 
             var precompiledAssemblyFileName = assemblyPart.Assembly.GetName().Name
@@ -41,13 +37,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             {
                 try
                 {
-                    Assembly.LoadFile(precompiledAssemblyFilePath);
+                    return Assembly.LoadFile(precompiledAssemblyFilePath);
                 }
                 catch (FileLoadException)
                 {
                     // Don't throw if assembly cannot be loaded. This can happen if the file is not a managed assembly.
                 }
             }
+
+            return null;
         }
     }
 }
