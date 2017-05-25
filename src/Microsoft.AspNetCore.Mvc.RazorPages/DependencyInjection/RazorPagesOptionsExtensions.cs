@@ -59,30 +59,30 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a <see cref="AllowAnonymousFilter"/> to the page with the specified path.
+        /// Adds a <see cref="AllowAnonymousFilter"/> to the page with the specified name.
         /// </summary>
         /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
-        /// <param name="path">The path of the Razor Page.</param>
+        /// <param name="pageName">The page name.</param>
         /// <returns>The <see cref="RazorPagesOptions"/>.</returns>
-        public static RazorPagesOptions AllowAnonymousToPage(this RazorPagesOptions options, string path)
+        public static RazorPagesOptions AllowAnonymousToPage(this RazorPagesOptions options, string pageName)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(pageName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(path));
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
             }
 
             var anonymousFilter = new AllowAnonymousFilter();
-            options.Conventions.Add(new PageConvention(path, model => model.Filters.Add(anonymousFilter)));
+            options.Conventions.Add(new PageConvention(pageName, model => model.Filters.Add(anonymousFilter)));
             return options;
         }
 
         /// <summary>
-        /// Adds a <see cref="AllowAnonymousFilter"/> to all pages under the specified path.
+        /// Adds a <see cref="AllowAnonymousFilter"/> to all pages under the specified folder.
         /// </summary>
         /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
         /// <param name="folderPath">The folder path.</param>
@@ -105,40 +105,40 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to the page with the specified path.
+        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to the page with the specified name.
         /// </summary>
         /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
-        /// <param name="path">The path of the Razor Page.</param>
+        /// <param name="pageName">The page name.</param>
         /// <param name="policy">The authorization policy.</param>
         /// <returns>The <see cref="RazorPagesOptions"/>.</returns>
-        public static RazorPagesOptions AuthorizePage(this RazorPagesOptions options, string path, string policy)
+        public static RazorPagesOptions AuthorizePage(this RazorPagesOptions options, string pageName, string policy)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(pageName))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(path));
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
             }
 
             var authorizeFilter = new AuthorizeFilter(policy);
-            options.Conventions.Add(new PageConvention(path, model => model.Filters.Add(authorizeFilter)));
+            options.Conventions.Add(new PageConvention(pageName, model => model.Filters.Add(authorizeFilter)));
             return options;
         }
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> to the page with the specified path.
+        /// Adds a <see cref="AuthorizeFilter"/> to the page with the specified name.
         /// </summary>
         /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
-        /// <param name="path">The path of the Razor Page.</param>
+        /// <param name="pageName">The page name.</param>
         /// <returns>The <see cref="RazorPagesOptions"/>.</returns>
-        public static RazorPagesOptions AuthorizePage(this RazorPagesOptions options, string path) =>
-            AuthorizePage(options, path, policy: string.Empty);
+        public static RazorPagesOptions AuthorizePage(this RazorPagesOptions options, string pageName) =>
+            AuthorizePage(options, pageName, policy: string.Empty);
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to all pages under the specified path.
+        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to all pages under the specified folder.
         /// </summary>
         /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
         /// <param name="folderPath">The folder path.</param>
@@ -162,13 +162,61 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a <see cref="AuthorizeFilter"/> to all pages under the specified path.
+        /// Adds a <see cref="AuthorizeFilter"/> to all pages under the specified folder.
         /// </summary>
         /// <param name="options">The <see cref="RazorPagesOptions"/> to configure.</param>
         /// <param name="folderPath">The folder path.</param>
         /// <returns>The <see cref="RazorPagesOptions"/>.</returns>
         public static RazorPagesOptions AuthorizeFolder(this RazorPagesOptions options, string folderPath) =>
             AuthorizeFolder(options, folderPath, policy: string.Empty);
+
+        /// <summary>
+        /// Adds the specified <paramref name="route"/> to the page at the specified <paramref name="pageName"/>.
+        /// <para>
+        /// The page can be routed via <paramref name="route"/> in addition to the default set of path based routes.
+        /// All links generated for this page will use the specified route.
+        /// </para>
+        /// </summary>
+        /// <param name="options">The <see cref="RazorPagesOptions"/>.</param>
+        /// <param name="pageName">The page name.</param>
+        /// <param name="route">The route to associate with the page.</param>
+        /// <returns>The <see cref="RazorPagesOptions"/>.</returns>
+        public static RazorPagesOptions AddPageRoute(this RazorPagesOptions options, string pageName, string route)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (string.IsNullOrEmpty(pageName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
+            }
+
+            if (string.IsNullOrEmpty(route))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(route));
+            }
+
+            options.Conventions.Add(new PageConvention(pageName, model =>
+            {
+                // Use the route specified in MapPageRoute for outbound routing.
+                foreach (var selector in model.Selectors)
+                {
+                    selector.AttributeRouteModel.SuppressLinkGeneration = true;
+                }
+
+                model.Selectors.Add(new SelectorModel
+                {
+                    AttributeRouteModel = new AttributeRouteModel
+                    {
+                        Template = route,
+                    }
+                });
+            }));
+
+            return options;
+        }
 
         private class PageConvention : IPageApplicationModelConvention
         {

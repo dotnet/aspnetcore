@@ -242,6 +242,80 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
         }
 
+        [Fact]
+        public void AddPageRoute_AddsRouteToSelector()
+        {
+            // Arrange
+            var options = new RazorPagesOptions();
+            var models = new[]
+            {
+                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml")
+                {
+                    Selectors =
+                    {
+                        CreateSelectorModel("Index", suppressLinkGeneration: true),
+                        CreateSelectorModel(""),
+                    }
+                },
+                new PageApplicationModel("/Pages/About.cshtml", "/About.cshtml")
+                {
+                    Selectors =
+                    {
+                        CreateSelectorModel("About"),
+                    }
+                }
+            };
+
+            // Act
+            options.AddPageRoute("/Index.cshtml", "Different-Route");
+            ApplyConventions(options, models);
+
+            // Assert
+            Assert.Collection(models,
+                model =>
+                {
+                    Assert.Equal("/Index.cshtml", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector =>
+                        {
+                            Assert.Equal("Index", selector.AttributeRouteModel.Template);
+                            Assert.True(selector.AttributeRouteModel.SuppressLinkGeneration);
+                        },
+                        selector =>
+                        {
+                            Assert.Equal("", selector.AttributeRouteModel.Template);
+                            Assert.True(selector.AttributeRouteModel.SuppressLinkGeneration);
+                        },
+                        selector =>
+                        {
+                            Assert.Equal("Different-Route", selector.AttributeRouteModel.Template);
+                            Assert.False(selector.AttributeRouteModel.SuppressLinkGeneration);
+                        });
+                },
+                model =>
+                {
+                    Assert.Equal("/About.cshtml", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector =>
+                        {
+                            Assert.Equal("About", selector.AttributeRouteModel.Template);
+                            Assert.False(selector.AttributeRouteModel.SuppressLinkGeneration);
+                        });
+                });
+        }
+
+        private static SelectorModel CreateSelectorModel(string template, bool suppressLinkGeneration = false)
+        {
+            return new SelectorModel
+            {
+                AttributeRouteModel = new AttributeRouteModel
+                {
+                    Template = template,
+                    SuppressLinkGeneration = suppressLinkGeneration
+                },
+            };
+        }
+
         private static void ApplyConventions(RazorPagesOptions options, PageApplicationModel[] models)
         {
             foreach (var convention in options.Conventions)
