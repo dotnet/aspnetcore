@@ -38,7 +38,7 @@
     </FullMetaPackagePackageReference>
     <HostingStartupPackageReference>
       <Version>$(AspNetCoreVersion)</Version>
-      <PrivateAssets>None</PrivateAssets>
+      <PrivateAssets>Compile</PrivateAssets>
     </HostingStartupPackageReference>
     <RuntimeStorePackageReference>
       <Version>$(AspNetCoreVersion)</Version>
@@ -73,7 +73,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" />
+    <HostingStartupPackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" />
+  </ItemGroup>
+
+  <ItemGroup>
     <FullMetaPackagePackageReference Include="@(MetaPackagePackageReference)" />
+    <FullMetaPackagePackageReference Include="@(HostingStartupPackageReference)" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Antiforgery" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
@@ -87,6 +93,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authorization" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" PrivateAssets="Compile" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.CookiePolicy" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cors" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" />
@@ -192,6 +199,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization.Abstractions" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" PrivateAssets="Compile" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.EventSource" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.TraceSource" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.ObjectPool" />
@@ -218,17 +226,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" />
-    <HostingStartupPackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" />
-  </ItemGroup>
-
-  <ItemGroup>
     <RuntimeStorePackageReference Include="@(FullMetaPackagePackageReference)" />
-    <RuntimeStorePackageReference Include="@(HostingStartupPackageReference)" />
     <RuntimeStorePackageReference Include="Microsoft.AspNetCore" />
-    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" />
-    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" />
-    <RuntimeStorePackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" />
-    <RuntimeStorePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" />
   </ItemGroup>
 </Project>
