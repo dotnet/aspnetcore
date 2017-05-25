@@ -1,14 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Test
 {
-    public class LargeTextRazorSourceDocumentTest
+    public class LargeTextSourceDocumentTest
     {
         private const int ChunkTestLength = 10;
+
+        [Fact]
+        public void GetChecksum_ReturnsCopiedChecksum()
+        {
+            // Arrange
+            var contentString = "Hello World";
+            var stream = TestRazorSourceDocument.CreateStreamContent(contentString);
+            var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
+            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF8, "file.cshtml");
+
+            // Act
+            var firstChecksum = document.GetChecksum();
+            var secondChecksum = document.GetChecksum();
+
+            // Assert
+            Assert.Equal(firstChecksum, secondChecksum);
+            Assert.NotSame(firstChecksum, secondChecksum);
+        }
+
+        [Fact]
+        public void GetChecksum_ComputesCorrectChecksum_UTF8()
+        {
+            // Arrange
+            var contentString = "Hello World";
+            var stream = TestRazorSourceDocument.CreateStreamContent(contentString);
+            var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
+            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF8, "file.cshtml");
+            var expectedChecksum = new byte[] { 10, 77, 85, 168, 215, 120, 229, 2, 47, 171, 112, 25, 119, 197, 216, 64, 187, 196, 134, 208 };
+
+            // Act
+            var checksum = document.GetChecksum();
+
+            // Assert
+            Assert.Equal(expectedChecksum, checksum);
+        }
+
+        [Fact]
+        public void GetChecksum_ComputesCorrectChecksum_UTF32()
+        {
+            // Arrange
+            var contentString = "Hello World";
+            var stream = TestRazorSourceDocument.CreateStreamContent(contentString, Encoding.UTF32);
+            var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
+            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF32, "file.cshtml");
+            var expectedChecksum = new byte[] { 108, 172, 130, 171, 42, 19, 155, 176, 211, 80, 224, 121, 169, 133, 25, 134, 48, 228, 199, 141 };
+
+            // Act
+            var checksum = document.GetChecksum();
+
+            // Assert
+            Assert.Equal(expectedChecksum, checksum);
+        }
 
         [Theory]
         [InlineData(ChunkTestLength - 1)]
@@ -31,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
 
             var stream = TestRazorSourceDocument.CreateStreamContent(new string(content));
             var reader = new StreamReader(stream, true);
-            var document = new LargeTextRazorSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
 
             // Act
             var output = new char[contentLength];
@@ -56,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var reader = new StreamReader(stream, true);
 
             // Act
-            var document = new LargeTextRazorSourceDocument(reader, ChunkTestLength, Encoding.UTF8, fileName);
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, fileName);
 
             // Assert
             Assert.Equal(fileName, document.FileName);
@@ -70,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var reader = new StreamReader(stream, true);
 
             // Act
-            var document = new LargeTextRazorSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
 
             // Assert
             Assert.Equal(3, document.Lines.Count);
@@ -92,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var stream = TestRazorSourceDocument.CreateStreamContent("abcdefghijklmnopqrstuvwxyz");
 
             var reader = new StreamReader(stream, true);
-            var document = new LargeTextRazorSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
 
             // Act
             var destination = new char[1000];

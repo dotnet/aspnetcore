@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/RazorTemplateEngineIntegrationTest/GenerateCodeWithConfigureClass.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "247d02621904d87ab805e437f33c5d03b9a0de91"
+#pragma checksum "TestFiles/IntegrationTests/RazorTemplateEngineIntegrationTest/GenerateCodeWithConfigureClass.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "38aa8e26c5d2a85c61d8e93fe69dd326fe82671b"
 namespace Razor
 {
     #line hidden

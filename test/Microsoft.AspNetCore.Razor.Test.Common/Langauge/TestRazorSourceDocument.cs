@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     content = NormalizeNewLines(content);
                 }
 
-                return new DefaultRazorSourceDocument(content, encoding ?? Encoding.UTF8, path);
+                return new StringSourceDocument(content, encoding ?? Encoding.UTF8, path);
             }
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 content = NormalizeNewLines(content);
             }
 
-            return new DefaultRazorSourceDocument(content, encoding ?? Encoding.UTF8, fileName);
+            return new StringSourceDocument(content, encoding ?? Encoding.UTF8, fileName);
         }
 
         private static string NormalizeNewLines(string content)

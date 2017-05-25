@@ -28,6 +28,18 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string Content { get; set; } = "Default content";
 
-        public override Stream Read() => new MemoryStream(Encoding.UTF8.GetBytes(Content));
+        public override Stream Read()
+        {
+            // Act like a file and have a UTF8 BOM.
+            var preamble = Encoding.UTF8.GetPreamble();
+            var contentBytes = Encoding.UTF8.GetBytes(Content);
+            var buffer = new byte[preamble.Length + contentBytes.Length];
+            preamble.CopyTo(buffer, 0);
+            contentBytes.CopyTo(buffer, preamble.Length);
+
+            var stream = new MemoryStream(buffer);
+
+            return stream;
+        }
     }
 }

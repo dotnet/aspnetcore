@@ -39,25 +39,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 Guid = Sha1AlgorithmId
             };
 
-            var charBuffer = new char[sourceDocument.Length];
-            sourceDocument.CopyTo(0, charBuffer, 0, sourceDocument.Length);
-
-            var encoder = sourceDocument.Encoding.GetEncoder();
-            var byteCount = encoder.GetByteCount(charBuffer, 0, charBuffer.Length, flush: true);
-            var checksumBytes = new byte[byteCount];
-            encoder.GetBytes(charBuffer, 0, charBuffer.Length, checksumBytes, 0, flush: true);
-
-            using (var hashAlgorithm = SHA1.Create())
+            var checksum = sourceDocument.GetChecksum();
+            var fileHashBuilder = new StringBuilder(checksum.Length * 2);
+            foreach (var value in checksum)
             {
-                var hashedBytes = hashAlgorithm.ComputeHash(checksumBytes);
-                var fileHashBuilder = new StringBuilder(hashedBytes.Length * 2);
-                foreach (var value in hashedBytes)
-                {
-                    fileHashBuilder.Append(value.ToString("x2"));
-                }
-
-                node.Bytes = fileHashBuilder.ToString();
+                fileHashBuilder.Append(value.ToString("x2"));
             }
+
+            node.Bytes = fileHashBuilder.ToString();
 
             return node;
         }

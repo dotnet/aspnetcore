@@ -838,7 +838,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var errorSink = new ErrorSink();
             var phase = new DefaultRazorTagHelperBinderPhase();
-            var document = RazorCodeDocument.Create(new DefaultRazorSourceDocument("Test content", encoding: Encoding.UTF8, fileName: "TestFile"));
+            var document = RazorCodeDocument.Create(new StringSourceDocument("Test content", encoding: Encoding.UTF8, fileName: "TestFile"));
 
             // Act
             var prefix = phase.ProcessTagHelperPrefix(((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors).ToList(), document, errorSink);

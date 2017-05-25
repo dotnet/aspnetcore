@@ -52,6 +52,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count);
 
         /// <summary>
+        /// Calculates the checksum for the <see cref="RazorSourceDocument"/>.
+        /// </summary>
+        /// <returns>The checksum.</returns>
+        public abstract byte[] GetChecksum();
+
+        /// <summary>
         /// Reads the <see cref="RazorSourceDocument"/> from the specified <paramref name="stream"/>.
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
@@ -64,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            return ReadFromInternal(stream, fileName, encoding: null);
+            return new StreamSourceDocument(stream, encoding: null, fileName: fileName);
         }
 
         /// <summary>
@@ -86,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            return ReadFromInternal(stream, fileName, encoding);
+            return new StreamSourceDocument(stream, encoding, fileName);
         }
 
         /// <summary>
@@ -142,57 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            return new DefaultRazorSourceDocument(content, encoding, fileName);
-        }
-
-        private static RazorSourceDocument ReadFromInternal(Stream stream, string fileName, Encoding encoding)
-        {
-            var streamLength = (int)stream.Length;
-            var content = string.Empty;
-            var contentEncoding = encoding ?? Encoding.UTF8;
-
-            if (streamLength > 0)
-            {
-                var bufferSize = Math.Min(streamLength, LargeObjectHeapLimitInChars);
-
-                var reader = new StreamReader(
-                    stream,
-                    contentEncoding,
-                    detectEncodingFromByteOrderMarks: true,
-                    bufferSize: bufferSize,
-                    leaveOpen: true);
-
-                using (reader)
-                {
-                    reader.Peek();      // Just to populate the encoding
-
-                    if (encoding == null)
-                    {
-                        contentEncoding = reader.CurrentEncoding;
-                    }
-                    else if (encoding != reader.CurrentEncoding)
-                    {
-                        throw new InvalidOperationException(
-                            Resources.FormatMismatchedContentEncoding(
-                                encoding.EncodingName,
-                                reader.CurrentEncoding.EncodingName));
-                    }
-
-                    if (streamLength > LargeObjectHeapLimitInChars)
-                    {
-                        // If the resulting string would end up on the large object heap, then use LargeTextRazorSourceDocument.
-                        return new LargeTextRazorSourceDocument(
-                            reader,
-                            LargeObjectHeapLimitInChars,
-                            contentEncoding,
-                            fileName);
-                    }
-
-                    content = reader.ReadToEnd();
-                }
-            }
-
-            return new DefaultRazorSourceDocument(content, contentEncoding, fileName);
+            return new StringSourceDocument(content, encoding, fileName);
         }
     }
 }

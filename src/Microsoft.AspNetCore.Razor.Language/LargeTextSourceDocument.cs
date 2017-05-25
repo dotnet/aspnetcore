@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class LargeTextRazorSourceDocument : RazorSourceDocument
+    internal class LargeTextSourceDocument : RazorSourceDocument
     {
         private readonly List<char[]> _chunks;
 
@@ -17,8 +18,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly RazorSourceLineCollection _lines;
 
         private readonly int _length;
+        private byte[] _checksum;
 
-        public LargeTextRazorSourceDocument(StreamReader reader, int chunkMaxLength, Encoding encoding, string fileName)
+        public LargeTextSourceDocument(StreamReader reader, int chunkMaxLength, Encoding encoding, string fileName)
         {
             if (reader == null)
             {
@@ -99,6 +101,30 @@ namespace Microsoft.AspNetCore.Razor.Language
                 chunkIndex++;
                 insideChunkPosition = 0;
             }
+        }
+
+        public override byte[] GetChecksum()
+        {
+            if (_checksum == null)
+            {
+                var charBuffer = new char[Length];
+                CopyTo(0, charBuffer, 0, Length);
+
+                var encoder = Encoding.GetEncoder();
+                var byteCount = encoder.GetByteCount(charBuffer, 0, charBuffer.Length, flush: true);
+                var bytes = new byte[byteCount];
+                encoder.GetBytes(charBuffer, 0, charBuffer.Length, bytes, 0, flush: true);
+
+                using (var hashAlgorithm = SHA1.Create())
+                {
+                    _checksum = hashAlgorithm.ComputeHash(bytes);
+                }
+            }
+
+            var copiedChecksum = new byte[_checksum.Length];
+            _checksum.CopyTo(copiedChecksum, 0);
+
+            return copiedChecksum;
         }
 
         private static void ReadChunks(StreamReader reader, int chunkMaxLength, out int length, out List<char[]> chunks)

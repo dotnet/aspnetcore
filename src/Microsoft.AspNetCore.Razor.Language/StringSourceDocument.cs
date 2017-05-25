@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DefaultRazorSourceDocument : RazorSourceDocument
+    internal class StringSourceDocument : RazorSourceDocument
     {
         private readonly string _content;
         private readonly RazorSourceLineCollection _lines;
+        private byte[] _checksum;
 
-        public DefaultRazorSourceDocument(string content, Encoding encoding, string fileName)
+        public StringSourceDocument(string content, Encoding encoding, string fileName)
         {
             if (content == null)
             {
@@ -68,6 +70,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             _content.CopyTo(sourceIndex, destination, destinationIndex, count);
+        }
+
+        public override byte[] GetChecksum()
+        {
+            if (_checksum == null)
+            {
+                var charBuffer = _content.ToCharArray();
+                var encoder = Encoding.GetEncoder();
+                var byteCount = encoder.GetByteCount(charBuffer, 0, charBuffer.Length, flush: true);
+                var bytes = new byte[byteCount];
+                encoder.GetBytes(charBuffer, 0, charBuffer.Length, bytes, 0, flush: true);
+
+                using (var hashAlgorithm = SHA1.Create())
+                {
+                    _checksum = hashAlgorithm.ComputeHash(bytes);
+                }
+            }
+
+            var copiedChecksum = new byte[_checksum.Length];
+            _checksum.CopyTo(copiedChecksum, 0);
+
+            return copiedChecksum;
         }
     }
 }
