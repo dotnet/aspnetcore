@@ -15,5 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Localization" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>

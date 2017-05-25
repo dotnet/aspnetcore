@@ -4,11 +4,23 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
 
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);FUNCTIONAL_TESTS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'netcoreapp2.0' ">
+    <!-- Work around https://github.com/dotnet/sdk/issues/926. Align with bitness of the web site projects. -->
+    <PlatformTarget>x86</PlatformTarget>
+
+    <!--
+      Work around https://github.com/Microsoft/vstest/issues/428 aka https://github.com/aspnet/Mvc/issues/5873.
+      Create the appropriate binding redirects.
+    -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +44,6 @@
     <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FiltersWebSite\FiltersWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\FSharpWebSite\FSharpWebSite.fsproj" />
     <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
     <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
@@ -47,7 +58,6 @@
     <ProjectReference Include="..\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.csproj" />
     <ProjectReference Include="..\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
 
-    <PackageReference Include="FSharp.Core" Version="$(FSharpCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(AspNetCoreVersion)" />

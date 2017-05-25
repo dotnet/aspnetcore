@@ -24,6 +24,6 @@
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.PropertyActivator.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <PackageReference Include="System.Runtime.Loader" Version="$(CoreFxVersion)" />
   </ItemGroup>
-
 </Project>
