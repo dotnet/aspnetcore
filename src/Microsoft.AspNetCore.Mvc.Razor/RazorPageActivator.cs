@@ -67,15 +67,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (!_activationInfo.TryGetValue(pageType, out propertyActivator))
             {
                 // Look for a property named "Model". If it is non-null, we'll assume this is
-                // the equivalent of TModel Model property on RazorPage<TModel>
-                var modelProperty = pageType.GetRuntimeProperty(ModelPropertyName);
-                if (modelProperty == null)
-                {
-                    var message = Resources.FormatViewCannotBeActivated(pageType.FullName, GetType().FullName);
-                    throw new InvalidOperationException(message);
-                }
-
-                var modelType = modelProperty.PropertyType;
+                // the equivalent of TModel Model property on RazorPage<TModel>.
+                //
+                // Otherwise if we don't have a model property the activator will just skip setting
+                // the view data.
+                var modelType = pageType.GetRuntimeProperty(ModelPropertyName)?.PropertyType;
                 propertyActivator = new RazorPagePropertyActivator(
                     pageType,
                     modelType,

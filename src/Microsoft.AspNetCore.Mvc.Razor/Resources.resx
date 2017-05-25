@@ -132,15 +132,6 @@
   <data name="LayoutCannotBeRendered" xml:space="preserve">
     <value>Layout page '{0}' cannot be rendered after '{1}' has been invoked.</value>
   </data>
-  <data name="MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword" xml:space="preserve">
-    <value>The 'inherits' keyword is not allowed when a '{0}' keyword is used.</value>
-  </data>
-  <data name="MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName" xml:space="preserve">
-    <value>The '{0}' keyword must be followed by a type name on the same line.</value>
-  </data>
-  <data name="MvcRazorCodeParser_OnlyOneModelStatementIsAllowed" xml:space="preserve">
-    <value>Only one '{0}' statement is allowed in a file.</value>
-  </data>
   <data name="RazorPage_ThereIsNoActiveWritingScopeToEnd" xml:space="preserve">
     <value>There is no active writing scope to end.</value>
   </data>
@@ -164,9 +155,6 @@
   </data>
   <data name="SectionsNotRendered" xml:space="preserve">
     <value>The following sections have been defined but have not been rendered by the page at '{0}': '{1}'. To ignore an unrendered section call {2}("sectionName").</value>
-  </data>
-  <data name="ViewCannotBeActivated" xml:space="preserve">
-    <value>View of type '{0}' cannot be activated by '{1}'.</value>
   </data>
   <data name="ViewContextMustBeSet" xml:space="preserve">
     <value>'{0} must be set to access '{1}'.</value>

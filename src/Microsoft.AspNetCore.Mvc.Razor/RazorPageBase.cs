@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
         public ITempDataDictionary TempData => ViewContext?.TempData;
 
-        protected Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
+        private Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
 
         private ITagHelperFactory TagHelperFactory
         {
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public bool Suppressed { get; set; }
         }
 
-        protected struct TagHelperScopeInfo
+        private struct TagHelperScopeInfo
         {
             public TagHelperScopeInfo(ViewBuffer buffer, HtmlEncoder encoder, TextWriter writer)
             {

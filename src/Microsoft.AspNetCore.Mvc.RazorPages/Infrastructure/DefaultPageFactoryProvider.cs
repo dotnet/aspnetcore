@@ -13,13 +13,13 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class DefaultPageFactory : IPageFactoryProvider
+    public class DefaultPageFactoryProvider : IPageFactoryProvider
     {
         private readonly IPageActivatorProvider _pageActivator;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly RazorPagePropertyActivator.PropertyValueAccessors _propertyAccessors;
 
-        public DefaultPageFactory(
+        public DefaultPageFactoryProvider(
             IPageActivatorProvider pageActivator,
             IModelMetadataProvider metadataProvider,
             IUrlHelperFactory urlHelperFactory,

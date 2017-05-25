@@ -81,48 +81,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             => string.Format(CultureInfo.CurrentCulture, GetString("LayoutCannotBeRendered"), p0, p1);
 
         /// <summary>
-        /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
-        /// </summary>
-        internal static string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword
-        {
-            get => GetString("MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword");
-        }
-
-        /// <summary>
-        /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
-        /// </summary>
-        internal static string FormatMvcRazorCodeParser_CannotHaveModelAndInheritsKeyword(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword"), p0);
-
-        /// <summary>
-        /// The '{0}' keyword must be followed by a type name on the same line.
-        /// </summary>
-        internal static string MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName
-        {
-            get => GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName");
-        }
-
-        /// <summary>
-        /// The '{0}' keyword must be followed by a type name on the same line.
-        /// </summary>
-        internal static string FormatMvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName"), p0);
-
-        /// <summary>
-        /// Only one '{0}' statement is allowed in a file.
-        /// </summary>
-        internal static string MvcRazorCodeParser_OnlyOneModelStatementIsAllowed
-        {
-            get => GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed");
-        }
-
-        /// <summary>
-        /// Only one '{0}' statement is allowed in a file.
-        /// </summary>
-        internal static string FormatMvcRazorCodeParser_OnlyOneModelStatementIsAllowed(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorCodeParser_OnlyOneModelStatementIsAllowed"), p0);
-
-        /// <summary>
         /// There is no active writing scope to end.
         /// </summary>
         internal static string RazorPage_ThereIsNoActiveWritingScopeToEnd
@@ -233,20 +191,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         internal static string FormatSectionsNotRendered(object p0, object p1, object p2)
             => string.Format(CultureInfo.CurrentCulture, GetString("SectionsNotRendered"), p0, p1, p2);
-
-        /// <summary>
-        /// View of type '{0}' cannot be activated by '{1}'.
-        /// </summary>
-        internal static string ViewCannotBeActivated
-        {
-            get => GetString("ViewCannotBeActivated");
-        }
-
-        /// <summary>
-        /// View of type '{0}' cannot be activated by '{1}'.
-        /// </summary>
-        internal static string FormatViewCannotBeActivated(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ViewCannotBeActivated"), p0, p1);
 
         /// <summary>
         /// '{0} must be set to access '{1}'.

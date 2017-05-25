@@ -30,9 +30,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             _metadataProvider = metadataProvider;
 
-            _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
-            _rootFactory = ViewDataDictionaryFactory.CreateFactory(modelType.GetTypeInfo());
-            _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(modelType.GetTypeInfo());
+
+            if (modelType != null)
+            {
+                _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
+                _rootFactory = ViewDataDictionaryFactory.CreateFactory(modelType.GetTypeInfo());
+                _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(modelType.GetTypeInfo());
+            }
 
             _propertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
                     pageType,
@@ -48,7 +52,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.ViewData = CreateViewDataDictionary(context);
+            if (_viewDataDictionaryType != null)
+            {
+                context.ViewData = CreateViewDataDictionary(context);
+            }
 
             for (var i = 0; i < _propertyActivators.Length; i++)
             {

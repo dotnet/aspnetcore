@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             _razorViewEngine = razorViewEngine;
             _htmlEncoder = htmlEncoder;
-            _razorPageActivator = new PassThruRazorPageActivator(razorPageActivator);
+            _razorPageActivator = razorPageActivator;
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 _razorViewEngine,
                 _razorPageActivator,
                 viewStarts,
-                result.Page,
+                new RazorPageAdapter(result.Page),
                 _htmlEncoder);
 
             return ExecuteAsync(viewContext, result.ContentType, result.StatusCode);

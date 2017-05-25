@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Assert.NotNull(testPage.ModelExpressionProviderWithInject);
         }
 
-        private static DefaultPageFactory CreatePageFactory(
+        private static DefaultPageFactoryProvider CreatePageFactory(
             IPageActivatorProvider pageActivator = null,
             IModelMetadataProvider provider = null,
             IUrlHelperFactory urlHelperFactory = null,
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             HtmlEncoder htmlEncoder = null,
             IModelExpressionProvider modelExpressionProvider = null)
         {
-            return new DefaultPageFactory(
+            return new DefaultPageFactoryProvider(
                 pageActivator ?? CreateActivator(),
                 provider ?? Mock.Of<IModelMetadataProvider>(),
                 urlHelperFactory ?? Mock.Of<IUrlHelperFactory>(),

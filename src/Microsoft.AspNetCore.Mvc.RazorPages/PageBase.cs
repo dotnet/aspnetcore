@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     /// A base class for a Razor page.
     /// </summary>
     [PagesBaseClass]
-    public abstract class PageBase : RazorPageBase, IRazorPage
+    public abstract class PageBase : RazorPageBase
     {
         private IObjectModelValidator _objectValidator;
         private IModelMetadataProvider _metadataProvider;
@@ -112,6 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <inheritdoc />
         public override void EnsureRenderedBodyOrSections()
         {
+            // This will never be called by MVC. MVC only calls this method on layout pages, and a Page can never be a layout page.
             throw new NotSupportedException();
         }
 
