@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -77,7 +77,12 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new NotImplementedException();
             }
 
-            public Task ChallengeAsync(ChallengeContext context)
+            public Task ChallengeAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ForbidAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
@@ -94,12 +99,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(0);
             }
 
-            public Task SignInAsync(SignInContext context)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SignOutAsync(SignOutContext context)
+            public Task SignOutAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
@@ -114,7 +119,12 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new NotImplementedException();
             }
 
-            public Task ChallengeAsync(ChallengeContext context)
+            public Task ChallengeAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ForbidAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
@@ -130,12 +140,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(0);
             }
 
-            public Task SignInAsync(SignInContext context)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SignOutAsync(SignOutContext context)
+            public Task SignOutAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
@@ -150,7 +160,12 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new NotImplementedException();
             }
 
-            public Task ChallengeAsync(ChallengeContext context)
+            public Task ChallengeAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ForbidAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
@@ -166,12 +181,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(0);
             }
 
-            public Task SignInAsync(SignInContext context)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SignOutAsync(SignOutContext context)
+            public Task SignOutAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }

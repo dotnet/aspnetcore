@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Authorization
         /// <summary>
         /// Gets or sets a comma delimited list of schemes from which user information is constructed.
         /// </summary>
-        string ActiveAuthenticationSchemes { get; set; }
+        string AuthenticationSchemes { get; set; }
     }
 }

@@ -140,15 +140,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
         }
 
-        protected override async Task HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var properties = context.Properties;
-
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = CurrentUri;

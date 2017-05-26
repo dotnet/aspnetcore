@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -44,23 +45,26 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         {
             var dic = new Dictionary<string, string>
             {
-                {"Facebook:AppId", "<id>"},
-                {"Facebook:AppSecret", "<secret>"},
-                {"Facebook:AuthorizationEndpoint", "<authEndpoint>"},
-                {"Facebook:BackchannelTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:AppId", "<id>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:AppSecret", "<secret>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:AuthorizationEndpoint", "<authEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:BackchannelTimeout", "0.0:0:30"},
                 //{"Facebook:CallbackPath", "/callbackpath"}, // PathString doesn't convert
-                {"Facebook:ClaimsIssuer", "<issuer>"},
-                {"Facebook:RemoteAuthenticationTimeout", "0.0:0:30"},
-                {"Facebook:SaveTokens", "true"},
-                {"Facebook:SendAppSecretProof", "true"},
-                {"Facebook:SignInScheme", "<signIn>"},
-                {"Facebook:TokenEndpoint", "<tokenEndpoint>"},
-                {"Facebook:UserInformationEndpoint", "<userEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:ClaimsIssuer", "<issuer>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:RemoteAuthenticationTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:SaveTokens", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:SendAppSecretProof", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:SignInScheme", "<signIn>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:TokenEndpoint", "<tokenEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:UserInformationEndpoint", "<userEndpoint>"},
             };
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddFacebookAuthentication().AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection()
+                .AddSingleton<IConfigureOptions<FacebookOptions>, ConfigureDefaults<FacebookOptions>>()
+                .AddFacebookAuthentication()
+                .AddSingleton<IConfiguration>(config);
             var sp = services.BuildServiceProvider();
 
             var options = sp.GetRequiredService<IOptionsSnapshot<FacebookOptions>>().Get(FacebookDefaults.AuthenticationScheme);

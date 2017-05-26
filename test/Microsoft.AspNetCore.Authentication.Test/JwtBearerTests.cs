@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
@@ -43,21 +44,24 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var dic = new Dictionary<string, string>
             {
-                {"Bearer:Audience", "<audience>"},
-                {"Bearer:Authority", "<authority>"},
-                {"Bearer:BackchannelTimeout", "0.0:0:30"},
-                {"Bearer:Challenge", "<challenge>"},
-                {"Bearer:ClaimsIssuer", "<issuer>"},
-                {"Bearer:IncludeErrorDetails", "true"},
-                {"Bearer:MetadataAddress", "<metadata>"},
-                {"Bearer:RefreshOnIssuerKeyNotFound", "true"},
-                {"Bearer:RequireHttpsMetadata", "false"},
-                {"Bearer:SaveToken", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:Audience", "<audience>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:Authority", "<authority>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:BackchannelTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:Challenge", "<challenge>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:ClaimsIssuer", "<issuer>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:IncludeErrorDetails", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:MetadataAddress", "<metadata>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:RefreshOnIssuerKeyNotFound", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:SaveToken", "true"},
             };
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddJwtBearerAuthentication().AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection()
+                .AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureDefaults<JwtBearerOptions>>()
+                .AddJwtBearerAuthentication()
+                .AddSingleton<IConfiguration>(config);
             var sp = services.BuildServiceProvider();
 
             var options = sp.GetRequiredService<IOptionsSnapshot<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
@@ -74,21 +78,26 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
-        public void AddWithDelegateIgnoresConfig()
+        public void AddWithDelegateOverridesConfig()
         {
             var dic = new Dictionary<string, string>
             {
-                {"Bearer:Audience", "<audience>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:Audience", "<audience>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:Authority", "<authority>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"}
             };
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddJwtBearerAuthentication(o => o.IncludeErrorDetails = true).AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection()
+                .AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureDefaults<JwtBearerOptions>>()
+                .AddJwtBearerAuthentication(o => o.Authority = "authority")
+                .AddSingleton<IConfiguration>(config);
             var sp = services.BuildServiceProvider();
 
             var options = sp.GetRequiredService<IOptionsSnapshot<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
-            Assert.Null(options.Audience);
-            Assert.True(options.IncludeErrorDetails);
+            Assert.Equal("<audience>", options.Audience);
+            Assert.Equal("authority", options.Authority);
         }
 
         [ConditionalFact(Skip = "Need to remove dependency on AAD since the generated tokens will expire")]
@@ -438,27 +447,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer Token");
             Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
             Assert.Equal("Bob le Tout Puissant", response.ResponseText);
-        }
-
-        [Fact]
-        public async Task BearerTurns401To403IfAuthenticated()
-        {
-            var server = CreateServer(options =>
-            {
-                options.SecurityTokenValidators.Clear();
-                options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
-            });
-
-            var response = await SendAsync(server, "http://example.com/unauthorized", "Bearer Token");
-            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
-        }
-
-        [Fact]
-        public async Task BearerDoesNothingTo401IfNotAuthenticated()
-        {
-            var server = CreateServer();
-            var response = await SendAsync(server, "http://example.com/unauthorized");
-            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
         }
 
         [Fact]

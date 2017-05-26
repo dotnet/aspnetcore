@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -43,23 +44,26 @@ namespace Microsoft.AspNetCore.Authentication.Google
         {
             var dic = new Dictionary<string, string>
             {
-                {"Google:ClientId", "<id>"},
-                {"Google:ClientSecret", "<secret>"},
-                {"Google:AuthorizationEndpoint", "<authEndpoint>"},
-                {"Google:BackchannelTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:ClientId", "<id>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:ClientSecret", "<secret>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:AuthorizationEndpoint", "<authEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:BackchannelTimeout", "0.0:0:30"},
                 //{"Google:CallbackPath", "/callbackpath"}, // PathString doesn't convert
-                {"Google:ClaimsIssuer", "<issuer>"},
-                {"Google:RemoteAuthenticationTimeout", "0.0:0:30"},
-                {"Google:SaveTokens", "true"},
-                {"Google:SendAppSecretProof", "true"},
-                {"Google:SignInScheme", "<signIn>"},
-                {"Google:TokenEndpoint", "<tokenEndpoint>"},
-                {"Google:UserInformationEndpoint", "<userEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:ClaimsIssuer", "<issuer>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:RemoteAuthenticationTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:SaveTokens", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:SendAppSecretProof", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:SignInScheme", "<signIn>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:TokenEndpoint", "<tokenEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Google:UserInformationEndpoint", "<userEndpoint>"},
             };
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddGoogleAuthentication().AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection()
+                .AddSingleton<IConfigureOptions<GoogleOptions>, ConfigureDefaults<GoogleOptions>>()
+                .AddGoogleAuthentication()
+                .AddSingleton<IConfiguration>(config);
             var sp = services.BuildServiceProvider();
 
             var options = sp.GetRequiredService<IOptionsSnapshot<GoogleOptions>>().Get(GoogleDefaults.AuthenticationScheme);
@@ -881,42 +885,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
 
             // Ensure claims transformation
             Assert.Equal("yup", transaction.FindClaimValue("xform"));
-        }
-
-        [Fact]
-        public async Task ChallengeGoogleWhenAlreadySignedInReturnsForbidden()
-        {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
-            var server = CreateServer(o =>
-            {
-                o.ClientId = "Test Id";
-                o.ClientSecret = "Test Secret";
-                o.StateDataFormat = stateFormat;
-                o.SaveTokens = true;
-                o.BackchannelHttpHandler = CreateBackchannel();
-            });
-
-            // Skip the challenge step, go directly to the callback path
-
-            var properties = new AuthenticationProperties();
-            var correlationKey = ".xsrf";
-            var correlationValue = "TestCorrelationId";
-            properties.Items.Add(correlationKey, correlationValue);
-            properties.RedirectUri = "/me";
-            var state = stateFormat.Protect(properties);
-            var transaction = await server.SendAsync(
-                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
-            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
-            Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
-            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
-
-            var authCookie = transaction.AuthenticationCookieValue;
-            transaction = await server.SendAsync("https://example.com/challenge", authCookie);
-            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.StartsWith("https://example.com/Account/AccessDenied?", transaction.Response.Headers.Location.OriginalString);
         }
 
         [Fact]

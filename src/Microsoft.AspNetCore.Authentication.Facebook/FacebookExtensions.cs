@@ -3,29 +3,21 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.Facebook;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class FacebookAuthenticationOptionsExtensions
     {
-        /// <summary>
-        /// Adds facebook authentication with options bound against the "Facebook" section 
-        /// from the IConfiguration in the service container.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services)
-        {
-            services.AddSingleton<IConfigureOptions<FacebookOptions>, FacebookConfigureOptions>();
-            return services.AddFacebookAuthentication(FacebookDefaults.AuthenticationScheme, _ => { });
-        }
+        public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services) 
+            => services.AddFacebookAuthentication(FacebookDefaults.AuthenticationScheme, _ => { });
 
         public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services, Action<FacebookOptions> configureOptions) 
             => services.AddFacebookAuthentication(FacebookDefaults.AuthenticationScheme, configureOptions);
 
         public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services, string authenticationScheme, Action<FacebookOptions> configureOptions)
         {
+            services.AddSingleton<ConfigureDefaultOptions<FacebookOptions>, FacebookConfigureOptions>();
             return services.AddOAuthAuthentication<FacebookOptions, FacebookHandler>(authenticationScheme, configureOptions);
         }
     }

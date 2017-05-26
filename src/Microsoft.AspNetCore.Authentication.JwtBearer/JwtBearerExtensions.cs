@@ -5,22 +5,14 @@ using System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class JwtBearerExtensions
     {
-        /// <summary>
-        /// Adds JwtBearer authentication with options bound against the "Bearer" section 
-        /// from the IConfiguration in the service container.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services)
-        {
-            services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerConfigureOptions>();
-            return services.AddJwtBearerAuthentication(JwtBearerDefaults.AuthenticationScheme, _ => { });
-        }
+        public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services) 
+            => services.AddJwtBearerAuthentication(JwtBearerDefaults.AuthenticationScheme, _ => { });
 
         public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services, Action<JwtBearerOptions> configureOptions) 
             => services.AddJwtBearerAuthentication(JwtBearerDefaults.AuthenticationScheme, configureOptions);
@@ -28,6 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services, string authenticationScheme, Action<JwtBearerOptions> configureOptions)
         {
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<JwtBearerOptions>, JwtBearerInitializer>());
+            services.AddSingleton<ConfigureDefaultOptions<JwtBearerOptions>, JwtBearerConfigureOptions>();
             return services.AddScheme<JwtBearerOptions, JwtBearerHandler>(authenticationScheme, configureOptions);
         }
     }

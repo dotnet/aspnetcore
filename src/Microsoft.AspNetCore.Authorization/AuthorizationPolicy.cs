@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Authorization
                     policyBuilder.RequireRole(trimmedRolesSplit);
                     useDefaultPolicy = false;
                 }
-                var authTypesSplit = authorizeDatum.ActiveAuthenticationSchemes?.Split(',');
+                var authTypesSplit = authorizeDatum.AuthenticationSchemes?.Split(',');
                 if (authTypesSplit != null && authTypesSplit.Any())
                 {
                     foreach (var authType in authTypesSplit)

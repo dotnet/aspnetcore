@@ -5,22 +5,14 @@ using System;
 using Microsoft.AspNetCore.Authentication.Twitter;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class TwitterExtensions
     {
-        /// <summary>
-        /// Adds Twitter authentication with options bound against the "Twitter" section 
-        /// from the IConfiguration in the service container.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
         public static IServiceCollection AddTwitterAuthentication(this IServiceCollection services)
-        {
-            services.AddSingleton<IConfigureOptions<TwitterOptions>, TwitterConfigureOptions>();
-            return services.AddTwitterAuthentication(TwitterDefaults.AuthenticationScheme, _ => { });
-        }
+            => services.AddTwitterAuthentication(TwitterDefaults.AuthenticationScheme, _ => { });
 
         public static IServiceCollection AddTwitterAuthentication(this IServiceCollection services, Action<TwitterOptions> configureOptions)
             => services.AddTwitterAuthentication(TwitterDefaults.AuthenticationScheme, configureOptions);
@@ -28,6 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddTwitterAuthentication(this IServiceCollection services, string authenticationScheme, Action<TwitterOptions> configureOptions)
         {
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<TwitterOptions>, TwitterInitializer>());
+            services.AddSingleton<ConfigureDefaultOptions<TwitterOptions>, TwitterConfigureOptions>();
             return services.AddRemoteScheme<TwitterOptions, TwitterHandler>(authenticationScheme, authenticationScheme, configureOptions);
         }
     }

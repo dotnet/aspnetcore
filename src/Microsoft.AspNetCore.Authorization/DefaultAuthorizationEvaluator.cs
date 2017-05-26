@@ -9,23 +9,15 @@ namespace Microsoft.AspNetCore.Authorization
     public class DefaultAuthorizationEvaluator : IAuthorizationEvaluator
     {
         /// <summary>
-        /// Returns true, if authorization has failed.
+        /// Determines whether the authorization result was successful or not.
         /// </summary>
         /// <param name="context">The authorization information.</param>
-        /// <returns>True if authorization has failed.</returns>
-        public virtual bool HasFailed(AuthorizationHandlerContext context)
-        {
-            return context.HasFailed;
-        }
-
-        /// <summary>
-        /// Returns true, if authorization has succeeded.
-        /// </summary>
-        /// <param name="context">The authorization information.</param>
-        /// <returns>True if authorization has succeeded.</returns>
-        public virtual bool HasSucceeded(AuthorizationHandlerContext context)
-        {
-            return context.HasSucceeded;
-        }
+        /// <returns>The <see cref="AuthorizationResult"/>.</returns>
+        public AuthorizationResult Evaluate(AuthorizationHandlerContext context)
+            => context.HasSucceeded
+                ? AuthorizationResult.Success()
+                : AuthorizationResult.Failed(context.HasFailed
+                    ? AuthorizationFailure.ExplicitFail()
+                    : AuthorizationFailure.Failed(context.PendingRequirements));
     }
 }

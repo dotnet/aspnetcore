@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
-        protected override async Task HandleSignInAsync(SignInContext signin)
+        protected override async Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
             _signInCalled = true;
 
@@ -259,8 +259,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 Context,
                 Scheme,
                 Options,
-                signin.Principal,
-                signin.Properties,
+                user,
+                properties,
                 cookieOptions);
 
             DateTimeOffset issuedUtc;
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             await ApplyHeaders(shouldRedirect, signedInContext.Properties);
         }
 
-        protected override async Task HandleSignOutAsync(SignOutContext signOutContext)
+        protected override async Task HandleSignOutAsync(AuthenticationProperties properties)
         {
             _signOutCalled = true;
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 Context,
                 Scheme,
                 Options,
-                signOutContext.Properties,
+                properties,
                 cookieOptions);
 
             await Events.SigningOut(context);
@@ -401,9 +401,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return path[0] == '/' && path[1] != '/' && path[1] != '\\';
         }
 
-        protected override async Task HandleForbiddenAsync(ChallengeContext context)
+        protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
         {
-            var properties = context.Properties;
             var returnUrl = properties.RedirectUri;
             if (string.IsNullOrEmpty(returnUrl))
             {
@@ -414,14 +413,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             await Events.RedirectToAccessDenied(redirectContext);
         }
 
-        protected override async Task HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var properties = context.Properties;
             var redirectUri = properties.RedirectUri;
             if (string.IsNullOrEmpty(redirectUri))
             {

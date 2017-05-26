@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
-    internal class MicrosoftAccountConfigureOptions : ConfigureNamedOptions<MicrosoftAccountOptions>
+    internal class MicrosoftAccountConfigureOptions : ConfigureDefaultOptions<MicrosoftAccountOptions>
     {
         // Bind to "Microsoft" section by default
         public MicrosoftAccountConfigureOptions(IConfiguration config) :
             base(MicrosoftAccountDefaults.AuthenticationScheme,
-                options => config.GetSection(MicrosoftAccountDefaults.AuthenticationScheme).Bind(options))
+                options => config.GetSection("Microsoft:AspNetCore:Authentication:Schemes:"+MicrosoftAccountDefaults.AuthenticationScheme).Bind(options))
         { }
     }
 }

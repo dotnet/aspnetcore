@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
@@ -37,20 +38,23 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             var dic = new Dictionary<string, string>
             {
-                {"Twitter:ConsumerKey", "<key>"},
-                {"Twitter:ConsumerSecret", "<secret>"},
-                {"Twitter:BackchannelTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Twitter:ConsumerKey", "<key>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Twitter:ConsumerSecret", "<secret>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Twitter:BackchannelTimeout", "0.0:0:30"},
                 //{"Twitter:CallbackPath", "/callbackpath"}, // PathString doesn't convert
-                {"Twitter:ClaimsIssuer", "<issuer>"},
-                {"Twitter:RemoteAuthenticationTimeout", "0.0:0:30"},
-                {"Twitter:SaveTokens", "true"},
-                {"Twitter:SendAppSecretProof", "true"},
-                {"Twitter:SignInScheme", "<signIn>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Twitter:ClaimsIssuer", "<issuer>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Twitter:RemoteAuthenticationTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Twitter:SaveTokens", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Twitter:SendAppSecretProof", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Twitter:SignInScheme", "<signIn>"},
             };
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddTwitterAuthentication().AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection()
+                .AddSingleton<IConfigureOptions<TwitterOptions>, ConfigureDefaults<TwitterOptions>>()
+                .AddTwitterAuthentication()
+                .AddSingleton<IConfiguration>(config);
             var sp = services.BuildServiceProvider();
 
             var options = sp.GetRequiredService<IOptionsSnapshot<TwitterOptions>>().Get(TwitterDefaults.AuthenticationScheme);

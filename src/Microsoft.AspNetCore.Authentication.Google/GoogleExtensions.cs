@@ -3,29 +3,21 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class GoogleExtensions
     {
-        /// <summary>
-        /// Adds google authentication with options bound against the "Google" section 
-        /// from the IConfiguration in the service container.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services)
-        {
-            services.AddSingleton<IConfigureOptions<GoogleOptions>, GoogleConfigureOptions>();
-            return services.AddGoogleAuthentication(GoogleDefaults.AuthenticationScheme, _ => { });
-        }
+        public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services) 
+            => services.AddGoogleAuthentication(GoogleDefaults.AuthenticationScheme, _ => { });
 
         public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services, Action<GoogleOptions> configureOptions) 
             => services.AddGoogleAuthentication(GoogleDefaults.AuthenticationScheme, configureOptions);
 
         public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services, string authenticationScheme, Action<GoogleOptions> configureOptions)
         {
+            services.AddSingleton<ConfigureDefaultOptions<GoogleOptions>, GoogleConfigureOptions>();
             return services.AddOAuthAuthentication<GoogleOptions, GoogleHandler>(authenticationScheme, configureOptions);
         }
     }

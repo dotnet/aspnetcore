@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.AspNetCore.Authentication.Google
 {
-    internal class GoogleConfigureOptions : ConfigureNamedOptions<GoogleOptions>
+    internal class GoogleConfigureOptions : ConfigureDefaultOptions<GoogleOptions>
     {
         public GoogleConfigureOptions(IConfiguration config) :
             base(GoogleDefaults.AuthenticationScheme,
-                options => config.GetSection(GoogleDefaults.AuthenticationScheme).Bind(options))
+                options => config.GetSection("Microsoft:AspNetCore:Authentication:Schemes:"+GoogleDefaults.AuthenticationScheme).Bind(options))
         { }
     }
 }

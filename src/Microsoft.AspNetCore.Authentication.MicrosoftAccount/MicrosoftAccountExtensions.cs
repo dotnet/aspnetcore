@@ -3,29 +3,21 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class MicrosoftAccountExtensions
     {
-        /// <summary>
-        /// Adds MicrosoftAccount authentication with options bound against the "Microsoft" section 
-        /// from the IConfiguration in the service container.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddMicrosoftAccountAuthentication(this IServiceCollection services)
-        {
-            services.AddSingleton<IConfigureOptions<MicrosoftAccountOptions>, MicrosoftAccountConfigureOptions>();
-            return services.AddMicrosoftAccountAuthentication(MicrosoftAccountDefaults.AuthenticationScheme, o => { });
-        }
+        public static IServiceCollection AddMicrosoftAccountAuthentication(this IServiceCollection services) 
+            => services.AddMicrosoftAccountAuthentication(MicrosoftAccountDefaults.AuthenticationScheme, _ => { });
 
-        public static IServiceCollection AddMicrosoftAccountAuthentication(this IServiceCollection services, Action<MicrosoftAccountOptions> configureOptions) =>
-            services.AddMicrosoftAccountAuthentication(MicrosoftAccountDefaults.AuthenticationScheme, configureOptions);
+        public static IServiceCollection AddMicrosoftAccountAuthentication(this IServiceCollection services, Action<MicrosoftAccountOptions> configureOptions) 
+            => services.AddMicrosoftAccountAuthentication(MicrosoftAccountDefaults.AuthenticationScheme, configureOptions);
 
         public static IServiceCollection AddMicrosoftAccountAuthentication(this IServiceCollection services, string authenticationScheme, Action<MicrosoftAccountOptions> configureOptions)
         {
+            services.AddSingleton<ConfigureDefaultOptions<MicrosoftAccountOptions>, MicrosoftAccountConfigureOptions>();
             return services.AddOAuthAuthentication<MicrosoftAccountOptions, MicrosoftAccountHandler>(authenticationScheme, configureOptions);
         }
     }

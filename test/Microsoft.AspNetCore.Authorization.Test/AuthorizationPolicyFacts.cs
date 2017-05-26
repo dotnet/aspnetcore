@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Authroization.Test
             // Arrange
             var attributes = new AuthorizeAttribute[] {
                 new AuthorizeAttribute(),
-                new AuthorizeAttribute("1") { ActiveAuthenticationSchemes = "dupe" },
-                new AuthorizeAttribute("2") { ActiveAuthenticationSchemes = "dupe" },
-                new AuthorizeAttribute { Roles = "r1,r2", ActiveAuthenticationSchemes = "roles" },
+                new AuthorizeAttribute("1") { AuthenticationSchemes = "dupe" },
+                new AuthorizeAttribute("2") { AuthenticationSchemes = "dupe" },
+                new AuthorizeAttribute { Roles = "r1,r2", AuthenticationSchemes = "roles" },
             };
             var options = new AuthorizationOptions();
             options.AddPolicy("1", policy => policy.RequireClaim("1"));
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Authroization.Test
             // Arrange
             var attributes = new AuthorizeAttribute[] {
                 new AuthorizeAttribute(),
-                new AuthorizeAttribute("2") { ActiveAuthenticationSchemes = "dupe" }
+                new AuthorizeAttribute("2") { AuthenticationSchemes = "dupe" }
             };
             var options = new AuthorizationOptions();
             options.DefaultPolicy = new AuthorizationPolicyBuilder("default").RequireClaim("default").Build();
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Authroization.Test
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
-                new AuthorizeAttribute() { ActiveAuthenticationSchemes = "a1 , a2" }
+                new AuthorizeAttribute() { AuthenticationSchemes = "a1 , a2" }
             };
             var options = new AuthorizationOptions();
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Authroization.Test
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
-                new AuthorizeAttribute() { ActiveAuthenticationSchemes = "a1 , , ,,, a2" }
+                new AuthorizeAttribute() { AuthenticationSchemes = "a1 , , ,,, a2" }
             };
             var options = new AuthorizationOptions();
 

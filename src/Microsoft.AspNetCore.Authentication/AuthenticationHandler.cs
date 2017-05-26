@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -178,44 +179,41 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected abstract Task<AuthenticateResult> HandleAuthenticateAsync();
 
-        public async Task SignInAsync(SignInContext context)
+        public async Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
-            if (context == null)
+            if (user == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(user));
             }
 
-            await HandleSignInAsync(context);
+            properties = properties ?? new AuthenticationProperties();
+            await HandleSignInAsync(user, properties);
             Logger.AuthenticationSchemeSignedIn(Scheme.Name);
         }
 
-        protected virtual Task HandleSignInAsync(SignInContext context)
+        protected virtual Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
             return TaskCache.CompletedTask;
         }
 
-        public async Task SignOutAsync(SignOutContext context)
+        public async Task SignOutAsync(AuthenticationProperties properties)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            await HandleSignOutAsync(context);
+            properties = properties ?? new AuthenticationProperties();
+            await HandleSignOutAsync(properties);
             Logger.AuthenticationSchemeSignedOut(Scheme.Name);
         }
 
-        protected virtual Task HandleSignOutAsync(SignOutContext context)
+        protected virtual Task HandleSignOutAsync(AuthenticationProperties properties)
         {
             return TaskCache.CompletedTask;
         }
 
         /// <summary>
-        /// Override this method to deal with a challenge that is forbidden.
+        /// Override this method to handle Forbid.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="properties"></param>
         /// <returns>A Task.</returns>
-        protected virtual Task HandleForbiddenAsync(ChallengeContext context)
+        protected virtual Task HandleForbiddenAsync(AuthenticationProperties properties)
         {
             Response.StatusCode = 403;
             return TaskCache.CompletedTask;
@@ -226,35 +224,26 @@ namespace Microsoft.AspNetCore.Authentication
         /// deals an authentication interaction as part of it's request flow. (like adding a response header, or
         /// changing the 401 result to 302 of a login page or external sign-in location.)
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="properties"></param>
         /// <returns>A Task.</returns>
-        protected virtual Task HandleUnauthorizedAsync(ChallengeContext context)
+        protected virtual Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             Response.StatusCode = 401;
             return TaskCache.CompletedTask;
         }
 
-        public async Task ChallengeAsync(ChallengeContext context)
+        public async Task ChallengeAsync(AuthenticationProperties properties)
         {
-            switch (context.Behavior)
-            {
-                case ChallengeBehavior.Automatic:
-                    // If there is a principal already, invoke the forbidden code path
-                    var result = await HandleAuthenticateOnceSafeAsync();
-                    if (result?.Principal != null)
-                    {
-                        goto case ChallengeBehavior.Forbidden;
-                    }
-                    goto case ChallengeBehavior.Unauthorized;
-                case ChallengeBehavior.Unauthorized:
-                    await HandleUnauthorizedAsync(context);
-                    Logger.AuthenticationSchemeChallenged(Scheme.Name);
-                    break;
-                case ChallengeBehavior.Forbidden:
-                    await HandleForbiddenAsync(context);
-                    Logger.AuthenticationSchemeForbidden(Scheme.Name);
-                    break;
-            }
+            properties = properties ?? new AuthenticationProperties();
+            await HandleChallengeAsync(properties);
+            Logger.AuthenticationSchemeChallenged(Scheme.Name);
+        }
+
+        public async Task ForbidAsync(AuthenticationProperties properties)
+        {
+            properties = properties ?? new AuthenticationProperties();
+            await HandleForbiddenAsync(properties);
+            Logger.AuthenticationSchemeForbidden(Scheme.Name);
         }
     }
 }

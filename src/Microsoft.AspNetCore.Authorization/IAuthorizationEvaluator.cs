@@ -9,17 +9,10 @@ namespace Microsoft.AspNetCore.Authorization
     public interface IAuthorizationEvaluator
     {
         /// <summary>
-        /// Returns true, if authorization has failed.
+        /// Determines whether the authorization result was successful or not.
         /// </summary>
         /// <param name="context">The authorization information.</param>
-        /// <returns>True if authorization has failed.</returns>
-        bool HasFailed(AuthorizationHandlerContext context);
-
-        /// <summary>
-        /// Returns true, if authorization has succeeded.
-        /// </summary>
-        /// <param name="context">The authorization information.</param>
-        /// <returns>True if authorization has succeeded.</returns>
-        bool HasSucceeded(AuthorizationHandlerContext context);
+        /// <returns>The <see cref="AuthorizationResult"/>.</returns>
+        AuthorizationResult Evaluate(AuthorizationHandlerContext context);
     }
 }

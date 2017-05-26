@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -44,23 +45,26 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
         {
             var dic = new Dictionary<string, string>
             {
-                {"Microsoft:ClientId", "<id>"},
-                {"Microsoft:ClientSecret", "<secret>"},
-                {"Microsoft:AuthorizationEndpoint", "<authEndpoint>"},
-                {"Microsoft:BackchannelTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:ClientId", "<id>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:ClientSecret", "<secret>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:AuthorizationEndpoint", "<authEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:BackchannelTimeout", "0.0:0:30"},
                 //{"Microsoft:CallbackPath", "/callbackpath"}, // PathString doesn't convert
-                {"Microsoft:ClaimsIssuer", "<issuer>"},
-                {"Microsoft:RemoteAuthenticationTimeout", "0.0:0:30"},
-                {"Microsoft:SaveTokens", "true"},
-                {"Microsoft:SendAppSecretProof", "true"},
-                {"Microsoft:SignInScheme", "<signIn>"},
-                {"Microsoft:TokenEndpoint", "<tokenEndpoint>"},
-                {"Microsoft:UserInformationEndpoint", "<userEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:ClaimsIssuer", "<issuer>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:RemoteAuthenticationTimeout", "0.0:0:30"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:SaveTokens", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:SendAppSecretProof", "true"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:SignInScheme", "<signIn>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:TokenEndpoint", "<tokenEndpoint>"},
+                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:UserInformationEndpoint", "<userEndpoint>"},
             };
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddMicrosoftAccountAuthentication().AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection()
+                .AddSingleton<IConfigureOptions<MicrosoftAccountOptions>, ConfigureDefaults<MicrosoftAccountOptions>>()
+                .AddMicrosoftAccountAuthentication()
+                .AddSingleton<IConfiguration>(config);
             var sp = services.BuildServiceProvider();
 
             var options = sp.GetRequiredService<IOptionsSnapshot<MicrosoftAccountOptions>>().Get(MicrosoftAccountDefaults.AuthenticationScheme);

@@ -5,22 +5,14 @@ using System;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class OpenIdConnectExtensions
     {
-        /// <summary>
-        /// Adds OpenIdConnect authentication with options bound against the "OpenIdConnect" section 
-        /// from the IConfiguration in the service container.
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
         public static IServiceCollection AddOpenIdConnectAuthentication(this IServiceCollection services)
-        {
-            services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, OpenIdConnectConfigureOptions>();
-            return services.AddOpenIdConnectAuthentication(OpenIdConnectDefaults.AuthenticationScheme, _ => { });
-        }
+            => services.AddOpenIdConnectAuthentication(OpenIdConnectDefaults.AuthenticationScheme, _ => { });
 
         public static IServiceCollection AddOpenIdConnectAuthentication(this IServiceCollection services, Action<OpenIdConnectOptions> configureOptions) 
             => services.AddOpenIdConnectAuthentication(OpenIdConnectDefaults.AuthenticationScheme, configureOptions);
@@ -28,6 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddOpenIdConnectAuthentication(this IServiceCollection services, string authenticationScheme, Action<OpenIdConnectOptions> configureOptions)
         {
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<OpenIdConnectOptions>, OpenIdConnectInitializer>());
+            services.AddSingleton<ConfigureDefaultOptions<OpenIdConnectOptions>, OpenIdConnectConfigureOptions>();
             return services.AddRemoteScheme<OpenIdConnectOptions, OpenIdConnectHandler>(authenticationScheme, authenticationScheme, configureOptions);
         }
     }

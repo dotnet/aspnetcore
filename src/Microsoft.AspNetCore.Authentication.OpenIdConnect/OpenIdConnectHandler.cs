@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Redirect user to the identity provider for sign out
         /// </summary>
         /// <returns>A task executing the sign out procedure</returns>
-        protected override async Task HandleSignOutAsync(SignOutContext signout)
+        protected override async Task HandleSignOutAsync(AuthenticationProperties properties)
         {
             Logger.EnteringOpenIdAuthenticationHandlerHandleSignOutAsync(GetType().FullName);
 
@@ -180,7 +180,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             };
 
             // Get the post redirect URI.
-            var properties = signout.Properties;
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = BuildRedirectUriIfRelative(Options.PostLogoutRedirectUri);
@@ -292,19 +291,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Responds to a 401 Challenge. Sends an OpenIdConnect message to the 'identity authority' to obtain an identity.
         /// </summary>
         /// <returns></returns>
-        protected override async Task HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             Logger.EnteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync(GetType().FullName);
 
             // order for local RedirectUri
             // 1. challenge.Properties.RedirectUri
             // 2. CurrentUri if RedirectUri is not set)
-            var properties = context.Properties;
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = CurrentUri;

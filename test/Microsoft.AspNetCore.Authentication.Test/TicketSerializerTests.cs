@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 

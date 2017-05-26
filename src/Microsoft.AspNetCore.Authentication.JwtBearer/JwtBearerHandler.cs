@@ -201,10 +201,10 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
         }
 
-        protected override async Task HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             var authResult = await HandleAuthenticateOnceSafeAsync();
-            var eventContext = new JwtBearerChallengeContext(Context, Scheme, Options, context.Properties)
+            var eventContext = new JwtBearerChallengeContext(Context, Scheme, Options, properties)
             {
                 AuthenticateFailure = authResult?.Failure
             };
@@ -330,12 +330,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             return string.Join("; ", messages);
         }
 
-        protected override Task HandleSignOutAsync(SignOutContext context)
+        protected override Task HandleSignOutAsync(AuthenticationProperties properties)
         {
             throw new NotSupportedException();
         }
 
-        protected override Task HandleSignInAsync(SignInContext context)
+        protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
             throw new NotSupportedException();
         }
