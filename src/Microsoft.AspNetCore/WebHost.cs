@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.AspNetCore
 {
@@ -124,6 +125,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
         ///     enables IIS integration,
+        ///     enables the ability for frameworks to bind their options to their default configuration sections,
         ///     and adds the developer exception page when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development'
         /// </remarks>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
@@ -143,6 +145,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
         ///     enables IIS integration,
+        ///     enables the ability for frameworks to bind their options to their default configuration sections,
         ///     and adds the developer exception page when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development'
         /// </remarks>
         /// <param name="args">The command line args.</param>
@@ -189,6 +192,7 @@ namespace Microsoft.AspNetCore
                 .ConfigureServices(services =>
                 {
                     services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
+                    services.ConfigureAspNetCoreDefaults();
                 });
 
             return builder;
