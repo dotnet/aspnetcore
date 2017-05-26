@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/20364")]
         public async Task Precompilation_WorksForSimpleApps()
         {
             // Arrange
