@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Microsoft.Extensions.Hosting
 {
     /// <summary>
@@ -11,11 +14,11 @@ namespace Microsoft.Extensions.Hosting
         /// <summary>
         /// Triggered when the application host is ready to start the service.
         /// </summary>
-        void Start();
+        Task StartAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Triggered when the application host is performing a graceful shutdown.
         /// </summary>
-        void Stop();
+        Task StopAsync(CancellationToken cancellationToken);
     }
 }

@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -19,11 +21,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _services = services;
         }
 
-        public void Start()
+        public async Task StartAsync(CancellationToken token)
         {
             try
             {
-                Execute(service => service.Start());
+                await ExecuteAsync(service => service.StartAsync(token));
             }
             catch (Exception ex)
             {
@@ -31,11 +33,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
-        public void Stop()
+        public async Task StopAsync(CancellationToken token)
         {
             try
             {
-                Execute(service => service.Stop());
+                await ExecuteAsync(service => service.StopAsync(token));
             }
             catch (Exception ex)
             {
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
-        private void Execute(Action<IHostedService> callback)
+        private async Task ExecuteAsync(Func<IHostedService, Task> callback)
         {
             List<Exception> exceptions = null;
 
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 try
                 {
-                    callback(service);
+                    await callback(service);
                 }
                 catch (Exception ex)
                 {

@@ -999,14 +999,16 @@ namespace Microsoft.AspNetCore.Hosting
             public bool StopCalled { get; set; }
             public bool DisposeCalled { get; set; }
 
-            public void Start()
+            public Task StartAsync(CancellationToken token)
             {
                 StartCalled = true;
+                return Task.CompletedTask;
             }
 
-            public void Stop()
+            public Task StopAsync(CancellationToken token)
             {
                 StopCalled = true;
+                return Task.CompletedTask;
             }
 
             public void Dispose()
@@ -1028,9 +1030,16 @@ namespace Microsoft.AspNetCore.Hosting
                 _disposing = disposing;
             }
 
-            public void Start() => _started();
-
-            public void Stop() => _stopping();
+            public Task StartAsync(CancellationToken token)
+            {
+                _started();
+                return Task.CompletedTask;
+            }
+            public Task StopAsync(CancellationToken token)
+            {
+                _stopping();
+                return Task.CompletedTask;
+            }
 
             public void Dispose() => _disposing();
         }
