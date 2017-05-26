@@ -291,29 +291,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Fact]
-        public async Task SynchronusExceptionEndsLongPollingConnection()
-        {
-            var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
-
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = MakeRequest("/foo", state);
-
-            var services = new ServiceCollection();
-            services.AddEndPoint<SynchronusExceptionEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<SynchronusExceptionEndPoint>();
-            var app = builder.Build();
-            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
-
-            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
-
-            ConnectionState removed;
-            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
-            Assert.False(exists);
-        }
-
-        [Fact]
         public async Task CompletedEndPointEndsLongPollingConnection()
         {
             var manager = CreateConnectionManager();

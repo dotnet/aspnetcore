@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public void Configure(IApplicationBuilder app, IHostingEnvironment env)
             {
                 app.UseSockets(options => options.MapEndPoint<EchoEndPoint>("echo"));
+                app.UseSignalR(options => options.MapHub<UncreatableHub>("uncreatable"));
             }
         }
 

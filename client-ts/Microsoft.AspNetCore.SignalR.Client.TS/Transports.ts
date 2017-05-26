@@ -125,7 +125,7 @@ export class ServerSentEventsTransport implements ITransport {
 
                     // don't report an error if the transport did not start successfully
                     if (this.eventSource && this.onClosed) {
-                        this.onClosed(new Error(e.message));
+                        this.onClosed(new Error(e.message || "Error occurred"));
                     }
                 }
 

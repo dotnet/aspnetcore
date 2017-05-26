@@ -3,20 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
-using Xunit;
-
-using ClientConnection = Microsoft.AspNetCore.Sockets.Client.Connection;
-using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Xunit.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
+using Xunit;
+using Xunit.Abstractions;
+using ClientConnection = Microsoft.AspNetCore.Sockets.Client.Connection;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -85,9 +86,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
                 const string message = "Major Key";
-                var baseUrl = _serverFixture.BaseUrl;
 
-                string url = baseUrl + "/echo";
+                var url = _serverFixture.BaseUrl + "/echo";
                 var connection = new ClientConnection(new Uri(url), loggerFactory);
                 try
                 {
@@ -157,9 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                var baseUrl = _serverFixture.BaseUrl;
-
-                string url = baseUrl + "/echo";
+                var url = _serverFixture.BaseUrl + "/echo";
                 var connection = new ClientConnection(new Uri(url), loggerFactory);
                 try
                 {
@@ -185,6 +183,62 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var receivedData = await receiveTcs.Task.OrTimeout();
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        public async Task ServerClosesConnectionWithErrorIfHubCannotBeCreated_WebSocket()
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await ServerClosesConnectionWithErrorIfHubCannotBeCreated(TransportType.WebSockets));
+            Assert.Equal("Websocket closed with error: InternalServerError.", exception.Message);
+        }
+
+        [Fact]
+        public async Task ServerClosesConnectionWithErrorIfHubCannotBeCreated_LongPolling()
+        {
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(
+                async () => await ServerClosesConnectionWithErrorIfHubCannotBeCreated(TransportType.LongPolling));
+            Assert.Equal("Response status code does not indicate success: 500 (Internal Server Error).", exception.Message);
+        }
+
+        private async Task ServerClosesConnectionWithErrorIfHubCannotBeCreated(TransportType transportType)
+        {
+            using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}"))
+            {
+                var logger = loggerFactory.CreateLogger<EndToEndTests>();
+
+                var url = _serverFixture.BaseUrl + "/uncreatable";
+                var connection = new HubConnection(new Uri(url), loggerFactory);
+                try
+                {
+                    var closeTcs = new TaskCompletionSource<object>();
+
+                    connection.Closed += e =>
+                    {
+                        logger.LogInformation("Connection closed");
+                        if (e != null)
+                        {
+                            closeTcs.TrySetException(e);
+                        }
+                        else
+                        {
+                            closeTcs.TrySetResult(null);
+                        }
+                    };
+
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync(transportType).OrTimeout();
+
+                    await closeTcs.Task.OrTimeout();
                 }
                 finally
                 {

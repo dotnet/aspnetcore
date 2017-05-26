@@ -65,6 +65,8 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                         await output.FlushAsync();
                     }
                 }
+
+                await _application.Completion;
             }
             catch (OperationCanceledException)
             {

@@ -114,6 +114,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             finally
             {
                 _transportCts.Cancel();
+                stream.Dispose();
             }
         }
 

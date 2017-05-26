@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                 var pollAgain = true;
 
-                // If the application ended before the transport task then we need to potentially need to end the 
+                // If the application ended before the transport task then we need to potentially need to end the
                 // connection
                 if (resultTask == state.ApplicationTask)
                 {

@@ -142,5 +142,21 @@ describe('hubConnection', () => {
                     });
             });
         });
+
+        it(`over ${signalR.TransportType[transportType]} closed with error if hub cannot be created`, done =>{
+            let errorRegex = {
+                WebSockets: "1011", // Message is browser specific (e.g. 'Websocket closed with status code: 1011')
+                LongPolling: "Status: 500",
+                ServerSentEvents: "Error occurred"
+            };
+
+            let hubConnection = new signalR.HubConnection(`http://${document.location.host}/uncreatable`, 'formatType=json&format=text');
+
+            hubConnection.onClosed = error => {
+                expect(error).toMatch(errorRegex[signalR.TransportType[transportType]]);
+                done();
+            }
+            hubConnection.start(transportType)
+        });
     });
 });

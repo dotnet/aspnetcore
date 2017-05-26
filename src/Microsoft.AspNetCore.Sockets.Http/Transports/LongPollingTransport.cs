@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             {
                 if (!await _application.WaitToReadAsync(token))
                 {
+                    await _application.Completion;
                     _logger.LogInformation("Terminating Long Polling connection by sending 204 response.");
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return;
@@ -81,6 +82,11 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 // Don't count this as cancellation, this is normal as the poll can end due to the browesr closing.
                 // The background thread will eventually dispose this connection if it's inactive
                 _logger.LogDebug("Client disconnected from Long Polling endpoint.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Long Polling transport was terminated due to an error");
+                throw;
             }
         }
     }
