@@ -5,6 +5,7 @@
     <AspNetCoreIntegrationTestingVersion>0.4.0-*</AspNetCoreIntegrationTestingVersion>
     <AspNetCoreModuleVersion>1.0.0-*</AspNetCoreModuleVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
+    <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
   </PropertyGroup>
