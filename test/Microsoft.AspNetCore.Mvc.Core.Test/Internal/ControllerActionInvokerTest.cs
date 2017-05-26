@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(4, sink.Writes.Count);
             Assert.Equal($"Executing action {displayName}", sink.Writes[0].State?.ToString());
             Assert.Equal($"Executing action method {displayName} with arguments ((null)) - ModelState is Valid", sink.Writes[1].State?.ToString());
-            Assert.Equal($"Executed action method {displayName}, returned result Microsoft.AspNetCore.Mvc.ContentResult.", sink.Writes[2].State?.ToString());
+            Assert.Equal($"Executed action method {displayName}, returned result {Result.GetType().FullName}.", sink.Writes[2].State?.ToString());
             // This message has the execution time embedded, which we don't want to verify.
             Assert.StartsWith($"Executed action {displayName} ", sink.Writes[3].State?.ToString());
         }
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Callback<ActionExecutedContext>(c => result = c.Result)
                 .Verifiable();
 
-            var invoker = CreateInvoker(filter.Object);
+            var invoker = CreateInvoker(filter.Object, result: Result);
 
             // Act
             await invoker.InvokeAsync();
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 })
                 .Verifiable();
 
-            var invoker = CreateInvoker(filter.Object);
+            var invoker = CreateInvoker(filter.Object, result: Result);
 
             // Act
             await invoker.InvokeAsync();
@@ -1397,7 +1397,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         protected override ResourceInvoker CreateInvoker(
             IFilterMetadata[] filters,
             Exception exception = null,
-            List<IValueProviderFactory> valueProviderFactories = null)
+            IActionResult result = null,
+            IList<IValueProviderFactory> valueProviderFactories = null)
         {
             var actionDescriptor = new ControllerActionDescriptor()
             {
@@ -1407,7 +1408,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 BoundProperties = new List<ParameterDescriptor>(),
             };
 
-            if (exception == Exception)
+            if (result == Result)
+            {
+                actionDescriptor.MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod));
+            }
+            else if (result != null)
+            {
+                throw new InvalidOperationException($"Unexpected action result {result}.");
+            }
+            else if (exception == Exception)
             {
                 actionDescriptor.MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ThrowingActionMethod));
             }
@@ -1500,10 +1509,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 mvcOptionsAccessor,
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));
-
-            services.AddSingleton(new ContentResultExecutor(
-                NullLogger<ContentResultExecutor>.Instance,
-                new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, ArrayPool<char>.Shared)));
 
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = services.BuildServiceProvider();
@@ -1739,48 +1744,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionDescriptor.MethodInfo,
                 actionDescriptor.ControllerTypeInfo,
                 ParameterDefaultValues.GetParameterDefaultValues(actionDescriptor.MethodInfo));
-        }
-
-        private class MockAuthorizationFilter : IAuthorizationFilter
-        {
-            int _expectedMaxAllowedErrors;
-
-            public MockAuthorizationFilter(int maxAllowedErrors)
-            {
-                _expectedMaxAllowedErrors = maxAllowedErrors;
-            }
-
-            public void OnAuthorization(AuthorizationFilterContext context)
-            {
-                Assert.Equal(_expectedMaxAllowedErrors, context.ModelState.MaxAllowedErrors);
-            }
-        }
-
-        private class TestParameterBinder : ParameterBinder
-        {
-            private readonly IDictionary<string, object> _actionParameters;
-            public TestParameterBinder(IDictionary<string, object> actionParameters)
-                : base(
-                    new EmptyModelMetadataProvider(),
-                    TestModelBinderFactory.CreateDefault(),
-                    Mock.Of<IObjectModelValidator>())
-            {
-                _actionParameters = actionParameters;
-            }
-
-            public override Task<ModelBindingResult> BindModelAsync(
-                ActionContext actionContext,
-                IValueProvider valueProvider,
-                ParameterDescriptor parameter,
-                object value)
-            {
-                if (_actionParameters.TryGetValue(parameter.Name, out var result))
-                {
-                    return Task.FromResult(ModelBindingResult.Success(result));
-                }
-
-                return Task.FromResult(ModelBindingResult.Failed());
-            }
         }
     }
 }

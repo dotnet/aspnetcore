@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public abstract class CommonResourceInvokerTest
     {
-        protected static readonly ContentResult Result = new ContentResult() { Content = "Hello, world!" };
+        protected static readonly TestResult Result = new TestResult();
 
         // Intentionally choosing an uncommon exception type.
         protected static readonly Exception Exception = new DivideByZeroException();
@@ -23,15 +23,17 @@ namespace Microsoft.AspNetCore.Mvc
         protected ResourceInvoker CreateInvoker(
             IFilterMetadata filter,
             Exception exception = null,
-            List<IValueProviderFactory> valueProviderFactories = null)
+            IActionResult result = null,
+            IList<IValueProviderFactory> valueProviderFactories = null)
         {
-            return CreateInvoker(new IFilterMetadata[] { filter }, exception, valueProviderFactories);
+            return CreateInvoker(new IFilterMetadata[] { filter }, exception, result, valueProviderFactories);
         }
 
         protected abstract ResourceInvoker CreateInvoker(
             IFilterMetadata[] filters,
             Exception exception = null,
-            List<IValueProviderFactory> valueProviderFactories = null);
+            IActionResult result = null,
+            IList<IValueProviderFactory> valueProviderFactories = null);
 
         [Fact]
         public async Task InvokeAction_DoesNotInvokeExceptionFilter_WhenActionDoesNotThrow()
@@ -845,7 +847,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var filter3 = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object, filter3.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object, filter3.Object }, result: Result);
 
             // Act
             await invoker.InvokeAsync();
@@ -859,7 +861,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Times.Once());
 
             Assert.True(context.Canceled);
-            Assert.IsType<ContentResult>(context.Result);
+            Assert.Same(Result, context.Result);
         }
 
         [Fact]
@@ -887,7 +889,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var filter3 = new Mock<IResultFilter>(MockBehavior.Strict);
 
-            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object, filter3.Object });
+            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object, filter3.Object }, result: Result);
 
             // Act
             await invoker.InvokeAsync();
@@ -901,7 +903,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Times.Once());
 
             Assert.True(context.Canceled);
-            Assert.IsType<ContentResult>(context.Result);
+            Assert.Same(Result, context.Result);
         }
 
         [Fact]
@@ -1203,7 +1205,7 @@ namespace Microsoft.AspNetCore.Mvc
                 })
                 .Verifiable();
 
-            var invoker = CreateInvoker(resourceFilter.Object);
+            var invoker = CreateInvoker(resourceFilter.Object, result: Result);
 
             // Act
             await invoker.InvokeAsync();
@@ -1709,6 +1711,10 @@ namespace Microsoft.AspNetCore.Mvc
             resourceFilter.Verify(
                 f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
                 Times.Never());
+        }
+
+        public class TestResult : ActionResult
+        {
         }
     }
 }

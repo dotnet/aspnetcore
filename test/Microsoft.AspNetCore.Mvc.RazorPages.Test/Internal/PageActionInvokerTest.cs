@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -22,544 +25,66 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
-    public class PageActionInvokerTest
+    public class PageActionInvokerTest : CommonResourceInvokerTest
     {
-        private readonly DivideByZeroException _pageException = new DivideByZeroException();
-
-        [Fact]
-        public async Task InvokeAsync_DoesNotInvokeExceptionFilter_WhenPageDoesNotThrow()
-        {
-            // Arrange
-            var filter = new Mock<IExceptionFilter>(MockBehavior.Strict);
-            filter
-                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
-                .Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter.Object }, pageThrows: false);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Never());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_DoesNotAsyncInvokeExceptionFilter_WhenPageDoesNotThrow()
-        {
-            // Arrange
-            var filter = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
-            filter
-                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
-                .Returns<ExceptionContext>((context) => Task.FromResult(true))
-                .Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter.Object }, pageThrows: false);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            filter.Verify(
-                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
-                Times.Never());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesExceptionFilter_WhenPageThrows()
-        {
-            // Arrange
-            Exception exception = null;
-            IActionResult pageAction = null;
-            var expected = new Mock<IActionResult>(MockBehavior.Strict);
-            expected
-                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
-            filter1
-                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
-                .Verifiable();
-            var filter2 = new Mock<IExceptionFilter>(MockBehavior.Strict);
-            filter2
-                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
-                .Callback<ExceptionContext>(context =>
-                {
-                    exception = context.Exception;
-                    pageAction = context.Result;
-
-                    // Handle the exception
-                    context.Result = expected.Object;
-                })
-                .Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter1.Object, filter2.Object }, pageThrows: true);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            expected.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
-            filter2.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
-
-            Assert.Same(_pageException, exception);
-            Assert.Null(pageAction);
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesAsyncExceptionFilter_WhenPageThrows()
-        {
-            // Arrange
-            Exception exception = null;
-            IActionResult pageAction = null;
-            var expected = new Mock<IActionResult>(MockBehavior.Strict);
-            expected
-                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var filter1 = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
-            filter1
-                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
-                .Returns<ExceptionContext>((context) => Task.FromResult(true))
-                .Verifiable();
-            var filter2 = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
-            filter2
-                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
-                .Callback<ExceptionContext>(context =>
-                {
-                    exception = context.Exception;
-                    pageAction = context.Result;
-
-                    // Handle the exception
-                    context.Result = expected.Object;
-                })
-                .Returns<ExceptionContext>((context) => Task.FromResult(true))
-                .Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter1.Object, filter2.Object }, pageThrows: true);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            expected.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
-            filter2.Verify(
-                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
-                Times.Once());
-
-            Assert.Same(_pageException, exception);
-            Assert.Null(pageAction);
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesExceptionFilter_ShortCircuit_ExceptionNull()
-        {
-            // Arrange
-            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
-
-            var filter2 = new Mock<IExceptionFilter>(MockBehavior.Strict);
-            filter2
-                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
-                .Callback<ExceptionContext>(context =>
-                {
-                    filter2.ToString();
-                    context.Exception = null;
-                })
-                .Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter1.Object, filter2.Object }, pageThrows: true);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            filter2.Verify(
-                f => f.OnException(It.IsAny<ExceptionContext>()),
-                Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesExceptionFilter_ShortCircuit_ExceptionHandled()
-        {
-            // Arrange
-            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
-
-            var filter2 = new Mock<IExceptionFilter>(MockBehavior.Strict);
-            filter2
-                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
-                .Callback<ExceptionContext>(context =>
-                {
-                    context.ExceptionHandled = true;
-                })
-                .Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter1.Object, filter2.Object }, pageThrows: true);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            filter2.Verify(
-                f => f.OnException(It.IsAny<ExceptionContext>()),
-                Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesAsyncExceptionFilter_ShortCircuit_ExceptionNull()
-        {
-            // Arrange
-            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
-            var filter2 = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
-
-            filter2
-                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
-                .Callback<ExceptionContext>(context =>
-                {
-                    filter2.ToString();
-                    context.Exception = null;
-                })
-                .Returns<ExceptionContext>((context) => Task.FromResult(true))
-                .Verifiable();
-
-            var filterMetadata = new IFilterMetadata[] { filter1.Object, filter2.Object };
-            var invoker = CreateInvoker(filterMetadata, pageThrows: true);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            filter2.Verify(
-                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
-                Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesAsyncExceptionFilter_ShortCircuit_ExceptionHandled()
-        {
-            // Arrange
-            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
-
-            var filter2 = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
-            filter2
-                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
-                .Callback<ExceptionContext>(context =>
-                {
-                    context.ExceptionHandled = true;
-                })
-                .Returns<ExceptionContext>((context) => Task.FromResult(true))
-                .Verifiable();
-
-            var invoker = CreateInvoker(new IFilterMetadata[] { filter1.Object, filter2.Object }, pageThrows: true);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            filter2.Verify(
-                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
-                Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesExceptionFilter_UnhandledExceptionIsThrown()
-        {
-            // Arrange
-            var filter = new Mock<IExceptionFilter>(MockBehavior.Strict);
-            filter
-                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
-                .Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter.Object }, pageThrows: true);
-
-            // Act
-            await Assert.ThrowsAsync(_pageException.GetType(), invoker.InvokeAsync);
-
-            // Assert
-            filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesAuthorizationFilter()
-        {
-            // Arrange
-            var filter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-            filter.Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>())).Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter.Object });
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            filter.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesAsyncAuthorizationFilter()
-        {
-            // Arrange
-            var filter = new Mock<IAsyncAuthorizationFilter>(MockBehavior.Strict);
-            filter
-                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()))
-                .Returns<AuthorizationFilterContext>(context => Task.FromResult(true))
-                .Verifiable();
-
-            var invoker = CreateInvoker(new[] { filter.Object });
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            filter.Verify(
-                f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()),
-                Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesAuthorizationFilter_ShortCircuit()
-        {
-            // Arrange
-            var createCalled = false;
-            var challenge = new Mock<IActionResult>(MockBehavior.Strict);
-            challenge
-                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var filter1 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-            filter1
-                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
-                .Callback<AuthorizationFilterContext>(c => Task.FromResult(true))
-                .Verifiable();
-
-            var filter2 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-            filter2
-                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
-                .Callback<AuthorizationFilterContext>(c => c.Result = challenge.Object)
-                .Verifiable();
-
-            var filter3 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-
-            var actionDescriptor = new CompiledPageActionDescriptor()
-            {
-                HandlerTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(TestPage).GetTypeInfo(),
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-            };
-
-            var cacheEntry = new PageActionInvokerCacheEntry(
-                actionDescriptor,
-                null,
-                (context, viewContext) => createCalled = true,
-                null,
-                (context) => null,
-                null,
-                null,
-                null,
-                null,
-                new FilterItem[0]);
-            var invoker = CreateInvoker(
-                new[] { filter1.Object, filter2.Object, filter3.Object },
-                actionDescriptor,
-                cacheEntry: cacheEntry);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            challenge.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
-            filter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()), Times.Once());
-            Assert.False(createCalled);
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesAsyncAuthorizationFilter_ShortCircuit()
-        {
-            // Arrange
-            var createCalled = false;
-            var challenge = new Mock<IActionResult>(MockBehavior.Strict);
-            challenge
-                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
-                .Returns(Task.FromResult(true))
-                .Verifiable();
-
-            var filter1 = new Mock<IAsyncAuthorizationFilter>(MockBehavior.Strict);
-            filter1
-                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()))
-                .Returns<AuthorizationFilterContext>((context) =>
-                {
-                    return Task.FromResult(true);
-                })
-                .Verifiable();
-
-            var filter2 = new Mock<IAsyncAuthorizationFilter>(MockBehavior.Strict);
-            filter2
-                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()))
-                .Returns<AuthorizationFilterContext>((context) =>
-                {
-                    context.Result = challenge.Object;
-                    return Task.FromResult(true);
-                });
-
-            var filter3 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-
-            var actionDescriptor = new CompiledPageActionDescriptor()
-            {
-                HandlerTypeInfo = typeof(TestPage).GetTypeInfo(),
-                ModelTypeInfo = typeof(TestPage).GetTypeInfo(),
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-            };
-
-            var cacheEntry = new PageActionInvokerCacheEntry(
-                actionDescriptor,
-                null,
-                (context, viewContext) => createCalled = true,
-                null,
-                (context) => null,
-                null,
-                null,
-                null,
-                null,
-                new FilterItem[0]);
-            var invoker = CreateInvoker(
-                new IFilterMetadata[] { filter1.Object, filter2.Object, filter3.Object },
-                actionDescriptor,
-                cacheEntry: cacheEntry);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            challenge.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
-            filter1.Verify(
-                f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()),
-                Times.Once());
-
-            Assert.False(createCalled);
-        }
-
-        [Fact]
-        public async Task InvokeAsync_ExceptionInAuthorizationFilter_CannotBeHandledByOtherFilters()
-        {
-            // Arrange
-            var expected = new InvalidCastException();
-
-            var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
-            exceptionFilter
-                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
-                .Callback<ExceptionContext>(context =>
-                {
-                    // Mark as handled
-                    context.Result = new EmptyResult();
-                })
-                .Verifiable();
-
-            var authorizationFilter1 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-            authorizationFilter1
-                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
-                .Callback<AuthorizationFilterContext>(c => { throw expected; })
-                .Verifiable();
-
-            // None of these filters should run
-            var authorizationFilter2 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-            var resourceFilter = new Mock<IResourceFilter>(MockBehavior.Strict);
-            var actionFilter = new Mock<IActionFilter>(MockBehavior.Strict);
-            var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
-
-            var invoker = CreateInvoker(new IFilterMetadata[]
-            {
-                exceptionFilter.Object,
-                authorizationFilter1.Object,
-                authorizationFilter2.Object,
-                resourceFilter.Object,
-                actionFilter.Object,
-                resultFilter.Object,
-            });
-
-            // Act
-            var thrown = await Assert.ThrowsAsync<InvalidCastException>(invoker.InvokeAsync);
-
-            // Assert
-            Assert.Same(expected, thrown);
-            exceptionFilter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Never());
-            authorizationFilter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task InvokeAsync_InvokesAuthorizationFilter_ChallengeNotSeenByResultFilters()
-        {
-            // Arrange
-            var challenge = new Mock<IActionResult>(MockBehavior.Strict);
-            challenge
-                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
-                .Returns<ActionContext>((context) => Task.FromResult(true))
-                .Verifiable();
-
-            var authorizationFilter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-            authorizationFilter
-                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
-                .Callback<AuthorizationFilterContext>(c => c.Result = challenge.Object)
-                .Verifiable();
-
-            var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
-
-            var invoker = CreateInvoker(new IFilterMetadata[] { authorizationFilter.Object, resultFilter.Object });
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            authorizationFilter.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()), Times.Once());
-            challenge.Verify(c => c.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
-        }
-
-        private PageActionInvoker CreateInvoker(
+        protected override ResourceInvoker CreateInvoker(
             IFilterMetadata[] filters,
-            bool pageThrows = false,
-            int maxAllowedErrorsInModelState = 200,
-            List<IValueProviderFactory> valueProviderFactories = null)
+            Exception exception = null,
+            IActionResult result = null,
+            IList<IValueProviderFactory> valueProviderFactories = null)
         {
-            Func<PageContext, Task> executeAction;
-            if (pageThrows)
-            {
-                executeAction = _ => { throw _pageException; };
-            }
-            else
-            {
-                executeAction = context => context.HttpContext.Response.WriteAsync("Hello");
-            }
-            var executor = new TestPageResultExecutor(executeAction);
             var actionDescriptor = new CompiledPageActionDescriptor
             {
                 ViewEnginePath = "/Index.cshtml",
                 RelativePath = "/Index.cshtml",
+                HandlerMethods = new List<HandlerMethodDescriptor>(),
                 HandlerTypeInfo = typeof(TestPage).GetTypeInfo(),
                 ModelTypeInfo = typeof(TestPage).GetTypeInfo(),
                 PageTypeInfo = typeof(TestPage).GetTypeInfo(),
             };
 
+            var handlers = new List<Func<object, object[], Task<IActionResult>>>();
+            if (result != null)
+            {
+                handlers.Add((obj, args) => Task.FromResult(result));
+                actionDescriptor.HandlerMethods.Add(new HandlerMethodDescriptor()
+                {
+                    HttpMethod = "GET",
+                    Parameters = new List<HandlerParameterDescriptor>(),
+                });
+            }
+            else if (exception != null)
+            {
+                handlers.Add((obj, args) => Task.FromException<IActionResult>(exception));
+                actionDescriptor.HandlerMethods.Add(new HandlerMethodDescriptor()
+                {
+                    HttpMethod = "GET",
+                    Parameters = new List<HandlerParameterDescriptor>(),
+                });
+            }
+
+            var executor = new TestPageResultExecutor();
             return CreateInvoker(
                 filters,
                 actionDescriptor,
-                executor);
+                executor,
+                handlers: handlers.ToArray());
         }
 
         private PageActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
             CompiledPageActionDescriptor actionDescriptor,
             PageResultExecutor executor = null,
-            IPageHandlerMethodSelector selector = null,
             PageActionInvokerCacheEntry cacheEntry = null,
             ITempDataDictionaryFactory tempDataFactory = null,
-            int maxAllowedErrorsInModelState = 200,
-            List<IValueProviderFactory> valueProviderFactories = null,
+            IList<IValueProviderFactory> valueProviderFactories = null,
+            Func<object, object[], Task<IActionResult>>[] handlers = null,
             RouteData routeData = null,
             ILogger logger = null)
         {
@@ -577,6 +102,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     diagnosticSource,
                     HtmlEncoder.Default);
             }
+
+            var mvcOptionsAccessor = new TestOptionsManager<MvcOptions>();
+            serviceCollection.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            serviceCollection.AddSingleton<IOptions<MvcOptions>>(mvcOptionsAccessor);
+            serviceCollection.AddSingleton(new ObjectResultExecutor(
+                mvcOptionsAccessor,
+                new TestHttpResponseStreamWriterFactory(),
+                NullLoggerFactory.Instance));
+
+            httpContext.Response.Body = new MemoryStream();
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             serviceCollection.AddSingleton(executor ?? executor);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
@@ -597,11 +133,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var viewDataFactory = ViewDataDictionaryFactory.CreateFactory(actionDescriptor.ModelTypeInfo);
             pageContext.ViewData = viewDataFactory(new EmptyModelMetadataProvider(), pageContext.ModelState);
-            
-            if (selector == null)
-            {
-                selector = Mock.Of<IPageHandlerMethodSelector>();
-            }
 
             if (valueProviderFactories == null)
             {
@@ -633,17 +164,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 _ => Activator.CreateInstance(actionDescriptor.ModelTypeInfo.AsType()),
                 (c, model) => { (model as IDisposable)?.Dispose(); },
                 null,
-                null,
+                handlers,
                 null,
                 new FilterItem[0]);
+
+            // Always just select the first one.
+            var selector = new Mock<IPageHandlerMethodSelector>();
+            selector
+                .Setup(s => s.Select(It.IsAny<PageContext>()))
+                .Returns<PageContext>(c => c.ActionDescriptor.HandlerMethods.FirstOrDefault());
             
             var invoker = new PageActionInvoker(
-                selector,
+                selector.Object,
                 diagnosticSource,
                 logger,
                 pageContext,
                 filters,
-                valueProviderFactories.AsReadOnly(),
+                valueProviderFactories.ToArray(),
                 cacheEntry,
                 GetParameterBinder(),
                 tempDataFactory,
@@ -687,6 +224,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             private readonly Func<PageContext, Task> _executeAction;
 
+            public TestPageResultExecutor()
+                : this(null)
+            {
+            }
+
             public TestPageResultExecutor(Func<PageContext, Task> executeAction)
                 : base(
                     Mock.Of<IHttpResponseStreamWriterFactory>(),
@@ -700,7 +242,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             public override Task ExecuteAsync(PageContext pageContext, PageResult result)
-                => _executeAction(pageContext);
+            {
+                return _executeAction?.Invoke(pageContext) ?? Task.CompletedTask;
+            }
         }
 
         private class TestPage : Page
