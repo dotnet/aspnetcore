@@ -95,7 +95,12 @@ namespace MusicStore.Controllers
                 return Task.FromResult(AuthenticateResult.None());
             }
 
-            public Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties, ChallengeBehavior behavior)
+            public Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties)
             {
                 return Task.FromResult(0);
             }
