@@ -119,6 +119,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Core" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.AzureKeyVault" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Mvc" />
