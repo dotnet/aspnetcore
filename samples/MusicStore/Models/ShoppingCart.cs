@@ -123,7 +123,6 @@ namespace MusicStore.Models
 
             return _dbContext
                 .CartItems
-                .Include(c => c.Album)
                 .Where(c => c.CartId == _shoppingCartId)
                 .Select(c => c.Album.Price * c.Count)
                 .SumAsync();
