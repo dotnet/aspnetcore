@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
@@ -18,18 +19,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
-        public void Precompilation_PreventsRefAssembliesFromBeingPublished()
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public void Precompilation_PreventsRefAssembliesFromBeingPublished(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act & Assert
             Assert.False(Directory.Exists(Path.Combine(Fixture.DeploymentResult.ContentRoot, "refs")));
         }
 
-        [Fact]
-        public async Task PublishingWithOption_AllowsPublishingRefAssemblies()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task PublishingWithOption_AllowsPublishingRefAssemblies(RuntimeFlavor flavor)
         {
             // Arrange
-            var deploymentParameters = Fixture.GetDeploymentParameters();
+            var deploymentParameters = Fixture.GetDeploymentParameters(flavor);
             deploymentParameters.PublishEnvironmentVariables.Add(
                 new KeyValuePair<string, string>("MvcRazorExcludeRefAssembliesFromPublish", "false"));
 

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
@@ -15,9 +17,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
-        public async Task PrecompiledAssembliesUseSameStrongNameAsApplication()
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task PrecompiledAssembliesUseSameStrongNameAsApplication(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+            
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 Fixture.DeploymentResult.ApplicationBaseUri,

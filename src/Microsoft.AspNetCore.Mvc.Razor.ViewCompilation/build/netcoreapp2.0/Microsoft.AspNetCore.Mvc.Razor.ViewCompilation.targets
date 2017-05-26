@@ -2,12 +2,13 @@
   <Import Project="$(MSBuildThisFileDirectory)..\common.targets" />
   <PropertyGroup>
     <MvcRazorRunCommand>dotnet</MvcRazorRunCommand>
-    <_MvcViewCompilationBinaryPath Condition="'$(_MvcViewCompilationBinaryPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName).dll</_MvcViewCompilationBinaryPath>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <_MvcViewCompilationBinaryPath Condition="'$(_MvcViewCompilationBinaryPath)'==''">$(MSBuildThisFileDirectory)../../lib/netcoreapp2.0/$(MSBuildThisFileName).dll</_MvcViewCompilationBinaryPath>
   </PropertyGroup>
   <Target
       Name="MvcRazorPrecompile"
       DependsOnTargets="_ResolveInputArguments"
-      Inputs="$(MSBuildThisFileFullPath);@(MvcRazorFilesToCompile);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects)"
+      Inputs="@(MvcRazorFilesToCompile);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects)"
       Outputs="$(_MvcRazorOutputFullPath)">
 
     <CallTarget Targets="_CreateResponseFileForMvcRazorPrecompile" />

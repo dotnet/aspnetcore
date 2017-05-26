@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
@@ -21,10 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
-        public async Task Precompilation_CanEmbedViewSourcesAsResources()
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_CanEmbedViewSourcesAsResources(RuntimeFlavor flavor)
         {
             // Arrange
+            Fixture.CreateDeployment(flavor);
             var expectedViews = new[]
             {
                 "/Areas/TestArea/Views/Home/Index.cshtml",

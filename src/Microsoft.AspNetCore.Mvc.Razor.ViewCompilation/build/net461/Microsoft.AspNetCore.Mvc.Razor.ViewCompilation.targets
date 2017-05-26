@@ -1,0 +1,50 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)..\common.targets" />
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+  <Target
+      Name="MvcRazorPrecompile"
+      DependsOnTargets="_ResolveInputArguments"
+      Inputs="@(MvcRazorFilesToCompile);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects);"
+      Outputs="$(_MvcRazorOutputFullPath)">
+
+    <PropertyGroup Condition="'$(MvcRazorRunCommand)'==''">
+      <MvcRazorRunCommand>$(OutputPath)$(MSBuildThisFileName).exe</MvcRazorRunCommand>
+      <MvcRazorRunCommand Condition="'$(PlatformTarget)'=='x86'">$(OutputPath)$(MSBuildThisFileName)-x86.exe</MvcRazorRunCommand>
+    </PropertyGroup>
+
+    <CallTarget Targets="_CreateResponseFileForMvcRazorPrecompile" />
+
+    <ItemGroup Condition="'$(PlatformTarget)'=='x86'">
+      <_PreCompilationFilesToCopy Include="$(OutputPath)$(AssemblyName).exe.config">
+        <Destination>$(OutputPath)$(MSBuildThisFileName)-x86.exe.config</Destination>
+      </_PreCompilationFilesToCopy>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(PlatformTarget)'!='x86'">
+      <_PreCompilationFilesToCopy Include="$(OutputPath)$(AssemblyName).exe.config" Condition="">
+        <Destination>$(OutputPath)$(MSBuildThisFileName).exe.config</Destination>
+      </_PreCompilationFilesToCopy>
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(_PreCompilationFilesToCopy)"
+      DestinationFiles="%(Destination)" />
+
+    <Message
+      Text="Executing Razor view precompilation."
+      Importance="Low" />
+
+    <Exec
+      Command="$(MvcRazorRunCommand) @&quot;$(_MvcRazorResponseFilePath)&quot;"
+      WorkingDirectory="$(MSBuildProjectDirectory)"/>
+
+    <Message
+      Text="Razor view compilation for $(MSBuildProjectName) -> $(_MvcRazorOutputFullPath)"
+      Importance="High" />
+
+    <Delete Files="%(_PreCompilationFilesToCopy.Destination)" />
+
+  </Target>
+</Project>

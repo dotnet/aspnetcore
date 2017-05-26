@@ -5,10 +5,17 @@
   </PropertyGroup>
 
   <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
-    Condition="'$(TestIncludeViewCompilationTargets)'=='true'"/>
+    Condition="'$(TestIncludeViewCompilationTargets)'=='true' AND '$(TargetFramework)'=='netcoreapp2.0'"/>
+
+  <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\net461\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
+    Condition="'$(TestIncludeViewCompilationTargets)'=='true' AND '$(TargetFramework)'=='net461'"/>
 
   <ItemGroup Condition="'$(TestIncludeViewCompilationTargets)'=='true'">
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
+    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
   </ItemGroup>
 
   <Target
@@ -16,7 +23,8 @@
     BeforeTargets="MvcRazorPrecompile"
     Condition="'$(TestIncludeViewCompilationTargets)'=='true'">
     <PropertyGroup>
-      <_MvcViewCompilationBinaryPath>$(MSBuildProjectDirectory)\$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll</_MvcViewCompilationBinaryPath>
+      <_MvcViewCompilationBinaryPath Condition="'$(TargetFramework)'=='netcoreapp2.0'">$(MSBuildProjectDirectory)\$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll</_MvcViewCompilationBinaryPath>
+      <_MvcViewCompilationBinaryPath Condition="'$(TargetFramework)'=='net461'">$(MSBuildProjectDirectory)\$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.exe</_MvcViewCompilationBinaryPath>
     </PropertyGroup>
   </Target>
 </Project>

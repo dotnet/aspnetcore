@@ -3,28 +3,24 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 {
-    public class SimpleAppTest : IClassFixture<SimpleAppTest.SimpleAppTestFixture>
+    public class SimpleAppX86DesktopOnlyTest : IClassFixture<SimpleAppX86DesktopOnlyTest.SimpleAppX86DesktopOnlyFixture>
     {
-        public SimpleAppTest(SimpleAppTestFixture fixture)
+        public SimpleAppX86DesktopOnlyTest(SimpleAppX86DesktopOnlyFixture fixture)
         {
             Fixture = fixture;
         }
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [ConditionalTheory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task Precompilation_WorksForSimpleApps(RuntimeFlavor flavor)
+        [Fact]
+        public async Task Precompilation_WorksForSimpleApps()
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
+            Fixture.CreateDeployment(RuntimeFlavor.Clr);
 
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
@@ -32,13 +28,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 Fixture.Logger);
 
             // Assert
-            TestEmbeddedResource.AssertContent("SimpleAppTest.Home.Index.txt", response);
+            TestEmbeddedResource.AssertContent("SimpleAppX86DesktopOnly.Home.Index.txt", response);
         }
 
-        public class SimpleAppTestFixture : ApplicationTestFixture
+        public class SimpleAppX86DesktopOnlyFixture : ApplicationTestFixture
         {
-            public SimpleAppTestFixture()
-                : base("SimpleApp")
+            public SimpleAppX86DesktopOnlyFixture()
+                : base("SimpleAppX86DesktopOnly")
             {
             }
         }

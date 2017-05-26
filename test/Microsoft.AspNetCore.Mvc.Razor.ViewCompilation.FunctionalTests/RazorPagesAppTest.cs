@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
@@ -16,9 +17,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
-        public async Task Precompilation_WorksForIndexPage_UsingFolderName()
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_WorksForIndexPage_UsingFolderName(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 "/",
@@ -28,9 +35,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             TestEmbeddedResource.AssertContent("RazorPages.Index.txt", response);
         }
 
-        [Fact]
-        public async Task Precompilation_WorksForIndexPage_UsingFileName()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_WorksForIndexPage_UsingFileName(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 "/Index",
@@ -40,9 +51,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             TestEmbeddedResource.AssertContent("RazorPages.Index.txt", response);
         }
 
-        [Fact]
-        public async Task Precompilation_WorksForPageWithModel()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_WorksForPageWithModel(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 "/PageWithModel?person=Dan",
@@ -52,9 +67,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             TestEmbeddedResource.AssertContent("RazorPages.PageWithModel.txt", response);
         }
 
-        [Fact]
-        public async Task Precompilation_WorksForPageWithRoute()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_WorksForPageWithRoute(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 "/PageWithRoute/Dan",
@@ -64,9 +83,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             TestEmbeddedResource.AssertContent("RazorPages.PageWithRoute.txt", response);
         }
 
-        [Fact]
-        public async Task Precompilation_WorksForPageInNestedFolder()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_WorksForPageInNestedFolder(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 "/Nested1/Nested2/PageWithTagHelper",
@@ -76,9 +99,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             TestEmbeddedResource.AssertContent("RazorPages.Nested1.Nested2.PageWithTagHelper.txt", response);
         }
 
-        [Fact]
-        public async Task Precompilation_WorksWithPageConventions()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_WorksWithPageConventions(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await RetryHelper.RetryRequest(
                 () => Fixture.HttpClient.GetAsync("/Auth/Index"),

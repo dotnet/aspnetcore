@@ -4,22 +4,25 @@
 
   <PropertyGroup>
     <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <RuntimeIdentifier Condition="!$(TargetFramework.StartsWith('netcoreapp'))">win7-x64</RuntimeIdentifier>
     <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>exe</OutputType>
-    <!-- Include the build outputs in the build directory (and not the lib directory) -->
-    <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
+    <X86ProjectDirectory>..\..\tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86\</X86ProjectDirectory>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="build\**\*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net461\win7-x86\$(MSBuildThisFileName)-x86.exe" Pack="true" PackagePath="lib\net461\$(MSBuildThisFileName)-x86.exe" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <ProjectReference Include="$(X86ProjectDirectory)$(MSBuildThisFileName)-x86.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='net461'" />
   </ItemGroup>
 
 </Project>

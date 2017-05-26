@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
@@ -21,10 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
-        public async Task ApplicationWithCustomInputFiles_Works()
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task ApplicationWithCustomInputFiles_Works(RuntimeFlavor flavor)
         {
             // Arrange
+            Fixture.CreateDeployment(flavor);
             var expectedText = "Hello Index!";
 
             // Act
@@ -36,10 +42,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
             Assert.Equal(expectedText, response.Trim());
         }
 
-        [Fact]
-        public async Task MvcRazorFilesToCompile_OverridesTheFilesToBeCompiled()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task MvcRazorFilesToCompile_OverridesTheFilesToBeCompiled(RuntimeFlavor flavor)
         {
             // Arrange
+            Fixture.CreateDeployment(flavor);
             var expectedViews = new[]
             {
                 "/Views/Home/About.cshtml",
@@ -57,10 +65,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
             Assert.Equal(expectedViews, actual);
         }
 
-        [Fact]
-        public void MvcRazorFilesToCompile_SpecificallyDoesNotPublishFilesToBeCompiled()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public void MvcRazorFilesToCompile_SpecificallyDoesNotPublishFilesToBeCompiled(RuntimeFlavor flavor)
         {
             // Arrange
+            Fixture.CreateDeployment(flavor);
             var viewsNotPublished = new[]
             {
                 "Index.cshtml",

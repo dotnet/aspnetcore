@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
@@ -16,9 +17,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
-        public async Task Precompilation_WorksForSimpleApps()
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_WorksForSimpleApps(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 Fixture.DeploymentResult.ApplicationBaseUri,
@@ -35,9 +42,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             {
             }
 
-            public override DeploymentParameters GetDeploymentParameters()
+            public override DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
             {
-                var parameters = base.GetDeploymentParameters();
+                var parameters = base.GetDeploymentParameters(flavor);
                 parameters.ApplicationName = "NewAssemblyName";
                 return parameters;
             }

@@ -14,22 +14,37 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
     {
         public const string DotnetCLITelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
         private IApplicationDeployer _deployer;
+        private HttpClient _httpClient;
 
         protected ApplicationTestFixture(string applicationName)
         {
             ApplicationName = applicationName;
-            DeploymentResult = CreateDeployment();
-            HttpClient = new HttpClient
-            {
-                BaseAddress = new Uri(DeploymentResult.ApplicationBaseUri),
-            };
         }
 
         public string ApplicationName { get; }
 
         public string ApplicationPath => ApplicationPaths.GetTestAppDirectory(ApplicationName);
 
-        public HttpClient HttpClient { get; private set; }
+        public HttpClient HttpClient
+        {
+            get
+            {
+                if (_httpClient == null)
+                {
+                    if (DeploymentResult == null)
+                    {
+                        throw new InvalidOperationException($"{nameof(CreateDeployment)} must be called prior to accessing the {nameof(HttpClient)} property.");
+                    }
+
+                    _httpClient = new HttpClient
+                    {
+                        BaseAddress = new Uri(DeploymentResult.ApplicationBaseUri),
+                    };
+                }
+
+                return _httpClient;
+            }
+        }
 
         public ILogger Logger { get; private set; }
 
@@ -37,12 +52,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public DeploymentResult DeploymentResult { get; private set; }
 
-        public virtual DeploymentParameters GetDeploymentParameters()
+        public virtual DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
         {
-            return GetDeploymentParameters(ApplicationPath);
+            return GetDeploymentParameters(ApplicationPath, flavor);
         }
 
-        public static DeploymentParameters GetDeploymentParameters(string applicationPath)
+        public static DeploymentParameters GetDeploymentParameters(string applicationPath, RuntimeFlavor flavor)
         {
             var telemetryOptOut = new KeyValuePair<string, string>(
                 DotnetCLITelemetryOptOut,
@@ -51,11 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             var deploymentParameters = new DeploymentParameters(
                 applicationPath,
                 ServerType.Kestrel,
-                RuntimeFlavor.CoreClr,
+                flavor,
                 RuntimeArchitecture.x64)
             {
                 PublishApplicationBeforeDeployment = true,
-                TargetFramework = "netcoreapp2.0",
+                TargetFramework = flavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
 #if DEBUG
                 Configuration = "Debug",
 #else
@@ -81,11 +96,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public void Dispose()
         {
-            HttpClient?.Dispose();
+            _httpClient?.Dispose();
             _deployer?.Dispose();
         }
 
-        protected static void TryDeleteDirectory(string directory)
+        private static void TryDeleteDirectory(string directory)
         {
             try
             {
@@ -97,14 +112,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        private DeploymentResult CreateDeployment()
+        public void CreateDeployment(RuntimeFlavor flavor)
         {
             LoggerFactory = CreateLoggerFactory();
-            Logger = LoggerFactory.CreateLogger(ApplicationName);
+            Logger = LoggerFactory.CreateLogger($"{ApplicationName}:{flavor}");
 
-            var deploymentParameters = GetDeploymentParameters();
+            var deploymentParameters = GetDeploymentParameters(flavor);
             _deployer = ApplicationDeployerFactory.Create(deploymentParameters, LoggerFactory);
-            return _deployer.DeployAsync().Result;
+            DeploymentResult = _deployer.DeployAsync().Result;
         }
     }
 }

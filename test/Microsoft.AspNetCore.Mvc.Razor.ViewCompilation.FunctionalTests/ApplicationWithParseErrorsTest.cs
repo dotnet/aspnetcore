@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -13,8 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 {
     public class ApplicationWithParseErrorsTest
     {
-        [Fact]
-        public async Task PublishingPrintsParseErrors()
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task PublishingPrintsParseErrors(RuntimeFlavor flavor)
         {
             // Arrange
             var applicationPath = ApplicationPaths.GetTestAppDirectory("ApplicationWithParseErrors");
@@ -27,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
             };
             var testSink = new TestSink();
-            var deploymentParameters = ApplicationTestFixture.GetDeploymentParameters(applicationPath);
+            var deploymentParameters = ApplicationTestFixture.GetDeploymentParameters(applicationPath, flavor);
             var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
             using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
             {

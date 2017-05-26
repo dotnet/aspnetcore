@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
@@ -16,9 +18,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
-        public async Task Precompilation_RunsConfiguredCompilationCallbacks()
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_RunsConfiguredCompilationCallbacks(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 Fixture.DeploymentResult.ApplicationBaseUri,
@@ -28,9 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             TestEmbeddedResource.AssertContent("ApplicationWithConfigureMvc.Home.Index.txt", response);
         }
 
-        [Fact]
-        public async Task Precompilation_UsesConfiguredParseOptions()
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_UsesConfiguredParseOptions(RuntimeFlavor flavor)
         {
+            // Arrange
+            Fixture.CreateDeployment(flavor);
+
             // Act
             var response = await Fixture.HttpClient.GetStringWithRetryAsync(
                 "Home/ViewWithPreprocessor",
