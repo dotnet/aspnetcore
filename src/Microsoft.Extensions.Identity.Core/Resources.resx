@@ -305,4 +305,8 @@
     <value>Passwords must use at least {0} different characters.</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
+  <data name="StoreNotIUserActivityStore" xml:space="preserve">
+    <value>Store does not implement IUserActivityStore&lt;User&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
 </root>

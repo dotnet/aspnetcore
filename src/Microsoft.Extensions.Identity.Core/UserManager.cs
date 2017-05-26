@@ -340,6 +340,21 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
+        /// Gets a flag indicating whether the backing user store supports tracking user activity like creation date.
+        /// </summary>
+        /// <value>
+        /// true if the backing user store supports user activity tracking, otherwise false.
+        /// </value>
+        public virtual bool SupportsUserActivity
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return Store is IUserActivityStore<TUser>;
+            }
+        }
+
+        /// <summary>
         /// Gets a flag indicating whether the backing user store supports returning
         /// <see cref="IQueryable"/> collections of information.
         /// </summary>
@@ -465,6 +480,11 @@ namespace Microsoft.AspNetCore.Identity
             }
             await UpdateNormalizedUserNameAsync(user);
             await UpdateNormalizedEmailAsync(user);
+
+            if (SupportsUserActivity)
+            {
+                await GetUserActivityStore().SetCreateDateAsync(user, DateTimeOffset.UtcNow, CancellationToken);
+            }
 
             return await Store.CreateAsync(user, CancellationToken);
         }
@@ -2226,6 +2246,79 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
+        /// Gets a date representing when a user was created.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the lookup.
+        /// </returns>
+        public virtual Task<DateTimeOffset?> GetCreateDateAsync(TUser user)
+        {
+            ThrowIfDisposed();
+            var store = GetUserActivityStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            return store.GetCreateDateAsync(user, CancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a date representing when the user last changed their password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the lookup.
+        /// </returns>
+        public virtual Task<DateTimeOffset?> GetLastPasswordChangeDateAsync(TUser user)
+        {
+            ThrowIfDisposed();
+            var store = GetUserActivityStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            return store.GetLastPasswordChangeDateAsync(user, CancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a date representing when the user last signed in.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the lookup.
+        /// </returns>
+        public virtual Task<DateTimeOffset?> GetLastSignInDateAsync(TUser user)
+        {
+            ThrowIfDisposed();
+            var store = GetUserActivityStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            return store.GetLastSignInDateAsync(user, CancellationToken);
+        }
+
+        /// <summary>
+        /// Update the last sign in date to DateTimeOffest.UtcNow.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the lookup.
+        /// </returns>
+        public virtual async Task<IdentityResult> UpdateLastSignInDateAsync(TUser user)
+        {
+            ThrowIfDisposed();
+            var store = GetUserActivityStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            await store.SetLastSignInDateAsync(user, DateTimeOffset.UtcNow, CancellationToken);
+            return await UpdateAsync(user);
+        }
+
+        /// <summary>
         /// Releases the unmanaged resources used by the role manager and optionally releases the managed resources.
         /// </summary>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
@@ -2247,6 +2340,17 @@ namespace Microsoft.AspNetCore.Identity
             }
             return cast;
         }
+
+        internal IUserActivityStore<TUser> GetUserActivityStore()
+        {
+            var cast = Store as IUserActivityStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserActivityStore);
+            }
+            return cast;
+        }
+
 
         internal IUserLockoutStore<TUser> GetUserLockoutStore()
         {
@@ -2310,6 +2414,10 @@ namespace Microsoft.AspNetCore.Identity
             }
             var hash = newPassword != null ? PasswordHasher.HashPassword(user, newPassword) : null;
             await passwordStore.SetPasswordHashAsync(user, hash, CancellationToken);
+            if (SupportsUserActivity)
+            {
+                await GetUserActivityStore().SetLastPasswordChangeDateAsync(user, DateTimeOffset.UtcNow, CancellationToken);
+            }
             await UpdateSecurityStampInternal(user);
             return IdentityResult.Success;
         }

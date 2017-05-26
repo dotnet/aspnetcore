@@ -11,17 +11,19 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    public class InMemoryEFUserStoreTest : IdentitySpecificationTestBase<IdentityUser, IdentityRole, string>
+    public class InMemoryEFUserStoreV1Test : IdentitySpecificationTestBase<IdentityUser, IdentityRole, string>
     {
         protected override object CreateTestContext()
-            => new InMemoryContext(new DbContextOptionsBuilder().Options);
+            => new InMemoryContextV1(new DbContextOptionsBuilder().Options);
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
-            => services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, DbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>((InMemoryContext)context, new IdentityErrorDescriber()));
+        {
+            services.AddSingleton<IUserStore<IdentityUser>>(new UserStoreV1<IdentityUser, IdentityRole, DbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>((InMemoryContextV1)context, new IdentityErrorDescriber()));
+        }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            var store = new RoleStore<IdentityRole, InMemoryContext, string, IdentityUserRole<string>, IdentityRoleClaim<string>>((InMemoryContext)context);
+            var store = new RoleStoreV1<IdentityRole, InMemoryContextV1, string, IdentityUserRole<string>, IdentityRoleClaim<string>>((InMemoryContextV1)context);
             services.AddSingleton<IRoleStore<IdentityRole>>(store);
         }
 

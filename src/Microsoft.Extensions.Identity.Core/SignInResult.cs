@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.Identity
         public bool RequiresTwoFactor { get; protected set; }
 
         /// <summary>
+        /// Returns a flag indication whether the user attempting to sign-in requires a password change.
+        /// </summary>
+        public bool RequiresPasswordChange { get; protected set; }
+
+        /// <summary>
         /// Returns a <see cref="SignInResult"/> that represents a successful sign-in.
         /// </summary>
         /// <returns>A <see cref="SignInResult"/> that represents a successful sign-in.</returns>

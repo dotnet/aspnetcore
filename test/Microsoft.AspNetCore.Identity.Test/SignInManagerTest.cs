@@ -202,6 +202,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.SupportsUserActivity).Returns(true).Verifiable();
+            manager.Setup(m => m.UpdateLastSignInDateAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
 
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
@@ -226,6 +228,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
+            manager.Setup(m => m.SupportsUserActivity).Returns(true).Verifiable();
+            manager.Setup(m => m.UpdateLastSignInDateAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
 
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
@@ -252,6 +256,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            manager.Setup(m => m.SupportsUserActivity).Returns(true).Verifiable();
+            manager.Setup(m => m.UpdateLastSignInDateAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
 
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
@@ -375,6 +381,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
             manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, providerName ?? TokenOptions.DefaultAuthenticatorProvider, code)).ReturnsAsync(true).Verifiable();
             manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            manager.Setup(m => m.SupportsUserActivity).Returns(true).Verifiable();
+            manager.Setup(m => m.UpdateLastSignInDateAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
 
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
@@ -419,6 +427,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = SetupUserManager(user);
             manager.Setup(m => m.SupportsUserLockout).Returns(supportsLockout).Verifiable();
             manager.Setup(m => m.RedeemTwoFactorRecoveryCodeAsync(user, bypassCode)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            manager.Setup(m => m.SupportsUserActivity).Returns(true).Verifiable();
+            manager.Setup(m => m.UpdateLastSignInDateAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
             if (supportsLockout)
             {
                 manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
@@ -456,11 +466,15 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Theory]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
-        public async Task CanExternalSignIn(bool isPersistent, bool supportsLockout)
+        [InlineData(true, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(false, true, true)]
+        [InlineData(false, false, true)]
+        [InlineData(true, true, false)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
+        [InlineData(false, false, false)]
+        public async Task CanExternalSignIn(bool isPersistent, bool supportsLockout, bool supportsActivity)
         {
             // Setup
             var user = new TestUser { UserName = "Foo" };
@@ -473,6 +487,11 @@ namespace Microsoft.AspNetCore.Identity.Test
                 manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
             }
             manager.Setup(m => m.FindByLoginAsync(loginProvider, providerKey)).ReturnsAsync(user).Verifiable();
+            if (supportsActivity)
+            {
+                manager.Setup(m => m.SupportsUserActivity).Returns(true).Verifiable();
+                manager.Setup(m => m.UpdateLastSignInDateAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            }
 
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
@@ -518,8 +537,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             { CallBase = true };
             //signInManager.Setup(s => s.SignInAsync(user, It.Is<AuthenticationProperties>(p => p.IsPersistent == isPersistent),
             //externalLogin? loginProvider : null)).Returns(Task.FromResult(0)).Verifiable();
-            signInManager.Setup(s => s.SignInAsync(user, It.IsAny<AuthenticationProperties>(), null)).Returns(Task.FromResult(0)).Verifiable();
-            signInManager.Object.Context = context;
+            signInManager.Setup(s => s.SignInAsync(user, It.IsAny<AuthenticationProperties>(), /*authmethod*/null, /*updateLastSignIn*/false)).Returns(Task.FromResult(0)).Verifiable();
 
             // Act
             await signInManager.Object.RefreshSignInAsync(user);
@@ -530,23 +548,39 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Theory]
-        [InlineData(true, true, true, true)]
-        [InlineData(true, true, false, true)]
-        [InlineData(true, false, true, true)]
-        [InlineData(true, false, false, true)]
-        [InlineData(false, true, true, true)]
-        [InlineData(false, true, false, true)]
-        [InlineData(false, false, true, true)]
-        [InlineData(false, false, false, true)]
-        [InlineData(true, true, true, false)]
-        [InlineData(true, true, false, false)]
-        [InlineData(true, false, true, false)]
-        [InlineData(true, false, false, false)]
-        [InlineData(false, true, true, false)]
-        [InlineData(false, true, false, false)]
-        [InlineData(false, false, true, false)]
-        [InlineData(false, false, false, false)]
-        public async Task CanTwoFactorSignIn(bool isPersistent, bool supportsLockout, bool externalLogin, bool rememberClient)
+        [InlineData(true, true, true, true, true)]
+        [InlineData(true, true, false, true, true)]
+        [InlineData(true, false, true, true, true)]
+        [InlineData(true, false, false, true, true)]
+        [InlineData(false, true, true, true, true)]
+        [InlineData(false, true, false, true, true)]
+        [InlineData(false, false, true, true, true)]
+        [InlineData(false, false, false, true, true)]
+        [InlineData(true, true, true, false, true)]
+        [InlineData(true, true, false, false, true)]
+        [InlineData(true, false, true, false, true)]
+        [InlineData(true, false, false, false, true)]
+        [InlineData(false, true, true, false, true)]
+        [InlineData(false, true, false, false, true)]
+        [InlineData(false, false, true, false, true)]
+        [InlineData(false, false, false, false, true)]
+        [InlineData(true, true, true, true, false)]
+        [InlineData(true, true, false, true, false)]
+        [InlineData(true, false, true, true, false)]
+        [InlineData(true, false, false, true, false)]
+        [InlineData(false, true, true, true, false)]
+        [InlineData(false, true, false, true, false)]
+        [InlineData(false, false, true, true, false)]
+        [InlineData(false, false, false, true, false)]
+        [InlineData(true, true, true, false, false)]
+        [InlineData(true, true, false, false, false)]
+        [InlineData(true, false, true, false, false)]
+        [InlineData(true, false, false, false, false)]
+        [InlineData(false, true, true, false, false)]
+        [InlineData(false, true, false, false, false)]
+        [InlineData(false, false, true, false, false)]
+        [InlineData(false, false, false, false, false)]
+        public async Task CanTwoFactorSignIn(bool isPersistent, bool supportsLockout, bool externalLogin, bool rememberClient, bool supportsUserActivity)
         {
             // Setup
             var user = new TestUser { UserName = "Foo" };
@@ -558,6 +592,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             {
                 manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false).Verifiable();
                 manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            }
+            if (supportsUserActivity)
+            {
+                manager.Setup(m => m.SupportsUserActivity).Returns(true).Verifiable();
+                manager.Setup(m => m.UpdateLastSignInDateAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
             }
             manager.Setup(m => m.VerifyTwoFactorTokenAsync(user, provider, code)).ReturnsAsync(true).Verifiable();
             var context = new DefaultHttpContext();

@@ -150,6 +150,21 @@ namespace Microsoft.AspNetCore.Identity
         public virtual int AccessFailedCount { get; set; }
 
         /// <summary>
+        /// Gets or sets the date and time, in UTC, when the user was created.
+        /// </summary>
+        public virtual DateTimeOffset? CreateDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time, in UTC, when the user last signed in.
+        /// </summary>
+        public virtual DateTimeOffset? LastSignInDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time, in UTC, when the user last changed his password.
+        /// </summary>
+        public virtual DateTimeOffset? LastPasswordChangeDate { get; set; }
+
+        /// <summary>
         /// Returns the username for this user.
         /// </summary>
         public override string ToString()

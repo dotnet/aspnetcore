@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         IRoleClaimStore<TRole>,
         IUserAuthenticationTokenStore<TUser>,
         IUserAuthenticatorKeyStore<TUser>,
-        IUserTwoFactorRecoveryCodeStore<TUser>
+        IUserTwoFactorRecoveryCodeStore<TUser>,
+        IUserActivityStore<TUser>
         where TRole : TestRole
         where TUser : TestUser
     {
@@ -581,6 +582,39 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                 return true;
             }
             return false;
+        }
+
+        public Task SetLastPasswordChangeDateAsync(TUser user, DateTimeOffset? changeDate, CancellationToken cancellationToken)
+        {
+            user.LastPasswordChangeDate = changeDate;
+            return Task.FromResult(0);
+        }
+
+        public Task<DateTimeOffset?> GetLastPasswordChangeDateAsync(TUser user, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(user.LastPasswordChangeDate);
+        }
+
+        public Task SetCreateDateAsync(TUser user, DateTimeOffset? creationDate, CancellationToken cancellationToken)
+        {
+            user.CreateDate = creationDate;
+            return Task.FromResult(0);
+        }
+
+        public Task<DateTimeOffset?> GetCreateDateAsync(TUser user, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(user.CreateDate);
+        }
+
+        public Task SetLastSignInDateAsync(TUser user, DateTimeOffset? lastSignIn, CancellationToken cancellationToken)
+        {
+            user.LastSignInDate = lastSignIn;
+            return Task.FromResult(0);
+        }
+
+        public Task<DateTimeOffset?> GetLastSignInDateAsync(TUser user, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(user.LastSignInDate);
         }
 
         public IQueryable<TRole> Roles

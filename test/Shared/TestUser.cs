@@ -124,6 +124,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         public virtual int AccessFailedCount { get; set; }
 
+        public virtual DateTimeOffset? CreateDate { get; set; }
+        public virtual DateTimeOffset? LastSignInDate { get; set; }
+        public virtual DateTimeOffset? LastPasswordChangeDate { get; set; }
+
         /// <summary>
         /// Navigation property
         /// </summary>

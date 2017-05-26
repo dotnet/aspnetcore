@@ -762,6 +762,22 @@ namespace Microsoft.AspNetCore.Identity
             return string.Format(CultureInfo.CurrentCulture, GetString("PasswordRequiresUniqueChars"), p0);
         }
 
+        /// <summary>
+        /// Store does not implement IUserActivityStore&lt;User&gt;.
+        /// </summary>
+        internal static string StoreNotIUserActivityStore
+        {
+            get { return GetString("StoreNotIUserActivityStore"); }
+        }
+
+        /// <summary>
+        /// Store does not implement IUserActivityStore&lt;User&gt;.
+        /// </summary>
+        internal static string FormatStoreNotIUserActivityStore()
+        {
+            return GetString("StoreNotIUserActivityStore");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -230,12 +230,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
     {
         public string LoginContext { get; set; }
 
-        public UserStoreWithGenerics(ContextWithGenerics context, string loginContext) : base(context)
+        public UserStoreWithGenerics(ContextWithGenerics context, string loginContext) : base(context, new IdentityErrorDescriber())
         {
             LoginContext = loginContext;
         }
 
-        protected override IdentityUserRoleWithDate CreateUserRole(IdentityUserWithGenerics user, MyIdentityRole role)
+        public override IdentityUserRoleWithDate CreateUserRole(IdentityUserWithGenerics user, MyIdentityRole role)
         {
             return new IdentityUserRoleWithDate()
             {
@@ -245,12 +245,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             };
         }
 
-        protected override IdentityUserClaimWithIssuer CreateUserClaim(IdentityUserWithGenerics user, Claim claim)
+        public override IdentityUserClaimWithIssuer CreateUserClaim(IdentityUserWithGenerics user, Claim claim)
         {
             return new IdentityUserClaimWithIssuer { UserId = user.Id, ClaimType = claim.Type, ClaimValue = claim.Value, Issuer = claim.Issuer };
         }
 
-        protected override IdentityUserLoginWithContext CreateUserLogin(IdentityUserWithGenerics user, UserLoginInfo login)
+        public override IdentityUserLoginWithContext CreateUserLogin(IdentityUserWithGenerics user, UserLoginInfo login)
         {
             return new IdentityUserLoginWithContext
             {
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             };
         }
 
-        protected override IdentityUserTokenWithStuff CreateUserToken(IdentityUserWithGenerics user, string loginProvider, string name, string value)
+        public override IdentityUserTokenWithStuff CreateUserToken(IdentityUserWithGenerics user, string loginProvider, string name, string value)
         {
             return new IdentityUserTokenWithStuff
             {
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             _loginContext = loginContext;
         }
 
-        protected override IdentityRoleClaimWithIssuer CreateRoleClaim(MyIdentityRole role, Claim claim)
+        public override IdentityRoleClaimWithIssuer CreateRoleClaim(MyIdentityRole role, Claim claim)
         {
             return new IdentityRoleClaimWithIssuer { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value, Issuer = claim.Issuer };
         }
