@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Sockets.Internal
 {
@@ -29,45 +29,47 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             }
 
             var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, authorizeData);
-            if (authorizePolicy.AuthenticationSchemes != null && authorizePolicy.AuthenticationSchemes.Count > 0)
-            {
-                ClaimsPrincipal newPrincipal = null;
-                foreach (var scheme in authorizePolicy.AuthenticationSchemes)
-                {
-                    var result = await context.Authentication.AuthenticateAsync(scheme);
-                    if (result != null)
-                    {
-                        newPrincipal = SecurityHelper.MergeUserPrincipal(newPrincipal, result);
-                    }
-                }
 
-                if (newPrincipal == null)
-                {
-                    newPrincipal = new ClaimsPrincipal(new ClaimsIdentity());
-                }
+            var policyEvaluator = context.RequestServices.GetRequiredService<IPolicyEvaluator>();
 
-                context.User = newPrincipal;
-            }
+            // This will set context.User if required
+            var authenticateResult = await policyEvaluator.AuthenticateAsync(authorizePolicy, context);
 
-            var authService = context.RequestServices.GetRequiredService<IAuthorizationService>();
-            if (await authService.AuthorizeAsync(context.User, context, authorizePolicy))
+            var authorizeResult = await policyEvaluator.AuthorizeAsync(authorizePolicy, authenticateResult, context);
+            if (authorizeResult.Succeeded)
             {
                 return true;
             }
-
-            // Challenge
-            if (authorizePolicy.AuthenticationSchemes != null && authorizePolicy.AuthenticationSchemes.Count > 0)
+            else if (authorizeResult.Challenged)
             {
-                foreach (var scheme in authorizePolicy.AuthenticationSchemes)
+                if (authorizePolicy.AuthenticationSchemes.Count > 0)
                 {
-                    await context.Authentication.ChallengeAsync(scheme, properties: null);
+                    foreach (var scheme in authorizePolicy.AuthenticationSchemes)
+                    {
+                        await context.ChallengeAsync(scheme);
+                    }
                 }
+                else
+                {
+                    await context.ChallengeAsync();
+                }
+                return false;
             }
-            else
+            else if (authorizeResult.Forbidden)
             {
-                await context.Authentication.ChallengeAsync(properties: null);
+                if (authorizePolicy.AuthenticationSchemes.Count > 0)
+                {
+                    foreach (var scheme in authorizePolicy.AuthenticationSchemes)
+                    {
+                        await context.ForbidAsync(scheme);
+                    }
+                }
+                else
+                {
+                    await context.ForbidAsync();
+                }
+                return false;
             }
-
             return false;
         }
     }

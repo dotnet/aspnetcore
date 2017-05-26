@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddSockets(this IServiceCollection services)
         {
             services.AddRouting();
+            services.AddAuthorizationPolicyEvaluator();
             services.TryAddSingleton<HttpConnectionDispatcher>();
             return services.AddSocketsCore();
         }
