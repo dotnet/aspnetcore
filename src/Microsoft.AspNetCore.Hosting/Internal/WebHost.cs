@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
                 var model = new ErrorPageModel
                 {
-                    RuntimeDisplayName = ".NET Core"
+                    RuntimeDisplayName = RuntimeInformation.FrameworkDescription
                 };
                 var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
                 var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();

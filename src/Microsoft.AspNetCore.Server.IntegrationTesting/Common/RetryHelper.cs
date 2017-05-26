@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     }
                     else
                     {
-                        if (exception is HttpRequestException)
+                        if (exception is HttpRequestException || exception is WebException)
                         {
                             logger.LogWarning("Failed to complete the request : {0}.", exception.Message);
                             await Task.Delay(1 * 1000); //Wait for a while before retry.
