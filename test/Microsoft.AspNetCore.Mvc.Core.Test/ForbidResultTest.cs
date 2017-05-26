@@ -19,13 +19,13 @@ namespace Microsoft.AspNetCore.Mvc
     public class ForbidResultTest
     {
         [Fact]
-        public async Task ExecuteResultAsync_InvokesForbidAsyncOnAuthenticationManager()
+        public async Task ExecuteResultAsync_InvokesForbidAsyncOnAuthenticationService()
         {
             // Arrange
             var httpContext = new Mock<HttpContext>();
             var auth = new Mock<IAuthenticationService>();
             auth
-                .Setup(c => c.ChallengeAsync(httpContext.Object, "", null, ChallengeBehavior.Forbidden))
+                .Setup(c => c.ForbidAsync(httpContext.Object, "", null))
                 .Returns(TaskCache.CompletedTask)
                 .Verifiable();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
@@ -52,11 +52,11 @@ namespace Microsoft.AspNetCore.Mvc
             var authProperties = new AuthenticationProperties();
             var auth = new Mock<IAuthenticationService>();
             auth
-                .Setup(c => c.ChallengeAsync(httpContext.Object, "Scheme1", authProperties, ChallengeBehavior.Forbidden))
+                .Setup(c => c.ForbidAsync(httpContext.Object, "Scheme1", authProperties))
                 .Returns(TaskCache.CompletedTask)
                 .Verifiable();
             auth
-                .Setup(c => c.ChallengeAsync(httpContext.Object, "Scheme2", authProperties, ChallengeBehavior.Forbidden))
+                .Setup(c => c.ForbidAsync(httpContext.Object, "Scheme2", authProperties))
                 .Returns(TaskCache.CompletedTask)
                 .Verifiable();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc
             var httpContext = new Mock<HttpContext>();
             var auth = new Mock<IAuthenticationService>();
             auth
-                .Setup(c => c.ChallengeAsync(httpContext.Object, null, expected, ChallengeBehavior.Forbidden))
+                .Setup(c => c.ForbidAsync(httpContext.Object, null, expected))
                 .Returns(TaskCache.CompletedTask)
                 .Verifiable();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc
             var httpContext = new Mock<HttpContext>();
             var auth = new Mock<IAuthenticationService>();
             auth
-                .Setup(c => c.ChallengeAsync(httpContext.Object, null, expected, ChallengeBehavior.Forbidden))
+                .Setup(c => c.ForbidAsync(httpContext.Object, null, expected))
                 .Returns(TaskCache.CompletedTask)
                 .Verifiable();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));

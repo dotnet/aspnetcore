@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            auth.Verify(c => c.ChallengeAsync(httpContext.Object, "", null, ChallengeBehavior.Automatic), Times.Exactly(1));
+            auth.Verify(c => c.ChallengeAsync(httpContext.Object, "", null), Times.Exactly(1));
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            auth.Verify(c => c.ChallengeAsync(httpContext.Object, null, null, ChallengeBehavior.Automatic), Times.Exactly(1));
+            auth.Verify(c => c.ChallengeAsync(httpContext.Object, null, null), Times.Exactly(1));
         }
 
         private static IServiceCollection CreateServices()
