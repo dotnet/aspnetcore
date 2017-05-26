@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,8 +14,10 @@ namespace PublishWithEmbedViewSources.Controllers
 
         public string GetPrecompiledResourceNames()
         {
-            var precompiledAssembly = Assembly.Load(
-                new AssemblyName("PublishWithEmbedViewSources.PrecompiledViews"));
+            var precompiledAssemblyPath = Path.Combine(
+                Path.GetDirectoryName(GetType().Assembly.Location),
+                "PublishWithEmbedViewSources.PrecompiledViews.dll");
+            var precompiledAssembly = Assembly.LoadFile(precompiledAssemblyPath);
             return string.Join(
                 Environment.NewLine,
                 precompiledAssembly.GetManifestResourceNames());

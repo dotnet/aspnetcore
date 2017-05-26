@@ -33,10 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
             };
             var expectedText = "Hello Index!";
 
-            var assemblyPath = Path.Combine(
-                Fixture.DeploymentResult.DeploymentParameters.PublishedApplicationRootPath,
-                $"{ApplicationName}.PrecompiledViews.dll");
-
             // Act - 1
             var response1 = await Fixture.HttpClient.GetStringWithRetryAsync(
                 "Home/Index",
