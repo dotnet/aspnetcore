@@ -166,9 +166,14 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), props, "simple")));
             }
 
-            public Task ChallengeAsync(ChallengeContext context)
+            public Task ChallengeAsync(AuthenticationProperties properties)
             {
-                return Task.FromResult(0);
+                throw new NotImplementedException();
+            }
+
+            public Task ForbidAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
             }
 
             public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
@@ -176,14 +181,14 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(0);
             }
 
-            public Task SignInAsync(SignInContext context)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
             {
-                return Task.FromResult(0);
+                throw new NotImplementedException();
             }
 
-            public Task SignOutAsync(SignOutContext context)
+            public Task SignOutAsync(AuthenticationProperties properties)
             {
-                return Task.FromResult(0);
+                throw new NotImplementedException();
             }
         }
 

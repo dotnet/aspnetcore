@@ -26,9 +26,17 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
-        /// <param name="behavior">The <see cref="ChallengeBehavior"/>.</param>
         /// <returns>A task.</returns>
-        Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties, ChallengeBehavior behavior);
+        Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties);
+
+        /// <summary>
+        /// Forbids the specified authentication scheme.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The name of the authentication scheme.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <returns>A task.</returns>
+        Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties);
 
         /// <summary>
         /// Sign a principal in for the specified authentication scheme.

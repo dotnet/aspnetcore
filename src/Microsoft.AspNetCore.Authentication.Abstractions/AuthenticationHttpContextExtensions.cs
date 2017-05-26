@@ -64,18 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
         public static Task ChallengeAsync(this HttpContext context, string scheme, AuthenticationProperties properties) =>
-            context.ChallengeAsync(scheme, properties: properties, behavior: ChallengeBehavior.Automatic);
-
-        /// <summary>
-        /// Extension method for Challenge.
-        /// </summary>
-        /// <param name="context">The <see cref="HttpContext"/> context.</param>
-        /// <param name="scheme">The name of the authentication scheme.</param>
-        /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
-        /// <param name="behavior">The <see cref="ChallengeBehavior"/> behavior.</param>
-        /// <returns>The task.</returns>
-        public static Task ChallengeAsync(this HttpContext context, string scheme, AuthenticationProperties properties, ChallengeBehavior behavior) =>
-            context.RequestServices.GetRequiredService<IAuthenticationService>().ChallengeAsync(context, scheme, properties, behavior);
+            context.RequestServices.GetRequiredService<IAuthenticationService>().ChallengeAsync(context, scheme, properties);
 
         /// <summary>
         /// Extension method for Forbid.
@@ -111,7 +100,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
         public static Task ForbidAsync(this HttpContext context, string scheme, AuthenticationProperties properties) =>
-            context.RequestServices.GetRequiredService<IAuthenticationService>().ChallengeAsync(context, scheme, properties, ChallengeBehavior.Forbidden);
+            context.RequestServices.GetRequiredService<IAuthenticationService>().ForbidAsync(context, scheme, properties);
 
         /// <summary>
         /// Extension method for SignIn.

@@ -191,7 +191,9 @@ namespace Microsoft.AspNetCore.Http
             TestCachedFeaturesAreNull(context, features);
             TestCachedFeaturesAreNull(context.Request, features);
             TestCachedFeaturesAreNull(context.Response, features);
+#pragma warning disable CS0618 // Type or member is obsolete
             TestCachedFeaturesAreNull(context.Authentication, features);
+#pragma warning restore CS0618 // Type or member is obsolete
             TestCachedFeaturesAreNull(context.Connection, features);
             TestCachedFeaturesAreNull(context.WebSockets, features);
         }
@@ -220,7 +222,9 @@ namespace Microsoft.AspNetCore.Http
             TestCachedFeaturesAreSet(context, features);
             TestCachedFeaturesAreSet(context.Request, features);
             TestCachedFeaturesAreSet(context.Response, features);
+#pragma warning disable CS0618 // Type or member is obsolete
             TestCachedFeaturesAreSet(context.Authentication, features);
+#pragma warning restore CS0618 // Type or member is obsolete
             TestCachedFeaturesAreSet(context.Connection, features);
             TestCachedFeaturesAreSet(context.WebSockets, features);
         }

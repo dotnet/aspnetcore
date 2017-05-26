@@ -80,9 +80,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
-        /// <param name="behavior">The <see cref="ChallengeBehavior"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties, ChallengeBehavior behavior)
+        public virtual async Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties)
         {
             if (scheme == null)
             {
@@ -100,8 +99,35 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
             }
 
-            var challengeContext = new ChallengeContext(context, scheme, properties, behavior);
-            await handler.ChallengeAsync(challengeContext);
+            await handler.ChallengeAsync(properties);
+        }
+
+        /// <summary>
+        /// Forbid the specified authentication scheme.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The name of the authentication scheme.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <returns>A task.</returns>
+        public virtual async Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+        {
+            if (scheme == null)
+            {
+                var defaultChallengeScheme = await Schemes.GetDefaultChallengeSchemeAsync();
+                scheme = defaultChallengeScheme?.Name;
+                if (scheme == null)
+                {
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found.");
+                }
+            }
+
+            var handler = await Handlers.GetHandlerAsync(context, scheme);
+            if (handler == null)
+            {
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
+            }
+
+            await handler.ForbidAsync(properties);
         }
 
         /// <summary>
@@ -135,8 +161,7 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
             }
 
-            var signInContext = new SignInContext(context, scheme, principal, properties);
-            await handler.SignInAsync(signInContext);
+            await handler.SignInAsync(principal, properties);
         }
 
         /// <summary>
@@ -159,8 +184,7 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
             }
 
-            var signOutContext = new SignOutContext(context, scheme, properties);
-            await handler.SignOutAsync(signOutContext);
+            await handler.SignOutAsync(properties);
         }
     }
 }

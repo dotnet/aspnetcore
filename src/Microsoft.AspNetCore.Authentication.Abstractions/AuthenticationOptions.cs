@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Authentication
         public string DefaultSignInScheme { get; set; }
 
         /// <summary>
-        /// Used by as the default scheme by <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties, ChallengeBehavior)"/>.
+        /// Used by as the default scheme by <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
         public string DefaultChallengeScheme { get; set; }
     }

@@ -34,11 +34,11 @@ namespace Microsoft.AspNetCore.Authentication
         Task<AuthenticationScheme> GetDefaultAuthenticateSchemeAsync();
 
         /// <summary>
-        /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties, ChallengeBehavior)"/>.
+        /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultChallengeScheme"/>.
         /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
         /// </summary>
-        /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties, ChallengeBehavior)"/>.</returns>
+        /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
         Task<AuthenticationScheme> GetDefaultChallengeSchemeAsync();
 
         /// <summary>
