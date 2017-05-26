@@ -7,6 +7,7 @@
     <MoqVersion>4.7.1</MoqVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <NewtonsoftJsonVersion>10.0.1</NewtonsoftJsonVersion>
+    <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <SQLitePCLRawVersion>1.1.5</SQLitePCLRawVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
