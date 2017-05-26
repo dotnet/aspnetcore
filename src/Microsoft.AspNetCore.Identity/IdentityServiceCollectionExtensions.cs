@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -17,10 +17,10 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class IdentityServiceCollectionExtensions
     {
-        internal class IdentityConfigureOptions : ConfigureOptions<IdentityOptions>
+        internal class IdentityConfigureOptions : ConfigureDefaultOptions<IdentityOptions>
         {
             public IdentityConfigureOptions(IConfiguration config) :
-                base(options => config.GetSection("Identity").Bind(options))
+                base(options => config.GetSection("Microsoft:AspNetCore:Identity").Bind(options))
             { }
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<SignInManager<TUser>, SignInManager<TUser>>();
             services.TryAddScoped<RoleManager<TRole>, AspNetRoleManager<TRole>>();
 
-            services.AddSingleton<IConfigureOptions<IdentityOptions>, IdentityConfigureOptions>();
+            services.AddSingleton<ConfigureDefaultOptions<IdentityOptions>, IdentityConfigureOptions>();
             if (setupAction != null)
             {
                 services.Configure(setupAction);

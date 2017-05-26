@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.Test
@@ -48,27 +49,28 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             var dic = new Dictionary<string, string>
             {
-                {"identity:claimsidentity:roleclaimtype", roleClaimType},
-                {"identity:claimsidentity:usernameclaimtype", usernameClaimType},
-                {"identity:claimsidentity:useridclaimtype", useridClaimType},
-                {"identity:claimsidentity:securitystampclaimtype", securityStampClaimType},
-                {"identity:user:requireUniqueEmail", "true"},
-                {"identity:password:RequiredLength", "10"},
-                {"identity:password:RequiredUniqueChars", "5"},
-                {"identity:password:RequireNonAlphanumeric", "false"},
-                {"identity:password:RequireUpperCase", "false"},
-                {"identity:password:RequireDigit", "false"},
-                {"identity:password:RequireLowerCase", "false"},
-                {"identity:lockout:AllowedForNewUsers", "FALSe"},
-                {"identity:lockout:MaxFailedAccessAttempts", "1000"}
+                {"microsoft:aspnetcore:identity:claimsidentity:roleclaimtype", roleClaimType},
+                {"microsoft:aspnetcore:identity:claimsidentity:usernameclaimtype", usernameClaimType},
+                {"microsoft:aspnetcore:identity:claimsidentity:useridclaimtype", useridClaimType},
+                {"microsoft:aspnetcore:identity:claimsidentity:securitystampclaimtype", securityStampClaimType},
+                {"microsoft:aspnetcore:identity:user:requireUniqueEmail", "true"},
+                {"microsoft:aspnetcore:identity:password:RequiredLength", "10"},
+                {"microsoft:aspnetcore:identity:password:RequiredUniqueChars", "5"},
+                {"microsoft:aspnetcore:identity:password:RequireNonAlphanumeric", "false"},
+                {"microsoft:aspnetcore:identity:password:RequireUpperCase", "false"},
+                {"microsoft:aspnetcore:identity:password:RequireDigit", "false"},
+                {"microsoft:aspnetcore:identity:password:RequireLowerCase", "false"},
+                {"microsoft:aspnetcore:identity:lockout:AllowedForNewUsers", "FALSe"},
+                {"microsoft:aspnetcore:identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
             var builder = new ConfigurationBuilder();
             builder.AddInMemoryCollection(dic);
             var config = builder.Build();
-            Assert.Equal(roleClaimType, config["identity:claimsidentity:roleclaimtype"]);
+            Assert.Equal(roleClaimType, config["microsoft:aspnetcore:identity:claimsidentity:roleclaimtype"]);
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection()
+                .AddSingleton<IConfiguration>(config)
+                .AddSingleton<IConfigureOptions<IdentityOptions>, ConfigureDefaults<IdentityOptions>>();
             services.AddIdentity<TestUser,TestRole>();
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
@@ -94,14 +96,14 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var dic = new Dictionary<string, string>
             {
-                {"identity:user:requireUniqueEmail", "true"},
-                {"identity:lockout:MaxFailedAccessAttempts", "1000"}
+                {"microsoft:aspnetcore:identity:user:requireUniqueEmail", "true"},
+                {"microsoft:aspnetcore:identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
             var builder = new ConfigurationBuilder();
             builder.AddInMemoryCollection(dic);
-            var config = builder.Build();
-            var services = new ServiceCollection();
-            services.AddSingleton<IConfiguration>(config);
+            var services = new ServiceCollection()
+                .AddSingleton<IConfiguration>(builder.Build())
+                .AddSingleton<IConfigureOptions<IdentityOptions>, ConfigureDefaults<IdentityOptions>>();
             services.AddIdentity<TestUser, TestRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
             var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(accessor);
@@ -113,9 +115,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void CanCustomizeIdentityOptions()
         {
-            var services = new ServiceCollection()
-                .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
-                .Configure<IdentityOptions>(options => options.Password.RequiredLength = -1);
+            var services = new ServiceCollection().Configure<IdentityOptions>(options => options.Password.RequiredLength = -1);
             services.AddIdentity<TestUser,TestRole>();
             var serviceProvider = services.BuildServiceProvider();
 
@@ -135,8 +135,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void CanSetupIdentityOptions()
         {
-            var services = new ServiceCollection()
-                .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var services = new ServiceCollection();
             services.AddIdentity<TestUser,TestRole>(options => options.User.RequireUniqueEmail = true);
             var serviceProvider = services.BuildServiceProvider();
 
