@@ -487,10 +487,11 @@
     <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(TimeStampFreeMetaPackage->'$(SignedAllMetapackagePath)%(Filename)') %(TimeStampFreeMetaPackage.Identity) > nul" />
 
     <ItemGroup>
-      <TimeStampedManifestFiles Include="$(SignedAllMetapackagePath)**\manifest.*.xml" />
+      <TimeStampedManifestFiles Include="$(SignedAllMetapackagePath)**\aspnetcore-store-*.xml" />
     </ItemGroup>
 
     <Exec Command="powershell.exe -command &quot;(Get-Content %(TimeStampedManifestFiles.FullPath)).replace('-$(BuildNumber)','-final') | Set-Content %(TimeStampedManifestFiles.FullPath)&quot;"/>
+    <Move SourceFiles="%(TimeStampedManifestFiles.FullPath)" DestinationFiles="$([System.String]::new('%(TimeStampedManifestFiles.FullPath)').Replace('-$(BuildNumber)', '-final'))" />
 
     <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(TimestampFreePackagesOutputPath)%(TimeStampFreeMetaPackage.FileName).nupkg * > nul" WorkingDirectory="$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)" />
   </Target>
