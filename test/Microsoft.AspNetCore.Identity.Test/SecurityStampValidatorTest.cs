@@ -24,7 +24,12 @@ namespace Microsoft.AspNetCore.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task ChallengeAsync(ChallengeContext context)
+            public Task ChallengeAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ForbidAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
@@ -39,12 +44,12 @@ namespace Microsoft.AspNetCore.Identity.Test
                 throw new NotImplementedException();
             }
 
-            public Task SignInAsync(SignInContext context)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SignOutAsync(SignOutContext context)
+            public Task SignOutAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
             }
