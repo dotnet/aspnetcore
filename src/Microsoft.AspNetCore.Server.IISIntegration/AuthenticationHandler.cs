@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Claims;
 using System.Globalization;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -58,29 +59,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return _user;
         }
 
-
-        public Task ChallengeAsync(ChallengeContext context)
+        public Task ChallengeAsync(AuthenticationProperties properties)
         {
-            switch (context.Behavior)
-            {
-                case ChallengeBehavior.Automatic:
-                    // If there is a principal already, invoke the forbidden code path
-                    if (GetUser() == null)
-                    {
-                        goto case ChallengeBehavior.Unauthorized;
-                    }
-                    else
-                    {
-                        goto case ChallengeBehavior.Forbidden;
-                    }
-                case ChallengeBehavior.Unauthorized:
-                    context.HttpContext.Response.StatusCode = 401;
-                    // We would normally set the www-authenticate header here, but IIS does that for us.
-                    break;
-                case ChallengeBehavior.Forbidden:
-                    context.HttpContext.Response.StatusCode = 403;
-                    break;
-            }
+            // We would normally set the www-authenticate header here, but IIS does that for us.
+            _context.Response.StatusCode = 401;
+            return TaskCache.CompletedTask;
+        }
+
+        public Task ForbidAsync(AuthenticationProperties properties)
+        {
+            _context.Response.StatusCode = 403;
             return TaskCache.CompletedTask;
         }
 
@@ -91,12 +79,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return TaskCache.CompletedTask;
         }
 
-        public Task SignInAsync(SignInContext context)
+        public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
             throw new NotSupportedException();
         }
 
-        public Task SignOutAsync(SignOutContext context)
+        public Task SignOutAsync(AuthenticationProperties properties)
         {
             return TaskCache.CompletedTask;
         }
