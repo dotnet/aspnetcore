@@ -3,7 +3,7 @@
   <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <UserSecretsId>aspnetcore-MetaPackagesSampleApp-20170406180413</UserSecretsId>
   </PropertyGroup>
 
@@ -16,4 +16,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore\Microsoft.AspNetCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
+  </ItemGroup>
 </Project>

@@ -7,8 +7,4 @@
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Linq.Parallel" Version="$(CoreFxVersion)" />
-  </ItemGroup>
-
 </Project>

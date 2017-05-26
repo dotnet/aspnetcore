@@ -2,10 +2,10 @@
   <PropertyGroup>
     <AspNetCoreIntegrationTestingVersion>0.4.0-*</AspNetCoreIntegrationTestingVersion>
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
-    <CoreFxVersion>4.3.0</CoreFxVersion>
+    <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.1</MoqVersion>
-    <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <NewtonsoftJsonVersion>10.0.1</NewtonsoftJsonVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <SQLitePCLRawVersion>1.1.5</SQLitePCLRawVersion>
