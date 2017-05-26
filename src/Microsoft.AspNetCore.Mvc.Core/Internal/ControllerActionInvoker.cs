@@ -18,17 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly ControllerActionInvokerCacheEntry _cacheEntry;
         private readonly ControllerContext _controllerContext;
-
-        private object _controller;
+        
         private Dictionary<string, object> _arguments;
-
-        private ExceptionContext _exceptionContext;
 
         private ActionExecutingContext _actionExecutingContext;
         private ActionExecutedContext _actionExecutedContext;
-
-        private ResultExecutingContext _resultExecutingContext;
-        private ResultExecutedContext _resultExecutedContext;
 
         internal ControllerActionInvoker(
             ILogger logger,
@@ -52,9 +46,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         protected override void ReleaseResources()
         {
-            if (_controller != null && _cacheEntry.ControllerReleaser != null)
+            if (_instance != null && _cacheEntry.ControllerReleaser != null)
             {
-                _cacheEntry.ControllerReleaser(_controllerContext, _controller);
+                _cacheEntry.ControllerReleaser(_controllerContext, _instance);
             }
         }
 
@@ -65,214 +59,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             switch (next)
             {
-                case State.ResourceInsideBegin:
-                    {
-                        goto case State.ExceptionBegin;
-                    }
-
-                case State.ExceptionBegin:
-                    {
-                        _cursor.Reset();
-                        goto case State.ExceptionNext;
-                    }
-
-                case State.ExceptionNext:
-                    {
-                        var current = _cursor.GetNextFilter<IExceptionFilter, IAsyncExceptionFilter>();
-                        if (current.FilterAsync != null)
-                        {
-                            state = current.FilterAsync;
-                            goto case State.ExceptionAsyncBegin;
-                        }
-                        else if (current.Filter != null)
-                        {
-                            state = current.Filter;
-                            goto case State.ExceptionSyncBegin;
-                        }
-                        else if (scope == Scope.Exception)
-                        {
-                            // All exception filters are on the stack already - so execute the 'inside'.
-                            goto case State.ExceptionInside;
-                        }
-                        else
-                        {
-                            // There are no exception filters - so jump right to 'inside'.
-                            Debug.Assert(scope == Scope.Resource);
-                            goto case State.ActionBegin;
-                        }
-                    }
-
-                case State.ExceptionAsyncBegin:
-                    {
-                        var task = InvokeNextExceptionFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
-                        {
-                            next = State.ExceptionAsyncResume;
-                            return task;
-                        }
-
-                        goto case State.ExceptionAsyncResume;
-                    }
-
-                case State.ExceptionAsyncResume:
-                    {
-                        Debug.Assert(state != null);
-
-                        var filter = (IAsyncExceptionFilter)state;
-                        var exceptionContext = _exceptionContext;
-
-                        // When we get here we're 'unwinding' the stack of exception filters. If we have an unhandled exception,
-                        // we'll call the filter. Otherwise there's nothing to do.
-                        if (exceptionContext?.Exception != null && !exceptionContext.ExceptionHandled)
-                        {
-                            _diagnosticSource.BeforeOnExceptionAsync(exceptionContext, filter);
-
-                            var task = filter.OnExceptionAsync(exceptionContext);
-                            if (task.Status != TaskStatus.RanToCompletion)
-                            {
-                                next = State.ExceptionAsyncEnd;
-                                return task;
-                            }
-
-                            goto case State.ExceptionAsyncEnd;
-                        }
-
-                        goto case State.ExceptionEnd;
-                    }
-
-                case State.ExceptionAsyncEnd:
-                    {
-                        Debug.Assert(state != null);
-                        Debug.Assert(_exceptionContext != null);
-
-                        var filter = (IAsyncExceptionFilter)state;
-                        var exceptionContext = _exceptionContext;
-
-                        _diagnosticSource.AfterOnExceptionAsync(exceptionContext, filter);
-
-                        if (exceptionContext.Exception == null || exceptionContext.ExceptionHandled)
-                        {
-                            // We don't need to do anthing to trigger a short circuit. If there's another
-                            // exception filter on the stack it will check the same set of conditions
-                            // and then just skip itself.
-                            _logger.ExceptionFilterShortCircuited(filter);
-                        }
-
-                        goto case State.ExceptionEnd;
-                    }
-
-                case State.ExceptionSyncBegin:
-                    {
-                        var task = InvokeNextExceptionFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
-                        {
-                            next = State.ExceptionSyncEnd;
-                            return task;
-                        }
-
-                        goto case State.ExceptionSyncEnd;
-                    }
-
-                case State.ExceptionSyncEnd:
-                    {
-                        Debug.Assert(state != null);
-
-                        var filter = (IExceptionFilter)state;
-                        var exceptionContext = _exceptionContext;
-
-                        // When we get here we're 'unwinding' the stack of exception filters. If we have an unhandled exception,
-                        // we'll call the filter. Otherwise there's nothing to do.
-                        if (exceptionContext?.Exception != null && !exceptionContext.ExceptionHandled)
-                        {
-                            _diagnosticSource.BeforeOnException(exceptionContext, filter);
-
-                            filter.OnException(exceptionContext);
-
-                            _diagnosticSource.AfterOnException(exceptionContext, filter);
-
-                            if (exceptionContext.Exception == null || exceptionContext.ExceptionHandled)
-                            {
-                                // We don't need to do anthing to trigger a short circuit. If there's another
-                                // exception filter on the stack it will check the same set of conditions
-                                // and then just skip itself.
-                                _logger.ExceptionFilterShortCircuited(filter);
-                            }
-                        }
-
-                        goto case State.ExceptionEnd;
-                    }
-
-                case State.ExceptionInside:
-                    {
-                        goto case State.ActionBegin;
-                    }
-
-                case State.ExceptionHandled:
-                    {
-                        // We arrive in this state when an exception happened, but was handled by exception filters
-                        // either by setting ExceptionHandled, or nulling out the Exception or setting a result
-                        // on the ExceptionContext.
-                        //
-                        // We need to execute the result (if any) and then exit gracefully which unwinding Resource 
-                        // filters.
-
-                        Debug.Assert(state != null);
-                        Debug.Assert(_exceptionContext != null);
-
-                        if (_exceptionContext.Result == null)
-                        {
-                            _exceptionContext.Result = new EmptyResult();
-                        }
-
-                        if (scope == Scope.Resource)
-                        {
-                            Debug.Assert(_exceptionContext.Result != null);
-                            _result = _exceptionContext.Result;
-                        }
-
-                        var task = InvokeResultAsync(_exceptionContext.Result);
-                        if (task.Status != TaskStatus.RanToCompletion)
-                        {
-                            next = State.ResourceInsideEnd;
-                            return task;
-                        }
-
-                        goto case State.ResourceInsideEnd;
-                    }
-
-                case State.ExceptionEnd:
-                    {
-                        var exceptionContext = _exceptionContext;
-
-                        if (scope == Scope.Exception)
-                        {
-                            isCompleted = true;
-                            return TaskCache.CompletedTask;
-                        }
-
-                        if (exceptionContext != null)
-                        {
-                            if (exceptionContext.Result != null ||
-                                exceptionContext.Exception == null ||
-                                exceptionContext.ExceptionHandled)
-                            {
-                                goto case State.ExceptionHandled;
-                            }
-
-                            Rethrow(exceptionContext);
-                            Debug.Fail("unreachable");
-                        }
-
-                        goto case State.ResultBegin;
-                    }
-
                 case State.ActionBegin:
                     {
                         var controllerContext = _controllerContext;
 
                         _cursor.Reset();
 
-                        _controller = _cacheEntry.ControllerFactory(controllerContext);
+                        _instance = _cacheEntry.ControllerFactory(controllerContext);
 
                         _arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
@@ -293,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         {
                             if (_actionExecutingContext == null)
                             {
-                                _actionExecutingContext = new ActionExecutingContext(_controllerContext, _filters, _arguments, _controller);
+                                _actionExecutingContext = new ActionExecutingContext(_controllerContext, _filters, _arguments, _instance);
                             }
 
                             state = current.FilterAsync;
@@ -303,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         {
                             if (_actionExecutingContext == null)
                             {
-                                _actionExecutingContext = new ActionExecutingContext(_controllerContext, _filters, _arguments, _controller);
+                                _actionExecutingContext = new ActionExecutingContext(_controllerContext, _filters, _arguments, _instance);
                             }
 
                             state = current.Filter;
@@ -350,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             _actionExecutedContext = new ActionExecutedContext(
                                 _controllerContext,
                                 _filters,
-                                _controller)
+                                _instance)
                             {
                                 Canceled = true,
                                 Result = _actionExecutingContext.Result,
@@ -384,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             _actionExecutedContext = new ActionExecutedContext(
                                 _actionExecutingContext,
                                 _filters,
-                                _controller)
+                                _instance)
                             {
                                 Canceled = true,
                                 Result = _actionExecutingContext.Result,
@@ -439,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         {
                             if (_actionExecutedContext == null)
                             {
-                                _actionExecutedContext = new ActionExecutedContext(_controllerContext, _filters, _controller)
+                                _actionExecutedContext = new ActionExecutedContext(_controllerContext, _filters, _instance)
                                 {
                                     Result = _result,
                                 };
@@ -457,234 +250,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             _result = actionExecutedContext.Result;
                         }
 
-                        if (scope == Scope.Exception)
-                        {
-                            // If we're inside an exception filter, let's allow those filters to 'unwind' before
-                            // the result.
-                            isCompleted = true;
-                            return TaskCache.CompletedTask;
-                        }
-
-                        Debug.Assert(scope == Scope.Resource);
-                        goto case State.ResultBegin;
-                    }
-
-                case State.ResultBegin:
-                    {
-                        _cursor.Reset();
-                        goto case State.ResultNext;
-                    }
-
-                case State.ResultNext:
-                    {
-                        var current = _cursor.GetNextFilter<IResultFilter, IAsyncResultFilter>();
-                        if (current.FilterAsync != null)
-                        {
-                            if (_resultExecutingContext == null)
-                            {
-                                _resultExecutingContext = new ResultExecutingContext(_controllerContext, _filters, _result, _controller);
-                            }
-
-                            state = current.FilterAsync;
-                            goto case State.ResultAsyncBegin;
-                        }
-                        else if (current.Filter != null)
-                        {
-                            if (_resultExecutingContext == null)
-                            {
-                                _resultExecutingContext = new ResultExecutingContext(_controllerContext, _filters, _result, _controller);
-                            }
-
-                            state = current.Filter;
-                            goto case State.ResultSyncBegin;
-                        }
-                        else
-                        {
-                            goto case State.ResultInside;
-                        }
-                    }
-
-                case State.ResultAsyncBegin:
-                    {
-                        Debug.Assert(state != null);
-                        Debug.Assert(_resultExecutingContext != null);
-
-                        var filter = (IAsyncResultFilter)state;
-                        var resultExecutingContext = _resultExecutingContext;
-
-                        _diagnosticSource.BeforeOnResultExecution(resultExecutingContext, filter);
-
-                        var task = filter.OnResultExecutionAsync(resultExecutingContext, InvokeNextResultFilterAwaitedAsync);
-                        if (task.Status != TaskStatus.RanToCompletion)
-                        {
-                            next = State.ResultAsyncEnd;
-                            return task;
-                        }
-
-                        goto case State.ResultAsyncEnd;
-                    }
-
-                case State.ResultAsyncEnd:
-                    {
-                        Debug.Assert(state != null);
-                        Debug.Assert(_resultExecutingContext != null);
-
-                        var filter = (IAsyncResultFilter)state;
-                        var resultExecutingContext = _resultExecutingContext;
-                        var resultExecutedContext = _resultExecutedContext;
-
-                        if (resultExecutedContext == null || resultExecutingContext.Cancel == true)
-                        {
-                            // Short-circuited by not calling next || Short-circuited by setting Cancel == true
-                            _logger.ResourceFilterShortCircuited(filter);
-
-                            _resultExecutedContext = new ResultExecutedContext(
-                                _controllerContext,
-                                _filters,
-                                resultExecutingContext.Result,
-                                _controller)
-                            {
-                                Canceled = true,
-                            };
-                        }
-
-                        _diagnosticSource.AfterOnResultExecution(_resultExecutedContext, filter);
-                        goto case State.ResultEnd;
-                    }
-
-                case State.ResultSyncBegin:
-                    {
-                        Debug.Assert(state != null);
-                        Debug.Assert(_resultExecutingContext != null);
-
-                        var filter = (IResultFilter)state;
-                        var resultExecutingContext = _resultExecutingContext;
-
-                        _diagnosticSource.BeforeOnResultExecuting(resultExecutingContext, filter);
-
-                        filter.OnResultExecuting(resultExecutingContext);
-
-                        _diagnosticSource.AfterOnResultExecuting(resultExecutingContext, filter);
-
-                        if (_resultExecutingContext.Cancel == true)
-                        {
-                            // Short-circuited by setting Cancel == true
-                            _logger.ResourceFilterShortCircuited(filter);
-
-                            _resultExecutedContext = new ResultExecutedContext(
-                                resultExecutingContext,
-                                _filters,
-                                resultExecutingContext.Result,
-                                _controller)
-                            {
-                                Canceled = true,
-                            };
-
-                            goto case State.ResultEnd;
-                        }
-
-                        var task = InvokeNextResultFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
-                        {
-                            next = State.ResultSyncEnd;
-                            return task;
-                        }
-
-                        goto case State.ResultSyncEnd;
-                    }
-
-                case State.ResultSyncEnd:
-                    {
-                        Debug.Assert(state != null);
-                        Debug.Assert(_resultExecutingContext != null);
-                        Debug.Assert(_resultExecutedContext != null);
-
-                        var filter = (IResultFilter)state;
-                        var resultExecutedContext = _resultExecutedContext;
-
-                        _diagnosticSource.BeforeOnResultExecuted(resultExecutedContext, filter);
-
-                        filter.OnResultExecuted(resultExecutedContext);
-
-                        _diagnosticSource.AfterOnResultExecuted(resultExecutedContext, filter);
-
-                        goto case State.ResultEnd;
-                    }
-
-                case State.ResultInside:
-                    {
-                        // If we executed result filters then we need to grab the result from there.
-                        if (_resultExecutingContext != null)
-                        {
-                            _result = _resultExecutingContext.Result;
-                        }
-
-                        if (_result == null)
-                        {
-                            // The empty result is always flowed back as the 'executed' result if we don't have one.
-                            _result = new EmptyResult();
-                        }
-
-                        var task = InvokeResultAsync(_result);
-                        if (task.Status != TaskStatus.RanToCompletion)
-                        {
-                            next = State.ResultEnd;
-                            return task;
-                        }
-
-                        goto case State.ResultEnd;
-                    }
-
-                case State.ResultEnd:
-                    {
-                        var result = _result;
-
-                        if (scope == Scope.Result)
-                        {
-                            if (_resultExecutedContext == null)
-                            {
-                                _resultExecutedContext = new ResultExecutedContext(_controllerContext, _filters, result, _controller);
-                            }
-
-                            isCompleted = true;
-                            return TaskCache.CompletedTask;
-                        }
-
-                        Rethrow(_resultExecutedContext);
-
-                        goto case State.ResourceInsideEnd;
-                    }
-
-                case State.ResourceInsideEnd:
-                    {
                         isCompleted = true;
                         return TaskCache.CompletedTask;
                     }
 
                 default:
                     throw new InvalidOperationException();
-            }
-        }
-
-        private async Task InvokeNextExceptionFilterAsync()
-        {
-            try
-            {
-                var next = State.ExceptionNext;
-                var state = (object)null;
-                var scope = Scope.Exception;
-                var isCompleted = false;
-                while (!isCompleted)
-                {
-                    await Next(ref next, ref scope, ref state, ref isCompleted);
-                }
-            }
-            catch (Exception exception)
-            {
-                _exceptionContext = new ExceptionContext(_controllerContext, _filters)
-                {
-                    ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
-                };
             }
         }
 
@@ -703,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             catch (Exception exception)
             {
-                _actionExecutedContext = new ActionExecutedContext(_controllerContext, _filters, _controller)
+                _actionExecutedContext = new ActionExecutedContext(_controllerContext, _filters, _instance)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
@@ -737,7 +308,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var controllerContext = _controllerContext;
             var executor = _cacheEntry.ActionMethodExecutor;
-            var controller = _controller;
+            var controller = _instance;
             var arguments = _arguments;
             var orderedArguments = PrepareArguments(arguments, executor);
 
@@ -842,58 +413,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return typeof(IActionResult).IsAssignableFrom(resultType);
         }
 
-        private async Task InvokeNextResultFilterAsync()
-        {
-            try
-            {
-                var next = State.ResultNext;
-                var state = (object)null;
-                var scope = Scope.Result;
-                var isCompleted = false;
-                while (!isCompleted)
-                {
-                    await Next(ref next, ref scope, ref state, ref isCompleted);
-                }
-            }
-            catch (Exception exception)
-            {
-                _resultExecutedContext = new ResultExecutedContext(_controllerContext, _filters, _result, _controller)
-                {
-                    ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
-                };
-            }
-
-            Debug.Assert(_resultExecutedContext != null);
-        }
-
-        private async Task<ResultExecutedContext> InvokeNextResultFilterAwaitedAsync()
-        {
-            Debug.Assert(_resultExecutingContext != null);
-            if (_resultExecutingContext.Cancel == true)
-            {
-                // If we get here, it means that an async filter set cancel == true AND called next().
-                // This is forbidden.
-                var message = Resources.FormatAsyncResultFilter_InvalidShortCircuit(
-                    typeof(IAsyncResultFilter).Name,
-                    nameof(ResultExecutingContext.Cancel),
-                    typeof(ResultExecutingContext).Name,
-                    typeof(ResultExecutionDelegate).Name);
-
-                throw new InvalidOperationException(message);
-            }
-
-            await InvokeNextResultFilterAsync();
-
-            Debug.Assert(_resultExecutedContext != null);
-            return _resultExecutedContext;
-        }
-
         /// <remarks><see cref="ResourceInvoker.InvokeFilterPipelineAsync"/> for details on what the
         /// variables in this method represent.</remarks>
         protected override async Task InvokeInnerFilterAsync()
         {
-            var next = State.ResourceInsideBegin;
-            var scope = Scope.Resource;
+            var next = State.ActionBegin;
+            var scope = Scope.Invoker;
             var state = (object)null;
             var isCompleted = false;
 
@@ -903,53 +428,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private static void Rethrow(ExceptionContext context)
-        {
-            if (context == null)
-            {
-                return;
-            }
-
-            if (context.ExceptionHandled)
-            {
-                return;
-            }
-
-            if (context.ExceptionDispatchInfo != null)
-            {
-                context.ExceptionDispatchInfo.Throw();
-            }
-
-            if (context.Exception != null)
-            {
-                throw context.Exception;
-            }
-        }
-
         private static void Rethrow(ActionExecutedContext context)
-        {
-            if (context == null)
-            {
-                return;
-            }
-
-            if (context.ExceptionHandled)
-            {
-                return;
-            }
-
-            if (context.ExceptionDispatchInfo != null)
-            {
-                context.ExceptionDispatchInfo.Throw();
-            }
-
-            if (context.Exception != null)
-            {
-                throw context.Exception;
-            }
-        }
-
-        private static void Rethrow(ResultExecutedContext context)
         {
             if (context == null)
             {
@@ -984,7 +463,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             Debug.Assert(_cacheEntry.ControllerBinderDelegate != null);
-            return _cacheEntry.ControllerBinderDelegate(_controllerContext, _controller, _arguments);
+            return _cacheEntry.ControllerBinderDelegate(_controllerContext, _instance, _arguments);
         }
 
         private static object[] PrepareArguments(
@@ -1016,25 +495,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private enum Scope
         {
-            Resource,
-            Exception,
+            Invoker,
             Action,
-            Result,
         }
 
         private enum State
         {
-            ResourceInsideBegin,
-            ExceptionBegin,
-            ExceptionNext,
-            ExceptionAsyncBegin,
-            ExceptionAsyncResume,
-            ExceptionAsyncEnd,
-            ExceptionSyncBegin,
-            ExceptionSyncEnd,
-            ExceptionInside,
-            ExceptionHandled,
-            ExceptionEnd,
             ActionBegin,
             ActionNext,
             ActionAsyncBegin,
@@ -1043,15 +509,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionSyncEnd,
             ActionInside,
             ActionEnd,
-            ResultBegin,
-            ResultNext,
-            ResultAsyncBegin,
-            ResultAsyncEnd,
-            ResultSyncBegin,
-            ResultSyncEnd,
-            ResultInside,
-            ResultEnd,
-            ResourceInsideEnd,
         }
     }
 }
