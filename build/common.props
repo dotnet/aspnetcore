@@ -93,6 +93,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authorization" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" PrivateAssets="Compile" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.CookiePolicy" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cors" />
@@ -196,6 +197,8 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Identity.Core" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Identity.Store" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Localization.Abstractions" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
