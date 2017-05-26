@@ -149,6 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var pageContext = new PageContext(actionContext)
             {
                 ActionDescriptor = cacheEntry.ActionDescriptor,
+                ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories),
                 ViewData = cacheEntry.ViewDataFactory(_modelMetadataProvider, actionContext.ModelState),
                 ViewStartFactories = cacheEntry.ViewStartFactories.ToList(),
             };
@@ -159,7 +160,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 _logger,
                 pageContext,
                 filters,
-                new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories),
                 cacheEntry,
                 _parameterBinder,
                 _tempDataFactory,

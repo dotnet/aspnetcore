@@ -141,4 +141,7 @@
   <data name="PathMustBeAnAppRelativePath" xml:space="preserve">
     <value>Path must be an application relative path that starts with a forward slash '/'.</value>
   </data>
+  <data name="AsyncPageFilter_InvalidShortCircuit" xml:space="preserve">
+    <value>If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then it cannot call the next filter by invoking {3}.</value>
+  </data>
 </root>

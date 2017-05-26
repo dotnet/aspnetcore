@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
@@ -35,5 +36,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets or sets the path relative to the base path for page discovery.
         /// </summary>
         public string ViewEnginePath { get; set; }
+
+        /// <inheritdoc />
+        public override string DisplayName
+        {
+            get
+            {
+                if (base.DisplayName == null && ViewEnginePath != null)
+                {
+                    base.DisplayName = ViewEnginePath;
+                }
+
+                return base.DisplayName;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                base.DisplayName = value;
+            }
+        }
     }
 }

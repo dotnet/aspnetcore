@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -14,27 +13,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     internal static class PageLoggerExtensions
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
-        private static readonly Action<ILogger, string, Exception> _pageExecuting;
-        private static readonly Action<ILogger, string, double, Exception> _pageExecuted;
-        private static readonly Action<ILogger, object, Exception> _exceptionFilterShortCircuit;
+        private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _handlerMethodExecuting;
+        private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
 
         static PageLoggerExtensions()
         {
-            _pageExecuting = LoggerMessage.Define<string>(
-                LogLevel.Debug,
-                1,
-                "Executing page {ActionName}");
+            // These numbers start at 101 intentionally to avoid conflict with the IDs used by ResourceInvoker.
 
-            _pageExecuted = LoggerMessage.Define<string, double>(
+            _handlerMethodExecuting = LoggerMessage.Define<string, string[], ModelValidationState>(
                 LogLevel.Information,
-                2,
-                "Executed page {ActionName} in {ElapsedMilliseconds}ms");
+                101,
+                "Executing handler method {HandlerName} with arguments ({Arguments}) - ModelState is {ValidationState}");
 
-            _exceptionFilterShortCircuit = LoggerMessage.Define<object>(
+            _handlerMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
-                4,
-                "Request was short circuited at exception filter '{ExceptionFilter}'.");
+                102,
+                "Executed handler method {HandlerName}, returned result {ActionResult}.");
 
             _pageFilterShortCircuit = LoggerMessage.Define<object>(
                LogLevel.Debug,
@@ -42,36 +37,39 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                "Request was short circuited at page filter '{PageFilter}'.");
         }
 
-        public static IDisposable PageScope(this ILogger logger, ActionDescriptor actionDescriptor)
+        public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object[] arguments)
         {
-            Debug.Assert(logger != null);
-            Debug.Assert(actionDescriptor != null);
-
-            return logger.BeginScope(new PageLogScope(actionDescriptor));
-        }
-
-        public static void ExecutingPage(this ILogger logger, ActionDescriptor action)
-        {
-            _pageExecuting(logger, action.DisplayName, null);
-        }
-
-        public static void ExecutedAction(this ILogger logger, ActionDescriptor action, long startTimestamp)
-        {
-            // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
-            if (logger.IsEnabled(LogLevel.Information) && startTimestamp != 0)
+            if (logger.IsEnabled(LogLevel.Information))
             {
-                var currentTimestamp = Stopwatch.GetTimestamp();
-                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+                var handlerName = handler.MethodInfo.Name;
 
-                _pageExecuted(logger, action.DisplayName, elapsed.TotalMilliseconds, null);
+                string[] convertedArguments;
+                if (arguments == null)
+                {
+                    convertedArguments = null;
+                }
+                else
+                {
+                    convertedArguments = new string[arguments.Length];
+                    for (var i = 0; i < arguments.Length; i++)
+                    {
+                        convertedArguments[i] = Convert.ToString(arguments[i]);
+                    }
+                }
+
+                var validationState = context.ModelState.ValidationState;
+
+                _handlerMethodExecuting(logger, handlerName, convertedArguments, validationState, null);
             }
         }
 
-        public static void ExceptionFilterShortCircuited(
-            this ILogger logger,
-            IFilterMetadata filter)
+        public static void ExecutedHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, IActionResult result)
         {
-            _exceptionFilterShortCircuit(logger, filter, null);
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var handlerName = handler.MethodInfo.Name;
+                _handlerMethodExecuted(logger, handlerName, Convert.ToString(result), null);
+            }
         }
 
         public static void PageFilterShortCircuited(
@@ -79,51 +77,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IFilterMetadata filter)
         {
             _pageFilterShortCircuit(logger, filter, null);
-        }
-
-        private class PageLogScope : IReadOnlyList<KeyValuePair<string, object>>
-        {
-            private readonly ActionDescriptor _action;
-
-            public PageLogScope(ActionDescriptor action)
-            {
-                _action = action;
-            }
-
-            public KeyValuePair<string, object> this[int index]
-            {
-                get
-                {
-                    if (index == 0)
-                    {
-                        return new KeyValuePair<string, object>("ActionId", _action.Id);
-                    }
-                    else if (index == 1)
-                    {
-                        return new KeyValuePair<string, object>("PageName", _action.DisplayName);
-                    }
-                    throw new IndexOutOfRangeException(nameof(index));
-                }
-            }
-
-            public int Count => 2;
-
-            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-            {
-                for (var i = 0; i < Count; ++i)
-                {
-                    yield return this[i];
-                }
-            }
-
-            public override string ToString()
-            {
-                // We don't include the _action.Id here because it's just an opaque guid, and if
-                // you have text logging, you can already use the requestId for correlation.
-                return _action.DisplayName;
-            }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

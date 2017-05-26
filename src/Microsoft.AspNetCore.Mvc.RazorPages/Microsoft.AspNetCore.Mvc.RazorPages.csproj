@@ -18,4 +18,8 @@
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Filters\" />
+  </ItemGroup>
+
 </Project>

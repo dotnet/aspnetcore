@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         filter.OnActionExecuted(actionExecutedContext);
 
-                        _diagnosticSource.BeforeOnActionExecuted(actionExecutedContext, filter);
+                        _diagnosticSource.AfterOnActionExecuted(actionExecutedContext, filter);
 
                         goto case State.ActionEnd;
                     }
