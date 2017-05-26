@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Tuple.Create((long?)_dataLength - 1, false),
 
                     // Buffer is exactly the same size as data.  Exposed race condition where
-                    // IConnectionControl.Resume() was called after socket was disconnected.
+                    // the connection was resumed after socket was disconnected.
                     Tuple.Create((long?)_dataLength, false),
 
                     // Largest possible buffer, should never trigger backpressure.
@@ -244,9 +244,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private static IWebHost StartWebHost(long? maxRequestBufferSize, 
-            byte[] expectedBody, 
-            bool useConnectionAdapter, 
+        private static IWebHost StartWebHost(long? maxRequestBufferSize,
+            byte[] expectedBody,
+            bool useConnectionAdapter,
             TaskCompletionSource<object> startReadingRequestBody,
             TaskCompletionSource<object> clientFinishedSendingRequestBody)
         {

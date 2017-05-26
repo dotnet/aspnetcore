@@ -228,14 +228,17 @@
   <data name="InvalidContentLength_InvalidNumber" xml:space="preserve">
     <value>Invalid Content-Length: "{value}". Value must be a positive integral number.</value>
   </data>
-  <data name="NonNegativeNullableIntRequired" xml:space="preserve">
-    <value>Value must be null or a non-negative integer.</value>
+  <data name="NonNegativeNumberOrNullRequired" xml:space="preserve">
+    <value>Value must be null or a non-negative number.</value>
   </data>
-  <data name="PositiveIntRequired" xml:space="preserve">
-    <value>Value must be a positive integer.</value>
+  <data name="NonNegativeNumberRequired" xml:space="preserve">
+    <value>Value must be a non-negative number.</value>
   </data>
-  <data name="PositiveNullableIntRequired" xml:space="preserve">
-    <value>Value must be null or a positive integer.</value>
+  <data name="PositiveNumberRequired" xml:space="preserve">
+    <value>Value must be a positive number.</value>
+  </data>
+  <data name="PositiveNumberOrNullRequired" xml:space="preserve">
+    <value>Value must be null or a positive number.</value>
   </data>
   <data name="UnixSocketPathMustBeAbsolute" xml:space="preserve">
     <value>Unix socket path must be absolute.</value>
@@ -308,5 +311,11 @@
   </data>
   <data name="CannotUpgradeNonUpgradableRequest" xml:space="preserve">
     <value>Cannot upgrade a non-upgradable request. Check IHttpUpgradeFeature.IsUpgradableRequest to determine if a request can be upgraded.</value>
+  </data>
+  <data name="UpgradedConnectionLimitReached" xml:space="preserve">
+    <value>Request cannot be upgraded because the server has already opened the maximum number of upgraded connections.</value>
+  </data>
+  <data name="UpgradeCannotBeCalledMultipleTimes" xml:space="preserve">
+    <value>IHttpUpgradeFeature.UpgradeAsync was already called and can only be called once per connection.</value>
   </data>
 </root>

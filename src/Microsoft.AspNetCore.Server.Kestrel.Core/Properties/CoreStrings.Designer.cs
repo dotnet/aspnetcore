@@ -529,46 +529,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidContentLength_InvalidNumber", "value"), value);
 
         /// <summary>
-        /// Value must be null or a non-negative integer.
+        /// Value must be null or a non-negative number.
         /// </summary>
-        internal static string NonNegativeNullableIntRequired
+        internal static string NonNegativeNumberOrNullRequired
         {
-            get => GetString("NonNegativeNullableIntRequired");
+            get => GetString("NonNegativeNumberOrNullRequired");
         }
 
         /// <summary>
-        /// Value must be null or a non-negative integer.
+        /// Value must be null or a non-negative number.
         /// </summary>
-        internal static string FormatNonNegativeNullableIntRequired()
-            => GetString("NonNegativeNullableIntRequired");
+        internal static string FormatNonNegativeNumberOrNullRequired()
+            => GetString("NonNegativeNumberOrNullRequired");
 
         /// <summary>
-        /// Value must be a positive integer.
+        /// Value must be a non-negative number.
         /// </summary>
-        internal static string PositiveIntRequired
+        internal static string NonNegativeNumberRequired
         {
-            get => GetString("PositiveIntRequired");
+            get => GetString("NonNegativeNumberRequired");
         }
 
         /// <summary>
-        /// Value must be a positive integer.
+        /// Value must be a non-negative number.
         /// </summary>
-        internal static string FormatPositiveIntRequired()
-            => GetString("PositiveIntRequired");
+        internal static string FormatNonNegativeNumberRequired()
+            => GetString("NonNegativeNumberRequired");
 
         /// <summary>
-        /// Value must be null or a positive integer.
+        /// Value must be a positive number.
         /// </summary>
-        internal static string PositiveNullableIntRequired
+        internal static string PositiveNumberRequired
         {
-            get => GetString("PositiveNullableIntRequired");
+            get => GetString("PositiveNumberRequired");
         }
 
         /// <summary>
-        /// Value must be null or a positive integer.
+        /// Value must be a positive number.
         /// </summary>
-        internal static string FormatPositiveNullableIntRequired()
-            => GetString("PositiveNullableIntRequired");
+        internal static string FormatPositiveNumberRequired()
+            => GetString("PositiveNumberRequired");
+
+        /// <summary>
+        /// Value must be null or a positive number.
+        /// </summary>
+        internal static string PositiveNumberOrNullRequired
+        {
+            get => GetString("PositiveNumberOrNullRequired");
+        }
+
+        /// <summary>
+        /// Value must be null or a positive number.
+        /// </summary>
+        internal static string FormatPositiveNumberOrNullRequired()
+            => GetString("PositiveNumberOrNullRequired");
 
         /// <summary>
         /// Unix socket path must be absolute.
@@ -905,6 +919,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatCannotUpgradeNonUpgradableRequest()
             => GetString("CannotUpgradeNonUpgradableRequest");
+
+        /// <summary>
+        /// Request cannot be upgraded because the server has already opened the maximum number of upgraded connections.
+        /// </summary>
+        internal static string UpgradedConnectionLimitReached
+        {
+            get => GetString("UpgradedConnectionLimitReached");
+        }
+
+        /// <summary>
+        /// Request cannot be upgraded because the server has already opened the maximum number of upgraded connections.
+        /// </summary>
+        internal static string FormatUpgradedConnectionLimitReached()
+            => GetString("UpgradedConnectionLimitReached");
+
+        /// <summary>
+        /// IHttpUpgradeFeature.UpgradeAsync was already called and can only be called once per connection.
+        /// </summary>
+        internal static string UpgradeCannotBeCalledMultipleTimes
+        {
+            get => GetString("UpgradeCannotBeCalledMultipleTimes");
+        }
+
+        /// <summary>
+        /// IHttpUpgradeFeature.UpgradeAsync was already called and can only be called once per connection.
+        /// </summary>
+        internal static string FormatUpgradeCannotBeCalledMultipleTimes()
+            => GetString("UpgradeCannotBeCalledMultipleTimes");
 
         private static string GetString(string name, params string[] formatterNames)
         {

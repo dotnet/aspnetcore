@@ -61,6 +61,32 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
+        public Task SendEmptyGet()
+        {
+            return Send("GET / HTTP/1.1",
+                "Host:",
+                "",
+                "");
+        }
+
+        public Task SendEmptyGetWithUpgradeAndKeepAlive()
+            => SendEmptyGetWithConnection("Upgrade, keep-alive");
+
+        public Task SendEmptyGetWithUpgrade()
+            => SendEmptyGetWithConnection("Upgrade");
+
+        public Task SendEmptyGetAsKeepAlive()
+            => SendEmptyGetWithConnection("keep-alive");
+
+        private Task SendEmptyGetWithConnection(string connection)
+        {
+            return Send("GET / HTTP/1.1",
+                "Host:",
+                "Connection: " + connection,
+                "",
+                "");
+        }
+
         public async Task SendAll(params string[] lines)
         {
             var text = string.Join("\r\n", lines);

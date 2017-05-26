@@ -6,14 +6,24 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class UpgradeTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public UpgradeTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public async Task ResponseThrowsAfterUpgrade()
         {
@@ -36,11 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send("GET / HTTP/1.1",
-                        "Host:",
-                        "Connection: Upgrade",
-                        "",
-                        "");
+                    await connection.SendEmptyGetWithUpgrade();
                     await connection.Receive("HTTP/1.1 101 Switching Protocols",
                         "Connection: Upgrade",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -90,11 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send("GET / HTTP/1.1",
-                        "Host:",
-                        "Connection: Upgrade",
-                        "",
-                        "");
+                    await connection.SendEmptyGetWithUpgrade();
 
                     await connection.Receive("HTTP/1.1 101 Switching Protocols",
                         "Connection: Upgrade",
@@ -108,6 +110,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await upgrade.Task.TimeoutAfter(TimeSpan.FromSeconds(30));
                 }
             }
+        }
+
+        [Fact]
+        public async Task UpgradeCannotBeCalledMultipleTimes()
+        {
+            var upgradeTcs = new TaskCompletionSource<object>();
+            using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+                await feature.UpgradeAsync();
+
+                try
+                {
+                    await feature.UpgradeAsync();
+                }
+                catch (Exception e)
+                {
+                    upgradeTcs.TrySetException(e);
+                    throw;
+                }
+
+                while (!context.RequestAborted.IsCancellationRequested)
+                {
+                    await Task.Delay(100);
+                }
+            }))
+            using (var connection = server.CreateConnection())
+            {
+                await connection.SendEmptyGetWithUpgrade();
+                await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                    "Connection: Upgrade",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+                await connection.WaitForConnectionClose().TimeoutAfter(TimeSpan.FromSeconds(15));
+            }
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(15)));
+            Assert.Equal(CoreStrings.UpgradeCannotBeCalledMultipleTimes, ex.Message);
         }
 
         [Fact]
@@ -151,11 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send("GET / HTTP/1.1",
-                        "Host:",
-                        "Connection: Upgrade",
-                        "",
-                        "");
+                    await connection.SendEmptyGetWithUpgrade();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
             }
@@ -207,16 +244,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send("GET / HTTP/1.1",
-                            "Host:",
-                            "",
-                            "");
+                    await connection.SendEmptyGet();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
             }
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(15));
             Assert.Equal(CoreStrings.CannotUpgradeNonUpgradableRequest, ex.Message);
+        }
+
+        [Fact]
+        public async Task RejectsUpgradeWhenLimitReached()
+        {
+            const int limit = 10;
+            var upgradeTcs = new TaskCompletionSource<object>();
+            var serviceContext = new TestServiceContext();
+            serviceContext.ConnectionManager = new FrameConnectionManager(serviceContext.Log, ResourceCounter.Unlimited, ResourceCounter.Quota(limit));
+
+            using (var server = new TestServer(async context =>
+            {
+                var feature = context.Features.Get<IHttpUpgradeFeature>();
+                if (feature.IsUpgradableRequest)
+                {
+                    try
+                    {
+                        var stream = await feature.UpgradeAsync();
+                        while (!context.RequestAborted.IsCancellationRequested)
+                        {
+                            await Task.Delay(100);
+                        }
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        upgradeTcs.TrySetException(ex);
+                    }
+                }
+            }, serviceContext))
+            {
+                using (var disposables = new DisposableStack<TestConnection>())
+                {
+                    for (var i = 0; i < limit; i++)
+                    {
+                        var connection = server.CreateConnection();
+                        disposables.Push(connection);
+
+                        await connection.SendEmptyGetWithUpgradeAndKeepAlive();
+                        await connection.Receive("HTTP/1.1 101");
+                    }
+
+                    using (var connection = server.CreateConnection())
+                    {
+                        await connection.SendEmptyGetWithUpgradeAndKeepAlive();
+                        await connection.Receive("HTTP/1.1 200");
+                    }
+                }
+            }
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(60)));
+            Assert.Equal(CoreStrings.UpgradedConnectionLimitReached, exception.Message);
         }
     }
 }

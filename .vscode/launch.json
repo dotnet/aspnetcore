@@ -8,6 +8,12 @@
       "processId": "${command:pickProcess}"
     },
     {
+      "name": "Attach: .NET Framework",
+      "type": "clr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    },
+    {
       "name": "Debug: SampleApp",
       "type": "coreclr",
       "request": "launch",
@@ -62,7 +68,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "Compile: CodeGenerator",
-      "program": "${workspaceRoot}/tools/CodeGenerator/bin/Debug/netcoreapp1.1/CodeGenerator.dll",
+      "program": "${workspaceRoot}/tools/CodeGenerator/bin/Debug/netcoreapp2.0/CodeGenerator.dll",
       "args": [],
       "cwd": "${workspaceRoot}",
       "console": "internalConsole",

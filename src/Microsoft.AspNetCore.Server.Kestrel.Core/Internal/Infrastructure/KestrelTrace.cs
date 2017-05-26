@@ -54,6 +54,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private static readonly Action<ILogger, string, Exception> _applicationNeverCompleted =
             LoggerMessage.Define<string>(LogLevel.Critical, 23, @"Connection id ""{ConnectionId}"" application never completed");
 
+        private static readonly Action<ILogger, string, Exception> _connectionRejected =
+            LoggerMessage.Define<string>(LogLevel.Warning, 24, @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -84,6 +87,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void ConnectionKeepAlive(string connectionId)
         {
             _connectionKeepAlive(_logger, connectionId, null);
+        }
+
+        public void ConnectionRejected(string connectionId)
+        {
+            _connectionRejected(_logger, connectionId, null);
         }
 
         public virtual void ConnectionDisconnect(string connectionId)

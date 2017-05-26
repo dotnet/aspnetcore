@@ -105,10 +105,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(0)]
         public void MaxRequestHeadersTotalSizeInvalid(int value)
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-            {
-                (new KestrelServerLimits()).MaxRequestHeadersTotalSize = value;
-            });
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().MaxRequestHeadersTotalSize = value);
+            Assert.StartsWith(CoreStrings.PositiveNumberRequired, ex.Message);
         }
 
         [Theory]
@@ -186,6 +184,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var o = new KestrelServerLimits();
             o.RequestHeadersTimeout = TimeSpan.FromSeconds(seconds);
             Assert.Equal(seconds, o.RequestHeadersTimeout.TotalSeconds);
+        }
+
+        [Fact]
+        public void MaxConnectionsDefault()
+        {
+            Assert.Null(new KestrelServerLimits().MaxConcurrentConnections);
+            Assert.Null(new KestrelServerLimits().MaxConcurrentUpgradedConnections);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(1u)]
+        [InlineData(long.MaxValue)]
+        public void MaxConnectionsValid(long? value)
+        {
+            var limits = new KestrelServerLimits
+            {
+                MaxConcurrentConnections = value
+            };
+
+            Assert.Equal(value, limits.MaxConcurrentConnections);
+        }
+
+        [Theory]
+        [InlineData(long.MinValue)]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public void MaxConnectionsInvalid(long value)
+        {
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().MaxConcurrentConnections = value);
+            Assert.StartsWith(CoreStrings.PositiveNumberOrNullRequired, ex.Message);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(long.MaxValue)]
+        public void MaxUpgradedConnectionsValid(long? value)
+        {
+            var limits = new KestrelServerLimits
+            {
+                MaxConcurrentUpgradedConnections = value
+            };
+
+            Assert.Equal(value, limits.MaxConcurrentUpgradedConnections);
+        }
+
+
+        [Theory]
+        [InlineData(long.MinValue)]
+        [InlineData(-1)]
+        public void MaxUpgradedConnectionsInvalid(long value)
+        {
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().MaxConcurrentUpgradedConnections = value);
+            Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
         }
     }
 }

@@ -11,10 +11,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly ConcurrentDictionary<long, FrameConnectionReference> _connectionReferences = new ConcurrentDictionary<long, FrameConnectionReference>();
         private readonly IKestrelTrace _trace;
 
-        public FrameConnectionManager(IKestrelTrace trace)
+        public FrameConnectionManager(IKestrelTrace trace, long? normalConnectionLimit, long? upgradedConnectionLimit)
+            : this(trace, GetCounter(normalConnectionLimit), GetCounter(upgradedConnectionLimit))
         {
+        }
+
+        public FrameConnectionManager(IKestrelTrace trace, ResourceCounter normalConnections, ResourceCounter upgradedConnections)
+        {
+            NormalConnectionCount = normalConnections;
+            UpgradedConnectionCount = upgradedConnections;
             _trace = trace;
         }
+
+        /// <summary>
+        /// TCP connections processed by Kestrel.
+        /// </summary>
+        public ResourceCounter NormalConnectionCount { get; }
+
+        /// <summary>
+        /// Connections that have been switched to a different protocol.
+        /// </summary>
+        public ResourceCounter UpgradedConnectionCount { get; }
 
         public void AddConnection(long id, FrameConnection connection)
         {
@@ -52,5 +69,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // If both conditions are false, the connection was removed during the heartbeat.
             }
         }
+
+        private static ResourceCounter GetCounter(long? number)
+            => number.HasValue
+                ? ResourceCounter.Quota(number.Value)
+                : ResourceCounter.Unlimited;
     }
 }

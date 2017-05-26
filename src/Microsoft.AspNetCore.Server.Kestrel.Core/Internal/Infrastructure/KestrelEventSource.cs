@@ -68,6 +68,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             WriteEvent(2, connectionId);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [Event(5, Level = EventLevel.Verbose)]
+        public void ConnectionRejected(string connectionId)
+        {
+            if (IsEnabled())
+            {
+                WriteEvent(5, connectionId);
+            }
+        }
+
         [NonEvent]
         public void RequestStart(Frame frame)
         {

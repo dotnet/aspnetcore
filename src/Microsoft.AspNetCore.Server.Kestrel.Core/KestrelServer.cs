@@ -67,7 +67,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var serverOptions = options.Value ?? new KestrelServerOptions();
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
             var trace = new KestrelTrace(logger);
-            var connectionManager = new FrameConnectionManager(trace);
+            var connectionManager = new FrameConnectionManager(
+                trace,
+                serverOptions.Limits.MaxConcurrentConnections,
+                serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
             var systemClock = new SystemClock();
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);

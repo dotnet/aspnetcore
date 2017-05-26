@@ -33,6 +33,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var connectionId = CorrelationIdGenerator.GetNextId();
             var frameConnectionId = Interlocked.Increment(ref _lastFrameConnectionId);
 
+            if (!_serviceContext.ConnectionManager.NormalConnectionCount.TryLockOne())
+            {
+                var goAway = new RejectionConnection(inputPipe, outputPipe, connectionId, _serviceContext);
+                goAway.Reject();
+                return goAway;
+            }
+
             var connection = new FrameConnection(new FrameConnectionContext
             {
                 ConnectionId = connectionId,

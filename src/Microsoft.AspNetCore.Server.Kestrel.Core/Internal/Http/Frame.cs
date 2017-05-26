@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesHttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
-        private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
+        private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
 
         private const string EmptyPath = "/";
         private const string Asterisk = "*";
@@ -61,7 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected RequestProcessingStatus _requestProcessingStatus;
         protected bool _keepAlive;
-        protected bool _upgrade;
+        protected bool _upgradeAvailable;
+        private volatile bool _wasUpgraded;
         private bool _canHaveBody;
         private bool _autoChunk;
         protected Exception _applicationException;
@@ -138,6 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        public bool WasUpgraded => _wasUpgraded;
         public IPAddress RemoteIpAddress { get; set; }
         public int RemotePort { get; set; }
         public IPAddress LocalIpAddress { get; set; }
@@ -208,10 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private int _statusCode;
         public int StatusCode
         {
-            get
-            {
-                return _statusCode;
-            }
+            get => _statusCode;
             set
             {
                 if (HasResponseStarted)
@@ -227,10 +226,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public string ReasonPhrase
         {
-            get
-            {
-                return _reasonPhrase;
-            }
+            get => _reasonPhrase;
+
             set
             {
                 if (HasResponseStarted)
@@ -1038,6 +1035,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
 
             responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
+
             responseHeaders.ContentLength = 0;
 
             if (ServerOptions.AddServerHeader)

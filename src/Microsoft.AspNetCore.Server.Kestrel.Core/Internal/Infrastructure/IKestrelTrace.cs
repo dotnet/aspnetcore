@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void ConnectionResume(string connectionId);
 
+        void ConnectionRejected(string connectionId);
+
         void ConnectionKeepAlive(string connectionId);
 
         void ConnectionDisconnect(string connectionId);

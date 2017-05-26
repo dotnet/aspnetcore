@@ -77,6 +77,23 @@
       }
     },
     {
+      "taskName": "Run: resx generation",
+      "suppressTaskName": true,
+      "command": "build.cmd",
+      "args": [
+        "/t:resx"
+      ],
+      "options": {
+        "cwd": "${workspaceRoot}"
+      },
+      "osx": {
+        "command": "./build.sh"
+      },
+      "linux": {
+        "command": "./build.sh"
+      }
+    },
+    {
       "taskName": "Run: Benchmarks",
       "args": [
         "run",

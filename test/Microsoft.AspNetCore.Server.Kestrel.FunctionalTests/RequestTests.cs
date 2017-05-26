@@ -662,10 +662,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var buffer = new char[identifierLength];
                     for (var i = 0; i < iterations; i++)
                     {
-                        await connection.Send("GET / HTTP/1.1",
-                            "Host:",
-                            "",
-                            "");
+                        await connection.SendEmptyGet();
 
                         await connection.Receive($"HTTP/1.1 200 OK",
                            $"Date: {server.Context.DateHeaderValue}",

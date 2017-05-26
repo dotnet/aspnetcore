@@ -28,6 +28,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private TimeSpan _requestHeadersTimeout = TimeSpan.FromSeconds(30);
 
+        // default to unlimited
+        private long? _maxConcurrentConnections = null;
+        private long? _maxConcurrentUpgradedConnections = null;
+
         /// <summary>
         /// Gets or sets the maximum size of the response buffer before write
         /// calls begin to block or return tasks that don't complete until the
@@ -41,15 +45,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public long? MaxResponseBufferSize
         {
-            get
-            {
-                return _maxResponseBufferSize;
-            }
+            get => _maxResponseBufferSize;
             set
             {
                 if (value.HasValue && value.Value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNullableIntRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNumberOrNullRequired);
                 }
                 _maxResponseBufferSize = value;
             }
@@ -64,15 +65,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public long? MaxRequestBufferSize
         {
-            get
-            {
-                return _maxRequestBufferSize;
-            }
+            get => _maxRequestBufferSize;
             set
             {
                 if (value.HasValue && value.Value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveNullableIntRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveNumberOrNullRequired);
                 }
                 _maxRequestBufferSize = value;
             }
@@ -86,15 +84,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public int MaxRequestLineSize
         {
-            get
-            {
-                return _maxRequestLineSize;
-            }
+            get => _maxRequestLineSize;
             set
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveIntRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveNumberRequired);
                 }
                 _maxRequestLineSize = value;
             }
@@ -108,15 +103,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public int MaxRequestHeadersTotalSize
         {
-            get
-            {
-                return _maxRequestHeadersTotalSize;
-            }
+            get => _maxRequestHeadersTotalSize;
             set
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveIntRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveNumberRequired);
                 }
                 _maxRequestHeadersTotalSize = value;
             }
@@ -130,15 +122,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public int MaxRequestHeaderCount
         {
-            get
-            {
-                return _maxRequestHeaderCount;
-            }
+            get => _maxRequestHeaderCount;
             set
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveIntRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveNumberRequired);
                 }
                 _maxRequestHeaderCount = value;
             }
@@ -152,14 +141,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public TimeSpan KeepAliveTimeout
         {
-            get
-            {
-                return _keepAliveTimeout;
-            }
-            set
-            {
-                _keepAliveTimeout = value;
-            }
+            get => _keepAliveTimeout;
+            set => _keepAliveTimeout = value;
         }
 
         /// <summary>
@@ -170,13 +153,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public TimeSpan RequestHeadersTimeout
         {
-            get
-            {
-                return _requestHeadersTimeout;
-            }
+            get => _requestHeadersTimeout;
+            set => _requestHeadersTimeout = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum number of open HTTP/S connections. When set to null, the number of connections is unlimited.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Defaults to null.
+        /// </para>
+        /// <para>
+        /// When a connection is upgraded to another protocol, such as WebSockets, its connection is counted against the
+        /// <see cref="MaxConcurrentUpgradedConnections" /> limit instead of <see cref="MaxConcurrentConnections" />.
+        /// </para>
+        /// </remarks>
+        public long? MaxConcurrentConnections
+        {
+            get => _maxConcurrentConnections;
             set
             {
-                _requestHeadersTimeout = value;
+                if (value.HasValue && value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveNumberOrNullRequired);
+                }
+                _maxConcurrentConnections = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum number of open, upgraded connections. When set to null, the number of upgraded connections is unlimited.
+        /// An upgraded connection is one that has been switched from HTTP to another protocol, such as WebSockets.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Defaults to null.
+        /// </para>
+        /// <para>
+        /// When a connection is upgraded to another protocol, such as WebSockets, its connection is counted against the
+        /// <see cref="MaxConcurrentUpgradedConnections" /> limit instead of <see cref="MaxConcurrentConnections" />.
+        /// </para>
+        /// </remarks>
+        public long? MaxConcurrentUpgradedConnections
+        {
+            get => _maxConcurrentUpgradedConnections;
+            set
+            {
+                if (value.HasValue && value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNumberOrNullRequired);
+                }
+                _maxConcurrentUpgradedConnections = value;
             }
         }
     }

@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void ConnectionReadFin(string connectionId) { }
         public void ConnectionReset(string connectionId) { }
         public void ConnectionResume(string connectionId) { }
+        public void ConnectionRejected(string connectionId) { }
         public void ConnectionStart(string connectionId) { }
         public void ConnectionStop(string connectionId) { }
         public void ConnectionWrite(string connectionId, int count) { }

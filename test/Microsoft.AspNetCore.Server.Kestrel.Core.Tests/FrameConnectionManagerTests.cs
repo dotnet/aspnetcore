@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var connectionId = "0";
             var trace = new Mock<IKestrelTrace>();
-            var frameConnectionManager = new FrameConnectionManager(trace.Object);
+            var frameConnectionManager = new FrameConnectionManager(trace.Object, ResourceCounter.Unlimited, ResourceCounter.Unlimited);
 
             // Create FrameConnection in inner scope so it doesn't get rooted by the current frame.
             UnrootedConnectionsGetRemovedFromHeartbeatInnerScope(connectionId, frameConnectionManager, trace);
