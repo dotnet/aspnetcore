@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
 {
     public static class IntegratedWebClientServiceCollectionExtensions
     {
-        public static IServiceCollection AddIntegratedWebClient(
+        public static IServiceCollection WithIntegratedWebClient(
             this IServiceCollection services,
             Action<IntegratedWebClientOptions> action)
         {
@@ -24,12 +24,27 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
             return services;
         }
 
-        public static IServiceCollection AddIntegratedWebClient(
+        public static IServiceCollection WithIntegratedWebClient(
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            services.AddIntegratedWebClient(options => configuration.Bind(options));
+            services.WithIntegratedWebClient(options => configuration.Bind(options));
             return services;
+        }
+
+        public static IServiceCollection WithIntegratedWebClient(this IServiceCollection services)
+        {
+            services.TryAddTransient<IConfigureOptions<IntegratedWebClientOptions>, DefaultSetup>();
+            services.WithIntegratedWebClient(_ => { });
+            return services;
+        }
+
+        private class DefaultSetup : ConfigureOptions<IntegratedWebClientOptions>
+        {
+            public DefaultSetup(IConfiguration configuration)
+                : base(options => configuration.GetSection(OpenIdConnectDefaults.AuthenticationScheme).Bind(options))
+            {
+            }
         }
     }
 }

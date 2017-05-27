@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
@@ -11,7 +12,11 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
     public static class IdentityServiceBuilderExtensions
     {
         public static IIdentityServiceBuilder AddEntityFrameworkStores<TContext>(this IIdentityServiceBuilder builder)
+            where TContext : DbContext
         {
+            var identityBuilder = new IdentityBuilder(builder.UserType, builder.RoleType, builder.Services);
+            identityBuilder.AddEntityFrameworkStores<TContext>();
+
             var services = builder.Services;
             var applicationType = FindGenericBaseType(builder.ApplicationType, typeof(IdentityServiceApplication<,,,,>));
             var userType = FindGenericBaseType(builder.UserType, typeof(IdentityUser<>));

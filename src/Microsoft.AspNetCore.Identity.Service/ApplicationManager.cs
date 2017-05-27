@@ -87,6 +87,17 @@ namespace Microsoft.AspNetCore.Identity.Service
             return await Store.CreateAsync(application, CancellationToken);
         }
 
+        public Task<string> GetApplicationNameAsync(TApplication application)
+        {
+            ThrowIfDisposed();
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            return Store.GetApplicationNameAsync(application, CancellationToken);
+        }
+
         public virtual async Task<IdentityServiceResult> DeleteAsync(TApplication application)
         {
             ThrowIfDisposed();
@@ -154,7 +165,7 @@ namespace Microsoft.AspNetCore.Identity.Service
 
         public Task<string> GenerateClientSecretAsync()
         {
-            return Task.FromResult(Guid.NewGuid().ToString());
+            return Task.FromResult(CryptographyHelpers.GenerateHighEntropyValue(byteLength: 32));
         }
 
         public async Task<IdentityServiceResult> AddClientSecretAsync(TApplication application, string clientSecret)
@@ -199,6 +210,54 @@ namespace Microsoft.AspNetCore.Identity.Service
             return await UpdateAsync(application);
         }
 
+        public async Task<IdentityServiceResult> RegisterLogoutUriAsync(TApplication application, string logoutUri)
+        {
+            ThrowIfDisposed();
+            var redirectStore = GetRedirectUriStore();
+            var result = await redirectStore.RegisterLogoutRedirectUriAsync(application, logoutUri, CancellationToken);
+            if (!result.Succeeded)
+            {
+                return result;
+            }
+
+            return await redirectStore.UpdateAsync(application, CancellationToken);
+        }
+
+        public async Task<IdentityServiceResult> UnregisterLogoutUriAsync(TApplication application, string logoutUri)
+        {
+            ThrowIfDisposed();
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (logoutUri == null)
+            {
+                throw new ArgumentNullException(nameof(logoutUri));
+            }
+
+            var redirectStore = GetRedirectUriStore();
+            var result = await redirectStore.UnregisterLogoutRedirectUriAsync(application, logoutUri, CancellationToken);
+            if (!result.Succeeded)
+            {
+                return result;
+            }
+
+            return await redirectStore.UpdateAsync(application, CancellationToken);
+        }
+
+        public async Task<IdentityServiceResult> SetApplicationNameAsync(TApplication application, string name)
+        {
+            ThrowIfDisposed();
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            await Store.SetApplicationNameAsync(application, name, CancellationToken);
+            return await UpdateAsync(application);
+        }
+
         public async Task<IdentityServiceResult> RemoveClientSecretAsync(TApplication application)
         {
             ThrowIfDisposed();
@@ -229,6 +288,7 @@ namespace Microsoft.AspNetCore.Identity.Service
 
         public async Task<IdentityServiceResult> RegisterRedirectUriAsync(TApplication application, string redirectUri)
         {
+            ThrowIfDisposed();
             var redirectStore = GetRedirectUriStore();
             var result = await redirectStore.RegisterRedirectUriAsync(application, redirectUri, CancellationToken);
             if (!result.Succeeded)
@@ -253,6 +313,17 @@ namespace Microsoft.AspNetCore.Identity.Service
 
         public async Task<IdentityServiceResult> UnregisterRedirectUriAsync(TApplication application, string redirectUri)
         {
+            ThrowIfDisposed();
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (redirectUri == null)
+            {
+                throw new ArgumentNullException(nameof(redirectUri));
+            }
+
             var redirectStore = GetRedirectUriStore();
             var result = await redirectStore.UnregisterRedirectUriAsync(application, redirectUri, CancellationToken);
             if (!result.Succeeded)
@@ -261,6 +332,18 @@ namespace Microsoft.AspNetCore.Identity.Service
             }
 
             return await redirectStore.UpdateAsync(application, CancellationToken);
+        }
+
+        public Task<bool> HasClientSecretAsync(TApplication application)
+        {
+            ThrowIfDisposed();
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            var store = GetClientSecretStore();
+            return store.HasClientSecretAsync(application, CancellationToken);
         }
 
         public async Task<IdentityServiceResult> UpdateRedirectUriAsync(TApplication application, string oldRedirectUri, string newRedirectUri)
@@ -311,7 +394,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             TApplication application,
             string clientSecret)
         {
-            var hash = PasswordHasher.HashPassword(application, clientSecret);
+            var hash = clientSecret == null ? null : PasswordHasher.HashPassword(application, clientSecret);
             await clientSecretStore.SetClientSecretHashAsync(application, hash, CancellationToken);
             return IdentityServiceResult.Success;
         }
@@ -486,6 +569,34 @@ namespace Microsoft.AspNetCore.Identity.Service
                 throw new ArgumentNullException(nameof(application));
             }
             return await claimStore.GetClaimsAsync(application, CancellationToken);
+        }
+
+        public async Task<IdentityServiceResult> UpdateLogoutUriAsync(TApplication application, string oldLogoutUri, string newLogoutUri)
+        {
+            ThrowIfDisposed();
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            if (oldLogoutUri == null)
+            {
+                throw new ArgumentNullException(nameof(oldLogoutUri));
+            }
+
+            if (newLogoutUri == null)
+            {
+                throw new ArgumentNullException(nameof(newLogoutUri));
+            }
+
+            var redirectUriStore = GetRedirectUriStore();
+            var result = await redirectUriStore.UpdateLogoutRedirectUriAsync(application, oldLogoutUri, newLogoutUri, CancellationToken);
+            if (!result.Succeeded)
+            {
+                return result;
+            }
+
+            return await UpdateAsync(application);
         }
 
         private IApplicationClaimStore<TApplication> GetApplicationClaimStore()

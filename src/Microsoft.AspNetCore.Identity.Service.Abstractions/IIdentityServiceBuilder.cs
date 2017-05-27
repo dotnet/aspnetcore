@@ -11,5 +11,6 @@ namespace Microsoft.AspNetCore.Identity.Service
         IServiceCollection Services { get; }
         Type ApplicationType { get; }
         Type UserType { get; }
+        Type RoleType { get; }
     }
 }

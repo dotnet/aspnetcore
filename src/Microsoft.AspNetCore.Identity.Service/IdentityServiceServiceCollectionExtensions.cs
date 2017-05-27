@@ -24,21 +24,23 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class IdentityServiceServiceCollectionExtensions
     {
-        public static IIdentityServiceBuilder AddIdentityService<TUser, TApplication>(
-            this IServiceCollection services,
+        public static IIdentityServiceBuilder AddApplications<TUser, TApplication>(
+            this IdentityBuilder builder,
             Action<IdentityServiceOptions> configure)
             where TUser : class
             where TApplication : class
         {
-            if (services == null)
+            if (builder == null)
             {
-                throw new NullReferenceException(nameof(services));
+                throw new NullReferenceException(nameof(builder));
             }
 
             if (configure == null)
             {
                 throw new NullReferenceException(nameof(configure));
             }
+
+            var services = builder.Services;
 
             services.AddOptions();
             services.AddWebEncoders();
@@ -100,7 +102,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.Configure(configure);
 
-            return new IdentityServiceBuilder<TUser, TApplication>(services);
+            return new IdentityServiceBuilder<TApplication>(builder);
         }
 
         private static IEnumerable<ServiceDescriptor> CreateServices<TUser, TApplication>()

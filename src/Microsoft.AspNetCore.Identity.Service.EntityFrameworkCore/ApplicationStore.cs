@@ -446,6 +446,19 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             return (TUserKey)TypeDescriptor.GetConverter(typeof(TKey)).ConvertFromInvariantString(id);
         }
 
+        public Task SetApplicationNameAsync(TApplication application, string name, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            if (application == null)
+            {
+                throw new ArgumentNullException(nameof(application));
+            }
+
+            application.Name = name;
+            return Task.CompletedTask;
+        }
+
         public Task SetClientSecretHashAsync(TApplication application, string clientSecretHash, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
 {
-    public class IntegratedWebClientOpenIdConnectOptionsSetup : IConfigureOptions<OpenIdConnectOptions>
+    public class IntegratedWebClientOpenIdConnectOptionsSetup : IConfigureNamedOptions<OpenIdConnectOptions>
     {
         private readonly IHttpContextAccessor _accessor;
         private readonly IKeySetMetadataProvider _keysProvider;
@@ -24,8 +24,13 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
             _keysProvider = keysProvider;
         }
 
-        public void Configure(OpenIdConnectOptions options)
+        public void Configure(string name, OpenIdConnectOptions options)
         {
+            if (name != OpenIdConnectDefaults.AuthenticationScheme)
+            {
+                return;
+            }
+
             options.TokenValidationParameters.NameClaimType = "name";
             options.SignInScheme = _webApplicationOptions.Value.CookieSignInScheme;
             options.ClientId = _webApplicationOptions.Value.ClientId;
@@ -57,6 +62,11 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
                 options.ConfigurationManager = new WebApplicationConfiguration(_webApplicationOptions.Value, _accessor);
                 options.TokenValidationParameters.IssuerSigningKeys = keys;
             }
+        }
+
+        public void Configure(OpenIdConnectOptions options)
+        {
+            Configure(OpenIdConnectDefaults.AuthenticationScheme, options);
         }
     }
 }

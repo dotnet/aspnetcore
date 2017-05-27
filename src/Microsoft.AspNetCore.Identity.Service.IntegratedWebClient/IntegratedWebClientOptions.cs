@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
     public class IntegratedWebClientOptions
     {
         public string ClientId { get; set; }
-        public string TokenRedirectUrn { get; set; }
+        public string TokenRedirectUrn { get; set; } = "urn:self:aspnet:identity:integrated";
         public string MetadataUri { get; set; }
         public string AuthorizationEndpoint { get; set; }
         public string TokenEndpoint { get; set; }

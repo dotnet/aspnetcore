@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Identity.Service.Specification.Tests
         protected virtual void SetupIdentityServiceServices(IServiceCollection services, object context = null)
         {
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
-            services.AddIdentityService<TUser, TApplication>(options =>
-            {
-            });
+            new IdentityBuilder(typeof(TestUser), typeof(TestRole), services)
+                .AddApplications<TUser, TApplication>(options => { });
+
             AddApplicationStore(services, context);
             services.AddLogging();
             services.AddSingleton<ILogger<ApplicationManager<TApplication>>>(new TestLogger<ApplicationManager<TApplication>>());
@@ -215,5 +215,8 @@ namespace Microsoft.AspNetCore.Identity.Service.Specification.Tests
 
         private IEnumerable<string> GenerateScopes(string prefix, int count) =>
             Enumerable.Range(0, count).Select(i => $"{prefix}_{count}");
+
+        private class TestUser { }
+        private class TestRole { }
     }
 }

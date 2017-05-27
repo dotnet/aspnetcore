@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Identity.Service
         public void Configure(AuthorizationOptions options)
         {
             options.AddPolicy(IdentityServiceOptions.LoginPolicyName, _identityServiceOptions.Value.LoginPolicy);
+            options.AddPolicy(IdentityServiceOptions.SessionPolicyName, _identityServiceOptions.Value.SessionPolicy);
+            options.AddPolicy(IdentityServiceOptions.ManagementPolicyName, _identityServiceOptions.Value.ManagementPolicy);
         }
     }
 }

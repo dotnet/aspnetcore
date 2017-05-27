@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Identity.Service
     {
         public const string LoginPolicyName = "Microsoft.AspNetCore.Identity.Service.Login";
         public const string SessionPolicyName = "Microsoft.AspNetCore.Identity.Service.Session";
+        public const string ManagementPolicyName = "Microsoft.AspNetCore.Identity.Service.Management";
         public const string CookieAuthenticationScheme = "Microsoft.AspNetCore.Identity.Service.Session.Cookies";
         public const string AuthenticationCookieName = "Microsoft.AspNetCore.Identity.Service";
 
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Identity.Service
 
         public AuthorizationPolicy LoginPolicy { get; set; }
         public AuthorizationPolicy SessionPolicy { get; set; }
+        public AuthorizationPolicy ManagementPolicy { get; set; }
 
         public IList<SigningCredentials> SigningKeys { get; set; } = new List<SigningCredentials>();
 

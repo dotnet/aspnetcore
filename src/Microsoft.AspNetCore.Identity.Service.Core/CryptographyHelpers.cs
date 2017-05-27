@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Identity.Service
 {
     internal static class CryptographyHelpers
     {
+        private static readonly RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
+
         public static string FindAlgorithm(X509Certificate2 certificate)
         {
             var rsapk = certificate.GetRSAPublicKey();
@@ -109,6 +111,13 @@ namespace Microsoft.AspNetCore.Identity.Service
             }
 
             throw new NotSupportedException();
+        }
+
+        internal static string GenerateHighEntropyValue(int byteLength)
+        {
+            var bytes = new byte[byteLength];
+            randomNumberGenerator.GetBytes(bytes);
+            return Base64UrlEncoder.Encode(bytes);
         }
     }
 }

@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Identity.Service
         Task<TApplication> FindByNameAsync(string name, CancellationToken cancellationToken);
         Task<string> GetApplicationIdAsync(TApplication application, CancellationToken cancellationToken);
         Task<string> GetApplicationNameAsync(TApplication application, CancellationToken cancellationToken);
+        Task SetApplicationNameAsync(TApplication application, string name, CancellationToken cancellationToken);
         Task<string> GetApplicationClientIdAsync(TApplication application, CancellationToken cancellationToken);
         Task<string> GetApplicationUserIdAsync(TApplication application, CancellationToken cancellationToken);
 

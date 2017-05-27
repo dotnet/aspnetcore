@@ -6,16 +6,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.Service
 {
-    internal class IdentityServiceBuilder<TUser,TApplication> : IIdentityServiceBuilder
+    internal class IdentityServiceBuilder<TApplication> : IIdentityServiceBuilder
     {
-        public IdentityServiceBuilder(IServiceCollection services)
+        private readonly IdentityBuilder _builder;
+
+        public IdentityServiceBuilder(IdentityBuilder builder)
         {
-            Services = services;
+            _builder = builder;
         }
 
-        public IServiceCollection Services { get; }
+        public IServiceCollection Services => _builder.Services;
 
         public Type ApplicationType => typeof(TApplication);
-        public Type UserType => typeof(TUser);
+        public Type UserType => _builder.UserType;
+        public Type RoleType => _builder.RoleType;
     }
 }
