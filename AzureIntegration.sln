@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extension
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.SiteExtension", "src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj", "{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApplicationInsights.HostingStartup.Tests", "test\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.Tests\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.Tests.csproj", "{0899A101-E451-40A4-81B0-7AA18202C25D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsights.HostingStartup.Tests", "test\ApplicationInsights.HostingStartup.Tests\ApplicationInsights.HostingStartup.Tests.csproj", "{0899A101-E451-40A4-81B0-7AA18202C25D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

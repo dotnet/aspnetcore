@@ -24,7 +24,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
 
         private readonly DeploymentResult _deploymentResult;
 
-        private static readonly Assembly _resourcesAssembly = typeof(ApplicationInsightsJavaScriptSnippetTest).GetTypeInfo().Assembly;
+        private static readonly Assembly _resourcesAssembly = typeof(JavaScriptSnippetTest).GetTypeInfo().Assembly;
 
         public Validator(
             HttpClient httpClient,

@@ -11,9 +11,9 @@ using Xunit.Abstractions;
 
 namespace ApplicationInsightsJavaScriptSnippetTest
 {
-    public class ApplicationInsightsJavaScriptSnippetTest : ApplicationInsightsFunctionalTest
+    public class JavaScriptSnippetTest : ApplicationInsightsFunctionalTest
     {
-        public ApplicationInsightsJavaScriptSnippetTest(ITestOutputHelper output) : base(output)
+        public JavaScriptSnippetTest(ITestOutputHelper output) : base(output)
         {
         }
 
@@ -30,7 +30,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             var testName = $"ApplicationInsightsJavaScriptSnippetTest_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
-                var logger = loggerFactory.CreateLogger(nameof(ApplicationInsightsJavaScriptSnippetTest));
+                var logger = loggerFactory.CreateLogger(nameof(JavaScriptSnippetTest));
                 var deploymentParameters = new DeploymentParameters(GetApplicationPath(), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
                     PublishApplicationBeforeDeployment = true,
