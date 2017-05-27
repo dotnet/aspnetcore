@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             var length = message.Payload.Length;
             if (message.Type == MessageType.Binary)
             {
-                length = Base64.ComputeEncodedLength(length);
+                length = Base64Encoder.ComputeEncodedLength(length);
             }
 
             // Get the type indicator
@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             if (message.Type == MessageType.Binary)
             {
                 // TODO: Base64 writer that works with IOutput would be amazing!
-                var arr = new byte[Base64.ComputeEncodedLength(message.Payload.Length)];
-                Base64.Encode(message.Payload, arr);
+                var arr = new byte[Base64Encoder.ComputeEncodedLength(message.Payload.Length)];
+                Base64Encoder.TryEncode(message.Payload, arr, out _, out _);
                 return output.TryWrite(arr);
             }
             else

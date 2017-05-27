@@ -72,8 +72,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             if (type == MessageType.Binary)
             {
                 // TODO: Base64 writer that works with IOutput would be amazing!
-                var arr = new byte[Base64.ComputeEncodedLength(payload.Length)];
-                Base64.Encode(payload, arr);
+                var arr = new byte[Base64Encoder.ComputeEncodedLength(payload.Length)];
+                Base64Encoder.TryEncode(payload, arr, out _, out _);
                 return TryWriteLine(arr, output);
             }
             else

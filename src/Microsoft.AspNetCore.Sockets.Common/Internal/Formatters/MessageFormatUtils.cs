@@ -13,22 +13,11 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             if (inputPayload.Length > 0)
             {
                 // Determine the output size
-                // Every 4 Base64 characters represents 3 bytes
-                var decodedLength = (inputPayload.Length / 4) * 3;
-
-                // Subtract padding bytes
-                if (inputPayload[inputPayload.Length - 1] == '=')
-                {
-                    decodedLength -= 1;
-                }
-                if (inputPayload.Length > 1 && inputPayload[inputPayload.Length - 2] == '=')
-                {
-                    decodedLength -= 1;
-                }
+                var decodedLength = Base64Encoder.ComputeDecodedLength(inputPayload);
 
                 // Allocate a new buffer to decode to
                 var decodeBuffer = new byte[decodedLength];
-                if (Base64.Decode(inputPayload, decodeBuffer) != decodedLength)
+                if (!Base64Encoder.TryDecode(inputPayload, decodeBuffer, out _, out var _))
                 {
                     throw new FormatException("Invalid Base64 payload");
                 }
