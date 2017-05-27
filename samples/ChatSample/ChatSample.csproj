@@ -3,12 +3,15 @@
   <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <UserSecretsId>aspnet-ChatSample-f11cf018-e0a8-49fa-b749-4c0eb5c9150b</UserSecretsId>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
     <!-- Don't create a NuGet package -->
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+ <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" PrivateAssets="All" />
+ </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj" />

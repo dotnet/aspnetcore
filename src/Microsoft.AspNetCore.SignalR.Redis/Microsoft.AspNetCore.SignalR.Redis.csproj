@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Redis for ASP.NET Core SignalR.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;signalr</PackageTags>

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             Add(StatisticColumn.OperationsPerSecond);
 
             Add(Job.Default
-                .With(Runtime.Core)
+                .With(BenchmarkDotNet.Environments.Runtime.Core)
                 .WithRemoveOutliers(false)
                 .With(new GcMode() { Server = true })
                 .With(RunStrategy.Throughput)

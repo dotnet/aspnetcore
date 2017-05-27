@@ -8,7 +8,7 @@
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <MoqVersion>4.7.1</MoqVersion>
-    <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <RedisVersion>1.2.3</RedisVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
