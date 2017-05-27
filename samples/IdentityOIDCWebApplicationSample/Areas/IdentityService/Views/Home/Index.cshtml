@@ -1,0 +1,13 @@
+@model IdentityServiceViewModel
+@{
+    ViewData["Title"] = "Identity service";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<environment include="Development">
+    <h4>Issuer</h4>
+    <p>@Model.Issuer</p>
+    <a asp-controller="IdentityServiceConfiguration" asp-action="Metadata">Configuration document</a>
+    @Html.Partial("Clients", Model.Clients)
+</environment>

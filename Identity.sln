@@ -60,6 +60,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.AzureKeyVault", "src\Microsoft.AspNetCore.Identity.Service.AzureKeyVault\Microsoft.AspNetCore.Identity.Service.AzureKeyVault.csproj", "{174180AE-00AD-4C2D-9F96-2EE2C5E60457}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityOIDCWebApplicationSample", "samples\IdentityOIDCWebApplicationSample\IdentityOIDCWebApplicationSample.csproj", "{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -474,6 +476,22 @@ Global
 		{174180AE-00AD-4C2D-9F96-2EE2C5E60457}.Release|x64.Build.0 = Release|Any CPU
 		{174180AE-00AD-4C2D-9F96-2EE2C5E60457}.Release|x86.ActiveCfg = Release|Any CPU
 		{174180AE-00AD-4C2D-9F96-2EE2C5E60457}.Release|x86.Build.0 = Release|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Debug|x64.Build.0 = Debug|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Debug|x86.Build.0 = Debug|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Release|x64.ActiveCfg = Release|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Release|x64.Build.0 = Release|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Release|x86.ActiveCfg = Release|Any CPU
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -505,5 +523,6 @@ Global
 		{D5905D78-A32E-44B8-8F21-EDAEDC95D9B8} = {0F647068-6602-4E24-B1DC-8ED91481A50A}
 		{FADA11FC-DC06-4832-A569-7B2374A6CD42} = {0F647068-6602-4E24-B1DC-8ED91481A50A}
 		{174180AE-00AD-4C2D-9F96-2EE2C5E60457} = {0F647068-6602-4E24-B1DC-8ED91481A50A}
+		{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935} = {58D94A0E-C2B7-43A7-8826-99ECBB1E0A50}
 	EndGlobalSection
 EndGlobal

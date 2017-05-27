@@ -1,0 +1,43 @@
+﻿@using IdentityOIDCWebApplicationSample.Identity.Models.ApplicationViewModels
+@model CreateRedirectUriViewModel
+
+    @{
+        ViewData["Title"] = "Add a redirect uri to your application";
+    }
+
+    <h2>@ViewData["Title"].</h2>
+    <div>
+        <hr />
+        <ul class="list-unstyled">
+            <li class="h4">Name</li>
+            <li>@Model.Name</li>
+            <li class="h4">Redirect uris</li>
+            <li>
+                <ul class="list-unstyled">
+                    @foreach (var redirectUris in Model.RedirectUris)
+                    {
+                        <li>@redirectUris</li>
+                    }
+                    @if (Model.RedirectUris.Count() == 0)
+                    {
+                        <li>(none)</li>
+                    }
+                </ul>
+            </li>
+        </ul>
+        <hr />
+        <form asp-action="CreateRedirectUri" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="NewRedirectUri">New redirect uri</label>
+                <input asp-for="NewRedirectUri" class="form-control large" placeholder="New redirect uri">
+                <span asp-validation-for="NewRedirectUri" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+    </div>
+    <hr />
+    <a asp-action="CreateLogoutUri" class="btn btn-default">Continue to add logout uris</a>
+    @section Scripts {
+        @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    }

@@ -1,0 +1,39 @@
+﻿@model IEnumerable<ClientViewModel>
+
+<h4>Clients</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Name)</th>
+            <th>@Html.DisplayNameFor(model => model.ClientId)</th>
+            <th>@Html.DisplayNameFor(model => model.RedirectUris)</th>
+            <th>@Html.DisplayNameFor(model => model.Scopes)</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    @foreach (var client in Model)
+    {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => client.Name)</td>
+            <td>@Html.DisplayFor(modelItem => client.ClientId)</td>
+            <td>
+                <ul>
+                    @foreach (var uri in client.RedirectUris)
+                    {
+                        <li>@uri</li>
+                    }
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    @foreach (var scope in client.Scopes)
+                    {
+                        <li>@scope</li>
+                    }
+                </ul>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
