@@ -1,14 +1,9 @@
 using System;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.SpaServices.Webpack;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -54,7 +49,7 @@ namespace Microsoft.AspNetCore.Builder
             // middleware). And since this is a dev-time-only feature, it doesn't matter if the default transport isn't
             // as fast as some theoretical future alternative.
             var nodeServicesOptions = new NodeServicesOptions(appBuilder.ApplicationServices);
-            nodeServicesOptions.WatchFileExtensions = new string[] {}; // Don't watch anything
+            nodeServicesOptions.WatchFileExtensions = new string[] { }; // Don't watch anything
             if (!string.IsNullOrEmpty(options.ProjectPath))
             {
                 nodeServicesOptions.ProjectPath = options.ProjectPath;
