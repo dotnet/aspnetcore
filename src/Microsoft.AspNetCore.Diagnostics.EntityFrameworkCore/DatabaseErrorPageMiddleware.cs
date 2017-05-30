@@ -2,12 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -17,23 +21,36 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     /// <summary>
-    /// Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
-    /// migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
+    ///     Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
+    ///     migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
     /// </summary>
-    public class DatabaseErrorPageMiddleware
+    public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>
     {
+        private static readonly AsyncLocal<DiagnosticHolder> _localDiagnostic = new AsyncLocal<DiagnosticHolder>();
+
+        private sealed class DiagnosticHolder
+        {
+            public void Hold(Exception exception, Type contextType)
+            {
+                Exception = exception;
+                ContextType = contextType;
+            }
+
+            public Exception Exception { get; private set; }
+            public Type ContextType { get; private set; }
+        }
+
         private readonly RequestDelegate _next;
         private readonly DatabaseErrorPageOptions _options;
         private readonly ILogger _logger;
-        private readonly DataStoreErrorLoggerProvider _loggerProvider;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DatabaseErrorPageMiddleware"/> class
+        ///     Initializes a new instance of the <see cref="DatabaseErrorPageMiddleware" /> class
         /// </summary>
         /// <param name="next">Delegate to execute the next piece of middleware in the request pipeline.</param>
         /// <param name="loggerFactory">
-        /// The <see cref="ILoggerFactory"/> for the application. This middleware both produces logging messages and
-        /// consumes them to detect database related exception.
+        ///     The <see cref="ILoggerFactory" /> for the application. This middleware both produces logging messages and
+        ///     consumes them to detect database related exception.
         /// </param>
         /// <param name="options">The options to control what information is displayed on the error page.</param>
         public DatabaseErrorPageMiddleware(
@@ -60,90 +77,84 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<DatabaseErrorPageMiddleware>();
 
-            _loggerProvider = new DataStoreErrorLoggerProvider();
-#pragma warning disable CS0618 // Type or member is obsolete
-            loggerFactory.AddProvider(_loggerProvider);
-#pragma warning restore CS0618 // Type or member is obsolete
+            DiagnosticListener.AllListeners.Subscribe(this);
         }
 
         /// <summary>
-        /// Process an individual request.
+        ///     Process an individual request.
         /// </summary>
-        /// <param name="context">The context for the current request.</param>
+        /// <param name="httpContext">The HTTP context for the current request.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public virtual async Task Invoke(HttpContext context)
+        public virtual async Task Invoke(HttpContext httpContext)
         {
-            if (context == null)
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
             try
             {
-                _loggerProvider.Logger.StartLoggingForCurrentCallContext();
+                // Because CallContext is cloned at each async operation we cannot
+                // lazily create the error object when an error is encountered, otherwise
+                // it will not be available to code outside of the current async context. 
+                // We create it ahead of time so that any cloning just clones the reference
+                // to the object that will hold any errors.
 
-                await _next(context);
+                _localDiagnostic.Value = new DiagnosticHolder();
+
+                await _next(httpContext);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 try
                 {
-                    if (ShouldDisplayErrorPage(_loggerProvider.Logger.LastError, ex, _logger))
+                    if (ShouldDisplayErrorPage(exception))
                     {
-                        var dbContextType = _loggerProvider.Logger.LastError.ContextType;
-                        var dbContext = (DbContext) context.RequestServices.GetService(dbContextType);
+                        var contextType = _localDiagnostic.Value.ContextType;
+                        var context = (DbContext)httpContext.RequestServices.GetService(contextType);
 
-                        if (dbContext == null)
+                        if (context == null)
                         {
-                            _logger.LogError(
-                                Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(dbContextType.FullName));
+                            _logger.LogError(Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(contextType.FullName));
                         }
                         else
                         {
-                            var creator = dbContext.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
+                            var relationalDatabaseCreator = context.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
 
-                            if (creator == null)
+                            if (relationalDatabaseCreator == null)
                             {
                                 _logger.LogDebug(Strings.DatabaseErrorPage_NotRelationalDatabase);
                             }
                             else
                             {
-                                var databaseExists = creator.Exists();
+                                var databaseExists = await relationalDatabaseCreator.ExistsAsync();
 
-                                var historyRepository = dbContext.GetService<IHistoryRepository>();
-                                var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
-                                var modelDiffer = dbContext.GetService<IMigrationsModelDiffer>();
-
-                                var appliedMigrations = historyRepository.GetAppliedMigrations();
-
-                                var pendingMigrations
-                                    = (from m in migrationsAssembly.Migrations
-                                        where !appliedMigrations.Any(
-                                            r => string.Equals(r.MigrationId, m.Key,
-                                                StringComparison.OrdinalIgnoreCase))
-                                        select m.Key)
-                                    .ToList();
+                                var migrationsAssembly = context.GetService<IMigrationsAssembly>();
+                                var modelDiffer = context.GetService<IMigrationsModelDiffer>();
 
                                 // HasDifferences will return true if there is no model snapshot, but if there is an existing database
                                 // and no model snapshot then we don't want to show the error page since they are most likely targeting
                                 // and existing database and have just misconfigured their model
-                                var pendingModelChanges
-                                    = (migrationsAssembly.ModelSnapshot != null || !databaseExists)
-                                      && modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model,
-                                          dbContext.Model);
 
-                                if (!databaseExists && pendingMigrations.Any()
-                                    || pendingMigrations.Any()
-                                    || pendingModelChanges)
+                                var pendingModelChanges
+                                    = (!databaseExists || migrationsAssembly.ModelSnapshot != null)
+                                      && modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model, context.Model);
+
+                                var pendingMigrations
+                                    = (databaseExists
+                                        ? await context.Database.GetPendingMigrationsAsync()
+                                        : context.Database.GetMigrations())
+                                    .ToArray();
+
+                                if (pendingModelChanges || pendingMigrations.Any())
                                 {
                                     var page = new DatabaseErrorPage
                                     {
                                         Model = new DatabaseErrorPageModel(
-                                            dbContextType, ex, databaseExists, pendingModelChanges, pendingMigrations,
-                                            _options)
+                                            contextType, exception, databaseExists, pendingModelChanges, pendingMigrations, _options)
                                     };
 
-                                    await page.ExecuteAsync(context);
+                                    await page.ExecuteAsync(httpContext);
 
                                     return;
                                 }
@@ -153,21 +164,26 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(0, e, Strings.DatabaseErrorPageMiddleware_Exception);
+                    _logger.LogError(
+                        eventId: 0,
+                        exception: e,
+                        message: Strings.DatabaseErrorPageMiddleware_Exception);
                 }
 
                 throw;
             }
         }
 
-        private static bool ShouldDisplayErrorPage(DataStoreErrorLogger.DataStoreErrorLog lastError,
-            Exception exception, ILogger logger)
+        private bool ShouldDisplayErrorPage(Exception exception)
         {
-            logger.LogDebug(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
+            _logger.LogDebug(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
 
-            if (!lastError.IsErrorLogged)
+            var lastRecordedException = _localDiagnostic.Value.Exception;
+
+            if (lastRecordedException == null)
             {
-                logger.LogDebug(Strings.DatabaseErrorPage_NoRecordedException);
+                _logger.LogDebug(Strings.DatabaseErrorPage_NoRecordedException);
+
                 return false;
             }
 
@@ -175,19 +191,62 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             for (var e = exception; e != null && !match; e = e.InnerException)
             {
-                match = lastError.Exception == e;
+                match = lastRecordedException == e;
             }
 
             if (!match)
             {
-                logger.LogDebug(Strings.DatabaseErrorPage_NoMatch);
+                _logger.LogDebug(Strings.DatabaseErrorPage_NoMatch);
 
                 return false;
             }
 
-            logger.LogDebug(Strings.DatabaseErrorPage_Matched);
+            _logger.LogDebug(Strings.DatabaseErrorPage_Matched);
 
             return true;
+        }
+
+        void IObserver<DiagnosticListener>.OnNext(DiagnosticListener diagnosticListener)
+        {
+            if (diagnosticListener.Name == DbLoggerCategory.Root)
+            {
+                diagnosticListener.Subscribe(this);
+            }
+        }
+
+        void IObserver<KeyValuePair<string, object>>.OnNext(KeyValuePair<string, object> keyValuePair)
+        {
+            switch (keyValuePair.Value)
+            {
+                case DbContextErrorEventData contextErrorEventData:
+                {
+                    _localDiagnostic.Value.Hold(contextErrorEventData.Exception, contextErrorEventData.Context.GetType());
+
+                    break;
+                }
+                case DbContextTypeErrorEventData contextTypeErrorEventData:
+                {
+                    _localDiagnostic.Value.Hold(contextTypeErrorEventData.Exception, contextTypeErrorEventData.ContextType);
+
+                    break;
+                }
+            }
+        }
+
+        void IObserver<DiagnosticListener>.OnCompleted()
+        {
+        }
+
+        void IObserver<DiagnosticListener>.OnError(Exception error)
+        {
+        }
+
+        void IObserver<KeyValuePair<string, object>>.OnCompleted()
+        {
+        }
+
+        void IObserver<KeyValuePair<string, object>>.OnError(Exception error)
+        {
         }
     }
 }
