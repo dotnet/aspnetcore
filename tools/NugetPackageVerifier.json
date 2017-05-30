@@ -4,6 +4,13 @@
             "SigningVerificationCompositeRule"
         ],
         "packages": {
+            "Microsoft.AspNetCore.CertificateGeneration.Task": {
+                "exclusions": {
+                    "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
+                        "Microsoft.AspNetCore.CertificateGeneration.Task; .NETCoreApp,Version=v2.0": "Temporary exception while waiting for Coherence-Signed to get a new version of NugetPackageVerifier."
+                    }
+                }
+            },
             "Microsoft.EntityFrameworkCore.ApplicationInsights": {
                 "exclusions": {
                     "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
