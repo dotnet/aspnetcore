@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26507.0
+VisualStudioVersion = 15.0.26524.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}"
 EndProject
@@ -10,6 +10,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.All", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{97D53BEB-A511-4FBE-B784-AB407D9A219F}"
 	ProjectSection(SolutionItems) = preProject
+		NuGet.config = NuGet.config
 		version.props = version.props
 	EndProjectSection
 EndProject
