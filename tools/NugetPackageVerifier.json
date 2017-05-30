@@ -8,13 +8,9 @@
                 "exclusions": {
                     "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
                         "Microsoft.AspNetCore.CertificateGeneration.Task; .NETCoreApp,Version=v2.0": "Temporary exception while waiting for Coherence-Signed to get a new version of NugetPackageVerifier."
-                    }
-                }
-            },
-            "Microsoft.EntityFrameworkCore.ApplicationInsights": {
-                "exclusions": {
-                    "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
-                        "Microsoft.EntityFrameworkCore.ApplicationInsights; .NETStandard,Version=v1.3": "Spurious exception as 2.4.0-beta3 is approved and in use here."
+                    },
+                    "BUILD_ITEMS_FRAMEWORK": {
+                        "*": "This is an MSBuild task intended to run through dotnet msbuild /t:Target independently of whether your project targets full framework or .net core."
                     }
                 }
             },
