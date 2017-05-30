@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ConnectionCountingReturnsToZero()
         {
-            const int count = 500;
+            const int count = 100;
             var opened = 0;
             var closed = 0;
             var openedTcs = new TaskCompletionSource<object>();
@@ -179,9 +179,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 });
 
                 // wait until resource counter has called lock for each connection
-                await openedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(60));
+                await openedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
                 // wait until resource counter has released all normal connections
-                await closedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(60));
+                await closedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
                 Assert.Equal(count, opened);
                 Assert.Equal(count, closed);
             }
