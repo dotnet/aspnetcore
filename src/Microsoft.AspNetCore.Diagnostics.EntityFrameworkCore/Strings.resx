@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ArgumentIsEmpty" xml:space="preserve">
-    <value>The string argument '{argumentName}' cannot be empty.</value>
-  </data>
-  <data name="CollectionArgumentIsEmpty" xml:space="preserve">
-    <value>The collection argument '{argumentName}' must contain at least one element.</value>
-  </data>
   <data name="DatabaseErrorPageMiddleware_ContextNotRegistered" xml:space="preserve">
     <value>The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code. Skipping display of the database error page.</value>
   </data>
@@ -170,9 +164,6 @@
   </data>
   <data name="DatabaseErrorPage_ApplyMigrationsCommandCLI" xml:space="preserve">
     <value>&gt; dotnet ef database update</value>
-  </data>
-  <data name="InvalidEnumValue" xml:space="preserve">
-    <value>The value provided for argument '{argumentName}' must be a valid value of enum type '{enumType}'.</value>
   </data>
   <data name="MigrationsEndPointMiddleware_Applied" xml:space="preserve">
     <value>Migrations successfully applied for context '{0}'.</value>

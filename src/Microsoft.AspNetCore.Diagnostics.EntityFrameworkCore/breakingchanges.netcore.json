@@ -6,5 +6,15 @@
   {
     "TypeId": "public class Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views.DatabaseErrorPageModel",
     "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.MigrationsEndPointMiddleware",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Http.RequestDelegate next, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.MigrationsEndPointMiddleware> logger, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.MigrationsEndPointOptions> options)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.DatabaseErrorPageMiddleware",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Http.RequestDelegate next, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DatabaseErrorPageOptions> options)",
+    "Kind": "Removal"
   }
 ]

@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
@@ -35,12 +36,14 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <param name="options">A <see cref="DatabaseErrorPageOptions"/> that specifies options for the middleware.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
-        public static IApplicationBuilder UseDatabaseErrorPage(this IApplicationBuilder app, DatabaseErrorPageOptions options)
+        public static IApplicationBuilder UseDatabaseErrorPage(
+            this IApplicationBuilder app, DatabaseErrorPageOptions options)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
+
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));

@@ -4,10 +4,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -26,7 +24,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
     {
         private readonly RequestDelegate _next;
         private readonly DatabaseErrorPageOptions _options;
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
         private readonly DataStoreErrorLoggerProvider _loggerProvider;
 
@@ -34,21 +31,32 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// Initializes a new instance of the <see cref="DatabaseErrorPageMiddleware"/> class
         /// </summary>
         /// <param name="next">Delegate to execute the next piece of middleware in the request pipeline.</param>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to resolve services from.</param>
         /// <param name="loggerFactory">
         /// The <see cref="ILoggerFactory"/> for the application. This middleware both produces logging messages and
         /// consumes them to detect database related exception.
         /// </param>
         /// <param name="options">The options to control what information is displayed on the error page.</param>
-        public DatabaseErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] IServiceProvider serviceProvider, [NotNull] ILoggerFactory loggerFactory, [NotNull] IOptions<DatabaseErrorPageOptions> options)
+        public DatabaseErrorPageMiddleware(
+            RequestDelegate next,
+            ILoggerFactory loggerFactory,
+            IOptions<DatabaseErrorPageOptions> options)
         {
-            Check.NotNull(next, nameof(next));
-            Check.NotNull(serviceProvider, nameof(serviceProvider));
-            Check.NotNull(loggerFactory, nameof(loggerFactory));
-            Check.NotNull(options, nameof(options));
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
             _next = next;
-            _serviceProvider = serviceProvider;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<DatabaseErrorPageMiddleware>();
 
@@ -63,9 +71,12 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// </summary>
         /// <param name="context">The context for the current request.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public virtual async Task Invoke([NotNull] HttpContext context)
+        public virtual async Task Invoke(HttpContext context)
         {
-            Check.NotNull(context, "context");
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             try
             {
@@ -80,14 +91,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                     if (ShouldDisplayErrorPage(_loggerProvider.Logger.LastError, ex, _logger))
                     {
                         var dbContextType = _loggerProvider.Logger.LastError.ContextType;
-                        var dbContext = (DbContext)context.RequestServices.GetService(dbContextType);
+                        var dbContext = (DbContext) context.RequestServices.GetService(dbContextType);
+
                         if (dbContext == null)
                         {
-                            _logger.LogError(Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(dbContextType.FullName));
+                            _logger.LogError(
+                                Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(dbContextType.FullName));
                         }
                         else
                         {
                             var creator = dbContext.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
+
                             if (creator == null)
                             {
                                 _logger.LogDebug(Strings.DatabaseErrorPage_NotRelationalDatabase);
@@ -101,25 +115,36 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                                 var modelDiffer = dbContext.GetService<IMigrationsModelDiffer>();
 
                                 var appliedMigrations = historyRepository.GetAppliedMigrations();
-                                var pendingMigrations = (
-                                        from m in migrationsAssembly.Migrations
+
+                                var pendingMigrations
+                                    = (from m in migrationsAssembly.Migrations
                                         where !appliedMigrations.Any(
-                                            r => string.Equals(r.MigrationId, m.Key, StringComparison.OrdinalIgnoreCase))
+                                            r => string.Equals(r.MigrationId, m.Key,
+                                                StringComparison.OrdinalIgnoreCase))
                                         select m.Key)
                                     .ToList();
 
                                 // HasDifferences will return true if there is no model snapshot, but if there is an existing database
                                 // and no model snapshot then we don't want to show the error page since they are most likely targeting
                                 // and existing database and have just misconfigured their model
-                                var pendingModelChanges = migrationsAssembly.ModelSnapshot == null && databaseExists
-                                    ? false
-                                    : modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model, dbContext.Model);
+                                var pendingModelChanges
+                                    = (migrationsAssembly.ModelSnapshot != null || !databaseExists)
+                                      && modelDiffer.HasDifferences(migrationsAssembly.ModelSnapshot?.Model,
+                                          dbContext.Model);
 
-                                if ((!databaseExists && pendingMigrations.Any()) || pendingMigrations.Any() || pendingModelChanges)
+                                if (!databaseExists && pendingMigrations.Any()
+                                    || pendingMigrations.Any()
+                                    || pendingModelChanges)
                                 {
-                                    var page = new DatabaseErrorPage();
-                                    page.Model = new DatabaseErrorPageModel(dbContextType, ex, databaseExists, pendingModelChanges, pendingMigrations, _options);
+                                    var page = new DatabaseErrorPage
+                                    {
+                                        Model = new DatabaseErrorPageModel(
+                                            dbContextType, ex, databaseExists, pendingModelChanges, pendingMigrations,
+                                            _options)
+                                    };
+
                                     await page.ExecuteAsync(context);
+
                                     return;
                                 }
                             }
@@ -135,7 +160,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             }
         }
 
-        private static bool ShouldDisplayErrorPage(DataStoreErrorLogger.DataStoreErrorLog lastError, Exception exception, ILogger logger)
+        private static bool ShouldDisplayErrorPage(DataStoreErrorLogger.DataStoreErrorLog lastError,
+            Exception exception, ILogger logger)
         {
             logger.LogDebug(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
 
@@ -145,7 +171,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 return false;
             }
 
-            bool match = false;
+            var match = false;
+
             for (var e = exception; e != null && !match; e = e.InnerException)
             {
                 match = lastError.Exception == e;
@@ -154,10 +181,12 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             if (!match)
             {
                 logger.LogDebug(Strings.DatabaseErrorPage_NoMatch);
+
                 return false;
             }
 
             logger.LogDebug(Strings.DatabaseErrorPage_Matched);
+
             return true;
         }
     }

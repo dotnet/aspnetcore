@@ -1,72 +1,35 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using JetBrains.Annotations;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 {
     internal class DatabaseErrorPageModel
     {
-        private readonly Type _contextType;
-        private readonly Exception _exception;
-        private readonly bool _databaseExists;
-        private readonly bool _pendingModelChanges;
-        private readonly IEnumerable<string> _pendingMigrations;
-        private readonly DatabaseErrorPageOptions _options;
-
         public DatabaseErrorPageModel(
-            [NotNull] Type contextType,
-            [NotNull] Exception exception,
+            Type contextType,
+            Exception exception,
             bool databaseExists,
             bool pendingModelChanges,
-            [NotNull] IEnumerable<string> pendingMigrations,
-            [NotNull] DatabaseErrorPageOptions options)
+            IEnumerable<string> pendingMigrations,
+            DatabaseErrorPageOptions options)
         {
-            Check.NotNull(contextType, "contextType");
-            Check.NotNull(exception, "exception");
-            Check.NotNull(pendingMigrations, "pendingMigrations");
-            Check.NotNull(options, "options");
-
-            _contextType = contextType;
-            _exception = exception;
-            _databaseExists = databaseExists;
-            _pendingModelChanges = pendingModelChanges;
-            _pendingMigrations = pendingMigrations;
-            _options = options;
+            ContextType = contextType;
+            Exception = exception;
+            DatabaseExists = databaseExists;
+            PendingModelChanges = pendingModelChanges;
+            PendingMigrations = pendingMigrations;
+            Options = options;
         }
 
-        public virtual Type ContextType
-        {
-            get { return _contextType; }
-        }
-
-        public virtual Exception Exception
-        {
-            get { return _exception; }
-        }
-
-        public virtual bool DatabaseExists
-        {
-            get { return _databaseExists; }
-        }
-
-        public virtual bool PendingModelChanges
-        {
-            get { return _pendingModelChanges; }
-        }
-
-        public virtual IEnumerable<string> PendingMigrations
-        {
-            get { return _pendingMigrations; }
-        }
-
-        public virtual DatabaseErrorPageOptions Options
-        {
-            get { return _options; }
-        }
+        public virtual Type ContextType { get; }
+        public virtual Exception Exception { get; }
+        public virtual bool DatabaseExists { get; }
+        public virtual bool PendingModelChanges { get; }
+        public virtual IEnumerable<string> PendingMigrations { get; }
+        public virtual DatabaseErrorPageOptions Options { get; }
     }
 }

@@ -11,38 +11,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             = new ResourceManager("Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Strings", typeof(Strings).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The string argument '{argumentName}' cannot be empty.
-        /// </summary>
-        internal static string ArgumentIsEmpty
-        {
-            get { return GetString("ArgumentIsEmpty"); }
-        }
-
-        /// <summary>
-        /// The string argument '{argumentName}' cannot be empty.
-        /// </summary>
-        internal static string FormatArgumentIsEmpty(object argumentName)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentIsEmpty", "argumentName"), argumentName);
-        }
-
-        /// <summary>
-        /// The collection argument '{argumentName}' must contain at least one element.
-        /// </summary>
-        internal static string CollectionArgumentIsEmpty
-        {
-            get { return GetString("CollectionArgumentIsEmpty"); }
-        }
-
-        /// <summary>
-        /// The collection argument '{argumentName}' must contain at least one element.
-        /// </summary>
-        internal static string FormatCollectionArgumentIsEmpty(object argumentName)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CollectionArgumentIsEmpty", "argumentName"), argumentName);
-        }
-
-        /// <summary>
         /// The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code. Skipping display of the database error page.
         /// </summary>
         internal static string DatabaseErrorPageMiddleware_ContextNotRegistered
@@ -296,22 +264,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         internal static string FormatDatabaseErrorPage_ApplyMigrationsCommandCLI()
         {
             return GetString("DatabaseErrorPage_ApplyMigrationsCommandCLI");
-        }
-
-        /// <summary>
-        /// The value provided for argument '{argumentName}' must be a valid value of enum type '{enumType}'.
-        /// </summary>
-        internal static string InvalidEnumValue
-        {
-            get { return GetString("InvalidEnumValue"); }
-        }
-
-        /// <summary>
-        /// The value provided for argument '{argumentName}' must be a valid value of enum type '{enumType}'.
-        /// </summary>
-        internal static string FormatInvalidEnumValue(object argumentName, object enumType)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidEnumValue", "argumentName", "enumType"), argumentName, enumType);
         }
 
         /// <summary>

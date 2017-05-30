@@ -4,9 +4,7 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -20,7 +18,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
     public class MigrationsEndPointMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger _logger;
         private readonly MigrationsEndPointOptions _options;
 
@@ -28,22 +25,29 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// Initializes a new instance of the <see cref="MigrationsEndPointMiddleware"/> class
         /// </summary>
         /// <param name="next">Delegate to execute the next piece of middleware in the request pipeline.</param>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to resolve services from.</param>
         /// <param name="logger">The <see cref="Logger{T}"/> to write messages to.</param>
         /// <param name="options">The options to control the behavior of the middleware.</param>
         public MigrationsEndPointMiddleware(
-            [NotNull] RequestDelegate next, 
-            [NotNull] IServiceProvider serviceProvider, 
-            [NotNull] ILogger<MigrationsEndPointMiddleware> logger, 
-            [NotNull] IOptions<MigrationsEndPointOptions> options)
+            RequestDelegate next, 
+            ILogger<MigrationsEndPointMiddleware> logger, 
+            IOptions<MigrationsEndPointOptions> options)
         {
-            Check.NotNull(next, "next");
-            Check.NotNull(serviceProvider, "serviceProvider");
-            Check.NotNull(logger, "logger");
-            Check.NotNull(options, "options");
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
             _next = next;
-            _serviceProvider = serviceProvider;
             _logger = logger;
             _options = options.Value;
         }
@@ -53,15 +57,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// </summary>
         /// <param name="context">The context for the current request.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public virtual async Task Invoke([NotNull] HttpContext context)
+        public virtual async Task Invoke(HttpContext context)
         {
-            Check.NotNull(context, "context");
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
 
             if (context.Request.Path.Equals(_options.Path))
             {
                 _logger.LogDebug(Strings.FormatMigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
 
                 var db = await GetDbContext(context, _logger);
+
                 if (db != null)
                 {
                     try
@@ -78,8 +86,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                     }
                     catch (Exception ex)
                     {
-                        var message = Strings.FormatMigrationsEndPointMiddleware_Exception(db.GetType().FullName) + ex.ToString();
+                        var message = Strings.FormatMigrationsEndPointMiddleware_Exception(db.GetType().FullName) + ex;
+
                         _logger.LogError(message);
+
                         throw new InvalidOperationException(message, ex);
                     }
                 }
@@ -94,28 +104,39 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         {
             var form = await context.Request.ReadFormAsync();
             var contextTypeName = form["context"];
+
             if (string.IsNullOrWhiteSpace(contextTypeName))
             {
                 logger.LogError(Strings.MigrationsEndPointMiddleware_NoContextType);
+
                 await WriteErrorToResponse(context.Response, Strings.MigrationsEndPointMiddleware_NoContextType);
+
                 return null;
             }
 
             var contextType = Type.GetType(contextTypeName);
+
             if (contextType == null)
             {
                 var message = Strings.FormatMigrationsEndPointMiddleware_InvalidContextType(contextTypeName);
+
                 logger.LogError(message);
+
                 await WriteErrorToResponse(context.Response, message);
+
                 return null;
             }
 
             var db = (DbContext)context.RequestServices.GetService(contextType);
+
             if (db == null)
             {
                 var message = Strings.FormatMigrationsEndPointMiddleware_ContextNotRegistered(contextType.FullName);
+
                 logger.LogError(message);
+
                 await WriteErrorToResponse(context.Response, message);
+
                 return null;
             }
 

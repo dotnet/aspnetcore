@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -37,7 +36,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             _log.Value = new DataStoreErrorLog();
         }
 
-        public virtual void Log<TState>(LogLevel logLevel, EventId eventId, [CanBeNull] TState state, [CanBeNull] Exception exception, [CanBeNull] Func<TState, Exception, string> formatter)
+        public virtual void Log<TState>(
+            LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (exception != null 
                 && LastError != null
@@ -73,11 +73,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             private Type _contextType;
             private Exception _exception;
 
-            public virtual void SetError([NotNull] Type contextType, [NotNull] Exception exception)
+            public virtual void SetError(Type contextType, Exception exception)
             {
-                Check.NotNull(contextType, nameof(contextType));
-                Check.NotNull(exception, nameof(exception));
-
                 _contextType = contextType;
                 _exception = exception;
             }

@@ -1,4 +1,4 @@
-namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 {
 #line 1 "DatabaseErrorPage.cshtml"
 using System
@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 #line hidden
     ;
 #line 4 "DatabaseErrorPage.cshtml"
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 
 #line default
 #line hidden

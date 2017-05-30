@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 exception: new Exception(),
                 databaseExists: false,
                 pendingModelChanges: false,
-                pendingMigrations: new string[] { "111_MigrationOne" },
+                pendingMigrations: new[] { "111_MigrationOne" },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 exception: new Exception(),
                 databaseExists: true,
                 pendingModelChanges: false,
-                pendingMigrations: new string[] { "111_MigrationOne" },
+                pendingMigrations: new[] { "111_MigrationOne" },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 exception: new Exception(),
                 databaseExists: true,
                 pendingModelChanges: true,
-                pendingMigrations: new string[] { "111_MigrationOne" },
+                pendingMigrations: new[] { "111_MigrationOne" },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                exception: new Exception(),
                databaseExists: true,
                pendingModelChanges: false,
-               pendingMigrations: new string[] { "111_MigrationOne" },
+               pendingMigrations: new[] { "111_MigrationOne" },
                options: options);
 
             var content = await ExecutePage(options, model);
