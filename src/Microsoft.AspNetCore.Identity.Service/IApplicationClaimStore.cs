@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Identity.Service
 {
     public interface IApplicationClaimStore<TApplication> : IApplicationStore<TApplication> where TApplication : class
     {
-        Task<IList<Claim>> GetClaimsAsync(TApplication user, CancellationToken cancellationToken);
-        Task AddClaimsAsync(TApplication user, IEnumerable<Claim> claims, CancellationToken cancellationToken);
-        Task ReplaceClaimAsync(TApplication user, Claim claim, Claim newClaim, CancellationToken cancellationToken);
-        Task RemoveClaimsAsync(TApplication user, IEnumerable<Claim> claims, CancellationToken cancellationToken);
+        Task<IList<Claim>> GetClaimsAsync(TApplication application, CancellationToken cancellationToken);
+        Task AddClaimsAsync(TApplication application, IEnumerable<Claim> claims, CancellationToken cancellationToken);
+        Task ReplaceClaimAsync(TApplication application, Claim claim, Claim newClaim, CancellationToken cancellationToken);
+        Task RemoveClaimsAsync(TApplication application, IEnumerable<Claim> claims, CancellationToken cancellationToken);
     }
 }

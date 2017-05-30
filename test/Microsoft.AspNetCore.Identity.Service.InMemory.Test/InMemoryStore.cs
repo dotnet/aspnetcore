@@ -172,6 +172,12 @@ namespace Microsoft.AspNetCore.Identity.Service.InMemory.Test
             return Task.CompletedTask;
         }
 
+        public Task SetApplicationNameAsync(TApplication application, string name, CancellationToken cancellationToken)
+        {
+            application.Name = name;
+            return Task.CompletedTask;
+        }
+
         public Task SetClientSecretHashAsync(TApplication application, string clientSecretHash, CancellationToken cancellationToken)
         {
             application.ClientSecretHash = clientSecretHash;

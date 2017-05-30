@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Identity.Service
             IdentityServiceRedirectUri<TApplicationKey>>
         where TApplicationKey : IEquatable<TApplicationKey>
         where TUserKey : IEquatable<TUserKey>
-
     {
     }
 

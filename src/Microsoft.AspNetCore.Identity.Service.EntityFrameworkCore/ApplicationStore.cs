@@ -28,12 +28,15 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
     {
         private bool _disposed;
 
-        public ApplicationStore(TContext context)
+        public ApplicationStore(TContext context, ApplicationErrorDescriber errorDescriber)
         {
             Context = context;
+            ErrorDescriber = errorDescriber;
         }
 
         public TContext Context { get; }
+
+        public ApplicationErrorDescriber ErrorDescriber { get; }
 
         public DbSet<TApplication> ApplicationsSet => Context.Set<TApplication>();
 
@@ -83,7 +86,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             }
             catch (DbUpdateConcurrencyException)
             {
-                return IdentityServiceResult.Failed(new IdentityServiceError() { Description = "Concurrency failure" });
+                return IdentityServiceResult.Failed(ErrorDescriber.ConcurrencyFailure());
             }
             return IdentityServiceResult.Success;
         }
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             }
             catch (DbUpdateConcurrencyException)
             {
-                return IdentityServiceResult.Failed(new IdentityServiceError() { Description = "Concurrency failure" });
+                return IdentityServiceResult.Failed(ErrorDescriber.ConcurrencyFailure());
             }
             return IdentityServiceResult.Success;
         }
@@ -118,16 +121,34 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
+            var oldQueryBehavior = Context.ChangeTracker.QueryTrackingBehavior;
 
-            return Applications.SingleOrDefaultAsync(a => a.ClientId == clientId, cancellationToken);
+            try
+            {
+                Context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+                return Applications.SingleOrDefaultAsync(a => a.ClientId == clientId, cancellationToken);
+            }
+            finally
+            {
+                Context.ChangeTracker.QueryTrackingBehavior = oldQueryBehavior;
+            }
         }
 
         public Task<TApplication> FindByNameAsync(string name, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
+            var oldQueryBehavior = Context.ChangeTracker.QueryTrackingBehavior;
 
-            return Applications.SingleOrDefaultAsync(a => a.Name == name, cancellationToken);
+            try
+            {
+                Context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+                return Applications.SingleOrDefaultAsync(a => a.Name == name, cancellationToken);
+            }
+            finally
+            {
+                Context.ChangeTracker.QueryTrackingBehavior = oldQueryBehavior;
+            }
         }
 
         public async Task<IEnumerable<TApplication>> FindByUserIdAsync(string userId, CancellationToken cancellationToken)
@@ -195,7 +216,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             return redirectUris;
         }
 
-        public async Task<IdentityServiceResult> RegisterRedirectUriAsync(TApplication app, string redirectUri, CancellationToken cancellationToken)
+        public Task<IdentityServiceResult> RegisterRedirectUriAsync(TApplication app, string redirectUri, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -209,17 +230,9 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(redirectUri));
             }
 
-            var existingRedirectUri = await RedirectUris.SingleOrDefaultAsync(
-                ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(redirectUri) && !ru.IsLogout);
-            if (existingRedirectUri != null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "A route with the same value already exists." });
-            }
-
             RedirectUris.Add(CreateRedirectUri(app, redirectUri, isLogout: false));
 
-            return IdentityServiceResult.Success;
+            return Task.FromResult(IdentityServiceResult.Success);
         }
 
         private TRedirectUri CreateRedirectUri(TApplication app, string redirectUri, bool isLogout)
@@ -249,12 +262,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             }
 
             var registeredUri = await RedirectUris
-                .SingleOrDefaultAsync(ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(redirectUri) && !ru.IsLogout);
-            if (registeredUri == null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "We were unable to find the redirect uri to unregister." });
-            }
+                .SingleAsync(ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(redirectUri) && !ru.IsLogout);
 
             RedirectUris.Remove(registeredUri);
 
@@ -285,13 +293,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             }
 
             var existingRedirectUri = await RedirectUris
-                .SingleOrDefaultAsync(ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(oldRedirectUri) && !ru.IsLogout);
-
-            if (existingRedirectUri == null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "We were unable to find the registered redirect uri to update." });
-            }
+                .SingleAsync(ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(oldRedirectUri) && !ru.IsLogout);
 
             existingRedirectUri.Value = newRedirectUri;
 
@@ -315,7 +317,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             return redirectUris;
         }
 
-        public async Task<IdentityServiceResult> RegisterLogoutRedirectUriAsync(TApplication app, string redirectUri, CancellationToken cancellationToken)
+        public Task<IdentityServiceResult> RegisterLogoutRedirectUriAsync(TApplication app, string redirectUri, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -329,17 +331,9 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(redirectUri));
             }
 
-            var existingRedirectUri = await RedirectUris.SingleOrDefaultAsync(
-                ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(redirectUri) && ru.IsLogout);
-            if (existingRedirectUri != null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "A route with the same value already exists." });
-            }
-
             RedirectUris.Add(CreateRedirectUri(app, redirectUri, isLogout: true));
 
-            return IdentityServiceResult.Success;
+            return Task.FromResult(IdentityServiceResult.Success);
         }
 
         public async Task<IdentityServiceResult> UnregisterLogoutRedirectUriAsync(TApplication app, string redirectUri, CancellationToken cancellationToken)
@@ -357,12 +351,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             }
 
             var registeredUri = await RedirectUris
-                .SingleOrDefaultAsync(ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(redirectUri) && ru.IsLogout);
-            if (registeredUri == null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "We were unable to find the redirect uri to unregister." });
-            }
+                .SingleAsync(ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(redirectUri) && ru.IsLogout);
 
             RedirectUris.Remove(registeredUri);
 
@@ -389,13 +378,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             }
 
             var existingRedirectUri = await RedirectUris
-                .SingleOrDefaultAsync(ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(oldRedirectUri) && ru.IsLogout);
-
-            if (existingRedirectUri == null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "We were unable to find the registered redirect uri to update." });
-            }
+                .SingleAsync(ru => ru.ApplicationId.Equals(app.Id) && ru.Value.Equals(oldRedirectUri) && ru.IsLogout);
 
             existingRedirectUri.Value = newRedirectUri;
 
@@ -513,7 +496,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             return scopes;
         }
 
-        public async Task<IdentityServiceResult> AddScopeAsync(TApplication application, string scope, CancellationToken cancellationToken)
+        public Task<IdentityServiceResult> AddScopeAsync(TApplication application, string scope, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -527,17 +510,9 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(scope));
             }
 
-            var existingScope = await Scopes.SingleOrDefaultAsync(
-                ru => ru.ApplicationId.Equals(application.Id) && ru.Value.Equals(scope));
-            if (existingScope != null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "A scope with the same value already exists." });
-            }
-
             Scopes.Add(CreateScope(application, scope));
 
-            return IdentityServiceResult.Success;
+            return Task.FromResult(IdentityServiceResult.Success);
         }
 
         private TScope CreateScope(TApplication application, string scope)
@@ -569,13 +544,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             }
 
             var existingScope = await Scopes
-                .SingleOrDefaultAsync(s => s.ApplicationId.Equals(application.Id) && s.Value.Equals(oldScope));
-            if (existingScope == null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "We were unable to find the scope to update." });
-            }
-
+                .SingleAsync(s => s.ApplicationId.Equals(application.Id) && s.Value.Equals(oldScope));
             existingScope.Value = newScope;
 
             return IdentityServiceResult.Success;
@@ -596,13 +565,7 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
             }
 
             var existingScope = await Scopes
-                .SingleOrDefaultAsync(ru => ru.ApplicationId.Equals(application.Id) && ru.Value.Equals(scope));
-            if (existingScope == null)
-            {
-                return IdentityServiceResult.Failed(
-                    new IdentityServiceError { Description = "We were unable to find the scope to remove." });
-            }
-
+                .SingleAsync(ru => ru.ApplicationId.Equals(application.Id) && ru.Value.Equals(scope));
             Scopes.Remove(existingScope);
 
             return IdentityServiceResult.Success;

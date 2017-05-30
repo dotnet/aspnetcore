@@ -93,6 +93,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IPasswordHasher<TApplication>, PasswordHasher<TApplication>>();
             services.AddScoped<ISigningCredentialsPolicyProvider, DefaultSigningCredentialsPolicyProvider>();
             services.AddScoped<ISigningCredentialsSource, DefaultSigningCredentialsSource>();
+            services.AddSingleton<IApplicationValidator<TApplication>, ApplicationValidator<TApplication>>();
+            services.AddSingleton<ApplicationErrorDescriber>();
 
             // Session
             services.AddTransient<SessionManager, SessionManager<TUser, TApplication>>();

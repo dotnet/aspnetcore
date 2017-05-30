@@ -28,10 +28,12 @@ namespace Microsoft.AspNetCore.Identity.Service
                 .ReturnsAsync(exists ? new IdentityServiceApplication() : null);
 
             var manager = new ApplicationManager<IdentityServiceApplication>(
+                Options.Create(new ApplicationOptions()),
                 store.Object,
                 Mock.Of<IPasswordHasher<IdentityServiceApplication>>(),
                 Array.Empty<IApplicationValidator<IdentityServiceApplication>>(),
-                Mock.Of<ILogger<ApplicationManager<IdentityServiceApplication>>>());
+                Mock.Of<ILogger<ApplicationManager<IdentityServiceApplication>>>(),
+                new ApplicationErrorDescriber());
 
             var clientValidator = new ClientApplicationValidator<IdentityServiceApplication>(
                 Options.Create(options),
@@ -59,10 +61,12 @@ namespace Microsoft.AspNetCore.Identity.Service
                 .ReturnsAsync(false);
 
             var manager = new ApplicationManager<IdentityServiceApplication>(
+                Options.Create(new ApplicationOptions()),
                 store.Object,
                 Mock.Of<IPasswordHasher<IdentityServiceApplication>>(),
                 Array.Empty<IApplicationValidator<IdentityServiceApplication>>(),
-                Mock.Of<ILogger<ApplicationManager<IdentityServiceApplication>>>());
+                Mock.Of<ILogger<ApplicationManager<IdentityServiceApplication>>>(),
+                new ApplicationErrorDescriber());
 
             var clientValidator = new ClientApplicationValidator<IdentityServiceApplication>(
                 Options.Create(options),
