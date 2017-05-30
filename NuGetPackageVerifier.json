@@ -23,6 +23,9 @@
         "exclusions":{
           "BUILD_ITEMS_FRAMEWORK": {
             "*": "This is an MSBuild task intended to run through dotnet msbuild /t:Target independently of whether your project targets full framework or .net core."
+          },
+          "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
+            "*": "Temporary exception while waiting for Coherence-Signed to get a new version of NugetPackageVerifier."
           }
         }
       }
