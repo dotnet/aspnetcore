@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 else
                 {
                     workingDirectory = DeploymentParameters.ApplicationPath;
-                    var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net46" : "netcoreapp2.0");
+                    var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0");
 
                     executableName = DotnetCommandName;
                     executableArgs = $"run --framework {targetFramework} {DotnetArgumentSeparator}";
