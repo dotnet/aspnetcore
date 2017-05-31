@@ -37,6 +37,12 @@ namespace Microsoft.AspNetCore.Builder
         public bool CookieHttpOnly { get; set; } = true;
 
         /// <summary>
+        /// Determines if the browser should allow the cookie to be attached to same-site or cross-site requests. The
+        /// default is Lax, which means the cookie is allowed to be attached to same-site and safe cross-site requests.
+        /// </summary>
+        public SameSiteMode SameSiteMode { get; set; } = SameSiteMode.Lax;
+
+        /// <summary>
         /// Determines if the cookie should only be transmitted on HTTPS requests. 
         /// </summary>
         public CookieSecurePolicy CookieSecure { get; set; } = CookieSecurePolicy.None;

@@ -153,6 +153,7 @@ namespace Microsoft.AspNetCore.Session
                 var cookieOptions = new CookieOptions
                 {
                     Domain = _options.CookieDomain,
+                    SameSite = _options.SameSiteMode,
                     HttpOnly = _options.CookieHttpOnly,
                     Path = _options.CookiePath ?? SessionDefaults.CookiePath,
                 };
