@@ -23,13 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         [ConditionalTheory]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public void Precompilation_PreventsRefAssembliesFromBeingPublished(RuntimeFlavor flavor)
+        public async Task Precompilation_PreventsRefAssembliesFromBeingPublished(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
-
-            // Act & Assert
-            Assert.False(Directory.Exists(Path.Combine(Fixture.DeploymentResult.ContentRoot, "refs")));
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                // Act & Assert
+                Assert.False(Directory.Exists(Path.Combine(deployment.DeploymentResult.ContentRoot, "refs")));
+            }
         }
 
         [ConditionalTheory]

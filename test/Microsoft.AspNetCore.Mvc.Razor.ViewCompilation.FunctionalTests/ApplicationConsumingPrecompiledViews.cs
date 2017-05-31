@@ -24,14 +24,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task ConsumingClassLibrariesWithPrecompiledViewsWork(RuntimeFlavor flavor)
         {
-            // Arrange
-            Fixture.CreateDeployment(flavor);
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync("Manage/Home", Fixture.Logger);
 
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync("Manage/Home", Fixture.Logger);
-
-            // Assert
-            TestEmbeddedResource.AssertContent("ApplicationConsumingPrecompiledViews.Manage.Home.Index.txt", response);
+                // Assert
+                TestEmbeddedResource.AssertContent("ApplicationConsumingPrecompiledViews.Manage.Home.Index.txt", response);
+            }
         }
 
         public class ApplicationConsumingPrecompiledViewsFixture : ApplicationTestFixture

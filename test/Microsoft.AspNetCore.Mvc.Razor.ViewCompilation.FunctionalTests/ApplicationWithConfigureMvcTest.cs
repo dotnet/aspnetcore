@@ -25,15 +25,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_RunsConfiguredCompilationCallbacks(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
 
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                Fixture.DeploymentResult.ApplicationBaseUri,
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
+                deployment.DeploymentResult.ApplicationBaseUri,
                 Fixture.Logger);
 
-            // Assert
-            TestEmbeddedResource.AssertContent("ApplicationWithConfigureMvc.Home.Index.txt", response);
+                // Assert
+                TestEmbeddedResource.AssertContent("ApplicationWithConfigureMvc.Home.Index.txt", response);
+            }
         }
 
         [ConditionalTheory]
@@ -41,17 +43,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_UsesConfiguredParseOptions(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
-
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
                 "Home/ViewWithPreprocessor",
                 Fixture.Logger);
 
-            // Assert
-            TestEmbeddedResource.AssertContent(
-                "ApplicationWithConfigureMvc.Home.ViewWithPreprocessor.txt",
-                response);
+                // Assert
+                TestEmbeddedResource.AssertContent(
+                    "ApplicationWithConfigureMvc.Home.ViewWithPreprocessor.txt",
+                    response);
+            }
         }
 
         public class ApplicationWithConfigureMvcFixture : ApplicationTestFixture

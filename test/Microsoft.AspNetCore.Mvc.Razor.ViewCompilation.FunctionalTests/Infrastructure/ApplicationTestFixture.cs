@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
 
@@ -13,44 +14,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
     public abstract class ApplicationTestFixture : IDisposable
     {
         public const string DotnetCLITelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
-        private IApplicationDeployer _deployer;
-        private HttpClient _httpClient;
 
         protected ApplicationTestFixture(string applicationName)
         {
             ApplicationName = applicationName;
+            LoggerFactory = CreateLoggerFactory();
+            Logger = LoggerFactory.CreateLogger($"{ApplicationName}");
         }
 
         public string ApplicationName { get; }
 
         public string ApplicationPath => ApplicationPaths.GetTestAppDirectory(ApplicationName);
 
-        public HttpClient HttpClient
-        {
-            get
-            {
-                if (_httpClient == null)
-                {
-                    if (DeploymentResult == null)
-                    {
-                        throw new InvalidOperationException($"{nameof(CreateDeployment)} must be called prior to accessing the {nameof(HttpClient)} property.");
-                    }
-
-                    _httpClient = new HttpClient
-                    {
-                        BaseAddress = new Uri(DeploymentResult.ApplicationBaseUri),
-                    };
-                }
-
-                return _httpClient;
-            }
-        }
-
         public ILogger Logger { get; private set; }
 
         public ILoggerFactory LoggerFactory { get; private set; }
-
-        public DeploymentResult DeploymentResult { get; private set; }
 
         public virtual DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
         {
@@ -96,8 +74,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public void Dispose()
         {
-            _httpClient?.Dispose();
-            _deployer?.Dispose();
         }
 
         private static void TryDeleteDirectory(string directory)
@@ -112,14 +88,35 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        public void CreateDeployment(RuntimeFlavor flavor)
+        public async Task<Deployment> CreateDeploymentAsync(RuntimeFlavor flavor)
         {
-            LoggerFactory = CreateLoggerFactory();
-            Logger = LoggerFactory.CreateLogger($"{ApplicationName}:{flavor}");
-
             var deploymentParameters = GetDeploymentParameters(flavor);
-            _deployer = ApplicationDeployerFactory.Create(deploymentParameters, LoggerFactory);
-            DeploymentResult = _deployer.DeployAsync().Result;
+            var deployer = ApplicationDeployerFactory.Create(deploymentParameters, LoggerFactory);
+            var deploymentResult = await deployer.DeployAsync();
+
+            return new Deployment(deployer, deploymentResult);
+        }
+
+        public class Deployment : IDisposable
+        {
+            public Deployment(IApplicationDeployer deployer, DeploymentResult deploymentResult)
+            {
+                Deployer = deployer;
+                DeploymentResult = deploymentResult;
+                HttpClient = deploymentResult.HttpClient;
+            }
+
+            public IApplicationDeployer Deployer { get; }
+
+            public HttpClient HttpClient { get; }
+
+            public DeploymentResult DeploymentResult { get; }
+
+            public void Dispose()
+            {
+                Deployer.Dispose();
+                HttpClient.Dispose();
+            }
         }
     }
 }

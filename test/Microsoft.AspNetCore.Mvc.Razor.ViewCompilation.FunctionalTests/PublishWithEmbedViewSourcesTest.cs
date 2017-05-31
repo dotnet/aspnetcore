@@ -30,32 +30,34 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
         public async Task Precompilation_CanEmbedViewSourcesAsResources(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
-            var expectedViews = new[]
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
             {
-                "/Areas/TestArea/Views/Home/Index.cshtml",
-                "/Views/Home/About.cshtml",
-                "/Views/Home/Index.cshtml",
-            };
-            var expectedText = "Hello Index!";
+                var expectedViews = new[]
+                {
+                    "/Areas/TestArea/Views/Home/Index.cshtml",
+                    "/Views/Home/About.cshtml",
+                    "/Views/Home/Index.cshtml",
+                };
+                var expectedText = "Hello Index!";
 
-            // Act - 1
-            var response1 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                "Home/Index",
-                Fixture.Logger);
+                // Act - 1
+                var response1 = await deployment.HttpClient.GetStringWithRetryAsync(
+                    "Home/Index",
+                    Fixture.Logger);
 
-            // Assert - 1
-            Assert.Equal(expectedText, response1.Trim());
+                // Assert - 1
+                Assert.Equal(expectedText, response1.Trim());
 
-            // Act - 2
-            var response2 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                "Home/GetPrecompiledResourceNames",
-                Fixture.Logger);
+                // Act - 2
+                var response2 = await deployment.HttpClient.GetStringWithRetryAsync(
+                    "Home/GetPrecompiledResourceNames",
+                    Fixture.Logger);
 
-            // Assert - 2
-            var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal(expectedViews, actual);
+                // Assert - 2
+                var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                    .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(expectedViews, actual);
+            }
         }
 
         public class PublishWithEmbedViewSourcesTestFixture : ApplicationTestFixture

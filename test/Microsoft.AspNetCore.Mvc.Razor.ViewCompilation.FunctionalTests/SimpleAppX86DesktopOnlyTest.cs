@@ -20,15 +20,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_WorksForSimpleApps()
         {
             // Arrange
-            Fixture.CreateDeployment(RuntimeFlavor.Clr);
+            using (var deployment = await Fixture.CreateDeploymentAsync(RuntimeFlavor.Clr))
+            {
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
+                    deployment.DeploymentResult.ApplicationBaseUri,
+                    Fixture.Logger);
 
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                Fixture.DeploymentResult.ApplicationBaseUri,
-                Fixture.Logger);
-
-            // Assert
-            TestEmbeddedResource.AssertContent("SimpleAppX86DesktopOnly.Home.Index.txt", response);
+                // Assert
+                TestEmbeddedResource.AssertContent("SimpleAppX86DesktopOnly.Home.Index.txt", response);
+            }
         }
 
         public class SimpleAppX86DesktopOnlyFixture : ApplicationTestFixture

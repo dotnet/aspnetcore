@@ -24,15 +24,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task PrecompiledAssembliesUseSameStrongNameAsApplication(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
-            
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                Fixture.DeploymentResult.ApplicationBaseUri,
-                Fixture.Logger);
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
+                    deployment.DeploymentResult.ApplicationBaseUri,
+                    Fixture.Logger);
 
-            // Assert
-            TestEmbeddedResource.AssertContent("StrongNamedApp.Home.Index.txt", response);
+                // Assert
+                TestEmbeddedResource.AssertContent("StrongNamedApp.Home.Index.txt", response);
+            }
         }
 
         public class StrongNamedAppFixture : ApplicationTestFixture

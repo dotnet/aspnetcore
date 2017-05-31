@@ -30,16 +30,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
         public async Task ApplicationWithCustomInputFiles_Works(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
-            var expectedText = "Hello Index!";
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                var expectedText = "Hello Index!";
 
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                Fixture.DeploymentResult.ApplicationBaseUri,
-                Fixture.Logger);
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
+                    deployment.DeploymentResult.ApplicationBaseUri,
+                    Fixture.Logger);
 
-            // Assert
-            Assert.Equal(expectedText, response.Trim());
+                // Assert
+                Assert.Equal(expectedText, response.Trim());
+            }
         }
 
         [ConditionalTheory]
@@ -47,53 +49,57 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
         public async Task MvcRazorFilesToCompile_OverridesTheFilesToBeCompiled(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
-            var expectedViews = new[]
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                var expectedViews = new[]
             {
                 "/Views/Home/About.cshtml",
                 "/Views/Home/Index.cshtml",
             };
 
-            // Act
-            var response2 = await Fixture.HttpClient.GetStringWithRetryAsync(
-                "Home/GetPrecompiledResourceNames",
-                Fixture.Logger);
+                // Act
+                var response2 = await deployment.HttpClient.GetStringWithRetryAsync(
+                    "Home/GetPrecompiledResourceNames",
+                    Fixture.Logger);
 
-            // Assert
-            var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal(expectedViews, actual);
+                // Assert
+                var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                    .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(expectedViews, actual);
+            }
         }
 
         [ConditionalTheory]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public void MvcRazorFilesToCompile_SpecificallyDoesNotPublishFilesToBeCompiled(RuntimeFlavor flavor)
+        public async Task MvcRazorFilesToCompile_SpecificallyDoesNotPublishFilesToBeCompiled(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
-            var viewsNotPublished = new[]
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
             {
-                "Index.cshtml",
-                "About.cshtml",
-            };
+                var viewsNotPublished = new[]
+                {
+                    "Index.cshtml",
+                    "About.cshtml",
+                };
 
-            var viewsPublished = new[]
-            {
-                "NotIncluded.cshtml",
-            };
-            var viewsDirectory = Path.Combine(Fixture.DeploymentResult.ContentRoot, "Views", "Home");
+                var viewsPublished = new[]
+                {
+                    "NotIncluded.cshtml",
+                };
+                var viewsDirectory = Path.Combine(deployment.DeploymentResult.ContentRoot, "Views", "Home");
 
-            // Act & Assert
-            foreach (var file in viewsPublished)
-            {
-                var filePath = Path.Combine(viewsDirectory, file);
-                Assert.True(File.Exists(filePath), $"{filePath} was not published.");
-            }
+                // Act & Assert
+                foreach (var file in viewsPublished)
+                {
+                    var filePath = Path.Combine(viewsDirectory, file);
+                    Assert.True(File.Exists(filePath), $"{filePath} was not published.");
+                }
 
-            foreach (var file in viewsNotPublished)
-            {
-                var filePath = Path.Combine(viewsDirectory, file);
-                Assert.False(File.Exists(filePath), $"{filePath} was published.");
+                foreach (var file in viewsNotPublished)
+                {
+                    var filePath = Path.Combine(viewsDirectory, file);
+                    Assert.False(File.Exists(filePath), $"{filePath} was published.");
+                }
             }
         }
 

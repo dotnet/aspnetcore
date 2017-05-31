@@ -46,15 +46,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_WorksForViewsThatUseTagHelpers(string url, RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
-
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
                 $"Home/{url}",
                 Fixture.Logger);
 
-            // Assert
-            TestEmbeddedResource.AssertContent($"ApplicationWithTagHelpers.Home.{url}.txt", response);
+                // Assert
+                TestEmbeddedResource.AssertContent($"ApplicationWithTagHelpers.Home.{url}.txt", response);
+            }
         }
 
         public class ApplicationWithTagHelpersFixture : ApplicationTestFixture

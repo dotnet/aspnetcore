@@ -25,15 +25,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_WorksForViewsUsingRelativePath(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
+                    deployment.DeploymentResult.ApplicationBaseUri,
+                    Fixture.Logger);
 
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                Fixture.DeploymentResult.ApplicationBaseUri,
-                Fixture.Logger);
-
-            // Assert
-            TestEmbeddedResource.AssertContent("ApplicationUsingRelativePaths.Home.Index.txt", response);
+                // Assert
+                TestEmbeddedResource.AssertContent("ApplicationUsingRelativePaths.Home.Index.txt", response);
+            }
         }
 
         [ConditionalTheory]
@@ -41,15 +42,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         public async Task Precompilation_WorksForViewsUsingDirectoryTraversal(RuntimeFlavor flavor)
         {
             // Arrange
-            Fixture.CreateDeployment(flavor);
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
 
-            // Act
-            var response = await Fixture.HttpClient.GetStringWithRetryAsync(
-                Fixture.DeploymentResult.ApplicationBaseUri,
+                // Act
+                var response = await deployment.HttpClient.GetStringWithRetryAsync(
+                deployment.DeploymentResult.ApplicationBaseUri,
                 Fixture.Logger);
 
-            // Assert
-            TestEmbeddedResource.AssertContent("ApplicationUsingRelativePaths.Home.About.txt", response);
+                // Assert
+                TestEmbeddedResource.AssertContent("ApplicationUsingRelativePaths.Home.About.txt", response);
+            }
         }
 
         public class ApplicationUsingRelativePathsTestFixture : ApplicationTestFixture
