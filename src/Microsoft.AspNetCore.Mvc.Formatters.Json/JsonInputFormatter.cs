@@ -3,13 +3,18 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -21,6 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
         private readonly ObjectPoolProvider _objectPoolProvider;
+        private readonly bool _suppressInputFormatterBuffering;
+
         private ObjectPool<JsonSerializer> _jsonSerializerPool;
 
         /// <summary>
@@ -38,7 +45,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ILogger logger,
             JsonSerializerSettings serializerSettings,
             ArrayPool<char> charPool,
-            ObjectPoolProvider objectPoolProvider)
+            ObjectPoolProvider objectPoolProvider) :
+            this(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering: false)
+        {
+            // This constructor by default buffers the request body as its the most secure setting 
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="serializerSettings">
+        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
+        /// (<see cref="MvcJsonOptions.SerializerSettings"/>) or an instance
+        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
+        /// </param>
+        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
+        /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
+        /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
+        public JsonInputFormatter(
+            ILogger logger,
+            JsonSerializerSettings serializerSettings,
+            ArrayPool<char> charPool,
+            ObjectPoolProvider objectPoolProvider,
+            bool suppressInputFormatterBuffering)
         {
             if (logger == null)
             {
@@ -64,6 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SerializerSettings = serializerSettings;
             _charPool = new JsonArrayPool<char>(charPool);
             _objectPoolProvider = objectPoolProvider;
+            _suppressInputFormatterBuffering = suppressInputFormatterBuffering;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -83,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         protected JsonSerializerSettings SerializerSettings { get; }
 
         /// <inheritdoc />
-        public override Task<InputFormatterResult> ReadRequestBodyAsync(
+        public override async Task<InputFormatterResult> ReadRequestBodyAsync(
             InputFormatterContext context,
             Encoding encoding)
         {
@@ -98,6 +129,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var request = context.HttpContext.Request;
+
+            if (!request.Body.CanSeek && !_suppressInputFormatterBuffering)
+            {
+                // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously 
+                // read everything into a buffer, and then seek back to the beginning. 
+                BufferingHelper.EnableRewind(request);
+                Debug.Assert(request.Body.CanSeek);
+
+                await request.Body.DrainAsync(CancellationToken.None);
+                request.Body.Seek(0L, SeekOrigin.Begin);
+            }
+
             using (var streamReader = context.ReaderFactory(request.Body, encoding))
             {
                 using (var jsonReader = new JsonTextReader(streamReader))
@@ -164,15 +207,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                             // or the JSON-encoded value "null". The upstream BodyModelBinder needs to
                             // be notified that we don't regard this as a real input so it can register
                             // a model binding error.
-                            return InputFormatterResult.NoValueAsync();
+                            return InputFormatterResult.NoValue();
                         }
                         else
                         {
-                            return InputFormatterResult.SuccessAsync(model);
+                            return InputFormatterResult.Success(model);
                         }
                     }
 
-                    return InputFormatterResult.FailureAsync();
+                    return InputFormatterResult.Failure();
                 }
             }
         }

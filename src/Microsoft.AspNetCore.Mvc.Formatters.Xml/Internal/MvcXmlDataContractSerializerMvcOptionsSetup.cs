@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
             options.ModelMetadataDetailsProviders.Add(new DataMemberRequiredBindingMetadataProvider());
 
             options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
-            options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
+            options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter(options.SuppressInputFormatterBuffering));
 
             options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider("System.Xml.Linq.XObject"));
             options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider("System.Xml.XmlNode"));

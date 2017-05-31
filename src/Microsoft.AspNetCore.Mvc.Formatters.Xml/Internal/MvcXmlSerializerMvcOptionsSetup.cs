@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
         public void Configure(MvcOptions options)
         {
             options.OutputFormatters.Add(new XmlSerializerOutputFormatter());
-            options.InputFormatters.Add(new XmlSerializerInputFormatter());
+            options.InputFormatters.Add(new XmlSerializerInputFormatter(options.SuppressInputFormatterBuffering));
         }
     }
 }
