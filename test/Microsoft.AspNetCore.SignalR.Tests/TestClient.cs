@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private IHubProtocol _protocol;
         private CancellationTokenSource _cts;
 
-        public ConnectionContext Connection;
+        public ConnectionContext Connection { get; }
         public IChannelConnection<Message> Application { get; }
         public Task Connected => Connection.Metadata.Get<TaskCompletionSource<bool>>("ConnectedTask").Task;
 
-        public TestClient(IServiceProvider serviceProvider)
+        public TestClient()
         {
             var transportToApplication = Channel.CreateUnbounded<Message>();
             var applicationToTransport = Channel.CreateUnbounded<Message>();
@@ -40,6 +40,39 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _protocol = new JsonHubProtocol(new JsonSerializer());
 
             _cts = new CancellationTokenSource();
+        }
+
+        public async Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
+        {
+            var invocationId = await SendInvocationAsync(methodName, args);
+
+            var messages = new List<HubMessage>();
+            while (true)
+            {
+                var message = await Read();
+
+                if (!string.Equals(message.InvocationId, invocationId))
+                {
+                    throw new NotSupportedException("TestClient does not support multiple outgoing invocations!");
+                }
+
+                if (message == null)
+                {
+                    throw new InvalidOperationException("Connection aborted!");
+                }
+
+                switch (message)
+                {
+                    case StreamItemMessage _:
+                        messages.Add(message);
+                        break;
+                    case CompletionMessage _:
+                        messages.Add(message);
+                        return messages;
+                    default:
+                        throw new NotSupportedException("TestClient does not support receiving invocations!");
+                }
+            }
         }
 
         public async Task<CompletionMessage> InvokeAsync(string methodName, params object[] args)
@@ -63,7 +96,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 switch (message)
                 {
                     case StreamItemMessage result:
-                        throw new NotSupportedException("TestClient does not support streaming!");
+                        throw new NotSupportedException("Use 'StreamAsync' to call a streaming method");
                     case CompletionMessage completion:
                         return completion;
                     default:

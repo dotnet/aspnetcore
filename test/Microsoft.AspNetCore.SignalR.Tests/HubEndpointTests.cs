@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var serviceProvider = CreateServiceProvider(s => s.AddSingleton(trackDispose));
             var endPoint = serviceProvider.GetService<HubEndPoint<DisposeTrackingHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<Hub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var exception =
                     await Assert.ThrowsAsync<InvalidOperationException>(
@@ -79,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<OnConnectedThrowsHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
                 client.Dispose();
@@ -103,7 +105,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<OnDisconnectedThrowsHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
                 client.Dispose();
@@ -123,7 +125,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -146,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -170,7 +172,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -192,7 +194,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -215,7 +217,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -237,7 +239,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -259,7 +261,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<InheritedHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -281,7 +283,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<InheritedHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -303,7 +305,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -341,8 +343,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var firstClient = new TestClient(serviceProvider))
-            using (var secondClient = new TestClient(serviceProvider))
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
             {
                 var firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
                 var secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
@@ -376,8 +378,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var firstClient = new TestClient(serviceProvider))
-            using (var secondClient = new TestClient(serviceProvider))
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
             {
                 var firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
                 var secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
@@ -418,7 +420,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(serviceProvider))
+            using (var client = new TestClient())
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -438,8 +440,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var firstClient = new TestClient(serviceProvider))
-            using (var secondClient = new TestClient(serviceProvider))
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
             {
                 var firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
                 var secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
@@ -470,8 +472,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var firstClient = new TestClient(serviceProvider))
-            using (var secondClient = new TestClient(serviceProvider))
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
             {
                 var firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
                 var secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
@@ -492,6 +494,62 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 secondClient.Dispose();
 
                 await Task.WhenAll(firstEndPointTask, secondEndPointTask).OrTimeout();
+            }
+        }
+
+        [Theory]
+        [InlineData(nameof(StreamingHub.CounterChannel))]
+        [InlineData(nameof(StreamingHub.CounterObservable))]
+        public async Task HubsCanStreamResponses(string method)
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<StreamingHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                var messages = await client.StreamAsync(method, 4).OrTimeout();
+
+                Assert.Equal(5, messages.Count);
+                AssertHubMessage(new StreamItemMessage(string.Empty, "0"), messages[0]);
+                AssertHubMessage(new StreamItemMessage(string.Empty, "1"), messages[1]);
+                AssertHubMessage(new StreamItemMessage(string.Empty, "2"), messages[2]);
+                AssertHubMessage(new StreamItemMessage(string.Empty, "3"), messages[3]);
+                AssertHubMessage(new CompletionMessage(string.Empty, error: null, result: null, hasResult: false), messages[4]);
+
+                client.Dispose();
+
+                await endPointLifetime;
+            }
+        }
+
+        private static void AssertHubMessage(HubMessage expected, HubMessage actual)
+        {
+            // We aren't testing InvocationIds here
+            switch (expected)
+            {
+                case CompletionMessage expectedCompletion:
+                    var actualCompletion = Assert.IsType<CompletionMessage>(actual);
+                    Assert.Equal(expectedCompletion.Error, actualCompletion.Error);
+                    Assert.Equal(expectedCompletion.HasResult, actualCompletion.HasResult);
+                    Assert.Equal(expectedCompletion.Result, actualCompletion.Result);
+                    break;
+                case StreamItemMessage expectedStreamItem:
+                    var actualStreamItem = Assert.IsType<StreamItemMessage>(actual);
+                    Assert.Equal(expectedStreamItem.Item, actualStreamItem.Item);
+                    break;
+                case InvocationMessage expectedInvocation:
+                    var actualInvocation = Assert.IsType<InvocationMessage>(actual);
+                    Assert.Equal(expectedInvocation.NonBlocking, actualInvocation.NonBlocking);
+                    Assert.Equal(expectedInvocation.Target, actualInvocation.Target);
+                    Assert.Equal(expectedInvocation.Arguments, actualInvocation.Arguments);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unsupported Hub Message type {expected.GetType()}");
             }
         }
 
@@ -518,6 +576,55 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return services.BuildServiceProvider();
         }
 
+        public class StreamingHub : TestHub
+        {
+            public IObservable<string> CounterObservable(int count)
+            {
+                return new CountingObservable(count);
+            }
+
+            public ReadableChannel<string> CounterChannel(int count)
+            {
+                var channel = Channel.CreateUnbounded<string>();
+
+                var task = Task.Run(async () =>
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        await channel.Out.WriteAsync(i.ToString());
+                    }
+                    channel.Out.Complete();
+                });
+
+                return channel.In;
+            }
+
+            private class CountingObservable : IObservable<string>
+            {
+                private int _count;
+
+                public CountingObservable(int count)
+                {
+                    _count = count;
+                }
+
+                public IDisposable Subscribe(IObserver<string> observer)
+                {
+                    var cts = new CancellationTokenSource();
+                    Task.Run(() =>
+                    {
+                        for (int i = 0; !cts.Token.IsCancellationRequested && i < _count; i++)
+                        {
+                            observer.OnNext(i.ToString());
+                        }
+                        observer.OnCompleted();
+                    });
+
+                    return new CancellationDisposable(cts);
+                }
+            }
+        }
+
         public class OnConnectedThrowsHub : Hub
         {
             public override Task OnConnectedAsync()
@@ -528,7 +635,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public class OnDisconnectedThrowsHub : Hub
+        public class OnDisconnectedThrowsHub : TestHub
         {
             public override Task OnDisconnectedAsync(Exception exception)
             {
@@ -538,14 +645,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        private class MethodHub : Hub
+        private class MethodHub : TestHub
         {
-            public override Task OnConnectedAsync()
-            {
-                Context.Connection.Metadata.Get<TaskCompletionSource<bool>>("ConnectedTask").SetResult(true);
-                return base.OnConnectedAsync();
-            }
-
             public Task GroupRemoveMethod(string groupName)
             {
                 return Groups.RemoveAsync(groupName);
@@ -624,7 +725,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        private class BaseHub : Hub
+        private class BaseHub : TestHub
         {
             public string BaseMethod(string message)
             {
@@ -637,7 +738,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        private class InvalidHub : Hub
+        private class InvalidHub : TestHub
         {
             public void OverloadedMethod(int num)
             {
@@ -648,7 +749,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        private class DisposeTrackingHub : Hub
+        private class DisposeTrackingHub : TestHub
         {
             private TrackDispose _trackDispose;
 
@@ -669,6 +770,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private class TrackDispose
         {
             public int DisposeCount = 0;
+        }
+
+        public abstract class TestHub : Hub
+        {
+            public override Task OnConnectedAsync()
+            {
+                Context.Connection.Metadata.Get<TaskCompletionSource<bool>>("ConnectedTask")?.TrySetResult(true);
+                return base.OnConnectedAsync();
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -55,13 +55,6 @@
 <script src="utils.js"></script>
 <script>
 var isConnected = false;
-function click(id, callback) {
-    document.getElementById(id).addEventListener('click', event => {
-        callback(event);
-        event.preventDefault();
-    });
-}
-
 function invoke(connection, method, ...args) {
     if (!isConnected) {
         return;
@@ -72,25 +65,16 @@ function invoke(connection, method, ...args) {
                 console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
 
                 if (result) {
-                    addLine(result);
+                    addLine('message', result);
                 }
             })
             .catch(err => {
-                addLine(err, 'red');
+                addLine('message', err, 'red');
             });
 }
 
 function getText(id) {
     return document.getElementById(id).value;
-}
-
-function addLine(line, color) {
-    var child = document.createElement('li');
-    if (color) {
-        child.style.color = color;
-    }
-    child.innerText = line;
-    document.getElementById('messages').appendChild(child);
 }
 
 let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
@@ -99,15 +83,15 @@ document.getElementById('head1').innerHTML = signalR.TransportType[transportType
 
 let connection = new signalR.HubConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
 connection.on('Send', msg => {
-    addLine(msg);
+    addLine('message', msg);
 });
 
 connection.onClosed = e => {
     if (e) {
-        addLine('Connection closed with error: ' + e, 'red');
+        addLine('message', 'Connection closed with error: ' + e, 'red');
     }
     else {
-        addLine('Disconnected', 'green');
+        addLine('message', 'Disconnected', 'green');
     }
 }
 
@@ -115,10 +99,10 @@ click('connect', event => {
     connection.start(transportType)
         .then(() => {
             isConnected = true;
-            addLine('Connected successfully', 'green');
+            addLine('message', 'Connected successfully', 'green');
         })
         .catch(err => {
-            addLine(err, 'red');
+            addLine('message', err, 'red');
         });
 });
 

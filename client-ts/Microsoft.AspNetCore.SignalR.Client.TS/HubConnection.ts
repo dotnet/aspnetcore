@@ -2,7 +2,7 @@ import { ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
 import { Connection } from "./Connection"
 import { TransportType } from "./Transports"
-
+import { Subject, Observable } from "./Observable"
 
 const enum MessageType {
     Invocation = 1,
@@ -22,7 +22,7 @@ interface InvocationMessage extends HubMessage {
 }
 
 interface ResultMessage extends HubMessage {
-    readonly result?: any;
+    readonly item?: any;
 }
 
 interface CompletionMessage extends HubMessage {
@@ -35,7 +35,7 @@ export { TransportType } from "./Transports"
 
 export class HubConnection {
     private connection: IConnection;
-    private callbacks: Map<string, (invocationUpdate: CompletionMessage|ResultMessage) => void>;
+    private callbacks: Map<string, (invocationUpdate: CompletionMessage | ResultMessage) => void>;
     private methods: Map<string, (...args: any[]) => void>;
     private id: number;
     private connectionClosedCallback: ConnectionClosed;
@@ -55,7 +55,7 @@ export class HubConnection {
             this.onConnectionClosed(error);
         }
 
-        this.callbacks = new Map<string, (invocationEvent: CompletionMessage|ResultMessage) => void>();
+        this.callbacks = new Map<string, (invocationEvent: CompletionMessage | ResultMessage) => void>();
         this.methods = new Map<string, (...args: any[]) => void>();
         this.id = 0;
     }
@@ -73,12 +73,14 @@ export class HubConnection {
                 this.InvokeClientMethod(<InvocationMessage>message);
                 break;
             case MessageType.Result:
-            // TODO: Streaming (MessageType.Result) currently not supported - callback will throw
             case MessageType.Completion:
                 let callback = this.callbacks.get(message.invocationId);
                 if (callback != null) {
                     callback(message);
-                    this.callbacks.delete(message.invocationId);
+
+                    if (message.type == MessageType.Completion) {
+                        this.callbacks.delete(message.invocationId);
+                    }
                 }
                 break;
             default:
@@ -125,17 +127,42 @@ export class HubConnection {
         return this.connection.stop();
     }
 
-    invoke(methodName: string, ...args: any[]): Promise<any> {
-        let id = this.id;
-        this.id++;
+    stream<T>(methodName: string, ...args: any[]): Observable<T> {
+        let invocationDescriptor = this.createInvocation(methodName, args);
 
-        let invocationDescriptor: InvocationMessage = {
-            type: MessageType.Invocation,
-            invocationId: id.toString(),
-            target: methodName,
-            arguments: args,
-            nonblocking: false
-        };
+        let subject = new Subject<T>();
+
+        this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: CompletionMessage | ResultMessage) => {
+            if (invocationEvent.type === MessageType.Completion) {
+                let completionMessage = <CompletionMessage>invocationEvent;
+                if (completionMessage.error) {
+                    subject.error(new Error(completionMessage.error));
+                }
+                else if(completionMessage.result) {
+                    subject.error(new Error("Server provided a result in a completion response to a streamed invocation."));
+                }
+                else {
+                    // TODO: Log a warning if there's a payload?
+                    subject.complete();
+                }
+            }
+            else {
+                subject.next(<T>(<ResultMessage>invocationEvent).item);
+            }
+        });
+
+        //TODO: separate conversion to enable different data formats
+        this.connection.send(JSON.stringify(invocationDescriptor))
+            .catch(e => {
+                subject.error(e);
+                this.callbacks.delete(invocationDescriptor.invocationId);
+            });
+
+        return subject;
+    }
+
+    invoke(methodName: string, ...args: any[]): Promise<any> {
+        let invocationDescriptor = this.createInvocation(methodName, args);
 
         let p = new Promise<any>((resolve, reject) => {
             this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: CompletionMessage | ResultMessage) => {
@@ -149,7 +176,7 @@ export class HubConnection {
                     }
                 }
                 else {
-                    reject(new Error("Streaming is not supported."))
+                    reject(new Error("Streaming methods must be invoked using HubConnection.stream"))
                 }
             });
 
@@ -170,5 +197,18 @@ export class HubConnection {
 
     set onClosed(callback: ConnectionClosed) {
         this.connectionClosedCallback = callback;
+    }
+
+    private createInvocation(methodName: string, args: any[]): InvocationMessage {
+        let id = this.id;
+        this.id++;
+
+        return <InvocationMessage>{
+            type: MessageType.Invocation,
+            invocationId: id.toString(),
+            target: methodName,
+            arguments: args,
+            nonblocking: false
+        };
     }
 }

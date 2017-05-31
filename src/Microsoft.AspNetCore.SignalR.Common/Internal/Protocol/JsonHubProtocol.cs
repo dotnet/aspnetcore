@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
     public class JsonHubProtocol : IHubProtocol
     {
         private const string ResultPropertyName = "result";
+        private const string ItemPropertyName = "item";
         private const string InvocationIdPropertyName = "invocationId";
         private const string TypePropertyName = "type";
         private const string ErrorPropertyName = "error";
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                         WriteInvocationMessage(m, writer);
                         break;
                     case StreamItemMessage m:
-                        WriteResultMessage(m, writer);
+                        WriteStreamItemMessage(m, writer);
                         break;
                     case CompletionMessage m:
                         WriteCompletionMessage(m, writer);
@@ -145,11 +146,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             writer.WriteEndObject();
         }
 
-        private void WriteResultMessage(StreamItemMessage message, JsonTextWriter writer)
+        private void WriteStreamItemMessage(StreamItemMessage message, JsonTextWriter writer)
         {
             writer.WriteStartObject();
             WriteHubMessageCommon(message, writer, ResultMessageType);
-            writer.WritePropertyName(ResultPropertyName);
+            writer.WritePropertyName(ItemPropertyName);
             _payloadSerializer.Serialize(writer, message.Item);
             writer.WriteEndObject();
         }
@@ -216,7 +217,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private StreamItemMessage BindResultMessage(JObject json, IInvocationBinder binder)
         {
             var invocationId = GetRequiredProperty<string>(json, InvocationIdPropertyName, JTokenType.String);
-            var result = GetRequiredProperty<JToken>(json, ResultPropertyName);
+            var result = GetRequiredProperty<JToken>(json, ItemPropertyName);
 
             var returnType = binder.GetReturnType(invocationId);
             return new StreamItemMessage(invocationId, result?.ToObject(returnType, _payloadSerializer));

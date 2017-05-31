@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true") // Work around https://github.com/aspnet/Hosting/issues/1075
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole();

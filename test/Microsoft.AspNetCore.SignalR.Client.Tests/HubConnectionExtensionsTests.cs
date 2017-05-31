@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -128,7 +128,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var connection = new TestConnection();
             var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
             var closeTcs = new TaskCompletionSource<Exception>();
-            hubConnection.Closed += e => closeTcs.TrySetException(e);
+            hubConnection.Closed += e =>
+            {
+                if (e == null)
+                {
+                    closeTcs.TrySetResult(null);
+                }
+                else
+                {
+                    closeTcs.TrySetException(e);
+                }
+            };
+
             try
             {
                 hubConnection.On<int>("Foo", r => { });
@@ -137,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReceiveJsonMessage(
                     new
                     {
-                        invocationId = "1",
+                    invocationId = "1",
                         type = 1,
                         target = "Foo",
                         arguments = new object[] { 42, "42" }
@@ -159,7 +170,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var connection = new TestConnection();
             var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
             var closeTcs = new TaskCompletionSource<Exception>();
-            hubConnection.Closed += e => closeTcs.TrySetException(e);
+            hubConnection.Closed += e =>
+            {
+                if (e == null)
+                {
+                    closeTcs.TrySetResult(null);
+                }
+                else
+                {
+                    closeTcs.TrySetException(e);
+                }
+            };
+
             try
             {
                 hubConnection.On<int>("Foo", r => { });
