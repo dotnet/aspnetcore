@@ -51,6 +51,22 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
         }
 
+        [Fact]
+        public async Task CheckRedirectPathWithQueryString()
+        {
+            var options = new RewriteOptions().AddRedirect("(.*)","http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+            });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync("foo?bar=1");
+
+            Assert.Equal("http://example.com/foo?bar=1", response.Headers.Location.OriginalString);
+        }
+
         [Theory]
         [InlineData(StatusCodes.Status301MovedPermanently)]
         [InlineData(StatusCodes.Status302Found)]

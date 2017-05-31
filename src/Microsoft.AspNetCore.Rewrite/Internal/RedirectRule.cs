@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 }
                 else
                 {
-                    response.Headers[HeaderNames.Location] = pathBase + newPath;
+                    response.Headers[HeaderNames.Location] = pathBase + newPath + context.HttpContext.Request.QueryString;
                 }
 
                 context.Logger?.RedirectedSummary(newPath);
