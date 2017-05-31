@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration
     /// <summary>
     /// Loads certificates from certificate stores.
     /// </summary>
-    public class CertificateStoreLoader : ICertificateStoreLoader
+    internal class CertificateStoreLoader : ICertificateStoreLoader
     {
         /// <summary>
         /// Load a ceritificate from the given store location.
