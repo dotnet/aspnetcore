@@ -11,6 +11,97 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
+        public void DirectiveDescriptor_CanHandleEOFIncompleteNamespaceTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddNamespaceToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom System.",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                new RazorError(
+                    LegacyResources.FormatDirectiveExpectsNamespace("custom"),
+                    8, 0, 8, 7));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_CanHandleEOFInvalidNamespaceTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddNamespaceToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom System<",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                new RazorError(
+                    LegacyResources.FormatDirectiveExpectsNamespace("custom"),
+                    8, 0, 8, 7));
+        }
+        [Fact]
+        public void DirectiveDescriptor_CanHandleIncompleteNamespaceTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddNamespaceToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom System." + Environment.NewLine,
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                new RazorError(
+                    LegacyResources.FormatDirectiveExpectsNamespace("custom"),
+                    8, 0, 8, 7));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_CanHandleInvalidNamespaceTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddNamespaceToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom System<" + Environment.NewLine,
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                new RazorError(
+                    LegacyResources.FormatDirectiveExpectsNamespace("custom"),
+                    8, 0, 8, 7));
+        }
+
+        [Fact]
         public void DirectiveDescriptor_UnderstandsTypeTokens()
         {
             // Arrange
