@@ -14,6 +14,13 @@
                     }
                 }
             },
+            "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation": {
+                "exclusions": {
+                    "DOC_MISSING": {
+                        "lib/netcoreapp2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll": "Not a class library. Docs not required for CLI tools"
+                    }
+                }
+            },
             "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
                 "exclusions": {
                     "BUILD_ITEMS_FRAMEWORK": {
