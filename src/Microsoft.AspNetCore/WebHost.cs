@@ -191,7 +191,6 @@ namespace Microsoft.AspNetCore
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
                     services.ConfigureAspNetCoreDefaults();
                 });
 
