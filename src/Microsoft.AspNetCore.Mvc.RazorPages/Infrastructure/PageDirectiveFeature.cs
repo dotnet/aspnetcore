@@ -3,12 +3,29 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public static class PageDirectiveFeature
     {
+        private static readonly RazorEngine PageDirectiveEngine = RazorEngine.Create(builder =>
+        {
+            for (var i = builder.Phases.Count - 1; i >= 0; i--)
+            {
+                var phase = builder.Phases[i];
+                builder.Phases.RemoveAt(i);
+                if (phase is IRazorDocumentClassifierPhase)
+                {
+                    break;
+                }
+            }
+
+            RazorExtensions.Register(builder);
+            builder.Features.Add(new PageDirectiveParserOptionsFeature());
+        });
+
         public static bool TryGetPageDirective(RazorProjectItem projectItem, out string template)
         {
             if (projectItem == null)
@@ -16,7 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 throw new ArgumentNullException(nameof(projectItem));
             }
 
-            return TryGetPageDirective(projectItem.Read, out template);
+            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
+            return TryGetPageDirective(sourceDocument, out template);
         }
 
         public static bool TryGetPageDirective(Func<Stream> streamFactory, out string template)
@@ -26,38 +44,36 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 throw new ArgumentNullException(nameof(streamFactory));
             }
 
-            const string PageDirective = "@page";
-
-            string content;
-            using (var streamReader = new StreamReader(streamFactory()))
+            using (var stream = streamFactory())
             {
-                do
-                {
-                    content = streamReader.ReadLine();
+                var sourceDocument = RazorSourceDocument.ReadFrom(stream, fileName: "Parse.cshtml");
+                return TryGetPageDirective(sourceDocument, out template);
+            }
+        }
 
-                } while (content != null && string.IsNullOrWhiteSpace(content));
-                content = content?.Trim();
+        private static bool TryGetPageDirective(RazorSourceDocument sourceDocument, out string template)
+        {
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            PageDirectiveEngine.Process(codeDocument);
+
+            if (PageDirective.TryGetPageDirective(codeDocument.GetIRDocument(), out var pageDirective))
+            {
+                template = pageDirective.RouteTemplate;
+                return true;
             }
 
-            if (content == null || !content.StartsWith(PageDirective, StringComparison.Ordinal))
-            {
-                template = null;
-                return false;
-            }
+            template = null;
+            return false;
+        }
 
-            template = content.Substring(PageDirective.Length, content.Length - PageDirective.Length).TrimStart();
+        private class PageDirectiveParserOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature
+        {
+            public int Order { get; }
 
-            if (template.StartsWith("\"") && template.EndsWith("\""))
+            public void Configure(RazorParserOptionsBuilder options)
             {
-                template = template.Substring(1, template.Length - 2);
+                options.ParseOnlyLeadingDirectives = true;
             }
-            // If it's not in quotes it's not our template
-            else
-            {
-                template = string.Empty;
-            }
-
-            return true;
         }
     }
 }

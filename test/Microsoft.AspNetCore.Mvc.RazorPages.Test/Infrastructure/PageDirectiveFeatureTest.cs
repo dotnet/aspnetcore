@@ -48,18 +48,6 @@ The rest of the thing");
             Assert.Null(template);
         }
 
-        [Fact]
-        public void TryGetPageDirective_MultipleQuotes()
-        {
-            // Arrange
-            string template;
-            var projectItem = new TestRazorProjectItem(@"@page """"template""""");
-
-            // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Equal(@"""template""", template);
-        }
-
         [Theory]
         [InlineData(@"""Some/Path/{value}")]
         [InlineData(@"Some/Path/{value}""")]
@@ -71,9 +59,8 @@ The rest of the thing");
 
             // Act & Assert
             Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Equal(string.Empty, template);
+            Assert.Null(template);
         }
-
 
         [Fact]
         public void TryGetPageDirective_NoQuotesAroundPath_IsNotTemplate()
@@ -84,7 +71,7 @@ The rest of the thing");
 
             // Act & Assert
             Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Equal(string.Empty, template);
+            Assert.Null(template);
         }
 
         [Fact]
@@ -126,7 +113,7 @@ The rest of the thing");
             Assert.Equal("Some/Path/{value}", template);
         }
 
-        [Fact(Skip = "Re-evaluate this scenario after we use Razor to parse this stuff")]
+        [Fact]
         public void TryGetPageDirective_JunkBeforeNewline()
         {
             // Arrange
@@ -136,7 +123,7 @@ a new line");
 
             // Act & Assert
             Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Empty(template);
+            Assert.Equal("Some/Path/{value}", template);
         }
 
         [Fact]
@@ -148,7 +135,7 @@ a new line");
 
             // Act & Assert
             Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Empty(template);
+            Assert.Null(template);
         }
 
         [Fact]
@@ -161,7 +148,7 @@ Non-path things");
 
             // Act & Assert
             Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Empty(template);
+            Assert.Null(template);
         }
 
         [Fact]
@@ -236,21 +223,9 @@ Nobody will use it");
             }
         }
 
-        public override string Path
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override string Path => "Test.cshtml";
 
-        public override string PhysicalPath
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override string PhysicalPath => null;
 
         public override Stream Read()
         {
