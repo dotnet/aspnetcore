@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 Domain = string.IsNullOrEmpty(_options.Domain) ? null : _options.Domain,
                 HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
                 Secure = context.Request.IsHttps,
             };
             SetCookiePath(context, cookieOptions);
