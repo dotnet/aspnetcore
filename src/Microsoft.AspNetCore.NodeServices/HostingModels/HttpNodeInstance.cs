@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.OutOfProcessNodeInstance" />
     internal class HttpNodeInstance : OutOfProcessNodeInstance
     {
-        private readonly static int streamBufferSize = 16 * 1024;
         private static readonly Regex PortMessageRegex =
             new Regex(@"^\[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on port (\d+)\]$");
 
@@ -137,28 +136,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 }
 
                 _disposed = true;
-            }
-        }
-
-        private static async Task<T> ReadJsonAsync<T>(Stream stream, CancellationToken cancellationToken)
-        {
-            var json = Encoding.UTF8.GetString(await ReadAllBytesAsync(stream, cancellationToken));
-            return JsonConvert.DeserializeObject<T>(json, jsonSerializerSettings);
-        }
-
-        private static async Task<byte[]> ReadAllBytesAsync(Stream input, CancellationToken cancellationToken)
-        {
-            byte[] buffer = new byte[streamBufferSize];
-
-            using (var ms = new MemoryStream())
-            {
-                int read;
-                while ((read = await input.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
-                {
-                    ms.Write(buffer, 0, read);
-                }
-
-                return ms.ToArray();
             }
         }
 
