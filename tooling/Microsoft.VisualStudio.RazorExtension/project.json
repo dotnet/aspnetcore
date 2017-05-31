@@ -1,0 +1,14 @@
+﻿{
+  "frameworks": {
+    "net46": {
+      "dependencies": {
+        "Microsoft.VisualStudio.ComponentModelHost": "15.0.26201",
+        "Microsoft.VisualStudio.Shell.15.0": "15.0.26201",
+        "Microsoft.VSSDK.BuildTools": "15.0.26201"
+      }
+    }
+  },
+  "runtimes": {
+    "win": { }
+  }
+}
