@@ -249,11 +249,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
         public void InvalidNamespaceAtEOF_DesignTime()
         {
             var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references,
-            expectedErrors: new[]
-            {
-                "Identifier expected"
-            });
+            RunDesignTimeTest(references, expectedErrors: new[] { "Identifier expected" });
         }
 
         [Fact]

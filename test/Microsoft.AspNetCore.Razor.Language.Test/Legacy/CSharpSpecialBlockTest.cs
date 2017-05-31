@@ -27,9 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Code, "Foo.Bar<Biz<Qux>, string, int>.Baz", markup: false)
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)
-                        .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First()))));
+                    Factory.Span(SpanKind.Code, "Foo.Bar<Biz<Qux>, string, int>.Baz", markup: false).AsDirectiveToken(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens[0])));
         }
 
         [Fact]

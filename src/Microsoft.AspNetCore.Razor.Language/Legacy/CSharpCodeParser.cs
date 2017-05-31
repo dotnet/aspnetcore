@@ -1649,6 +1649,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
+                Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
                 Output(SpanKind.Code, AcceptedCharacters.NonWhiteSpace);
             }
 
