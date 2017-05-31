@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.OutOfProcessNodeInstance" />
     internal class HttpNodeInstance : OutOfProcessNodeInstance
     {
+        private readonly static int streamBufferSize = 16 * 1024;
         private static readonly Regex PortMessageRegex =
             new Regex(@"^\[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on port (\d+)\]$");
 
@@ -67,8 +68,10 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             if (!response.IsSuccessStatusCode)
             {
                 // Unfortunately there's no true way to cancel ReadAsStringAsync calls, hence AbandonIfCancelled
-                var responseErrorString = await response.Content.ReadAsStringAsync().OrThrowOnCancellation(cancellationToken);
-                throw new Exception("Call to Node module failed with error: " + responseErrorString);
+                var responseJson = await response.Content.ReadAsStringAsync().OrThrowOnCancellation(cancellationToken);
+                var responseError = JsonConvert.DeserializeObject<RpcJsonResponse>(responseJson, jsonSerializerSettings);
+
+                throw new NodeInvocationException(responseError.ErrorMessage, responseError.ErrorDetails);
             }
 
             var responseContentType = response.Content.Headers.ContentType;
@@ -136,5 +139,35 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 _disposed = true;
             }
         }
+
+        private static async Task<T> ReadJsonAsync<T>(Stream stream, CancellationToken cancellationToken)
+        {
+            var json = Encoding.UTF8.GetString(await ReadAllBytesAsync(stream, cancellationToken));
+            return JsonConvert.DeserializeObject<T>(json, jsonSerializerSettings);
+        }
+
+        private static async Task<byte[]> ReadAllBytesAsync(Stream input, CancellationToken cancellationToken)
+        {
+            byte[] buffer = new byte[streamBufferSize];
+
+            using (var ms = new MemoryStream())
+            {
+                int read;
+                while ((read = await input.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+
+                return ms.ToArray();
+            }
+        }
+
+#pragma warning disable 649 // These properties are populated via JSON deserialization
+        private class RpcJsonResponse
+        {
+            public string ErrorMessage { get; set; }
+            public string ErrorDetails { get; set; }
+        }
+#pragma warning restore 649
     }
 }

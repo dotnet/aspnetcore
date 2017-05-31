@@ -86,5 +86,8 @@ function readRequestBodyAsJson(request, callback) {
 
 function respondWithError(res: http.ServerResponse, errorValue: any) {
     res.statusCode = 500;
-    res.end(errorValue.stack || errorValue.toString());
+    res.end(JSON.stringify({
+        errorMessage: errorValue.message || errorValue,
+        errorDetails: errorValue.stack || null
+    }));
 }
