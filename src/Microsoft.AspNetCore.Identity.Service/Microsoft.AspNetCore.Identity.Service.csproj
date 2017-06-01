@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup>
