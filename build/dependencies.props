@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
+    <AspNetCoreVersion>2.0.0-preview2-*</AspNetCoreVersion>
 
     <!--
       * Use 4.4.0-* instead of $(CoreFxVersion) to address "SqlClient fails with netcoreapp2.0 on Win7/Server2008"
