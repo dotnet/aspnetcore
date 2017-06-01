@@ -19,8 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private const string AcceptRangeHeaderValue = "bytes";
 
-        // default buffer size as defined in BufferedStream type
-        protected const int BufferSize = 0x1000;
+        protected const int BufferSize = 64 * 1024;
 
         public FileResultExecutorBase(ILogger logger)
         {
@@ -40,9 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         protected virtual (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetHeadersAndLog(
             ActionContext context,
-            FileResult result, long?
-            fileLength, DateTimeOffset?
-            lastModified = null,
+            FileResult result,
+            long? fileLength,
+            DateTimeOffset? lastModified = null,
             EntityTagHeaderValue etag = null)
         {
             if (context == null)
@@ -57,15 +56,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             SetContentType(context, result);
             SetContentDispositionHeader(context, result);
             Logger.FileResultExecuting(result.FileDownloadName);
-            if (fileLength.HasValue)
-            {
-                SetAcceptRangeHeader(context);
-            }
 
             var request = context.HttpContext.Request;
             var httpRequestHeaders = request.GetTypedHeaders();
             var response = context.HttpContext.Response;
             var httpResponseHeaders = response.GetTypedHeaders();
+            if (fileLength.HasValue)
+            {
+                SetAcceptRangeHeader(context);
+                // Assuming the request is not a range request, the Content-Length header is set to the length of the entire file. 
+                // If the request is a valid range request, this header is overwritten with the length of the range as part of the 
+                // range processing (see method SetContentLength).
+                response.ContentLength = fileLength.Value;
+            }
+
             if (lastModified.HasValue)
             {
                 httpResponseHeaders.LastModified = lastModified;
@@ -276,6 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 fileLength.Value);
 
             response.StatusCode = StatusCodes.Status206PartialContent;
+            // Overwrite the Content-Length header for valid range requests with the range length.
             var rangeLength = SetContentLength(context, range);
             return (range, rangeLength, serveBody: true);
         }
