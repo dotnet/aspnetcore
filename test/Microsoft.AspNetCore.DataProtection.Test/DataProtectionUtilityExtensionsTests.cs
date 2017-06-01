@@ -3,6 +3,8 @@
 
 using System;
 using Microsoft.AspNetCore.DataProtection.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -11,28 +13,75 @@ namespace Microsoft.AspNetCore.DataProtection
     public class DataProtectionUtilityExtensionsTests
     {
         [Theory]
-        [InlineData(" discriminator", "discriminator")] // normalized trim
-        [InlineData("", null)] // app discriminator not null -> overrides app base path
+        [InlineData("app-path", "app-path")]
+        [InlineData("app-path ", "app-path")] // normalized trim
+        [InlineData("  ", null)] // normalized whitespace -> null
         [InlineData(null, null)] // nothing provided at all
-        public void GetApplicationUniqueIdentifier(string appDiscriminator, string expected)
+        public void GetApplicationUniqueIdentifierFromHosting(string contentRootPath, string expected)
         {
             // Arrange
-            var mockAppDiscriminator = new Mock<IApplicationDiscriminator>();
-            mockAppDiscriminator.Setup(o => o.Discriminator).Returns(appDiscriminator);
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider.Setup(o => o.GetService(typeof(IApplicationDiscriminator))).Returns(mockAppDiscriminator.Object);
+            var mockEnvironment = new Mock<IHostingEnvironment>();
+            mockEnvironment.Setup(o => o.ContentRootPath).Returns(contentRootPath);
+
+            var services = new ServiceCollection()
+                .AddSingleton(mockEnvironment.Object)
+                .AddDataProtection()
+                .Services
+                .BuildServiceProvider();
 
             // Act
-            string actual = mockServiceProvider.Object.GetApplicationUniqueIdentifier();
+            var actual = services.GetApplicationUniqueIdentifier();
 
             // Assert
             Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData(" discriminator ", "discriminator")]
+        [InlineData(" discriminator", "discriminator")] // normalized trim
+        [InlineData("  ", null)] // normalized whitespace -> null
+        [InlineData(null, null)] // nothing provided at all
+        public void GetApplicationIdentifierFromApplicationDiscriminator(string discriminator, string expected)
+        {
+            // Arrange
+            var mockAppDiscriminator = new Mock<IApplicationDiscriminator>();
+            mockAppDiscriminator.Setup(o => o.Discriminator).Returns(discriminator);
+
+            var mockEnvironment = new Mock<IHostingEnvironment>();
+            mockEnvironment.SetupGet(o => o.ContentRootPath).Throws(new InvalidOperationException("Hosting environment should not be checked"));
+
+            var services = new ServiceCollection()
+                .AddSingleton(mockEnvironment.Object)
+                .AddSingleton(mockAppDiscriminator.Object)
+                .AddDataProtection()
+                .Services
+                .BuildServiceProvider();
+
+            // Act
+            var actual = services.GetApplicationUniqueIdentifier();
+
+            // Assert
+            Assert.Equal(expected, actual);
+            mockAppDiscriminator.VerifyAll();
         }
 
         [Fact]
         public void GetApplicationUniqueIdentifier_NoServiceProvider_ReturnsNull()
         {
             Assert.Null(((IServiceProvider)null).GetApplicationUniqueIdentifier());
+        }
+
+        [Fact]
+        public void GetApplicationUniqueIdentifier_NoHostingEnvironment_ReturnsNull()
+        {
+            // arrange
+            var services = new ServiceCollection()
+              .AddDataProtection()
+              .Services
+              .BuildServiceProvider();
+
+            // act & assert
+            Assert.Null(services.GetApplicationUniqueIdentifier());
         }
     }
 }

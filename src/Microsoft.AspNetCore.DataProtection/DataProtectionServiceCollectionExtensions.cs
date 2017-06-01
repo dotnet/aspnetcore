@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
@@ -75,6 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IConfigureOptions<DataProtectionOptions>, DataProtectionOptionsSetup>());
 
             services.TryAddSingleton<IKeyManager, XmlKeyManager>();
+            services.TryAddSingleton<IApplicationDiscriminator, HostingApplicationDiscriminator>();
 
             // Internal services
             services.TryAddSingleton<IDefaultKeyResolver, DefaultKeyResolver>();
