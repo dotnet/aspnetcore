@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Internal;
@@ -987,19 +986,6 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 Assert.Equal("0", builder.GetSetting("testhostingstartup"));
             }
-        }
-
-        [Fact]
-        public void Build_SetsAppDescriminatorFromContentRoot()
-        {
-            var builder = CreateWebHostBuilder()
-                .UseContentRoot(Environment.CurrentDirectory)
-                .Configure(app => { })
-                .UseServer(new TestServer());
-
-            var host = builder.Build();
-            var applicationDiscriminator = host.Services.GetRequiredService<IApplicationDiscriminator>();
-            Assert.Equal(Environment.CurrentDirectory, applicationDiscriminator.Discriminator);
         }
 
         [Fact]

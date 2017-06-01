@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
-using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
@@ -298,7 +297,6 @@ namespace Microsoft.AspNetCore.Hosting
             var services = new ServiceCollection();
             services.AddSingleton(_hostingEnvironment);
             services.AddSingleton(_context);
-            services.AddTransient<IApplicationDiscriminator, ApplicationDiscriminator>();
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(_hostingEnvironment.ContentRootPath)
