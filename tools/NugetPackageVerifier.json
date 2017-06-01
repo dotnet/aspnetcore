@@ -37,6 +37,13 @@
                         "*": "No package verification performed on the repo"
                     }
                 }
+            },
+            "Microsoft.AspNetCore.All": {
+                "Exclusions": {
+                    "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
+                        "*": "Temporary exception while waiting for Coherence-Signed to get a new version of NugetPackageVerifier."
+                    }
+                }
             }
         }
     },
