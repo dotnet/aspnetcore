@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -204,6 +205,14 @@ namespace Microsoft.AspNetCore.Http
             var path = new PathString(input);
 
             Assert.Equal(expected, path.ToUriComponent());
+        }
+
+        [Fact]
+        public void PathStringConvertsFromString()
+        {
+            var converter = TypeDescriptor.GetConverter(typeof(PathString));
+            PathString result = (PathString)converter.ConvertFromInvariantString("/foo");
+            Assert.Equal("/foo", result.ToString());
         }
     }
 }

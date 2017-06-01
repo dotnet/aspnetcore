@@ -4,6 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -28,6 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
             services.TryAddScoped<IAuthenticationHandlerProvider, AuthenticationHandlerProvider>();
             services.TryAddSingleton<IAuthenticationSchemeProvider, AuthenticationSchemeProvider>();
+            services.AddTransient<ConfigureDefaultOptions<AuthenticationOptions>, DefaultConfigureOptions>();
             return services;
         }
 
@@ -52,5 +55,13 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Configure(configureOptions);
             return services;
         }
+
+        private class DefaultConfigureOptions : ConfigureDefaultOptions<AuthenticationOptions>
+        {
+            public DefaultConfigureOptions(IConfiguration config) :
+                base(options => config.GetSection("Microsoft:AspNetCore:Authentication").Bind(options))
+            { }
+        }
+
     }
 }
