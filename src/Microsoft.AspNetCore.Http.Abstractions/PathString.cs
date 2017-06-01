@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.AspNetCore.Http.Internal;
@@ -11,6 +13,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// Provides correct escaping for Path and PathBase values when needed to reconstruct a request or redirect URI string
     /// </summary>
+    [TypeConverter(typeof(PathStringConverter))]
     public struct PathString : IEquatable<PathString>
     {
         private static readonly char[] splitChar = { '/' };
@@ -451,6 +454,14 @@ namespace Microsoft.AspNetCore.Http
         public static implicit operator string(PathString path)
         {
             return path.ToString();
+        }
+    }
+
+    internal class PathStringConverter : TypeConverter
+    {
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            return new PathString((string)value);
         }
     }
 }
