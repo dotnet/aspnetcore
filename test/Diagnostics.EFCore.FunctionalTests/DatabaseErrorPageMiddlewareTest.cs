@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 }
             });
 
-            Assert.True(logProvider.Logger.Messages.Any(m =>
+            Assert.True(logProvider.Logger.Messages.ToList().Any(m =>
                 m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext)))));
         }
 
