@@ -153,6 +153,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
+        public static SpanConstructor AsDirectiveToken(this SpanConstructor self, DirectiveTokenDescriptor descriptor)
+        {
+            return self
+                .With(new DirectiveTokenChunkGenerator(descriptor))
+                .With(new DirectiveTokenEditHandler((content) => SpanConstructor.TestTokenizer(content)))
+                .Accepts(AcceptedCharactersInternal.NonWhiteSpace);
+        }
+
         public static SourceLocation GetLocationAndAdvance(this SourceLocationTracker self, string content)
         {
             var ret = self.CurrentLocation;

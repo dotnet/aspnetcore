@@ -1,0 +1,23 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - 
+        UsingStatement - (1:0,1 [14] ) - System
+        UsingStatement - (16:1,1 [34] ) - System.Collections.Generic
+        UsingStatement - (51:2,1 [19] ) - System.Linq
+        UsingStatement - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingStatement - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingStatement - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InvalidNamespaceAtEOF_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - BeginContext(11, 5, true);
+                HtmlContent - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml)
+                    RazorIRToken - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml) - Html - Test.
+                CSharpStatement - 
+                    RazorIRToken -  - CSharp - EndContext();
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 
+            InjectDirective - 

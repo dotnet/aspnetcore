@@ -913,21 +913,53 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         // qualified-identifier:
         //      identifier
         //      qualified-identifier . identifier
-        protected bool QualifiedIdentifier()
+        protected bool QualifiedIdentifier(out int identifierLength)
         {
-            if (At(CSharpSymbolType.Identifier))
+            var currentIdentifierLength = 0;
+            var expectingDot = false;
+            var tokens = ReadWhile(token =>
             {
-                AcceptAndMoveNext();
-
-                if (Optional(CSharpSymbolType.Dot))
+                var type = token.Type;
+                if ((expectingDot && type == CSharpSymbolType.Dot) ||
+                    (!expectingDot && type == CSharpSymbolType.Identifier))
                 {
-                    return QualifiedIdentifier();
+                    expectingDot = !expectingDot;
+                    return true;
+                }
+
+                if (type != CSharpSymbolType.WhiteSpace &&
+                    type != CSharpSymbolType.NewLine)
+                {
+                    expectingDot = false;
+                    currentIdentifierLength += token.Content.Length;
+                }
+
+                return false;
+            });
+
+            identifierLength = currentIdentifierLength;
+            var validQualifiedIdentifier = expectingDot;
+            if (validQualifiedIdentifier)
+            {
+                foreach (var token in tokens)
+                {
+                    identifierLength += token.Content.Length;
+                    Accept(token);
                 }
 
                 return true;
             }
             else
             {
+                PutCurrentBack();
+
+                foreach (var token in tokens)
+                {
+                    identifierLength += token.Content.Length;
+                    PutBack(token);
+                }
+
+                EnsureCurrent();
                 return false;
             }
         }
@@ -1602,12 +1634,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         break;
 
                     case DirectiveTokenKind.Namespace:
-                        if (!QualifiedIdentifier())
+                        if (!QualifiedIdentifier(out var identifierLength))
                         {
                             Context.ErrorSink.OnError(
                                 CurrentStart,
                                 LegacyResources.FormatDirectiveExpectsNamespace(descriptor.Name),
-                                CurrentSymbol.Content.Length);
+                                identifierLength);
 
                             return;
                         }
@@ -1645,6 +1677,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
+                Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
                 Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
             }
 
