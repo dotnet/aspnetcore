@@ -19,7 +19,6 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.ComponentModel.TypeConverter" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
