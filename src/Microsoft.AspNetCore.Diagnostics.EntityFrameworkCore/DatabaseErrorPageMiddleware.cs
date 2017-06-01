@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
         void IObserver<DiagnosticListener>.OnNext(DiagnosticListener diagnosticListener)
         {
-            if (diagnosticListener.Name == DbLoggerCategory.Root)
+            if (diagnosticListener.Name == DbLoggerCategory.Name)
             {
                 diagnosticListener.Subscribe(this);
             }
