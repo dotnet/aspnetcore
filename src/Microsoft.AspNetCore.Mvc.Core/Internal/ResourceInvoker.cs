@@ -736,7 +736,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         if (resultExecutedContext == null || resultExecutingContext.Cancel == true)
                         {
                             // Short-circuited by not calling next || Short-circuited by setting Cancel == true
-                            _logger.ResourceFilterShortCircuited(filter);
+                            _logger.ResultFilterShortCircuited(filter);
 
                             _resultExecutedContext = new ResultExecutedContext(
                                 _actionContext,
@@ -769,7 +769,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         if (_resultExecutingContext.Cancel == true)
                         {
                             // Short-circuited by setting Cancel == true
-                            _logger.ResourceFilterShortCircuited(filter);
+                            _logger.ResultFilterShortCircuited(filter);
 
                             _resultExecutedContext = new ResultExecutedContext(
                                 resultExecutingContext,
