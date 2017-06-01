@@ -8,7 +8,7 @@
   <Import Project="tools\QERM.targets" />
 
   <PropertyGroup>
-    <PublishFeed>https://dotnet.myget.org/F/aspnetcore-dev/</PublishFeed>
+    <PublishFeed>https://dotnet.myget.org/F/aspnetcore-release/</PublishFeed>
     <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
     <BuildToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</BuildToolsFeed>
     <CoherenceDestinationDir>$(ArtifactsPath)coherence\</CoherenceDestinationDir>
@@ -300,8 +300,8 @@
     <PropertyGroup>
       <CodeSignCreateTestJob>false</CodeSignCreateTestJob>
       <TestCodeSign>true</TestCodeSign>
-      <COHERENCE_DROP_LOCATION Condition="'$(COHERENCE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence\dev\Latest</COHERENCE_DROP_LOCATION>
-      <COHERENCE_PACKAGECACHE_DROP_LOCATION Condition="'$(COHERENCE_PACKAGECACHE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence-PackageCache\dev\Latest</COHERENCE_PACKAGECACHE_DROP_LOCATION>
+      <COHERENCE_DROP_LOCATION Condition="'$(COHERENCE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence\2.0.0-preview2\Latest</COHERENCE_DROP_LOCATION>
+      <COHERENCE_PACKAGECACHE_DROP_LOCATION Condition="'$(COHERENCE_PACKAGECACHE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence-PackageCache\2.0.0-preview2\Latest</COHERENCE_PACKAGECACHE_DROP_LOCATION>
     </PropertyGroup>
   </Target>
 
