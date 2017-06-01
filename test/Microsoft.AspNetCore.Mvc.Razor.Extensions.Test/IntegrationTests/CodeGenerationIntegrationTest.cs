@@ -28,6 +28,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 
         #region Runtime
         [Fact]
+        public void InvalidNamespaceAtEOF_Runtime()
+        {
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunRuntimeTest(references, expectedErrors: new[]
+            {
+                "Identifier expected"
+            });
+        }
+
+        [Fact]
         public void IncompleteDirectives_Runtime()
         {
             var appCode = @"
@@ -256,6 +266,13 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
         #endregion
 
         #region DesignTime
+        [Fact]
+        public void InvalidNamespaceAtEOF_DesignTime()
+        {
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunDesignTimeTest(references, expectedErrors: new[] { "Identifier expected" });
+        }
+
         [Fact]
         public void IncompleteDirectives_DesignTime()
         {
