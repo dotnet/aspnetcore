@@ -1702,7 +1702,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             CurrentSymbol.Content.Length);
                     }
 
-                    Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+                    Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.WhiteSpace);
                     break;
                 case DirectiveKind.RazorBlock:
                     AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
