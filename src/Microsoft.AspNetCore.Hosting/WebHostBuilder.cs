@@ -26,13 +26,11 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly List<Action<WebHostBuilderContext, IServiceCollection>> _configureServicesDelegates;
-        private readonly List<Action<WebHostBuilderContext, ILoggerFactory>> _configureLoggingDelegates;
 
         private IConfiguration _config;
         private WebHostOptions _options;
         private WebHostBuilderContext _context;
         private bool _webHostBuilt;
-        private Func<WebHostBuilderContext, ILoggerFactory> _createLoggerFactoryDelegate;
         private List<Action<WebHostBuilderContext, IConfigurationBuilder>> _configureAppConfigurationBuilderDelegates;
 
         /// <summary>
@@ -42,7 +40,6 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _hostingEnvironment = new HostingEnvironment();
             _configureServicesDelegates = new List<Action<WebHostBuilderContext, IServiceCollection>>();
-            _configureLoggingDelegates = new List<Action<WebHostBuilderContext, ILoggerFactory>>();
             _configureAppConfigurationBuilderDelegates = new List<Action<WebHostBuilderContext, IConfigurationBuilder>>();
 
             _config = new ConfigurationBuilder()
@@ -91,41 +88,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify the <see cref="ILoggerFactory"/> to be used by the web host.
-        /// </summary>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder UseLoggerFactory(ILoggerFactory loggerFactory)
-        {
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            return UseLoggerFactory(_ => loggerFactory);
-        }
-
-        /// <summary>
-        /// Adds a delegate to construct the <see cref="ILoggerFactory"/> that will be registered
-        /// as a singleton and used by the application.
-        /// </summary>
-        /// <param name="createLoggerFactory">The delegate that constructs an <see cref="IConfigurationBuilder" /></param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        /// <remarks>
-        /// The <see cref="ILoggerFactory"/> on the <see cref="WebHostBuilderContext"/> is uninitialized at this stage.
-        /// </remarks>
-        public IWebHostBuilder UseLoggerFactory(Func<WebHostBuilderContext, ILoggerFactory> createLoggerFactory)
-        {
-            if (createLoggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(createLoggerFactory));
-            }
-
-            _createLoggerFactoryDelegate = createLoggerFactory;
-            return this;
-        }
-
-        /// <summary>
         /// Adds a delegate for configuring additional services for the host or web application. This may be called
         /// multiple times.
         /// </summary>
@@ -155,35 +117,6 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             _configureServicesDelegates.Add(configureServices);
-            return this;
-        }
-
-        /// <summary>
-        /// Adds a delegate for configuring the provided <see cref="ILoggerFactory"/>. This may be called multiple times.
-        /// </summary>
-        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
-        /// <typeparam name="T">
-        /// The type of <see cref="ILoggerFactory"/> to configure.
-        /// The delegate will not execute if the type provided does not match the <see cref="ILoggerFactory"/> used by the <see cref="IWebHostBuilder"/>.
-        /// </typeparam>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        /// <remarks>
-        /// The <see cref="ILoggerFactory"/> on the <see cref="WebHostBuilderContext"/> is uninitialized at this stage.
-        /// </remarks>
-        public IWebHostBuilder ConfigureLogging<T>(Action<WebHostBuilderContext, T> configureLogging) where T : ILoggerFactory
-        {
-            if (configureLogging == null)
-            {
-                throw new ArgumentNullException(nameof(configureLogging));
-            }
-
-            _configureLoggingDelegates.Add((context, factory) =>
-            {
-                if (factory is T typedFactory)
-                {
-                    configureLogging(context, typedFactory);
-                }
-            });
             return this;
         }
 
@@ -313,19 +246,6 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton<IConfiguration>(configuration);
             _context.Configuration = configuration;
 
-            // The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
-            var loggerFactory = _createLoggerFactoryDelegate?.Invoke(_context) ?? new LoggerFactory();
-            services.AddSingleton(loggerFactory);
-            _context.LoggerFactory = loggerFactory;
-
-            foreach (var configureLogging in _configureLoggingDelegates)
-            {
-                configureLogging(_context, loggerFactory);
-            }
-
-            //This is required to add ILogger of T.
-            services.AddLogging();
-
             var listener = new DiagnosticListener("Microsoft.AspNetCore");
             services.AddSingleton<DiagnosticListener>(listener);
             services.AddSingleton<DiagnosticSource>(listener);
@@ -334,6 +254,7 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
             services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
             services.AddOptions();
+            services.AddLogging();
 
             // Conjure up a RequestServices
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
@@ -387,9 +308,6 @@ namespace Microsoft.AspNetCore.Hosting
             // can still manage their lifetime (disposal) shared instances with application services.
             // NOTE: This code overrides original services lifetime. Instances would always be singleton in
             // application container.
-            var loggerFactory = hostingServiceProvider.GetService<ILoggerFactory>();
-            services.Replace(ServiceDescriptor.Singleton(typeof(ILoggerFactory), loggerFactory));
-
             var listener = hostingServiceProvider.GetService<DiagnosticListener>();
             services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticListener), listener));
             services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticSource), listener));

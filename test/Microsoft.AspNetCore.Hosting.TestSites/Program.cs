@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace ServerComparison.TestSites
 {
@@ -25,7 +27,7 @@ namespace ServerComparison.TestSites
                 .ConfigureLogging((_, factory) =>
                 {
                     factory.AddConsole();
-                    factory.AddFilter("Console", level => level >= LogLevel.Warning);
+                    factory.AddFilter<ConsoleLoggerProvider>(level => level >= LogLevel.Warning);
                 })
                 .UseStartup("Microsoft.AspNetCore.Hosting.TestSites");
 
