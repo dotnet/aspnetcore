@@ -1,4 +1,5 @@
 #pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "c0587249e6e0b7ba4e1efc463f58577d5d0b6ae2"
+[assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml), null)]
 namespace AspNetCore
 {
     #line hidden

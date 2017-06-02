@@ -1,3 +1,4 @@
+[assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(Test.Namespace.PageWithNamespace_Page), null)]
 namespace Test.Namespace
 {
     #line hidden

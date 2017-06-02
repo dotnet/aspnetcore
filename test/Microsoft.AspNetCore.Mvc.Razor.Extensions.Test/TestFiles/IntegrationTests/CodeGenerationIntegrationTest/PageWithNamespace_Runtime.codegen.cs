@@ -1,4 +1,5 @@
 #pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PageWithNamespace.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b205857d3dad47cb3f0c1d7775ae251b306ab830"
+[assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(Test.Namespace.PageWithNamespace_Page), null)]
 namespace Test.Namespace
 {
     #line hidden

@@ -1,4 +1,5 @@
 #pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MalformedPageDirective.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5a9ff8440150c6746e4a8ba63bc633ea84930405"
+[assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml), null)]
 namespace AspNetCore
 {
     #line hidden

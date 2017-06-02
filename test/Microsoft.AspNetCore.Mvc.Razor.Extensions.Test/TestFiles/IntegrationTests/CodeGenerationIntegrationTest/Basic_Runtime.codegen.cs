@@ -1,4 +1,5 @@
 #pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "4120ddad9d4353ed260e0585fe71080d78ff8ab3"
+[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Basic_cshtml))]
 namespace AspNetCore
 {
     #line hidden

@@ -1,5 +1,7 @@
 Document - 
     Checksum - 
+    CSharpStatement - 
+        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsViewModel_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System

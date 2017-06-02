@@ -1,4 +1,5 @@
 #pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewWithNamespace.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "2893acf42354a0bc8b6a2698f5d2e4fab0e59dbe"
+[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(Test.Namespace.ViewWithNamespace_View))]
 namespace Test.Namespace
 {
     #line hidden

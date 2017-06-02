@@ -15,9 +15,6 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.DependencyModel;
 using Xunit;
-#if !NET46
-using System.Runtime.Loader;
-#endif
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 {
@@ -572,19 +569,11 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 
             if (expectedErrors == null)
             {
-                Assert.Equal(0, errors.Count());
+                Assert.Empty(errors.Select(e => e.GetMessage()));
             }
             else
             {
-                Assert.Equal(expectedErrors.Count(), errors.Count());
-
-                var expectedArray = expectedErrors.ToArray();
-                var actualArray = errors.ToArray();
-
-                for (var i = 0; i < expectedErrors.Count(); i++)
-                {
-                    Assert.Equal(expectedArray[i], actualArray[i].GetMessage());
-                }
+                Assert.Equal(expectedErrors, errors.Select(e => e.GetMessage()));
             }
         }
 
@@ -687,12 +676,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
         private static IEnumerable<MetadataReference> CreateMvcShimReferences(string mvcShimName)
         {
             var dllPath = Path.Combine(Directory.GetCurrentDirectory(), mvcShimName);
-            Assembly assembly;
-#if NET46
-            assembly = Assembly.LoadFile(dllPath);
-#else
-            assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
-#endif
+            var assembly = Assembly.LoadFile(dllPath);
             var assemblyDependencyContext = DependencyContext.Load(assembly);
 
             var assemblyReferencePaths = assemblyDependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths());

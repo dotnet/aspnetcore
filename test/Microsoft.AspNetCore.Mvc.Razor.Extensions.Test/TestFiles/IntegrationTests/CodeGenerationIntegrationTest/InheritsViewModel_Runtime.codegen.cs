@@ -1,4 +1,5 @@
 #pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InheritsViewModel.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "91cf923452a86b2906083cb0236d6d5b3bc528ef"
+[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsViewModel_cshtml))]
 namespace AspNetCore
 {
     #line hidden

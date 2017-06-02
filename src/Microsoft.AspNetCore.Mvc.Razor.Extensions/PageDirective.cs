@@ -16,15 +16,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             DirectiveKind.SingleLine,
             builder => builder.AddOptionalStringToken());
 
-        private PageDirective(string routeTemplate, string pageName)
+        private PageDirective(string routeTemplate)
         {
             RouteTemplate = routeTemplate;
-            PageName = pageName;
         }
 
         public string RouteTemplate { get; }
-
-        public string PageName { get; }
 
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
         {
@@ -48,18 +45,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var tokens = visitor.DirectiveNode.Tokens.ToList();
             string routeTemplate = null;
-            string pageName = null;
             if (tokens.Count > 0)
             {
                 routeTemplate = TrimQuotes(tokens[0].Content);
             }
 
-            if (tokens.Count > 1)
-            {
-                pageName = TrimQuotes(tokens[1].Content);
-            }
-
-            pageDirective = new PageDirective(routeTemplate, pageName);
+            pageDirective = new PageDirective(routeTemplate);
             return true;
         }
 

@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Assert.True(result);
             Assert.Null(pageDirective.RouteTemplate);
-            Assert.Null(pageDirective.PageName);
         }
 
         [Fact]
@@ -80,7 +79,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Assert.True(result);
             Assert.Null(pageDirective.RouteTemplate);
-            Assert.Null(pageDirective.PageName);
         }
 
         [Fact]
@@ -99,7 +97,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Assert.True(result);
             Assert.Equal("some-route-template", pageDirective.RouteTemplate);
-            Assert.Null(pageDirective.PageName);
         }
 
         private RazorEngine CreateEngine()

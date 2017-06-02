@@ -1,3 +1,4 @@
+[assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml), null)]
 namespace AspNetCore
 {
     #line hidden

@@ -1,3 +1,4 @@
+[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InjectWithModel_cshtml))]
 namespace AspNetCore
 {
     #line hidden

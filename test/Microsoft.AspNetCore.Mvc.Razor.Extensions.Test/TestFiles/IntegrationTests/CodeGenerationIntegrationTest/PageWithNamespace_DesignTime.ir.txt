@@ -1,5 +1,7 @@
 Document - 
     Checksum - 
+    CSharpStatement - 
+        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(Test.Namespace.PageWithNamespace_Page), null)]
     NamespaceDeclaration -  - Test.Namespace
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
