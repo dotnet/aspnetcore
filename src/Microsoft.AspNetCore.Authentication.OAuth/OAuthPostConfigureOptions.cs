@@ -12,18 +12,18 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// Used to setup defaults for the OAuthOptions.
     /// </summary>
-    public class OAuthInitializer<TOptions, THandler> : IInitializeOptions<TOptions>
+    public class OAuthPostConfigureOptions<TOptions, THandler> : IPostConfigureOptions<TOptions>
         where TOptions : OAuthOptions, new()
         where THandler : OAuthHandler<TOptions>
     {
         private readonly IDataProtectionProvider _dp;
 
-        public OAuthInitializer(IDataProtectionProvider dataProtection)
+        public OAuthPostConfigureOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;
         }
 
-        public void Initialize(string name, TOptions options)
+        public void PostConfigure(string name, TOptions options)
         {
             options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
             if (options.Backchannel == null)

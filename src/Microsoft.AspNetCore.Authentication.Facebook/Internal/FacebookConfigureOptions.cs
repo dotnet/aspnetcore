@@ -4,9 +4,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options.Infrastructure;
 
-namespace Microsoft.AspNetCore.Authentication.Facebook
+namespace Microsoft.AspNetCore.Authentication.Facebook.Internal
 {
-    internal class FacebookConfigureOptions : ConfigureDefaultOptions<FacebookOptions>
+    public class FacebookConfigureOptions : ConfigureDefaultOptions<FacebookOptions>
     {
         public FacebookConfigureOptions(IConfiguration config) :
             base(FacebookDefaults.AuthenticationScheme,

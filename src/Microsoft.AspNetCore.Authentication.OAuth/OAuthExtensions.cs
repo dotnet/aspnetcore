@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
             where TOptions : OAuthOptions, new()
             where THandler : OAuthHandler<TOptions>
         {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<TOptions>, OAuthInitializer<TOptions, THandler>>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TOptions>, OAuthPostConfigureOptions<TOptions, THandler>>());
             return services.AddRemoteScheme<TOptions, THandler>(authenticationScheme, authenticationScheme, configureOptions);
         }
     }

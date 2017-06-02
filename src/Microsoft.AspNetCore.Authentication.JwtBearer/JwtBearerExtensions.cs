@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Options.Infrastructure;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services, string authenticationScheme, Action<JwtBearerOptions> configureOptions)
         {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<JwtBearerOptions>, JwtBearerInitializer>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, JwtBearerPostConfigureOptions>());
             services.AddSingleton<ConfigureDefaultOptions<JwtBearerOptions>, JwtBearerConfigureOptions>();
             return services.AddScheme<JwtBearerOptions, JwtBearerHandler>(authenticationScheme, configureOptions);
         }

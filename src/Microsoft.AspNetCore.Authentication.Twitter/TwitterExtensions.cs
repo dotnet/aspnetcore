@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.Twitter;
+using Microsoft.AspNetCore.Authentication.Twitter.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Options.Infrastructure;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddTwitterAuthentication(this IServiceCollection services, string authenticationScheme, Action<TwitterOptions> configureOptions)
         {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<TwitterOptions>, TwitterInitializer>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TwitterOptions>, TwitterPostConfigureOptions>());
             services.AddSingleton<ConfigureDefaultOptions<TwitterOptions>, TwitterConfigureOptions>();
             return services.AddRemoteScheme<TwitterOptions, TwitterHandler>(authenticationScheme, authenticationScheme, configureOptions);
         }

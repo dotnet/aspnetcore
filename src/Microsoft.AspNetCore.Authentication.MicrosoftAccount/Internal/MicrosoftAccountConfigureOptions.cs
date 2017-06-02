@@ -4,9 +4,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options.Infrastructure;
 
-namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
+namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount.Internal
 {
-    internal class MicrosoftAccountConfigureOptions : ConfigureDefaultOptions<MicrosoftAccountOptions>
+    public class MicrosoftAccountConfigureOptions : ConfigureDefaultOptions<MicrosoftAccountOptions>
     {
         // Bind to "Microsoft" section by default
         public MicrosoftAccountConfigureOptions(IConfiguration config) :
