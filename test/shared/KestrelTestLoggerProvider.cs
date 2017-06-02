@@ -6,16 +6,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class KestrelTestLoggerFactory : ILoggerFactory
+    public class KestrelTestLoggerProvider : ILoggerProvider
     {
         private readonly ILogger _testLogger;
 
-        public KestrelTestLoggerFactory()
+        public KestrelTestLoggerProvider()
             : this(new TestApplicationErrorLogger())
         {
         }
 
-        public KestrelTestLoggerFactory(ILogger testLogger)
+        public KestrelTestLoggerProvider(ILogger testLogger)
         {
             _testLogger = testLogger;
         }
@@ -23,11 +23,6 @@ namespace Microsoft.AspNetCore.Testing
         public ILogger CreateLogger(string categoryName)
         {
             return _testLogger;
-        }
-
-        public void AddProvider(ILoggerProvider provider)
-        {
-            throw new NotImplementedException();
         }
 
         public void Dispose()

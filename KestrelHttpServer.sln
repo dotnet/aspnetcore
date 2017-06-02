@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26510.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7972A5D6-3385-4127-9277-428506DD44FF}"
 	ProjectSection(SolutionItems) = preProject
@@ -22,7 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0EF2AC
 		test\shared\DummyApplication.cs = test\shared\DummyApplication.cs
 		test\shared\HttpClientSlim.cs = test\shared\HttpClientSlim.cs
 		test\shared\HttpParsingData.cs = test\shared\HttpParsingData.cs
-		test\shared\KestrelTestLoggerFactory.cs = test\shared\KestrelTestLoggerFactory.cs
+		test\shared\KestrelTestLoggerProvider.cs = test\shared\KestrelTestLoggerProvider.cs
 		test\shared\LifetimeNotImplemented.cs = test\shared\LifetimeNotImplemented.cs
 		test\shared\MockConnectionInformation.cs = test\shared\MockConnectionInformation.cs
 		test\shared\MockFrameControl.cs = test\shared\MockFrameControl.cs

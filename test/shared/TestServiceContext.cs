@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Testing
     public class TestServiceContext : ServiceContext
     {
         public TestServiceContext()
-            : this(new KestrelTestLoggerFactory())
+            : this(new LoggerFactory(new[] { new KestrelTestLoggerProvider() }))
         {
         }
 

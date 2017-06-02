@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
-            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new KestrelTestLoggerFactory(testLogger));
+            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new [] { new KestrelTestLoggerProvider(testLogger)} ));
         }
 
         private static void StartDummyApplication(IServer server)
