@@ -62,6 +62,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 typeof(JsonMediaTypeFormatter).FullName,
                 typeof(XmlMediaTypeFormatter).FullName,
+
+#if NET461
+                // We call into WebAPI and ask it to add all of its formatters. On net461 it adds this additional formatter.
+                typeof(FormUrlEncodedMediaTypeFormatter).FullName
+#endif
             };
 
             // Act

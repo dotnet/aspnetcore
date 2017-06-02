@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -91,7 +92,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains(expectedCompilationContent, content);
         }
 
-        [Fact]
+        [ConditionalFact]
+        // MVC Generates portable PDBs when compiling Razor views. NET461 does not understand portable PDBs
+        // so line and file information cannot be determined. This is blocked until one of these issues are fixed:
+        // https://github.com/aspnet/Common/issues/235
+        // https://github.com/aspnet/Mvc/issues/6356
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
         public async Task RuntimeErrorAreListedByErrorPageMiddleware()
         {
             // Arrange
