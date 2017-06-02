@@ -66,7 +66,7 @@
 
     <RemoveDir Directories="$(PackageCacheOutputPath)" />
     <RemoveDir Directories="$(WorkingDirectory)" />
-    <Exec Command="dotnet store --manifest $(MetaPackageFile) --framework netcoreapp2.0 --runtime $(RID) --output $(PackageCacheOutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory)" />
+    <Exec Command="dotnet store --manifest $(MetaPackageFile) --framework netcoreapp2.0 --runtime $(RID) --output $(PackageCacheOutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory) --skip-symbols" />
 
     <Exec Command="dotnet restore" WorkingDirectory="$(RepositoryRoot)tools\TrimDeps" />
     <Exec Command="dotnet restore" WorkingDirectory="$(HostingStartupTemplatePath)" />
