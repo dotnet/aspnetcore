@@ -79,13 +79,9 @@ namespace IISSample
                 .Build();
 
             var host = new WebHostBuilder()
-                .ConfigureLogging((hostingContext, factory) =>
+                .ConfigureLogging((hostingContext, builder) =>
                 {
-                    if (hostingContext.Configuration["WIRE_LOGGING_CONFIGURATION"]?.ToLowerInvariant() != "false")
-                    {
-                        factory.UseConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    }
-                    factory.AddConsole();
+                    builder.AddConsole();
                 })
                 .UseKestrel()
                 .UseStartup<Startup>()

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Hosting.Azure.AppServices.Tests
 
             mock.Object.UseAzureAppServices();
 
-            mock.Verify(builder => builder.ConfigureLogging(It.IsNotNull<Action<WebHostBuilderContext, LoggerFactory>>()), Times.Once);
+            mock.Verify(builder => builder.ConfigureServices(It.IsNotNull<Action<IServiceCollection>>()), Times.Once);
         }
     }
 }
