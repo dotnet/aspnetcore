@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -39,6 +40,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             public KitchenSinkApp(ITestOutputHelper logger)
                 : base("KitchenSink", logger)
             {
+            }
+
+            protected override IEnumerable<string> GetDefaultArgs()
+            {
+                return new[] { "--msbuildprojectextensionspath", ".net/obj", "run", "--" };
             }
         }
     }

@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Watcher
     internal class CommandLineOptions
     {
         public string Project { get; private set; }
+        public string MSBuildProjectExtensionsPath { get; private set; }
         public bool IsHelp { get; private set; }
         public bool IsQuiet { get; private set; }
         public bool IsVerbose { get; private set; }
@@ -61,8 +62,16 @@ Examples:
             };
 
             app.HelpOption("-?|-h|--help");
-            var optProjects = app.Option("-p|--project", "The project to watch",
-                CommandOptionType.SingleValue); // TODO multiple shouldn't be too hard to support
+            // TODO multiple shouldn't be too hard to support
+            var optProjects = app.Option("-p|--project <PROJECT>", "The project to watch",
+                CommandOptionType.SingleValue);
+
+            var optMSBuildProjectExtensionsPath = app.Option("--msbuildprojectextensionspath <PATH>",
+                "The MSBuild project extensions path. Defaults to \"obj\".",
+                CommandOptionType.SingleValue);
+            // Hide from help text because this is an internal option that will hopefully go away when/if #244 is resolved.
+            optMSBuildProjectExtensionsPath.ShowInHelpText = false;
+
             var optQuiet = app.Option("-q|--quiet", "Suppresses all output except warnings and errors",
                 CommandOptionType.NoValue);
             var optVerbose = app.VerboseOption();
@@ -92,6 +101,7 @@ Examples:
             return new CommandLineOptions
             {
                 Project = optProjects.Value(),
+                MSBuildProjectExtensionsPath = optMSBuildProjectExtensionsPath.Value(),
                 IsQuiet = optQuiet.HasValue(),
                 IsVerbose = optVerbose.HasValue(),
                 RemainingArguments = app.RemainingArguments,

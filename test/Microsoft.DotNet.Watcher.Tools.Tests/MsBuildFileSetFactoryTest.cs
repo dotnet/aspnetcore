@@ -238,7 +238,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
             graph.Find("A").WithProjectReference(graph.Find("W"), watch: false);
 
             var output = new OutputSink();
-            var filesetFactory = new MsBuildFileSetFactory(_reporter, graph.GetOrCreate("A").Path, output)
+            var filesetFactory = new MsBuildFileSetFactory(_reporter, graph.GetOrCreate("A").Path, null, output)
             {
                 // enables capturing markers to know which projects have been visited
                 BuildFlags = { "/p:_DotNetWatchTraceOutput=true" }
@@ -280,7 +280,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         private Task<IFileSet> GetFileSet(TemporaryCSharpProject target)
-            => GetFileSet(new MsBuildFileSetFactory(_reporter, target.Path, waitOnError: false));
+            => GetFileSet(new MsBuildFileSetFactory(_reporter, target.Path, null, waitOnError: false));
 
         private async Task<IFileSet> GetFileSet(MsBuildFileSetFactory filesetFactory)
         {

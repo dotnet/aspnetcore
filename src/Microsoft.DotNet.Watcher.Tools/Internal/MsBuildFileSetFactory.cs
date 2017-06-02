@@ -21,19 +21,26 @@ namespace Microsoft.DotNet.Watcher.Internal
         private const string WatchTargetsFileName = "DotNetWatchCommon.targets";
         private readonly IReporter _reporter;
         private readonly string _projectFile;
+        private readonly string _projectExtensionsPath;
         private readonly string _watchTargetsDir;
         private readonly OutputSink _outputSink;
         private readonly ProcessRunner _processRunner;
         private readonly bool _waitOnError;
 
-        public MsBuildFileSetFactory(IReporter reporter, string projectFile, bool waitOnError)
-            : this(reporter, projectFile, new OutputSink())
+        public MsBuildFileSetFactory(IReporter reporter,
+            string projectFile,
+            string msBuildProjectExtensionsPath,
+            bool waitOnError)
+            : this(reporter, projectFile, msBuildProjectExtensionsPath, new OutputSink())
         {
             _waitOnError = waitOnError;
         }
 
         // output sink is for testing
-        internal MsBuildFileSetFactory(IReporter reporter, string projectFile, OutputSink outputSink)
+        internal MsBuildFileSetFactory(IReporter reporter,
+            string projectFile,
+            string msBuildProjectExtensionsPath,
+            OutputSink outputSink)
         {
             Ensure.NotNull(reporter, nameof(reporter));
             Ensure.NotNullOrEmpty(projectFile, nameof(projectFile));
@@ -44,6 +51,11 @@ namespace Microsoft.DotNet.Watcher.Internal
             _watchTargetsDir = FindWatchTargetsDir();
             _outputSink = outputSink;
             _processRunner = new ProcessRunner(reporter);
+
+            // default value for MSBuildProjectExtensionsPath is $(BaseIntermediateOutputPath), which defaults to 'obj/'.
+            _projectExtensionsPath = string.IsNullOrEmpty(msBuildProjectExtensionsPath)
+                ? Path.Combine(Path.GetDirectoryName(_projectFile), "obj")
+                : msBuildProjectExtensionsPath;
         }
 
         internal List<string> BuildFlags { get; } = new List<string>
@@ -153,11 +165,8 @@ namespace Microsoft.DotNet.Watcher.Internal
         // Ensures file exists in $(MSBuildProjectExtensionsPath)/$(MSBuildProjectFile).dotnetwatch.targets
         private void EnsureInitialized()
         {
-            // default value for MSBuildProjectExtensionsPath.
-            var projectExtensionsPath = Path.Combine(Path.GetDirectoryName(_projectFile), "obj");
-
             // see https://github.com/Microsoft/msbuild/blob/bf9b21cc7869b96ea2289ff31f6aaa5e1d525a26/src/XMakeTasks/Microsoft.Common.targets#L127
-            var projectExtensionFile = Path.Combine(projectExtensionsPath,
+            var projectExtensionFile = Path.Combine(_projectExtensionsPath,
                 Path.GetFileName(_projectFile) + ProjectExtensionFileExtension);
 
             if (!File.Exists(projectExtensionFile))

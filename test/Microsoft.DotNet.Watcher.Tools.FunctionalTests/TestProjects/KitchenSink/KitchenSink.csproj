@@ -1,8 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>.net/obj</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

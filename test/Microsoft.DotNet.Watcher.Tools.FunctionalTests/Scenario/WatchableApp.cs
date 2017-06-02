@@ -96,12 +96,17 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 await PrepareAsync();
             }
 
-            var args = new[] { "run", "--" }.Concat(arguments);
+            var args = GetDefaultArgs().Concat(arguments);
             Start(args, name);
 
             // Make this timeout long because it depends much on the MSBuild compilation speed.
             // Slow machines may take a bit to compile and boot test apps
             await Process.GetOutputLineAsync(StartedMessage).TimeoutAfter(TimeSpan.FromMinutes(2));
+        }
+
+        protected virtual IEnumerable<string> GetDefaultArgs()
+        {
+            return new[] { "run", "--" };
         }
 
         public virtual void Dispose()
