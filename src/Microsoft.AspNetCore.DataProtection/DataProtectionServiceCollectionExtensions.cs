@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -77,6 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IKeyManager, XmlKeyManager>();
             services.TryAddSingleton<IApplicationDiscriminator, HostingApplicationDiscriminator>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter, DataProtectionStartupFilter>());
 
             // Internal services
             services.TryAddSingleton<IDefaultKeyResolver, DefaultKeyResolver>();

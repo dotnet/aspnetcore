@@ -129,6 +129,10 @@ namespace Microsoft.Extensions.Logging
 
         private static Action<ILogger, Exception> _policyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing;
 
+        private static Action<ILogger, Guid, Exception> _keyRingWasLoadedOnStartup;
+
+        private static Action<ILogger, Exception> _keyRingFailedToLoadOnStartup;
+
         private static Action<ILogger, Exception> _usingEphemeralKeyRepository;
 
         private static Action<ILogger, string, Exception> _usingRegistryAsKeyRepositoryWithDPAPI;
@@ -388,6 +392,14 @@ namespace Microsoft.Extensions.Logging
             _usingAzureAsKeyRepository = LoggerMessage.Define<string>(eventId: 0,
                 logLevel: LogLevel.Information,
                 formatString: "Azure Web Sites environment detected. Using '{FullName}' as key repository; keys will not be encrypted at rest.");
+            _keyRingWasLoadedOnStartup = LoggerMessage.Define<Guid>(
+                eventId: 0,
+                logLevel: LogLevel.Debug,
+                formatString: "Key ring with default key {KeyId:B} was loaded during application startup.");
+            _keyRingFailedToLoadOnStartup = LoggerMessage.Define(
+                eventId: 0,
+                logLevel: LogLevel.Information,
+                formatString: "Key ring failed to load during application startup.");
         }
 
         /// <summary>
@@ -759,6 +771,16 @@ namespace Microsoft.Extensions.Logging
         public static void UsingAzureAsKeyRepository(this ILogger logger, string fullName)
         {
             _usingAzureAsKeyRepository(logger, fullName, null);
+        }
+
+        public static void KeyRingWasLoadedOnStartup(this ILogger logger, Guid defaultKeyId)
+        {
+            _keyRingWasLoadedOnStartup(logger, defaultKeyId, null);
+        }
+
+        public static void KeyRingFailedToLoadOnStartup(this ILogger logger, Exception innerException)
+        {
+            _keyRingFailedToLoadOnStartup(logger, innerException);
         }
     }
 }
