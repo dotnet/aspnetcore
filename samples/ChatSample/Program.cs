@@ -15,7 +15,7 @@ namespace ChatSample
                 .UseSetting(WebHostDefaults.PreventHostingStartupKey, "true")
                 .ConfigureLogging((context, factory) =>
                 {
-                    factory.UseConfiguration(context.Configuration.GetSection("Logging"));
+                    factory.AddConfiguration(context.Configuration.GetSection("Logging"));
                     factory.AddConsole();
                     factory.AddDebug();
                 })
