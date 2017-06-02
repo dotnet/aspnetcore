@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Tests
             {
                 File.WriteAllText("appsettings.json", @"
 {
-    ""Kestrel"": {
+    ""Microsoft:AspNetCore:Server:Kestrel"": {
         ""EndPoints"": {
             ""EndPoint"": {
                 ""Address"": """ + endPointAddress + @""",
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Tests
             {
                 File.WriteAllText("appsettings.json", @"
 {
-    ""Kestrel"": {
+    ""Microsoft:AspNetCore:Server:Kestrel"": {
         ""EndPoints"": {
             ""EndPoint"": {
                 ""Address"": ""127.0.0.1"",
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Tests
             {
                 File.WriteAllText("appsettings.json", @"
 {
-    ""Kestrel"": {
+    ""Microsoft:AspNetCore:Server:Kestrel"": {
         ""EndPoints"": {
             ""EndPoint"": {
                 ""Address"": ""127.0.0.1"",

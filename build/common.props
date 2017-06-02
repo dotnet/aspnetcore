@@ -55,7 +55,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <MetaPackagePackageReference Include="Microsoft.AspNetCore.Certificates.Configuration" />
     <MetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics" />
     <MetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting" />
     <MetaPackagePackageReference Include="Microsoft.AspNetCore.Routing" />
