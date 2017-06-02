@@ -15,11 +15,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             get
             {
                 yield return RuntimeFlavor.CoreClr;
-                // Can't run on CLR until https://github.com/dotnet/corefx/issues/20364 is resolved.
-                //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                //{
-                //    yield return RuntimeFlavor.Clr;
-                //}
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    yield return RuntimeFlavor.Clr;
+                }
             }
         }
 
