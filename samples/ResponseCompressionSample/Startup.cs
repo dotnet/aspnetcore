@@ -72,7 +72,8 @@ namespace ResponseCompressionSample
                 .UseKestrel()
                 .ConfigureLogging(factory =>
                 {
-                    factory.AddConsole(LogLevel.Debug);
+                    factory.AddConsole()
+                        .SetMinimumLevel(LogLevel.Debug);
                 })
                 .UseStartup<Startup>()
                 .Build();
