@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                         Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.EmptyCSharp().AsStatement(),
                     Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                 new RazorError(
