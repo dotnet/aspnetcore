@@ -11,17 +11,7 @@
   },
   {
     "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
-    "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureLogging<T0>(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, T0> configureLogging) where T0 : Microsoft.Extensions.Logging.ILoggerFactory",
-    "Kind": "Addition"
-  },
-  {
-    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
     "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceCollection> configureServices)",
-    "Kind": "Addition"
-  },
-  {
-    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
-    "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder UseLoggerFactory(System.Func<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Logging.ILoggerFactory> createLoggerFactory)",
     "Kind": "Addition"
   },
   {
@@ -38,5 +28,10 @@
     "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
     "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureLogging(System.Action<Microsoft.Extensions.Logging.ILoggerFactory> configureLogging)",
     "Kind": "Removal"
-  }
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+    "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder UseLoggerFactory(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory)",
+    "Kind": "Removal"
+   }
 ]

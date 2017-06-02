@@ -12,5 +12,10 @@
       "TypeId": "public static class Microsoft.AspNetCore.Hosting.WebHostExtensions",
       "MemberId": "public static System.Void Run(this Microsoft.AspNetCore.Hosting.IWebHost host, System.Threading.CancellationToken token)",
       "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Hosting.WebHostBuilder : Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+      "MemberId": "public Microsoft.AspNetCore.Hosting.IWebHostBuilder UseLoggerFactory(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory)",
+      "Kind": "Removal"
     }
 ]

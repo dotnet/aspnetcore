@@ -34,8 +34,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.WindowsServices", "src\Microsoft.AspNetCore.Hosting.WindowsServices\Microsoft.AspNetCore.Hosting.WindowsServices.csproj", "{9C93A93B-270A-4785-8F41-46C38DC33825}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Certificates.Configuration", "src\Microsoft.AspNetCore.Certificates.Configuration\Microsoft.AspNetCore.Certificates.Configuration.csproj", "{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Certificates.Configuration.Tests", "test\Microsoft.AspNetCore.Certificates.Configuration.Tests\Microsoft.AspNetCore.Certificates.Configuration.Tests.csproj", "{AB0B7394-278D-4838-A59C-276ED88D00CC}"
 EndProject
 Global
@@ -196,18 +194,6 @@ Global
 		{9C93A93B-270A-4785-8F41-46C38DC33825}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{9C93A93B-270A-4785-8F41-46C38DC33825}.Release|x86.ActiveCfg = Release|Any CPU
 		{9C93A93B-270A-4785-8F41-46C38DC33825}.Release|x86.Build.0 = Release|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Debug|x86.Build.0 = Debug|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Release|x86.ActiveCfg = Release|Any CPU
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4}.Release|x86.Build.0 = Release|Any CPU
 		{AB0B7394-278D-4838-A59C-276ED88D00CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AB0B7394-278D-4838-A59C-276ED88D00CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB0B7394-278D-4838-A59C-276ED88D00CC}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -238,7 +224,6 @@ Global
 		{39D3B138-37DB-4D03-A5A0-3F2B02EFC671} = {FEB39027-9158-4DE2-997F-7ADAEF8188D0}
 		{96BC7EEA-64D9-4DA5-8E87-1C18CBFE7D12} = {E0497F39-AFFB-4819-A116-E39E361915AB}
 		{9C93A93B-270A-4785-8F41-46C38DC33825} = {E0497F39-AFFB-4819-A116-E39E361915AB}
-		{A911A891-EAC5-4AA1-B17E-B83A1BB1E8B4} = {E0497F39-AFFB-4819-A116-E39E361915AB}
 		{AB0B7394-278D-4838-A59C-276ED88D00CC} = {FEB39027-9158-4DE2-997F-7ADAEF8188D0}
 	EndGlobalSection
 EndGlobal

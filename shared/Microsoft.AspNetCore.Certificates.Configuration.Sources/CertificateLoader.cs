@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration
     /// <summary>
     /// A helper class to load certificates from files and certificate stores based on <seealso cref="IConfiguration"/> data.
     /// </summary>
-    public class CertificateLoader
+    internal class CertificateLoader
     {
         private readonly IConfiguration _certificatesConfiguration;
         private readonly string _environmentName;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration
         /// Creates a new instance of <see cref="CertificateLoader"/> that can load certificate references from configuration.
         /// </summary>
         /// <param name="certificatesConfiguration">An <see cref="IConfiguration"/> with information about certificates.</param>
-        public CertificateLoader(IConfiguration certificatesConfiguration)
+        internal CertificateLoader(IConfiguration certificatesConfiguration)
             : this(certificatesConfiguration, null, null)
         {
         }
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration
         /// </summary>
         /// <param name="certificatesConfiguration">An <see cref="IConfiguration"/> with information about certificates.</param>
         /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance.</param>
-        public CertificateLoader(IConfiguration certificatesConfiguration, ILoggerFactory loggerFactory)
+        internal CertificateLoader(IConfiguration certificatesConfiguration, ILoggerFactory loggerFactory)
             : this(certificatesConfiguration, loggerFactory, null)
         {
         }
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration
         /// <param name="certificatesConfiguration">An <see cref="IConfiguration"/> with information about certificates.</param>
         /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance.</param>
         /// <param name="environmentName">The name of the environment the application is running in.</param>
-        public CertificateLoader(IConfiguration certificatesConfiguration, ILoggerFactory loggerFactory, string environmentName)
+        internal CertificateLoader(IConfiguration certificatesConfiguration, ILoggerFactory loggerFactory, string environmentName)
             : this(certificatesConfiguration, loggerFactory, environmentName, new CertificateFileLoader(), new CertificateStoreLoader())
         {
         }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration
         /// by name, or one or more inline certificate specifications.
         /// </param>
         /// <returns>One or more loaded certificates.</returns>
-        public IEnumerable<X509Certificate2> Load(IConfigurationSection certificateConfiguration)
+        internal IEnumerable<X509Certificate2> Load(IConfigurationSection certificateConfiguration)
         {
             var certificateNames = certificateConfiguration.Value;
             var certificates = new List<X509Certificate2>();
@@ -182,6 +182,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration
 #if NETCOREAPP2_0
                     ?? TryLoad(X509KeyStorageFlags.EphemeralKeySet, out error)
 #elif NETSTANDARD2_0
+#elif NET461
 #else
 #error target frameworks need to be updated
 #endif

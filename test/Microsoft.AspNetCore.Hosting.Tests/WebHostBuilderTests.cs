@@ -204,29 +204,12 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     Assert.NotNull(context.HostingEnvironment);
                     Assert.NotNull(context.Configuration);
-                    Assert.NotNull(context.LoggerFactory);
                     configurationCallbackCalled = true;
                     options.ValidateScopes = true;
                 });
 
             Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
             Assert.True(configurationCallbackCalled);
-        }
-
-        [Fact]
-        public void UseLoggerFactoryHonored()
-        {
-            var loggerFactory = new LoggerFactory();
-
-            var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(loggerFactory)
-                .UseServer(new TestServer())
-                .UseStartup<StartupNoServices>();
-
-            using (var host = (WebHost)hostBuilder.Build())
-            {
-                Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
-            }
         }
 
         [Fact]
@@ -248,46 +231,6 @@ namespace Microsoft.AspNetCore.Hosting
             using (hostBuilder.Build())
             {
                 Assert.Equal(2, callCount);
-            }
-        }
-
-        [Fact]
-        public void UseLoggerFactoryDelegateIsHonored()
-        {
-            var loggerFactory = new LoggerFactory();
-
-            var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_ => loggerFactory)
-                .UseServer(new TestServer())
-                .UseStartup<StartupNoServices>();
-
-            using (var host = (WebHost)hostBuilder.Build())
-            {
-                Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
-            }
-        }
-
-        [Fact]
-        public void UseLoggerFactoryFuncAndConfigureLoggingCompose()
-        {
-            var callCount = 0; //Verify that multiple configureLogging calls still compose correctly.
-            var loggerFactory = new LoggerFactory();
-            var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_ => loggerFactory)
-                .ConfigureLogging(factory =>
-                {
-                    Assert.Equal(0, callCount++);
-                })
-                .ConfigureLogging(factory =>
-                {
-                    Assert.Equal(1, callCount++);
-                })
-                .UseServer(new TestServer())
-                .UseStartup<StartupNoServices>();
-            using (var host = (WebHost)hostBuilder.Build())
-            {
-                Assert.Equal(2, callCount);
-                Assert.Same(loggerFactory, host.Services.GetService<ILoggerFactory>());
             }
         }
 
@@ -329,62 +272,6 @@ namespace Microsoft.AspNetCore.Hosting
                  .UseStartup<StartupNoServices>();
 
             using (hostBuilder.Build()) { }
-        }
-
-        [Fact]
-        public void ConfigureLoggingCalledIfLoggerFactoryTypeMatches()
-        {
-            var callCount = 0;
-            var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_ => new SubLoggerFactory())
-                .ConfigureLogging<CustomLoggerFactory>(factory =>
-                {
-                    Assert.Equal(0, callCount++);
-                })
-                .UseServer(new TestServer())
-                .UseStartup<StartupNoServices>();
-
-            using (hostBuilder.Build())
-            {
-                Assert.Equal(1, callCount);
-            }
-        }
-
-        [Fact]
-        public void ConfigureLoggingNotCalledIfLoggerFactoryTypeDoesNotMatches()
-        {
-            var callCount = 0;
-            var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_ => new NonSubLoggerFactory())
-                .ConfigureLogging<CustomLoggerFactory>(factory =>
-                {
-                    Assert.Equal(0, callCount++);
-                })
-                .UseServer(new TestServer())
-                .UseStartup<StartupNoServices>();
-
-            using (hostBuilder.Build())
-            {
-                Assert.Equal(0, callCount);
-            }
-        }
-
-        [Fact]
-        public void CanUseCustomLoggerFactory()
-        {
-            var hostBuilder = new WebHostBuilder()
-                .UseLoggerFactory(_ => new CustomLoggerFactory())
-                .ConfigureLogging<CustomLoggerFactory>(factory =>
-                {
-                    factory.CustomConfigureMethod();
-                })
-                .UseServer(new TestServer())
-                .UseStartup<StartupNoServices>();
-
-            using (var host = (WebHost)hostBuilder.Build())
-            {
-                Assert.IsType(typeof(CustomLoggerFactory), host.Services.GetService<ILoggerFactory>());
-            }
         }
 
         [Fact]
@@ -791,52 +678,6 @@ namespace Microsoft.AspNetCore.Hosting
                 var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
                 Assert.Equal("WebHostBuilder allows creation only of a single instance of WebHost", ex.Message);
             }
-        }
-
-        [Fact]
-        public void Build_PassesSameAutoCreatedILoggerFactoryEverywhere()
-        {
-            var builder = CreateWebHostBuilder();
-            var server = new TestServer();
-            using (var host = builder.UseServer(server)
-                .UseStartup<StartupWithILoggerFactory>()
-                .Build())
-            {
-                var startup = host.Services.GetService<StartupWithILoggerFactory>();
-                Assert.Equal(startup.ConfigureLoggerFactory, startup.ConstructorLoggerFactory);
-            }
-        }
-
-        [Fact]
-        public void Build_PassesSamePassedILoggerFactoryEverywhere()
-        {
-            var factory = new LoggerFactory();
-            var builder = CreateWebHostBuilder();
-            var server = new TestServer();
-            using (var host = builder.UseServer(server)
-                .UseLoggerFactory(factory)
-                .UseStartup<StartupWithILoggerFactory>()
-                .Build())
-            {
-                var startup = host.Services.GetService<StartupWithILoggerFactory>();
-                Assert.Equal(factory, startup.ConfigureLoggerFactory);
-                Assert.Equal(factory, startup.ConstructorLoggerFactory);
-            }
-        }
-
-        [Fact]
-        public void Build_PassedILoggerFactoryNotDisposed()
-        {
-            var factory = new DisposableLoggerFactory();
-            var builder = CreateWebHostBuilder();
-            var server = new TestServer();
-
-            using (var host = builder.UseServer(server)
-                .UseLoggerFactory(factory)
-                .UseStartup<StartupWithILoggerFactory>()
-                .Build()) { }
-
-            Assert.False(factory.Disposed);
         }
 
         [Fact]

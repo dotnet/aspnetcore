@@ -4,6 +4,7 @@
       // Don't run any rules for packages that don't ship.
     ],
     "packages": {
+      "Microsoft.AspNetCore.Certificates.Configuration.Sources": {},
       "Microsoft.AspNetCore.Server.IntegrationTesting": {}
     }
   },

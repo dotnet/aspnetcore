@@ -20,10 +20,5 @@ namespace Microsoft.AspNetCore.Hosting
         /// The <see cref="IConfiguration" /> containing the merged configuration of the application and the <see cref="IWebHost" />.
         /// </summary>
         public IConfiguration Configuration { get; set; }
-
-        /// <summary>
-        /// The <see cref="ILoggerFactory" /> configured on the <see cref="IWebHost" />.
-        /// </summary>
-        public ILoggerFactory LoggerFactory { get; set; }
     }
 }
