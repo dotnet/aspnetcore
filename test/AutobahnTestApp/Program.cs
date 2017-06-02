@@ -15,12 +15,8 @@ namespace AutobahnTestApp
                 .AddCommandLine(args)
                 .Build();
 
-            var loggerFactory = new LoggerFactory()
-                .AddConsole();
-            var logger = loggerFactory.CreateLogger<Program>();
-
             var builder = new WebHostBuilder()
-                .UseLoggerFactory(loggerFactory)
+                .ConfigureLogging(loggingBuilder => loggingBuilder.AddConsole())
                 .UseConfiguration(config)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
@@ -28,14 +24,14 @@ namespace AutobahnTestApp
 
             if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
             {
-                logger.LogInformation("Using HttpSys server");
+                Console.WriteLine("Using HttpSys server");
                 builder.UseHttpSys();
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
             {
                 // ANCM is hosting the process.
                 // The port will not yet be configured at this point, but will also not require HTTPS.
-                logger.LogInformation("Detected ANCM, using Kestrel");
+                Console.WriteLine("Detected ANCM, using Kestrel");
                 builder.UseKestrel();
             }
             else
@@ -44,7 +40,7 @@ namespace AutobahnTestApp
                 var urls = builder.GetSetting(WebHostDefaults.ServerUrlsKey) ?? builder.GetSetting("server.urls");
                 builder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
 
-                logger.LogInformation("Using Kestrel, URL: {url}", urls);
+                Console.WriteLine("Using Kestrel, URL: {url}", urls);
 
                 if (urls.Contains(";"))
                 {
@@ -60,7 +56,7 @@ namespace AutobahnTestApp
                         if (uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
                         {
                             var certPath = Path.Combine(AppContext.BaseDirectory, "TestResources", "testCert.pfx");
-                            logger.LogInformation("Using SSL with certificate: {certPath}", certPath);
+                            Console.WriteLine("Using SSL with certificate: {certPath}", certPath);
                             listenOptions.UseHttps(certPath, "testPassword");
                         }
                     });
