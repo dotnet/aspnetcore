@@ -32,6 +32,8 @@
     <TempDir>$(ArtifactsDir)temp\</TempDir>
     <ToolsDir>$(RepositoryRoot)tools\</ToolsDir>
     <DependencyBuildDirectory>$(RepositoryRoot).deps\build\</DependencyBuildDirectory>
+    <RuntimeStoreReferenceDirectory>$(ToolsDir)Build.RuntimeStore.References\</RuntimeStoreReferenceDirectory>
+    <RuntimeStoreReferencePackageDirectory>$(RuntimeStoreReferenceDirectory)bin\Release\</RuntimeStoreReferencePackageDirectory>
     <PrepareDependsOn>
       $(PrepareDependsOn);
       UpdateNuGetConfig
@@ -52,6 +54,8 @@
       <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
     </GetOSPlatform>
 
+    <Error Text="Please specify the platform for the runtime package store via PACKAGE_CACHE_PLATFORM: {x64|x86}." Condition="'$(PACKAGE_CACHE_PLATFORM)' == ''"/>
+
     <PropertyGroup>
       <OutputZipSufix Condition="'$(OSPlatform)' == 'Windows'">win$(PACKAGE_CACHE_PLATFORM)</OutputZipSufix>
       <OutputZipSufix Condition="'$(OSPlatform)' == 'Linux'">linux</OutputZipSufix>
@@ -64,10 +68,25 @@
       <OutputZipNoTimestamp>$(ArtifactsDir)Build.RS.$(OutputZipSufix).zip</OutputZipNoTimestamp>
     </PropertyGroup>
 
+    <!-- Build reference package -->
+    <Exec Command="dotnet restore" WorkingDirectory="$(RuntimeStoreReferenceDirectory)" />
+    <MSBuild Projects="$(RuntimeStoreReferenceDirectory)\Build.RuntimeStore.References.csproj"
+      Targets="Pack"
+      Properties="Configuration=Release" />
+
+    <UpdatePackageSource
+      NuGetConfigPath="$(RepositoryRoot)NuGet.config"
+      SourceName="RuntimeStoreReference"
+      SourceUri="$(RuntimeStoreReferencePackageDirectory)"
+      Condition="Exists('$(RuntimeStoreReferencePackageDirectory)')" />
+
+    <!-- Build runtime store -->
     <RemoveDir Directories="$(PackageCacheOutputPath)" />
     <RemoveDir Directories="$(WorkingDirectory)" />
-    <Exec Command="dotnet store --manifest $(MetaPackageFile) --framework netcoreapp2.0 --runtime $(RID) --output $(PackageCacheOutputPath) --framework-version 2.0.0-* --working-dir $(WorkingDirectory) --skip-symbols" />
 
+    <Exec Command="dotnet store -m $(MetaPackageFile) -f netcoreapp2.0 -r $(RID) -o $(PackageCacheOutputPath) --framework-version 2.0.0-* -w $(WorkingDirectory) --skip-symbols" />
+
+    <!-- Create deps files for hosting startup -->
     <Exec Command="dotnet restore" WorkingDirectory="$(RepositoryRoot)tools\TrimDeps" />
     <Exec Command="dotnet restore" WorkingDirectory="$(HostingStartupTemplatePath)" />
 
