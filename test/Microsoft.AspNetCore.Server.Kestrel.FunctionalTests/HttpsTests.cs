@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task EmptyRequestLoggedAsInformation()
         {
-            var loggerFactory = new HandshakeErrorLoggerFactory();
+            var loggerProvider = new HandshakeErrorLoggerProvider();
 
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .UseLoggerFactory(loggerFactory)
+                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => { });
 
             using (var host = hostBuilder.Build())
@@ -48,19 +49,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Close socket immediately
                 }
 
-                await loggerFactory.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+                await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
             }
 
-            Assert.Equal(1, loggerFactory.FilterLogger.LastEventId.Id);
-            Assert.Equal(LogLevel.Information, loggerFactory.FilterLogger.LastLogLevel);
-            Assert.True(loggerFactory.ErrorLogger.TotalErrorsLogged == 0,
-                userMessage: string.Join(Environment.NewLine, loggerFactory.ErrorLogger.ErrorMessages));
+            Assert.Equal(1, loggerProvider.FilterLogger.LastEventId.Id);
+            Assert.Equal(LogLevel.Information, loggerProvider.FilterLogger.LastLogLevel);
+            Assert.True(loggerProvider.ErrorLogger.TotalErrorsLogged == 0,
+                userMessage: string.Join(Environment.NewLine, loggerProvider.ErrorLogger.ErrorMessages));
         }
 
         [Fact]
         public async Task ClientHandshakeFailureLoggedAsInformation()
         {
-            var loggerFactory = new HandshakeErrorLoggerFactory();
+            var loggerProvider = new HandshakeErrorLoggerProvider();
 
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .UseLoggerFactory(loggerFactory)
+                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => { });
 
             using (var host = hostBuilder.Build())
@@ -84,20 +85,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await stream.WriteAsync(new byte[10], 0, 10);
                 }
 
-                await loggerFactory.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+                await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
             }
 
-            Assert.Equal(1, loggerFactory.FilterLogger.LastEventId.Id);
-            Assert.Equal(LogLevel.Information, loggerFactory.FilterLogger.LastLogLevel);
-            Assert.True(loggerFactory.ErrorLogger.TotalErrorsLogged == 0,
-                userMessage: string.Join(Environment.NewLine, loggerFactory.ErrorLogger.ErrorMessages));
+            Assert.Equal(1, loggerProvider.FilterLogger.LastEventId.Id);
+            Assert.Equal(LogLevel.Information, loggerProvider.FilterLogger.LastLogLevel);
+            Assert.True(loggerProvider.ErrorLogger.TotalErrorsLogged == 0,
+                userMessage: string.Join(Environment.NewLine, loggerProvider.ErrorLogger.ErrorMessages));
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1103#issuecomment-246971172
         [Fact]
         public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
         {
-            var loggerFactory = new HandshakeErrorLoggerFactory();
+            var loggerProvider = new HandshakeErrorLoggerProvider();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .UseLoggerFactory(loggerFactory)
+                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => app.Run(async httpContext =>
                 {
                     var ct = httpContext.RequestAborted;
@@ -142,14 +143,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            Assert.False(loggerFactory.ErrorLogger.ObjectDisposedExceptionLogged);
+            Assert.False(loggerProvider.ErrorLogger.ObjectDisposedExceptionLogged);
         }
 
         [Fact]
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
             var tcs = new TaskCompletionSource<object>();
-            var loggerFactory = new HandshakeErrorLoggerFactory();
+            var loggerProvider = new HandshakeErrorLoggerProvider();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .UseLoggerFactory(loggerFactory)
+                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => app.Run(async httpContext =>
                 {
                     httpContext.Abort();
@@ -198,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task DoesNotThrowObjectDisposedExceptionOnEmptyConnection()
         {
-            var loggerFactory = new HandshakeErrorLoggerFactory();
+            var loggerProvider = new HandshakeErrorLoggerProvider();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
@@ -207,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .UseLoggerFactory(loggerFactory)
+                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => app.Run(httpContext => Task.CompletedTask));
 
             using (var host = hostBuilder.Build())
@@ -224,14 +225,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            Assert.False(loggerFactory.ErrorLogger.ObjectDisposedExceptionLogged);
+            Assert.False(loggerProvider.ErrorLogger.ObjectDisposedExceptionLogged);
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/pull/1197
         [Fact]
         public void ConnectionFilterDoesNotLeakBlock()
         {
-            var loggerFactory = new HandshakeErrorLoggerFactory();
+            var loggerProvider = new HandshakeErrorLoggerProvider();
 
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -241,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
-                .UseLoggerFactory(loggerFactory)
+                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
                 .Configure(app => { });
 
             using (var host = hostBuilder.Build())
@@ -258,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private class HandshakeErrorLoggerFactory : ILoggerFactory
+        private class HandshakeErrorLoggerProvider : ILoggerProvider
         {
             public HttpsConnectionFilterLogger FilterLogger { get; } = new HttpsConnectionFilterLogger();
             public ApplicationErrorLogger ErrorLogger { get; } = new ApplicationErrorLogger();
@@ -273,11 +274,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     return ErrorLogger;
                 }
-            }
-
-            public void AddProvider(ILoggerProvider provider)
-            {
-                throw new NotImplementedException();
             }
 
             public void Dispose()
