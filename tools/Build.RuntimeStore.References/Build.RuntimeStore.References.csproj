@@ -3,10 +3,11 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-   <PackageReference Include="Build.RuntimeStore.References" Version="$(AspNetCoreVersion)" />
+   <PackageReference Include="@(RuntimeStorePackageReference)" />
   </ItemGroup>
 </Project>
