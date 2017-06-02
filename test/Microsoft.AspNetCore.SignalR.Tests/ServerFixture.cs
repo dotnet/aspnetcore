@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private void StartServer()
         {
             host = new WebHostBuilder()
-                .UseLoggerFactory(_loggerFactory)
+                .ConfigureLogging(builder => builder.AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseKestrel()
                 .UseUrls(BaseUrl)
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -88,5 +88,4 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             host.Dispose();
         }
     }
-
 }

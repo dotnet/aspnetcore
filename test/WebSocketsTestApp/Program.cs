@@ -5,6 +5,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace WebSocketsTestApp
 {
@@ -21,7 +22,7 @@ namespace WebSocketsTestApp
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole();
-                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                    factory.AddFilter<ConsoleLoggerProvider>(level => level >= LogLevel.Debug);
                 })
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())

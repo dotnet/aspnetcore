@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
@@ -197,14 +198,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             _testServer.Dispose();
         }
 
-        private static LoggerFactory CreateLogger()
+        private static ILoggerFactory CreateLogger()
         {
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddConsole();
-            loggerFactory.AddFilter("Console", level => level >= (_verbose ? LogLevel.Trace : LogLevel.Error));
-            loggerFactory.AddDebug();
+            var serviceCollection = new ServiceCollection();
 
-            return loggerFactory;
+            serviceCollection.AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.AddFilter<ConsoleLoggerProvider>(level => level >= (_verbose ? LogLevel.Trace : LogLevel.Error));
+                builder.AddDebug();
+            });
+
+            return serviceCollection.BuildServiceProvider().GetRequiredService<ILoggerFactory>();
         }
 
         public class TestHub : Hub
