@@ -22,17 +22,8 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         [InlineData(ApplicationType.Standalone)]
         public async Task DefaultAILogFiltersApplied(ApplicationType applicationType)
         {
-            var responseText = await RunRequest(applicationType, "DefaultLogging", true);
+            var responseText = await RunRequest(applicationType, "DefaultLogging");
             AssertDefaultLogs(responseText);
-        }
-
-        [Theory]
-        [InlineData(ApplicationType.Portable)]
-        [InlineData(ApplicationType.Standalone)]
-        public async Task DefaultAILogFiltersAppliedWithoutConfiguration(ApplicationType applicationType)
-        {
-            var responseText = await RunRequest(applicationType, "DefaultLogging", false);
-            AssertDefaultNoConfigurationLogs(responseText);
         }
 
         [Theory]
@@ -40,7 +31,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         [InlineData(ApplicationType.Standalone)]
         public async Task CustomAILogFiltersApplied(ApplicationType applicationType)
         {
-            var responseText = await RunRequest(applicationType, "CustomLogging", true);
+            var responseText = await RunRequest(applicationType, "CustomLogging");
             AssertCustomLogs(responseText);
         }
 
@@ -75,37 +66,6 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             Assert.Contains("Specific trace log", responseText);
         }
 
-        private static void AssertDefaultNoConfigurationLogs(string responseText)
-        {
-            // Enabled by default
-            Assert.Contains("System warning log", responseText);
-            // Disabled by default
-            Assert.DoesNotContain("System information log", responseText);
-            // Disabled by default
-            Assert.DoesNotContain("System trace log", responseText);
-
-            // Enabled by default
-            Assert.Contains("Microsoft warning log", responseText);
-            // Disabled by default
-            Assert.DoesNotContain("Microsoft information log", responseText);
-            // Disabled by default
-            Assert.DoesNotContain("Microsoft trace log", responseText);
-
-            // Enabled by default
-            Assert.Contains("Custom warning log", responseText);
-            // Enabled by default
-            Assert.Contains("Custom information log", responseText);
-            // Disabled by default
-            Assert.DoesNotContain("Custom trace log", responseText);
-
-            // Enabled by default
-            Assert.Contains("Specific warning log", responseText);
-            // Enabled by default
-            Assert.Contains("Specific information log", responseText);
-            // Disabled by default
-            Assert.DoesNotContain("Specific trace log", responseText);
-        }
-
         private static void AssertCustomLogs(string responseText)
         {
             // Custom logger allows only namespaces with 'o' in the name
@@ -130,7 +90,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             Assert.DoesNotContain("Specific trace log", responseText);
         }
 
-        private async Task<string> RunRequest(ApplicationType applicationType, string environment, bool wireConfiguration)
+        private async Task<string> RunRequest(ApplicationType applicationType, string environment)
         {
             string responseText;
             var testName = $"ApplicationInsightsLoggingTest_{applicationType}";
@@ -153,10 +113,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                             "Microsoft.AspNetCore.ApplicationInsights.HostingStartup"),
                         new KeyValuePair<string, string>(
                             "HOME",
-                            Path.Combine(GetApplicationPath(), "home")),
-                        new KeyValuePair<string, string>(
-                            "ASPNETCORE_WIRE_LOGGING_CONFIGURATION",
-                            wireConfiguration.ToString()),
+                            Path.Combine(GetApplicationPath(), "home"))
                     },
                 };
 

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(hostBuilder));
             }
 #pragma warning disable 618
-            hostBuilder.ConfigureLogging(loggerFactory => loggerFactory.AddAzureWebAppDiagnostics());
+            hostBuilder.ConfigureLogging(builder => builder.AddAzureWebAppDiagnostics());
 #pragma warning restore 618
             return hostBuilder;
         }
