@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
-                    logging.UseConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
                     logging.AddDebug();
                 })
