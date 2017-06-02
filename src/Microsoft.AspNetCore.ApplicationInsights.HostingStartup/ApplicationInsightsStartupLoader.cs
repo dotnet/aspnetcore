@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
                 var settingsFile = Path.Combine(home, "site", "diagnostics", ApplicationInsightsSettingsFile);
                 var configurationBuilder = new ConfigurationBuilder();
                 configurationBuilder.AddJsonFile(settingsFile, optional: true);
-                services.AddLogging(builder => builder.AddConfiguration(configurationBuilder.Build().GetSection("Logging"), replace: true));
+                services.AddLogging(builder => builder.AddConfiguration(configurationBuilder.Build().GetSection("Logging")));
             }
         }
     }
