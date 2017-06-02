@@ -3,6 +3,7 @@
 
 using System;
 using System.Binary.Base64;
+using System.Buffers;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
@@ -13,11 +14,11 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             if (inputPayload.Length > 0)
             {
                 // Determine the output size
-                var decodedLength = Base64Encoder.ComputeDecodedLength(inputPayload);
+                var decodedLength = Base64Decoder.ComputeDecodedLength(inputPayload);
 
                 // Allocate a new buffer to decode to
                 var decodeBuffer = new byte[decodedLength];
-                if (!Base64Encoder.TryDecode(inputPayload, decodeBuffer, out _, out var _))
+                if (Base64.Decoder.Transform(inputPayload, decodeBuffer, out _, out var _) != TransformationStatus.Done)
                 {
                     throw new FormatException("Invalid Base64 payload");
                 }
