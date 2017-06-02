@@ -174,12 +174,9 @@
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Relational.Design" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" PrivateAssets="Build" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-    <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" />
     <FullMetaPackagePackageReference Include="Microsoft.EntityFrameworkCore.Tools" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Caching.Memory" />
