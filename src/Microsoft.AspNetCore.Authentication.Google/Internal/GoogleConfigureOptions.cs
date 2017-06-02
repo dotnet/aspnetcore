@@ -4,9 +4,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options.Infrastructure;
 
-namespace Microsoft.AspNetCore.Authentication.Google
+namespace Microsoft.AspNetCore.Authentication.Google.Internal
 {
-    internal class GoogleConfigureOptions : ConfigureDefaultOptions<GoogleOptions>
+    public class GoogleConfigureOptions : ConfigureDefaultOptions<GoogleOptions>
     {
         public GoogleConfigureOptions(IConfiguration config) :
             base(GoogleDefaults.AuthenticationScheme,

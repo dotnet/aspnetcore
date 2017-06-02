@@ -4,9 +4,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options.Infrastructure;
 
-namespace Microsoft.AspNetCore.Authentication.JwtBearer
+namespace Microsoft.AspNetCore.Authentication.JwtBearer.Internal
 {
-    internal class JwtBearerConfigureOptions : ConfigureDefaultOptions<JwtBearerOptions>
+    public class JwtBearerConfigureOptions : ConfigureDefaultOptions<JwtBearerOptions>
     {
         // Bind to "Bearer" section by default
         public JwtBearerConfigureOptions(IConfiguration config) :

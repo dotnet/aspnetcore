@@ -14,21 +14,21 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     /// <summary>
     /// Used to setup defaults for all <see cref="OpenIdConnectOptions"/>.
     /// </summary>
-    public class OpenIdConnectInitializer : IInitializeOptions<OpenIdConnectOptions>
+    public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdConnectOptions>
     {
         private readonly IDataProtectionProvider _dp;
 
-        public OpenIdConnectInitializer(IDataProtectionProvider dataProtection)
+        public OpenIdConnectPostConfigureOptions(IDataProtectionProvider dataProtection)
         {
             _dp = dataProtection;
         }
 
         /// <summary>
-        /// Invoked to initialize a TOptions instance.
+        /// Invoked to post configure a TOptions instance.
         /// </summary>
-        /// <param name="name">The name of the options instance being initialized.</param>
-        /// <param name="options">The options instance to initialize.</param>
-        public void Initialize(string name, OpenIdConnectOptions options)
+        /// <param name="name">The name of the options instance being configured.</param>
+        /// <param name="options">The options instance to configure.</param>
+        public void PostConfigure(string name, OpenIdConnectOptions options)
         {
             options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
 

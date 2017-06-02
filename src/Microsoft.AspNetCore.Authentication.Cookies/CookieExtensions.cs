@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddCookieAuthentication(this IServiceCollection services, string authenticationScheme, Action<CookieAuthenticationOptions> configureOptions)
         {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IInitializeOptions<CookieAuthenticationOptions>, CookieAuthenticationInitializer>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureCookieAuthenticationOptions>());
             return services.AddScheme<CookieAuthenticationOptions, CookieAuthenticationHandler>(authenticationScheme, configureOptions);
         }
     }

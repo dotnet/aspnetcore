@@ -4,9 +4,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options.Infrastructure;
 
-namespace Microsoft.AspNetCore.Authentication.Twitter
+namespace Microsoft.AspNetCore.Authentication.Twitter.Internal
 {
-    internal class TwitterConfigureOptions : ConfigureDefaultOptions<TwitterOptions>
+    public class TwitterConfigureOptions : ConfigureDefaultOptions<TwitterOptions>
     {
         // Bind to "Twitter" section by default
         public TwitterConfigureOptions(IConfiguration config) :

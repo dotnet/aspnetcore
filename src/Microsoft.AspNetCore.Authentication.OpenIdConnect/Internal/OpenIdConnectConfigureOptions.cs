@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options.Infrastructure;
 
-namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.OpenIdConnect.Internal
 {
     internal class OpenIdConnectConfigureOptions : ConfigureDefaultOptions<OpenIdConnectOptions>
     {

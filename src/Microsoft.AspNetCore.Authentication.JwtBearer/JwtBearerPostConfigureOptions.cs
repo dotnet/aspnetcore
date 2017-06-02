@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     /// <summary>
     /// Used to setup defaults for all <see cref="JwtBearerOptions"/>.
     /// </summary>
-    public class JwtBearerInitializer : IInitializeOptions<JwtBearerOptions>
+    public class JwtBearerPostConfigureOptions : IPostConfigureOptions<JwtBearerOptions>
     {
         /// <summary>
-        /// Invoked to initialize a JwtBearerOptions instance.
+        /// Invoked to post configure a JwtBearerOptions instance.
         /// </summary>
-        /// <param name="name">The name of the options instance being initialized.</param>
-        /// <param name="options">The options instance to initialize.</param>
-        public void Initialize(string name, JwtBearerOptions options)
+        /// <param name="name">The name of the options instance being configured.</param>
+        /// <param name="options">The options instance to configure.</param>
+        public void PostConfigure(string name, JwtBearerOptions options)
         {
             if (string.IsNullOrEmpty(options.TokenValidationParameters.ValidAudience) && !string.IsNullOrEmpty(options.Audience))
             {
