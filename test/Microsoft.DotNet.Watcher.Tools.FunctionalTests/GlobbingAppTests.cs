@@ -41,22 +41,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(2, types);
         }
 
-        [Fact(Skip = "Broken. See https://github.com/aspnet/DotNetTools/issues/212")]
-        public async Task AddCompiledFile()
-        {
-            await _app.StartWatcherAsync();
-
-            var types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
-            Assert.Equal(2, types);
-
-            var fileToChange = Path.Combine(_app.SourceDirectory, "include", "Bar.cs");
-            File.WriteAllText(fileToChange, "public class Bar {}");
-
-            await _app.HasRestarted();
-            types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
-            Assert.Equal(3, types);
-        }
-
         [Fact]
         public async Task DeleteCompiledFile()
         {
