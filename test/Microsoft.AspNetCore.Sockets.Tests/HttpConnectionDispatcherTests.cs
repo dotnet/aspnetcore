@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -48,9 +47,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var id = Encoding.UTF8.GetString(ms.ToArray());
 
-            ConnectionState state;
-            Assert.True(manager.TryGetConnection(id, out state));
-            Assert.Equal(id, state.Connection.ConnectionId);
+            Assert.True(manager.TryGetConnection(id, out var connection));
+            Assert.Equal(id, connection.ConnectionId);
         }
 
         [Theory]
@@ -182,7 +180,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task SendRequestsWithInvalidContentTypeAreRejected()
         {
             var manager = CreateConnectionManager();
-            var connectionState = manager.CreateConnection();
+            var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             using (var strm = new MemoryStream())
             {
@@ -192,7 +190,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 services.AddEndPoint<TestEndPoint>();
                 context.Request.Path = "/foo";
                 context.Request.Method = "POST";
-                context.Request.QueryString = new QueryString($"?id={connectionState.Connection.ConnectionId}");
+                context.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
                 context.Request.ContentType = "text/plain";
                 context.Response.Body = strm;
 
@@ -245,11 +243,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task CompletedEndPointEndsConnection()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest("/foo", state);
+            var context = MakeRequest("/foo", connection);
             SetTransport(context, TransportType.ServerSentEvents);
 
             var services = new ServiceCollection();
@@ -261,8 +259,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-            ConnectionState removed;
-            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
         }
 
@@ -270,10 +267,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task SynchronusExceptionEndsConnection()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = MakeRequest("/foo", state);
+            var context = MakeRequest("/foo", connection);
             SetTransport(context, TransportType.ServerSentEvents);
 
             var services = new ServiceCollection();
@@ -285,8 +282,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-            ConnectionState removed;
-            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
         }
 
@@ -294,11 +290,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task CompletedEndPointEndsLongPollingConnection()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest("/foo", state);
+            var context = MakeRequest("/foo", connection);
 
             var services = new ServiceCollection();
             services.AddEndPoint<ImmediatelyCompleteEndPoint>();
@@ -309,8 +305,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
 
-            ConnectionState removed;
-            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
         }
 
@@ -318,11 +313,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task WebSocketTransportTimesOutWhenCloseFrameNotReceived()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest("/foo", state);
+            var context = MakeRequest("/foo", connection);
             SetTransport(context, TransportType.WebSockets);
 
             var services = new ServiceCollection();
@@ -344,12 +339,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task RequestToActiveConnectionId409ForStreamingTransports(TransportType transportType)
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context1 = MakeRequest("/foo", state);
-            var context2 = MakeRequest("/foo", state);
+            var context1 = MakeRequest("/foo", connection);
+            var context2 = MakeRequest("/foo", connection);
 
             SetTransport(context1, transportType);
             SetTransport(context2, transportType);
@@ -383,12 +378,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task RequestToActiveConnectionIdKillsPreviousConnectionLongPolling()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context1 = MakeRequest("/foo", state);
-            var context2 = MakeRequest("/foo", state);
+            var context1 = MakeRequest("/foo", connection);
+            var context2 = MakeRequest("/foo", connection);
 
             var services = new ServiceCollection();
             services.AddEndPoint<TestEndPoint>();
@@ -402,7 +397,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             await request1;
 
             Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
-            Assert.Equal(ConnectionState.ConnectionStatus.Active, state.Status);
+            Assert.Equal(DefaultConnectionContext.ConnectionStatus.Active, connection.Status);
 
             Assert.False(request2.IsCompleted);
 
@@ -417,12 +412,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task RequestToDisposedConnectionIdReturns404(TransportType transportType)
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
-            state.Status = ConnectionState.ConnectionStatus.Disposed;
+            var connection = manager.CreateConnection();
+            connection.Status = DefaultConnectionContext.ConnectionStatus.Disposed;
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest("/foo", state);
+            var context = MakeRequest("/foo", connection);
             SetTransport(context, transportType);
 
             var services = new ServiceCollection();
@@ -441,11 +436,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task ConnectionStateSetToInactiveAfterPoll()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest("/foo", state);
+            var context = MakeRequest("/foo", connection);
 
             var services = new ServiceCollection();
             services.AddEndPoint<TestEndPoint>();
@@ -458,12 +453,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the transport so the poll yields
-            await state.Connection.Transport.Output.WriteAsync(new Message(buffer, MessageType.Text));
+            await connection.Transport.Output.WriteAsync(new Message(buffer, MessageType.Text));
 
             await task;
 
-            Assert.Equal(ConnectionState.ConnectionStatus.Inactive, state.Status);
-            Assert.Null(state.RequestId);
+            Assert.Equal(DefaultConnectionContext.ConnectionStatus.Inactive, connection.Status);
+            Assert.Null(connection.RequestId);
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         }
@@ -472,11 +467,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task BlockingConnectionWorksWithStreamingConnections()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest("/foo", state);
+            var context = MakeRequest("/foo", connection);
             SetTransport(context, TransportType.ServerSentEvents);
 
             var services = new ServiceCollection();
@@ -490,13 +485,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the application
-            await state.Application.Output.WriteAsync(new Message(buffer, MessageType.Text));
+            await connection.Application.Output.WriteAsync(new Message(buffer, MessageType.Text));
 
             await task;
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            ConnectionState removed;
-            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
         }
 
@@ -504,11 +498,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task BlockingConnectionWorksWithLongPollingConnection()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest("/foo", state);
+            var context = MakeRequest("/foo", connection);
 
             var services = new ServiceCollection();
             services.AddEndPoint<BlockingEndPoint>();
@@ -521,13 +515,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the application
-            await state.Application.Output.WriteAsync(new Message(buffer, MessageType.Text));
+            await connection.Application.Output.WriteAsync(new Message(buffer, MessageType.Text));
 
             await task;
 
             Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
-            ConnectionState removed;
-            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
         }
 
@@ -535,7 +528,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task AttemptingToPollWhileAlreadyPollingReplacesTheCurrentPoll()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
@@ -546,16 +539,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var app = builder.Build();
             var options = new HttpSocketOptions();
 
-            var context1 = MakeRequest("/foo", state);
+            var context1 = MakeRequest("/foo", connection);
             var task1 = dispatcher.ExecuteAsync(context1, options, app);
-            var context2 = MakeRequest("/foo", state);
+            var context2 = MakeRequest("/foo", connection);
             var task2 = dispatcher.ExecuteAsync(context2, options, app);
 
             // Task 1 should finish when request 2 arrives
             await task1.OrTimeout();
 
             // Send a message from the app to complete Task 2
-            await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text));
+            await connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text));
 
             await task2.OrTimeout();
 
@@ -606,7 +599,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task UnauthorizedConnectionFailsToStartEndPoint()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
@@ -624,7 +617,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Request.Method = "GET";
             context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
-            values["id"] = state.Connection.ConnectionId;
+            values["id"] = connection.ConnectionId;
             var qs = new QueryCollection(values);
             context.Request.Query = qs;
 
@@ -644,7 +637,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task AuthenticatedUserWithoutPermissionCausesForbidden()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
@@ -662,7 +655,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Request.Method = "GET";
             context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
-            values["id"] = state.Connection.ConnectionId;
+            values["id"] = connection.ConnectionId;
             var qs = new QueryCollection(values);
             context.Request.Query = qs;
 
@@ -684,7 +677,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task AuthorizedConnectionCanConnectToEndPoint()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
@@ -705,7 +698,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Request.Method = "GET";
             context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
-            values["id"] = state.Connection.ConnectionId;
+            values["id"] = connection.ConnectionId;
             var qs = new QueryCollection(values);
             context.Request.Query = qs;
             context.Response.Body = new MemoryStream();
@@ -720,7 +713,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
             var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-            await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
+            await connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
 
             await endPointTask.OrTimeout();
 
@@ -733,7 +726,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task AuthorizedConnectionWithAcceptedSchemesCanConnectToEndPoint()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
@@ -755,7 +748,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Request.Method = "GET";
             context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
-            values["id"] = state.Connection.ConnectionId;
+            values["id"] = connection.ConnectionId;
             var qs = new QueryCollection(values);
             context.Request.Query = qs;
             context.Response.Body = new MemoryStream();
@@ -770,7 +763,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
             var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-            await state.Connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
+            await connection.Transport.Output.WriteAsync(new Message(Encoding.UTF8.GetBytes("Hello, World"), MessageType.Text)).OrTimeout();
 
             await endPointTask.OrTimeout();
 
@@ -782,7 +775,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task AuthorizedConnectionWithRejectedSchemesFailsToConnectToEndPoint()
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
@@ -804,7 +797,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Request.Method = "GET";
             context.RequestServices = sp;
             var values = new Dictionary<string, StringValues>();
-            values["id"] = state.Connection.ConnectionId;
+            values["id"] = connection.ConnectionId;
             var qs = new QueryCollection(values);
             context.Request.Query = qs;
             context.Response.Body = new MemoryStream();
@@ -881,7 +874,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         private static async Task CheckTransportSupported(TransportType supportedTransports, TransportType transportType, int status)
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             using (var strm = new MemoryStream())
             {
@@ -894,7 +887,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Path = "/foo";
                 context.Request.Method = "GET";
                 var values = new Dictionary<string, StringValues>();
-                values["id"] = state.Connection.ConnectionId;
+                values["id"] = connection.ConnectionId;
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
 
@@ -919,11 +912,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         private static async Task<List<Message>> RunSendTest(string contentType, string encoded, string format)
         {
             var manager = CreateConnectionManager();
-            var state = manager.CreateConnection();
+            var connection = manager.CreateConnection();
 
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
 
-            var context = MakeRequest("/foo", state, format);
+            var context = MakeRequest("/foo", connection, format);
             context.Request.Method = "POST";
             context.Request.ContentType = contentType;
 
@@ -942,7 +935,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app).OrTimeout();
             }
 
-            while (state.Connection.Transport.Input.TryRead(out var message))
+            while (connection.Transport.Input.TryRead(out var message))
             {
                 messages.Add(message);
             }
@@ -950,13 +943,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             return messages;
         }
 
-        private static DefaultHttpContext MakeRequest(string path, ConnectionState state, string format = null)
+        private static DefaultHttpContext MakeRequest(string path, DefaultConnectionContext connection, string format = null)
         {
             var context = new DefaultHttpContext();
             context.Request.Path = path;
             context.Request.Method = "GET";
             var values = new Dictionary<string, StringValues>();
-            values["id"] = state.Connection.ConnectionId;
+            values["id"] = connection.ConnectionId;
             if (format != null)
             {
                 values["format"] = format;

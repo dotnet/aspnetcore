@@ -20,7 +20,7 @@ namespace ChatSample.Hubs
         {
             if (!Context.User.Identity.IsAuthenticated)
             {
-                Context.Connection.Dispose();
+                Context.Connection.Transport.Dispose();
                 return;
             }
 

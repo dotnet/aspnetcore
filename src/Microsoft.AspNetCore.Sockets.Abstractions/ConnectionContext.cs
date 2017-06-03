@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public abstract class ConnectionContext : IDisposable
+    public abstract class ConnectionContext
     {
         public abstract string ConnectionId { get; }
 
@@ -23,11 +23,5 @@ namespace Microsoft.AspNetCore.Sockets
 
         // TEMPORARY
         public abstract IChannelConnection<Message> Transport { get; set; }
-
-        // TEMPORARY
-        public void Dispose()
-        {
-            Transport?.Dispose();
-        }
     }
 }

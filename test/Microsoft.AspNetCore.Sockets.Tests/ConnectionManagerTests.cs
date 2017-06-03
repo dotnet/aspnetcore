@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -16,104 +15,97 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void NewConnectionsHaveConnectionId()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
 
-            Assert.NotNull(state.Connection);
-            Assert.NotNull(state.Connection.ConnectionId);
-            Assert.Equal(ConnectionState.ConnectionStatus.Inactive, state.Status);
-            Assert.Null(state.ApplicationTask);
-            Assert.Null(state.TransportTask);
-            Assert.Null(state.Cancellation);
-            Assert.Null(state.RequestId);
-            Assert.NotNull(state.Connection.Transport);
+            Assert.NotNull(connection.ConnectionId);
+            Assert.Equal(DefaultConnectionContext.ConnectionStatus.Inactive, connection.Status);
+            Assert.Null(connection.ApplicationTask);
+            Assert.Null(connection.TransportTask);
+            Assert.Null(connection.Cancellation);
+            Assert.Null(connection.RequestId);
+            Assert.NotNull(connection.Transport);
         }
 
         [Fact]
         public void NewConnectionsCanBeRetrieved()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
 
-            Assert.NotNull(state.Connection);
-            Assert.NotNull(state.Connection.ConnectionId);
+            Assert.NotNull(connection.ConnectionId);
 
-            ConnectionState newState;
-            Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
-            Assert.Same(newState, state);
+            Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+            Assert.Same(newConnection, connection);
         }
 
         [Fact]
         public void AddNewConnection()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
 
-            var transport = state.Connection.Transport;
+            var transport = connection.Transport;
 
-            Assert.NotNull(state.Connection);
-            Assert.NotNull(state.Connection.ConnectionId);
+            Assert.NotNull(connection.ConnectionId);
             Assert.NotNull(transport);
 
-            ConnectionState newState;
-            Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
-            Assert.Same(newState, state);
-            Assert.Same(transport, newState.Connection.Transport);
+            Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+            Assert.Same(newConnection, connection);
+            Assert.Same(transport, newConnection.Transport);
         }
 
         [Fact]
         public void RemoveConnection()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
 
-            var transport = state.Connection.Transport;
+            var transport = connection.Transport;
 
-            Assert.NotNull(state.Connection);
-            Assert.NotNull(state.Connection.ConnectionId);
+            Assert.NotNull(connection.ConnectionId);
             Assert.NotNull(transport);
 
-            ConnectionState newState;
-            Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
-            Assert.Same(newState, state);
-            Assert.Same(transport, newState.Connection.Transport);
+            Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+            Assert.Same(newConnection, connection);
+            Assert.Same(transport, newConnection.Transport);
 
-            connectionManager.RemoveConnection(state.Connection.ConnectionId);
-            Assert.False(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
+            connectionManager.RemoveConnection(connection.ConnectionId);
+            Assert.False(connectionManager.TryGetConnection(connection.ConnectionId, out newConnection));
         }
 
         [Fact]
         public async Task CloseConnectionsEndsAllPendingConnections()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
 
-            state.ApplicationTask = Task.Run(async () =>
+            connection.ApplicationTask = Task.Run(async () =>
             {
-                Assert.False(await state.Connection.Transport.Input.WaitToReadAsync());
+                Assert.False(await connection.Transport.Input.WaitToReadAsync());
             });
 
-            state.TransportTask = Task.Run(async () =>
+            connection.TransportTask = Task.Run(async () =>
             {
-                Assert.False(await state.Application.Input.WaitToReadAsync());
+                Assert.False(await connection.Application.Input.WaitToReadAsync());
             });
 
             connectionManager.CloseConnections();
 
-            await state.DisposeAsync();
+            await connection.DisposeAsync();
         }
 
         [Fact]
         public async Task DisposingConnectionMultipleTimesWaitsOnConnectionClose()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            state.ApplicationTask = tcs.Task;
-            state.TransportTask = tcs.Task;
+            connection.ApplicationTask = tcs.Task;
+            connection.TransportTask = tcs.Task;
 
-            var firstTask = state.DisposeAsync();
-            var secondTask = state.DisposeAsync();
+            var firstTask = connection.DisposeAsync();
+            var secondTask = connection.DisposeAsync();
             Assert.False(firstTask.IsCompleted);
             Assert.False(secondTask.IsCompleted);
 
@@ -126,14 +118,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task DisposingConnectionMultipleGetsExceptionFromTransportOrApp()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            state.ApplicationTask = tcs.Task;
-            state.TransportTask = tcs.Task;
+            connection.ApplicationTask = tcs.Task;
+            connection.TransportTask = tcs.Task;
 
-            var firstTask = state.DisposeAsync();
-            var secondTask = state.DisposeAsync();
+            var firstTask = connection.DisposeAsync();
+            var secondTask = connection.DisposeAsync();
             Assert.False(firstTask.IsCompleted);
             Assert.False(secondTask.IsCompleted);
 
@@ -150,14 +142,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task DisposingConnectionMultipleGetsCancellation()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            state.ApplicationTask = tcs.Task;
-            state.TransportTask = tcs.Task;
+            connection.ApplicationTask = tcs.Task;
+            connection.TransportTask = tcs.Task;
 
-            var firstTask = state.DisposeAsync();
-            var secondTask = state.DisposeAsync();
+            var firstTask = connection.DisposeAsync();
+            var secondTask = connection.DisposeAsync();
             Assert.False(firstTask.IsCompleted);
             Assert.False(secondTask.IsCompleted);
 
@@ -171,21 +163,20 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task DisposeInactiveConnection()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();;
+            var connection = connectionManager.CreateConnection();;
 
-            Assert.NotNull(state.Connection);
-            Assert.NotNull(state.Connection.ConnectionId);
-            Assert.NotNull(state.Connection.Transport);
+            Assert.NotNull(connection.ConnectionId);
+            Assert.NotNull(connection.Transport);
 
-            await state.DisposeAsync();
-            Assert.Equal(ConnectionState.ConnectionStatus.Disposed, state.Status);
+            await connection.DisposeAsync();
+            Assert.Equal(DefaultConnectionContext.ConnectionStatus.Disposed, connection.Status);
         }
 
         [Fact]
         public void ScanAfterDisposeNoops()
         {
             var connectionManager = CreateConnectionManager();
-            var state = connectionManager.CreateConnection();
+            var connection = connectionManager.CreateConnection();
 
             connectionManager.CloseConnections();
 
