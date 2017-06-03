@@ -22,13 +22,15 @@
     <NoTimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
     <TimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(BuildNumber)</TimestampVersion>
 
-    <WorkingDirectory>$(MetaPackagePath)bin\work\</WorkingDirectory>
-    <PackageCacheOutputPath>$(MetaPackagePath)bin\packageCache\</PackageCacheOutputPath>
+    <RuntimeStoreWorkingDirectory>$(RepositoryRoot).rw\</RuntimeStoreWorkingDirectory>
+    <RuntimeStoreOutputPath>$(RepositoryRoot).ro\</RuntimeStoreOutputPath>
     <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
     <ArtifactsZipDir>$(ArtifactsDir)zip\</ArtifactsZipDir>
     <DepsOutputPath>$(ArtifactsDir)deps\</DepsOutputPath>
-    <ArtifactsZipTimestampDir>$(ArtifactsZipDir)ts\</ArtifactsZipTimestampDir>
-    <ArtifactsZipNoTimestampDir>$(ArtifactsZipDir)nt\</ArtifactsZipNoTimestampDir>
+    <RuntimeStoreZipTimestampDir>$(ArtifactsZipDir)t\</RuntimeStoreZipTimestampDir>
+    <RuntimeStoreZipNoTimestampDir>$(ArtifactsZipDir)n\</RuntimeStoreZipNoTimestampDir>
+    <RuntimeStoreSymbolsZipTimestampDir>$(ArtifactsZipDir)st\</RuntimeStoreSymbolsZipTimestampDir>
+    <RuntimeStoreSymbolsZipNoTimestampDir>$(ArtifactsZipDir)sn\</RuntimeStoreSymbolsZipNoTimestampDir>
     <TempDir>$(ArtifactsDir)temp\</TempDir>
     <ToolsDir>$(RepositoryRoot)tools\</ToolsDir>
     <DependencyBuildDirectory>$(RepositoryRoot).deps\build\</DependencyBuildDirectory>
@@ -48,7 +50,7 @@
       Condition="Exists('$(DependencyBuildDirectory)')" />
   </Target>
 
-  <Target Name="BuildPackageCache" DependsOnTargets="UpdateNuGetConfig">
+  <Target Name="BuildPackageCache" DependsOnTargets="UpdateNuGetConfig;AddDiaSymReaderToPath">
     <GetOSPlatform>
       <!-- Returns {Linux, macOS, Windows} -->
       <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
@@ -69,6 +71,10 @@
 
       <OutputZip>$(ArtifactsDir)Build.RS.$(OutputZipSufix)-$(VersionSuffix).zip</OutputZip>
       <OutputZipNoTimestamp>$(ArtifactsDir)Build.RS.$(OutputZipSufix).zip</OutputZipNoTimestamp>
+      <OutputSymbolZip>$(ArtifactsDir)Build.Symbols.RS.$(OutputZipSufix)-$(VersionSuffix).zip</OutputSymbolZip>
+      <OutputSymbolZipNoTimestamp>$(ArtifactsDir)Build.Symbols.RS.$(OutputZipSufix).zip</OutputSymbolZipNoTimestamp>
+      <OutputSymbolTGZ>$(ArtifactsDir)Build.Symbols.RS.$(OutputZipSufix)-$(VersionSuffix).tar.gz</OutputSymbolTGZ>
+      <OutputSymbolTGZNoTimeStamp>$(ArtifactsDir)Build.Symbols.RS.$(OutputZipSufix).tar.gz</OutputSymbolTGZNoTimeStamp>
     </PropertyGroup>
 
     <!-- Build reference package -->
@@ -84,10 +90,10 @@
       Condition="Exists('$(RuntimeStoreReferencePackageDirectory)')" />
 
     <!-- Build runtime store -->
-    <RemoveDir Directories="$(PackageCacheOutputPath)" />
-    <RemoveDir Directories="$(WorkingDirectory)" />
+    <RemoveDir Directories="$(RuntimeStoreOutputPath)" />
+    <RemoveDir Directories="$(RuntimeStoreWorkingDirectory)" />
 
-    <Exec Command="dotnet store -m $(MetaPackageFile) -f netcoreapp2.0 -r $(RID) -o $(PackageCacheOutputPath) --framework-version 2.0.0-* -w $(WorkingDirectory) --skip-symbols" />
+    <Exec Command="dotnet store -m $(MetaPackageFile) -f netcoreapp2.0 -r $(RID) -o $(RuntimeStoreOutputPath) --framework-version 2.0.0-* -w $(RuntimeStoreWorkingDirectory)" />
 
     <!-- Create deps files for hosting startup -->
     <Exec Command="dotnet restore" WorkingDirectory="$(RepositoryRoot)tools\TrimDeps" />
@@ -97,40 +103,77 @@
     <Exec Command="dotnet msbuild /t:&quot;Restore;Rebuild;CollectDeps&quot; $(HostingStartupTemplateFile) /p:&quot;DepsOutputPath=$(DepsOutputPath);HostingStartupPackageName=%(HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(Version)&quot;"/>
 
     <ItemGroup>
-      <PackageStoreManifestFiles Include="$(PackageCacheOutputPath)**\artifact.xml">
+      <PackageStoreManifestFiles Include="$(RuntimeStoreOutputPath)**\artifact.xml">
         <TimestampDestinationFile>aspnetcore-store-$(TimestampVersion)-$(RID).xml</TimestampDestinationFile>
       </PackageStoreManifestFiles>
-      <_PackageCacheFiles Include="$(PackageCacheOutputPath)**\*" Exclude="$(PackageCacheOutputPath)**\artifact.xml" />
-      <PackageCacheFiles Include="@(_PackageCacheFiles)" >
+      <_RuntimeStoreFiles Include="$(RuntimeStoreOutputPath)**\*" Exclude="$(RuntimeStoreOutputPath)**\artifact.xml;$(RuntimeStoreOutputPath)symbols\**\*" />
+      <RuntimeStoreFiles Include="@(_RuntimeStoreFiles)" >
         <NoTimestampRecursiveDir>$([System.String]::new('%(RecursiveDir)').Replace('-$(BuildNumber)', '-final'))</NoTimestampRecursiveDir>
-      </PackageCacheFiles>
+      </RuntimeStoreFiles>
+      <_RuntimeStoreSymbolFiles Include="$(RuntimeStoreOutputPath)symbols\**\*" />
+      <RuntimeStoreSymbolFiles Include="@(_RuntimeStoreSymbolFiles )" >
+        <NoTimestampRecursiveDir>$([System.String]::new('%(RecursiveDir)').Replace('-$(BuildNumber)', '-final'))</NoTimestampRecursiveDir>
+      </RuntimeStoreSymbolFiles>
       <DepsFiles Include="$(DepsOutputPath)**\*" />
     </ItemGroup>
 
     <Move SourceFiles="%(PackageStoreManifestFiles.FullPath)" DestinationFiles="$(ArtifactsDir)%(PackageStoreManifestFiles.TimestampDestinationFile)" />
 
-    <Copy SourceFiles="@(DepsFiles)" DestinationFolder="$(ArtifactsZipTimestampDir)additionalDeps\%(RecursiveDir)" />
-    <Copy SourceFiles="@(PackageCacheFiles)" DestinationFolder="$(ArtifactsZipTimestampDir)store\%(RecursiveDir)" />
-    <Copy SourceFiles="@(DepsFiles)" DestinationFolder="$(ArtifactsZipNoTimestampDir)additionalDeps\%(RecursiveDir)" />
-    <Copy SourceFiles="@(PackageCacheFiles)" DestinationFiles="$(ArtifactsZipNoTimestampDir)store\%(PackageCacheFiles.NoTimestampRecursiveDir)%(PackageCacheFiles.FileName)%(PackageCacheFiles.Extension)" />
+    <Copy SourceFiles="@(DepsFiles)" DestinationFolder="$(RuntimeStoreZipTimestampDir)additionalDeps\%(RecursiveDir)" />
+    <Copy SourceFiles="@(DepsFiles)" DestinationFolder="$(RuntimeStoreZipNoTimestampDir)additionalDeps\%(RecursiveDir)" />
+    <Copy SourceFiles="@(RuntimeStoreFiles)" DestinationFolder="$(RuntimeStoreZipTimestampDir)store\%(RecursiveDir)" />
+    <Copy SourceFiles="@(RuntimeStoreFiles)" DestinationFiles="$(RuntimeStoreZipNoTimestampDir)store\%(RuntimeStoreFiles.NoTimestampRecursiveDir)%(RuntimeStoreFiles.FileName)%(RuntimeStoreFiles.Extension)" />
+    <Copy SourceFiles="@(RuntimeStoreSymbolFiles)" DestinationFolder="$(RuntimeStoreSymbolsZipTimestampDir)%(RecursiveDir)" />
+    <Copy SourceFiles="@(RuntimeStoreSymbolFiles)" DestinationFiles="$(RuntimeStoreSymbolsZipNoTimestampDir)%(RuntimeStoreSymbolFiles.NoTimestampRecursiveDir)%(RuntimeStoreSymbolFiles.FileName)%(RuntimeStoreSymbolFiles.Extension)" />
 
     <ItemGroup>
-      <NoTimestampDepsFiles Include="$(ArtifactsZipNoTimestampDir)additionalDeps\**\*"/>
+      <NoTimestampDepsFiles Include="$(RuntimeStoreZipNoTimestampDir)additionalDeps\**\*"/>
     </ItemGroup>
 
     <MSBuild Projects="$(ProjectPath)" Targets="_RemoveTimestampFromDepsFile" Properties="DepsFile=%(NoTimestampDepsFiles.FullPath)" />
 
     <ItemGroup>
-      <OutputZipFiles Include="$(ArtifactsZipTimestampDir)**\*" />
-      <OutputZipFilesNoTimestamp Include="$(ArtifactsZipNoTimestampDir)**\*" />
+      <OutputZipFiles Include="$(RuntimeStoreZipTimestampDir)**\*" />
+      <OutputZipFilesNoTimestamp Include="$(RuntimeStoreZipNoTimestampDir)**\*" />
+      <OutputSymbolZipFiles Include="$(RuntimeStoreSymbolsZipTimestampDir)**\*" />
+      <OutputSymbolZipFilesNoTimestamp Include="$(RuntimeStoreSymbolsZipNoTimestampDir)**\*" />
     </ItemGroup>
 
-    <ZipArchive File="$(OutputZip)" SourceFiles="@(OutputZipFiles)" WorkingDirectory="$(ArtifactsZipTimestampDir)" Overwrite="true"/>
-    <ZipArchive File="$(OutputZipNoTimeStamp)" SourceFiles="@(OutputZipFilesNoTimestamp)" WorkingDirectory="$(ArtifactsZipNoTimestampDir)" Overwrite="true"/>
+    <ZipArchive File="$(OutputZip)" SourceFiles="@(OutputZipFiles)" WorkingDirectory="$(RuntimeStoreZipTimestampDir)" Overwrite="true"/>
+    <ZipArchive File="$(OutputZipNoTimeStamp)" SourceFiles="@(OutputZipFilesNoTimestamp)" WorkingDirectory="$(RuntimeStoreZipNoTimestampDir)" Overwrite="true"/>
+    <ZipArchive File="$(OutputSymbolZip)" SourceFiles="@(OutputSymbolZipFiles)" WorkingDirectory="$(RuntimeStoreSymbolsZipTimestampDir)" Overwrite="true"/>
+    <ZipArchive File="$(OutputSymbolZipNoTimeStamp)" SourceFiles="@(OutputSymbolZipFilesNoTimestamp)" WorkingDirectory="$(RuntimeStoreSymbolsZipNoTimestampDir)" Overwrite="true"/>
+
+    <MSBuild Projects="$(ProjectPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZip);TGZFileName=$(OutputSymbolTGZ)" />
+    <MSBuild Projects="$(ProjectPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZipNoTimeStamp);TGZFileName=$(OutputSymbolTGZNoTimeStamp)" />
 
     <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
     <Copy SourceFiles="$(RepositoryRoot)build\Build.RS.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Linux'" />
     <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)'=='Linux'" />
+  </Target>
+
+  <Target Name="ConvertZipToTGZ" Condition="'$(OS)' != 'Windows_NT'">
+    <Exec Command="&quot;$(ToolsDir)zip2tgz.sh&quot; &quot;$(ZipFileName)&quot; &quot;$(TGZFileName)&quot;" />
+    <Delete Files="$(ZipFileName)" />
+  </Target>
+
+  <Target Name="AddDiaSymReaderToPath" Condition="'$(OS)' == 'Windows_NT'">
+    <!-- Parse framework version -->
+    <GetDotNetHost>
+      <Output TaskParameter="DotNetDirectory" PropertyName="DotnetHomeDirectory" />
+    </GetDotNetHost>
+
+    <Exec Command="powershell.exe $(ToolsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
+    </Exec>
+
+    <PropertyGroup>
+      <DiaSymReaderDirectory>$(DotnetHomeDirectory)shared\Microsoft.NETCore.App\$(SharedFrameworkVersion)</DiaSymReaderDirectory>
+    </PropertyGroup>
+
+    <Message Text="Adding DiaSymReader to PATH by appending: $(DiaSymReaderDirectory)" Importance="high" />
+
+    <SetEnvironmentVariable Variable="PATH" Value="$(PATH);$(DiaSymReaderDirectory)" />
   </Target>
 
   <Target Name="_RemoveTimestampFromDepsFile">
