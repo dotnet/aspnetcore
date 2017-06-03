@@ -10,8 +10,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="$(AspNetPackageVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(AspNetPackageVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="$(AspNetPackageVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="$(AspNetPackageVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(AspNetPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="$(AspNetPackageVersion)" />
   </ItemGroup>
