@@ -10,7 +10,6 @@ A transport is required to have the following attributes:
 1. Frame-based - Messages have fixed length (as opposed to streaming, where data is just pushed throughout the connection)
 1. Frame Metadata - Able to encode one piece of Frame Metadata
     * `Type` - Either `Binary` or `Text`.
-1. Able to handle partial messages from the Server application (i.e. where `EndOfMessage` is `false`). The transport can opt to implement this by buffering, since only WebSockets natively supports this functionality.
 1. Binary-safe - Able to transmit arbitrary binary data, regardless of content
 1. Text-safe - Able to transmit arbitrary text data, preserving the content. Line-endings must be preserved **but may be converted to a different format**. For example `\r\n` may be converted to `\n`. This is due to quirks in some transports (Server Sent Events). If the exact line-ending needs to be preserved, the data should be sent as a `Binary` message.
 
@@ -30,7 +29,7 @@ For the Long-Polling and Server-Sent events transports, there are two additional
 
 The WebSockets transport is unique in that it is full duplex, and a persistent connection that can be established in a single operation. As a result, the client is not required to use the `OPTIONS [endpoint-base]` request to establish a connection in advance. It also includes all the necessary metadata in it's own frame metadata.
 
-The WebSocket transport is activated by making a WebSocket connection to `[endpoint-base]`. The **optional** `connectionId` query string value is used to identify the connection to attach to. If there is no `connectionId` query string value, a new connection is established. If the parameter is specified but there is no connection with the specified ID value, a `404 Not Found` response is returned. Upon receiving this request, the connection is established and the server responds with a WebSocket upgrade (`101 Switching Protocols`) immediately ready for frames to be sent/received. The WebSocket OpCode field is used to indicate the type of the frame (Text or Binary) and the WebSocket "FIN" flag is used to indicate the end of a message.
+The WebSocket transport is activated by making a WebSocket connection to `[endpoint-base]`. The **optional** `connectionId` query string value is used to identify the connection to attach to. If there is no `connectionId` query string value, a new connection is established. If the parameter is specified but there is no connection with the specified ID value, a `404 Not Found` response is returned. Upon receiving this request, the connection is established and the server responds with a WebSocket upgrade (`101 Switching Protocols`) immediately ready for frames to be sent/received. The WebSocket OpCode field is used to indicate the type of the frame (Text or Binary).
 
 Establishing a second WebSocket connection when there is already a WebSocket connection associated with the Endpoints connection is not permitted and will fail with a `409 Conflict` status code.
 

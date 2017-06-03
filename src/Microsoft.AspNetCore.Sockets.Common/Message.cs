@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public struct Message
     {
-        public bool EndOfMessage { get; }
         public MessageType Type { get; }
 
         // REVIEW: We need a better primitive to use here. Memory<byte> would be good,
@@ -16,12 +15,6 @@ namespace Microsoft.AspNetCore.Sockets
         public byte[] Payload { get; }
 
         public Message(byte[] payload, MessageType type)
-            : this(payload, type, endOfMessage: true)
-        {
-
-        }
-
-        public Message(byte[] payload, MessageType type, bool endOfMessage)
         {
             if (payload == null)
             {
@@ -29,7 +22,6 @@ namespace Microsoft.AspNetCore.Sockets
             }
 
             Type = type;
-            EndOfMessage = endOfMessage;
             Payload = payload;
         }
     }

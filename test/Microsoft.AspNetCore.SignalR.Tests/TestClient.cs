@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var invocationId = GetInvocationId();
             var payload = await _protocol.WriteToArrayAsync(new InvocationMessage(invocationId, nonBlocking: false, target: methodName, arguments: args));
 
-            await Application.Output.WriteAsync(new Message(payload, _protocol.MessageType, endOfMessage: true));
+            await Application.Output.WriteAsync(new Message(payload, _protocol.MessageType));
 
             return invocationId;
         }

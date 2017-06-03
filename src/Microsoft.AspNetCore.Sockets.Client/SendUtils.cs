@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 logger.LogDebug("Writing '{0}' message to the server", message.Type);
 
                 var payload = message.Payload ?? Array.Empty<byte>();
-                if (!MessageFormatter.TryWriteMessage(new Message(payload, message.Type, endOfMessage: true), output, format))
+                if (!MessageFormatter.TryWriteMessage(new Message(payload, message.Type), output, format))
                 {
                     // We didn't get any more memory!
                     throw new InvalidOperationException("Unable to write message to pipeline");

@@ -23,14 +23,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
         public static bool TryWriteMessage(Message message, IOutput output)
         {
-            if (!message.EndOfMessage)
-            {
-                // This is a truely exceptional condition since we EXPECT callers to have already
-                // buffered incomplete messages and synthesized the correct, complete message before
-                // giving it to us. Hence we throw, instead of returning false.
-                throw new InvalidOperationException("Cannot format message where endOfMessage is false using this format");
-            }
-
             var typeIndicator = GetTypeIndicator(message.Type);
 
             // Write the Data Prefix

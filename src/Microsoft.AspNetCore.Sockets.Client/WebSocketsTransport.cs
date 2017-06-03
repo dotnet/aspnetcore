@@ -115,13 +115,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                             offset += incomingMessage[i].Count;
                         }
 
-                        message = new Message(messageBuffer, messageType, receiveResult.EndOfMessage);
+                        message = new Message(messageBuffer, messageType);
                     }
                     else
                     {
                         var buffer = new byte[incomingMessage[0].Count];
                         Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, buffer, 0, incomingMessage[0].Count);
-                        message = new Message(buffer, messageType, receiveResult.EndOfMessage);
+                        message = new Message(buffer, messageType);
                     }
 
                     _logger.LogInformation("Passing message to application. Payload size: {0}", message.Payload.Length);

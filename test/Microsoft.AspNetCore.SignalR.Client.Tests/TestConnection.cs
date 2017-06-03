@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 throw new InvalidOperationException("Connection must be started before SendAsync can be called");
             }
 
-            var message = new Message(data, type, endOfMessage: true);
+            var message = new Message(data, type);
             while (await _sentMessages.Out.WaitToWriteAsync(cancellationToken))
             {
                 if (_sentMessages.Out.TryWrite(message))

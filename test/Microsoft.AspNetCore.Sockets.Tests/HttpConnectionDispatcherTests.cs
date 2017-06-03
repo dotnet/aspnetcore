@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the transport so the poll yields
-            await state.Connection.Transport.Output.WriteAsync(new Message(buffer, MessageType.Text, endOfMessage: true));
+            await state.Connection.Transport.Output.WriteAsync(new Message(buffer, MessageType.Text));
 
             await task;
 
@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the application
-            await state.Application.Output.WriteAsync(new Message(buffer, MessageType.Text, endOfMessage: true));
+            await state.Application.Output.WriteAsync(new Message(buffer, MessageType.Text));
 
             await task;
 
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the application
-            await state.Application.Output.WriteAsync(new Message(buffer, MessageType.Text, endOfMessage: true));
+            await state.Application.Output.WriteAsync(new Message(buffer, MessageType.Text));
 
             await task;
 

@@ -45,7 +45,7 @@ namespace SocialWeather
                         ? MessageType.Binary
                         : MessageType.Text;
 
-                connection.Transport.Output.TryWrite(new Message(ms.ToArray(), format, endOfMessage: true));
+                connection.Transport.Output.TryWrite(new Message(ms.ToArray(), format));
             }
         }
 

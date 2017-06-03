@@ -161,13 +161,13 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                         offset += incomingMessage[i].Count;
                     }
 
-                    message = new Message(messageBuffer, messageType, receiveResult.EndOfMessage);
+                    message = new Message(messageBuffer, messageType);
                 }
                 else
                 {
                     var buffer = new byte[incomingMessage[0].Count];
                     Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, buffer, 0, incomingMessage[0].Count);
-                    message = new Message(buffer, messageType, receiveResult.EndOfMessage);
+                    message = new Message(buffer, messageType);
                 }
 
                 _logger.LogInformation("Passing message to application. Payload size: {length}", message.Payload.Length);
@@ -199,11 +199,11 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
                             if (_logger.IsEnabled(LogLevel.Debug))
                             {
-                                _logger.LogDebug("Sending Type: {messageType}, size: {size}, EndOfMessage: {endOfMessage}", 
-                                    message.Type, message.EndOfMessage, message.Payload.Length);
+                                _logger.LogDebug("Sending Type: {messageType}, size: {size}", 
+                                    message.Type, message.Payload.Length);
                             }
 
-                            await ws.SendAsync(new ArraySegment<byte>(message.Payload), messageType, message.EndOfMessage, CancellationToken.None);
+                            await ws.SendAsync(new ArraySegment<byte>(message.Payload), messageType, endOfMessage: true, cancellationToken: CancellationToken.None);
                         }
                         catch (Exception ex)
                         {

@@ -62,8 +62,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             await channel.Out.WriteAsync(new Message(
                 Encoding.UTF8.GetBytes(message),
-                MessageType.Text,
-                endOfMessage: true));
+                MessageType.Text));
 
             Assert.True(channel.Out.TryComplete());
 

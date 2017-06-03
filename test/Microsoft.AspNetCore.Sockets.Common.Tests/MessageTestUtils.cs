@@ -11,14 +11,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     {
         public static void AssertMessage(Message message, MessageType messageType, byte[] payload)
         {
-            Assert.True(message.EndOfMessage);
             Assert.Equal(messageType, message.Type);
             Assert.Equal(payload, message.Payload);
         }
 
         public static void AssertMessage(Message message, MessageType messageType, string payload)
         {
-            Assert.True(message.EndOfMessage);
             Assert.Equal(messageType, message.Type);
             Assert.Equal(payload, Encoding.UTF8.GetString(message.Payload));
         }
@@ -27,16 +25,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             return new Message(
                 payload,
-                type,
-                endOfMessage: true);
+                type);
         }
 
         public static Message CreateMessage(string payload, MessageType type)
         {
             return new Message(
                 Encoding.UTF8.GetBytes(payload),
-                type,
-                endOfMessage: true);
+                type);
         }
     }
 }

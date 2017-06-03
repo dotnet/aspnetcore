@@ -47,7 +47,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 
                 var message = await applicationSide.Input.In.ReadAsync();
-                Assert.True(message.EndOfMessage);
                 Assert.Equal(format, message.Type);
                 Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload));
 
@@ -60,53 +59,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var clientSummary = await client;
 
                 Assert.Equal(WebSocketCloseStatus.NormalClosure, clientSummary.CloseResult.CloseStatus);
-            }
-        }
-
-        [Theory]
-        [InlineData(MessageType.Text, WebSocketMessageType.Text)]
-        [InlineData(MessageType.Binary, WebSocketMessageType.Binary)]
-        public async Task IncompleteMessagesAreWrittenAsMultiFrameWebSocketMessages(MessageType format, WebSocketMessageType webSocketMessageType)
-        {
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
-
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
-
-            using (var feature = new TestWebSocketConnectionFeature())
-            {
-                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
-
-                // Give the server socket to the transport and run it
-                var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
-
-                // Run the client socket
-                var client = feature.Client.ExecuteAndCaptureFramesAsync();
-
-                // Write multi-frame message to the output channel, and then complete it
-                await applicationSide.Output.Out.WriteAsync(new Message(
-                    Encoding.UTF8.GetBytes("Hello"),
-                    format,
-                    endOfMessage: false));
-                await applicationSide.Output.Out.WriteAsync(new Message(
-                    Encoding.UTF8.GetBytes("World"),
-                    format,
-                    endOfMessage: true));
-                Assert.True(applicationSide.Output.Out.TryComplete());
-
-                // The client should finish now, as should the server
-                var clientSummary = await client;
-                await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-                await transport;
-
-                Assert.Equal(2, clientSummary.Received.Count);
-                Assert.False(clientSummary.Received[0].EndOfMessage);
-                Assert.Equal(webSocketMessageType, clientSummary.Received[0].MessageType);
-                Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Buffer));
-                Assert.True(clientSummary.Received[1].EndOfMessage);
-                Assert.Equal(webSocketMessageType, clientSummary.Received[1].MessageType);
-                Assert.Equal("World", Encoding.UTF8.GetString(clientSummary.Received[1].Buffer));
             }
         }
 
@@ -134,8 +86,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 // Write to the output channel, and then complete it
                 await applicationSide.Output.Out.WriteAsync(new Message(
                     Encoding.UTF8.GetBytes("Hello"),
-                    format,
-                    endOfMessage: true));
+                    format));
                 Assert.True(applicationSide.Output.Out.TryComplete());
 
                 // The client should finish now, as should the server
@@ -185,7 +136,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 // Read that frame from the input
                 var message = await applicationSide.Input.In.ReadAsync();
-                Assert.True(message.EndOfMessage);
                 Assert.Equal(format, message.Type);
                 Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload));
 

@@ -29,7 +29,7 @@ namespace SocketsSample.EndPoints
                         // We can avoid the copy here but we'll deal with that later
                         var text = Encoding.UTF8.GetString(message.Payload);
                         text = $"{connection.ConnectionId}: {text}";
-                        await Broadcast(Encoding.UTF8.GetBytes(text), message.Type, message.EndOfMessage);
+                        await Broadcast(Encoding.UTF8.GetBytes(text), message.Type);
                     }
                 }
             }
@@ -43,10 +43,10 @@ namespace SocketsSample.EndPoints
 
         private Task Broadcast(string text)
         {
-            return Broadcast(Encoding.UTF8.GetBytes(text), MessageType.Text, endOfMessage: true);
+            return Broadcast(Encoding.UTF8.GetBytes(text), MessageType.Text);
         }
 
-        private Task Broadcast(byte[] payload, MessageType format, bool endOfMessage)
+        private Task Broadcast(byte[] payload, MessageType format)
         {
             var tasks = new List<Task>(Connections.Count);
 
@@ -54,8 +54,7 @@ namespace SocketsSample.EndPoints
             {
                 tasks.Add(c.Transport.Output.WriteAsync(new Message(
                     payload,
-                    format,
-                    endOfMessage)));
+                    format)));
             }
 
             return Task.WhenAll(tasks);

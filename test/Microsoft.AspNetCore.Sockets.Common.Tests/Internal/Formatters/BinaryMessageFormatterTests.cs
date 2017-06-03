@@ -93,16 +93,5 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
 
             Assert.Equal(encoded, output.ToArray().Slice(offset).ToArray());
         }
-
-        [Fact]
-        public void WriteInvalidMessages()
-        {
-            var message = new Message(new byte[0], MessageType.Binary, endOfMessage: false);
-            var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
-            var ex = Assert.Throws<ArgumentException>(() =>
-                MessageFormatter.TryWriteMessage(message, output, MessageFormat.Binary));
-            Assert.Equal($"Cannot format message where endOfMessage is false using this format{Environment.NewLine}Parameter name: message", ex.Message);
-            Assert.Equal("message", ex.ParamName);
-        }
     }
 }

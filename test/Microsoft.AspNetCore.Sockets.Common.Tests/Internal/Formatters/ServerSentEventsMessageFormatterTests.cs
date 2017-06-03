@@ -10,16 +10,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
 {
     public class ServerSentEventsMessageFormatterTests
     {
-        [Fact]
-        public void WriteInvalidMessages()
-        {
-            var message = new Message(new byte[0], MessageType.Binary, endOfMessage: false);
-            var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-                ServerSentEventsMessageFormatter.TryWriteMessage(message, output));
-            Assert.Equal("Cannot format message where endOfMessage is false using this format", ex.Message);
-        }
-
         [Theory]
         [InlineData("data: T\r\n\r\n", MessageType.Text, "")]
         [InlineData("data: T\r\ndata: Hello, World\r\n\r\n", MessageType.Text, "Hello, World")]

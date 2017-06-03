@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
             var payload = await protocol.WriteToArrayAsync(hubMessage);
-            var message = new Message(payload, protocol.MessageType, endOfMessage: true);
+            var message = new Message(payload, protocol.MessageType);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {
