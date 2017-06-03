@@ -23,7 +23,5 @@ branches:
     - /^rel\/.*/
 before_install:
   - if test "$TRAVIS_OS_NAME" == "linux"; then nvm install $TRAVIS_NODE_VERSION; fi
-install:
-  - pip install autobahntestsuite "six>=1.9.0"
 script:
   - ./build.sh
