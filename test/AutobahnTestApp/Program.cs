@@ -40,7 +40,7 @@ namespace AutobahnTestApp
                 var urls = builder.GetSetting(WebHostDefaults.ServerUrlsKey) ?? builder.GetSetting("server.urls");
                 builder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
 
-                Console.WriteLine("Using Kestrel, URL: {url}", urls);
+                Console.WriteLine($"Using Kestrel, URL: {urls}");
 
                 if (urls.Contains(";"))
                 {
@@ -56,7 +56,7 @@ namespace AutobahnTestApp
                         if (uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
                         {
                             var certPath = Path.Combine(AppContext.BaseDirectory, "TestResources", "testCert.pfx");
-                            Console.WriteLine("Using SSL with certificate: {certPath}", certPath);
+                            Console.WriteLine($"Using SSL with certificate: {certPath}");
                             listenOptions.UseHttps(certPath, "testPassword");
                         }
                     });
