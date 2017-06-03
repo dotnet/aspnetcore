@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.AspNetCore.Sockets.Transports;
-using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -89,7 +88,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                 await DoPersistentConnection(socketDelegate, sse, context, state);
             }
-            else if (context.Features.Get<IHttpWebSocketConnectionFeature>()?.IsWebSocketRequest == true)
+            else if (context.WebSockets.IsWebSocketRequest)
             {
                 // Connection can be established lazily
                 var state = await GetOrCreateConnectionAsync(context);

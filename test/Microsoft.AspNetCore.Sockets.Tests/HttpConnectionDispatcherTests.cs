@@ -4,20 +4,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Internal;
-using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.WebSockets.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -368,16 +368,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var webSocketTask = Task.CompletedTask;
 
-            var ws = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketConnectionFeature>();
+            var ws = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketFeature>();
             if (ws != null)
             {
-                webSocketTask = ws.Client.ExecuteAsync(frame => Task.CompletedTask);
-                await ws.Client.CloseAsync(new WebSocketCloseResult(WebSocketCloseStatus.NormalClosure), CancellationToken.None);
+                await ws.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             }
 
             manager.CloseConnections();
-
-            await webSocketTask.OrTimeout();
 
             await request1.OrTimeout();
         }
@@ -975,7 +972,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             switch (transportType)
             {
                 case TransportType.WebSockets:
-                    context.Features.Set<IHttpWebSocketConnectionFeature>(new TestWebSocketConnectionFeature());
+                    context.Features.Set<IHttpWebSocketFeature>(new TestWebSocketConnectionFeature());
                     break;
                 case TransportType.ServerSentEvents:
                     context.Request.Headers["Accept"] = "text/event-stream";

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -65,11 +65,11 @@ function invoke(connection, method, ...args) {
                 console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
 
                 if (result) {
-                    addLine('message', result);
+                    addLine('messages', result);
                 }
             })
             .catch(err => {
-                addLine('message', err, 'red');
+                addLine('messages', err, 'red');
             });
 }
 
@@ -83,15 +83,15 @@ document.getElementById('head1').innerHTML = signalR.TransportType[transportType
 
 let connection = new signalR.HubConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
 connection.on('Send', msg => {
-    addLine('message', msg);
+    addLine('messages', msg);
 });
 
 connection.onClosed = e => {
     if (e) {
-        addLine('message', 'Connection closed with error: ' + e, 'red');
+        addLine('messages', 'Connection closed with error: ' + e, 'red');
     }
     else {
-        addLine('message', 'Disconnected', 'green');
+        addLine('messages', 'Disconnected', 'green');
     }
 }
 
@@ -99,10 +99,10 @@ click('connect', event => {
     connection.start(transportType)
         .then(() => {
             isConnected = true;
-            addLine('message', 'Connected successfully', 'green');
+            addLine('messages', 'Connected successfully', 'green');
         })
         .catch(err => {
-            addLine('message', err, 'red');
+            addLine('messages', err, 'red');
         });
 });
 
@@ -130,7 +130,7 @@ click('leave-group', event => {
 
 click('groupmsg', event => {
     let groupName = getText('target');
-    let message = getText('message');
+    let message = getText('messages');
     invoke(connection, 'SendToGroup', groupName, message);
 });
 

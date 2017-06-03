@@ -2,26 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO.Pipelines;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebSockets.Internal;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.WebSockets.Internal;
 
 namespace Microsoft.AspNetCore.Sockets.Transports
 {
     public class WebSocketsTransport : IHttpTransport
     {
         private readonly WebSocketOptions _options;
-        private static readonly WebSocketAcceptContext _emptyContext = new WebSocketAcceptContext();
-
-        private WebSocketOpcode _lastOpcode = WebSocketOpcode.Continuation;
-        private bool _lastFrameIncomplete = false;
-
         private readonly ILogger _logger;
         private readonly IChannelConnection<Message> _application;
 
@@ -49,11 +42,9 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
         {
-            var feature = context.Features.Get<IHttpWebSocketConnectionFeature>();
+            Debug.Assert(context.WebSockets.IsWebSocketRequest, "Not a websocket request");
 
-            Debug.Assert(feature != null, $"The {nameof(IHttpWebSocketConnectionFeature)} feature is missing!");
-
-            using (var ws = await feature.AcceptWebSocketConnectionAsync(_emptyContext))
+            using (var ws = await context.WebSockets.AcceptWebSocketAsync())
             {
                 _logger.LogInformation("Socket opened.");
 
@@ -62,10 +53,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             _logger.LogInformation("Socket closed.");
         }
 
-        public async Task ProcessSocketAsync(IWebSocketConnection socket)
+        public async Task ProcessSocketAsync(WebSocket socket)
         {
             // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
-            var receiving = socket.ExecuteAsync((frame, state) => ((WebSocketsTransport)state).HandleFrame(frame), this);
+            var receiving = StartReceiving(socket);
             var sending = StartSending(socket);
 
             // Wait for something to shut down.
@@ -88,7 +79,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
                 // Shutting down because we received a close frame from the client.
                 // Complete the input writer so that the application knows there won't be any more input.
-                _logger.LogDebug("Client closed connection with status code '{0}' ({1}). Signaling end-of-input to application", receiving.Result.Status, receiving.Result.Description);
+                _logger.LogDebug("Client closed connection with status code '{status}' ({description}). Signaling end-of-input to application", receiving.Result.CloseStatus, receiving.Result.CloseStatusDescription);
                 _application.Output.TryComplete();
 
                 // Wait for the application to finish sending.
@@ -96,7 +87,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 await sending;
 
                 // Send the server's close frame
-                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+                await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             }
             else
             {
@@ -104,7 +95,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
                 // The application finished sending. Close our end of the connection
                 _logger.LogDebug(!failed ? "Application finished sending. Sending close frame." : "Application failed during sending. Sending InternalServerError close frame");
-                await socket.CloseAsync(!failed ? WebSocketCloseStatus.NormalClosure : WebSocketCloseStatus.InternalServerError);
+                await socket.CloseOutputAsync(!failed ? WebSocketCloseStatus.NormalClosure : WebSocketCloseStatus.InternalServerError, "", CancellationToken.None);
 
                 // Now trigger the exception from the application, if there was one.
                 sending.GetAwaiter().GetResult();
@@ -126,69 +117,93 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             }
         }
 
-        private Task HandleFrame(WebSocketFrame frame)
+        private async Task<WebSocketReceiveResult> StartReceiving(WebSocket socket)
         {
-            // Is this a frame we care about?
-            if (!frame.Opcode.IsMessage())
+            // REVIEW: This code was copied from the client, it's highly unoptimized at the moment (especially 
+            // for server logic)
+            var incomingMessage = new List<ArraySegment<byte>>();
+            while (true)
             {
-                return Task.CompletedTask;
+                const int bufferSize = 4096;
+                var totalBytes = 0;
+                WebSocketReceiveResult receiveResult;
+                do
+                {
+                    var buffer = new ArraySegment<byte>(new byte[bufferSize]);
+
+                    // Exceptions are handled above where the send and receive tasks are being run.
+                    receiveResult = await socket.ReceiveAsync(buffer, CancellationToken.None);
+                    if (receiveResult.MessageType == WebSocketMessageType.Close)
+                    {
+                        return receiveResult;
+                    }
+
+                    _logger.LogDebug("Message received. Type: {messageType}, size: {size}, EndOfMessage: {endOfMessage}",
+                        receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
+
+                    var truncBuffer = new ArraySegment<byte>(buffer.Array, 0, receiveResult.Count);
+                    incomingMessage.Add(truncBuffer);
+                    totalBytes += receiveResult.Count;
+                } while (!receiveResult.EndOfMessage);
+
+                // Making sure the message type is either text or binary
+                Debug.Assert((receiveResult.MessageType == WebSocketMessageType.Binary || receiveResult.MessageType == WebSocketMessageType.Text), "Unexpected message type");
+
+                Message message;
+                var messageType = receiveResult.MessageType == WebSocketMessageType.Binary ? MessageType.Binary : MessageType.Text;
+                if (incomingMessage.Count > 1)
+                {
+                    var messageBuffer = new byte[totalBytes];
+                    var offset = 0;
+                    for (var i = 0; i < incomingMessage.Count; i++)
+                    {
+                        Buffer.BlockCopy(incomingMessage[i].Array, 0, messageBuffer, offset, incomingMessage[i].Count);
+                        offset += incomingMessage[i].Count;
+                    }
+
+                    message = new Message(messageBuffer, messageType, receiveResult.EndOfMessage);
+                }
+                else
+                {
+                    var buffer = new byte[incomingMessage[0].Count];
+                    Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, buffer, 0, incomingMessage[0].Count);
+                    message = new Message(buffer, messageType, receiveResult.EndOfMessage);
+                }
+
+                _logger.LogInformation("Passing message to application. Payload size: {length}", message.Payload.Length);
+                while (await _application.Output.WaitToWriteAsync())
+                {
+                    if (_application.Output.TryWrite(message))
+                    {
+                        incomingMessage.Clear();
+                        break;
+                    }
+                }
             }
-
-            LogFrame("Receiving", frame);
-
-            // Determine the effective opcode based on the continuation.
-            var effectiveOpcode = frame.Opcode;
-            if (frame.Opcode == WebSocketOpcode.Continuation)
-            {
-                effectiveOpcode = _lastOpcode;
-            }
-            else
-            {
-                _lastOpcode = frame.Opcode;
-            }
-
-            // Create a Message for the frame
-            // This has to copy the buffer :(.
-            var message = new Message(frame.Payload.ToArray(), effectiveOpcode == WebSocketOpcode.Binary ? MessageType.Binary : MessageType.Text, frame.EndOfMessage);
-
-            // Write the message to the channel
-            return _application.Output.WriteAsync(message);
         }
 
-        private void LogFrame(string action, WebSocketFrame frame)
-        {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.LogDebug(
-                    $"{action} frame: Opcode={frame.Opcode}, Fin={frame.EndOfMessage}, Payload={frame.Payload.Length} bytes");
-            }
-        }
-
-        private async Task StartSending(IWebSocketConnection ws)
+        private async Task StartSending(WebSocket ws)
         {
             while (await _application.Input.WaitToReadAsync())
             {
                 // Get a frame from the application
-                Message message;
-                while (_application.Input.TryRead(out message))
+                while (_application.Input.TryRead(out var message))
                 {
                     if (message.Payload.Length > 0)
                     {
                         try
                         {
-                            var opcode = message.Type == MessageType.Binary ?
-                                WebSocketOpcode.Binary :
-                                WebSocketOpcode.Text;
+                            var messageType = message.Type == MessageType.Binary ?
+                                WebSocketMessageType.Binary :
+                                WebSocketMessageType.Text;
 
-                            var frame = new WebSocketFrame(
-                                endOfMessage: message.EndOfMessage,
-                                opcode: _lastFrameIncomplete ? WebSocketOpcode.Continuation : opcode,
-                                payload: ReadableBuffer.Create(message.Payload));
+                            if (_logger.IsEnabled(LogLevel.Debug))
+                            {
+                                _logger.LogDebug("Sending Type: {messageType}, size: {size}, EndOfMessage: {endOfMessage}", 
+                                    message.Type, message.EndOfMessage, message.Payload.Length);
+                            }
 
-                            _lastFrameIncomplete = !message.EndOfMessage;
-
-                            LogFrame("Sending", frame);
-                            await ws.SendAsync(frame);
+                            await ws.SendAsync(new ArraySegment<byte>(message.Payload), messageType, message.EndOfMessage, CancellationToken.None);
                         }
                         catch (Exception ex)
                         {

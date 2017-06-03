@@ -1,36 +1,177 @@
 ﻿using System;
-using System.Buffers;
-using System.IO.Pipelines;
+using System.Collections.Generic;
+using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebSockets.Internal;
-using Microsoft.Extensions.WebSockets.Internal;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
 {
-    internal class TestWebSocketConnectionFeature : IHttpWebSocketConnectionFeature, IDisposable
+    internal class TestWebSocketConnectionFeature : IHttpWebSocketFeature, IDisposable
     {
-        private PipeFactory _factory = new PipeFactory(BufferPool.Default);
-
         public bool IsWebSocketRequest => true;
 
-        public WebSocketConnection Client { get; private set; }
+        public WebSocketChannel Client { get; private set; }
 
-        public ValueTask<IWebSocketConnection> AcceptWebSocketConnectionAsync(WebSocketAcceptContext context)
+        public Task<WebSocket> AcceptAsync() => AcceptAsync(new WebSocketAcceptContext());
+
+        public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
         {
-            var clientToServer = _factory.Create();
-            var serverToClient = _factory.Create();
+            var clientToServer = Channel.CreateUnbounded<WebSocketMessage>();
+            var serverToClient = Channel.CreateUnbounded<WebSocketMessage>();
 
-            var clientSocket = new WebSocketConnection(serverToClient.Reader, clientToServer.Writer);
-            var serverSocket = new WebSocketConnection(clientToServer.Reader, serverToClient.Writer);
+            var clientSocket = new WebSocketChannel(serverToClient.In, clientToServer.Out);
+            var serverSocket = new WebSocketChannel(clientToServer.In, serverToClient.Out);
 
             Client = clientSocket;
-            return new ValueTask<IWebSocketConnection>(serverSocket);
+            return Task.FromResult<WebSocket>(serverSocket);
         }
 
         public void Dispose()
         {
-            _factory.Dispose();
+        }
+
+        public class WebSocketChannel : WebSocket
+        {
+            private readonly ReadableChannel<WebSocketMessage> _input;
+            private readonly WritableChannel<WebSocketMessage> _output;
+
+            private WebSocketCloseStatus? _closeStatus;
+            private string _closeStatusDescription;
+            private WebSocketState _state;
+
+            public WebSocketChannel(ReadableChannel<WebSocketMessage> input, WritableChannel<WebSocketMessage> output)
+            {
+                _input = input;
+                _output = output;
+            }
+
+            public override WebSocketCloseStatus? CloseStatus => _closeStatus;
+
+            public override string CloseStatusDescription => _closeStatusDescription;
+
+            public override WebSocketState State => _state;
+
+            public override string SubProtocol => null;
+
+            public override void Abort()
+            {
+                _output.TryComplete(new OperationCanceledException());
+                _state = WebSocketState.Aborted;
+            }
+
+            public override async Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
+            {
+                await _output.WriteAsync(new WebSocketMessage
+                {
+                    CloseStatus = closeStatus,
+                    CloseStatusDescription = statusDescription,
+                    MessageType = WebSocketMessageType.Close,
+                },
+                cancellationToken);
+
+                _state = WebSocketState.CloseSent;
+
+                _output.TryComplete();
+            }
+
+            public override async Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
+            {
+                await _output.WriteAsync(new WebSocketMessage
+                {
+                    CloseStatus = closeStatus,
+                    CloseStatusDescription = statusDescription,
+                    MessageType = WebSocketMessageType.Close,
+                },
+                cancellationToken);
+
+                _state = WebSocketState.CloseSent;
+
+                _output.TryComplete();
+            }
+
+            public override void Dispose()
+            {
+                _state = WebSocketState.Closed;
+                _output.TryComplete();
+            }
+
+            public override async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+            {
+                var message = await _input.ReadAsync();
+
+                if (message.MessageType == WebSocketMessageType.Close)
+                {
+                    _state = WebSocketState.CloseReceived;
+                    _closeStatus = message.CloseStatus;
+                    _closeStatusDescription = message.CloseStatusDescription;
+                    return new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, message.CloseStatus, message.CloseStatusDescription);
+                }
+
+                // REVIEW: This assumes the buffer passed in is > the buffer received
+                Buffer.BlockCopy(message.Buffer, 0, buffer.Array, buffer.Offset, message.Buffer.Length);
+
+                return new WebSocketReceiveResult(message.Buffer.Length, message.MessageType, message.EndOfMessage);
+            }
+
+            public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+            {
+                var copy = new byte[buffer.Count];
+                Buffer.BlockCopy(buffer.Array, buffer.Offset, copy, 0, buffer.Count);
+                return _output.WriteAsync(new WebSocketMessage
+                {
+                    Buffer = copy,
+                    MessageType = messageType,
+                    EndOfMessage = endOfMessage
+                },
+                cancellationToken);
+            }
+
+            public async Task<WebSocketConnectionSummary> ExecuteAndCaptureFramesAsync()
+            {
+                var frames = new List<WebSocketMessage>();
+                while (await _input.WaitToReadAsync())
+                {
+                    while (_input.TryRead(out var message))
+                    {
+                        if (message.MessageType == WebSocketMessageType.Close)
+                        {
+                            _state = WebSocketState.CloseReceived;
+                            _closeStatus = message.CloseStatus;
+                            _closeStatusDescription = message.CloseStatusDescription;
+                            return new WebSocketConnectionSummary(frames, new WebSocketReceiveResult(0, message.MessageType, message.EndOfMessage, message.CloseStatus, message.CloseStatusDescription));
+                        }
+
+                        frames.Add(message);
+                    }
+                }
+                _state = WebSocketState.Closed;
+                _closeStatus = WebSocketCloseStatus.InternalServerError;
+                return new WebSocketConnectionSummary(frames, new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true, closeStatus: WebSocketCloseStatus.InternalServerError, closeStatusDescription: ""));
+            }
+        }
+
+        public class WebSocketConnectionSummary
+        {
+            public IList<WebSocketMessage> Received { get; }
+            public WebSocketReceiveResult CloseResult { get; }
+
+            public WebSocketConnectionSummary(IList<WebSocketMessage> received, WebSocketReceiveResult closeResult)
+            {
+                Received = received;
+                CloseResult = closeResult;
+            }
+        }
+
+        public class WebSocketMessage
+        {
+            public byte[] Buffer { get; set; }
+            public WebSocketMessageType MessageType { get; set; }
+            public bool EndOfMessage { get; set; }
+            public WebSocketCloseStatus? CloseStatus { get; set; }
+            public string CloseStatusDescription { get; set; }
         }
     }
 }

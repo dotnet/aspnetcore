@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Compile Include="..\Common\TaskExtensions.cs" Link="TaskExtensions.cs" />
-    <Compile Include="..\Microsoft.Extensions.WebSockets.Internal.Tests\WebSocketConnectionExtensions.cs;..\Microsoft.Extensions.WebSockets.Internal.Tests\WebSocketConnectionSummary.cs;..\Microsoft.Extensions.WebSockets.Internal.Tests\WebSocketPair.cs" />
   </ItemGroup>
 
   <ItemGroup>
