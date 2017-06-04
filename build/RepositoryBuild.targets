@@ -57,6 +57,15 @@
 
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
 
+    <!-- Copy Korebuild folder to individual repos to avoid downloading it again and again and also to
+          prevent from taking in newer Korebuild changes when Universe is building midway -->
+    <ItemGroup>
+      <_KorebuildItems Include="$(RepositoryRoot).build\**\*.*" />
+    </ItemGroup>
+
+    <Message Text="Copying Korebuild from Universe to repository $(BuildRepositoryRoot)"/>
+    <Copy SourceFiles="@(_KorebuildItems)" DestinationFolder="$(BuildRepositoryRoot).build\%(RecursiveDir)" SkipUnchangedFiles="true" UseHardlinksIfPossible="true" />
+
     <Exec
       Command="./$(_BuildScriptToExecute) $(BuildArguments)"
       EnvironmentVariables="KOREBUILD_SKIP_RUNTIME_INSTALL=1"
