@@ -444,6 +444,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatDirectiveMustAppearAtStartOfLine(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveMustAppearAtStartOfLine"), p0);
 
+        /// <summary>
+        /// The key must not be null.
+        /// </summary>
+        internal static string KeyMustNotBeNull
+        {
+            get => GetString("KeyMustNotBeNull");
+        }
+
+        /// <summary>
+        /// The key must not be null.
+        /// </summary>
+        internal static string FormatKeyMustNotBeNull()
+            => GetString("KeyMustNotBeNull");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

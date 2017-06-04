@@ -210,4 +210,7 @@
   <data name="DirectiveMustAppearAtStartOfLine" xml:space="preserve">
     <value>The '{0}` directive must appear at the start of the line.</value>
   </data>
+  <data name="KeyMustNotBeNull" xml:space="preserve">
+    <value>The key must not be null.</value>
+  </data>
 </root>
