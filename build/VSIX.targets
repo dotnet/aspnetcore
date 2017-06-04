@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);GenerateVSIX</PackageDependsOn>
-    <NuGetCommandLineVersion>3.5.0</NuGetCommandLineVersion>
+    <NuGetCommandLineVersion>4.1.0</NuGetCommandLineVersion>
     <VSIXName>Microsoft.VisualStudio.RazorExtension</VSIXName>
     <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
   </PropertyGroup>

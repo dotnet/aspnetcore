@@ -9,10 +9,11 @@
     <MoqVersion>4.7.1</MoqVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
-    <RoslynVersion>2.0.0</RoslynVersion>
-    <RoslynDevVersion>2.3.0-beta1-61624-03</RoslynDevVersion>
+    <RoslynVersion>2.3.0-beta1</RoslynVersion>
+    <RoslynDevVersion>2.3.0-beta3-61731-06</RoslynDevVersion>
     <StreamJsonRpcVersion>1.0.2-rc</StreamJsonRpcVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
+    <VsShellVersion>15.0.26201</VsShellVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
   </PropertyGroup>
 </Project>
