@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             await task;
 
             Assert.Equal(DefaultConnectionContext.ConnectionStatus.Inactive, connection.Status);
-            Assert.Null(connection.RequestId);
+            Assert.Null(connection.GetHttpContext());
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         }

@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                     if (connection.Status == DefaultConnectionContext.ConnectionStatus.Active)
                     {
-                        _logger.LogDebug("Connection {connectionId} is already active via {requestId}. Cancelling previous request.", connection.ConnectionId, connection.RequestId);
+                        _logger.LogDebug("Connection {connectionId} is already active via {requestId}. Cancelling previous request.", connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
 
                         using (connection.Cancellation)
                         {
@@ -158,12 +158,9 @@ namespace Microsoft.AspNetCore.Sockets
                                 // Should be a cancelled task
                             }
 
-                            _logger.LogDebug("Previous poll cancelled for {connectionId} on {requestId}.", connection.ConnectionId, connection.RequestId);
+                            _logger.LogDebug("Previous poll cancelled for {connectionId} on {requestId}.", connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
                         }
                     }
-
-                    // Mark the request identifier
-                    connection.RequestId = context.TraceIdentifier;
 
                     // Mark the connection as active
                     connection.Status = DefaultConnectionContext.ConnectionStatus.Active;
@@ -171,7 +168,7 @@ namespace Microsoft.AspNetCore.Sockets
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (connection.ApplicationTask == null)
                     {
-                        _logger.LogDebug("Establishing new connection: {connectionId} on {requestId}", connection.ConnectionId, connection.RequestId);
+                        _logger.LogDebug("Establishing new connection: {connectionId} on {requestId}", connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
 
                         connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.LongPolling;
 
@@ -179,7 +176,7 @@ namespace Microsoft.AspNetCore.Sockets
                     }
                     else
                     {
-                        _logger.LogDebug("Resuming existing connection: {connectionId} on {requestId}", connection.ConnectionId, connection.RequestId);
+                        _logger.LogDebug("Resuming existing connection: {connectionId} on {requestId}", connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
                     }
 
                     var longPolling = new LongPollingTransport(connection.Application.Input, _loggerFactory);
@@ -241,7 +238,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                             connection.Status = DefaultConnectionContext.ConnectionStatus.Inactive;
 
-                            connection.RequestId = null;
+                            connection.Metadata[ConnectionMetadataNames.HttpContext] = null;
 
                             // Dispose the cancellation token
                             connection.Cancellation.Dispose();
@@ -255,16 +252,6 @@ namespace Microsoft.AspNetCore.Sockets
                     }
                 }
             }
-        }
-
-        private DefaultConnectionContext CreateConnection(HttpContext context)
-        {
-            var connection = _manager.CreateConnection();
-            var format = (string)context.Request.Query[ConnectionMetadataNames.Format];
-            connection.User = context.User;
-            connection.Metadata[ConnectionMetadataNames.HttpContext] = context;
-            connection.Metadata[ConnectionMetadataNames.Format] = string.IsNullOrEmpty(format) ? "json" : format;
-            return connection;
         }
 
         private async Task DoPersistentConnection(SocketDelegate socketDelegate,
@@ -288,7 +275,7 @@ namespace Microsoft.AspNetCore.Sockets
                 // There's already an active request
                 if (connection.Status == DefaultConnectionContext.ConnectionStatus.Active)
                 {
-                    _logger.LogDebug("Connection {connectionId} is already active via {requestId}.", connection.ConnectionId, connection.RequestId);
+                    _logger.LogDebug("Connection {connectionId} is already active via {requestId}.", connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
 
                     // Reject the request with a 409 conflict
                     context.Response.StatusCode = StatusCodes.Status409Conflict;
@@ -297,9 +284,6 @@ namespace Microsoft.AspNetCore.Sockets
 
                 // Mark the connection as active
                 connection.Status = DefaultConnectionContext.ConnectionStatus.Active;
-
-                // Store the request identifier
-                connection.RequestId = context.TraceIdentifier;
 
                 // Call into the end point passing the connection
                 connection.ApplicationTask = ExecuteApplication(socketDelegate, connection);
@@ -336,7 +320,7 @@ namespace Microsoft.AspNetCore.Sockets
             context.Response.ContentType = "text/plain";
 
             // Establish the connection
-            var connection = CreateConnection(context);
+            var connection = _manager.CreateConnection();
 
             // Get the bytes for the connection id
             var connectionIdBuffer = Encoding.UTF8.GetBytes(connection.ConnectionId);
@@ -407,8 +391,6 @@ namespace Microsoft.AspNetCore.Sockets
                 return false;
             }
 
-            connection.User = context.User;
-
             var transport = connection.Metadata.Get<TransportType?>(ConnectionMetadataNames.Transport);
 
             if (transport == null)
@@ -421,6 +403,13 @@ namespace Microsoft.AspNetCore.Sockets
                 await context.Response.WriteAsync("Cannot change transports mid-connection");
                 return false;
             }
+
+            // Setup the connection state from the http context
+            var format = (string)context.Request.Query[ConnectionMetadataNames.Format];
+            connection.User = context.User;
+            connection.Metadata[ConnectionMetadataNames.HttpContext] = context;
+            connection.Metadata[ConnectionMetadataNames.Format] = string.IsNullOrEmpty(format) ? "json" : format;
+
             return true;
         }
 
@@ -455,7 +444,7 @@ namespace Microsoft.AspNetCore.Sockets
             // There's no connection id so this is a brand new connection
             if (StringValues.IsNullOrEmpty(connectionId))
             {
-                connection = CreateConnection(context);
+                connection = _manager.CreateConnection();
             }
             else if (!_manager.TryGetConnection(connectionId, out connection))
             {

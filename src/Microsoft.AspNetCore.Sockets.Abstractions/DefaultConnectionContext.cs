@@ -20,14 +20,12 @@ namespace Microsoft.AspNetCore.Sockets
             Transport = transport;
             Application = application;
             ConnectionId = id;
+            LastSeenUtc = DateTime.UtcNow;
         }
 
         public CancellationTokenSource Cancellation { get; set; }
 
         public SemaphoreSlim Lock { get; } = new SemaphoreSlim(1, 1);
-
-        // REVIEW: This should only be on the Http implementation
-        public string RequestId { get; set; }
 
         public Task TransportTask { get; set; }
 
@@ -64,8 +62,6 @@ namespace Microsoft.AspNetCore.Sockets
                 else
                 {
                     Status = ConnectionStatus.Disposed;
-
-                    RequestId = null;
 
                     // If the application task is faulted, propagate the error to the transport
                     if (ApplicationTask?.IsFaulted == true)
