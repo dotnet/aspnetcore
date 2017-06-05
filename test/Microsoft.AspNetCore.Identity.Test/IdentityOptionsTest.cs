@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.Test
@@ -37,79 +36,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(ClaimTypes.Name, options.ClaimsIdentity.UserNameClaimType);
             Assert.Equal(ClaimTypes.NameIdentifier, options.ClaimsIdentity.UserIdClaimType);
             Assert.Equal("AspNet.Identity.SecurityStamp", options.ClaimsIdentity.SecurityStampClaimType);
-        }
-
-        [Fact]
-        public void IdentityOptionsFromConfig()
-        {
-            const string roleClaimType = "rolez";
-            const string usernameClaimType = "namez";
-            const string useridClaimType = "idz";
-            const string securityStampClaimType = "stampz";
-
-            var dic = new Dictionary<string, string>
-            {
-                {"microsoft:aspnetcore:identity:claimsidentity:roleclaimtype", roleClaimType},
-                {"microsoft:aspnetcore:identity:claimsidentity:usernameclaimtype", usernameClaimType},
-                {"microsoft:aspnetcore:identity:claimsidentity:useridclaimtype", useridClaimType},
-                {"microsoft:aspnetcore:identity:claimsidentity:securitystampclaimtype", securityStampClaimType},
-                {"microsoft:aspnetcore:identity:user:requireUniqueEmail", "true"},
-                {"microsoft:aspnetcore:identity:password:RequiredLength", "10"},
-                {"microsoft:aspnetcore:identity:password:RequiredUniqueChars", "5"},
-                {"microsoft:aspnetcore:identity:password:RequireNonAlphanumeric", "false"},
-                {"microsoft:aspnetcore:identity:password:RequireUpperCase", "false"},
-                {"microsoft:aspnetcore:identity:password:RequireDigit", "false"},
-                {"microsoft:aspnetcore:identity:password:RequireLowerCase", "false"},
-                {"microsoft:aspnetcore:identity:lockout:AllowedForNewUsers", "FALSe"},
-                {"microsoft:aspnetcore:identity:lockout:MaxFailedAccessAttempts", "1000"}
-            };
-            var builder = new ConfigurationBuilder();
-            builder.AddInMemoryCollection(dic);
-            var config = builder.Build();
-            Assert.Equal(roleClaimType, config["microsoft:aspnetcore:identity:claimsidentity:roleclaimtype"]);
-
-            var services = new ServiceCollection()
-                .AddSingleton<IConfiguration>(config)
-                .AddSingleton<IConfigureOptions<IdentityOptions>, ConfigureDefaults<IdentityOptions>>();
-            services.AddIdentity<TestUser,TestRole>();
-            var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
-            Assert.NotNull(accessor);
-            var options = accessor.Value;
-            Assert.Equal(roleClaimType, options.ClaimsIdentity.RoleClaimType);
-            Assert.Equal(useridClaimType, options.ClaimsIdentity.UserIdClaimType);
-            Assert.Equal(usernameClaimType, options.ClaimsIdentity.UserNameClaimType);
-            Assert.Equal(securityStampClaimType, options.ClaimsIdentity.SecurityStampClaimType);
-            Assert.True(options.User.RequireUniqueEmail);
-            Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+", options.User.AllowedUserNameCharacters);
-            Assert.False(options.Password.RequireDigit);
-            Assert.False(options.Password.RequireLowercase);
-            Assert.False(options.Password.RequireNonAlphanumeric);
-            Assert.False(options.Password.RequireUppercase);
-            Assert.Equal(10, options.Password.RequiredLength);
-            Assert.Equal(5, options.Password.RequiredUniqueChars);
-            Assert.False(options.Lockout.AllowedForNewUsers);
-            Assert.Equal(1000, options.Lockout.MaxFailedAccessAttempts);
-        }
-
-        [Fact]
-        public void IdentityOptionsActionOverridesConfig()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"microsoft:aspnetcore:identity:user:requireUniqueEmail", "true"},
-                {"microsoft:aspnetcore:identity:lockout:MaxFailedAccessAttempts", "1000"}
-            };
-            var builder = new ConfigurationBuilder();
-            builder.AddInMemoryCollection(dic);
-            var services = new ServiceCollection()
-                .AddSingleton<IConfiguration>(builder.Build())
-                .AddSingleton<IConfigureOptions<IdentityOptions>, ConfigureDefaults<IdentityOptions>>();
-            services.AddIdentity<TestUser, TestRole>(o => { o.User.RequireUniqueEmail = false; o.Lockout.MaxFailedAccessAttempts++; });
-            var accessor = services.BuildServiceProvider().GetRequiredService<IOptions<IdentityOptions>>();
-            Assert.NotNull(accessor);
-            var options = accessor.Value;
-            Assert.False(options.User.RequireUniqueEmail);
-            Assert.Equal(1001, options.Lockout.MaxFailedAccessAttempts);
         }
 
         [Fact]
