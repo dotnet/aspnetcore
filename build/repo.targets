@@ -112,6 +112,7 @@
     <PropertyGroup>
       <_BuildRepositoryProperties>
         UniverseBuildDir=$(BuildDir);
+        UniverseMSBuildDir=$(ArtifactsDir)msbuild;
         BuildInParallel=$(BuildInParallel);
         BuildNumber=$(BuildNumber);
         Configuration=$(Configuration);

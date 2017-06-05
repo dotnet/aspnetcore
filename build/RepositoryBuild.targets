@@ -49,7 +49,9 @@
   <Target Name="_BuildRepository" DependsOnTargets="_PinVersions">
     <PropertyGroup>
       <BuildArguments>$(_RepositoryBuildTargets) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</BuildArguments>
-      <RepositoryArtifactsDirectory>$(BuildRepositoryRoot)artifacts\build\</RepositoryArtifactsDirectory>
+      <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts</RepositoryArtifactsRoot>
+      <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)\build\</RepositoryArtifactsBuildDirectory>
+      <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)\msbuild\</RepositoryArtifactsMSBuildDirectory>
 
       <_BuildScriptToExecute Condition="'$(OS)'!='Windows_NT'">build.sh</_BuildScriptToExecute>
       <_BuildScriptToExecute Condition="'$(OS)'=='Windows_NT'">build.cmd</_BuildScriptToExecute>
@@ -73,20 +75,25 @@
       WorkingDirectory="$(BuildRepositoryRoot)" />
 
     <ItemGroup>
-      <RepositoryArtifacts Include="$(RepositoryArtifactsDirectory)*" />
-      <RepositorySymbolNupkgs Include="$(RepositoryArtifactsDirectory)*.symbols.nupkg" />
-      <RepositoryNupkgs Include="$(RepositoryArtifactsDirectory)*.nupkg" Exclude="@(RepositorySymbolNupkgs)" />
+      <RepositoryArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
+      <RepositorySymbolNupkgs Include="$(RepositoryArtifactsBuildDirectory)*.symbols.nupkg" />
+      <RepositoryNupkgs Include="$(RepositoryArtifactsBuildDirectory)*.nupkg" Exclude="@(RepositorySymbolNupkgs)" />
+      <RepositoryMSBuildArtifacts Include="$(RepositoryArtifactsMSBuildDirectory)**\*.*" />
     </ItemGroup>
 
     <Copy
        SourceFiles="@(RepositoryArtifacts)"
        DestinationFolder="$(UniverseBuildDir)" />
 
+    <Move
+       SourceFiles="@(RepositoryMSBuildArtifacts)"
+       DestinationFolder="$(UniverseMSBuildDir)\$(RepositoryToBuild)\%(RecursiveDir)" />
+
     <Message Text="Publishing the following packages to the volatile feed: @(RepositoryNupkgs -> '%(Filename)%(Extension)', ', ')"
       Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Exec
-      Command="$(DotNetPath) $(PackagePublisherPath) -d $(RepositoryArtifactsDirectory) -f $(NuGetPublishVolatileFeed)"
+      Command="$(DotNetPath) $(PackagePublisherPath) -d $(RepositoryArtifactsBuildDirectory) -f $(NuGetPublishVolatileFeed)"
       Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
