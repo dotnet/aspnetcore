@@ -6,6 +6,6 @@
 
   <Target Name="RunTSClientNodeTests" AfterTargets="Test">
     <Message Text="Running TypeScript client Node tests" Importance="high" />
-    <Exec Command="npm test" WorkingDirectory="$(RepositoryRoot)client-ts" />
+    <Exec Command="npm test" WorkingDirectory="$(RepositoryRoot)client-ts" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 </Project>

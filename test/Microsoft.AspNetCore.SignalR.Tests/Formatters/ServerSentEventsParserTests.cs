@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
     {
         [Theory]
         [InlineData("\r\n", "")]
-        [InlineData("\r\n", "")]
         [InlineData("\r\n:\r\n", "")]
         [InlineData("\r\n:comment\r\n", "")]
         [InlineData("data: \r\r\n\r\n", "\r")]
@@ -99,7 +98,6 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [InlineData(new[] { "dat", "a: Hello, World\r\n\r\n" }, "Hello, World")]
         [InlineData(new[] { "data", ": Hello, World\r\n\r\n" }, "Hello, World")]
         [InlineData(new[] { "data:", " Hello, World\r\n\r\n" }, "Hello, World")]
-        [InlineData(new[] { "data: ", "Hello, World\r\n\r\n" }, "Hello, World")]
         [InlineData(new[] { "data: Hello, World", "\r\n\r\n" }, "Hello, World")]
         [InlineData(new[] { "data: Hello, World\r\n", "\r\n" }, "Hello, World")]
         [InlineData(new[] { "data: ", "Hello, World\r\n\r\n" }, "Hello, World")]

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
@@ -103,7 +105,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             try
             {
-                var connectUrl = await GetConnectUrl(Url, httpClient, _logger);
+                var negotiationResponse = await Negotiate(Url, httpClient, _logger);
 
                 // Connection is being stopped while start was in progress
                 if (_connectionState == ConnectionState.Disconnected)
@@ -112,9 +114,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     return;
                 }
 
-                // TODO: Available server transports should be sent by the server in the negotiation response
-                _transport = transportFactory.CreateTransport(TransportType.All);
+                _transport = transportFactory.CreateTransport(GetAvailableServerTransports(negotiationResponse));
 
+                var connectUrl = CreateConnectUrl(Url, negotiationResponse);
                 _logger.LogDebug("Starting transport '{0}' with Url: {1}", _transport.GetType().Name, connectUrl);
                 await StartTransport(connectUrl);
             }
@@ -179,30 +181,73 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
         }
 
-        private static async Task<Uri> GetConnectUrl(Uri url, HttpClient httpClient, ILogger logger)
-        {
-            var connectionId = await GetConnectionId(url, httpClient, logger);
-            return Utils.AppendQueryString(url, "id=" + connectionId);
-        }
-
-        private static async Task<string> GetConnectionId(Uri url, HttpClient httpClient, ILogger logger)
+        private async static Task<NegotiationResponse> Negotiate(Uri url, HttpClient httpClient, ILogger logger)
         {
             try
             {
                 // Get a connection ID from the server
                 logger.LogDebug("Establishing Connection at: {0}", url);
-                var request = new HttpRequestMessage(HttpMethod.Options, url);
-                var response = await httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-                var connectionId = await response.Content.ReadAsStringAsync();
-                logger.LogDebug("Connection Id: {0}", connectionId);
-                return connectionId;
+                using (var request = new HttpRequestMessage(HttpMethod.Options, url))
+                using (var response = await httpClient.SendAsync(request))
+                {
+                    response.EnsureSuccessStatusCode();
+                    return await ParseNegotiateResponse(response, logger);
+                }
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to start connection. Error getting connection id from '{0}': {1}", url, ex);
+                logger.LogError("Failed to start connection. Error getting negotiation response from '{0}': {1}", url, ex);
                 throw;
             }
+        }
+
+        private static async Task<NegotiationResponse> ParseNegotiateResponse(HttpResponseMessage response, ILogger logger)
+        {
+            NegotiationResponse negotiationResponse;
+            using (var reader = new JsonTextReader(new StreamReader(await response.Content.ReadAsStreamAsync())))
+            {
+                try
+                {
+                    negotiationResponse = new JsonSerializer().Deserialize<NegotiationResponse>(reader);
+                }
+                catch (Exception ex)
+                {
+                    throw new FormatException("Invalid negotiation response received.", ex);
+                }
+            }
+
+            if (negotiationResponse == null)
+            {
+                throw new FormatException("Invalid negotiation response received.");
+            }
+
+            return negotiationResponse;
+        }
+
+        private TransportType GetAvailableServerTransports(NegotiationResponse negotiationResponse)
+        {
+            if (negotiationResponse.AvailableTransports == null)
+            {
+                throw new FormatException("No transports returned in negotiation response.");
+            }
+
+            var availableServerTransports = (TransportType)0;
+            foreach (var t in negotiationResponse.AvailableTransports)
+            {
+                availableServerTransports |= t;
+            }
+
+            return availableServerTransports;
+        }
+
+        private static Uri CreateConnectUrl(Uri url, NegotiationResponse negotiationResponse)
+        {
+            if (string.IsNullOrWhiteSpace(negotiationResponse.ConnectionId))
+            {
+                throw new FormatException("Invalid connection id returned in negotiation response.");
+            }
+
+            return Utils.AppendQueryString(url, "id=" + negotiationResponse.ConnectionId);
         }
 
         private async Task StartTransport(Uri connectUrl)
@@ -351,6 +396,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
             public const int Connecting = 1;
             public const int Connected = 2;
             public const int Disconnected = 3;
+        }
+
+        private class NegotiationResponse
+        {
+            public string ConnectionId { get; set; }
+            public TransportType[] AvailableTransports { get; set; }
         }
     }
 }

@@ -16,6 +16,17 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 **NOTE on errors:** In all error cases, by default, the detailed exception message is **never** provided; a short description string may be provided. However, an application developer may elect to allow detailed exception messages to be emitted, which should only be used in the `Development` environment. Unexpected errors are communicated by HTTP `500 Server Error` status codes or WebSockets `1008 Policy Violation` close frames; in these cases the connection should be considered to be terminated.
 
+## `OPTIONS [endpoint-base]` request
+
+The `OPTIONS [endpoint-base]` request is used to establish connection between the client and the server. The response to the `OPTIONS [endpoint-base]` request contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server. The content type of the response is `application/json`. The following is a sample response to the `OPTIONS [endpoint-base]` request 
+
+```
+{
+  "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
+  "availableTransports":["WebSockets","ServerSentEvents","LongPolling"]
+}
+```
+
 ## WebSockets (Full Duplex)
 
 The WebSockets transport is unique in that it is full duplex, and a persistent connection that can be established in a single operation. As a result, the client is not required to use the `OPTIONS [endpoint-base]` request to establish a connection in advance. It also includes all the necessary metadata in it's own frame metadata.

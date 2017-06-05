@@ -47,7 +47,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -78,7 +80,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -139,7 +143,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -170,7 +176,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))

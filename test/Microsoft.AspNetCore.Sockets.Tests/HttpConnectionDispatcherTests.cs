@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -45,11 +47,41 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             builder.UseEndPoint<TestEndPoint>();
             var app = builder.Build();
             await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+            var connectionId = negotiateResponse.Value<string>("connectionId");
+            Assert.True(manager.TryGetConnection(connectionId, out var connectionContext));
+            Assert.Equal(connectionId, connectionContext.ConnectionId);
+        }
 
-            var id = Encoding.UTF8.GetString(ms.ToArray());
+        [Theory]
+        [InlineData(TransportType.All)]
+        [InlineData((TransportType)0)]
+        [InlineData(TransportType.LongPolling | TransportType.WebSockets)]
+        public async Task NegotiateReturnsAvailableTransports(TransportType transports)
+        {
+            var manager = CreateConnectionManager();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            services.AddOptions();
+            var ms = new MemoryStream();
+            context.Request.Path = "/foo";
+            context.Request.Method = "OPTIONS";
+            context.Response.Body = ms;
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            await dispatcher.ExecuteAsync(context, new HttpSocketOptions { Transports = transports }, app);
 
-            Assert.True(manager.TryGetConnection(id, out var connection));
-            Assert.Equal(id, connection.ConnectionId);
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+            var availableTransports = (TransportType)0;
+            foreach (var transport in negotiateResponse["availableTransports"])
+            {
+                availableTransports |= (TransportType)Enum.Parse(typeof(TransportType), transport.Value<string>());
+            }
+
+            Assert.Equal(transports, availableTransports);
         }
 
         [Theory]

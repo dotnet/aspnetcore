@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Transports;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Sockets
 {
@@ -314,17 +315,46 @@ namespace Microsoft.AspNetCore.Sockets
             // Set the allowed headers for this resource
             context.Response.Headers.AppendCommaSeparatedValues("Allow", "GET", "POST", "OPTIONS");
 
-            context.Response.ContentType = "text/plain";
+            context.Response.ContentType = "application/json";
 
             // Establish the connection
             var connection = _manager.CreateConnection();
 
             // Get the bytes for the connection id
-            var connectionIdBuffer = Encoding.UTF8.GetBytes(connection.ConnectionId);
+            var negotiateResponseBuffer = Encoding.UTF8.GetBytes(GetNegotiatePayload(connection.ConnectionId, options));
 
             // Write it out to the response with the right content length
-            context.Response.ContentLength = connectionIdBuffer.Length;
-            return context.Response.Body.WriteAsync(connectionIdBuffer, 0, connectionIdBuffer.Length);
+            context.Response.ContentLength = negotiateResponseBuffer.Length;
+            return context.Response.Body.WriteAsync(negotiateResponseBuffer, 0, negotiateResponseBuffer.Length);
+        }
+
+        private static string GetNegotiatePayload(string connectionId, HttpSocketOptions options)
+        {
+            var sb = new StringBuilder();
+            using (var jsonWriter = new JsonTextWriter(new StringWriter(sb)))
+            {
+                jsonWriter.WriteStartObject();
+                jsonWriter.WritePropertyName("connectionId");
+                jsonWriter.WriteValue(connectionId);
+                jsonWriter.WritePropertyName("availableTransports");
+                jsonWriter.WriteStartArray();
+                if ((options.Transports & TransportType.WebSockets) != 0)
+                {
+                   jsonWriter.WriteValue(nameof(TransportType.WebSockets));
+                }
+                if ((options.Transports & TransportType.ServerSentEvents) != 0)
+                {
+                    jsonWriter.WriteValue(nameof(TransportType.ServerSentEvents));
+                }
+                if ((options.Transports & TransportType.LongPolling) != 0)
+                {
+                    jsonWriter.WriteValue(nameof(TransportType.LongPolling));
+                }
+                jsonWriter.WriteEndArray();
+                jsonWriter.WriteEndObject();
+            }
+
+            return sb.ToString();
         }
 
         private async Task ProcessSend(HttpContext context)

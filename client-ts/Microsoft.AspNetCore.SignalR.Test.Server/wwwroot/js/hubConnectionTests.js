@@ -47,11 +47,11 @@ describe('hubConnection', () => {
                                 },
                                 error: (err) => {
                                     fail(err);
-                                    done();
+                                    hubConnection.stop();
                                 },
                                 complete: () => {
                                     expect(received).toEqual(["a", "b", "c"]);
-                                    done();
+                                    hubConnection.stop();
                                 }
                             });
                     })

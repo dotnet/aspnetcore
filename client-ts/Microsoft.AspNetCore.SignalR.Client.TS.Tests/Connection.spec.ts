@@ -2,7 +2,8 @@ import { IHttpClient } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpClien
 import { Connection } from "../Microsoft.AspNetCore.SignalR.Client.TS/Connection"
 import { ISignalROptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/ISignalROptions"
 import { DataReceived, TransportClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
-import { ITransport } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
+import { ITransport, TransportType } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
+import { eachTransport } from "./Common";
 
 describe("Connection", () => {
 
@@ -102,7 +103,7 @@ describe("Connection", () => {
             httpClient: <IHttpClient>{
                 options(url: string): Promise<string> {
                     connection.stop();
-                    return Promise.resolve("");
+                    return Promise.resolve("{}");
                 },
                 get(url: string): Promise<string> {
                     connection.stop();
@@ -133,7 +134,7 @@ describe("Connection", () => {
         let options: ISignalROptions = {
             httpClient: <IHttpClient>{
                 options(url: string): Promise<string> {
-                    return Promise.resolve("42");
+                    return Promise.resolve("{ \"connectionId\": \"42\" }");
                 },
                 get(url: string): Promise<string> {
                     return Promise.resolve("");
@@ -167,5 +168,55 @@ describe("Connection", () => {
 
         expect(connectUrl).toBe("http://tempuri.org?q=myData&id=42");
         done();
+    });
+
+    eachTransport((requestedTransport: TransportType) => {
+        it(`Connection cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async done => {
+            let options: ISignalROptions = {
+                httpClient: <IHttpClient>{
+                    options(url: string): Promise<string> {
+                        return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
+                    },
+                    get(url: string): Promise<string> {
+                        return Promise.resolve("");
+                    }
+                }
+            } as ISignalROptions;
+
+            var connection = new Connection("http://tempuri.org", options);
+            try {
+                await connection.start(requestedTransport);
+                fail();
+                done();
+            }
+            catch (e) {
+                expect(e.message).toBe("No available transports found.");
+                done();
+            }
+        });
+    });
+
+    it(`Connection cannot be started if no transport available on server and no transport requested`, async done => {
+        let options: ISignalROptions = {
+            httpClient: <IHttpClient>{
+                options(url: string): Promise<string> {
+                    return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
+                },
+                get(url: string): Promise<string> {
+                    return Promise.resolve("");
+                }
+            }
+        } as ISignalROptions;
+
+        var connection = new Connection("http://tempuri.org", options);
+        try {
+            await connection.start();
+            fail();
+            done();
+        }
+        catch (e) {
+            expect(e.message).toBe("No available transports found.");
+            done();
+        }
     });
 });

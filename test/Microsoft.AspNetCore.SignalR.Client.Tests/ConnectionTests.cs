@@ -51,7 +51,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -81,7 +84,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -132,7 +137,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     // allow DisposeAsync to continue once we know we are past the connection state check
                     allowDisposeTcs.SetResult(null);
                     await releaseNegotiateTcs.Task;
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -174,7 +181,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -199,7 +208,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -230,7 +241,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             var mockTransport = new Mock<ITransport>();
@@ -267,7 +280,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -294,11 +309,12 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    if (request.Method == HttpMethod.Get)
-                    {
-                        return new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(string.Empty) };
-                    }
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+
+                    return request.Method == HttpMethod.Get
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError)
+                        : request.Method == HttpMethod.Options
+                            ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                            : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -328,7 +344,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             var mockTransport = new Mock<ITransport>();
@@ -370,7 +388,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             var mockTransport = new Mock<ITransport>();
@@ -438,7 +458,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -477,7 +500,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     {
                         sendTcs.SetResult(await request.Content.ReadAsByteArrayAsync());
                     }
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -523,7 +549,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     {
                         content = "T2:T:42;";
                     }
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(content) };
+
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK, content);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -549,11 +578,12 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    if (request.Method == HttpMethod.Post)
-                    {
-                        return ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError);
-                    }
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+
+                    return request.Method == HttpMethod.Post
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError)
+                        : request.Method == HttpMethod.Options
+                            ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                            : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -585,7 +615,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     {
                         content = "42";
                     }
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, content);
+
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK, content);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -627,11 +660,12 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
                     await Task.Yield();
-                    if (request.Method == HttpMethod.Get)
-                    {
-                        return new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(string.Empty) };
-                    }
-                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+
+                    return request.Method == HttpMethod.Get
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError)
+                        : request.Method == HttpMethod.Options
+                            ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                            : ResponseUtils.CreateResponse(HttpStatusCode.OK);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -656,6 +690,101 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 {
                     await connection.DisposeAsync();
                 }
+            }
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("Not Json")]
+        public async Task StartThrowsFormatExceptionIfNegotiationResponseIsInvalid(string negotiatePayload)
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, negotiatePayload);
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var connection = new Connection(new Uri("http://fakeuri.org/"));
+                var exception = await Assert.ThrowsAsync<FormatException>(
+                    () => connection.StartAsync(TransportType.LongPolling, httpClient));
+
+                Assert.Equal("Invalid negotiation response received.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task StartThrowsFormatExceptionIfNegotiationResponseHasNoConnectionId()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                        ResponseUtils.CreateNegotiationResponse(connectionId: null));
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var connection = new Connection(new Uri("http://fakeuri.org/"));
+                var exception = await Assert.ThrowsAsync<FormatException>(
+                    () => connection.StartAsync(TransportType.LongPolling, httpClient));
+
+                Assert.Equal("Invalid connection id returned in negotiation response.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task StartThrowsFormatExceptionIfNegotiationResponseHasNoTransports()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                        ResponseUtils.CreateNegotiationResponse(transportTypes: null));
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var connection = new Connection(new Uri("http://fakeuri.org/"));
+                var exception = await Assert.ThrowsAsync<FormatException>(
+                    () => connection.StartAsync(TransportType.LongPolling, httpClient));
+
+                Assert.Equal("No transports returned in negotiation response.", exception.Message);
+            }
+        }
+
+        [Theory]
+        [InlineData((TransportType)0)]
+        [InlineData(TransportType.ServerSentEvents)]
+        public async Task ConnectionCannotBeStartedIfNoCommonTransportsBetweenClientAndServer(TransportType serverTransports)
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                        ResponseUtils.CreateNegotiationResponse(transportTypes: serverTransports));
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var connection = new Connection(new Uri("http://fakeuri.org/"));
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => connection.StartAsync(TransportType.LongPolling, httpClient));
+
+                Assert.Equal("No requested transports available on the server.", exception.Message);
             }
         }
     }

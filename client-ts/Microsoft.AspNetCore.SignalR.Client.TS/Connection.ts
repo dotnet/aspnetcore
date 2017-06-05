@@ -11,6 +11,11 @@ enum ConnectionState {
     Disconnected
 }
 
+interface INegotiateResponse {
+    connectionId: string
+    availableTransports: string[]
+}
+
 export class Connection implements IConnection {
     private connectionState: ConnectionState;
     private url: string;
@@ -25,7 +30,7 @@ export class Connection implements IConnection {
         this.connectionState = ConnectionState.Initial;
     }
 
-    async start(transport: TransportType | ITransport = TransportType.WebSockets): Promise<void> {
+    async start(transport?: TransportType | ITransport): Promise<void> {
         if (this.connectionState != ConnectionState.Initial) {
             return Promise.reject(new Error("Cannot start a connection that is not in the 'Initial' state."));
         }
@@ -38,7 +43,9 @@ export class Connection implements IConnection {
 
     private async startInternal(transportType: TransportType | ITransport): Promise<void> {
         try {
-            this.connectionId = await this.httpClient.options(this.url);
+            let negotiatePayload = await this.httpClient.options(this.url);  
+            let negotiateResponse: INegotiateResponse = JSON.parse(negotiatePayload);
+            this.connectionId = negotiateResponse.connectionId;
 
             // the user tries to stop the the connection when it is being started
             if (this.connectionState == ConnectionState.Disconnected) {
@@ -47,7 +54,7 @@ export class Connection implements IConnection {
 
             this.url += (this.url.indexOf("?") == -1 ? "?" : "&") + `id=${this.connectionId}`;
 
-            this.transport = this.createTransport(transportType);
+            this.transport = this.createTransport(transportType, negotiateResponse.availableTransports);
             this.transport.onDataReceived = this.onDataReceived;
             this.transport.onClosed = e => this.stopConnection(true, e);
             await this.transport.connect(this.url);
@@ -56,21 +63,24 @@ export class Connection implements IConnection {
             this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
         }
         catch (e) {
-            console.log("Failed to start the connection. " + e)
+            console.log("Failed to start the connection. " + e);
             this.connectionState = ConnectionState.Disconnected;
             this.transport = null;
             throw e;
         };
     }
 
-    private createTransport(transport: TransportType | ITransport): ITransport {
-        if (transport === TransportType.WebSockets) {
+    private createTransport(transport: TransportType | ITransport, availableTransports: string[]): ITransport {
+        if (!transport && availableTransports.length > 0) {
+            transport = TransportType[availableTransports[0]];
+        }
+        if (transport === TransportType.WebSockets && availableTransports.indexOf(TransportType[transport]) >= 0) {
             return new WebSocketTransport();
         }
-        if (transport === TransportType.ServerSentEvents) {
+        if (transport === TransportType.ServerSentEvents && availableTransports.indexOf(TransportType[transport]) >= 0) {
             return new ServerSentEventsTransport(this.httpClient);
         }
-        if (transport === TransportType.LongPolling) {
+        if (transport === TransportType.LongPolling && availableTransports.indexOf(TransportType[transport]) >= 0) {
             return new LongPollingTransport(this.httpClient);
         }
 
@@ -78,11 +88,11 @@ export class Connection implements IConnection {
             return transport;
         }
 
-        throw new Error("No valid transports requested.");
+        throw new Error("No available transports found.");
     }
 
     private isITransport(transport: any): transport is ITransport {
-        return "connect" in transport;
+        return typeof(transport) === "object" && "connect" in transport;
     }
 
     private changeState(from: ConnectionState, to: ConnectionState): Boolean {

@@ -3,7 +3,9 @@
 
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Text;
+
+using SocketsTransportType = Microsoft.AspNetCore.Sockets.TransportType;
 
 namespace Microsoft.AspNetCore.Client.Tests
 {
@@ -24,6 +26,38 @@ namespace Microsoft.AspNetCore.Client.Tests
             {
                 Content = payload
             };
+        }
+
+        public static string CreateNegotiationResponse(string connectionId = "00000000-0000-0000-0000-000000000000",
+            SocketsTransportType? transportTypes = SocketsTransportType.All)
+        {
+            var sb = new StringBuilder("{ ");
+            if (connectionId != null)
+            {
+                sb.Append($"\"connectionId\": \"{connectionId}\",");
+            }
+            if (transportTypes != null)
+            {
+                sb.Append($"\"availableTransports\": [ ");
+                if ((transportTypes & SocketsTransportType.WebSockets) == SocketsTransportType.WebSockets)
+                {
+                    sb.Append($"\"{nameof(SocketsTransportType.WebSockets)}\",");
+                }
+                if ((transportTypes & SocketsTransportType.ServerSentEvents) == SocketsTransportType.ServerSentEvents)
+                {
+                    sb.Append($"\"{nameof(SocketsTransportType.ServerSentEvents)}\",");
+                }
+                if ((transportTypes & SocketsTransportType.LongPolling) == SocketsTransportType.LongPolling)
+                {
+                    sb.Append($"\"{nameof(SocketsTransportType.LongPolling)}\",");
+                }
+                sb.Length--;
+                sb.Append("],");
+            }
+            sb.Length--;
+            sb.Append("}");
+
+            return sb.ToString();
         }
     }
 }
