@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public sealed class ViewComponentTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
     {

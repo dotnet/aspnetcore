@@ -13,6 +13,8 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj" />
 
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DependencyModelVersion)" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     internal class ViewComponentDiagnosticFactory
     {

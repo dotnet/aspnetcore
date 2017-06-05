@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     internal static class ViewComponentTypes
     {

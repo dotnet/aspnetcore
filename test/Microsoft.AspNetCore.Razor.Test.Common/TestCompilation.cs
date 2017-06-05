@@ -1,43 +1,37 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.DependencyModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.DependencyModel;
 using Xunit;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.CodeAnalysis
 {
     public static class TestCompilation
     {
-        private static IEnumerable<MetadataReference> _metadataReferences;
+        private static Dictionary<Assembly, IEnumerable<MetadataReference>> _assemblyMetadataReferences =
+            new Dictionary<Assembly, IEnumerable<MetadataReference>>();
 
-        public static IEnumerable<MetadataReference> MetadataReferences
+        public static IEnumerable<MetadataReference> GetMetadataReferences(Assembly assembly)
         {
-            get
-            {
-                if (_metadataReferences == null)
-                {
-                    var currentAssembly = typeof(TestCompilation).GetTypeInfo().Assembly;
-                    var dependencyContext = DependencyContext.Load(currentAssembly);
+            var dependencyContext = DependencyContext.Load(assembly);
 
-                    _metadataReferences = dependencyContext.CompileLibraries
-                        .SelectMany(l => l.ResolveReferencePaths())
-                        .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
-                        .ToArray();
-                }
+            var metadataReferences = dependencyContext.CompileLibraries
+                .SelectMany(l => l.ResolveReferencePaths())
+                .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
+                .ToArray();
 
-                return _metadataReferences;
-            }
+            return metadataReferences;
         }
 
         public static string AssemblyName => "TestAssembly";
 
-        public static Compilation Create(SyntaxTree syntaxTree = null)
+        public static Compilation Create(Assembly assembly, SyntaxTree syntaxTree = null)
         {
             IEnumerable<SyntaxTree> syntaxTrees = null;
 
@@ -46,7 +40,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 syntaxTrees = new[] { syntaxTree };
             }
 
-            var compilation = CSharpCompilation.Create(AssemblyName, syntaxTrees, MetadataReferences);
+            if (!_assemblyMetadataReferences.TryGetValue(assembly, out IEnumerable<MetadataReference> metadataReferences))
+            {
+                metadataReferences = GetMetadataReferences(assembly);
+                _assemblyMetadataReferences[assembly] = metadataReferences;
+            }
+
+            var compilation = CSharpCompilation.Create(AssemblyName, syntaxTrees, metadataReferences);
 
             EnsureValidCompilation(compilation);
 

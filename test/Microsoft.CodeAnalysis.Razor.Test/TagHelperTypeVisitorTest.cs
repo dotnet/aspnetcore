@@ -4,12 +4,15 @@
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using System.Collections.Generic;
 using Xunit;
+using System.Reflection;
 
 namespace Microsoft.CodeAnalysis.Razor.Workspaces
 {
     public class TagHelperTypeVisitorTest
     {
-        private static Compilation Compilation { get; } = TestCompilation.Create();
+        private static readonly Assembly _assembly = typeof(TagHelperTypeVisitorTest).GetTypeInfo().Assembly;
+
+        private static Compilation Compilation { get; } = TestCompilation.Create(_assembly);
 
         private static INamedTypeSymbol ITagHelperSymbol { get; } = Compilation.GetTypeByMetadataName(TagHelperTypes.ITagHelper);
 

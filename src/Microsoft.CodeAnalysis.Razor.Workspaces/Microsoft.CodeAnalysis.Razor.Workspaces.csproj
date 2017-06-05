@@ -11,6 +11,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynVersion)" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj" />
-    <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj" />
   </ItemGroup>
 </Project>

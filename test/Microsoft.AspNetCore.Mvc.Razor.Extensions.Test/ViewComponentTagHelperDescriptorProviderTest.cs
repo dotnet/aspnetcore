@@ -2,15 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     // This is just a basic integration test. There are detailed tests for the VCTH visitor and descriptor factory.
     public class ViewComponentTagHelperDescriptorProviderTest
     {
+        private static readonly Assembly _assembly = typeof(ViewComponentTagHelperDescriptorProviderTest).GetTypeInfo().Assembly;
+
         [Fact]
         public void DescriptorProvider_FindsVCTH()
         {
@@ -22,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 ";
 
-            var testCompilation = TestCompilation.Create(CSharpSyntaxTree.ParseText(code));
+            var testCompilation = TestCompilation.Create(_assembly, CSharpSyntaxTree.ParseText(code));
 
             var context = TagHelperDescriptorProviderContext.Create();
             context.SetCompilation(testCompilation);

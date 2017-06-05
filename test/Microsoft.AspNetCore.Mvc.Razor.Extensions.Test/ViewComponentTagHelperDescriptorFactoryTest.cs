@@ -3,19 +3,22 @@
 
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Razor.Language;
-using Xunit;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis;
+using Xunit;
 
-namespace Microsoft.CodeAnalysis.Razor.Workspaces
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class ViewComponentTagHelperDescriptorFactoryTest
     {
+        private static readonly Assembly _assembly = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetTypeInfo().Assembly;
+
         [Fact]
         public void CreateDescriptor_UnderstandsStringParameters()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(StringParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
@@ -53,7 +56,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_UnderstandsVariousParameterTypes()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(VariousParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
@@ -99,7 +102,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_UnderstandsGenericParameters()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(GenericParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
@@ -137,7 +140,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_AddsDiagnostic_ForViewComponentWithNoInvokeMethod()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
 
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(ViewComponentWithoutInvokeMethod).FullName);
@@ -154,7 +157,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_ForViewComponentWithInvokeAsync_UnderstandsGenericTask()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
 
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(AsyncViewComponentWithGenericTask).FullName);
@@ -170,7 +173,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_ForViewComponentWithInvokeAsync_UnderstandsNonGenericTask()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
 
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(AsyncViewComponentWithNonGenericTask).FullName);
@@ -186,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_ForViewComponentWithInvokeAsync_DoesNotUnderstandVoid()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
 
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(AsyncViewComponentWithString).FullName);
@@ -203,7 +206,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_ForViewComponentWithInvokeAsync_DoesNotUnderstandString()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
 
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(AsyncViewComponentWithString).FullName);
@@ -220,7 +223,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_ForViewComponentWithInvoke_DoesNotUnderstandVoid()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
 
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(SyncViewComponentWithVoid).FullName);
@@ -237,7 +240,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_ForViewComponentWithInvoke_DoesNotUnderstandNonGenericTask()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
 
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(SyncViewComponentWithNonGenericTask).FullName);
@@ -254,7 +257,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_ForViewComponentWithInvoke_DoesNotUnderstandGenericTask()
         {
             // Arrange
-            var testCompilation = TestCompilation.Create();
+            var testCompilation = TestCompilation.Create(_assembly);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
 
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(SyncViewComponentWithGenericTask).FullName);

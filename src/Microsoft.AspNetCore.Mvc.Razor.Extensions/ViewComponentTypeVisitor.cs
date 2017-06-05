@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     internal class ViewComponentTypeVisitor : SymbolVisitor
     {

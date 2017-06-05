@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     /// <summary>
     /// A library of methods used to generate <see cref="TagHelperDescriptor"/>s for view components.

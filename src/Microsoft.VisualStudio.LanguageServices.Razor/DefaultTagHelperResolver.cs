@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Shell;
@@ -56,8 +58,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 }
 
                 // The OOP host is turned off, so let's do this in process.
-                var resolver = new CodeAnalysis.Razor.DefaultTagHelperResolver(designTime: true);
-                result = await resolver.GetTagHelpersAsync(project, CancellationToken.None).ConfigureAwait(false);
+                var compilation = await project.GetCompilationAsync(CancellationToken.None).ConfigureAwait(false);
+                result = GetTagHelpers(compilation, designTime: true);
                 return result;
             }
             catch (Exception exception)
@@ -77,6 +79,32 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     nameof(GetTagHelpersAsync),
                     exception);
             }
+        }
+
+        private TagHelperResolutionResult GetTagHelpers(Compilation compilation, bool designTime)
+        {
+            var descriptors = new List<TagHelperDescriptor>();
+
+            var providers = new ITagHelperDescriptorProvider[]
+            {
+                new DefaultTagHelperDescriptorProvider() { DesignTime = designTime, },
+                new ViewComponentTagHelperDescriptorProvider(),
+            };
+
+            var results = new List<TagHelperDescriptor>();
+            var context = TagHelperDescriptorProviderContext.Create(results);
+            context.SetCompilation(compilation);
+
+            for (var i = 0; i < providers.Length; i++)
+            {
+                var provider = providers[i];
+                provider.Execute(context);
+            }
+
+            var diagnostics = new List<RazorDiagnostic>();
+            var resolutionResult = new TagHelperResolutionResult(results, diagnostics);
+
+            return resolutionResult;
         }
 
         private TagHelperResolutionResult GetTagHelperResolutionResult(JObject jsonObject)
