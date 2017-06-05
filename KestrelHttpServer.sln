@@ -71,15 +71,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Tests", "test\Microsoft.AspNetCore.Server.Kestrel.Tests\Microsoft.AspNetCore.Server.Kestrel.Tests.csproj", "{4F1C30F8-CCAA-48D7-9DF6-2A84021F5BCC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{FD3692F8-F5C7-49A5-8D69-29F8A87A9DB7}"
-	ProjectSection(SolutionItems) = preProject
-		build\common.props = build\common.props
-		build\dependencies.props = build\dependencies.props
-		build\Key.snk = build\Key.snk
-		build\repo.props = build\repo.props
-		build\repo.targets = build\repo.targets
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -279,6 +270,5 @@ Global
 		{2E9CB89D-EC8F-4DD9-A72B-08D5BABF752D} = {2D5D5227-4DBD-499A-96B1-76A36B03B750}
 		{D95A7EC3-48AC-4D03-B2E2-0DA3E13BD3A4} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
 		{4F1C30F8-CCAA-48D7-9DF6-2A84021F5BCC} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
-		{FD3692F8-F5C7-49A5-8D69-29F8A87A9DB7} = {7972A5D6-3385-4127-9277-428506DD44FF}
 	EndGlobalSection
 EndGlobal
