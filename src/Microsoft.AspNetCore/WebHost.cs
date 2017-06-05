@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.AspNetCore
 {
@@ -188,10 +187,6 @@ namespace Microsoft.AspNetCore
                 .UseDefaultServiceProvider((context, options) =>
                 {
                     options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
-                })
-                .ConfigureServices(services =>
-                {
-                    services.ConfigureAspNetCoreDefaults();
                 });
 
             return builder;

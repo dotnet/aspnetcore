@@ -69,7 +69,6 @@
     <MetaPackagePackageReference Include="Microsoft.Extensions.Logging" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Console" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Debug" />
-    <MetaPackagePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
   <ItemGroup>
@@ -208,6 +207,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Logging.TraceSource" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.ObjectPool" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Options" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Primitives" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.WebEncoders" />
     <FullMetaPackagePackageReference Include="Microsoft.Net.Http.Headers" />
