@@ -544,6 +544,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             HttpRequestAuthTypeKerberos
         }
 
+        internal enum HTTP_QOS_SETTING_TYPE
+        {
+            HttpQosSettingTypeBandwidth,
+            HttpQosSettingTypeConnectionLimit,
+            HttpQosSettingTypeFlowRate
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct HTTP_SERVER_AUTHENTICATION_INFO
         {
@@ -602,6 +609,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             internal HTTP_FLAGS Flags;
             internal IntPtr RequestQueueHandle;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct HTTP_CONNECTION_LIMIT_INFO
+        {
+            internal HTTP_FLAGS Flags;
+            internal uint MaxConnections;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct HTTP_QOS_SETTING_INFO
+        {
+            internal HTTP_QOS_SETTING_TYPE QosType;
+            internal IntPtr QosSetting;
         }
 
         // see http.w for definitions

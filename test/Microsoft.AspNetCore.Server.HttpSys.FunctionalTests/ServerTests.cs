@@ -300,6 +300,112 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        [ConditionalFact]
+        public void Server_SetConnectionLimitArgumentValidation_Success()
+        {
+            var server = Utilities.CreatePump();
+
+            Assert.Null(server.Listener.Options.MaxConnections);
+            Assert.Throws<ArgumentOutOfRangeException>(() => server.Listener.Options.MaxConnections = -2);
+            Assert.Null(server.Listener.Options.MaxConnections);
+            server.Listener.Options.MaxConnections = null;
+            server.Listener.Options.MaxConnections = 3;
+        }
+
+        [ConditionalFact]
+        public async Task Server_SetConnectionLimit_Success()
+        {
+            // This is just to get a dynamic port
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
+
+            var server = Utilities.CreatePump();
+            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
+            Assert.Null(server.Listener.Options.MaxConnections);
+            server.Listener.Options.MaxConnections = 3;
+
+            using (server)
+            {
+                await server.StartAsync(new DummyApplication(), CancellationToken.None);
+
+                using (var client1 = await SendHungRequestAsync("GET", address))
+                using (var client2 = await SendHungRequestAsync("GET", address))
+                {
+                    using (var client3 = await SendHungRequestAsync("GET", address))
+                    {
+                        // Maxed out, refuses connection and throws
+                        await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
+                    }
+
+                    // A connection has been closed, try again.
+                    string responseText = await SendRequestAsync(address);
+                    Assert.Equal(string.Empty, responseText);
+                }
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Server_SetConnectionLimitChangeAfterStarted_Success()
+        {
+            // This is just to get a dynamic port
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
+
+            var server = Utilities.CreatePump();
+            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
+            Assert.Null(server.Listener.Options.MaxConnections);
+            server.Listener.Options.MaxConnections = 3;
+
+            using (server)
+            {
+                await server.StartAsync(new DummyApplication(), CancellationToken.None);
+
+                using (var client1 = await SendHungRequestAsync("GET", address))
+                using (var client2 = await SendHungRequestAsync("GET", address))
+                using (var client3 = await SendHungRequestAsync("GET", address))
+                {
+                    // Maxed out, refuses connection and throws
+                    await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
+
+                    server.Listener.Options.MaxConnections = 4;
+
+                    string responseText = await SendRequestAsync(address);
+                    Assert.Equal(string.Empty, responseText);
+
+                    server.Listener.Options.MaxConnections = 2;
+
+                    // Maxed out, refuses connection and throws
+                    await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
+                }
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Server_SetConnectionLimitInfinite_Success()
+        {
+            // This is just to get a dynamic port
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
+
+            var server = Utilities.CreatePump();
+            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
+            server.Listener.Options.MaxConnections = -1; // infinite
+
+            using (server)
+            {
+                await server.StartAsync(new DummyApplication(), CancellationToken.None);
+
+                using (var client1 = await SendHungRequestAsync("GET", address))
+                using (var client2 = await SendHungRequestAsync("GET", address))
+                using (var client3 = await SendHungRequestAsync("GET", address))
+                {
+                    // Doesn't max out
+                    string responseText = await SendRequestAsync(address);
+                    Assert.Equal(string.Empty, responseText);
+                }
+            }
+        }
+
         private async Task<string> SendRequestAsync(string uri)
         {
             using (HttpClient client = new HttpClient())

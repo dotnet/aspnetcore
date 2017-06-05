@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         // The native request queue
         private long _requestQueueLength = DefaultRequestQueueLength;
+        private long? _maxConnections;
         private RequestQueue _requestQueue;
+        private UrlGroup _urlGroup;
 
         public HttpSysOptions()
         {
@@ -55,6 +57,29 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public bool ThrowWriteExceptions { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of concurrent connections to accept, -1 for infinite, or null to
+        /// use the machine wide setting from the registry. The default value is null.
+        /// </summary>
+        public long? MaxConnections
+        {
+            get => _maxConnections;
+            set
+            {
+                if (value.HasValue && value < -1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Empty);
+                }
+
+                if (value.HasValue && _urlGroup != null)
+                {
+                    _urlGroup.SetMaxConnections(value.Value);
+                }
+
+                _maxConnections = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.
         /// </summary>
         public long RequestQueueLimit
@@ -79,13 +104,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal void SetRequestQueueLimit(RequestQueue requestQueue)
+        internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
         {
+            _urlGroup = urlGroup;
             _requestQueue = requestQueue;
+
+            if (_maxConnections.HasValue)
+            {
+                _urlGroup.SetMaxConnections(_maxConnections.Value);
+            }
+
             if (_requestQueueLength != DefaultRequestQueueLength)
             {
                 _requestQueue.SetLengthLimit(_requestQueueLength);
             }
+
+            Authentication.SetUrlGroupSecurity(urlGroup);
+            Timeouts.SetUrlGroupTimeouts(urlGroup);
         }
     }
 }

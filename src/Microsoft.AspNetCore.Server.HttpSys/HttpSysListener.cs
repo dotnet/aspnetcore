@@ -146,9 +146,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Options.Authentication.SetUrlGroupSecurity(UrlGroup);
-                    Options.Timeouts.SetUrlGroupTimeouts(UrlGroup);
-                    Options.SetRequestQueueLimit(RequestQueue);
+                    Options.Apply(UrlGroup, RequestQueue);
 
                     _requestQueue.AttachToUrlGroup();
 
