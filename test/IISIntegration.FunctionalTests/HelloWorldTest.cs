@@ -81,6 +81,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         response = await deploymentResult.HttpClient.GetAsync("/Query%3FPath?query?");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal("?query?", responseText);
+
+                        response = await deploymentResult.HttpClient.GetAsync("/BodyLimit");
+                        responseText = await response.Content.ReadAsStringAsync();
+                        Assert.Equal("null", responseText);
                     }
                     catch (XunitException)
                     {

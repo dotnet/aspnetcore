@@ -76,6 +76,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 return;
             }
 
+            var bodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            if (bodySizeFeature != null)
+            {
+                // IIS already limits this, no need to do it twice.
+                bodySizeFeature.MaxRequestBodySize = null;
+            }
+
             if (_options.ForwardClientCertificate)
             {
                 var header = httpContext.Request.Headers[MSAspNetCoreClientCert];
