@@ -192,4 +192,7 @@
   <data name="XmlKeyManager_IXmlRepositoryNotFound" xml:space="preserve">
     <value>The '{0}' instance could not be found. When an '{1}' instance is set, a corresponding '{0}' instance must also be set.</value>
   </data>
+  <data name="FileSystem_EphemeralKeysLocationInContainer" xml:space="preserve">
+    <value>Storing keys in a directory '{path}' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed.</value>
+  </data>
 </root>

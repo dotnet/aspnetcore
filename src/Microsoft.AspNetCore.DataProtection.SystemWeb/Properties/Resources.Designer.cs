@@ -15,32 +15,28 @@ namespace Microsoft.AspNetCore.DataProtection.SystemWeb
         /// </summary>
         internal static string DataProtector_ProtectFailed
         {
-            get { return GetString("DataProtector_ProtectFailed"); }
+            get => GetString("DataProtector_ProtectFailed");
         }
 
         /// <summary>
         /// A call to Protect failed. This most likely means that the data protection system is misconfigured. See the inner exception for more information.
         /// </summary>
         internal static string FormatDataProtector_ProtectFailed()
-        {
-            return GetString("DataProtector_ProtectFailed");
-        }
+            => GetString("DataProtector_ProtectFailed");
 
         /// <summary>
         /// The CreateDataProtectionProvider method returned null.
         /// </summary>
         internal static string Startup_CreateProviderReturnedNull
         {
-            get { return GetString("Startup_CreateProviderReturnedNull"); }
+            get => GetString("Startup_CreateProviderReturnedNull");
         }
 
         /// <summary>
         /// The CreateDataProtectionProvider method returned null.
         /// </summary>
         internal static string FormatStartup_CreateProviderReturnedNull()
-        {
-            return GetString("Startup_CreateProviderReturnedNull");
-        }
+            => GetString("Startup_CreateProviderReturnedNull");
 
         private static string GetString(string name, params string[] formatterNames)
         {

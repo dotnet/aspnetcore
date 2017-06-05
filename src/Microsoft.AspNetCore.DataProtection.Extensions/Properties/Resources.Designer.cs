@@ -15,48 +15,42 @@ namespace Microsoft.AspNetCore.DataProtection.Extensions
         /// </summary>
         internal static string CryptCommon_GenericError
         {
-            get { return GetString("CryptCommon_GenericError"); }
+            get => GetString("CryptCommon_GenericError");
         }
 
         /// <summary>
         /// An error occurred during a cryptographic operation.
         /// </summary>
         internal static string FormatCryptCommon_GenericError()
-        {
-            return GetString("CryptCommon_GenericError");
-        }
+            => GetString("CryptCommon_GenericError");
 
         /// <summary>
         /// The payload expired at {0}.
         /// </summary>
         internal static string TimeLimitedDataProtector_PayloadExpired
         {
-            get { return GetString("TimeLimitedDataProtector_PayloadExpired"); }
+            get => GetString("TimeLimitedDataProtector_PayloadExpired");
         }
 
         /// <summary>
         /// The payload expired at {0}.
         /// </summary>
         internal static string FormatTimeLimitedDataProtector_PayloadExpired(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TimeLimitedDataProtector_PayloadExpired"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TimeLimitedDataProtector_PayloadExpired"), p0);
 
         /// <summary>
         /// The payload is invalid.
         /// </summary>
         internal static string TimeLimitedDataProtector_PayloadInvalid
         {
-            get { return GetString("TimeLimitedDataProtector_PayloadInvalid"); }
+            get => GetString("TimeLimitedDataProtector_PayloadInvalid");
         }
 
         /// <summary>
         /// The payload is invalid.
         /// </summary>
         internal static string FormatTimeLimitedDataProtector_PayloadInvalid()
-        {
-            return GetString("TimeLimitedDataProtector_PayloadInvalid");
-        }
+            => GetString("TimeLimitedDataProtector_PayloadInvalid");
 
         private static string GetString(string name, params string[] formatterNames)
         {

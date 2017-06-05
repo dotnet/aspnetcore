@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.Repositories
@@ -35,6 +36,22 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
             Directory = directory;
             _logger = loggerFactory.CreateLogger<FileSystemXmlRepository>();
+
+            try
+            {
+                if (DockerUtils.IsDocker && !DockerUtils.IsVolumeMountedFolder(Directory))
+                {
+                    // warn users that keys may be lost when running in docker without a volume mounted folder
+                    _logger.UsingEphemeralFileSystemLocationInContainer(Directory.FullName);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Treat exceptions as non-fatal when attempting to detect docker. 
+                // These might occur if fstab is an unrecognized format, or if there are other unusual
+                // file IO errors.
+                _logger.LogTrace(ex, "Failure occurred while attempting to detect docker.");
+            }
         }
 
         /// <summary>

@@ -15,64 +15,56 @@ namespace Microsoft.AspNetCore.DataProtection.Abstractions
         /// </summary>
         internal static string CryptCommon_PayloadInvalid
         {
-            get { return GetString("CryptCommon_PayloadInvalid"); }
+            get => GetString("CryptCommon_PayloadInvalid");
         }
 
         /// <summary>
         /// The payload was invalid.
         /// </summary>
         internal static string FormatCryptCommon_PayloadInvalid()
-        {
-            return GetString("CryptCommon_PayloadInvalid");
-        }
+            => GetString("CryptCommon_PayloadInvalid");
 
         /// <summary>
         /// The purposes collection cannot be null or empty and cannot contain null elements.
         /// </summary>
         internal static string DataProtectionExtensions_NullPurposesCollection
         {
-            get { return GetString("DataProtectionExtensions_NullPurposesCollection"); }
+            get => GetString("DataProtectionExtensions_NullPurposesCollection");
         }
 
         /// <summary>
         /// The purposes collection cannot be null or empty and cannot contain null elements.
         /// </summary>
         internal static string FormatDataProtectionExtensions_NullPurposesCollection()
-        {
-            return GetString("DataProtectionExtensions_NullPurposesCollection");
-        }
+            => GetString("DataProtectionExtensions_NullPurposesCollection");
 
         /// <summary>
         /// An error occurred during a cryptographic operation.
         /// </summary>
         internal static string CryptCommon_GenericError
         {
-            get { return GetString("CryptCommon_GenericError"); }
+            get => GetString("CryptCommon_GenericError");
         }
 
         /// <summary>
         /// An error occurred during a cryptographic operation.
         /// </summary>
         internal static string FormatCryptCommon_GenericError()
-        {
-            return GetString("CryptCommon_GenericError");
-        }
+            => GetString("CryptCommon_GenericError");
 
         /// <summary>
         /// No service for type '{0}' has been registered.
         /// </summary>
         internal static string DataProtectionExtensions_NoService
         {
-            get { return GetString("DataProtectionExtensions_NoService"); }
+            get => GetString("DataProtectionExtensions_NoService");
         }
 
         /// <summary>
         /// No service for type '{0}' has been registered.
         /// </summary>
         internal static string FormatDataProtectionExtensions_NoService(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DataProtectionExtensions_NoService"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("DataProtectionExtensions_NoService"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {

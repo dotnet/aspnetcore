@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -136,6 +138,23 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 // Assert
                 var orderedNames = allElements.Select(el => el.Name.LocalName).OrderBy(name => name);
                 Assert.Equal(new[] { "element1", "element2", "element3" }, orderedNames);
+            });
+        }
+
+        [ConditionalFact]
+        [DockerOnly]
+        [Trait("Docker", "true")]
+        public void Logs_DockerEphemeralFolders()
+        {
+            // Arrange
+            var loggerFactory = new StringLoggerFactory(LogLevel.Warning);
+            WithUniqueTempDirectory(dirInfo =>
+            {
+                // Act
+                var repo = new FileSystemXmlRepository(dirInfo, loggerFactory);
+
+                // Assert
+                Assert.Contains(Resources.FormatFileSystem_EphemeralKeysLocationInContainer(dirInfo.FullName), loggerFactory.ToString());
             });
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Win32;
 
 namespace Microsoft.Extensions.Logging
@@ -142,6 +143,8 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, string, Exception> _usingProfileAsKeyRepositoryWithDPAPI;
 
         private static Action<ILogger, string, Exception> _usingAzureAsKeyRepository;
+
+        private static Action<ILogger, string, Exception> _usingEphemeralFileSystemLocationInContainer;
 
         static LoggingExtensions()
         {
@@ -377,19 +380,29 @@ namespace Microsoft.Extensions.Logging
                 eventId: 58,
                 logLevel: LogLevel.Information,
                 formatString: "Creating key {KeyId:B} with creation date {CreationDate:u}, activation date {ActivationDate:u}, and expiration date {ExpirationDate:u}.");
-            _usingEphemeralKeyRepository = LoggerMessage.Define(eventId: 59,
+            _usingEphemeralKeyRepository = LoggerMessage.Define(
+                eventId: 59,
                 logLevel: LogLevel.Warning,
                 formatString: "Neither user profile nor HKLM registry available. Using an ephemeral key repository. Protected data will be unavailable when application exits.");
-            _usingRegistryAsKeyRepositoryWithDPAPI = LoggerMessage.Define<string>(eventId: 0,
+            _usingEphemeralFileSystemLocationInContainer = LoggerMessage.Define<string>(
+                eventId: 60,
+                logLevel: LogLevel.Warning,
+                formatString: Resources.FileSystem_EphemeralKeysLocationInContainer);
+
+            _usingRegistryAsKeyRepositoryWithDPAPI = LoggerMessage.Define<string>(
+                eventId: 0,
                 logLevel: LogLevel.Information,
                 formatString: "User profile not available. Using '{Name}' as key repository and Windows DPAPI to encrypt keys at rest.");
-            _usingProfileAsKeyRepository = LoggerMessage.Define<string>(eventId: 0,
+            _usingProfileAsKeyRepository = LoggerMessage.Define<string>(
+                eventId: 0,
                 logLevel: LogLevel.Information,
                 formatString: "User profile is available. Using '{FullName}' as key repository; keys will not be encrypted at rest.");
-            _usingProfileAsKeyRepositoryWithDPAPI = LoggerMessage.Define<string>(eventId: 0,
+            _usingProfileAsKeyRepositoryWithDPAPI = LoggerMessage.Define<string>(
+                eventId: 0,
                 logLevel: LogLevel.Information,
                 formatString: "User profile is available. Using '{FullName}' as key repository and Windows DPAPI to encrypt keys at rest.");
-            _usingAzureAsKeyRepository = LoggerMessage.Define<string>(eventId: 0,
+            _usingAzureAsKeyRepository = LoggerMessage.Define<string>(
+                eventId: 0,
                 logLevel: LogLevel.Information,
                 formatString: "Azure Web Sites environment detected. Using '{FullName}' as key repository; keys will not be encrypted at rest.");
             _keyRingWasLoadedOnStartup = LoggerMessage.Define<Guid>(
@@ -781,6 +794,11 @@ namespace Microsoft.Extensions.Logging
         public static void KeyRingFailedToLoadOnStartup(this ILogger logger, Exception innerException)
         {
             _keyRingFailedToLoadOnStartup(logger, innerException);
+        }
+
+        public static void UsingEphemeralFileSystemLocationInContainer(this ILogger logger, string path)
+        {
+            _usingEphemeralFileSystemLocationInContainer(logger, path, null);
         }
     }
 }
