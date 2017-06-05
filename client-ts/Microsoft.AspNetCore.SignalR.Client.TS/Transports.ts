@@ -1,6 +1,5 @@
 import { DataReceived, TransportClosed } from "./Common"
 import { IHttpClient } from "./HttpClient"
-import * as Formatters from "./Formatters";
 
 export enum TransportType {
     WebSockets,
@@ -103,20 +102,15 @@ export class ServerSentEventsTransport implements ITransport {
             try {
                 eventSource.onmessage = (e: MessageEvent) => {
                     if (this.onDataReceived) {
-                        // Parse the message
-                        let message;
                         try {
-                            message = Formatters.ServerSentEventsFormat.parse(e.data);
-                            console.log(`(SSE transport) data received: ${message.content}`);
+                            console.log(`(SSE transport) data received: ${e.data}`);
+                            this.onDataReceived(e.data);
                         } catch (error) {
                             if (this.onClosed) {
                                 this.onClosed(error);
                             }
                             return;
                         }
-
-                        // TODO: pass the whole message object along
-                        this.onDataReceived(message.content);
                     }
                 };
 
@@ -187,22 +181,15 @@ export class LongPollingTransport implements ITransport {
         pollXhr.onload = () => {
             if (pollXhr.status == 200) {
                 if (this.onDataReceived) {
-                    // Parse the messages
-                    let messages;
                     try {
-                        messages = Formatters.TextMessageFormat.parse(pollXhr.response);
+                        console.log(`(LongPolling transport) data received: ${pollXhr.response}`);
+                        this.onDataReceived(pollXhr.response);
                     } catch (error) {
                         if (this.onClosed) {
                             this.onClosed(error);
                         }
                         return;
                     }
-
-                    messages.forEach((message) => {
-                        console.log(`(LongPolling transport) data received: ${message.content}`);
-                        // TODO: pass the whole message object along
-                        this.onDataReceived(message.content)
-                    });
                 }
                 this.poll(url);
             }
@@ -256,6 +243,5 @@ const headers = new Map<string, string>();
 headers.set("Content-Type", "application/vnd.microsoft.aspnetcore.endpoint-messages.v1+text");
 
 async function send(httpClient: IHttpClient, url: string, data: any): Promise<void> {
-    let message = `T${data.length.toString()}:T:${data};`;
-    await httpClient.post(url, message, headers);
+    await httpClient.post(url, data, headers);
 }

@@ -3,8 +3,10 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -28,8 +30,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         // ONLY to be used for application payloads (args, return values, etc.)
         private JsonSerializer _payloadSerializer;
 
-        public MessageType MessageType => MessageType.Text;
-
         /// <summary>
         /// Creates an instance of the <see cref="JsonHubProtocol"/> using the specified <see cref="JsonSerializer"/>
         /// to serialize application payloads (arguments, results, etc.). The serialization of the outer protocol can
@@ -46,13 +46,22 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             _payloadSerializer = payloadSerializer;
         }
 
-        public HubMessage ParseMessage(ReadOnlySpan<byte> input, IInvocationBinder binder)
+        public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
         {
-            // TODO: Need a span-native JSON parser!
-            using (var memoryStream = new MemoryStream(input.ToArray()))
+            var reader = new BytesReader(input.ToArray());
+            messages = new List<HubMessage>();
+
+            // This API has to change to return the amount consumed
+            foreach (var m in ParseSendBatch(ref reader, MessageFormat.Text))
             {
-                return ParseMessage(memoryStream, binder);
+                // TODO: Need a span-native JSON parser!
+                using (var memoryStream = new MemoryStream(m.Payload))
+                {
+                    messages.Add(ParseMessage(memoryStream, binder));
+                }
             }
+
+            return messages.Count > 0;
         }
 
         public bool TryWriteMessage(HubMessage message, IOutput output)
@@ -63,7 +72,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 WriteMessage(message, memoryStream);
                 memoryStream.Flush();
 
-                return output.TryWrite(memoryStream.ToArray());
+                var frame = new Message(memoryStream.ToArray(), MessageType.Text);
+                return MessageFormatter.TryWriteMessage(frame, output, MessageFormat.Text);
             }
         }
 
@@ -277,6 +287,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 throw new FormatException($"Expected '{property}' to be of type {expectedType}.");
             }
             return prop.Value<T>();
+        }
+
+        private List<Message> ParseSendBatch(ref BytesReader payload, MessageFormat messageFormat)
+        {
+            var messages = new List<Message>();
+
+            if (payload.Unread.Length == 0)
+            {
+                return messages;
+            }
+
+            // REVIEW: This needs a little work. We could probably new up exactly the right parser, if we tinkered with the inheritance hierarchy a bit.
+            var parser = new MessageParser();
+            while (parser.TryParseMessage(ref payload, messageFormat, out var message))
+            {
+                messages.Add(message);
+            }
+            return messages;
         }
     }
 }

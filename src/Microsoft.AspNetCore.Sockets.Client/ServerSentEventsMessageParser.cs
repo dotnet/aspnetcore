@@ -14,26 +14,19 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         private const byte ByteCR = (byte)'\r';
         private const byte ByteLF = (byte)'\n';
         private const byte ByteColon = (byte)':';
-        private const byte ByteT = (byte)'T';
-        private const byte ByteB = (byte)'B';
-        private const byte ByteC = (byte)'C';
-        private const byte ByteE = (byte)'E';
 
         private static byte[] _dataPrefix = Encoding.UTF8.GetBytes("data: ");
         private static byte[] _sseLineEnding = Encoding.UTF8.GetBytes("\r\n");
         private static byte[] _newLine = Encoding.UTF8.GetBytes(Environment.NewLine);
 
-        private readonly static int _messageTypeLineLength = "data: X\r\n".Length;
-
-        private InternalParseState _internalParserState = InternalParseState.ReadMessageType;
+        private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
         private List<byte[]> _data = new List<byte[]>();
-        private MessageType _messageType = MessageType.Text;
 
-        public ParseResult ParseMessage(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out Message message)
+        public ParseResult ParseMessage(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out byte[] message)
         {
             consumed = buffer.Start;
             examined = buffer.End;
-            message = new Message();
+            message = null;
             var reader = new ReadableBufferReader(buffer);
 
             var start = consumed;
@@ -46,7 +39,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     // For the case of  data: Foo\r\n\r\<Anytine except \n>
                     if (_internalParserState == InternalParseState.ReadEndOfMessage)
                     {
-                        if(ConvertBufferToSpan(buffer.Slice(start, buffer.End)).Length > 1)
+                        if (ConvertBufferToSpan(buffer.Slice(start, buffer.End)).Length > 1)
                         {
                             throw new FormatException("Expected a \\r\\n frame ending");
                         }
@@ -95,17 +88,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 var payload = Array.Empty<byte>();
                 switch (_internalParserState)
                 {
-                    case InternalParseState.ReadMessageType:
-                        EnsureStartsWithDataPrefix(line);
-
-
-                        _messageType = ParseMessageType(line);
-
-                        _internalParserState = InternalParseState.ReadMessagePayload;
-
-                        start = lineEnd;
-                        consumed = lineEnd;
-                        break;
                     case InternalParseState.ReadMessagePayload:
                         EnsureStartsWithDataPrefix(line);
 
@@ -131,25 +113,18 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                                 payloadSize += dataLine.Length;
                             }
 
-                            if (_messageType != MessageType.Binary)
-                            {
-                                payloadSize += _newLine.Length*_data.Count;
+                            payloadSize += _newLine.Length * _data.Count;
 
-                                // Allocate space in the paylod buffer for the data and the new lines.
-                                // Subtract newLine length because we don't want a trailing newline.
-                                payload = new byte[payloadSize - _newLine.Length];
-                            }
-                            else
-                            {
-                                payload = new byte[payloadSize];
-                            }
+                            // Allocate space in the payload buffer for the data and the new lines.
+                            // Subtract newLine length because we don't want a trailing newline.
+                            payload = new byte[payloadSize - _newLine.Length];
 
                             var offset = 0;
                             foreach (var dataLine in _data)
                             {
                                 dataLine.CopyTo(payload, offset);
                                 offset += dataLine.Length;
-                                if (offset < payload.Length && _messageType != MessageType.Binary)
+                                if (offset < payload.Length)
                                 {
                                     _newLine.CopyTo(payload, offset);
                                     offset += _newLine.Length;
@@ -157,12 +132,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                             }
                         }
 
-                        if (_messageType == MessageType.Binary)
-                        {
-                            payload = MessageFormatUtils.DecodePayload(payload);
-                        }
-
-                        message = new Message(payload, _messageType);
+                        message = payload;
                         consumed = lineEnd;
                         examined = consumed;
                         return ParseResult.Completed;
@@ -188,7 +158,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
         public void Reset()
         {
-            _internalParserState = InternalParseState.ReadMessageType;
+            _internalParserState = InternalParseState.ReadMessagePayload;
             _data.Clear();
         }
 
@@ -205,30 +175,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             return line.Length == _sseLineEnding.Length && line.SequenceEqual(_sseLineEnding);
         }
 
-        private MessageType ParseMessageType(ReadOnlySpan<byte> line)
-        {
-            if (line.Length != _messageTypeLineLength)
-            {
-                throw new FormatException("Expected a data format message of the form 'data: <MesssageType>'");
-            }
-
-            // Skip the "data: " part of the line
-            var type = line[_dataPrefix.Length];
-            switch (type)
-            {
-                case ByteT:
-                    return MessageType.Text;
-                case ByteB:
-                    return MessageType.Binary;
-                case ByteC:
-                    return MessageType.Close;
-                case ByteE:
-                    return MessageType.Error;
-                default:
-                    throw new FormatException($"Unknown message type: '{(char)type}'");
-            }
-        }
-
         public enum ParseResult
         {
             Completed,
@@ -237,7 +183,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
         private enum InternalParseState
         {
-            ReadMessageType,
             ReadMessagePayload,
             ReadEndOfMessage,
             Error

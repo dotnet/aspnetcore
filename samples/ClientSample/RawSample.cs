@@ -41,7 +41,7 @@ namespace ClientSample
             try
             {
                 var cts = new CancellationTokenSource();
-                connection.Received += (data, format) => Console.WriteLine($"{Encoding.UTF8.GetString(data)}");
+                connection.Received += data => Console.WriteLine($"{Encoding.UTF8.GetString(data)}");
                 connection.Closed += e => cts.Cancel();
 
                 await connection.StartAsync();
@@ -63,7 +63,7 @@ namespace ClientSample
                         break;
                     }
 
-                    await connection.SendAsync(Encoding.UTF8.GetBytes(line), MessageType.Text, cts.Token);
+                    await connection.SendAsync(Encoding.UTF8.GetBytes(line), cts.Token);
                 }
             }
             catch (AggregateException aex) when (aex.InnerExceptions.All(e => e is OperationCanceledException))

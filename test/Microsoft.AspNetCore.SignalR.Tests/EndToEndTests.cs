@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var receiveTcs = new TaskCompletionSource<string>();
                     var closeTcs = new TaskCompletionSource<object>();
-                    connection.Received += (data, format) =>
+                    connection.Received += data =>
                     {
                         logger.LogInformation("Received {length} byte message", data.Length);
                         receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
@@ -119,10 +119,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var bytes = Encoding.UTF8.GetBytes(message);
                     logger.LogInformation("Sending {length} byte message", bytes.Length);
-                    await connection.SendAsync(bytes, MessageType.Text).OrTimeout();
+                    await connection.SendAsync(bytes).OrTimeout();
                     logger.LogInformation("Sent message", bytes.Length);
-
-                    var receiveData = new ReceiveData();
 
                     logger.LogInformation("Receiving message");
                     Assert.Equal(message, await receiveTcs.Task.OrTimeout());
@@ -162,7 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 try
                 {
                     var receiveTcs = new TaskCompletionSource<byte[]>();
-                    connection.Received += (data, messageType) =>
+                    connection.Received += data =>
                     {
                         logger.LogInformation("Received {length} byte message", data.Length);
                         receiveTcs.TrySetResult(data);
@@ -174,10 +172,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var bytes = Encoding.UTF8.GetBytes(message);
                     logger.LogInformation("Sending {length} byte message", bytes.Length);
-                    await connection.SendAsync(bytes, MessageType.Text).OrTimeout();
+                    await connection.SendAsync(bytes).OrTimeout();
                     logger.LogInformation("Sent message", bytes.Length);
-
-                    var receiveData = new ReceiveData();
 
                     logger.LogInformation("Receiving message");
                     var receivedData = await receiveTcs.Task.OrTimeout();

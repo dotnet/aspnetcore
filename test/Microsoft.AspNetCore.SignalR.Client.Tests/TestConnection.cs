@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -18,20 +19,20 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private TaskCompletionSource<object> _started = new TaskCompletionSource<object>();
         private TaskCompletionSource<object> _disposed = new TaskCompletionSource<object>();
 
-        private Channel<Message> _sentMessages = Channel.CreateUnbounded<Message>();
-        private Channel<Message> _receivedMessages = Channel.CreateUnbounded<Message>();
+        private Channel<byte[]> _sentMessages = Channel.CreateUnbounded<byte[]>();
+        private Channel<byte[]> _receivedMessages = Channel.CreateUnbounded<byte[]>();
 
         private CancellationTokenSource _receiveShutdownToken = new CancellationTokenSource();
         private Task _receiveLoop;
 
         public event Action Connected;
-        public event Action<byte[], MessageType> Received;
+        public event Action<byte[]> Received;
         public event Action<Exception> Closed;
 
         public Task Started => _started.Task;
         public Task Disposed => _disposed.Task;
-        public ReadableChannel<Message> SentMessages => _sentMessages.In;
-        public WritableChannel<Message> ReceivedMessages => _receivedMessages.Out;
+        public ReadableChannel<byte[]> SentMessages => _sentMessages.In;
+        public WritableChannel<byte[]> ReceivedMessages => _receivedMessages.Out;
 
         public TestConnection()
         {
@@ -45,17 +46,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return _receiveLoop;
         }
 
-        public async Task SendAsync(byte[] data, MessageType type, CancellationToken cancellationToken)
+        public async Task SendAsync(byte[] data, CancellationToken cancellationToken)
         {
-            if(!_started.Task.IsCompleted)
+            if (!_started.Task.IsCompleted)
             {
                 throw new InvalidOperationException("Connection must be started before SendAsync can be called");
             }
 
-            var message = new Message(data, type);
             while (await _sentMessages.Out.WaitToWriteAsync(cancellationToken))
             {
-                if (_sentMessages.Out.TryWrite(message))
+                if (_sentMessages.Out.TryWrite(data))
                 {
                     return;
                 }
@@ -73,20 +73,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task<string> ReadSentTextMessageAsync()
         {
             var message = await SentMessages.ReadAsync();
-            if (message.Type != MessageType.Text)
-            {
-                throw new InvalidOperationException($"Unexpected message of type: {message.Type}");
-            }
-            return Encoding.UTF8.GetString(message.Payload);
+            return Encoding.UTF8.GetString(message);
         }
 
         public Task ReceiveJsonMessage(object jsonObject)
         {
             var json = JsonConvert.SerializeObject(jsonObject, Formatting.None);
-            var bytes = Encoding.UTF8.GetBytes(json);
-            var message = new Message(bytes, MessageType.Text);
+            var bytes = Encoding.UTF8.GetBytes($"{json.Length}:T:{json};");
 
-            return _receivedMessages.Out.WriteAsync(message);
+            return _receivedMessages.Out.WriteAsync(bytes);
         }
 
         private async Task ReceiveLoopAsync(CancellationToken token)
@@ -99,7 +94,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         while (_receivedMessages.In.TryRead(out var message))
                         {
-                            Received?.Invoke(message.Payload, message.Type);
+                            Received?.Invoke(message);
                         }
                     }
                 }

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -19,10 +17,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
-        private IChannelConnection<SendMessage, Message> _application;
+        private IChannelConnection<SendMessage, byte[]> _application;
         private Task _sender;
         private Task _poller;
-        private MessageParser _parser = new MessageParser();
 
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
@@ -38,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, IChannelConnection<SendMessage, Message> application)
+        public Task StartAsync(Uri url, IChannelConnection<SendMessage, byte[]> application)
         {
             _logger.LogInformation("Starting {0}", nameof(LongPollingTransport));
 
@@ -86,7 +83,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
                     request.Headers.UserAgent.Add(SendUtils.DefaultUserAgentHeader);
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MessageFormatter.BinaryContentType));
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(ContentTypes.BinaryContentType));
 
                     var response = await _httpClient.SendAsync(request, cancellationToken);
                     response.EnsureSuccessStatusCode();
@@ -102,24 +99,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         _logger.LogDebug("Received messages from the server");
 
-                        var messageFormat = MessageParser.GetFormatFromContentType(response.Content.Headers.ContentType.ToString());
-
                         // Until Pipeline starts natively supporting BytesReader, this is the easiest way to do this.
                         var payload = await response.Content.ReadAsByteArrayAsync();
                         if (payload.Length > 0)
                         {
-                            var messages = ParsePayload(payload, messageFormat);
-
-                            foreach (var message in messages)
+                            while (!_application.Output.TryWrite(payload))
                             {
-                                while (!_application.Output.TryWrite(message))
+                                if (cancellationToken.IsCancellationRequested || !await _application.Output.WaitToWriteAsync(cancellationToken))
                                 {
-                                    if (cancellationToken.IsCancellationRequested || !await _application.Output.WaitToWriteAsync(cancellationToken))
-                                    {
-                                        return;
-                                    }
+                                    return;
                                 }
                             }
+
                         }
                     }
                 }
@@ -139,34 +130,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 _transportCts.Cancel();
                 _logger.LogInformation("Receive loop stopped");
             }
-        }
-
-        private IList<Message> ParsePayload(byte[] payload, MessageFormat messageFormat)
-        {
-            var reader = new BytesReader(payload);
-            if (messageFormat != MessageParser.GetFormatFromIndicator(reader.Unread[0]))
-            {
-                throw new FormatException($"Format indicator '{(char)reader.Unread[0]}' does not match format determined by Content-Type '{MessageFormatter.GetContentType(messageFormat)}'");
-            }
-            reader.Advance(1);
-
-            _parser.Reset();
-            var messages = new List<Message>();
-            while (_parser.TryParseMessage(ref reader, messageFormat, out var message))
-            {
-                messages.Add(message);
-            }
-
-            // Since we pre-read the whole payload, we know that when this fails we have read everything.
-            // Once Pipelines natively support BytesReader, we could get into situations where the data for
-            // a message just isn't available yet.
-
-            // If there's still data, we hit an incomplete message
-            if (reader.Unread.Length > 0)
-            {
-                throw new FormatException("Incomplete message");
-            }
-            return messages;
         }
     }
 }

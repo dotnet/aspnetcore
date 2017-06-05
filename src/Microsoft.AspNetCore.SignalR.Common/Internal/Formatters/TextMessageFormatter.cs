@@ -17,9 +17,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         internal const char TextTypeFlag = 'T';
         internal const char BinaryTypeFlag = 'B';
 
-        internal const char CloseTypeFlag = 'C';
-        internal const char ErrorTypeFlag = 'E';
-
         public static bool TryWriteMessage(Message message, IOutput output)
         {
             // Calculate the length, it's the number of characters for text messages, but number of base64 characters for binary
@@ -77,8 +74,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             {
                 case MessageType.Text: return TextTypeFlag;
                 case MessageType.Binary: return BinaryTypeFlag;
-                case MessageType.Close: return CloseTypeFlag;
-                case MessageType.Error: return ErrorTypeFlag;
                 default: throw new FormatException($"Invalid message type: {type}");
             }
         }

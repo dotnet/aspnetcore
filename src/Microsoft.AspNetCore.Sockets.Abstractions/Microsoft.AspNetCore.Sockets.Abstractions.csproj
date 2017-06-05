@@ -15,9 +15,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Sockets.Common\Microsoft.AspNetCore.Sockets.Common.csproj" />
-  </ItemGroup>
-
 </Project>

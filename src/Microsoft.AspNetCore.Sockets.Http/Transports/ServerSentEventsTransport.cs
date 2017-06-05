@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 {
     public class ServerSentEventsTransport : IHttpTransport
     {
-        private readonly ReadableChannel<Message> _application;
+        private readonly ReadableChannel<byte[]> _application;
         private readonly ILogger _logger;
 
-        public ServerSentEventsTransport(ReadableChannel<Message> application, ILoggerFactory loggerFactory)
+        public ServerSentEventsTransport(ReadableChannel<byte[]> application, ILoggerFactory loggerFactory)
         {
             _application = application;
             _logger = loggerFactory.CreateLogger<ServerSentEventsTransport>();
@@ -49,9 +49,9 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             {
                 while (await _application.WaitToReadAsync(token))
                 {
-                    while (_application.TryRead(out var message))
+                    while (_application.TryRead(out var buffer))
                     {
-                        if (!ServerSentEventsMessageFormatter.TryWriteMessage(message, output))
+                        if (!ServerSentEventsMessageFormatter.TryWriteMessage(buffer, output))
                         {
                             // We ran out of space to write, even after trying to enlarge.
                             // This should only happen in a significant lack-of-memory scenario.

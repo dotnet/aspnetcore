@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Common\ArrayOutput.cs" Link="ArrayOutput.cs" />
     <Compile Include="..\Common\TaskExtensions.cs" Link="TaskExtensions.cs" />
   </ItemGroup>
 

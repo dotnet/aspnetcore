@@ -2,9 +2,7 @@
 
 let knownTypes = {
     "T": MessageType.Text,
-    "B": MessageType.Binary,
-    "C": MessageType.Close,
-    "E": MessageType.Error
+    "B": MessageType.Binary
 };
 
 function splitAt(input: string, searchString: string, position: number): [string, number] {
@@ -14,42 +12,6 @@ function splitAt(input: string, searchString: string, position: number): [string
     }
     let left = input.substring(position, index);
     return [left, index + searchString.length];
-}
-
-export namespace ServerSentEventsFormat {
-    export function parse(input: string): Message {
-        // The SSE protocol is pretty simple. We just look at the first line for the type, and then process the remainder.
-        // Binary messages require Base64-decoding and ArrayBuffer support, just like in the other formats below
-
-        if (input.length == 0) {
-            throw new Error("Message is missing header");
-        }
-
-        let [header, offset] = splitAt(input, "\n", 0);
-        let payload = input.substring(offset);
-
-        // Just in case the header used CRLF as the line separator, carve it off
-        if (header.endsWith('\r')) {
-            header = header.substr(0, header.length - 1);
-        }
-
-        // Parse the header
-        var messageType = knownTypes[header];
-        if (messageType === undefined) {
-            throw new Error(`Unknown type value: '${header}'`);
-        }
-
-        if (messageType == MessageType.Binary) {
-            // We need to decode and put in an ArrayBuffer. Throw for now
-            // This will require our own Base64-decoder because the browser
-            // built-in one only decodes to strings and throws if invalid UTF-8
-            // characters are found.
-            throw new Error("TODO: Support for binary messages");
-        }
-
-        // Create the message
-        return new Message(messageType, payload);
-    }
 }
 
 export namespace TextMessageFormat {
@@ -114,12 +76,8 @@ export namespace TextMessageFormat {
             return []
         }
 
-        if (input[0] != 'T') {
-            throw new Error(`Unsupported message format: '${input[0]}'`);
-        }
-
         let messages = [];
-        var offset = 1;
+        var offset = 0;
         while (offset < input.length) {
             let message;
             [offset, message] = parseMessage(input, offset);

@@ -2,16 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
+using System.IO.Pipelines.Text.Primitives;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -157,27 +162,31 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 while (await connection.Transport.Input.WaitToReadAsync(cts.Token))
                 {
-                    while (connection.Transport.Input.TryRead(out var incomingMessage))
+                    while (connection.Transport.Input.TryRead(out var buffer))
                     {
-                        var hubMessage = protocol.ParseMessage(incomingMessage.Payload, this);
-
-                        switch (hubMessage)
+                        if (protocol.TryParseMessages(buffer, this, out var hubMessages))
                         {
-                            case InvocationMessage invocationMessage:
-                                if (_logger.IsEnabled(LogLevel.Debug))
+                            foreach (var hubMessage in hubMessages)
+                            {
+                                switch (hubMessage)
                                 {
-                                    _logger.LogDebug("Received hub invocation: {invocation}", invocationMessage);
+                                    case InvocationMessage invocationMessage:
+                                        if (_logger.IsEnabled(LogLevel.Debug))
+                                        {
+                                            _logger.LogDebug("Received hub invocation: {invocation}", invocationMessage);
+                                        }
+
+                                        // Don't wait on the result of execution, continue processing other
+                                        // incoming messages on this connection.
+                                        var ignore = ProcessInvocation(connection, protocol, invocationMessage, cts, completion);
+                                        break;
+
+                                    // Other kind of message we weren't expecting
+                                    default:
+                                        _logger.LogError("Received unsupported message of type '{messageType}'", hubMessage.GetType().FullName);
+                                        throw new NotSupportedException($"Received unsupported message: {hubMessage}");
                                 }
-
-                                // Don't wait on the result of execution, continue processing other
-                                // incoming messages on this connection.
-                                var ignore = ProcessInvocation(connection, protocol, invocationMessage, cts, completion);
-                                break;
-
-                            // Other kind of message we weren't expecting
-                            default:
-                                _logger.LogError("Received unsupported message of type '{messageType}'", hubMessage.GetType().FullName);
-                                throw new NotSupportedException($"Received unsupported message: {hubMessage}");
+                            }
                         }
                     }
                 }
@@ -213,8 +222,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task Execute(ConnectionContext connection, IHubProtocol protocol, InvocationMessage invocationMessage)
         {
-            HubMethodDescriptor descriptor;
-            if (!_methods.TryGetValue(invocationMessage.Target, out descriptor))
+            if (!_methods.TryGetValue(invocationMessage.Target, out var descriptor))
             {
                 // Send an error to the client. Then let the normal completion process occur
                 _logger.LogError("Unknown hub method '{method}'", invocationMessage.Target);
@@ -229,11 +237,10 @@ namespace Microsoft.AspNetCore.SignalR
         private async Task SendMessageAsync(ConnectionContext connection, IHubProtocol protocol, HubMessage hubMessage)
         {
             var payload = await protocol.WriteToArrayAsync(hubMessage);
-            var message = new Message(payload, protocol.MessageType);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {
-                if (connection.Transport.Output.TryWrite(message))
+                if (connection.Transport.Output.TryWrite(payload))
                 {
                     return;
                 }

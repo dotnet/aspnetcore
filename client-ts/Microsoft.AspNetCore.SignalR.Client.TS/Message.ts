@@ -1,8 +1,6 @@
 export enum MessageType {
     Text,
     Binary,
-    Close,
-    Error
 }
 
 export class Message {

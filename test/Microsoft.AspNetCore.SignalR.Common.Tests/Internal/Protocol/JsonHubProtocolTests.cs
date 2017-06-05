@@ -50,6 +50,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [MemberData(nameof(ProtocolTestData))]
         public async Task WriteMessage(HubMessage message, bool camelCase, NullValueHandling nullValueHandling, string expectedOutput)
         {
+            expectedOutput = Frame(expectedOutput);
+
             var jsonSerializer = new JsonSerializer
             {
                 NullValueHandling = nullValueHandling,
@@ -67,6 +69,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [MemberData(nameof(ProtocolTestData))]
         public void ParseMessage(HubMessage expectedMessage, bool camelCase, NullValueHandling nullValueHandling, string input)
         {
+            input = Frame(input);
+
             var jsonSerializer = new JsonSerializer
             {
                 NullValueHandling = nullValueHandling,
@@ -75,9 +79,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var binder = new TestBinder(expectedMessage);
             var protocol = new JsonHubProtocol(jsonSerializer);
-            var message = protocol.ParseMessage(Encoding.UTF8.GetBytes(input), binder);
+            protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages);
 
-            Assert.Equal(expectedMessage, message, TestEqualityComparer.Instance);
+            Assert.Equal(expectedMessage, messages[0], TestEqualityComparer.Instance);
         }
 
         [Theory]
@@ -106,9 +110,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{'type':'foo'}", "Expected 'type' to be of type Integer.")]
         public void InvalidMessages(string input, string expectedMessage)
         {
+            input = Frame(input);
+
             var binder = new TestBinder();
             var protocol = new JsonHubProtocol(new JsonSerializer());
-            var ex = Assert.Throws<FormatException>(() => protocol.ParseMessage(Encoding.UTF8.GetBytes(input), binder));
+            var ex = Assert.Throws<FormatException>(() => protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -118,11 +124,20 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{'type':3,'invocationId':'42','error':'foo','result':true}", "The 'error' and 'result' properties are mutually exclusive.")]
         public void InvalidMessagesWithBinder(string input, string expectedMessage)
         {
+            input = Frame(input);
+
             var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
             var protocol = new JsonHubProtocol(new JsonSerializer());
-            var ex = Assert.Throws<FormatException>(() => protocol.ParseMessage(Encoding.UTF8.GetBytes(input), binder));
+            var ex = Assert.Throws<FormatException>(() => protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages));
             Assert.Equal(expectedMessage, ex.Message);
         }
+
+        private static string Frame(string input)
+        {
+            input = $"{input.Length}:T:{input};";
+            return input;
+        }
+
 
         private class CustomObject : IEquatable<CustomObject>
         {

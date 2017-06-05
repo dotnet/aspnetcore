@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Sockets
         // on the same task
         private TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>();
 
-        public DefaultConnectionContext(string id, IChannelConnection<Message> transport, IChannelConnection<Message> application)
+        public DefaultConnectionContext(string id, IChannelConnection<byte[]> transport, IChannelConnection<byte[]> application)
         {
             Transport = transport;
             Application = application;
@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Sockets
 
         public override ConnectionMetadata Metadata { get; } = new ConnectionMetadata();
 
-        public IChannelConnection<Message> Application { get; }
+        public IChannelConnection<byte[]> Application { get; }
 
-        public override IChannelConnection<Message> Transport { get; set; }
+        public override IChannelConnection<byte[]> Transport { get; set; }
 
         public async Task DisposeAsync()
         {

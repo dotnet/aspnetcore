@@ -22,16 +22,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private CancellationTokenSource _cts;
 
         public DefaultConnectionContext Connection { get; }
-        public IChannelConnection<Message> Application { get; }
+        public IChannelConnection<byte[]> Application { get; }
         public Task Connected => Connection.Metadata.Get<TaskCompletionSource<bool>>("ConnectedTask").Task;
 
         public TestClient()
         {
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            Application = ChannelConnection.Create<Message>(input: applicationToTransport, output: transportToApplication);
-            var transport = ChannelConnection.Create<Message>(input: transportToApplication, output: applicationToTransport);
+            Application = ChannelConnection.Create<byte[]>(input: applicationToTransport, output: transportToApplication);
+            var transport = ChannelConnection.Create<byte[]>(input: transportToApplication, output: applicationToTransport);
 
             Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), transport, Application);
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Interlocked.Increment(ref _id).ToString()) }));
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var invocationId = GetInvocationId();
             var payload = await _protocol.WriteToArrayAsync(new InvocationMessage(invocationId, nonBlocking: false, target: methodName, arguments: args));
 
-            await Application.Output.WriteAsync(new Message(payload, _protocol.MessageType));
+            await Application.Output.WriteAsync(payload);
 
             return invocationId;
         }
@@ -137,9 +137,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public HubMessage TryRead()
         {
-            if (Application.Input.TryRead(out var message))
+            if (Application.Input.TryRead(out var buffer) && 
+                _protocol.TryParseMessages(buffer, this, out var messages))
             {
-                return _protocol.ParseMessage(message.Payload, this);
+                return messages[0];
             }
             return null;
         }

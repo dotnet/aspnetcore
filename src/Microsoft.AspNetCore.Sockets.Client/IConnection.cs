@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
     public interface IConnection
     {
         Task StartAsync(ITransportFactory transportFactory, HttpClient httpClient);
-        Task SendAsync(byte[] data, MessageType type, CancellationToken cancellationToken);
+        Task SendAsync(byte[] data, CancellationToken cancellationToken);
         Task DisposeAsync();
 
         event Action Connected;
-        event Action<byte[], MessageType> Received;
+        event Action<byte[]> Received;
         event Action<Exception> Closed;
     }
 }

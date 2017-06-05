@@ -6,8 +6,6 @@ namespace Microsoft.AspNetCore.Sockets
     public enum MessageType
     {
         Text,
-        Binary,
-        Close,
-        Error
+        Binary
     }
 }

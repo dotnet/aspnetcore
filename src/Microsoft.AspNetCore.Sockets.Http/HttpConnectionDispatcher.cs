@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Text;
@@ -11,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Sockets.Internal;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.AspNetCore.Sockets.Transports;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -59,7 +56,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        private async Task ExecuteEndpointAsync(HttpContext context, SocketDelegate socketDelegate, HttpSocketOptions options) 
+        private async Task ExecuteEndpointAsync(HttpContext context, SocketDelegate socketDelegate, HttpSocketOptions options)
         {
             var supportedTransports = options.Transports;
 
@@ -339,8 +336,8 @@ namespace Microsoft.AspNetCore.Sockets
                 return;
             }
 
-            // Read the entire payload to a byte array for now because Pipelines and ReadOnlyBytes
-            // don't play well with each other yet.
+            // TODO: Use a pool here
+
             byte[] buffer;
             using (var stream = new MemoryStream())
             {
@@ -349,35 +346,11 @@ namespace Microsoft.AspNetCore.Sockets
                 buffer = stream.ToArray();
             }
 
-            MessageFormat messageFormat;
-            if (string.Equals(context.Request.ContentType, MessageFormatter.TextContentType, StringComparison.OrdinalIgnoreCase))
+            while (!connection.Application.Output.TryWrite(buffer))
             {
-                messageFormat = MessageFormat.Text;
-            }
-            else if (string.Equals(context.Request.ContentType, MessageFormatter.BinaryContentType, StringComparison.OrdinalIgnoreCase))
-            {
-                messageFormat = MessageFormat.Binary;
-            }
-            else
-            {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsync($"'{context.Request.ContentType}' is not a valid Content-Type for send requests.");
-                return;
-            }
-
-            var reader = new BytesReader(buffer);
-            var messages = ParseSendBatch(ref reader, messageFormat);
-
-            // REVIEW: Do we want to return a specific status code here if the connection has ended?
-            _logger.LogDebug("Received batch of {count} message(s)", messages.Count);
-            foreach (var message in messages)
-            {
-                while (!connection.Application.Output.TryWrite(message))
+                if (!await connection.Application.Output.WaitToWriteAsync())
                 {
-                    if (!await connection.Application.Output.WaitToWriteAsync())
-                    {
-                        return;
-                    }
+                    return;
                 }
             }
         }
@@ -405,10 +378,8 @@ namespace Microsoft.AspNetCore.Sockets
             }
 
             // Setup the connection state from the http context
-            var format = (string)context.Request.Query[ConnectionMetadataNames.Format];
             connection.User = context.User;
             connection.Metadata[ConnectionMetadataNames.HttpContext] = context;
-            connection.Metadata[ConnectionMetadataNames.Format] = string.IsNullOrEmpty(format) ? "json" : format;
 
             return true;
         }
@@ -455,31 +426,6 @@ namespace Microsoft.AspNetCore.Sockets
             }
 
             return connection;
-        }
-
-        private List<Message> ParseSendBatch(ref BytesReader payload, MessageFormat messageFormat)
-        {
-            var messages = new List<Message>();
-
-            if (payload.Unread.Length == 0)
-            {
-                return messages;
-            }
-
-            if (payload.Unread[0] != MessageFormatter.GetFormatIndicator(messageFormat))
-            {
-                throw new FormatException($"Format indicator '{(char)payload.Unread[0]}' does not match format determined by Content-Type '{MessageFormatter.GetContentType(messageFormat)}'");
-            }
-
-            payload.Advance(1);
-
-            // REVIEW: This needs a little work. We could probably new up exactly the right parser, if we tinkered with the inheritance hierarchy a bit.
-            var parser = new MessageParser();
-            while (parser.TryParseMessage(ref payload, messageFormat, out var message))
-            {
-                messages.Add(message);
-            }
-            return messages;
         }
     }
 }

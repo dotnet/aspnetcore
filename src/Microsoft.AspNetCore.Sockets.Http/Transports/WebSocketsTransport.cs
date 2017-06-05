@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Sockets.Transports
     {
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
-        private readonly IChannelConnection<Message> _application;
+        private readonly IChannelConnection<byte[]> _application;
 
-        public WebSocketsTransport(WebSocketOptions options, IChannelConnection<Message> application, ILoggerFactory loggerFactory)
+        public WebSocketsTransport(WebSocketOptions options, IChannelConnection<byte[]> application, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -149,31 +149,30 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 // Making sure the message type is either text or binary
                 Debug.Assert((receiveResult.MessageType == WebSocketMessageType.Binary || receiveResult.MessageType == WebSocketMessageType.Text), "Unexpected message type");
 
-                Message message;
-                var messageType = receiveResult.MessageType == WebSocketMessageType.Binary ? MessageType.Binary : MessageType.Text;
+                // TODO: Check received message type against the _options.WebSocketMessageType
+
+                byte[] messageBuffer = null;
+
                 if (incomingMessage.Count > 1)
                 {
-                    var messageBuffer = new byte[totalBytes];
+                    messageBuffer = new byte[totalBytes];
                     var offset = 0;
                     for (var i = 0; i < incomingMessage.Count; i++)
                     {
                         Buffer.BlockCopy(incomingMessage[i].Array, 0, messageBuffer, offset, incomingMessage[i].Count);
                         offset += incomingMessage[i].Count;
                     }
-
-                    message = new Message(messageBuffer, messageType);
                 }
                 else
                 {
-                    var buffer = new byte[incomingMessage[0].Count];
-                    Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, buffer, 0, incomingMessage[0].Count);
-                    message = new Message(buffer, messageType);
+                    messageBuffer = new byte[incomingMessage[0].Count];
+                    Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, messageBuffer, 0, incomingMessage[0].Count);
                 }
 
-                _logger.LogInformation("Passing message to application. Payload size: {length}", message.Payload.Length);
+                _logger.LogInformation("Passing message to application. Payload size: {length}", messageBuffer.Length);
                 while (await _application.Output.WaitToWriteAsync())
                 {
-                    if (_application.Output.TryWrite(message))
+                    if (_application.Output.TryWrite(messageBuffer))
                     {
                         incomingMessage.Clear();
                         break;
@@ -187,23 +186,18 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             while (await _application.Input.WaitToReadAsync())
             {
                 // Get a frame from the application
-                while (_application.Input.TryRead(out var message))
+                while (_application.Input.TryRead(out var buffer))
                 {
-                    if (message.Payload.Length > 0)
+                    if (buffer.Length > 0)
                     {
                         try
                         {
-                            var messageType = message.Type == MessageType.Binary ?
-                                WebSocketMessageType.Binary :
-                                WebSocketMessageType.Text;
-
                             if (_logger.IsEnabled(LogLevel.Debug))
                             {
-                                _logger.LogDebug("Sending Type: {messageType}, size: {size}", 
-                                    message.Type, message.Payload.Length);
+                                _logger.LogDebug("Sending payload: {size}", buffer.Length);
                             }
 
-                            await ws.SendAsync(new ArraySegment<byte>(message.Payload), messageType, endOfMessage: true, cancellationToken: CancellationToken.None);
+                            await ws.SendAsync(new ArraySegment<byte>(buffer), _options.WebSocketMessageType, endOfMessage: true, cancellationToken: CancellationToken.None);
                         }
                         catch (Exception ex)
                         {

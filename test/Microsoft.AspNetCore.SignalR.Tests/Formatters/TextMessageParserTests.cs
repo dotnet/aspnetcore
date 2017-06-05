@@ -17,10 +17,6 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [InlineData(0, "0:T:;", MessageType.Text, "")]
         [InlineData(0, "3:T:ABC;", MessageType.Text, "ABC")]
         [InlineData(0, "11:T:A\nR\rC\r\n;DEF;", MessageType.Text, "A\nR\rC\r\n;DEF")]
-        [InlineData(0, "0:C:;", MessageType.Close, "")]
-        [InlineData(0, "17:C:Connection Closed;", MessageType.Close, "Connection Closed")]
-        [InlineData(0, "0:E:;", MessageType.Error, "")]
-        [InlineData(0, "12:E:Server Error;", MessageType.Error, "Server Error")]
         [InlineData(4, "12:T:Hello, World;", MessageType.Text, "Hello, World")]
         public void ReadTextMessage(int chunkSize, string encoded, MessageType messageType, string payload)
         {
@@ -57,7 +53,7 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [InlineData(8)]
         public void ReadMultipleMessages(int chunkSize)
         {
-            const string encoded = "0:B:;14:T:Hello,\r\nWorld!;1:C:A;12:E:Server Error;";
+            const string encoded = "0:B:;14:T:Hello,\r\nWorld!;";
             var parser = new MessageParser();
             var data = Encoding.UTF8.GetBytes(encoded);
             var buffer = chunkSize > 0 ?
@@ -74,11 +70,9 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
 
             Assert.Equal(reader.Index, Encoding.UTF8.GetByteCount(encoded));
 
-            Assert.Equal(4, messages.Count);
+            Assert.Equal(2, messages.Count);
             MessageTestUtils.AssertMessage(messages[0], MessageType.Binary, new byte[0]);
             MessageTestUtils.AssertMessage(messages[1], MessageType.Text, "Hello,\r\nWorld!");
-            MessageTestUtils.AssertMessage(messages[2], MessageType.Close, "A");
-            MessageTestUtils.AssertMessage(messages[3], MessageType.Error, "Server Error");
         }
 
         [Theory]

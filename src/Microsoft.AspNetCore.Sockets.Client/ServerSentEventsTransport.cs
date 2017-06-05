@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
 
-        private IChannelConnection<SendMessage, Message> _application;
+        private IChannelConnection<SendMessage, byte[]> _application;
 
         public Task Running { get; private set; } = Task.CompletedTask;
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
-        public Task StartAsync(Uri url, IChannelConnection<SendMessage, Message> application)
+        public Task StartAsync(Uri url, IChannelConnection<SendMessage, byte[]> application)
         {
             _logger.LogInformation("Starting {transportName}", nameof(ServerSentEventsTransport));
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return Task.CompletedTask;
         }
 
-        private async Task OpenConnection(IChannelConnection<SendMessage, Message> application, Uri url, CancellationToken cancellationToken)
+        private async Task OpenConnection(IChannelConnection<SendMessage, byte[]> application, Uri url, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting receive loop");
 
@@ -89,12 +89,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
                             break;
                         }
 
-                        var parseResult = _parser.ParseMessage(input, out consumed, out examined, out var message);
+                        var parseResult = _parser.ParseMessage(input, out consumed, out examined, out var buffer);
 
                         switch (parseResult)
                         {
                             case ServerSentEventsMessageParser.ParseResult.Completed:
-                                _application.Output.TryWrite(message);
+                                _application.Output.TryWrite(buffer);
                                 _parser.Reset();
                                 break;
                             case ServerSentEventsMessageParser.ParseResult.Incomplete:

@@ -50,11 +50,11 @@ namespace Microsoft.AspNetCore.Sockets
         {
             var id = MakeNewConnectionId();
 
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
 
             var connection = new DefaultConnectionContext(id, applicationSide, transportSide);
             

@@ -37,10 +37,10 @@ namespace SocialWeather
 
             while (await connection.Transport.Input.WaitToReadAsync())
             {
-                if (connection.Transport.Input.TryRead(out var message))
+                if (connection.Transport.Input.TryRead(out var buffer))
                 {
                     var stream = new MemoryStream();
-                    await stream.WriteAsync(message.Payload, 0, message.Payload.Length);
+                    await stream.WriteAsync(buffer, 0, buffer.Length);
                     stream.Position = 0;
                     var weatherReport = await formatter.ReadAsync(stream);
                     await _lifetimeManager.SendToAllAsync(weatherReport);

@@ -3,6 +3,7 @@ import { IConnection } from "./IConnection"
 import { Connection } from "./Connection"
 import { TransportType } from "./Transports"
 import { Subject, Observable } from "./Observable"
+import * as Formatters from "./Formatters";
 
 const enum MessageType {
     Invocation = 1,
@@ -67,25 +68,32 @@ export class HubConnection {
             return;
         }
 
-        var message = JSON.parse(data);
-        switch (message.type) {
-            case MessageType.Invocation:
-                this.InvokeClientMethod(<InvocationMessage>message);
-                break;
-            case MessageType.Result:
-            case MessageType.Completion:
-                let callback = this.callbacks.get(message.invocationId);
-                if (callback != null) {
-                    callback(message);
+        // Parse the messages
+        let messages = Formatters.TextMessageFormat.parse(data);
 
-                    if (message.type == MessageType.Completion) {
-                        this.callbacks.delete(message.invocationId);
+        for (var i = 0; i < messages.length; ++i) {
+            console.log(`Received message: ${messages[i].content}`);
+
+            var message = JSON.parse(messages[i].content.toString());
+            switch (message.type) {
+                case MessageType.Invocation:
+                    this.InvokeClientMethod(<InvocationMessage>message);
+                    break;
+                case MessageType.Result:
+                case MessageType.Completion:
+                    let callback = this.callbacks.get(message.invocationId);
+                    if (callback != null) {
+                        callback(message);
+
+                        if (message.type == MessageType.Completion) {
+                            this.callbacks.delete(message.invocationId);
+                        }
                     }
-                }
-                break;
-            default:
-                console.log("Invalid message type: " + data);
-                break;
+                    break;
+                default:
+                    console.log("Invalid message type: " + data);
+                    break;
+            }
         }
     }
 
@@ -138,7 +146,7 @@ export class HubConnection {
                 if (completionMessage.error) {
                     subject.error(new Error(completionMessage.error));
                 }
-                else if(completionMessage.result) {
+                else if (completionMessage.result) {
                     subject.error(new Error("Server provided a result in a completion response to a streamed invocation."));
                 }
                 else {
@@ -152,7 +160,10 @@ export class HubConnection {
         });
 
         //TODO: separate conversion to enable different data formats
-        this.connection.send(JSON.stringify(invocationDescriptor))
+        let data = JSON.stringify(invocationDescriptor);
+        let message = `${data.length}:T:${data};`;
+
+        this.connection.send(message)
             .catch(e => {
                 subject.error(e);
                 this.callbacks.delete(invocationDescriptor.invocationId);
@@ -180,8 +191,11 @@ export class HubConnection {
                 }
             });
 
-            //TODO: separate conversion to enable different data formats
-            this.connection.send(JSON.stringify(invocationDescriptor))
+            // TODO: separate conversion to enable different data formats
+            let data = JSON.stringify(invocationDescriptor);
+            let message = `${data.length}:T:${data};`;
+
+            this.connection.send(message)
                 .catch(e => {
                     reject(e);
                     this.callbacks.delete(invocationDescriptor.invocationId);

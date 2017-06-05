@@ -39,21 +39,5 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
             throw new ArgumentException($"Invalid message format: 0x{formatIndicator:X}", nameof(formatIndicator));
         }
-
-        public static MessageFormat GetFormatFromContentType(string contentType)
-        {
-            // Can't use switch because our "constants" are not consts, they're "static readonly" (which is good, because they are public)
-            if (string.Equals(contentType, MessageFormatter.TextContentType, StringComparison.OrdinalIgnoreCase))
-            {
-                return MessageFormat.Text;
-            }
-
-            if (string.Equals(contentType, MessageFormatter.BinaryContentType, StringComparison.OrdinalIgnoreCase))
-            {
-                return MessageFormat.Binary;
-            }
-
-            throw new ArgumentException($"Invalid Content-Type: '{contentType}'", nameof(contentType));
-        }
     }
 }

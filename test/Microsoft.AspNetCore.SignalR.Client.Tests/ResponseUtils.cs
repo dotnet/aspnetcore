@@ -4,14 +4,14 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.Client.Tests
 {
     internal static class ResponseUtils
     {
         public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode) =>
-            CreateResponse(statusCode, MessageFormatter.TextContentType, string.Empty);
+            CreateResponse(statusCode, ContentTypes.TextContentType, string.Empty);
 
         public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode, string contentType, string payload) =>
             CreateResponse(statusCode, contentType, new StringContent(payload));

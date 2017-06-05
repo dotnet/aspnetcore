@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     public class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket = new ClientWebSocket();
-        private IChannelConnection<SendMessage, Message> _application;
+        private IChannelConnection<SendMessage, byte[]> _application;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly ILogger _logger;
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Task Running { get; private set; } = Task.CompletedTask;
 
-        public async Task StartAsync(Uri url, IChannelConnection<SendMessage, Message> application)
+        public async Task StartAsync(Uri url, IChannelConnection<SendMessage, byte[]> application)
         {
             _logger.LogInformation("Starting {0}", nameof(WebSocketsTransport));
 
@@ -103,31 +103,25 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     //Making sure the message type is either text or binary
                     Debug.Assert((receiveResult.MessageType == WebSocketMessageType.Binary || receiveResult.MessageType == WebSocketMessageType.Text), "Unexpected message type");
 
-                    Message message;
-                    var messageType = receiveResult.MessageType == WebSocketMessageType.Binary ? MessageType.Binary : MessageType.Text;
+                    var messageBuffer = new byte[totalBytes];
                     if (incomingMessage.Count > 1)
                     {
-                        var messageBuffer = new byte[totalBytes];
                         var offset = 0;
                         for (var i = 0; i < incomingMessage.Count; i++)
                         {
                             Buffer.BlockCopy(incomingMessage[i].Array, 0, messageBuffer, offset, incomingMessage[i].Count);
                             offset += incomingMessage[i].Count;
                         }
-
-                        message = new Message(messageBuffer, messageType);
                     }
                     else
                     {
-                        var buffer = new byte[incomingMessage[0].Count];
-                        Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, buffer, 0, incomingMessage[0].Count);
-                        message = new Message(buffer, messageType);
+                        Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, messageBuffer, 0, incomingMessage[0].Count);
                     }
 
-                    _logger.LogInformation("Passing message to application. Payload size: {0}", message.Payload.Length);
+                    _logger.LogInformation("Passing message to application. Payload size: {0}", messageBuffer.Length);
                     while (await _application.Output.WaitToWriteAsync(_transportCts.Token))
                     {
-                        if (_application.Output.TryWrite(message))
+                        if (_application.Output.TryWrite(messageBuffer))
                         {
                             incomingMessage.Clear();
                             break;
@@ -157,12 +151,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         try
                         {
-                            _logger.LogDebug("Received message from application. Message type {0}. Payload size: {1}",
-                                message.Type, message.Payload.Length);
+                            _logger.LogDebug("Received message from application. Payload size: {1}", message.Payload.Length);
 
-                            await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload),
-                                message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary,
-                                true, _transportCts.Token);
+                            await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload), WebSocketMessageType.Text, true, _transportCts.Token);
 
                             message.SendResult.SetResult(null);
                         }

@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             public override async Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
             {
-                await _output.WriteAsync(new WebSocketMessage
+                await SendMessageAsync(new WebSocketMessage
                 {
                     CloseStatus = closeStatus,
                     CloseStatusDescription = statusDescription,
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             public override async Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
             {
-                await _output.WriteAsync(new WebSocketMessage
+                await SendMessageAsync(new WebSocketMessage
                 {
                     CloseStatus = closeStatus,
                     CloseStatusDescription = statusDescription,
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             {
                 var copy = new byte[buffer.Count];
                 Buffer.BlockCopy(buffer.Array, buffer.Offset, copy, 0, buffer.Count);
-                return _output.WriteAsync(new WebSocketMessage
+                return SendMessageAsync(new WebSocketMessage
                 {
                     Buffer = copy,
                     MessageType = messageType,
@@ -150,6 +150,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 _state = WebSocketState.Closed;
                 _closeStatus = WebSocketCloseStatus.InternalServerError;
                 return new WebSocketConnectionSummary(frames, new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true, closeStatus: WebSocketCloseStatus.InternalServerError, closeStatusDescription: ""));
+            }
+
+            private async Task SendMessageAsync(WebSocketMessage webSocketMessage, CancellationToken cancellationToken)
+            {
+                while (await _output.WaitToWriteAsync(cancellationToken))
+                {
+                    if (_output.TryWrite(webSocketMessage))
+                    {
+                        break;
+                    }
+                }
             }
         }
 

@@ -14,13 +14,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
         [Fact]
         public void WriteMultipleMessages()
         {
-            const string expectedEncoding = "0:B:;14:T:Hello,\r\nWorld!;1:C:A;12:E:Server Error;";
+            const string expectedEncoding = "0:B:;14:T:Hello,\r\nWorld!;";
             var messages = new[]
             {
                 MessageTestUtils.CreateMessage(new byte[0]),
                 MessageTestUtils.CreateMessage("Hello,\r\nWorld!",MessageType.Text),
-                MessageTestUtils.CreateMessage("A", MessageType.Close),
-                MessageTestUtils.CreateMessage("Server Error", MessageType.Error)
             };
 
             var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
@@ -52,10 +50,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
         [InlineData(8, "0:T:;", MessageType.Text, "")]
         [InlineData(8, "3:T:ABC;", MessageType.Text, "ABC")]
         [InlineData(8, "11:T:A\nR\rC\r\n;DEF;", MessageType.Text, "A\nR\rC\r\n;DEF")]
-        [InlineData(8, "0:C:;", MessageType.Close, "")]
-        [InlineData(8, "17:C:Connection Closed;", MessageType.Close, "Connection Closed")]
-        [InlineData(8, "0:E:;", MessageType.Error, "")]
-        [InlineData(8, "12:E:Server Error;", MessageType.Error, "Server Error")]
         [InlineData(256, "11:T:A\nR\rC\r\n;DEF;", MessageType.Text, "A\nR\rC\r\n;DEF")]
         public void WriteTextMessage(int chunkSize, string encoded, MessageType messageType, string payload)
         {

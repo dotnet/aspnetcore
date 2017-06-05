@@ -100,12 +100,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 case BinaryMessageFormatter.BinaryTypeFlag:
                     messageType = MessageType.Binary;
                     return true;
-                case BinaryMessageFormatter.CloseTypeFlag:
-                    messageType = MessageType.Close;
-                    return true;
-                case BinaryMessageFormatter.ErrorTypeFlag:
-                    messageType = MessageType.Error;
-                    return true;
                 default:
                     messageType = default(MessageType);
                     return false;

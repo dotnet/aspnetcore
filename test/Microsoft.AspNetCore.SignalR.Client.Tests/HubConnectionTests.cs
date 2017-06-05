@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var hubConnection = new HubConnection(mockConnection.Object, mockProtocol, null);
             await hubConnection.StartAsync(new TestTransportFactory(Mock.Of<ITransport>()), httpClient: null);
 
-            mockConnection.Raise(c => c.Received += null, new object[] { new byte[] { }, MessageType.Text });
+            mockConnection.Raise(c => c.Received += null, new object[] { new byte[] { } });
             Assert.Equal(1, mockProtocol.ParseCalls);
         }
 
@@ -285,8 +286,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 };
             }
 
-            public HubMessage ParseMessage(ReadOnlySpan<byte> input, IInvocationBinder binder)
+            public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
             {
+                messages = new List<HubMessage>();
+
                 ParseCalls += 1;
                 if (_error != null)
                 {
@@ -294,7 +297,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
                 if (_parsed != null)
                 {
-                    return _parsed;
+                    messages.Add(_parsed);
+                    return true;
                 }
 
                 throw new InvalidOperationException("No Parsed Message provided");

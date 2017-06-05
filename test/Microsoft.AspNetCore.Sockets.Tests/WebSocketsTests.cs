@@ -18,15 +18,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     public class WebSocketsTests
     {
         [Theory]
-        [InlineData(MessageType.Text, WebSocketMessageType.Text)]
-        [InlineData(MessageType.Binary, WebSocketMessageType.Binary)]
-        public async Task ReceivedFramesAreWrittenToChannel(MessageType format, WebSocketMessageType webSocketMessageType)
+        [InlineData(WebSocketMessageType.Text)]
+        [InlineData(WebSocketMessageType.Binary)]
+        public async Task ReceivedFramesAreWrittenToChannel(WebSocketMessageType webSocketMessageType)
         {
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -46,9 +46,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     cancellationToken: CancellationToken.None);
                 await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 
-                var message = await applicationSide.Input.In.ReadAsync();
-                Assert.Equal(format, message.Type);
-                Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload));
+                var buffer = await applicationSide.Input.In.ReadAsync();
+                Assert.Equal("Hello", Encoding.UTF8.GetString(buffer));
 
                 Assert.True(applicationSide.Output.Out.TryComplete());
 
@@ -63,19 +62,19 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(MessageType.Text, WebSocketMessageType.Text)]
-        [InlineData(MessageType.Binary, WebSocketMessageType.Binary)]
-        public async Task DataWrittenToOutputPipelineAreSentAsFrames(MessageType format, WebSocketMessageType webSocketMessageType)
+        [InlineData(WebSocketMessageType.Text)]
+        [InlineData(WebSocketMessageType.Binary)]
+        public async Task DataWrittenToOutputPipelineAreSentAsFrames(WebSocketMessageType webSocketMessageType)
         {
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions() { WebSocketMessageType = webSocketMessageType }, transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -84,9 +83,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = feature.Client.ExecuteAndCaptureFramesAsync();
 
                 // Write to the output channel, and then complete it
-                await applicationSide.Output.Out.WriteAsync(new Message(
-                    Encoding.UTF8.GetBytes("Hello"),
-                    format));
+                await applicationSide.Output.Out.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
                 Assert.True(applicationSide.Output.Out.TryComplete());
 
                 // The client should finish now, as should the server
@@ -102,19 +99,19 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(MessageType.Text, WebSocketMessageType.Text)]
-        [InlineData(MessageType.Binary, WebSocketMessageType.Binary)]
-        public async Task FrameReceivedAfterServerCloseSent(MessageType format, WebSocketMessageType webSocketMessageType)
+        [InlineData(WebSocketMessageType.Text)]
+        [InlineData(WebSocketMessageType.Binary)]
+        public async Task FrameReceivedAfterServerCloseSent(WebSocketMessageType webSocketMessageType)
         {
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, new LoggerFactory());
+                var ws = new WebSocketsTransport(new WebSocketOptions() { WebSocketMessageType = webSocketMessageType }, transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -135,9 +132,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 
                 // Read that frame from the input
-                var message = await applicationSide.Input.In.ReadAsync();
-                Assert.Equal(format, message.Type);
-                Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload));
+                var buffer = await applicationSide.Input.In.ReadAsync();
+                Assert.Equal("Hello", Encoding.UTF8.GetString(buffer));
 
                 await transport;
             }
@@ -146,11 +142,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task TransportFailsWhenClientDisconnectsAbnormally()
         {
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -173,11 +169,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task ClientReceivesInternalServerErrorWhenTheApplicationFails()
         {
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -204,11 +200,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task TransportClosesOnCloseTimeoutIfClientDoesNotSendCloseFrame()
         {
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -227,7 +223,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 applicationSide.Dispose();
 
                 await transport.OrTimeout(TimeSpan.FromSeconds(10));
-                
+
                 // Now we're closed
                 Assert.Equal(WebSocketState.Aborted, serverSocket.State);
 

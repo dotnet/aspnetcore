@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <Compile Include="..\Common\TaskExtensions.cs" Link="TaskExtensions.cs" />
+    <Compile Include="..\Common\ArrayOutput.cs" Link="ArrayOutput.cs" />
+    <Compile Include="..\Common\ByteArrayExtensions.cs" Link="ByteArrayExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

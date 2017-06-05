@@ -3,15 +3,13 @@
 
 using System;
 using System.Buffers;
-using Microsoft.AspNetCore.Sockets;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public interface IHubProtocol
     {
-        MessageType MessageType { get; }
-
-        HubMessage ParseMessage(ReadOnlySpan<byte> input, IInvocationBinder binder);
+        bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages);
 
         bool TryWriteMessage(HubMessage message, IOutput output);
     }

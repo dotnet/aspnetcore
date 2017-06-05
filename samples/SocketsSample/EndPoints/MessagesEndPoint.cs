@@ -23,13 +23,12 @@ namespace SocketsSample.EndPoints
             {
                 while (await connection.Transport.Input.WaitToReadAsync())
                 {
-                    Message message;
-                    if (connection.Transport.Input.TryRead(out message))
+                    if (connection.Transport.Input.TryRead(out var buffer))
                     {
                         // We can avoid the copy here but we'll deal with that later
-                        var text = Encoding.UTF8.GetString(message.Payload);
+                        var text = Encoding.UTF8.GetString(buffer);
                         text = $"{connection.ConnectionId}: {text}";
-                        await Broadcast(Encoding.UTF8.GetBytes(text), message.Type);
+                        await Broadcast(Encoding.UTF8.GetBytes(text));
                     }
                 }
             }
@@ -43,18 +42,16 @@ namespace SocketsSample.EndPoints
 
         private Task Broadcast(string text)
         {
-            return Broadcast(Encoding.UTF8.GetBytes(text), MessageType.Text);
+            return Broadcast(Encoding.UTF8.GetBytes(text));
         }
 
-        private Task Broadcast(byte[] payload, MessageType format)
+        private Task Broadcast(byte[] payload)
         {
             var tasks = new List<Task>(Connections.Count);
 
             foreach (var c in Connections)
             {
-                tasks.Add(c.Transport.Output.WriteAsync(new Message(
-                    payload,
-                    format)));
+                tasks.Add(c.Transport.Output.WriteAsync(payload));
             }
 
             return Task.WhenAll(tasks);

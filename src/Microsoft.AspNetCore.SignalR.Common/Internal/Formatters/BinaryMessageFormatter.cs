@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
     {
         internal const byte TextTypeFlag = 0x00;
         internal const byte BinaryTypeFlag = 0x01;
-        internal const byte ErrorTypeFlag = 0x02;
-        internal const byte CloseTypeFlag = 0x03;
 
         public static bool TryWriteMessage(Message message, IOutput output)
         {
@@ -44,10 +42,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     return TextTypeFlag;
                 case MessageType.Binary:
                     return BinaryTypeFlag;
-                case MessageType.Close:
-                    return CloseTypeFlag;
-                case MessageType.Error:
-                    return ErrorTypeFlag;
                 default:
                     throw new FormatException($"Invalid Message Type: {type}");
             }

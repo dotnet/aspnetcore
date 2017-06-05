@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSESetsContentType()
         {
-            var channel = Channel.CreateUnbounded<Message>();
+            var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
             var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSETurnsResponseBufferingOff()
         {
-            var channel = Channel.CreateUnbounded<Message>();
+            var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
             var feature = new HttpBufferingFeature();
             context.Features.Set<IHttpBufferingFeature>(feature);
@@ -49,20 +49,18 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData("Hello World", ":\r\ndata: T\r\ndata: Hello World\r\n\r\n")]
-        [InlineData("Hello\nWorld", ":\r\ndata: T\r\ndata: Hello\r\ndata: World\r\n\r\n")]
-        [InlineData("Hello\r\nWorld", ":\r\ndata: T\r\ndata: Hello\r\ndata: World\r\n\r\n")]
+        [InlineData("Hello World", ":\r\ndata: Hello World\r\n\r\n")]
+        [InlineData("Hello\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]
+        [InlineData("Hello\r\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]
         public async Task SSEAddsAppropriateFraming(string message, string expected)
         {
-            var channel = Channel.CreateUnbounded<Message>();
+            var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
             var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
-            await channel.Out.WriteAsync(new Message(
-                Encoding.UTF8.GetBytes(message),
-                MessageType.Text));
+            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes(message));
 
             Assert.True(channel.Out.TryComplete());
 

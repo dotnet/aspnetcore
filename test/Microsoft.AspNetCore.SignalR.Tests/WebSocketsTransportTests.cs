@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -33,8 +32,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task WebSocketsTransportStopsSendAndReceiveLoopsWhenTransportIsStopped()
         {
             var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-            var transportToConnection = Channel.CreateUnbounded<Message>();
-            var channelConnection = new ChannelConnection<SendMessage, Message>(connectionToTransport, transportToConnection);
+            var transportToConnection = Channel.CreateUnbounded<byte[]>();
+            var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
             var webSocketsTransport = new WebSocketsTransport();
             await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection);
@@ -47,8 +46,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task WebSocketsTransportStopsWhenConnectionChannelClosed()
         {
             var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-            var transportToConnection = Channel.CreateUnbounded<Message>();
-            var channelConnection = new ChannelConnection<SendMessage, Message>(connectionToTransport, transportToConnection);
+            var transportToConnection = Channel.CreateUnbounded<byte[]>();
+            var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
             var webSocketsTransport = new WebSocketsTransport();
             await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection);
@@ -61,20 +60,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task WebSocketsTransportStopsWhenConnectionClosedByTheServer()
         {
             var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-            var transportToConnection = Channel.CreateUnbounded<Message>();
-            var channelConnection = new ChannelConnection<SendMessage, Message>(connectionToTransport, transportToConnection);
+            var transportToConnection = Channel.CreateUnbounded<byte[]>();
+            var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
             var webSocketsTransport = new WebSocketsTransport();
             await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection);
 
             var sendTcs = new TaskCompletionSource<object>();
-            connectionToTransport.Out.TryWrite(new SendMessage(new byte[] { 0x42 }, MessageType.Binary, sendTcs));
+            connectionToTransport.Out.TryWrite(new SendMessage(new byte[] { 0x42 }, sendTcs));
             await sendTcs.Task;
             // The echo endpoint close the connection immediately after sending response which should stop the transport
             await webSocketsTransport.Running.OrTimeout();
 
-            Assert.True(transportToConnection.In.TryRead(out var message));
-            Assert.Equal(new byte[] { 0x42 }, message.Payload);
+            Assert.True(transportToConnection.In.TryRead(out var buffer));
+            Assert.Equal(new byte[] { 0x42 }, buffer);
         }
     }
 }

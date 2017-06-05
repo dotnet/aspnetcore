@@ -3,6 +3,7 @@ import { HubConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/HubConn
 import { DataReceived, ConnectionClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
 import { TransportType, ITransport } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
 import { Observer } from "../Microsoft.AspNetCore.SignalR.Client.TS/Observable"
+import { TextMessageFormat } from "../Microsoft.AspNetCore.SignalR.Client.TS/Formatters"
 
 import { asyncit as it, captureException } from './JasmineUtils';
 
@@ -215,12 +216,13 @@ class TestConnection implements IConnection {
     };
 
     send(data: any): Promise<void> {
-        this.lastInvocationId = JSON.parse(data).invocationId;
+        var invocation = TextMessageFormat.parse(data)[0].content.toString();
+        this.lastInvocationId = JSON.parse(invocation).invocationId;
         if (this.sentData) {
-            this.sentData.push(data);
+            this.sentData.push(invocation);
         }
         else {
-            this.sentData = [data];
+            this.sentData = [invocation];
         }
         return Promise.resolve();
     };
@@ -232,7 +234,8 @@ class TestConnection implements IConnection {
     };
 
     receive(data: any): void {
-        this.onDataReceived(JSON.stringify(data));
+        var payload = JSON.stringify(data);
+        this.onDataReceived(`${payload.length}:T:${payload};`);
     }
 
     onDataReceived: DataReceived;

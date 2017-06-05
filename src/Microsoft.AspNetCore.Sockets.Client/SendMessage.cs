@@ -7,13 +7,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public struct SendMessage
     {
-        public MessageType Type { get; }
         public byte[] Payload { get; }
         public TaskCompletionSource<object> SendResult { get; }
 
-        public SendMessage(byte[] payload, MessageType type, TaskCompletionSource<object> result)
+        public SendMessage(byte[] payload, TaskCompletionSource<object> result)
         {
-            Type = type;
             Payload = payload;
             SendResult = result;
         }

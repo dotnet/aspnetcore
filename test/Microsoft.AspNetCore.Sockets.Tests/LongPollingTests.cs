@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task Set204StatusCodeWhenChannelComplete()
         {
-            var channel = Channel.CreateUnbounded<Message>();
+            var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
             var poll = new LongPollingTransport(channel, new LoggerFactory());
 
@@ -34,48 +34,35 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task FrameSentAsSingleResponse()
         {
-            var channel = Channel.CreateUnbounded<Message>();
+            var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
             var poll = new LongPollingTransport(channel, new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
-            await channel.Out.WriteAsync(new Message(
-                Encoding.UTF8.GetBytes("Hello World"),
-                MessageType.Text));
+            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
 
             Assert.True(channel.Out.TryComplete());
 
             await poll.ProcessRequestAsync(context, context.RequestAborted);
 
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal("T11:T:Hello World;", Encoding.UTF8.GetString(ms.ToArray()));
+            Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
         }
 
-        [Theory]
-        [InlineData(MessageFormat.Text, "T5:T:Hello;1:T: ;5:T:World;")]
-        [InlineData(MessageFormat.Binary, "QgAAAAAAAAAFAEhlbGxvAAAAAAAAAAEAIAAAAAAAAAAFAFdvcmxk")]
-        public async Task MultipleFramesSentAsSingleResponse(MessageFormat format, string expectedPayload)
+        [Fact]
+        public async Task MultipleFramesSentAsSingleResponse()
         {
-            var channel = Channel.CreateUnbounded<Message>();
+            var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
-            if (format == MessageFormat.Binary)
-            {
-                context.Request.Headers["Accept"] = MessageFormatter.BinaryContentType;
-            }
+
             var poll = new LongPollingTransport(channel, new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
-            await channel.Out.WriteAsync(new Message(
-                Encoding.UTF8.GetBytes("Hello"),
-                MessageType.Text));
-            await channel.Out.WriteAsync(new Message(
-                Encoding.UTF8.GetBytes(" "),
-                MessageType.Text));
-            await channel.Out.WriteAsync(new Message(
-                Encoding.UTF8.GetBytes("World"),
-                MessageType.Text));
+            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
+            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes(" "));
+            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes("World"));
 
             Assert.True(channel.Out.TryComplete());
 
@@ -84,10 +71,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal(200, context.Response.StatusCode);
 
             var payload = ms.ToArray();
-            var encoded = format == MessageFormat.Binary ?
-                Convert.ToBase64String(payload) :
-                Encoding.UTF8.GetString(payload);
-            Assert.Equal(expectedPayload, encoded);
+            Assert.Equal("Hello World", Encoding.UTF8.GetString(payload));
         }
     }
 }

@@ -13,26 +13,26 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
-    public class Connection: IConnection
+    public class Connection : IConnection
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
 
         private volatile int _connectionState = ConnectionState.Initial;
-        private volatile IChannelConnection<Message, SendMessage> _transportChannel;
+        private volatile IChannelConnection<byte[], SendMessage> _transportChannel;
         private HttpClient _httpClient;
         private volatile ITransport _transport;
         private volatile Task _receiveLoopTask;
         private TaskCompletionSource<object> _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private TaskQueue _eventQueue = new TaskQueue();
 
-        private ReadableChannel<Message> Input => _transportChannel.Input;
+        private ReadableChannel<byte[]> Input => _transportChannel.Input;
         private WritableChannel<SendMessage> Output => _transportChannel.Output;
 
         public Uri Url { get; }
 
         public event Action Connected;
-        public event Action<byte[], MessageType> Received;
+        public event Action<byte[]> Received;
         public event Action<Exception> Closed;
 
         public Connection(Uri url)
@@ -208,10 +208,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private async Task StartTransport(Uri connectUrl)
         {
             var applicationToTransport = Channel.CreateUnbounded<SendMessage>();
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationSide = new ChannelConnection<SendMessage, Message>(applicationToTransport, transportToApplication);
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationSide = new ChannelConnection<SendMessage, byte[]>(applicationToTransport, transportToApplication);
 
-            _transportChannel = new ChannelConnection<Message, SendMessage>(transportToApplication, applicationToTransport);
+            _transportChannel = new ChannelConnection<byte[], SendMessage>(transportToApplication, applicationToTransport);
 
             // Start the transport, giving it one end of the pipeline
             try
@@ -237,11 +237,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         _logger.LogDebug("Message received but connection is not connected. Skipping raising Received event.");
                         // drain
-                        Input.TryRead(out Message ignore);
+                        Input.TryRead(out _);
                         continue;
                     }
 
-                    if (Input.TryRead(out Message message))
+                    if (Input.TryRead(out var buffer))
                     {
                         _logger.LogDebug("Scheduling raising Received event.");
                         var ignore = _eventQueue.Enqueue(() =>
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                             var receivedEventHandler = Received;
                             if (receivedEventHandler != null)
                             {
-                                receivedEventHandler(message.Payload, message.Type);
+                                receivedEventHandler(buffer);
                             }
 
                             return Task.CompletedTask;
@@ -275,12 +275,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.LogTrace("Ending receive loop");
         }
 
-        public Task SendAsync(byte[] data, MessageType type)
-        {
-            return SendAsync(data, type, CancellationToken.None);
-        }
-
-        public async Task SendAsync(byte[] data, MessageType type, CancellationToken cancellationToken)
+        public async Task SendAsync(byte[] data, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (data == null)
             {
@@ -298,7 +293,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // TaskCompletionSource result. This way we prevent from user's code blocking our channel
             // send loop.
             var sendTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var message = new SendMessage(data, type, sendTcs);
+            var message = new SendMessage(data, sendTcs);
 
             _logger.LogDebug("Sending message");
 
