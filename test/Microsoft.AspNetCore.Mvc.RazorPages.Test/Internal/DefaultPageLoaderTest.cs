@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Act
             var actual = DefaultPageLoader.CreateDescriptor(expected,
-                new RazorPageAttribute(expected.RelativePath, typeof(EmptyPage), null, ""));
+                new RazorPageAttribute(expected.RelativePath, typeof(EmptyPage), ""));
 
             // Assert
             Assert.Same(expected.ActionConstraints, actual.ActionConstraints);
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Act
             var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(),
-                new RazorPageAttribute("/Pages/Index", type, type, ""));
+                new RazorPageAttribute("/Pages/Index", type, ""));
 
             // Assert
             Assert.Empty(result.BoundProperties);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Act
             var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(),
-                new RazorPageAttribute("/Pages/Index", type, typeof(EmptyPageModel), ""));
+                new RazorPageAttribute("/Pages/Index", type, ""));
 
             // Assert
             Assert.Empty(result.BoundProperties);
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Act
             var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(),
-                new RazorPageAttribute("/Pages/Index", type, typeof(ModelWithHandler), ""));
+                new RazorPageAttribute("/Pages/Index", type, ""));
 
             // Assert
             Assert.Collection(result.BoundProperties, p => Assert.Equal("BindMe", p.Name));
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Act
             var result = DefaultPageLoader.CreateDescriptor(new PageActionDescriptor(),
-                new RazorPageAttribute("/Pages/Index", type, typeof(PocoModel), ""));
+                new RazorPageAttribute("/Pages/Index", type, ""));
 
             // Assert
             Assert.Collection(result.BoundProperties, p => Assert.Equal("BindMe", p.Name));

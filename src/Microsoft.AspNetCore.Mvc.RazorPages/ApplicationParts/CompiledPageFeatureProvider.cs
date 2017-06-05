@@ -53,12 +53,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             foreach (var page in manifests.SelectMany(m => m.CompiledPages))
             {
                 var normalizedPath = ViewPath.NormalizePath(page.Path);
-                var modelType = page.CompiledType.GetProperty("Model")?.PropertyType;
 
                 var pageAttribute = new RazorPageAttribute(
                     normalizedPath,
                     page.CompiledType,
-                    modelType,
                     page.RoutePrefix);
 
                 var viewDescriptor = new CompiledViewDescriptor

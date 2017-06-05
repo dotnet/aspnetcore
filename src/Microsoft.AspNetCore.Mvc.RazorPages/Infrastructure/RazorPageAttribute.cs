@@ -8,14 +8,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class RazorPageAttribute : RazorViewAttribute
     {
-        public RazorPageAttribute(string path, Type viewType, Type modelType, string routeTemplate)
+        public RazorPageAttribute(string path, Type viewType, string routeTemplate)
             : base(path, viewType)
         {
-            ModelType = modelType;
             RouteTemplate = routeTemplate;
         }
-
-        public Type ModelType { get; }
 
         public string RouteTemplate { get; }
     }

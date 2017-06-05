@@ -30,14 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var viewDescriptor = compileTask.GetAwaiter().GetResult();
             var viewAttribute = viewDescriptor.ViewAttribute;
 
-            // Pages always have a model type. If it's not set explicitly by the developer using
-            // @model, it will be the same as the page type.
-            var modelType = viewAttribute.ViewType.GetProperty(ModelPropertyName)?.PropertyType;
-
             var pageAttribute = new RazorPageAttribute(
                 viewAttribute.Path,
                 viewAttribute.ViewType,
-                modelType,
                 routeTemplate: null);
 
             return CreateDescriptor(actionDescriptor, pageAttribute);
@@ -49,7 +44,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             RazorPageAttribute pageAttribute)
         {
             var pageType = pageAttribute.ViewType.GetTypeInfo();
-            var modelType = pageAttribute.ModelType?.GetTypeInfo();
+
+            // Pages always have a model type. If it's not set explicitly by the developer using
+            // @model, it will be the same as the page type.
+            var modelType = pageAttribute.ViewType.GetProperty(ModelPropertyName)?.PropertyType?.GetTypeInfo();
 
             // Now we want to find the handler methods. If the model defines any handlers, then we'll use those,
             // otherwise look at the page itself (unless the page IS the model, in which case we already looked).

@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             return new CompiledViewDescriptor
             {
                 RelativePath = path,
-                ViewAttribute = new RazorPageAttribute(path, typeof(object), typeof(object), prefix),
+                ViewAttribute = new RazorPageAttribute(path, typeof(object), prefix),
             };
         }
 
