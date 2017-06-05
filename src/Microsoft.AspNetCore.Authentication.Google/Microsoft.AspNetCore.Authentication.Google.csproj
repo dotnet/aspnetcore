@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Authentication.OAuth\Microsoft.AspNetCore.Authentication.OAuth.csproj" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>

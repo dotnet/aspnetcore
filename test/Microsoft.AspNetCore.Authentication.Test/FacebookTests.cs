@@ -20,7 +20,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Infrastructure;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -38,68 +37,6 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             Assert.NotNull(scheme);
             Assert.Equal("FacebookHandler", scheme.HandlerType.Name);
             Assert.Equal(FacebookDefaults.AuthenticationScheme, scheme.DisplayName);
-        }
-
-        [Fact]
-        public void AddCanBindAgainstDefaultConfig()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:AppId", "<id>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:AppSecret", "<secret>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:AuthorizationEndpoint", "<authEndpoint>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:BackchannelTimeout", "0.0:0:30"},
-                //{"Facebook:CallbackPath", "/callbackpath"}, // PathString doesn't convert
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:ClaimsIssuer", "<issuer>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:RemoteAuthenticationTimeout", "0.0:0:30"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:SaveTokens", "true"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:SendAppSecretProof", "true"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:SignInScheme", "<signIn>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:TokenEndpoint", "<tokenEndpoint>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Facebook:UserInformationEndpoint", "<userEndpoint>"},
-            };
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(dic);
-            var config = configurationBuilder.Build();
-            var services = new ServiceCollection()
-                .AddSingleton<IConfigureOptions<FacebookOptions>, ConfigureDefaults<FacebookOptions>>()
-                .AddFacebookAuthentication()
-                .AddSingleton<IConfiguration>(config);
-            var sp = services.BuildServiceProvider();
-
-            var options = sp.GetRequiredService<IOptionsSnapshot<FacebookOptions>>().Get(FacebookDefaults.AuthenticationScheme);
-            Assert.Equal("<id>", options.AppId);
-            Assert.Equal("<secret>", options.AppSecret);
-            Assert.Equal("<authEndpoint>", options.AuthorizationEndpoint);
-            Assert.Equal(new TimeSpan(0, 0, 0, 30), options.BackchannelTimeout);
-            //Assert.Equal("/callbackpath", options.CallbackPath); // NOTE: PathString doesn't convert
-            Assert.Equal("<issuer>", options.ClaimsIssuer);
-            Assert.Equal("<id>", options.ClientId);
-            Assert.Equal("<secret>", options.ClientSecret);
-            Assert.Equal(new TimeSpan(0, 0, 0, 30), options.RemoteAuthenticationTimeout);
-            Assert.True(options.SaveTokens);
-            Assert.True(options.SendAppSecretProof);
-            Assert.Equal("<signIn>", options.SignInScheme);
-            Assert.Equal("<tokenEndpoint>", options.TokenEndpoint);
-            Assert.Equal("<userEndpoint>", options.UserInformationEndpoint);
-        }
-
-        [Fact]
-        public void AddWithDelegateIgnoresConfig()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"Facebook:AppId", "<id>"},
-            };
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(dic);
-            var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddFacebookAuthentication(o => o.SaveTokens = false).AddSingleton<IConfiguration>(config);
-            var sp = services.BuildServiceProvider();
-
-            var options = sp.GetRequiredService<IOptionsSnapshot<FacebookOptions>>().Get(FacebookDefaults.AuthenticationScheme);
-            Assert.Null(options.AppId);
-            Assert.False(options.SaveTokens);
         }
 
         [Fact]
