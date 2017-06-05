@@ -3,8 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.Facebook;
-using Microsoft.AspNetCore.Authentication.Facebook.Internal;
-using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -17,9 +15,6 @@ namespace Microsoft.Extensions.DependencyInjection
             => services.AddFacebookAuthentication(FacebookDefaults.AuthenticationScheme, configureOptions);
 
         public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services, string authenticationScheme, Action<FacebookOptions> configureOptions)
-        {
-            services.AddSingleton<ConfigureDefaultOptions<FacebookOptions>, FacebookConfigureOptions>();
-            return services.AddOAuthAuthentication<FacebookOptions, FacebookHandler>(authenticationScheme, configureOptions);
-        }
+            => services.AddOAuthAuthentication<FacebookOptions, FacebookHandler>(authenticationScheme, configureOptions);
     }
 }

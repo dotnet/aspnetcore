@@ -19,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Infrastructure;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -37,65 +36,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.NotNull(scheme);
             Assert.Equal("GoogleHandler", scheme.HandlerType.Name);
             Assert.Equal(GoogleDefaults.AuthenticationScheme, scheme.DisplayName);
-        }
-
-        [Fact]
-        public void AddCanBindAgainstDefaultConfig()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:ClientId", "<id>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:ClientSecret", "<secret>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:AuthorizationEndpoint", "<authEndpoint>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:BackchannelTimeout", "0.0:0:30"},
-                //{"Google:CallbackPath", "/callbackpath"}, // PathString doesn't convert
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:ClaimsIssuer", "<issuer>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:RemoteAuthenticationTimeout", "0.0:0:30"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:SaveTokens", "true"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:SendAppSecretProof", "true"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:SignInScheme", "<signIn>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:TokenEndpoint", "<tokenEndpoint>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Google:UserInformationEndpoint", "<userEndpoint>"},
-            };
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(dic);
-            var config = configurationBuilder.Build();
-            var services = new ServiceCollection()
-                .AddSingleton<IConfigureOptions<GoogleOptions>, ConfigureDefaults<GoogleOptions>>()
-                .AddGoogleAuthentication()
-                .AddSingleton<IConfiguration>(config);
-            var sp = services.BuildServiceProvider();
-
-            var options = sp.GetRequiredService<IOptionsSnapshot<GoogleOptions>>().Get(GoogleDefaults.AuthenticationScheme);
-            Assert.Equal("<authEndpoint>", options.AuthorizationEndpoint);
-            Assert.Equal(new TimeSpan(0, 0, 0, 30), options.BackchannelTimeout);
-            //Assert.Equal("/callbackpath", options.CallbackPath); // NOTE: PathString doesn't convert
-            Assert.Equal("<issuer>", options.ClaimsIssuer);
-            Assert.Equal("<id>", options.ClientId);
-            Assert.Equal("<secret>", options.ClientSecret);
-            Assert.Equal(new TimeSpan(0, 0, 0, 30), options.RemoteAuthenticationTimeout);
-            Assert.True(options.SaveTokens);
-            Assert.Equal("<signIn>", options.SignInScheme);
-            Assert.Equal("<tokenEndpoint>", options.TokenEndpoint);
-            Assert.Equal("<userEndpoint>", options.UserInformationEndpoint);
-        }
-
-        [Fact]
-        public void AddWithDelegateIgnoresConfig()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"Google:ClientId", "<id>"},
-            };
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(dic);
-            var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddGoogleAuthentication(o => o.SaveTokens = false).AddSingleton<IConfiguration>(config);
-            var sp = services.BuildServiceProvider();
-
-            var options = sp.GetRequiredService<IOptionsSnapshot<GoogleOptions>>().Get(GoogleDefaults.AuthenticationScheme);
-            Assert.Null(options.ClientId);
-            Assert.False(options.SaveTokens);
         }
 
         [Fact]

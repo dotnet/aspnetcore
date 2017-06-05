@@ -15,7 +15,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Infrastructure;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
 
@@ -29,33 +28,6 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         const string Logout = "/logout";
         const string Signin = "/signin";
         const string Signout = "/signout";
-
-        [Fact]
-        public void AddCanBindAgainstDefaultConfig()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"Microsoft:AspNetCore:Authentication:Schemes:OpenIdConnect:ClientId", "<id>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:OpenIdConnect:ClientSecret", "<secret>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:OpenIdConnect:RequireHttpsMetadata", "false"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:OpenIdConnect:Authority", "<auth>"}
-            };
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(dic);
-            var config = configurationBuilder.Build();
-            var services = new ServiceCollection()
-                .AddSingleton<IConfigureOptions<OpenIdConnectOptions>, ConfigureDefaults<OpenIdConnectOptions>>()
-                .AddOpenIdConnectAuthentication()
-                .AddSingleton<IConfiguration>(config);
-            var sp = services.BuildServiceProvider();
-
-            var options = sp.GetRequiredService<IOptionsSnapshot<OpenIdConnectOptions>>().Get(OpenIdConnectDefaults.AuthenticationScheme);
-            Assert.Equal("<id>", options.ClientId);
-            Assert.Equal("<secret>", options.ClientSecret);
-            Assert.Equal("<auth>", options.Authority);
-            Assert.False(options.RequireHttpsMetadata);
-        }
-
 
         /// <summary>
         /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.

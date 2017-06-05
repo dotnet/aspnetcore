@@ -3,8 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authentication.Google.Internal;
-using Microsoft.Extensions.Options.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -17,9 +15,6 @@ namespace Microsoft.Extensions.DependencyInjection
             => services.AddGoogleAuthentication(GoogleDefaults.AuthenticationScheme, configureOptions);
 
         public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services, string authenticationScheme, Action<GoogleOptions> configureOptions)
-        {
-            services.AddSingleton<ConfigureDefaultOptions<GoogleOptions>, GoogleConfigureOptions>();
-            return services.AddOAuthAuthentication<GoogleOptions, GoogleHandler>(authenticationScheme, configureOptions);
-        }
+            => services.AddOAuthAuthentication<GoogleOptions, GoogleHandler>(authenticationScheme, configureOptions);
     }
 }

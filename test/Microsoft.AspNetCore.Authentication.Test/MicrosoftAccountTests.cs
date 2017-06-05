@@ -20,7 +20,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Infrastructure;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -38,65 +37,6 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
             Assert.NotNull(scheme);
             Assert.Equal("MicrosoftAccountHandler", scheme.HandlerType.Name);
             Assert.Equal(MicrosoftAccountDefaults.AuthenticationScheme, scheme.DisplayName);
-        }
-
-        [Fact]
-        public void AddCanBindAgainstDefaultConfig()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:ClientId", "<id>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:ClientSecret", "<secret>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:AuthorizationEndpoint", "<authEndpoint>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:BackchannelTimeout", "0.0:0:30"},
-                //{"Microsoft:CallbackPath", "/callbackpath"}, // PathString doesn't convert
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:ClaimsIssuer", "<issuer>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:RemoteAuthenticationTimeout", "0.0:0:30"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:SaveTokens", "true"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:SendAppSecretProof", "true"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:SignInScheme", "<signIn>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:TokenEndpoint", "<tokenEndpoint>"},
-                {"Microsoft:AspNetCore:Authentication:Schemes:Microsoft:UserInformationEndpoint", "<userEndpoint>"},
-            };
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(dic);
-            var config = configurationBuilder.Build();
-            var services = new ServiceCollection()
-                .AddSingleton<IConfigureOptions<MicrosoftAccountOptions>, ConfigureDefaults<MicrosoftAccountOptions>>()
-                .AddMicrosoftAccountAuthentication()
-                .AddSingleton<IConfiguration>(config);
-            var sp = services.BuildServiceProvider();
-
-            var options = sp.GetRequiredService<IOptionsSnapshot<MicrosoftAccountOptions>>().Get(MicrosoftAccountDefaults.AuthenticationScheme);
-            Assert.Equal("<authEndpoint>", options.AuthorizationEndpoint);
-            Assert.Equal(new TimeSpan(0, 0, 0, 30), options.BackchannelTimeout);
-            //Assert.Equal("/callbackpath", options.CallbackPath); // NOTE: PathString doesn't convert
-            Assert.Equal("<issuer>", options.ClaimsIssuer);
-            Assert.Equal("<id>", options.ClientId);
-            Assert.Equal("<secret>", options.ClientSecret);
-            Assert.Equal(new TimeSpan(0, 0, 0, 30), options.RemoteAuthenticationTimeout);
-            Assert.True(options.SaveTokens);
-            Assert.Equal("<signIn>", options.SignInScheme);
-            Assert.Equal("<tokenEndpoint>", options.TokenEndpoint);
-            Assert.Equal("<userEndpoint>", options.UserInformationEndpoint);
-        }
-
-        [Fact]
-        public void AddWithDelegateIgnoresConfig()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"Microsoft:ClientId", "<id>"},
-            };
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(dic);
-            var config = configurationBuilder.Build();
-            var services = new ServiceCollection().AddMicrosoftAccountAuthentication(o => o.SaveTokens = true).AddSingleton<IConfiguration>(config);
-            var sp = services.BuildServiceProvider();
-
-            var options = sp.GetRequiredService<IOptionsSnapshot<MicrosoftAccountOptions>>().Get(MicrosoftAccountDefaults.AuthenticationScheme);
-            Assert.Null(options.ClientId);
-            Assert.True(options.SaveTokens);
         }
 
         [Fact]
