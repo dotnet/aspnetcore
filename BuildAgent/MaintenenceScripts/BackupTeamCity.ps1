@@ -88,7 +88,7 @@ function Invoke-TeamCityBackup() {
                                             $includePersonalChanges,
                                             $fileName);
 
-    return Invoke-TeamCityRequest $server $userName $password $api "POST"
+    return Invoke-TeamCityRequest $server $api $userName $password "POST"
 }
 
 function Get-BackupStatus {
