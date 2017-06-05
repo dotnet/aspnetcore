@@ -74,7 +74,7 @@ namespace TestSites
                     }
                     else
                     {
-                        return context.ChallengeAsync(IISMiddleware.AuthenticationScheme);
+                        return context.ChallengeAsync(IISDefaults.AuthenticationScheme);
                     }
                 }
 

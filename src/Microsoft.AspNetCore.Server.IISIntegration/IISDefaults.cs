@@ -5,6 +5,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     public class IISDefaults
     {
+        public static readonly string AuthenticationScheme = "Windows";
         public const string Negotiate = "Negotiate";
         public const string Ntlm = "NTLM";
     }
