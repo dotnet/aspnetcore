@@ -10,7 +10,7 @@
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
-    <RoslynVersion>2.3.0-beta1</RoslynVersion>
+    <RoslynVersion>2.0.0</RoslynVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <WebApiClientVersion>5.2.2</WebApiClientVersion>
