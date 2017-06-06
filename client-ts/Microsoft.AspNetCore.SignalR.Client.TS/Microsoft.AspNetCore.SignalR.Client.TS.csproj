@@ -44,6 +44,7 @@
     <Exec Command="npm version $(ModuleVersion)" WorkingDirectory="$(MSBuildThisFileDirectory).." Condition="'$(VersionSuffix)' != ''" />
     <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
     <Exec Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package.json" Condition="'$(VersionSuffix)' != ''" />
+    <Exec Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package-lock.json" Condition="'$(VersionSuffix)' != ''" />
 
     <ItemGroup>
       <TSClient Include="$(MSBuildThisFileDirectory)../signalr-client*.tgz" />

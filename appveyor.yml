@@ -11,7 +11,7 @@ branches:
 build_script:
   - ps: .\build.ps1
 install:
-  - ps: Install-Product node 6
+  - ps: Install-Product node 8
 clone_depth: 1
 test: off
 deploy: off
