@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public Task Invoke(HttpContext context)
         {
             var fileContext = new StaticFileContext(context, _options, _matchUrl, _logger, _fileProvider, _contentTypeProvider);
-          
+
             if (!fileContext.ValidateMethod())
             {
                 _logger.LogRequestMethodNotSupported(context.Request.Method);
@@ -88,10 +88,9 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _logger.LogFileNotFound(fileContext.SubPath);
             }
             else
-            { 
+            {
                 // If we get here, we can try to serve the file
                 fileContext.ComprehendRequestHeaders();
-
                 switch (fileContext.GetPreconditionState())
                 {
                     case StaticFileContext.PreconditionState.Unspecified:
@@ -104,10 +103,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                         {
                             return fileContext.SendRangeAsync();
                         }
-                        
                         _logger.LogFileServed(fileContext.SubPath, fileContext.PhysicalPath);
                         return fileContext.SendAsync();
-
                     case StaticFileContext.PreconditionState.NotModified:
                         _logger.LogPathNotModified(fileContext.SubPath);
                         return fileContext.SendStatusAsync(Constants.Status304NotModified);
