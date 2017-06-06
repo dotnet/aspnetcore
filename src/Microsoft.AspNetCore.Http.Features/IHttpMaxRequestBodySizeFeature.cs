@@ -9,6 +9,13 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IHttpMaxRequestBodySizeFeature
     {
         /// <summary>
+        /// Indicates whether <see cref="MaxRequestBodySize"/> is read-only.
+        /// If true, this could mean that the request body has already been read from
+        /// or that <see cref="IHttpUpgradeFeature.UpgradeAsync"/> was called.
+        /// </summary>
+        bool IsReadOnly { get; }
+
+        /// <summary>
         /// The maximum allowed size of the current request body in bytes.
         /// When set to null, the maximum request body size is unlimited.
         /// This cannot be modified after the reading the request body has started.
