@@ -20,8 +20,4 @@
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)" />
-  </ItemGroup>
-
 </Project>
