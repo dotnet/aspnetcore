@@ -67,14 +67,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
                 jsonInputPatchLogger,
                 _jsonSerializerSettings,
                 _charPool,
-                _objectPoolProvider));
+                _objectPoolProvider,
+                options.SuppressInputFormatterBuffering));
 
             var jsonInputLogger = _loggerFactory.CreateLogger<JsonInputFormatter>();
             options.InputFormatters.Add(new JsonInputFormatter(
                 jsonInputLogger,
                 _jsonSerializerSettings,
                 _charPool,
-                _objectPoolProvider));
+                _objectPoolProvider,
+                options.SuppressInputFormatterBuffering));
 
             options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
 

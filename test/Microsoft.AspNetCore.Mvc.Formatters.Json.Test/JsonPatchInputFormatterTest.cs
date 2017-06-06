@@ -7,8 +7,10 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -22,6 +24,94 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private static readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
+
+        [Fact]
+        public async Task BuffersRequestBody_ByDefault()
+        {
+            // Arrange
+            var logger = GetLogger();
+            var formatter =
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+            var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.ContentType = "application/json";
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(JsonPatchDocument<Customer>));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            var patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
+            Assert.Equal("add", patchDoc.Operations[0].op);
+            Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
+            Assert.Equal("John", patchDoc.Operations[0].value);
+
+            Assert.True(httpContext.Request.Body.CanSeek);
+            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
+
+            result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
+            Assert.Equal("add", patchDoc.Operations[0].op);
+            Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
+            Assert.Equal("John", patchDoc.Operations[0].value);
+        }
+
+        [Fact]
+        public async Task SuppressInputFormatterBufferingSetToTrue_DoesNotBufferRequestBody()
+        {
+            // Arrange
+            var logger = GetLogger();
+            var formatter =
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider, suppressInputFormatterBuffering: true);
+            var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.ContentType = "application/json";
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(JsonPatchDocument<Customer>));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            var patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
+            Assert.Equal("add", patchDoc.Operations[0].op);
+            Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
+            Assert.Equal("John", patchDoc.Operations[0].value);
+
+            result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            Assert.Null(result.Model);
+        }
 
         [Fact]
         public async Task JsonPatchInputFormatter_ReadsOneOperation_Successfully()
@@ -208,6 +298,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private class Customer
         {
             public string Name { get; set; }
+        }
+
+        private class TestResponseFeature : HttpResponseFeature
+        {
+            public override void OnCompleted(Func<object, Task> callback, object state)
+            {
+                // do not do anything
+            }
         }
     }
 }

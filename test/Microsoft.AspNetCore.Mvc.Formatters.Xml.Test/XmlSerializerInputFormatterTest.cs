@@ -10,8 +10,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Moq;
@@ -37,6 +38,97 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         {
             public string SampleString { get; set; }
             public TestLevelOne TestOne { get; set; }
+        }
+
+        [Fact]
+        public async Task BuffersRequestBody_ByDefault()
+        {
+            // Arrange
+            var expectedInt = 10;
+            var expectedString = "TestString";
+            var expectedDateTime = XmlConvert.ToString(DateTime.UtcNow, XmlDateTimeSerializationMode.Utc);
+
+            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                                "<TestLevelOne><SampleInt>" + expectedInt + "</SampleInt>" +
+                                "<sampleString>" + expectedString + "</sampleString>" +
+                                "<SampleDate>" + expectedDateTime + "</SampleDate></TestLevelOne>";
+
+            var formatter = new XmlSerializerInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.ContentType = "application/json";
+            var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasError);
+            var model = Assert.IsType<TestLevelOne>(result.Model);
+
+            Assert.Equal(expectedInt, model.SampleInt);
+            Assert.Equal(expectedString, model.sampleString);
+            Assert.Equal(
+                XmlConvert.ToDateTime(expectedDateTime, XmlDateTimeSerializationMode.Utc),
+                model.SampleDate);
+
+            Assert.True(httpContext.Request.Body.CanSeek);
+            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
+
+            result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasError);
+            model = Assert.IsType<TestLevelOne>(result.Model);
+
+            Assert.Equal(expectedInt, model.SampleInt);
+            Assert.Equal(expectedString, model.sampleString);
+            Assert.Equal(
+                XmlConvert.ToDateTime(expectedDateTime, XmlDateTimeSerializationMode.Utc),
+                model.SampleDate);
+        }
+
+        [Fact]
+        public async Task SuppressInputFormatterBufferingSetToTrue_DoesNotBufferRequestBody()
+        {
+            // Arrange
+            var expectedInt = 10;
+            var expectedString = "TestString";
+            var expectedDateTime = XmlConvert.ToString(DateTime.UtcNow, XmlDateTimeSerializationMode.Utc);
+
+            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                                "<TestLevelOne><SampleInt>" + expectedInt + "</SampleInt>" +
+                                "<sampleString>" + expectedString + "</sampleString>" +
+                                "<SampleDate>" + expectedDateTime + "</SampleDate></TestLevelOne>";
+
+            var formatter = new XmlSerializerInputFormatter(suppressInputFormatterBuffering: true);
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.ContentType = "application/xml";
+            var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasError);
+            var model = Assert.IsType<TestLevelOne>(result.Model);
+
+            Assert.Equal(expectedInt, model.SampleInt);
+            Assert.Equal(expectedString, model.sampleString);
+            Assert.Equal(
+                XmlConvert.ToDateTime(expectedDateTime, XmlDateTimeSerializationMode.Utc),
+                model.SampleDate);
+
+            // Reading again should fail as buffering request body is disabled
+            await Assert.ThrowsAsync<XmlException>(() => formatter.ReadAsync(context));
         }
 
         [Theory]
@@ -435,6 +527,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         private InputFormatterContext GetInputFormatterContext(byte[] contentBytes, Type modelType)
         {
             var httpContext = GetHttpContext(contentBytes);
+            return GetInputFormatterContext(httpContext, modelType);
+        }
+
+        private InputFormatterContext GetInputFormatterContext(HttpContext httpContext, Type modelType)
+        {
             var provider = new EmptyModelMetadataProvider();
             var metadata = provider.GetMetadataForType(modelType);
             return new InputFormatterContext(
@@ -469,6 +566,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             {
                 createSerializerCalledCount++;
                 return base.CreateSerializer(type);
+            }
+        }
+
+        private class TestResponseFeature : HttpResponseFeature
+        {
+            public override void OnCompleted(Func<object, Task> callback, object state)
+            {
+                // do not do anything
             }
         }
     }
