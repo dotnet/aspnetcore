@@ -177,7 +177,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                     // TagHelperDescriptorProviders (actually do tag helper discovery)
                     b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider());
-                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.ViewComponentTagHelperDescriptorProvider());
+                    b.Features.Add(new ViewComponentTagHelperDescriptorProvider());
                 });
             });
 
