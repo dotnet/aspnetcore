@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -188,10 +187,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
 
             var generatedAssembly = CompileAndEmit(codeDocument, cSharpDocument.GeneratedCode);
-            var exportedType = generatedAssembly.GetExportedTypes().FirstOrDefault(f => !f.IsNested);
+            var viewAttribute = generatedAssembly.GetCustomAttribute<RazorViewAttribute>();
             return new CompiledViewDescriptor
             {
-                ViewAttribute = new RazorViewAttribute(relativePath, exportedType),
+                ViewAttribute = viewAttribute,
                 RelativePath = relativePath,
             };
         }

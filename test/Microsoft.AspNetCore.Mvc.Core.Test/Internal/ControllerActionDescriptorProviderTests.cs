@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(FilterScope.Controller, filter2.Scope);
 
             var filter3 = descriptor.FilterDescriptors[2];
-            Assert.Equal(3, Assert.IsType<MyFilterAttribute>(filter3.Filter).Value); ;
+            Assert.Equal(3, Assert.IsType<MyFilterAttribute>(filter3.Filter).Value);
             Assert.Equal(FilterScope.Action, filter3.Scope);
         }
 

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Xunit;
 
@@ -19,8 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptors = new[]
             {
-                GetDescriptor("/Pages/About.cshtml"),
-                GetDescriptor("/Pages/Home.cshtml", "some-prefix"),
+                GetAttribute("/Pages/About.cshtml"),
+                GetAttribute("/Pages/Home.cshtml", "some-prefix"),
             };
             var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
             var context = new PageApplicationModelProviderContext();
@@ -52,8 +51,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptors = new[]
             {
-                GetDescriptor("/Pages/Index.cshtml"),
-                GetDescriptor("/Pages/Admin/Index.cshtml", "some-template"),
+                GetAttribute("/Pages/Index.cshtml"),
+                GetAttribute("/Pages/Admin/Index.cshtml", "some-template"),
             };
             var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions { RootDirectory = "/" });
             var context = new PageApplicationModelProviderContext();
@@ -87,8 +86,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptors = new[]
             {
-                GetDescriptor("/Pages/Index.cshtml"),
-                GetDescriptor("/Pages/Admin/Index.cshtml", "some-template"),
+                GetAttribute("/Pages/Index.cshtml"),
+                GetAttribute("/Pages/Admin/Index.cshtml", "some-template"),
             };
             var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
             var context = new PageApplicationModelProviderContext();
@@ -122,8 +121,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptors = new[]
             {
-                GetDescriptor("/Pages/Index.cshtml"),
-                GetDescriptor("/Pages/Home.cshtml", "/some-prefix"),
+                GetAttribute("/Pages/Index.cshtml"),
+                GetAttribute("/Pages/Home.cshtml", "/some-prefix"),
             };
             var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
             var context = new PageApplicationModelProviderContext();
@@ -134,27 +133,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 ex.Message);
         }
 
-        private static CompiledViewDescriptor GetDescriptor(string path, string prefix = "")
-        {
-            return new CompiledViewDescriptor
-            {
-                RelativePath = path,
-                ViewAttribute = new RazorPageAttribute(path, typeof(object), prefix),
-            };
-        }
+        private static RazorPageAttribute GetAttribute(string path, string prefix = "") => new RazorPageAttribute(path, typeof(object), prefix);
 
         public class TestCompiledPageApplicationModelProvider : CompiledPageApplicationModelProvider
         {
-            private readonly IEnumerable<CompiledViewDescriptor> _info;
+            private readonly IEnumerable<RazorPageAttribute> _attributes;
 
-            public TestCompiledPageApplicationModelProvider(IEnumerable<CompiledViewDescriptor> info, RazorPagesOptions options)
+            public TestCompiledPageApplicationModelProvider(IEnumerable<RazorPageAttribute> attributes, RazorPagesOptions options)
                 : base(new ApplicationPartManager(), new TestOptionsManager<RazorPagesOptions>(options))
             {
-                _info = info;
+                _attributes = attributes;
             }
 
-
-            protected override IEnumerable<CompiledViewDescriptor> GetCompiledPageDescriptors() => _info;
+            protected override IEnumerable<RazorPageAttribute> GetRazorPageAttributes(IEnumerable<ApplicationPart> parts) => _attributes;
         }
     }
 }

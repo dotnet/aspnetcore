@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.Extensions.Primitives;
@@ -34,20 +35,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         {
             foreach (var assemblyPart in parts.OfType<AssemblyPart>())
             {
-                var viewContainer = GetManifest(assemblyPart);
-                if (viewContainer == null)
+                var viewAttributes = GetViewAttributes(assemblyPart);
+                foreach (var attribute in viewAttributes)
                 {
-                    continue;
-                }
-
-                foreach (var item in viewContainer.ViewInfos)
-                {
-                    var relativePath = ViewPath.NormalizePath(item.Path);
+                    var relativePath = ViewPath.NormalizePath(attribute.Path);
                     var viewDescriptor = new CompiledViewDescriptor
                     {
                         ExpirationTokens = Array.Empty<IChangeToken>(),
                         RelativePath = relativePath,
-                        ViewAttribute = new RazorViewAttribute(relativePath, item.Type),
+                        ViewAttribute = attribute,
                         IsPrecompiled = true,
                     };
 
@@ -57,19 +53,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         }
 
         /// <summary>
-        /// Gets the type of <see cref="ViewInfoContainer"/> for the specified <paramref name="assemblyPart"/>.
+        /// Gets the sequence of <see cref="RazorViewAttribute"/> instances associated with the specified <paramref name="assemblyPart"/>.
         /// </summary>
         /// <param name="assemblyPart">The <see cref="AssemblyPart"/>.</param>
-        /// <returns>The <see cref="ViewInfoContainer"/> <see cref="Type"/>.</returns>
-        protected virtual ViewInfoContainer GetManifest(AssemblyPart assemblyPart)
+        /// <returns>The sequence of <see cref="RazorViewAttribute"/> instances.</returns>
+        protected virtual IEnumerable<RazorViewAttribute> GetViewAttributes(AssemblyPart assemblyPart)
         {
-            var type = CompiledViewManfiest.GetManifestType(assemblyPart, FullyQualifiedManifestTypeName);
-            if (type != null)
+            if (assemblyPart == null)
             {
-                return (ViewInfoContainer)Activator.CreateInstance(type);
+                throw new ArgumentNullException(nameof(assemblyPart));
             }
 
-            return null;
+            var featureAssembly = CompiledViewManfiest.GetFeatureAssembly(assemblyPart);
+            if (featureAssembly != null)
+            {
+                return featureAssembly.GetCustomAttributes<RazorViewAttribute>();
+            }
+
+            return Enumerable.Empty<RazorViewAttribute>();
         }
     }
 }

@@ -36,10 +36,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             // Arrange
             var part1 = new AssemblyPart(typeof(object).GetTypeInfo().Assembly);
             var part2 = new AssemblyPart(GetType().GetTypeInfo().Assembly);
-            var featureProvider = new TestableViewsFeatureProvider(new Dictionary<AssemblyPart, Type>
+            var featureProvider = new TestableViewsFeatureProvider(new Dictionary<AssemblyPart, IEnumerable<RazorViewAttribute>>
             {
-                { part1, typeof(ViewInfoContainer1) },
-                { part2, typeof(ViewInfoContainer2) },
+                {
+                    part1,
+                    new[]
+                    {
+                        new RazorViewAttribute("/Views/test/Index.cshtml", typeof(object)),
+                    }
+                },
+                {
+                    part2,
+                    new[]
+                    {
+                        new RazorViewAttribute("/Areas/Admin/Views/Index.cshtml", typeof(string)),
+                        new RazorViewAttribute("/Areas/Admin/Views/About.cshtml", typeof(int)),
+                    }
+                },
             });
 
             var applicationPartManager = new ApplicationPartManager();
@@ -109,40 +122,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 
         private class TestableViewsFeatureProvider : ViewsFeatureProvider
         {
-            private readonly Dictionary<AssemblyPart, Type> _containerLookup;
+            private readonly Dictionary<AssemblyPart, IEnumerable<RazorViewAttribute>> _attributeLookup;
 
-            public TestableViewsFeatureProvider(Dictionary<AssemblyPart, Type> containerLookup)
+            public TestableViewsFeatureProvider(Dictionary<AssemblyPart, IEnumerable<RazorViewAttribute>> attributeLookup)
             {
-                _containerLookup = containerLookup;
+                _attributeLookup = attributeLookup;
             }
 
-            protected override ViewInfoContainer GetManifest(AssemblyPart assemblyPart)
+            protected override IEnumerable<RazorViewAttribute> GetViewAttributes(AssemblyPart assemblyPart)
             {
-                var type = _containerLookup[assemblyPart];
-                return (ViewInfoContainer)Activator.CreateInstance(type);
-            }
-        }
-
-        private class ViewInfoContainer1 : ViewInfoContainer
-        {
-            public ViewInfoContainer1()
-                : base(new[]
-                {
-                    new ViewInfo("/Views/test/Index.cshtml", typeof(object))
-                })
-            {
-            }
-        }
-
-        private class ViewInfoContainer2 : ViewInfoContainer
-        {
-            public ViewInfoContainer2()
-                : base(new[]
-                {
-                    new ViewInfo("/Areas/Admin/Views/Index.cshtml", typeof(string)),
-                    new ViewInfo("/Areas/Admin/Views/About.cshtml", typeof(int))
-                })
-            {
+                return _attributeLookup[assemblyPart];
             }
         }
 

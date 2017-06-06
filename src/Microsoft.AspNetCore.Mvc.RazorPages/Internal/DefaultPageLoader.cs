@@ -28,12 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             var compileTask = Compiler.CompileAsync(actionDescriptor.RelativePath);
             var viewDescriptor = compileTask.GetAwaiter().GetResult();
-            var viewAttribute = viewDescriptor.ViewAttribute;
-
-            var pageAttribute = new RazorPageAttribute(
-                viewAttribute.Path,
-                viewAttribute.ViewType,
-                routeTemplate: null);
+            var pageAttribute = (RazorPageAttribute)viewDescriptor.ViewAttribute;
 
             return CreateDescriptor(actionDescriptor, pageAttribute);
         }
