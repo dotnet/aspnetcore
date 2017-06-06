@@ -34,15 +34,18 @@ repositories. The subfolders are built in dependency order.
 ## Verifying cross repo changes
 You can use the Universe repo to preemptively verify and prepare follow ups for your breaking changes:
 - Clone the Universe repo https://github.com/aspnet/Universe 
-- Add a branch attribute to the build\Repositories.props file to point to your branch in the repo you’re trying to verify. For instance,
-  `<Repository Include="HtmlAbstractions" Commit="" />`
-  becomes
-  `<Repository Include="HtmlAbstractions" Commit="" Branch=”prkrishn/breaking-changes” />`
-- Run from the root of Universe, 
-  `build.cmd /p:CompileOnly=true /p:ShallowClone=true /p:BuildGraphOf=HtmlAbstractions`
-  This should clone and compile all the repos against your breaking changes branch. If you’d like to additionally run tests in all your dependencies (this will take a while), remove the first parameter: 
-  `build.cmd /p:ShallowClone=true /p:BuildGraphOf=HtmlAbstractions`
-  The ShallowClone property speeds up git clone and is optional in both cases.
+- Add a branch attribute to the `build\Repositories.props` file to point to your branch in the repo you’re trying to verify. For instance,  
+  `<Repository Include="HtmlAbstractions" Commit="" />`  
+  becomes  
+  `<Repository Include="HtmlAbstractions" Commit="" Branch="prkrishn/breaking-changes" />`  
+  **Note**: This branch should have been pushed to the server already.
+- Run from the root of Universe  
+  `build.cmd /p:CompileOnly=true /p:ShallowClone=true /p:BuildGraphOf=HtmlAbstractions`  
+  
+  This should clone and compile all the repos against your breaking changes branch. If you’d like to additionally run tests in all your dependencies (this will take a while and also you could hit some flaky tests), remove the first parameter:  
+  `build.cmd /p:ShallowClone=true /p:BuildGraphOf=HtmlAbstractions`   
+  
+  The ShallowClone property speeds up git clone and is optional in both cases.  
 
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
