@@ -14,15 +14,13 @@ enum ConnectionState {
 export class Connection implements IConnection {
     private connectionState: ConnectionState;
     private url: string;
-    private queryString: string;
     private connectionId: string;
     private httpClient: IHttpClient;
     private transport: ITransport;
     private startPromise: Promise<void>;
 
-    constructor(url: string, queryString: string = "", options: ISignalROptions = {}) {
+    constructor(url: string, options: ISignalROptions = {}) {
         this.url = url;
-        this.queryString = queryString || "";
         this.httpClient = options.httpClient || new HttpClient();
         this.connectionState = ConnectionState.Initial;
     }
@@ -40,23 +38,19 @@ export class Connection implements IConnection {
 
     private async startInternal(transportType: TransportType | ITransport): Promise<void> {
         try {
-            var negotiateUrl = this.url + (this.queryString ? "?" + this.queryString : "");
-            this.connectionId = await this.httpClient.options(negotiateUrl);
+            this.connectionId = await this.httpClient.options(this.url);
 
             // the user tries to stop the the connection when it is being started
             if (this.connectionState == ConnectionState.Disconnected) {
                 return;
             }
 
-            if (this.queryString) {
-                this.queryString += "&";
-            }
-            this.queryString += `id=${this.connectionId}`;
+            this.url += (this.url.indexOf("?") == -1 ? "?" : "&") + `id=${this.connectionId}`;
 
             this.transport = this.createTransport(transportType);
             this.transport.onDataReceived = this.onDataReceived;
             this.transport.onClosed = e => this.stopConnection(true, e);
-            await this.transport.connect(this.url, this.queryString);
+            await this.transport.connect(this.url);
             // only change the state if we were connecting to not overwrite
             // the state if the connection is already marked as Disconnected
             this.changeState(ConnectionState.Connecting, ConnectionState.Connected);

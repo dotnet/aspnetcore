@@ -18,7 +18,7 @@ describe("Connection", () => {
             }
         } as ISignalROptions;
 
-        let connection = new Connection("http://tempuri.org", undefined, options);
+        let connection = new Connection("http://tempuri.org", options);
 
         try {
             await connection.start();
@@ -53,7 +53,7 @@ describe("Connection", () => {
             }
         } as ISignalROptions;
 
-        let connection = new Connection("http://tempuri.org", undefined, options);
+        let connection = new Connection("http://tempuri.org", options);
 
         try {
             await connection.start();
@@ -76,7 +76,7 @@ describe("Connection", () => {
             }
         } as ISignalROptions;
 
-        let connection = new Connection("http://tempuri.org", undefined, options);
+        let connection = new Connection("http://tempuri.org", options);
 
         try {
             // start will fail and transition the connection to the Disconnected state
@@ -111,7 +111,7 @@ describe("Connection", () => {
             }
         } as ISignalROptions;
 
-        var connection = new Connection("http://tempuri.org", undefined, options);
+        var connection = new Connection("http://tempuri.org", options);
 
         try {
             await connection.start();
@@ -141,10 +141,10 @@ describe("Connection", () => {
             }
         } as ISignalROptions;
 
-        let connectQueryString: string;
+        let connectUrl: string;
         let fakeTransport: ITransport = {
-            connect(url: string, queryString: string): Promise<void> {
-                connectQueryString = queryString;
+            connect(url: string): Promise<void> {
+                connectUrl = url;
                 return Promise.reject("");
             },
             send(data: any): Promise<void> {
@@ -155,7 +155,7 @@ describe("Connection", () => {
             onClosed: undefined
         }
 
-        var connection = new Connection("http://tempuri.org", "q=myData", options);
+        var connection = new Connection("http://tempuri.org?q=myData", options);
 
         try {
             await connection.start(fakeTransport);
@@ -165,7 +165,7 @@ describe("Connection", () => {
         catch (e) {
         }
 
-        expect(connectQueryString).toBe("q=myData&id=42");
+        expect(connectUrl).toBe("http://tempuri.org?q=myData&id=42");
         done();
     });
 });

@@ -8,7 +8,7 @@ export enum TransportType {
 }
 
 export interface ITransport {
-    connect(url: string, queryString: string): Promise<void>;
+    connect(url: string): Promise<void>;
     send(data: any): Promise<void>;
     stop(): void;
     onDataReceived: DataReceived;
@@ -21,12 +21,11 @@ export class WebSocketTransport implements ITransport {
     connect(url: string, queryString: string = ""): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
-            let connectUrl = url + (queryString ? "?" + queryString : "");
 
-            let webSocket = new WebSocket(connectUrl);
+            let webSocket = new WebSocket(url);
 
             webSocket.onopen = (event: Event) => {
-                console.log(`WebSocket connected to ${connectUrl}`);
+                console.log(`WebSocket connected to ${url}`);
                 this.webSocket = webSocket;
                 resolve();
             };
@@ -80,24 +79,20 @@ export class ServerSentEventsTransport implements ITransport {
     private eventSource: EventSource;
     private url: string;
     private queryString: string;
-    private fullUrl: string;
     private httpClient: IHttpClient;
 
     constructor(httpClient: IHttpClient) {
         this.httpClient = httpClient;
     }
 
-    connect(url: string, queryString: string): Promise<void> {
+    connect(url: string): Promise<void> {
         if (typeof (EventSource) === "undefined") {
             Promise.reject("EventSource not supported by the browser.")
         }
-
-        this.queryString = queryString;
         this.url = url;
-        this.fullUrl = url + (queryString ? "?" + queryString : "");
 
         return new Promise<void>((resolve, reject) => {
-            let eventSource = new EventSource(this.fullUrl);
+            let eventSource = new EventSource(this.url);
 
             try {
                 eventSource.onmessage = (e: MessageEvent) => {
@@ -124,7 +119,7 @@ export class ServerSentEventsTransport implements ITransport {
                 }
 
                 eventSource.onopen = () => {
-                    console.log(`SSE connected to ${this.fullUrl}`);
+                    console.log(`SSE connected to ${this.url}`);
                     this.eventSource = eventSource;
                     resolve();
                 }
@@ -136,7 +131,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, this.fullUrl, data);
+        return send(this.httpClient, this.url, data);
     }
 
     stop(): void {
@@ -152,8 +147,6 @@ export class ServerSentEventsTransport implements ITransport {
 
 export class LongPollingTransport implements ITransport {
     private url: string;
-    private queryString: string;
-    private fullUrl: string;
     private httpClient: IHttpClient;
     private pollXhr: XMLHttpRequest;
     private shouldPoll: boolean;
@@ -162,12 +155,10 @@ export class LongPollingTransport implements ITransport {
         this.httpClient = httpClient;
     }
 
-    connect(url: string, queryString: string): Promise<void> {
+    connect(url: string): Promise<void> {
         this.url = url;
-        this.queryString = queryString;
         this.shouldPoll = true;
-        this.fullUrl = url + (queryString ? "?" + queryString : "");
-        this.poll(this.fullUrl);
+        this.poll(this.url);
         return Promise.resolve();
     }
 
@@ -224,7 +215,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, this.fullUrl, data);
+        return send(this.httpClient, this.url, data);
     }
 
     stop(): void {
