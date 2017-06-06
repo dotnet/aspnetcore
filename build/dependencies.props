@@ -3,7 +3,6 @@
     <AspNetCoreIntegrationTestingVersion>0.4.0-*</AspNetCoreIntegrationTestingVersion>
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
-    <CoreFxVersion>4.3.0</CoreFxVersion>
     <GoogleProtobufVersion>3.1.0</GoogleProtobufVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
@@ -16,7 +15,7 @@
     <RxVersion>3.1.1</RxVersion>
 
     <!--
-      TODO remove  in next update of xunit
+      TODO remove in next update of xunit
       Prevent bug in xunit.analyzer from failing the build.
       Should be fixed by https://github.com/xunit/xunit.analyzers/pull/52
     -->
