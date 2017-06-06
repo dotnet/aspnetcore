@@ -81,7 +81,7 @@ function addUserOnline(user) {
         return;
     }
     var userLi = document.createElement('li');
-    userLi.innerText = `user.Name (${user.ConnectionId})`;
+    userLi.innerText = `${user.Name} (${user.ConnectionId})`;
     userLi.id = user.ConnectionId;
     document.getElementById('users').appendChild(userLi);
 }

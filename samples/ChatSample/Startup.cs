@@ -8,9 +8,7 @@ using ChatSample.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Redis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,7 +58,7 @@ namespace ChatSample
                  //.AddRedis()
                 ;
             services.AddAuthentication();
-
+            services.AddCookieAuthentication();
 
             services.AddSingleton(typeof(DefaultHubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultPresenceHublifetimeMenager<>));
@@ -87,9 +85,6 @@ namespace ChatSample
             app.UseStaticFiles();
 
             app.UseAuthentication();
-
-            // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
-            //app.UseCookieAuthentication();
 
             app.UseSignalR(routes =>
             {

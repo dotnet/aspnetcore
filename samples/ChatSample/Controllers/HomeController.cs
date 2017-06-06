@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 
 namespace ChatSample.Controllers
 {
     public class HomeController : Controller
     {
-        [Authorize]
         public IActionResult Index()
         {
             return View();

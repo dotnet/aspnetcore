@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
 {
     public static class AuthorizeHelper
     {
-        public static async Task<bool> AuthorizeAsync(HttpContext context, IList<string> policies)
+        public static async Task<bool> AuthorizeAsync(HttpContext context, IList<IAuthorizeData> policies)
         {
             if (policies.Count == 0)
             {
@@ -21,14 +21,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             }
 
             var policyProvider = context.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>();
-            var authorizeData = new List<IAuthorizeData>();
 
-            foreach (var policy in policies)
-            {
-                authorizeData.Add(new AuthorizeAttribute(policy));
-            }
-
-            var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, authorizeData);
+            var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, policies);
 
             var policyEvaluator = context.RequestServices.GetRequiredService<IPolicyEvaluator>();
 

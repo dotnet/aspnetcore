@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
@@ -560,7 +561,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             builder.UseEndPoint<TestEndPoint>();
             var app = builder.Build();
             var options = new HttpSocketOptions();
-            options.AuthorizationPolicyNames.Add("test");
+            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
             // would hang if EndPoint was running
             await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
@@ -598,7 +599,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             builder.UseEndPoint<TestEndPoint>();
             var app = builder.Build();
             var options = new HttpSocketOptions();
-            options.AuthorizationPolicyNames.Add("test");
+            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
             context.User = new ClaimsPrincipal(new ClaimsIdentity("authenticated"));
 
@@ -642,7 +643,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             builder.UseEndPoint<TestEndPoint>();
             var app = builder.Build();
             var options = new HttpSocketOptions();
-            options.AuthorizationPolicyNames.Add("test");
+            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
             // "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
@@ -692,7 +693,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             builder.UseEndPoint<TestEndPoint>();
             var app = builder.Build();
             var options = new HttpSocketOptions();
-            options.AuthorizationPolicyNames.Add("test");
+            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
             // "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
@@ -741,7 +742,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             builder.UseEndPoint<TestEndPoint>();
             var app = builder.Build();
             var options = new HttpSocketOptions();
-            options.AuthorizationPolicyNames.Add("test");
+            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
             // "authorize" user
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));

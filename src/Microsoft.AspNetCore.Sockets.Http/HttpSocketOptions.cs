@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.AspNetCore.Sockets
 {
     public class HttpSocketOptions
     {
-        public IList<string> AuthorizationPolicyNames { get; } = new List<string>();
+        public IList<IAuthorizeData> AuthorizationData { get; } = new List<IAuthorizeData>();
 
         public TransportType Transports { get; set; } = TransportType.All;
 

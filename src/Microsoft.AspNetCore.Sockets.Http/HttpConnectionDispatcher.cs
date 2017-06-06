@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         public async Task ExecuteAsync(HttpContext context, HttpSocketOptions options, SocketDelegate socketDelegate)
         {
-            if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationPolicyNames))
+            if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
             {
                 return;
             }
