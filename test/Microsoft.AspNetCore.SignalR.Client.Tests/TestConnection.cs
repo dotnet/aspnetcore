@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return _receivedMessages.Out.WriteAsync(bytes);
         }
 
-        private byte[] FormatMessageToArray(byte[] message, int bufferSize = 1024)
+        private byte[] FormatMessageToArray(byte[] message)
         {
             var output = new ArrayOutput(1024);
             Assert.True(TextMessageFormatter.TryWriteMessage(message, output));

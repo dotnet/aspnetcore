@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             return Encoding.UTF8.GetString(FormatMessageToArray(data));
         }
 
-        private static byte[] FormatMessageToArray(byte[] message, int bufferSize = 1024)
+        private static byte[] FormatMessageToArray(byte[] message)
         {
             var output = new ArrayOutput(1024);
             Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
