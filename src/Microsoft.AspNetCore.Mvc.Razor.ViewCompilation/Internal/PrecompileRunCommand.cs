@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 
                 if (PageDirectiveFeature.TryGetPageDirective(fileInfo.CreateReadStream, out var template))
                 {
-                    compilationInfo.RouteTemplate = template;
+                    compilationInfo.RouteTemplate = template ?? string.Empty;
                 }
 
                 results[i] = compilationInfo;
