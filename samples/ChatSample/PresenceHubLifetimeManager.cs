@@ -12,20 +12,20 @@ using System.Linq;
 
 namespace ChatSample
 {
-    public class DefaultPresenceHublifetimeMenager<THub> : PresenceHubLifetimeManager<THub, DefaultHubLifetimeManager<THub>>
+    public class DefaultPresenceHublifetimeManager<THub> : PresenceHubLifetimeManager<THub, DefaultHubLifetimeManager<THub>>
         where THub : HubWithPresence
     {
-        public DefaultPresenceHublifetimeMenager(IUserTracker<THub> userTracker, IServiceScopeFactory serviceScopeFactory,
+        public DefaultPresenceHublifetimeManager(IUserTracker<THub> userTracker, IServiceScopeFactory serviceScopeFactory,
             ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
             : base(userTracker, serviceScopeFactory, loggerFactory, serviceProvider)
         {
         }
     }
 
-    public class RedisPresenceHublifetimeMenager<THub> : PresenceHubLifetimeManager<THub, RedisHubLifetimeManager<THub>>
+    public class RedisPresenceHublifetimeManager<THub> : PresenceHubLifetimeManager<THub, RedisHubLifetimeManager<THub>>
     where THub : HubWithPresence
     {
-        public RedisPresenceHublifetimeMenager(IUserTracker<THub> userTracker, IServiceScopeFactory serviceScopeFactory,
+        public RedisPresenceHublifetimeManager(IUserTracker<THub> userTracker, IServiceScopeFactory serviceScopeFactory,
             ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
             : base(userTracker, serviceScopeFactory, loggerFactory, serviceProvider)
         {

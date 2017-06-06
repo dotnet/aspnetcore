@@ -61,11 +61,11 @@ namespace ChatSample
             services.AddCookieAuthentication();
 
             services.AddSingleton(typeof(DefaultHubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
-            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultPresenceHublifetimeMenager<>));
+            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultPresenceHublifetimeManager<>));
             services.AddSingleton(typeof(IUserTracker<>), typeof(InMemoryUserTracker<>));
 
             //services.AddSingleton(typeof(RedisHubLifetimeManager<>), typeof(RedisHubLifetimeManager<>));
-            //services.AddSingleton(typeof(HubLifetimeManager<>), typeof(RedisPresenceHublifetimeMenager<>));
+            //services.AddSingleton(typeof(HubLifetimeManager<>), typeof(RedisPresenceHublifetimeManager<>));
             //services.AddSingleton(typeof(IUserTracker<>), typeof(RedisUserTracker<>));
         }
 
