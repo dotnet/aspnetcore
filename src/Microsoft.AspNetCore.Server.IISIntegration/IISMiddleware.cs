@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
 
             var bodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
-            if (bodySizeFeature != null)
+            if (bodySizeFeature != null && !bodySizeFeature.IsReadOnly)
             {
                 // IIS already limits this, no need to do it twice.
                 bodySizeFeature.MaxRequestBodySize = null;
