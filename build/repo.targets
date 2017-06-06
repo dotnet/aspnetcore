@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <NuGetPublishVolatileFeed>https://dotnet.myget.org/F/aspnetcore-volatile-release/api/v2/package</NuGetPublishVolatileFeed>
+    <NuGetPublishVolatileFeed>https://dotnet.myget.org/F/aspnetcore-volatile-dev/api/v2/package</NuGetPublishVolatileFeed>
 
     <_BuildGraphFile>$(BuildDir)BuildGraph.proj</_BuildGraphFile>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
