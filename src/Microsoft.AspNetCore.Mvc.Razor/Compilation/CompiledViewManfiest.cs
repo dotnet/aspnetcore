@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
