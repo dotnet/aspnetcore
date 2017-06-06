@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.AspNetCore.Sockets.Tests.Internal;
 
@@ -11,9 +10,10 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
     public class MessageParserBenchmark
     {
         private static readonly Random Random = new Random();
-        private readonly MessageParser _parser = new MessageParser();
-        private ReadOnlyBytes _input;
-        private byte[] _buffer;
+        private readonly TextMessageParser _textMessageParser = new TextMessageParser();
+        private readonly BinaryMessageParser _binaryMessageParser = new BinaryMessageParser();
+        private ReadOnlyBytes _binaryInput;
+        private ReadOnlyBytes _textInput;
 
         [Params(32, 64)]
         public int ChunkSize { get; set; }
@@ -21,28 +21,45 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Params(64, 128)]
         public int MessageLength { get; set; }
 
-        [Params(MessageFormat.Text, MessageFormat.Binary)]
-        public MessageFormat Format { get; set; }
-
         [Setup]
         public void Setup()
         {
-            _buffer = new byte[MessageLength];
-            Random.NextBytes(_buffer);
-            var message = new Message(_buffer, MessageType.Binary);
+            var buffer = new byte[MessageLength];
+            Random.NextBytes(buffer);
             var output = new ArrayOutput(MessageLength + 32);
-            if (!MessageFormatter.TryWriteMessage(message, output, Format))
+            if (!BinaryMessageFormatter.TryWriteMessage(buffer, output))
             {
                 throw new InvalidOperationException("Failed to format message");
             }
-            _input = output.ToArray().ToChunkedReadOnlyBytes(ChunkSize);
+
+            _binaryInput = output.ToArray().ToChunkedReadOnlyBytes(ChunkSize);
+
+            buffer = new byte[MessageLength];
+            Random.NextBytes(buffer);
+            output = new ArrayOutput(MessageLength + 32);
+            if (!TextMessageFormatter.TryWriteMessage(buffer, output))
+            {
+                throw new InvalidOperationException("Failed to format message");
+            }
+
+            _textInput = output.ToArray().ToChunkedReadOnlyBytes(ChunkSize);
         }
 
         [Benchmark]
         public void SingleBinaryMessage()
         {
-            var reader = new BytesReader(_input);
-            if (!_parser.TryParseMessage(ref reader, Format, out _))
+            var reader = new BytesReader(_binaryInput);
+            if (!_binaryMessageParser.TryParseMessage(ref reader, out _))
+            {
+                throw new InvalidOperationException("Failed to parse");
+            }
+        }
+
+        [Benchmark]
+        public void SingleTextMessage()
+        {
+            var reader = new BytesReader(_textInput);
+            if (!_textMessageParser.TryParseMessage(ref reader, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
             }

@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
-using Microsoft.AspNetCore.Sockets.Tests;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
@@ -14,37 +13,19 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
     public class TextMessageParserTests
     {
         [Theory]
-        [InlineData(0, "0:T:;", MessageType.Text, "")]
-        [InlineData(0, "3:T:ABC;", MessageType.Text, "ABC")]
-        [InlineData(0, "11:T:A\nR\rC\r\n;DEF;", MessageType.Text, "A\nR\rC\r\n;DEF")]
-        [InlineData(4, "12:T:Hello, World;", MessageType.Text, "Hello, World")]
-        public void ReadTextMessage(int chunkSize, string encoded, MessageType messageType, string payload)
+        [InlineData(0, "0:;", "")]
+        [InlineData(0, "3:ABC;", "ABC")]
+        [InlineData(0, "11:A\nR\rC\r\n;DEF;", "A\nR\rC\r\n;DEF")]
+        [InlineData(4, "12:Hello, World;", "Hello, World")]
+        public void ReadTextMessage(int chunkSize, string encoded, string payload)
         {
-            var parser = new MessageParser();
+            var parser = new TextMessageParser();
             var buffer = Encoding.UTF8.GetBytes(encoded);
             var reader = new BytesReader(buffer.ToChunkedReadOnlyBytes(chunkSize));
 
-            Assert.True(parser.TryParseMessage(ref reader, MessageFormat.Text, out var message));
+            Assert.True(parser.TryParseMessage(ref reader, out var message));
             Assert.Equal(reader.Index, buffer.Length);
-
-            MessageTestUtils.AssertMessage(message, messageType, payload);
-        }
-
-        [Theory]
-        [InlineData("0:B:;", new byte[0])]
-        [InlineData("8:B:q83vEg==;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
-        [InlineData("8:B:q83vEjQ=;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12, 0x34 })]
-        [InlineData("8:B:q83vEjRW;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56 })]
-        public void ReadBinaryMessage(string encoded, byte[] payload)
-        {
-            var parser = new MessageParser();
-            var buffer = Encoding.UTF8.GetBytes(encoded);
-            var reader = new BytesReader(buffer);
-
-            Assert.True(parser.TryParseMessage(ref reader, MessageFormat.Text, out var message));
-            Assert.Equal(reader.Index, buffer.Length);
-
-            MessageTestUtils.AssertMessage(message, MessageType.Binary, payload);
+            Assert.Equal(Encoding.UTF8.GetBytes(payload), message.ToArray());
         }
 
         [Theory]
@@ -53,8 +34,8 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [InlineData(8)]
         public void ReadMultipleMessages(int chunkSize)
         {
-            const string encoded = "0:B:;14:T:Hello,\r\nWorld!;";
-            var parser = new MessageParser();
+            const string encoded = "0:;14:Hello,\r\nWorld!;";
+            var parser = new TextMessageParser();
             var data = Encoding.UTF8.GetBytes(encoded);
             var buffer = chunkSize > 0 ?
                 data.ToChunkedReadOnlyBytes(chunkSize) :
@@ -62,17 +43,17 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
 
             var reader = new BytesReader(buffer);
 
-            var messages = new List<Message>();
-            while (parser.TryParseMessage(ref reader, MessageFormat.Text, out var message))
+            var messages = new List<byte[]>();
+            while (parser.TryParseMessage(ref reader, out var message))
             {
-                messages.Add(message);
+                messages.Add(message.ToArray());
             }
 
             Assert.Equal(reader.Index, Encoding.UTF8.GetByteCount(encoded));
 
             Assert.Equal(2, messages.Count);
-            MessageTestUtils.AssertMessage(messages[0], MessageType.Binary, new byte[0]);
-            MessageTestUtils.AssertMessage(messages[1], MessageType.Text, "Hello,\r\nWorld!");
+            Assert.Equal(new byte[0], messages[0]);
+            Assert.Equal(Encoding.UTF8.GetBytes("Hello,\r\nWorld!"), messages[1]);
         }
 
         [Theory]
@@ -81,45 +62,41 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [InlineData("1230450945")]
         [InlineData("1:")]
         [InlineData("10")]
-        [InlineData("5:T:A")]
-        [InlineData("5:T:ABCDE")]
+        [InlineData("5:A")]
+        [InlineData("5:ABCDE")]
         public void ReadIncompleteMessages(string encoded)
         {
-            var parser = new MessageParser();
+            var parser = new TextMessageParser();
             var buffer = Encoding.UTF8.GetBytes(encoded);
             var reader = new BytesReader(buffer);
-            Assert.False(parser.TryParseMessage(ref reader, MessageFormat.Text, out _));
+            Assert.False(parser.TryParseMessage(ref reader, out _));
         }
 
         [Theory]
         [InlineData("X:", "Invalid length: 'X'")]
-        [InlineData("5:X:ABCDEF", "Unknown message type: 'X'")]
-        [InlineData("1:asdf", "Unknown message type: 'a'")]
-        [InlineData("1::", "Unknown message type: ':'")]
-        [InlineData("1:AB:", "Unknown message type: 'A'")]
-        [InlineData("1:TA", "Missing delimiter ':' after type")]
-        [InlineData("1029348109238412903849023841290834901283409128349018239048102394:X:ABCDEF", "Invalid length: '1029348109238412903849023841290834901283409128349018239048102394'")]
+        [InlineData("1:asdf", "Missing delimiter ';' after payload")]
+        [InlineData("1029348109238412903849023841290834901283409128349018239048102394:ABCDEF", "Invalid length: '1029348109238412903849023841290834901283409128349018239048102394'")]
         [InlineData("12ab34:", "Invalid length: '12ab34'")]
-        [InlineData("5:T:ABCDEF", "Missing delimiter ';' after payload")]
+        [InlineData("5:ABCDEF", "Missing delimiter ';' after payload")]
         public void ReadInvalidMessages(string encoded, string expectedMessage)
         {
-            var parser = new MessageParser();
+            var parser = new TextMessageParser();
             var buffer = Encoding.UTF8.GetBytes(encoded);
             var reader = new BytesReader(buffer);
-            var ex = Assert.Throws<FormatException>(() => parser.TryParseMessage(ref reader, MessageFormat.Text, out _));
+            var ex = Assert.Throws<FormatException>(() => parser.TryParseMessage(ref reader, out _));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Fact]
         public void ReadInvalidEncodedMessage()
         {
-            var parser = new MessageParser();
+            var parser = new TextMessageParser();
 
             // Invalid because first character is a UTF-8 "continuation" character
             // We need to include the ':' so that
             var buffer = new byte[] { 0x48, 0x65, 0x80, 0x6C, 0x6F, (byte)':' };
             var reader = new BytesReader(buffer);
-            var ex = Assert.Throws<FormatException>(() => parser.TryParseMessage(ref reader, MessageFormat.Text, out _));
+            var ex = Assert.Throws<FormatException>(() => parser.TryParseMessage(ref reader, out _));
             Assert.Equal("Invalid length", ex.Message);
         }
     }

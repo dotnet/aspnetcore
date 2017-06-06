@@ -10,7 +10,9 @@ using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.Sockets.Tests.Internal;
 using Newtonsoft.Json;
+using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -79,9 +81,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public Task ReceiveJsonMessage(object jsonObject)
         {
             var json = JsonConvert.SerializeObject(jsonObject, Formatting.None);
-            var bytes = Encoding.UTF8.GetBytes($"{json.Length}:T:{json};");
+            var bytes = FormatMessageToArray(Encoding.UTF8.GetBytes(json));
 
             return _receivedMessages.Out.WriteAsync(bytes);
+        }
+
+        private byte[] FormatMessageToArray(byte[] message, int bufferSize = 1024)
+        {
+            var output = new ArrayOutput(1024);
+            Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
+            return output.ToArray();
         }
 
         private async Task ReceiveLoopAsync(CancellationToken token)

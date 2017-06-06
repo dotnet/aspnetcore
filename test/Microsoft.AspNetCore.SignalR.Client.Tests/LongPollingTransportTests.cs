@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -11,10 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Internal;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -227,7 +224,7 @@ namespace Microsoft.AspNetCore.Client.Tests
                     if (firstCall)
                     {
                         firstCall = false;
-                        return ResponseUtils.CreateResponse(HttpStatusCode.OK, ContentTypes.BinaryContentType, message1Payload);
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK, message1Payload);
                     }
 
                     return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
@@ -260,7 +257,6 @@ namespace Microsoft.AspNetCore.Client.Tests
 
                     // Check the provided request
                     Assert.Equal(2, sentRequests.Count);
-                    Assert.Contains(ContentTypes.BinaryContentType, sentRequests[0].Headers.Accept.FirstOrDefault()?.ToString());
 
                     // Check the messages received
                     Assert.Equal(1, messages.Count);

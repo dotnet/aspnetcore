@@ -4,24 +4,22 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.Client.Tests
 {
     internal static class ResponseUtils
     {
         public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode) =>
-            CreateResponse(statusCode, ContentTypes.TextContentType, string.Empty);
+            CreateResponse(statusCode, string.Empty);
 
-        public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode, string contentType, string payload) =>
-            CreateResponse(statusCode, contentType, new StringContent(payload));
+        public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode, string payload) =>
+            CreateResponse(statusCode, new StringContent(payload));
 
-        public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode, string contentType, byte[] payload) =>
-            CreateResponse(statusCode, contentType, new ByteArrayContent(payload));
+        public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode, byte[] payload) =>
+            CreateResponse(statusCode, new ByteArrayContent(payload));
 
-        public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode, string contentType, HttpContent payload)
+        public static HttpResponseMessage CreateResponse(HttpStatusCode statusCode, HttpContent payload)
         {
-            payload.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
             return new HttpResponseMessage(statusCode)
             {
                 Content = payload

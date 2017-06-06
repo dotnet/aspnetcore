@@ -328,31 +328,24 @@ JSON payloads are wrapped in an outer message framing to support batching over v
 The body will be formatted as below and encoded in UTF-8. Identifiers in square brackets `[]` indicate fields defined below, and parenthesis `()` indicate grouping.
 
 ```
-([Length]:[Type]:[Body];)([Length]:[Type]:[Body];)... continues until end of the connection ...
+([Length]:[Body];)([Length]:[Body];)... continues until end of the connection ...
 ```
 
 * `[Length]` - Length of the `[Body]` field in bytes, specified as UTF-8 digits (`0`-`9`, terminated by `:`). If the body is a binary frame, this length indicates the number of Base64-encoded characters, not the number of bytes in the final decoded message!
-* `[Type]` - A single-byte UTF-8 character indicating the type of the frame, see the list of frame Types below
 * `[Body]` - The body of the message, the content of which depends upon the value of `[Type]`
 
-The following values are valid for `[Type]`:
-
-* `T` - Indicates a text frame, the `[Body]` contains UTF-8 encoded text data.
-* `B` - Indicates a binary frame, the `[Body]` contains Base64 encoded binary data.
-
-Note: If there is no `[Body]` for a frame, there does still need to be a `:` and `;` delimiting the body. So, for example, the following is an encoding of a single text frame `A`: `T1:T:A;`
+Note: If there is no `[Body]` for a frame, there does still need to be a `:` and `;` delimiting the body. So, for example, the following is an encoding of a single text frame `A`: `1:A;`
 
 For example, when sending the following frames (`\n` indicates the actual Line Feed character, not an escape sequence):
 
-* Type=`Text`, "Hello\nWorld"
-* Type=`Binary`, `0x01 0x02`
-* Type=`Text`, `<<no body>>`
+* "Hello\nWorld"
+* `<<no body>>`
 
 The encoding will be as follows
 
 ```
-T11:T:Hello
-World;4:B:AQI=;0:T:;
+11:Hello
+World;0:;
 ```
 
 Note that the final frame still ends with the `;` terminator, and that since the body may contain `;`, newlines, etc., the length is specified in order to know exactly where the body ends.
@@ -456,27 +449,21 @@ Protobuf payloads are wrapped in an outer message framing described below.
 #### Binary encoding
 
 ```
-([Length][Type][Body])([Length][Type][Body])... continues until end of the connection ...
+([Length][Body])([Length][Body])... continues until end of the connection ...
 ```
 
 * `[Length]` - A 64-bit integer in Network Byte Order (Big-endian) representing the length of the body in bytes
-* `[Type]` - An 8-bit integer indicating the type of the message.
-    * `0x00` => `Text` - `[Body]` is UTF-8 encoded text data
-    * `0x01` => `Binary` - `[Body]` is raw binary data
-    * All other values are reserved and must **not** be used. An endpoint may reject a frame using any other value and terminate the connection.
-* `[Body]` - The body of the message, exactly `[Length]` bytes in length. `Text` frames are always encoded in UTF-8.
+* `[Body]` - The body of the message, exactly `[Length]` bytes in length.
 
 For example, when sending the following frames (`\n` indicates the actual Line Feed character, not an escape sequence):
 
-* Type=`Text`, "Hello\nWorld"
-* Type=`Binary`, `0x01 0x02`
+* "Hello\nWorld"
+* `0x01 0x02`
 
 The encoding will be as follows, as a list of binary digits in hex (text in parentheses `()` are comments). Whitespace and newlines are irrelevant and for illustration only.
 ```
 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x0B                (start of frame; 64-bit integer value: 11)
-0x00                                                   (Type = Text)
 0x68 0x65 0x6C 0x6C 0x6F 0x0A 0x77 0x6F 0x72 0x6C 0x64 (UTF-8 encoding of 'Hello\nWorld')
 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x02                (start of frame; 64-bit integer value: 2)
-0x01                                                   (Type = Binary)
 0x01 0x02                                              (body)
 ```

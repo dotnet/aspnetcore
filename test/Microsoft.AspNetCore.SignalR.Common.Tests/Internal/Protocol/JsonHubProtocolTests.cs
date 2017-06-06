@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.Sockets.Tests.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -134,10 +136,16 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         private static string Frame(string input)
         {
-            input = $"{input.Length}:T:{input};";
-            return input;
+            var data = Encoding.UTF8.GetBytes(input);
+            return Encoding.UTF8.GetString(FormatMessageToArray(data));
         }
 
+        private static byte[] FormatMessageToArray(byte[] message, int bufferSize = 1024)
+        {
+            var output = new ArrayOutput(1024);
+            Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
+            return output.ToArray();
+        }
 
         private class CustomObject : IEquatable<CustomObject>
         {

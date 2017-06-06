@@ -216,7 +216,7 @@ class TestConnection implements IConnection {
     };
 
     send(data: any): Promise<void> {
-        var invocation = TextMessageFormat.parse(data)[0].content.toString();
+        var invocation = TextMessageFormat.parse(data)[0];
         this.lastInvocationId = JSON.parse(invocation).invocationId;
         if (this.sentData) {
             this.sentData.push(invocation);
@@ -235,7 +235,7 @@ class TestConnection implements IConnection {
 
     receive(data: any): void {
         var payload = JSON.stringify(data);
-        this.onDataReceived(`${payload.length}:T:${payload};`);
+        this.onDataReceived(TextMessageFormat.write(payload));
     }
 
     onDataReceived: DataReceived;

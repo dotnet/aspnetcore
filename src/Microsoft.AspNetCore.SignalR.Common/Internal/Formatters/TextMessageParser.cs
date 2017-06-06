@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Binary;
 using System.Buffers;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
-    internal class TextMessageParser
+    public class TextMessageParser
     {
         private ParserState _state;
 
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         /// Attempts to parse a message from the buffer. Returns 'false' if there is not enough data to complete a message. Throws an
         /// exception if there is a format error in the provided data.
         /// </summary>
-        public bool TryParseMessage(ref BytesReader buffer, out Message message)
+        public bool TryParseMessage(ref BytesReader buffer, out ReadOnlyBuffer<byte> payload)
         {
             while (buffer.Unread.Length > 0)
             {
@@ -30,34 +29,17 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     case ParsePhase.ReadingLength:
                         if (!TryReadLength(ref buffer))
                         {
-                            message = default(Message);
+                            payload = default(ReadOnlyBuffer<byte>);
                             return false;
                         }
 
                         break;
                     case ParsePhase.LengthComplete:
-                        if (!TryReadDelimiter(ref buffer, TextMessageFormatter.FieldDelimiter, ParsePhase.ReadingType, "length"))
+                        if (!TryReadDelimiter(ref buffer, TextMessageFormatter.FieldDelimiter, ParsePhase.ReadingPayload, "length"))
                         {
-                            message = default(Message);
+                            payload = default(ReadOnlyBuffer<byte>);
                             return false;
                         }
-
-                        break;
-                    case ParsePhase.ReadingType:
-                        if (!TryReadType(ref buffer))
-                        {
-                            message = default(Message);
-                            return false;
-                        }
-
-                        break;
-                    case ParsePhase.TypeComplete:
-                        if (!TryReadDelimiter(ref buffer, TextMessageFormatter.FieldDelimiter, ParsePhase.ReadingPayload, "type"))
-                        {
-                            message = default(Message);
-                            return false;
-                        }
-
                         break;
                     case ParsePhase.ReadingPayload:
                         ReadPayload(ref buffer);
@@ -66,12 +48,12 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     case ParsePhase.PayloadComplete:
                         if (!TryReadDelimiter(ref buffer, TextMessageFormatter.MessageDelimiter, ParsePhase.ReadingPayload, "payload"))
                         {
-                            message = default(Message);
+                            payload = default(ReadOnlyBuffer<byte>);
                             return false;
                         }
 
                         // We're done!
-                        message = new Message(_state.Payload, _state.MessageType);
+                        payload = _state.Payload;
                         Reset();
                         return true;
                     default:
@@ -79,7 +61,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 }
             }
 
-            message = default(Message);
+            payload = default(ReadOnlyBuffer<byte>);
             return false;
         }
 
@@ -129,23 +111,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             return true;
         }
 
-        private bool TryReadType(ref BytesReader buffer)
-        {
-            if (buffer.Unread.Length == 0)
-            {
-                return false;
-            }
-
-            if (!TryParseType(buffer.Unread[0], out _state.MessageType))
-            {
-                throw new FormatException($"Unknown message type: '{(char)buffer.Unread[0]}'");
-            }
-
-            buffer.Advance(1);
-            _state.Phase = ParsePhase.TypeComplete;
-            return true;
-        }
-
         private void ReadPayload(ref BytesReader buffer)
         {
             if (_state.Payload == null)
@@ -155,11 +120,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
             if (_state.Read == _state.Length)
             {
-                if (_state.MessageType == MessageType.Binary)
-                {
-                    _state.Payload = MessageFormatUtils.DecodePayload(_state.Payload);
-                }
-
                 _state.Phase = ParsePhase.PayloadComplete;
             }
             else
@@ -172,27 +132,10 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             }
         }
 
-        private static bool TryParseType(byte type, out MessageType messageType)
-        {
-            switch ((char)type)
-            {
-                case TextMessageFormatter.TextTypeFlag:
-                    messageType = MessageType.Text;
-                    return true;
-                case TextMessageFormatter.BinaryTypeFlag:
-                    messageType = MessageType.Binary;
-                    return true;
-                default:
-                    messageType = default(MessageType);
-                    return false;
-            }
-        }
-
         private struct ParserState
         {
             public ParsePhase Phase;
             public int Length;
-            public MessageType MessageType;
             public byte[] Payload;
             public int Read;
         }
@@ -201,8 +144,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         {
             ReadingLength = 0,
             LengthComplete,
-            ReadingType,
-            TypeComplete,
             ReadingPayload,
             PayloadComplete
         }

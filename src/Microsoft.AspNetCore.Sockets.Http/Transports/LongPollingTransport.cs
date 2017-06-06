@@ -35,11 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                     return;
                 }
 
-                var headers = context.Request.GetTypedHeaders();
-                var messageFormat = headers.Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue(ContentTypes.BinaryContentType)) == true ?
-                MessageFormat.Binary :
-                MessageFormat.Text;
-                context.Response.ContentType = ContentTypes.GetContentType(messageFormat);
+                // REVIEW: What should the content type be?
 
                 var contentLength = 0;
                 var buffers = new List<byte[]>();

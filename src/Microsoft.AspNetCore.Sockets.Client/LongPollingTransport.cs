@@ -83,7 +83,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
                     request.Headers.UserAgent.Add(SendUtils.DefaultUserAgentHeader);
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(ContentTypes.BinaryContentType));
 
                     var response = await _httpClient.SendAsync(request, cancellationToken);
                     response.EnsureSuccessStatusCode();

@@ -72,9 +72,9 @@ export class HubConnection {
         let messages = Formatters.TextMessageFormat.parse(data);
 
         for (var i = 0; i < messages.length; ++i) {
-            console.log(`Received message: ${messages[i].content}`);
+            console.log(`Received message: ${messages[i]}`);
 
-            var message = JSON.parse(messages[i].content.toString());
+            var message = JSON.parse(messages[i]);
             switch (message.type) {
                 case MessageType.Invocation:
                     this.InvokeClientMethod(<InvocationMessage>message);
@@ -159,9 +159,8 @@ export class HubConnection {
             }
         });
 
-        //TODO: separate conversion to enable different data formats
-        let data = JSON.stringify(invocationDescriptor);
-        let message = `${data.length}:T:${data};`;
+        // TODO: separate conversion to enable different data formats
+        let message = this.framePayload(invocationDescriptor);
 
         this.connection.send(message)
             .catch(e => {
@@ -192,8 +191,7 @@ export class HubConnection {
             });
 
             // TODO: separate conversion to enable different data formats
-            let data = JSON.stringify(invocationDescriptor);
-            let message = `${data.length}:T:${data};`;
+            let message = this.framePayload(invocationDescriptor);
 
             this.connection.send(message)
                 .catch(e => {
@@ -211,6 +209,11 @@ export class HubConnection {
 
     set onClosed(callback: ConnectionClosed) {
         this.connectionClosedCallback = callback;
+    }
+
+    private framePayload(invocationDescriptor: InvocationMessage): string {
+        let data = JSON.stringify(invocationDescriptor);
+        return Formatters.TextMessageFormat.write(data);
     }
 
     private createInvocation(methodName: string, args: any[]): InvocationMessage {

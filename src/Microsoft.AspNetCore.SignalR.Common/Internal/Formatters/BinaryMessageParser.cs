@@ -7,7 +7,7 @@ using System.Buffers;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
-    internal class BinaryMessageParser
+    public class BinaryMessageParser
     {
         private ParserState _state;
 
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             _state = default(ParserState);
         }
 
-        public bool TryParseMessage(ref BytesReader buffer, out Message message)
+        public bool TryParseMessage(ref BytesReader buffer, out ReadOnlyBuffer<byte> payload)
         {
             if (_state.Length == null)
             {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
                 if (lengthBuffer == null)
                 {
-                    message = default(Message);
+                    payload = default(ReadOnlyBuffer<byte>);
                     return false;
                 }
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
                 if (length.Length < sizeof(long))
                 {
-                    message = default(Message);
+                    payload = default(ReadOnlyBuffer<byte>);
                     return false;
                 }
 
@@ -43,25 +43,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 }
                 buffer.Advance(length.Length);
                 _state.Length = (int)longLength;
-            }
-
-            if (_state.MessageType == null)
-            {
-                if (buffer.Unread.Length == 0)
-                {
-                    message = default(Message);
-                    return false;
-                }
-
-                var typeByte = buffer.Unread[0];
-
-                if (!TryParseType(typeByte, out var messageType))
-                {
-                    throw new FormatException($"Unknown type value: 0x{typeByte:X}");
-                }
-
-                buffer.Advance(1);
-                _state.MessageType = messageType;
             }
 
             if (_state.Payload == null)
@@ -80,36 +61,19 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
             if (_state.Read == _state.Payload.Length)
             {
-                message = new Message(_state.Payload, _state.MessageType.Value);
+                payload = _state.Payload;
                 Reset();
                 return true;
             }
 
             // There's still more to read.
-            message = default(Message);
+            payload = default(ReadOnlyBuffer<byte>);
             return false;
-        }
-
-        private static bool TryParseType(byte type, out MessageType messageType)
-        {
-            switch (type)
-            {
-                case BinaryMessageFormatter.TextTypeFlag:
-                    messageType = MessageType.Text;
-                    return true;
-                case BinaryMessageFormatter.BinaryTypeFlag:
-                    messageType = MessageType.Binary;
-                    return true;
-                default:
-                    messageType = default(MessageType);
-                    return false;
-            }
         }
 
         private struct ParserState
         {
             public int? Length;
-            public MessageType? MessageType;
             public byte[] Payload;
             public int Read;
         }

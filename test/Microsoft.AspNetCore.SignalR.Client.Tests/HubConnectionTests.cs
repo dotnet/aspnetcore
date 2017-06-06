@@ -268,8 +268,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public int ParseCalls { get; private set; } = 0;
             public int WriteCalls { get; private set; } = 0;
 
-            public MessageType MessageType => MessageType.Text;
-
             public static MockHubProtocol ReturnOnParse(HubMessage parsed)
             {
                 return new MockHubProtocol

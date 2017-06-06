@@ -1,10 +1,4 @@
-﻿import { Message, MessageType } from './Message';
-
-let knownTypes = {
-    "T": MessageType.Text,
-    "B": MessageType.Binary
-};
-
+﻿
 function splitAt(input: string, searchString: string, position: number): [string, number] {
     let index = input.indexOf(searchString, position);
     if (index < 0) {
@@ -23,7 +17,7 @@ export namespace TextMessageFormat {
         return input.length >= requiredLength;
     }
 
-    function parseMessage(input: string, position: number): [number, Message] {
+    function parseMessage(input: string, position: number): [number, string] {
         var offset = position;
 
         // Read the length
@@ -36,20 +30,11 @@ export namespace TextMessageFormat {
         }
         let length = Number.parseInt(lenStr);
 
-        // Required space is: 3 (type flag, ":", ";") + length (payload len)
-        if (!hasSpace(input, offset, 3 + length)) {
+        // Required space is: (";") + length (payload len)
+        if (!hasSpace(input, offset, 1 + length)) {
             throw new Error("Message is incomplete");
         }
-
-        // Read the type
-        var [typeStr, offset] = splitAt(input, ":", offset);
-
-        // Parse the type
-        var messageType = knownTypes[typeStr];
-        if (messageType === undefined) {
-            throw new Error(`Unknown type value: '${typeStr}'`);
-        }
-
+        
         // Read the payload
         var payload = input.substr(offset, length);
         offset += length;
@@ -60,18 +45,14 @@ export namespace TextMessageFormat {
         }
         offset += 1;
 
-        if (messageType == MessageType.Binary) {
-            // We need to decode and put in an ArrayBuffer. Throw for now
-            // This will require our own Base64-decoder because the browser
-            // built-in one only decodes to strings and throws if invalid UTF-8
-            // characters are found.
-            throw new Error("TODO: Support for binary messages");
-        }
-
-        return [offset, new Message(messageType, payload)];
+        return [offset, payload];
     }
 
-    export function parse(input: string): Message[] {
+    export function write(output: string): string {
+        return `${output.length}:${output};`;
+    }
+
+    export function parse(input: string): string[] {
         if (input.length == 0) {
             return []
         }

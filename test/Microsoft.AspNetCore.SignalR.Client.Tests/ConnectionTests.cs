@@ -2,17 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Text.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
-using Microsoft.AspNetCore.Sockets.Tests.Internal;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -589,7 +585,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     {
                         content = "42";
                     }
-                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, ContentTypes.TextContentType, content);
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK, content);
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
@@ -661,14 +657,6 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     await connection.DisposeAsync();
                 }
             }
-        }
-
-        private byte[] FormatMessageToArray(Message message, MessageFormat binary, int bufferSize = 1024)
-        {
-            var output = new ArrayOutput(bufferSize);
-            output.Append('B', TextEncoder.Utf8);
-            Assert.True(MessageFormatter.TryWriteMessage(message, output, binary));
-            return output.ToArray();
         }
     }
 }

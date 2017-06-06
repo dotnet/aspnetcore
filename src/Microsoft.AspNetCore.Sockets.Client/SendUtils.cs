@@ -56,7 +56,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                         // Set the, now filled, stream as the content
                         request.Content = new StreamContent(memoryStream);
-                        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(ContentTypes.GetContentType(MessageFormat.Binary));
 
                         var response = await httpClient.SendAsync(request);
                         response.EnsureSuccessStatusCode();

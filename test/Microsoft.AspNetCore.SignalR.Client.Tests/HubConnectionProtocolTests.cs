@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
-                Assert.Equal("59:T:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]};", invokeMessage);
+                Assert.Equal("59:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]};", invokeMessage);
             }
             finally
             {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
-                Assert.Equal("59:T:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]};", invokeMessage);
+                Assert.Equal("59:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]};", invokeMessage);
 
                 // Complete the channel
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();

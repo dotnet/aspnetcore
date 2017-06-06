@@ -8,9 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Protocol\**" />
-    <EmbeddedResource Remove="Protocol\**" />
-    <None Remove="Protocol\**" />
+    <Compile Include="..\Common\ArrayOutput.cs" Link="ArrayOutput.cs" />
   </ItemGroup>
 
   <ItemGroup>

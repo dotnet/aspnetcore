@@ -214,14 +214,14 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         {
             get
             {
-                yield return new object[] { "data: Shaolin\r\ndata:  Fantastic\r\n\r\n", "Shaolin" + Environment.NewLine + " Fantastic", MessageType.Text };
-                yield return new object[] { "data: The\r\ndata: Get\r\ndata: Down\r\n\r\n", "The" + Environment.NewLine + "Get" + Environment.NewLine + "Down", MessageType.Text };
+                yield return new object[] { "data: Shaolin\r\ndata:  Fantastic\r\n\r\n", "Shaolin" + Environment.NewLine + " Fantastic" };
+                yield return new object[] { "data: The\r\ndata: Get\r\ndata: Down\r\n\r\n", "The" + Environment.NewLine + "Get" + Environment.NewLine + "Down" };
             }
         }
 
         [Theory]
         [MemberData(nameof(MultilineMessages))]
-        public void ParseMessagesWithMultipleDataLines(string encodedMessage, string expectedMessage, MessageType expectedMessageType)
+        public void ParseMessagesWithMultipleDataLines(string encodedMessage, string expectedMessage)
         {
             var buffer = Encoding.UTF8.GetBytes(encodedMessage);
             var readableBuffer = ReadableBuffer.Create(buffer);

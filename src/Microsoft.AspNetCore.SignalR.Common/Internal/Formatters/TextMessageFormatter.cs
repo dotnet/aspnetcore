@@ -3,31 +3,21 @@
 
 using System;
 using System.Binary;
-using System.Binary.Base64;
 using System.Buffers;
 using System.Text;
 using System.Text.Formatting;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
-    internal static class TextMessageFormatter
+    public static class TextMessageFormatter
     {
         internal const char FieldDelimiter = ':';
         internal const char MessageDelimiter = ';';
-        internal const char TextTypeFlag = 'T';
-        internal const char BinaryTypeFlag = 'B';
-
-        public static bool TryWriteMessage(Message message, IOutput output)
+        
+        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, IOutput output)
         {
             // Calculate the length, it's the number of characters for text messages, but number of base64 characters for binary
-            var length = message.Payload.Length;
-            if (message.Type == MessageType.Binary)
-            {
-                length = Base64Encoder.ComputeEncodedLength(length);
-            }
-
-            // Get the type indicator
-            var typeIndicator = GetTypeIndicator(message.Type);
+            var length = payload.Length;
 
             // Write the length as a string
             output.Append(length, TextEncoder.Utf8);
@@ -35,14 +25,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             // Write the field delimiter ':'
             output.Append(FieldDelimiter, TextEncoder.Utf8);
 
-            // Write the type
-            output.Append(typeIndicator, TextEncoder.Utf8);
-
-            // Write the field delimiter ':'
-            output.Append(FieldDelimiter, TextEncoder.Utf8);
-
             // Write the payload
-            if (!TryWritePayload(message, output, length))
+            if (!output.TryWrite(payload))
             {
                 return false;
             }
@@ -50,32 +34,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             // Terminator
             output.Append(MessageDelimiter, TextEncoder.Utf8);
             return true;
-        }
-
-        private static bool TryWritePayload(Message message, IOutput output, int length)
-        {
-            // Payload
-            if (message.Type == MessageType.Binary)
-            {
-                // TODO: Base64 writer that works with IOutput would be amazing!
-                var arr = new byte[Base64Encoder.ComputeEncodedLength(message.Payload.Length)];
-                Base64.Encoder.Transform(message.Payload, arr, out _, out _);
-                return output.TryWrite(arr);
-            }
-            else
-            {
-                return output.TryWrite(message.Payload);
-            }
-        }
-
-        private static char GetTypeIndicator(MessageType type)
-        {
-            switch (type)
-            {
-                case MessageType.Text: return TextTypeFlag;
-                case MessageType.Binary: return BinaryTypeFlag;
-                default: throw new FormatException($"Invalid message type: {type}");
-            }
         }
     }
 }
