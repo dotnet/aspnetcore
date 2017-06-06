@@ -1,10 +1,11 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-preview2-*</AspNetCoreVersion>
-    <CoreFxVersion>4.3.0</CoreFxVersion>
+    <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <MoqVersion>4.7.1</MoqVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
