@@ -117,6 +117,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             var contentRange = new ContentRangeHeaderValue(0, 3, 34);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
             Assert.Equal(4, httpResponse.ContentLength);
             Assert.Equal("File", body);
@@ -148,14 +149,46 @@ namespace Microsoft.AspNetCore.Mvc
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Equal("FilePathResultTestFile contents�", body);
         }
 
         [Theory]
         [InlineData("0-5")]
-        [InlineData("bytes = 11-0")]
+        [InlineData("bytes = ")]
         [InlineData("bytes = 1-4, 5-11")]
-        public async Task WriteFileAsync_RangeRequested_NotSatisfiable(string rangeString)
+        public async Task WriteFileAsync_RangeRequestIgnored(string rangeString)
+        {
+            // Arrange
+            var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
+            var result = new TestPhysicalFileResult(path, "text/plain");
+            var httpContext = GetHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            requestHeaders.IfModifiedSince = DateTimeOffset.MinValue;
+            httpContext.Request.Headers[HeaderNames.Range] = rangeString;
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
+            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal("FilePathResultTestFile contents�", body);
+        }
+
+        [Theory]
+        [InlineData("bytes = 35-36")]
+        [InlineData("bytes = -0")]
+        public async Task WriteFileAsync_RangeRequestedNotSatisfiable(string rangeString)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));

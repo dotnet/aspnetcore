@@ -219,9 +219,9 @@ namespace Microsoft.AspNetCore.Mvc
 
         [Theory]
         [InlineData("0-5")]
-        [InlineData("bytes = 11-0")]
+        [InlineData("bytes = ")]
         [InlineData("bytes = 1-4, 5-11")]
-        public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(string rangeString)
+        public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestIgnored(string rangeString)
         {
             // Arrange            
             var contentType = "text/plain";
@@ -238,6 +238,46 @@ namespace Microsoft.AspNetCore.Mvc
 
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
+            httpContext.Request.Headers[HeaderNames.Range] = rangeString;
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
+            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
+            Assert.Equal(lastModified.ToString("R"), httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
+            Assert.Equal("Hello World", body);
+        }
+
+        [Theory]
+        [InlineData("bytes = 12-13")]
+        [InlineData("bytes = -0")]
+        public async Task WriteFileAsync_PreconditionStateUnspecified_RangeRequestedNotSatisfiable(string rangeString)
+        {
+            // Arrange            
+            var contentType = "text/plain";
+            var lastModified = new DateTimeOffset();
+            var entityTag = new EntityTagHeaderValue("\"Etag\"");
+            var byteArray = Encoding.ASCII.GetBytes("Hello World");
+            var readStream = new MemoryStream(byteArray);
+
+            var result = new FileStreamResult(readStream, contentType)
+            {
+                LastModified = lastModified,
+                EntityTag = entityTag,
+            };
+
+            var httpContext = GetHttpContext();
             httpContext.Request.Headers[HeaderNames.Range] = rangeString;
             httpContext.Request.Method = HttpMethods.Get;
             httpContext.Response.Body = new MemoryStream();

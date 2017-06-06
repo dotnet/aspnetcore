@@ -31,8 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Unspecified,
             NotModified,
             ShouldProcess,
-            PreconditionFailed,
-            IgnoreRangeRequest
+            PreconditionFailed
         }
 
         protected ILogger Logger { get; }
@@ -61,15 +60,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var httpRequestHeaders = request.GetTypedHeaders();
             var response = context.HttpContext.Response;
             var httpResponseHeaders = response.GetTypedHeaders();
-            if (fileLength.HasValue)
-            {
-                SetAcceptRangeHeader(context);
-                // Assuming the request is not a range request, the Content-Length header is set to the length of the entire file. 
-                // If the request is a valid range request, this header is overwritten with the length of the range as part of the 
-                // range processing (see method SetContentLength).
-                response.ContentLength = fileLength.Value;
-            }
-
             if (lastModified.HasValue)
             {
                 httpResponseHeaders.LastModified = lastModified;
@@ -80,24 +70,35 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var serveBody = !HttpMethods.IsHead(request.Method);
-            if (HttpMethods.IsHead(request.Method) || HttpMethods.IsGet(request.Method))
+            var preconditionState = GetPreconditionState(context, httpRequestHeaders, lastModified, etag);
+            if (preconditionState == PreconditionState.NotModified)
             {
-                var preconditionState = GetPreconditionState(context, httpRequestHeaders, lastModified, etag);
-                if (request.Headers.ContainsKey(HeaderNames.Range) &&
-                    (preconditionState == PreconditionState.Unspecified ||
-                    preconditionState == PreconditionState.ShouldProcess))
+                serveBody = false;
+                response.StatusCode = StatusCodes.Status304NotModified;
+            }
+            else if (preconditionState == PreconditionState.PreconditionFailed)
+            {
+                serveBody = false;
+                response.StatusCode = StatusCodes.Status412PreconditionFailed;
+            }
+
+            if (fileLength.HasValue)
+            {
+                SetAcceptRangeHeader(context);
+                // Assuming the request is not a range request, the Content-Length header is set to the length of the entire file. 
+                // If the request is a valid range request, this header is overwritten with the length of the range as part of the 
+                // range processing (see method SetContentLength).
+                response.ContentLength = fileLength.Value;
+                if (HttpMethods.IsHead(request.Method) || HttpMethods.IsGet(request.Method))
                 {
-                    return SetRangeHeaders(context, httpRequestHeaders, fileLength, lastModified, etag);
-                }
-                if (preconditionState == PreconditionState.NotModified)
-                {
-                    serveBody = false;
-                    response.StatusCode = StatusCodes.Status304NotModified;
-                }
-                else if (preconditionState == PreconditionState.PreconditionFailed)
-                {
-                    serveBody = false;
-                    response.StatusCode = StatusCodes.Status412PreconditionFailed;
+                    if ((preconditionState == PreconditionState.Unspecified ||
+                        preconditionState == PreconditionState.ShouldProcess))
+                    {
+                        if (IfRangeValid(context, httpRequestHeaders, lastModified, etag))
+                        {
+                            return SetRangeHeaders(context, httpRequestHeaders, fileLength);
+                        }
+                    }
                 }
             }
 
@@ -155,6 +156,37 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return PreconditionState.Unspecified;
         }
 
+        internal static bool IfRangeValid(
+            ActionContext context,
+            RequestHeaders httpRequestHeaders,
+            DateTimeOffset? lastModified = null,
+            EntityTagHeaderValue etag = null)
+        {
+            // 14.27 If-Range
+            var ifRange = httpRequestHeaders.IfRange;
+            if (ifRange != null)
+            {
+                // If the validator given in the If-Range header field matches the
+                // current validator for the selected representation of the target
+                // resource, then the server SHOULD process the Range header field as
+                // requested.  If the validator does not match, the server MUST ignore
+                // the Range header field.
+                if (ifRange.LastModified.HasValue)
+                {
+                    if (lastModified.HasValue && lastModified > ifRange.LastModified)
+                    {
+                        return false;
+                    }
+                }
+                else if (etag != null && ifRange.EntityTag != null && !ifRange.EntityTag.Compare(etag, useStrongComparison: true))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         // Internal for testing
         internal static PreconditionState GetPreconditionState(
             ActionContext context,
@@ -166,7 +198,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var ifNoneMatchState = PreconditionState.Unspecified;
             var ifModifiedSinceState = PreconditionState.Unspecified;
             var ifUnmodifiedSinceState = PreconditionState.Unspecified;
-            var ifRangeState = PreconditionState.Unspecified;
 
             // 14.24 If-Match
             var ifMatch = httpRequestHeaders.IfMatch;
@@ -208,28 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 ifUnmodifiedSinceState = unmodified ? PreconditionState.ShouldProcess : PreconditionState.PreconditionFailed;
             }
 
-            var ifRange = httpRequestHeaders.IfRange;
-            if (ifRange != null)
-            {
-                // If the validator given in the If-Range header field matches the
-                // current validator for the selected representation of the target
-                // resource, then the server SHOULD process the Range header field as
-                // requested.  If the validator does not match, the server MUST ignore
-                // the Range header field.
-                if (ifRange.LastModified.HasValue)
-                {
-                    if (lastModified.HasValue && lastModified > ifRange.LastModified)
-                    {
-                        ifRangeState = PreconditionState.IgnoreRangeRequest;
-                    }
-                }
-                else if (etag != null && ifRange.EntityTag != null && !ifRange.EntityTag.Compare(etag, useStrongComparison: true))
-                {
-                    ifRangeState = PreconditionState.IgnoreRangeRequest;
-                }
-            }
-
-            var state = GetMaxPreconditionState(ifMatchState, ifNoneMatchState, ifModifiedSinceState, ifUnmodifiedSinceState, ifRangeState);
+            var state = GetMaxPreconditionState(ifMatchState, ifNoneMatchState, ifModifiedSinceState, ifUnmodifiedSinceState);
             return state;
         }
 
@@ -250,16 +260,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetRangeHeaders(
             ActionContext context,
             RequestHeaders httpRequestHeaders,
-            long? fileLength,
-            DateTimeOffset? lastModified = null,
-            EntityTagHeaderValue etag = null)
+            long? fileLength)
         {
             var response = context.HttpContext.Response;
             var httpResponseHeaders = response.GetTypedHeaders();
 
-            // Checked for presence of Range header explicitly before calling this method.
-            // Range may be null for parsing errors, multiple ranges and when the file length is missing.
-            var range = fileLength.HasValue ? ParseRange(context, httpRequestHeaders, fileLength.Value, lastModified, etag) : null;
+            // Range may be null for empty range header, invalid ranges, parsing errors, multiple ranges 
+            // and when the file length is zero.
+            var (isRangeRequest, range) = RangeHelper.ParseRange(
+                context.HttpContext,
+                httpRequestHeaders,
+                fileLength.Value);
+
+            if (!isRangeRequest)
+            {
+                return (range: null, rangeLength: 0, serveBody: true);
+            }
+
             if (range == null)
             {
                 // 14.16 Content-Range - A server sending a response with status code 416 (Requested range not satisfiable)
@@ -293,32 +310,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var response = context.HttpContext.Response;
             response.ContentLength = length;
             return length;
-        }
-
-        private static RangeItemHeaderValue ParseRange(
-            ActionContext context,
-            RequestHeaders httpRequestHeaders,
-            long fileLength,
-            DateTimeOffset? lastModified = null,
-            EntityTagHeaderValue etag = null)
-        {
-            var httpContext = context.HttpContext;
-            var response = httpContext.Response;
-
-            var range = RangeHelper.ParseRange(httpContext, httpRequestHeaders, lastModified, etag);
-
-            if (range != null)
-            {
-                var normalizedRanges = RangeHelper.NormalizeRanges(range, fileLength);
-                if (normalizedRanges == null || normalizedRanges.Count == 0)
-                {
-                    return null;
-                }
-
-                return normalizedRanges.Single();
-            }
-
-            return null;
         }
 
         protected static ILogger CreateLogger<T>(ILoggerFactory factory)

@@ -378,8 +378,10 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(FileResultExecutorBase.PreconditionState.NotModified, state);
         }
 
-        [Fact]
-        public void GetPreconditionState_ShouldNotProcess_IgnoreRangeRequest()
+        [Theory]
+        [InlineData("\"NotEtag\"", false)]
+        [InlineData("\"Etag\"", true)]
+        public void IfRangeValid_IgnoreRangeRequest(string ifRangeString, bool expected)
         {
             // Arrange
             var actionContext = new ActionContext();
@@ -389,19 +391,19 @@ namespace Microsoft.AspNetCore.Mvc
             var lastModified = DateTimeOffset.MinValue;
             lastModified = new DateTimeOffset(lastModified.Year, lastModified.Month, lastModified.Day, lastModified.Hour, lastModified.Minute, lastModified.Second, TimeSpan.FromSeconds(0));
             var etag = new EntityTagHeaderValue("\"Etag\"");
-            httpRequestHeaders.IfRange = new RangeConditionHeaderValue("\"NotEtag\"");
+            httpRequestHeaders.IfRange = new RangeConditionHeaderValue(ifRangeString);
             httpRequestHeaders.IfModifiedSince = lastModified;
             actionContext.HttpContext = httpContext;
 
             // Act
-            var state = FileResultExecutorBase.GetPreconditionState(
+            var ifRangeIsValid = FileResultExecutorBase.IfRangeValid(
                 actionContext,
                 httpRequestHeaders,
                 lastModified,
                 etag);
 
             // Assert
-            Assert.Equal(FileResultExecutorBase.PreconditionState.IgnoreRangeRequest, state);
+            Assert.Equal(expected, ifRangeIsValid);
         }
 
         private static IServiceCollection CreateServices()
