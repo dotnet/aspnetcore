@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return descriptorX != null &&
-                string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
+                string.Equals(descriptorX.Directive, descriptorY.Directive, StringComparison.Ordinal) &&
                 descriptorX.Kind == descriptorY.Kind &&
                 Enumerable.SequenceEqual(
                     descriptorX.Tokens,
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(descriptor.Name, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.Directive, StringComparer.Ordinal);
             hashCodeCombiner.Add(descriptor.Kind);
 
             return hashCodeCombiner.CombinedHash;

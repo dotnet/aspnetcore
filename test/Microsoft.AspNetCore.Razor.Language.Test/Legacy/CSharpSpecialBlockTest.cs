@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None)),
                 new RazorError(
-                    LegacyResources.FormatUnexpectedEOFAfterDirective(CSharpCodeParser.InheritsDirectiveDescriptor.Name, "type"),
+                    LegacyResources.FormatUnexpectedEOFAfterDirective(CSharpCodeParser.InheritsDirectiveDescriptor.Directive, "type"),
                     new SourceLocation(8, 0, 8), 1));
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, "                ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                new RazorError(LegacyResources.FormatDirectiveExpectsTypeName(CSharpCodeParser.InheritsDirectiveDescriptor.Name), 24, 0, 24, Environment.NewLine.Length));
+                new RazorError(LegacyResources.FormatDirectiveExpectsTypeName(CSharpCodeParser.InheritsDirectiveDescriptor.Directive), 24, 0, 24, Environment.NewLine.Length));
         }
 
         [Fact]

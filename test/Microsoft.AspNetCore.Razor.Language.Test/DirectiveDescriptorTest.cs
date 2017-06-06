@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var directive = DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine);
 
             // Assert
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
             Assert.Equal(DirectiveKind.SingleLine, directive.Kind);
         }
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var directive = DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine, configure);
 
             // Assert
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
             Assert.Equal(DirectiveKind.SingleLine, directive.Kind);
             Assert.True(called);
         }
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var directive = DirectiveDescriptor.CreateSingleLineDirective("test");
 
             // Assert
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
             Assert.Equal(DirectiveKind.SingleLine, directive.Kind);
         }
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var directive = DirectiveDescriptor.CreateSingleLineDirective("test", configure);
 
             // Assert
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
             Assert.Equal(DirectiveKind.SingleLine, directive.Kind);
             Assert.True(called);
         }
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var directive = DirectiveDescriptor.CreateRazorBlockDirective("test");
 
             // Assert
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
             Assert.Equal(DirectiveKind.RazorBlock, directive.Kind);
         }
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var directive = DirectiveDescriptor.CreateRazorBlockDirective("test", configure);
 
             // Assert
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
             Assert.Equal(DirectiveKind.RazorBlock, directive.Kind);
             Assert.True(called);
         }
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var directive = DirectiveDescriptor.CreateCodeBlockDirective("test");
 
             // Assert
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
             Assert.Equal(DirectiveKind.CodeBlock, directive.Kind);
         }
 
@@ -111,29 +111,29 @@ namespace Microsoft.AspNetCore.Razor.Language
             var directive = DirectiveDescriptor.CreateCodeBlockDirective("test", configure);
 
             // Assert
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
             Assert.Equal(DirectiveKind.CodeBlock, directive.Kind);
             Assert.True(called);
         }
 
         [Fact]
-        public void Build_ValidatesDirectiveName_EmptyIsInvalid()
+        public void Build_ValidatesDirectiveKeyword_EmptyIsInvalid()
         {
             // Arrange & Act
             var ex = Assert.Throws<InvalidOperationException>(() => DirectiveDescriptor.CreateSingleLineDirective(""));
 
             // Assert
-            Assert.Equal("Invalid directive name ''. Directives must have a non-empty name that consists only of letters.", ex.Message);
+            Assert.Equal("Invalid directive keyword ''. Directives must have a non-empty keyword that consists only of letters.", ex.Message);
         }
 
         [Fact]
-        public void Build_ValidatesDirectiveName_InvalidCharacter()
+        public void Build_ValidatesDirectiveKeyword_InvalidCharacter()
         {
             // Arrange & Act
             var ex = Assert.Throws<InvalidOperationException>(() => DirectiveDescriptor.CreateSingleLineDirective("test_directive"));
 
             // Assert
-            Assert.Equal("Invalid directive name 'test_directive'. Directives must have a non-empty name that consists only of letters.", ex.Message);
+            Assert.Equal("Invalid directive keyword 'test_directive'. Directives must have a non-empty keyword that consists only of letters.", ex.Message);
         }
 
         [Fact]

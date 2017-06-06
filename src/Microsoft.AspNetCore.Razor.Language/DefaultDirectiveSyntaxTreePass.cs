@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 if (_nestedLevel > 0)
                 {
                     var directiveStart = block.Children.First(child => !child.IsBlock && ((Span)child).Kind == SpanKindInternal.Transition).Start;
-                    var errorLength = /* @ */ 1 + CSharpCodeParser.SectionDirectiveDescriptor.Name.Length;
+                    var errorLength = /* @ */ 1 + CSharpCodeParser.SectionDirectiveDescriptor.Directive.Length;
                     _errorSink.OnError(
                         directiveStart,
                         LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),

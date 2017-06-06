@@ -1546,8 +1546,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             for (var i = 0; i < allDirectives.Count; i++)
             {
                 var directiveDescriptor = allDirectives[i];
-                CurrentKeywords.Add(directiveDescriptor.Name);
-                MapDirectives(() => HandleDirective(directiveDescriptor), directiveDescriptor.Name);
+                CurrentKeywords.Add(directiveDescriptor.Directive);
+                MapDirectives(() => HandleDirective(directiveDescriptor), directiveDescriptor.Directive);
             }
 
             MapDirectives(TagHelperPrefixDirective, SyntaxConstants.CSharp.TagHelperPrefixKeyword);
@@ -1583,7 +1583,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             Context.Builder.CurrentBlock.Type = BlockKindInternal.Directive;
             Context.Builder.CurrentBlock.ChunkGenerator = new DirectiveChunkGenerator(descriptor);
-            AssertDirective(descriptor.Name);
+            AssertDirective(descriptor.Directive);
 
             AcceptAndMoveNext();
             Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
@@ -1614,7 +1614,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     Context.ErrorSink.OnError(
                         CurrentStart,
-                        LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Name, tokenDescriptor.Kind.ToString().ToLowerInvariant()),
+                        LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Directive, tokenDescriptor.Kind.ToString().ToLowerInvariant()),
                         length: 1);
                     return;
                 }
@@ -1626,7 +1626,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             Context.ErrorSink.OnError(
                                 CurrentStart,
-                                LegacyResources.FormatDirectiveExpectsTypeName(descriptor.Name),
+                                LegacyResources.FormatDirectiveExpectsTypeName(descriptor.Directive),
                                 CurrentSymbol.Content.Length);
 
                             return;
@@ -1638,7 +1638,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             Context.ErrorSink.OnError(
                                 CurrentStart,
-                                LegacyResources.FormatDirectiveExpectsNamespace(descriptor.Name),
+                                LegacyResources.FormatDirectiveExpectsNamespace(descriptor.Directive),
                                 identifierLength);
 
                             return;
@@ -1654,7 +1654,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             Context.ErrorSink.OnError(
                                 CurrentStart,
-                                LegacyResources.FormatDirectiveExpectsIdentifier(descriptor.Name),
+                                LegacyResources.FormatDirectiveExpectsIdentifier(descriptor.Directive),
                                 CurrentSymbol.Content.Length);
                             return;
                         }
@@ -1669,7 +1669,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             Context.ErrorSink.OnError(
                                 CurrentStart,
-                                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral(descriptor.Name),
+                                LegacyResources.FormatDirectiveExpectsQuotedStringLiteral(descriptor.Directive),
                                 CurrentSymbol.Content.Length);
                             return;
                         }
@@ -1698,7 +1698,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         Context.ErrorSink.OnError(
                             CurrentStart,
-                            LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Name, LegacyResources.ErrorComponent_Newline),
+                            LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Directive, LegacyResources.ErrorComponent_Newline),
                             CurrentSymbol.Content.Length);
                     }
 
@@ -1750,14 +1750,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 Context.ErrorSink.OnError(
                     CurrentStart,
-                    LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Name, "{"),
+                    LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Directive, "{"),
                     length: 1 /* { */);
             }
             else if (!At(CSharpSymbolType.LeftBrace))
             {
                 Context.ErrorSink.OnError(
                     CurrentStart,
-                    LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Name, "{"),
+                    LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Directive, "{"),
                     CurrentSymbol.Content.Length);
             }
             else
@@ -1777,7 +1777,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     editHandler.AutoCompleteString = "}";
                     Context.ErrorSink.OnError(
                         startingBraceLocation,
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(descriptor.Name, "}", "{"),
+                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(descriptor.Directive, "}", "{"),
                         length: 1 /* } */);
                 }
                 else

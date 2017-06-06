@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             var syntaxTree = codeDocument.GetSyntaxTree();
             var directive = Assert.Single(syntaxTree.Options.Directives);
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
         }
 
         [Fact]
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Collection(
                 codeDocument.GetImportSyntaxTrees(),
-                t => { Assert.Same(t.Source, imports[0]); Assert.Equal("test", Assert.Single(t.Options.Directives).Name); },
-                t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test", Assert.Single(t.Options.Directives).Name); });
+                t => { Assert.Same(t.Source, imports[0]); Assert.Equal("test", Assert.Single(t.Options.Directives).Directive); },
+                t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test", Assert.Single(t.Options.Directives).Directive); });
         }
 
         private class MyParserOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature

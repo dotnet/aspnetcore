@@ -198,8 +198,8 @@
   <data name="InvalidOperation_SpanIsNotChangeOwner" xml:space="preserve">
     <value>The node '{0}' is not the owner of change '{1}'.</value>
   </data>
-  <data name="DirectiveDescriptor_InvalidDirectiveName" xml:space="preserve">
-    <value>Invalid directive name '{0}'. Directives must have a non-empty name that consists only of letters.</value>
+  <data name="DirectiveDescriptor_InvalidDirectiveKeyword" xml:space="preserve">
+    <value>Invalid directive keyword '{0}'. Directives must have a non-empty keyword that consists only of letters.</value>
   </data>
   <data name="FeatureMustBeInitialized" xml:space="preserve">
     <value>The feature must be initialized by setting the '{0}' property.</value>

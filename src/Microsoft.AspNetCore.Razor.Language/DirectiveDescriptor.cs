@@ -7,107 +7,185 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+    /// <summary>
+    /// A descriptor type for a directive that can be parsed by the Razor parser.
+    /// </summary>
     public abstract class DirectiveDescriptor
     {
-        public abstract string Name { get; }
+        /// <summary>
+        /// Gets the description of the directive.
+        /// </summary>
+        /// <remarks>
+        /// The description is used for information purposes, and has no effect on parsing.
+        /// </remarks>
+        public abstract string Description { get; }
 
+        /// <summary>
+        /// Gets the directive keyword without the leading <c>@</c> token.
+        /// </summary>
+        public abstract string Directive { get; }
+
+        /// <summary>
+        /// Gets the display name of the directive.
+        /// </summary>
+        /// <remarks>
+        /// The display name is used for information purposes, and has no effect on parsing.
+        /// </remarks>
+        public abstract string DisplayName { get; }
+
+        /// <summary>
+        /// Gets the kind of the directive. The kind determines whether or not a directive has an associated block.
+        /// </summary>
         public abstract DirectiveKind Kind { get; }
 
+        /// <summary>
+        /// Gets the list of directive tokens that can follow the directive keyword.
+        /// </summary>
         public abstract IReadOnlyList<DirectiveTokenDescriptor> Tokens { get; }
 
-        public static DirectiveDescriptor CreateDirective(string name, DirectiveKind kind)
+        /// <summary>
+        /// Creates a new <see cref="DirectiveDescriptor"/>.
+        /// </summary>
+        /// <param name="directive">The directive keyword.</param>
+        /// <param name="kind">The directive kind.</param>
+        /// <returns>A <see cref="DirectiveDescriptor"/> for the created directive.</returns>
+        public static DirectiveDescriptor CreateDirective(string directive, DirectiveKind kind)
         {
-            if (name == null)
+            if (directive == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(directive));
             }
 
-            return CreateDirective(name, kind, configure: null);
+            return CreateDirective(directive, kind, configure: null);
         }
 
-        public static DirectiveDescriptor CreateDirective(string name, DirectiveKind kind, Action<IDirectiveDescriptorBuilder> configure)
+        /// <summary>
+        /// Creates a new <see cref="DirectiveDescriptor"/>.
+        /// </summary>
+        /// <param name="directive">The directive keyword.</param>
+        /// <param name="kind">The directive kind.</param>
+        /// <param name="configure">A configuration delegate for the directive.</param>
+        /// <returns>A <see cref="DirectiveDescriptor"/> for the created directive.</returns>
+        public static DirectiveDescriptor CreateDirective(string directive, DirectiveKind kind, Action<IDirectiveDescriptorBuilder> configure)
         {
-            if (name == null)
+            if (directive == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(directive));
             }
 
-            var builder = new DefaultDirectiveDescriptorBuilder(name, kind);
+            var builder = new DefaultDirectiveDescriptorBuilder(directive, kind);
             configure?.Invoke(builder);
             return builder.Build();
         }
 
-        public static DirectiveDescriptor CreateSingleLineDirective(string name)
+        /// <summary>
+        /// Creates a new <see cref="DirectiveDescriptor"/> with <see cref="Kind"/> set to <see cref="DirectiveKind.SingleLine"/>
+        /// </summary>
+        /// <param name="directive">The directive keyword.</param>
+        /// <returns>A <see cref="DirectiveDescriptor"/> for the created directive.</returns>
+        public static DirectiveDescriptor CreateSingleLineDirective(string directive)
         {
-            if (name == null)
+            if (directive == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(directive));
             }
 
-            return CreateDirective(name, DirectiveKind.SingleLine, configure: null);
+            return CreateDirective(directive, DirectiveKind.SingleLine, configure: null);
         }
 
-        public static DirectiveDescriptor CreateSingleLineDirective(string name, Action<IDirectiveDescriptorBuilder> configure)
+        /// <summary>
+        /// Creates a new <see cref="DirectiveDescriptor"/> with <see cref="Kind"/> set to <see cref="DirectiveKind.SingleLine"/>
+        /// </summary>
+        /// <param name="directive">The directive keyword.</param>
+        /// <param name="configure">A configuration delegate for the directive.</param>
+        /// <returns>A <see cref="DirectiveDescriptor"/> for the created directive.</returns>
+        public static DirectiveDescriptor CreateSingleLineDirective(string directive, Action<IDirectiveDescriptorBuilder> configure)
         {
-            if (name == null)
+            if (directive == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(directive));
             }
 
-            return CreateDirective(name, DirectiveKind.SingleLine, configure);
+            return CreateDirective(directive, DirectiveKind.SingleLine, configure);
         }
 
-        public static DirectiveDescriptor CreateRazorBlockDirective(string name)
+        /// <summary>
+        /// Creates a new <see cref="DirectiveDescriptor"/> with <see cref="Kind"/> set to <see cref="DirectiveKind.RazorBlock"/>
+        /// </summary>
+        /// <param name="directive">The directive keyword.</param>
+        /// <returns>A <see cref="DirectiveDescriptor"/> for the created directive.</returns>
+        public static DirectiveDescriptor CreateRazorBlockDirective(string directive)
         {
-            if (name == null)
+            if (directive == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(directive));
             }
 
-            return CreateDirective(name, DirectiveKind.RazorBlock, configure: null);
+            return CreateDirective(directive, DirectiveKind.RazorBlock, configure: null);
         }
 
-        public static DirectiveDescriptor CreateRazorBlockDirective(string name, Action<IDirectiveDescriptorBuilder> configure)
+        /// <summary>
+        /// Creates a new <see cref="DirectiveDescriptor"/> with <see cref="Kind"/> set to <see cref="DirectiveKind.RazorBlock"/>
+        /// </summary>
+        /// <param name="directive">The directive keyword.</param>
+        /// <param name="configure">A configuration delegate for the directive.</param>
+        /// <returns>A <see cref="DirectiveDescriptor"/> for the created directive.</returns>
+        public static DirectiveDescriptor CreateRazorBlockDirective(string directive, Action<IDirectiveDescriptorBuilder> configure)
         {
-            if (name == null)
+            if (directive == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(directive));
             }
 
-            return CreateDirective(name, DirectiveKind.RazorBlock, configure);
+            return CreateDirective(directive, DirectiveKind.RazorBlock, configure);
         }
 
-        public static DirectiveDescriptor CreateCodeBlockDirective(string name)
+        /// <summary>
+        /// Creates a new <see cref="DirectiveDescriptor"/> with <see cref="Kind"/> set to <see cref="DirectiveKind.CodeBlock"/>
+        /// </summary>
+        /// <param name="directive">The directive keyword.</param>
+        /// <returns>A <see cref="DirectiveDescriptor"/> for the created directive.</returns>
+        public static DirectiveDescriptor CreateCodeBlockDirective(string directive)
         {
-            if (name == null)
+            if (directive == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(directive));
             }
 
-            return CreateDirective(name, DirectiveKind.CodeBlock, configure: null);
+            return CreateDirective(directive, DirectiveKind.CodeBlock, configure: null);
         }
 
-        public static DirectiveDescriptor CreateCodeBlockDirective(string name, Action<IDirectiveDescriptorBuilder> configure)
+        /// <summary>
+        /// Creates a new <see cref="DirectiveDescriptor"/> with <see cref="Kind"/> set to <see cref="DirectiveKind.CodeBlock"/>
+        /// </summary>
+        /// <param name="directive">The directive keyword.</param>
+        /// <param name="configure">A configuration delegate for the directive.</param>
+        /// <returns>A <see cref="DirectiveDescriptor"/> for the created directive.</returns>
+        public static DirectiveDescriptor CreateCodeBlockDirective(string directive, Action<IDirectiveDescriptorBuilder> configure)
         {
-            if (name == null)
+            if (directive == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(directive));
             }
 
-            return CreateDirective(name, DirectiveKind.CodeBlock, configure);
+            return CreateDirective(directive, DirectiveKind.CodeBlock, configure);
         }
 
         private class DefaultDirectiveDescriptorBuilder : IDirectiveDescriptorBuilder
         {
             public DefaultDirectiveDescriptorBuilder(string name, DirectiveKind kind)
             {
-                Name = name;
+                Directive = name;
                 Kind = kind;
 
                 Tokens = new List<DirectiveTokenDescriptor>();
             }
 
-            public string Name { get; }
+            public string Description { get; set; }
+
+            public string Directive { get; }
+
+            public string DisplayName { get; set; }
 
             public DirectiveKind Kind { get; }
 
@@ -115,16 +193,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public DirectiveDescriptor Build()
             {
-                if (Name.Length == 0)
+                if (Directive.Length == 0)
                 {
-                    throw new InvalidOperationException(Resources.FormatDirectiveDescriptor_InvalidDirectiveName(Name));
+                    throw new InvalidOperationException(Resources.FormatDirectiveDescriptor_InvalidDirectiveKeyword(Directive));
                 }
 
-                for (var i = 0; i < Name.Length; i++)
+                for (var i = 0; i < Directive.Length; i++)
                 {
-                    if (!char.IsLetter(Name[i]))
+                    if (!char.IsLetter(Directive[i]))
                     {
-                        throw new InvalidOperationException(Resources.FormatDirectiveDescriptor_InvalidDirectiveName(Name));
+                        throw new InvalidOperationException(Resources.FormatDirectiveDescriptor_InvalidDirectiveKeyword(Directive));
                     }
                 }
 
@@ -140,20 +218,31 @@ namespace Microsoft.AspNetCore.Razor.Language
                     }
                 }
 
-                return new DefaultDirectiveDescriptor(Name, Kind, Tokens.ToArray());
+                return new DefaultDirectiveDescriptor(Directive, Kind, Tokens.ToArray(), DisplayName, Description);
             }
         }
 
         private class DefaultDirectiveDescriptor : DirectiveDescriptor
         {
-            public DefaultDirectiveDescriptor(string name, DirectiveKind kind, DirectiveTokenDescriptor[] tokens)
+            public DefaultDirectiveDescriptor(
+                string directive, 
+                DirectiveKind kind, 
+                DirectiveTokenDescriptor[] tokens,
+                string displayName,
+                string description)
             {
-                Name = name;
+                Directive = directive;
                 Kind = kind;
                 Tokens = tokens;
+                DisplayName = displayName;
+                Description = description;
             }
 
-            public override string Name { get; }
+            public override string Description { get; }
+
+            public override string Directive { get; }
+
+            public override string DisplayName { get; }
 
             public override DirectiveKind Kind { get; }
 

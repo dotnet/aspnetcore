@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Same(expected, actual);
 
             var directive = Assert.Single(actual.Directives);
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.IsType<DefaultRazorDirectiveFeature>(actual);
 
             var directive = Assert.Single(actual.Directives);
-            Assert.Equal("test", directive.Name);
+            Assert.Equal("test", directive.Directive);
         }
 
         [Fact]

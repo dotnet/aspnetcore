@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     ModelDirectives.Add(node);
                 }
-                else if (node.Descriptor.Name == "inherits")
+                else if (node.Descriptor.Directive == "inherits")
                 {
                     InheritsDirectives.Add(node);
                 }

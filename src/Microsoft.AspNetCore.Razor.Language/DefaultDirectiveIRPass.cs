@@ -99,15 +99,15 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitDirective(DirectiveIRNode node)
             {
-                if (string.Equals(node.Name, CSharpCodeParser.FunctionsDirectiveDescriptor.Name, StringComparison.Ordinal))
+                if (string.Equals(node.Name, CSharpCodeParser.FunctionsDirectiveDescriptor.Directive, StringComparison.Ordinal))
                 {
                     FunctionsDirectiveNodes.Add(node);
                 }
-                else if (string.Equals(node.Name, CSharpCodeParser.InheritsDirectiveDescriptor.Name, StringComparison.Ordinal))
+                else if (string.Equals(node.Name, CSharpCodeParser.InheritsDirectiveDescriptor.Directive, StringComparison.Ordinal))
                 {
                     InheritsDirectiveNodes.Add(node);
                 }
-                else if (string.Equals(node.Name, CSharpCodeParser.SectionDirectiveDescriptor.Name, StringComparison.Ordinal))
+                else if (string.Equals(node.Name, CSharpCodeParser.SectionDirectiveDescriptor.Directive, StringComparison.Ordinal))
                 {
                     SectionDirectiveNodes.Add(node);
                 }

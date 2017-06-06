@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
             var builder = new StringBuilder();
             builder.Append("@");
-            builder.Append(_directive.Name);
+            builder.Append(_directive.Directive);
 
             foreach (var token in _directive.Tokens)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
         public string DisplayText { get; }
 
-        public string Name => _directive.Name;
+        public string Name => _directive.Directive;
     }
 }
 #endif

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None)),
                 new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(CSharpCodeParser.FunctionsDirectiveDescriptor.Name, "}", "{"),
+                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(CSharpCodeParser.FunctionsDirectiveDescriptor.Directive, "}", "{"),
                     new SourceLocation(10, 0, 10),
                     length: 1));
         }

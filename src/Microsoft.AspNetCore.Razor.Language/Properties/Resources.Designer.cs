@@ -389,18 +389,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidOperation_SpanIsNotChangeOwner"), p0, p1);
 
         /// <summary>
-        /// Invalid directive name '{0}'. Directives must have a non-empty name that consists only of letters.
+        /// Invalid directive keyword '{0}'. Directives must have a non-empty keyword that consists only of letters.
         /// </summary>
-        internal static string DirectiveDescriptor_InvalidDirectiveName
+        internal static string DirectiveDescriptor_InvalidDirectiveKeyword
         {
-            get => GetString("DirectiveDescriptor_InvalidDirectiveName");
+            get => GetString("DirectiveDescriptor_InvalidDirectiveKeyword");
         }
 
         /// <summary>
-        /// Invalid directive name '{0}'. Directives must have a non-empty name that consists only of letters.
+        /// Invalid directive keyword '{0}'. Directives must have a non-empty keyword that consists only of letters.
         /// </summary>
-        internal static string FormatDirectiveDescriptor_InvalidDirectiveName(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveDescriptor_InvalidDirectiveName"), p0);
+        internal static string FormatDirectiveDescriptor_InvalidDirectiveKeyword(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveDescriptor_InvalidDirectiveKeyword"), p0);
 
         /// <summary>
         /// The feature must be initialized by setting the '{0}' property.

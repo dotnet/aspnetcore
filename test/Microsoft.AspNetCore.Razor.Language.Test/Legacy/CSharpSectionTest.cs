@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(Environment.NewLine)),
                 new RazorError(
-                    LegacyResources.FormatDirectiveExpectsIdentifier(CSharpCodeParser.SectionDirectiveDescriptor.Name),
+                    LegacyResources.FormatDirectiveExpectsIdentifier(CSharpCodeParser.SectionDirectiveDescriptor.Directive),
                     new SourceLocation(8, 0, 8),
                     length: Environment.NewLine.Length));
         }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Span(SpanKindInternal.Markup, "         " + Environment.NewLine + "    ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace)),
                     Factory.EmptyHtml()),
                 new RazorError(
-                    LegacyResources.FormatUnexpectedEOFAfterDirective(CSharpCodeParser.SectionDirectiveDescriptor.Name, "{"),
+                    LegacyResources.FormatUnexpectedEOFAfterDirective(CSharpCodeParser.SectionDirectiveDescriptor.Directive, "{"),
                     new SourceLocation(25 + Environment.NewLine.Length, 0, 25 + Environment.NewLine.Length),
                     length: 1));
         }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Span(SpanKindInternal.Code, "         ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.Markup(Environment.NewLine + "    ")),
                 new RazorError(
-                    LegacyResources.FormatDirectiveExpectsIdentifier(CSharpCodeParser.SectionDirectiveDescriptor.Name),
+                    LegacyResources.FormatDirectiveExpectsIdentifier(CSharpCodeParser.SectionDirectiveDescriptor.Directive),
                     new SourceLocation(17, 0, 17),
                     length: Environment.NewLine.Length));
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Markup("</p>")),
                     Factory.Markup(" }")),
                 new RazorError(
-                    LegacyResources.FormatDirectiveExpectsIdentifier(CSharpCodeParser.SectionDirectiveDescriptor.Name),
+                    LegacyResources.FormatDirectiveExpectsIdentifier(CSharpCodeParser.SectionDirectiveDescriptor.Directive),
                     new SourceLocation(9, 0, 9),
                     length: 1));
         }
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Markup("</p>")),
                     Factory.Markup(" }")),
                 new RazorError(
-                    LegacyResources.FormatUnexpectedDirectiveLiteral(CSharpCodeParser.SectionDirectiveDescriptor.Name, "{"),
+                    LegacyResources.FormatUnexpectedDirectiveLiteral(CSharpCodeParser.SectionDirectiveDescriptor.Directive, "{"),
                     new SourceLocation(12, 0, 12),
                     length: 1));
         }
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupBlock(
                         Factory.EmptyHtml()))),
                 new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(CSharpCodeParser.SectionDirectiveDescriptor.Name, "}", "{"),
+                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(CSharpCodeParser.SectionDirectiveDescriptor.Directive, "}", "{"),
                     new SourceLocation(13, 0, 13),
                     length: 1));
         }
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Span(SpanKindInternal.Markup, "      " + Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace)),
                     Factory.EmptyHtml()),
                 new RazorError(
-                    LegacyResources.FormatUnexpectedEOFAfterDirective(CSharpCodeParser.SectionDirectiveDescriptor.Name, "{"),
+                    LegacyResources.FormatUnexpectedEOFAfterDirective(CSharpCodeParser.SectionDirectiveDescriptor.Directive, "{"),
                     new SourceLocation(18 + Environment.NewLine.Length, 0, 18 + Environment.NewLine.Length),
                     length: 1));
         }

@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _builder.Push(new DirectiveIRNode()
                 {
-                    Name = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Name,
+                    Name = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Directive,
                     Descriptor = CSharpCodeParser.AddTagHelperDirectiveDescriptor,
                     Source = BuildSourceSpanFromNode(span),
                 });
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _builder.Push(new DirectiveIRNode()
                 {
-                    Name = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Name,
+                    Name = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Directive,
                     Descriptor = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
                     Source = BuildSourceSpanFromNode(span),
                 });
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _builder.Push(new DirectiveIRNode()
                 {
-                    Name = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Name,
+                    Name = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Directive,
                     Descriptor = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
                     Source = BuildSourceSpanFromNode(span),
                 });
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     _builder.Push(new DirectiveIRNode()
                     {
-                        Name = chunkGenerator.Descriptor.Name,
+                        Name = chunkGenerator.Descriptor.Directive,
                         Descriptor = chunkGenerator.Descriptor,
                         Source = BuildSourceSpanFromNode(block),
                     });
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _builder.Push(new DirectiveIRNode()
                 {
-                    Name = chunkGenerator.Descriptor.Name,
+                    Name = chunkGenerator.Descriptor.Directive,
                     Descriptor = chunkGenerator.Descriptor,
                     Source = BuildSourceSpanFromNode(block),
                 });
