@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Identity.Service.Test
             Assert.Equal(expectedError, result.Errors, ErrorsComparer.Instance);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/Identity/issues/1266")]
         public async Task ValidateLogoutUri_FailsIfTheUriIsRelative()
         {
             // Arrange
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Identity.Service.Test
             Assert.Equal(expectedError, result.Errors, ErrorsComparer.Instance);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/Identity/issues/1266")]
         public async Task ValidateRedirectUri_FailsIfTheUriIsRelative()
         {
             // Arrange
