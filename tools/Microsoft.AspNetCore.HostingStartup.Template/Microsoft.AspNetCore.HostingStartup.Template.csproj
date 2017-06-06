@@ -14,8 +14,8 @@
 
   <Target Name="CollectDeps">
     <PropertyGroup>
-      <CurrentRuntimeFrameworkVersion Condition="'$(CurrentRuntimeFrameworkVersion)' == ''">$(RuntimeFrameworkVersion)</CurrentRuntimeFrameworkVersion>
-      <DestinationDepsFile>$(DepsOutputPath)\$(HostingStartupPackageName)\shared\Microsoft.NETCore.App\$(CurrentRuntimeFrameworkVersion)\$(HostingStartupPackageName).deps.json</DestinationDepsFile>
+      <DepsRuntimeFrameworkVersion Condition="'$(DepsRuntimeFrameworkVersion)' == ''">$(RuntimeFrameworkVersion)</DepsRuntimeFrameworkVersion>
+      <DestinationDepsFile>$(DepsOutputPath)\$(HostingStartupPackageName)\shared\Microsoft.NETCore.App\$(DepsRuntimeFrameworkVersion)\$(HostingStartupPackageName).deps.json</DestinationDepsFile>
     </PropertyGroup>
 
     <Copy SourceFiles="$(ProjectDepsFilePath)" DestinationFiles="$(DestinationDepsFile)" />
