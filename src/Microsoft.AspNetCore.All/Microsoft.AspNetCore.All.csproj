@@ -22,13 +22,4 @@
     <Content Include="build\**\*.targets" PackagePath="%(Identity)" />
   </ItemGroup>
 
-  <Target Name="UpdateManifestVersionNumbers" BeforeTargets="GenerateNuspec">
-    <PropertyGroup>
-      <ManifestTargetsFile>$(MSBuildThisFileDirectory)build\PublishWithAspNetCoreTargetManifest.targets</ManifestTargetsFile>
-    </PropertyGroup>
-
-    <Exec Command="powershell.exe -command &quot;(Get-Content $(ManifestTargetsFile)).replace('__MANIFEST_VERSION__','$(VersionPrefix)-$(VersionSuffix)') | Set-Content $(ManifestTargetsFile)&quot;" Condition="'$(OS)' == 'Windows_NT'"/>
-    <Exec Command="sed -i -e &quot;s/__MANIFEST_VERSION__/$(VersionPrefix)-$(VersionSuffix)/g&quot; $(ManifestTargetsFile)" Condition="'$(OS)' != 'Windows_NT'"/>
-  </Target>
-
 </Project>
