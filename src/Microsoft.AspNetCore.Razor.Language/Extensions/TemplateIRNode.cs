@@ -28,6 +28,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var extension = target.GetExtension<ITemplateTargetExtension>();
             if (extension == null)
             {

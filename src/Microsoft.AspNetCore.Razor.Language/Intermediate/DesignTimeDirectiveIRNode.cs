@@ -27,7 +27,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var extension = target.GetExtension<IDesignTimeDirectiveTargetExtension>();
+            if (extension == null)
+            {
+                context.ReportMissingExtension<IDesignTimeDirectiveTargetExtension>();
+                return;
+            }
+
             extension.WriteDesignTimeDirective(context, this);
         }
     }

@@ -42,7 +42,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var extension = target.GetExtension<IPreallocatedAttributeTargetExtension>();
+            if (extension == null)
+            {
+                context.ReportMissingExtension<IPreallocatedAttributeTargetExtension>();
+                return;
+            }
+
             extension.WriteSetPreallocatedTagHelperProperty(context, this);
         }
     }

@@ -38,7 +38,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 throw new ArgumentNullException(nameof(target));
             }
 
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var extension = target.GetExtension<IInjectDirectiveTargetExtension>();
+            if (extension == null)
+            {
+                context.ReportMissingExtension<IInjectDirectiveTargetExtension>();
+                return;
+            }
+
             extension.WriteInjectProperty(context, this);
         }
     }
