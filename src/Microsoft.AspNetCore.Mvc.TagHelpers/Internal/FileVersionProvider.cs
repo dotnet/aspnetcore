@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 
         private static string GetHashForFile(IFileInfo fileInfo)
         {
-            using (var sha256 = SHA256.Create())
+            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
             {
                 using (var readStream = fileInfo.CreateReadStream())
                 {
