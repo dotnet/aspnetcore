@@ -56,6 +56,9 @@
 
     <Error Text="Please specify the platform for the runtime package store via PACKAGE_CACHE_PLATFORM: {x64|x86}." Condition="'$(PACKAGE_CACHE_PLATFORM)' == ''"/>
 
+    <!-- Display dotnet info -->
+    <Exec Command="dotnet --info" />
+
     <PropertyGroup>
       <OutputZipSufix Condition="'$(OSPlatform)' == 'Windows'">win$(PACKAGE_CACHE_PLATFORM)</OutputZipSufix>
       <OutputZipSufix Condition="'$(OSPlatform)' == 'Linux'">linux</OutputZipSufix>

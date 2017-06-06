@@ -14,9 +14,11 @@
 
   <Target Name="CollectDeps">
     <PropertyGroup>
-      <DestinationDepsFile>$(DepsOutputPath)\$(HostingStartupPackageName)\shared\Microsoft.NETCore.App\$(RuntimeFrameworkVersion)\$(HostingStartupPackageName).deps.json</DestinationDepsFile>
+      <CurrentRuntimeFrameworkVersion Condition="'$(CurrentRuntimeFrameworkVersion)' == ''">$(RuntimeFrameworkVersion)</CurrentRuntimeFrameworkVersion>
+      <DestinationDepsFile>$(DepsOutputPath)\$(HostingStartupPackageName)\shared\Microsoft.NETCore.App\$(CurrentRuntimeFrameworkVersion)\$(HostingStartupPackageName).deps.json</DestinationDepsFile>
     </PropertyGroup>
-      <Copy SourceFiles="$(ProjectDepsFilePath)" DestinationFiles="$(DestinationDepsFile)" />
-      <Exec Command="dotnet run --framework netcoreapp2.0 $([System.IO.Path]::GetFullPath('$(DestinationDepsFile)'))" WorkingDirectory="../TrimDeps/"/>
+
+    <Copy SourceFiles="$(ProjectDepsFilePath)" DestinationFiles="$(DestinationDepsFile)" />
+    <Exec Command="dotnet run --framework netcoreapp2.0 $([System.IO.Path]::GetFullPath('$(DestinationDepsFile)'))" WorkingDirectory="../TrimDeps/"/>
   </Target>
 </Project>
