@@ -36,7 +36,7 @@
 
     <ItemGroup>
       <VSIXPaths Include="$(COHERENCE_DROP_LOCATION)\build\*.vsix" />
-      <PackageCaches Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.zip" />
+      <PackageCaches Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.zip;$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.tar.gz" />
       <PackageCachesArtifacts
         Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.nuspec;
                 $(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.txt" />
@@ -62,7 +62,7 @@
       <UnsignedOobPackages Include="$(CoherenceDestinationDir)shipoob\*.nupkg" />
       <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
       <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
-      <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)*.zip" />
+      <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)Build.RS.*.zip" />
     </ItemGroup>
 
     <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
@@ -408,6 +408,13 @@
     <ReadLinesFromFile File="$(CoherencePackageCacheDestinationDir)version.txt">
       <Output TaskParameter="Lines" PropertyName="VersionNumber" />
     </ReadLinesFromFile>
+
+    <ItemGroup>
+      <RuntimeStoreSymbols Include="$(CoherencePackageCacheDestinationDir)Build.Symbols.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(RuntimeStoreSymbols)" DestinationFolder="$(PackageCacheOutputPath)" />
+
     <Exec Command="$(DNXToolsPath)NuGet.exe pack @(PackageCacheNuspec) -Version $(VersionNumber) -OutputDirectory $(PackageCacheOutputPath) -BasePath $(PackageCacheOutputPath)"/>
   </Target>
 
