@@ -191,4 +191,7 @@
   <data name="PropertyMustBeSet" xml:space="preserve">
     <value>The property '{0}' of '{1}' must not be null.</value>
   </data>
+  <data name="RazorViewCompiler_ViewPathsDifferOnlyInCase" xml:space="preserve">
+    <value>The following precompiled view paths differ only in case, which is not supported:</value>
+  </data>
 </root>
