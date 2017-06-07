@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         RequestLineTooLong,
         HeadersExceedMaxTotalSize,
         TooManyHeaders,
+        RequestBodyTooLarge,
         RequestTimeout,
         FinalTransferCodingNotChunked,
         LengthRequired,

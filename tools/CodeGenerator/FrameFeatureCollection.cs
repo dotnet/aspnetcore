@@ -44,7 +44,8 @@ namespace CodeGenerator
                 typeof(IItemsFeature),
                 typeof(ITlsConnectionFeature),
                 typeof(IHttpWebSocketFeature),
-                typeof(ISessionFeature)
+                typeof(ISessionFeature),
+                typeof(IHttpMaxRequestBodySizeFeature)
             };
 
             var rareFeatures = new[]
@@ -64,6 +65,7 @@ namespace CodeGenerator
                 typeof(IHttpRequestIdentifierFeature),
                 typeof(IHttpRequestLifetimeFeature),
                 typeof(IHttpConnectionFeature),
+                typeof(IHttpMaxRequestBodySizeFeature)
             };
 
             return $@"// Copyright (c) .NET Foundation. All rights reserved.

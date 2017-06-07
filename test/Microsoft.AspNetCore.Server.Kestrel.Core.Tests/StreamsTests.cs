@@ -80,13 +80,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 RequestUpgrade = upgradeable;
             }
-
-            protected override bool Read(ReadableBuffer readableBuffer, WritableBuffer writableBuffer, out ReadCursor consumed, out ReadCursor examined)
-            {
-                consumed = default(ReadCursor);
-                examined = default(ReadCursor);
-                return true;
-            }
         }
     }
 }

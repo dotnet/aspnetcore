@@ -169,14 +169,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _state = FrameStreamState.Closed;
         }
 
-        public void ResumeAcceptingReads()
-        {
-            if (_state == FrameStreamState.Closed)
-            {
-                _state = FrameStreamState.Open;
-            }
-        }
-
         public void StopAcceptingReads()
         {
             // Can't use dispose (or close) as can be disposed too early by user code

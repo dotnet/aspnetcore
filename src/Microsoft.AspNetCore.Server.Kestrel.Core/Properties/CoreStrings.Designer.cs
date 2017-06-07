@@ -948,6 +948,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatUpgradeCannotBeCalledMultipleTimes()
             => GetString("UpgradeCannotBeCalledMultipleTimes");
 
+        /// <summary>
+        /// Request body too large.
+        /// </summary>
+        internal static string BadRequest_RequestBodyTooLarge
+        {
+            get => GetString("BadRequest_RequestBodyTooLarge");
+        }
+
+        /// <summary>
+        /// Request body too large.
+        /// </summary>
+        internal static string FormatBadRequest_RequestBodyTooLarge()
+            => GetString("BadRequest_RequestBodyTooLarge");
+
+        /// <summary>
+        /// The maximum request body size cannot be modified after the app has already started reading from the request body.
+        /// </summary>
+        internal static string MaxRequestBodySizeCannotBeModifiedAfterRead
+        {
+            get => GetString("MaxRequestBodySizeCannotBeModifiedAfterRead");
+        }
+
+        /// <summary>
+        /// The maximum request body size cannot be modified after the app has already started reading from the request body.
+        /// </summary>
+        internal static string FormatMaxRequestBodySizeCannotBeModifiedAfterRead()
+            => GetString("MaxRequestBodySizeCannotBeModifiedAfterRead");
+
+        /// <summary>
+        /// The maximum request body size cannot be modified after the request has be upgraded.
+        /// </summary>
+        internal static string MaxRequestBodySizeCannotBeModifiedForUpgradedRequests
+        {
+            get => GetString("MaxRequestBodySizeCannotBeModifiedForUpgradedRequests");
+        }
+
+        /// <summary>
+        /// The maximum request body size cannot be modified after the request has be upgraded.
+        /// </summary>
+        internal static string FormatMaxRequestBodySizeCannotBeModifiedForUpgradedRequests()
+            => GetString("MaxRequestBodySizeCannotBeModifiedForUpgradedRequests");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
