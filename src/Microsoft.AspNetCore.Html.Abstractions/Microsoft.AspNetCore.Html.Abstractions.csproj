@@ -9,7 +9,6 @@ Commonly used types:
 Microsoft.AspNetCore.Html.HtmlString
 Microsoft.AspNetCore.Html.IHtmlContent</Description>
     <TargetFramework>netstandard1.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
   </PropertyGroup>
