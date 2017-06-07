@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,8 +15,8 @@ namespace Microsoft.CodeAnalysis
 {
     public static class TestCompilation
     {
-        private static Dictionary<Assembly, IEnumerable<MetadataReference>> _assemblyMetadataReferences =
-            new Dictionary<Assembly, IEnumerable<MetadataReference>>();
+        private static readonly ConcurrentDictionary<Assembly, IEnumerable<MetadataReference>> _referenceCache =
+            new ConcurrentDictionary<Assembly, IEnumerable<MetadataReference>>();
 
         public static IEnumerable<MetadataReference> GetMetadataReferences(Assembly assembly)
         {
@@ -40,10 +41,10 @@ namespace Microsoft.CodeAnalysis
                 syntaxTrees = new[] { syntaxTree };
             }
 
-            if (!_assemblyMetadataReferences.TryGetValue(assembly, out IEnumerable<MetadataReference> metadataReferences))
+            if (!_referenceCache.TryGetValue(assembly, out IEnumerable<MetadataReference> metadataReferences))
             {
                 metadataReferences = GetMetadataReferences(assembly);
-                _assemblyMetadataReferences[assembly] = metadataReferences;
+                _referenceCache.TryAdd(assembly, metadataReferences);
             }
 
             var compilation = CSharpCompilation.Create(AssemblyName, syntaxTrees, metadataReferences);
