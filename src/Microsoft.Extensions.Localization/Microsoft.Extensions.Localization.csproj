@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
     <Description>Application localization services and default implementation based on ResourceManager to load localized assembly resources.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>localization</PackageTags>
@@ -20,10 +20,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Resources.Reader" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
