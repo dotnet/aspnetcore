@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR
         public void MapHub<THub>(string path, Action<HttpSocketOptions> socketOptions) where THub : Hub<IClientProxy>
         {
             // find auth attributes
-            var authorizeAttribute = typeof(THub).GetCustomAttribute<AuthorizeAttribute>();
+            var authorizeAttribute = typeof(THub).GetCustomAttribute<AuthorizeAttribute>(inherit: true);
             var options = new HttpSocketOptions();
             if (authorizeAttribute != null)
             {
