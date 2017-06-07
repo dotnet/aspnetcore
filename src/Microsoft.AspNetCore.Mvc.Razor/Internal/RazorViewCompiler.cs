@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     {
         private readonly object _initializeLock = new object();
         private readonly object _cacheLock = new object();
+        private readonly Dictionary<string, Task<CompiledViewDescriptor>> _precompiledViewLookup;
         private readonly ConcurrentDictionary<string, string> _normalizedPathLookup;
         private readonly IFileProvider _fileProvider;
         private readonly RazorTemplateEngine _templateEngine;
@@ -82,12 +83,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _normalizedPathLookup = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
             _cache = new MemoryCache(new MemoryCacheOptions());
 
+            _precompiledViewLookup = new Dictionary<string, Task<CompiledViewDescriptor>>(
+                precompiledViews.Count,
+                StringComparer.OrdinalIgnoreCase);
+
             foreach (var precompiledView in precompiledViews)
             {
-                _cache.Set(
-                    precompiledView.RelativePath,
-                    Task.FromResult(precompiledView),
-                    new MemoryCacheEntryOptions { Priority = CacheItemPriority.NeverRemove });
+                if (_precompiledViewLookup.TryGetValue(precompiledView.RelativePath, out var otherValue))
+                {
+                    var message = string.Join(
+                        Environment.NewLine,
+                        Resources.RazorViewCompiler_ViewPathsDifferOnlyInCase,
+                        otherValue.Result.RelativePath,
+                        precompiledView.RelativePath);
+                    throw new InvalidOperationException(message);
+                }
+
+                _precompiledViewLookup.Add(precompiledView.RelativePath, Task.FromResult(precompiledView));
             }
         }
 
@@ -99,17 +111,40 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 throw new ArgumentNullException(nameof(relativePath));
             }
 
+            // Lookup precompiled views first.
+
             // Attempt to lookup the cache entry using the passed in path. This will succeed if the path is already
             // normalized and a cache entry exists.
-            if (!_cache.TryGetValue(relativePath, out Task<CompiledViewDescriptor> cachedResult))
+            string normalizedPath = null;
+            Task<CompiledViewDescriptor> cachedResult;
+
+            if (_precompiledViewLookup.Count > 0)
             {
-                var normalizedPath = GetNormalizedPath(relativePath);
-                if (!_cache.TryGetValue(normalizedPath, out cachedResult))
+                if (_precompiledViewLookup.TryGetValue(relativePath, out cachedResult))
                 {
-                    cachedResult = CreateCacheEntry(normalizedPath);
+                    return cachedResult;
+                }
+
+                normalizedPath = GetNormalizedPath(relativePath);
+                if (_precompiledViewLookup.TryGetValue(normalizedPath, out cachedResult))
+                {
+                    return cachedResult;
                 }
             }
 
+            if (_cache.TryGetValue(relativePath, out cachedResult))
+            {
+                return cachedResult;
+            }
+
+            normalizedPath = normalizedPath ?? GetNormalizedPath(relativePath);
+            if (_cache.TryGetValue(normalizedPath, out cachedResult))
+            {
+                return cachedResult;
+            }
+
+            // Entry does not exist. Attempt to create one.
+            cachedResult = CreateCacheEntry(normalizedPath);
             return cachedResult;
         }
 

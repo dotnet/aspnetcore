@@ -350,6 +350,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         internal static string FormatPropertyMustBeSet(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("PropertyMustBeSet"), p0, p1);
 
+        /// <summary>
+        /// The following precompiled view paths differ only in case, which is not supported:
+        /// </summary>
+        internal static string RazorViewCompiler_ViewPathsDifferOnlyInCase
+        {
+            get => GetString("RazorViewCompiler_ViewPathsDifferOnlyInCase");
+        }
+
+        /// <summary>
+        /// The following precompiled view paths differ only in case, which is not supported:
+        /// </summary>
+        internal static string FormatRazorViewCompiler_ViewPathsDifferOnlyInCase()
+            => GetString("RazorViewCompiler_ViewPathsDifferOnlyInCase");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

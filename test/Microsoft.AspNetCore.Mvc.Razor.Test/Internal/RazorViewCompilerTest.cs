@@ -17,6 +17,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     public class RazorViewCompilerTest
     {
         [Fact]
+        public void Constructor_ThrowsIfMultiplePrecompiledViewsHavePathsDifferingOnlyInCase()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var precompiledViews = new[]
+            {
+                new CompiledViewDescriptor { RelativePath = "/Views/Home/About.cshtml" },
+                new CompiledViewDescriptor { RelativePath = "/Views/home/About.cshtml" },
+            };
+            var message = string.Join(
+                Environment.NewLine,
+                "The following precompiled view paths differ only in case, which is not supported:",
+                precompiledViews[0].RelativePath,
+                precompiledViews[1].RelativePath);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => GetViewCompiler(fileProvider, precompiledViews: precompiledViews));
+            Assert.Equal(message, ex.Message);
+        }
+
+        [Fact]
         public async Task CompileAsync_ReturnsResultWithNullAttribute_IfFileIsNotFoundInFileSystem()
         {
             // Arrange
@@ -178,6 +199,49 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             Assert.Same(precompiledView, result);
         }
 
+        [Theory]
+        [InlineData("/views/home/index.cshtml")]
+        [InlineData("/VIEWS/HOME/INDEX.CSHTML")]
+        [InlineData("/viEws/HoME/inDex.cshtml")]
+        public async Task CompileAsync_PerformsCaseInsensitiveLookupsForPrecompiledViews(string lookupPath)
+        {
+            // Arrange
+            var path = "/Views/Home/Index.cshtml";
+            var fileProvider = new TestFileProvider();
+            var fileInfo = fileProvider.AddFile(path, "some content");
+            var precompiledView = new CompiledViewDescriptor
+            {
+                RelativePath = path,
+            };
+            var viewCompiler = GetViewCompiler(fileProvider, precompiledViews: new[] { precompiledView });
+
+            // Act
+            var result = await viewCompiler.CompileAsync(lookupPath);
+
+            // Assert
+            Assert.Same(precompiledView, result);
+        }
+
+        [Fact]
+        public async Task CompileAsync_PerformsCaseInsensitiveLookupsForPrecompiledViews_WithNonNormalizedPaths()
+        {
+            // Arrange
+            var path = "/Views/Home/Index.cshtml";
+            var fileProvider = new TestFileProvider();
+            var fileInfo = fileProvider.AddFile(path, "some content");
+            var precompiledView = new CompiledViewDescriptor
+            {
+                RelativePath = path,
+            };
+            var viewCompiler = GetViewCompiler(fileProvider, precompiledViews: new[] { precompiledView });
+
+            // Act
+            var result = await viewCompiler.CompileAsync("Views\\Home\\Index.cshtml");
+
+            // Assert
+            Assert.Same(precompiledView, result);
+        }
+
         [Fact]
         public async Task CompileAsync_DoesNotRecompile_IfFileTriggerWasSetForPrecompiledView()
         {
@@ -199,7 +263,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Assert
             Assert.Same(precompiledView, result);
         }
-
 
         [Fact]
         public async Task GetOrAdd_AllowsConcurrentCompilationOfMultipleRazorPages()
@@ -465,7 +528,7 @@ this should fail";
             fileProvider = fileProvider ?? new TestFileProvider();
             compilationCallback = compilationCallback ?? (_ => { });
             var options = new TestOptionsManager<RazorViewEngineOptions>();
-            if  (referenceManager == null)
+            if (referenceManager == null)
             {
                 var applicationPartManager = new ApplicationPartManager();
                 var assembly = typeof(RazorViewCompilerTest).Assembly;
