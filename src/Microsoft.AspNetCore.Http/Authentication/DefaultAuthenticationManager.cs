@@ -42,7 +42,9 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
 
         public override IEnumerable<AuthenticationDescription> GetAuthenticationSchemes()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var handler = HttpAuthenticationFeature.Handler;
+#pragma warning restore CS0618 // Type or member is obsolete
             if (handler == null)
             {
                 return new AuthenticationDescription[0];
@@ -61,7 +63,9 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var handler = HttpAuthenticationFeature.Handler;
+#pragma warning restore CS0618 // Type or member is obsolete
             if (handler != null)
             {
                 await handler.AuthenticateAsync(context);
@@ -80,7 +84,9 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
                 throw new ArgumentNullException(nameof(authenticationScheme));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var handler = HttpAuthenticationFeature.Handler;
+#pragma warning restore CS0618 // Type or member is obsolete
             var context = new AuthenticateContext(authenticationScheme);
             if (handler != null)
             {
@@ -107,7 +113,9 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
                 throw new ArgumentException(nameof(authenticationScheme));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var handler = HttpAuthenticationFeature.Handler;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var challengeContext = new ChallengeContext(authenticationScheme, properties?.Items, behavior);
             if (handler != null)
@@ -133,7 +141,9 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
                 throw new ArgumentNullException(nameof(principal));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var handler = HttpAuthenticationFeature.Handler;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var signInContext = new SignInContext(authenticationScheme, principal, properties?.Items);
             if (handler != null)
@@ -154,7 +164,9 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
                 throw new ArgumentException(nameof(authenticationScheme));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var handler = HttpAuthenticationFeature.Handler;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var signOutContext = new SignOutContext(authenticationScheme, properties?.Items);
             if (handler != null)
