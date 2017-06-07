@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         /// <param name="projectPath">The root path of the current project. This is used when resolving Node.js module paths relative to the project root.</param>
         /// <param name="watchFileExtensions">The filename extensions that should be watched within the project root. The Node instance will automatically shut itself down if any matching file changes.</param>
         /// <param name="commandLineArguments">Additional command-line arguments to be passed to the Node.js instance.</param>
+        /// <param name="applicationStoppingToken">A token that indicates when the host application is stopping.</param>
         /// <param name="nodeOutputLogger">The <see cref="ILogger"/> to which the Node.js instance's stdout/stderr (and other log information) should be written.</param>
         /// <param name="environmentVars">Environment variables to be set on the Node.js process.</param>
         /// <param name="invocationTimeoutMilliseconds">The maximum duration, in milliseconds, to wait for RPC calls to complete.</param>
@@ -55,6 +56,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             string projectPath,
             string[] watchFileExtensions,
             string commandLineArguments,
+            CancellationToken applicationStoppingToken,
             ILogger nodeOutputLogger,
             IDictionary<string, string> environmentVars,
             int invocationTimeoutMilliseconds,
@@ -67,7 +69,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             }
 
             OutputLogger = nodeOutputLogger;
-            _entryPointScript = new StringAsTempFile(entryPointScript);
+            _entryPointScript = new StringAsTempFile(entryPointScript, applicationStoppingToken);
             _invocationTimeoutMilliseconds = invocationTimeoutMilliseconds;
             _launchWithDebugging = launchWithDebugging;
 

@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Builder
             // Get a filename matching the middleware Node script
             var script = EmbeddedResourceReader.Read(typeof(WebpackDevMiddleware),
                 "/Content/Node/webpack-dev-middleware.js");
-            var nodeScript = new StringAsTempFile(script); // Will be cleaned up on process exit
+            var nodeScript = new StringAsTempFile(script, nodeServicesOptions.ApplicationStoppingToken); // Will be cleaned up on process exit
 
             // Ideally, this would be relative to the application's PathBase (so it could work in virtual directories)
             // but it's not clear that such information exists during application startup, as opposed to within the context

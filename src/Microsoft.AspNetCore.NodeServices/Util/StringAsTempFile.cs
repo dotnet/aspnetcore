@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
@@ -11,22 +12,21 @@ namespace Microsoft.AspNetCore.NodeServices
         private bool _disposedValue;
         private bool _hasDeletedTempFile;
         private object _fileDeletionLock = new object();
+        private IDisposable _applicationLifetimeRegistration;
 
         /// <summary>
         /// Create a new instance of <see cref="StringAsTempFile"/>.
         /// </summary>
         /// <param name="content">The contents of the temporary file to be created.</param>
-        public StringAsTempFile(string content)
+        /// <param name="applicationStoppingToken">A token that indicates when the host application is stopping.</param>
+        public StringAsTempFile(string content, CancellationToken applicationStoppingToken)
         {
             FileName = Path.GetTempFileName();
             File.WriteAllText(FileName, content);
 
             // Because .NET finalizers don't reliably run when the process is terminating, also
             // add event handlers for other shutdown scenarios.
-            // Note that this still doesn't capture SIGKILL (at least on macOS) - there doesn't
-            // appear to be a way of doing that. So in that case, the temporary file will be
-            // left behind.
-            System.Runtime.Loader.AssemblyLoadContext.Default.Unloading += HandleAssemblyUnloading;
+            _applicationLifetimeRegistration = applicationStoppingToken.Register(EnsureTempFileDeleted);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.NodeServices
                 if (disposing)
                 {
                     // Dispose managed state
-                    System.Runtime.Loader.AssemblyLoadContext.Default.Unloading -= HandleAssemblyUnloading;
+                    _applicationLifetimeRegistration.Dispose();
                 }
 
                 EnsureTempFileDeleted();
@@ -69,11 +69,6 @@ namespace Microsoft.AspNetCore.NodeServices
                     _hasDeletedTempFile = true;
                 }
             }
-        }
-
-        private void HandleAssemblyUnloading(System.Runtime.Loader.AssemblyLoadContext context)
-        {
-            EnsureTempFileDeleted();
         }
 
         /// <summary>

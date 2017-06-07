@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 options.ProjectPath,
                 options.WatchFileExtensions,
                 MakeCommandLineOptions(port),
+                options.ApplicationStoppingToken,
                 options.NodeInstanceOutputLogger,
                 options.EnvironmentVariables,
                 options.InvocationTimeoutMilliseconds,

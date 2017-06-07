@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         private static INodeServices _fallbackNodeServices; // Used only if no INodeServices was registered with DI
 
         private readonly string _applicationBasePath;
+        private readonly CancellationToken _applicationStoppingToken;
         private readonly INodeServices _nodeServices;
 
         /// <summary>
@@ -35,6 +37,9 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             var hostEnv = (IHostingEnvironment) serviceProvider.GetService(typeof(IHostingEnvironment));
             _nodeServices = (INodeServices) serviceProvider.GetService(typeof(INodeServices)) ?? _fallbackNodeServices;
             _applicationBasePath = hostEnv.ContentRootPath;
+            
+            var applicationLifetime = (IApplicationLifetime) serviceProvider.GetService(typeof(IApplicationLifetime));
+            _applicationStoppingToken = applicationLifetime.ApplicationStopping;
 
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
             // in your startup file, but then again it might be confusing that you don't need to.
@@ -101,6 +106,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             var result = await Prerenderer.RenderToString(
                 _applicationBasePath,
                 _nodeServices,
+                _applicationStoppingToken,
                 new JavaScriptModuleExport(ModuleName)
                 {
                     ExportName = ExportName
