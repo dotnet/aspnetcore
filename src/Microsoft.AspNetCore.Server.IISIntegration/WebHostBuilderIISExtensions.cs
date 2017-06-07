@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Hosting
                 else
                 {
                     // Lightup a new ANCM variable that tells us if auth is enabled.
-                    foreach (var authType in iisAuth.Split(';'))
+                    foreach (var authType in iisAuth.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (!string.Equals(authType, "anonymous", StringComparison.OrdinalIgnoreCase))
                         {

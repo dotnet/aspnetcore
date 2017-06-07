@@ -42,11 +42,11 @@ namespace TestSites
                     var authScheme = (await authProvider.GetAllSchemesAsync()).SingleOrDefault();
                     if (string.IsNullOrEmpty(iisAuth))
                     {
-                        await ctx.Response.WriteAsync("backcompat;" + authScheme?.Name ?? "null");
+                        await ctx.Response.WriteAsync("backcompat;" + (authScheme?.Name ?? "null"));
                     }
                     else
                     {
-                        await ctx.Response.WriteAsync("latest;" + authScheme?.Name ?? "null");
+                        await ctx.Response.WriteAsync("latest;" + (authScheme?.Name ?? "null"));
                     }
                     return;
                 }
