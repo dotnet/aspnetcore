@@ -1,14 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.0</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0-*" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="2.0.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0-*" />
   </ItemGroup>
 
   <ItemGroup>

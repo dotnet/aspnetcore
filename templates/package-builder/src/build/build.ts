@@ -181,6 +181,13 @@ function buildDotNetNewNuGetPackage(packageId: string) {
                 exclude: ['.template.config/**']
             }],
             symbols: {
+                TargetFrameworkOverride: {
+                    type: 'parameter',
+                    description: 'Overrides the target framework',
+                    replaces: 'TargetFrameworkOverride',
+                    datatype: 'string',
+                    defaultValue: ''
+                },
                 Framework: {
                     type: 'parameter',
                     description: 'The target framework for the project.',
@@ -191,6 +198,7 @@ function buildDotNetNewNuGetPackage(packageId: string) {
                             description: 'Target netcoreapp2.0'
                         }
                     ],
+                    replaces: 'netcoreapp2.0',
                     defaultValue: 'netcoreapp2.0'
                 },
                 skipRestore: {
@@ -226,7 +234,16 @@ function buildDotNetNewNuGetPackage(packageId: string) {
         }, null, 2));
 
         fs.writeFileSync(path.join(templateConfigDir, 'dotnetcli.host.json'), JSON.stringify({
+            $schema: 'http://json.schemastore.org/dotnetcli.host',
             symbolInfo: {
+                TargetFrameworkOverride: {
+                    isHidden: 'true',
+                    longName: 'target-framework-override',
+                    shortName: ''
+                },
+                Framework: {
+                    longName: 'framework'
+                },
                 skipRestore: {
                     longName: 'no-restore',
                     shortName: ''
@@ -235,12 +252,14 @@ function buildDotNetNewNuGetPackage(packageId: string) {
         }, null, 2));
         
         fs.writeFileSync(path.join(templateConfigDir, 'vs-2017.3.host.json'), JSON.stringify({
+            $schema: 'http://json.schemastore.org/vs-2017.3.host',
             name: { text: templateConfig.displayName },
-            description: { text: `Web application built with MVC ASP.NET Core and ${templateConfig.displayName}` },
-            order: 2000,
+            description: { text: `ASP.NET Core application with MVC and ${templateConfig.displayName}` },
+            order: 301,
             icon: 'icon.png',
             learnMoreLink: 'https://github.com/aspnet/JavaScriptServices',
-            uiFilters: [ 'oneaspnet' ]
+            uiFilters: [ 'oneaspnet' ],
+            minFullFrameworkVersion: '4.6.1'
         }, null, 2));
     });
 
