@@ -33,3 +33,5 @@ global.json
 
 # Dependencies from pre-requisite builds
 .deps/
+.rw/
+.ro/
