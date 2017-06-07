@@ -31,14 +31,14 @@ namespace SocketsSample.Hubs
 
         public async Task JoinGroup(string groupName)
         {
-            await Clients.Group(groupName).InvokeAsync("Send", $"{Context.ConnectionId} joined {groupName}");
+            await Groups.AddAsync(Context.ConnectionId, groupName);
 
-            await Groups.AddAsync(groupName);
+            await Clients.Group(groupName).InvokeAsync("Send", $"{Context.ConnectionId} joined {groupName}");
         }
 
         public async Task LeaveGroup(string groupName)
         {
-            await Groups.RemoveAsync(groupName);
+            await Groups.RemoveAsync(Context.ConnectionId, groupName);
 
             await Clients.Group(groupName).InvokeAsync("Send", $"{Context.ConnectionId} left {groupName}");
         }

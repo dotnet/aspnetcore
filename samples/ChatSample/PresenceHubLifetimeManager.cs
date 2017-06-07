@@ -157,14 +157,14 @@ namespace ChatSample
             return _wrappedHubLifetimeManager.InvokeUserAsync(userId, methodName, args);
         }
 
-        public override Task AddGroupAsync(ConnectionContext connection, string groupName)
+        public override Task AddGroupAsync(string connectionId, string groupName)
         {
-            return _wrappedHubLifetimeManager.AddGroupAsync(connection, groupName);
+            return _wrappedHubLifetimeManager.AddGroupAsync(connectionId, groupName);
         }
 
-        public override Task RemoveGroupAsync(ConnectionContext connection, string groupName)
+        public override Task RemoveGroupAsync(string connectionId, string groupName)
         {
-            return _wrappedHubLifetimeManager.RemoveGroupAsync(connection, groupName);
+            return _wrappedHubLifetimeManager.RemoveGroupAsync(connectionId, groupName);
         }
     }
 }

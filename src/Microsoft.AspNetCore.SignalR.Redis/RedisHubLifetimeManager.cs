@@ -200,17 +200,21 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 // in RemoveGroupAsync
                 foreach (var group in groupNames.ToArray())
                 {
-                    tasks.Add(RemoveGroupAsync(connection, group));
+                    tasks.Add(RemoveGroupAsync(connection.ConnectionId, group));
                 }
             }
 
             return Task.WhenAll(tasks);
         }
 
-        public override async Task AddGroupAsync(ConnectionContext connection, string groupName)
+        public override async Task AddGroupAsync(string connectionId, string groupName)
         {
             var groupChannel = typeof(THub).FullName + ".group." + groupName;
-
+            var connection = _connections[connectionId];
+            if (connection == null)
+            {
+                return;
+            }
             var groupNames = connection.Metadata.GetOrAdd(HubConnectionMetadataNames.Groups, _ => new HashSet<string>());
 
             lock (groupNames)
@@ -258,12 +262,18 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
         }
 
-        public override async Task RemoveGroupAsync(ConnectionContext connection, string groupName)
+        public override async Task RemoveGroupAsync(string connectionId, string groupName)
         {
             var groupChannel = typeof(THub).FullName + ".group." + groupName;
 
             GroupData group;
             if (!_groups.TryGetValue(groupChannel, out group))
+            {
+                return;
+            }
+
+            var connection = _connections[connectionId];
+            if (connection != null)
             {
                 return;
             }
