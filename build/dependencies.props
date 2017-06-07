@@ -8,6 +8,7 @@
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <RoslynVersion>2.0.0</RoslynVersion>
     <RoslynDevVersion>2.3.0-beta1-61624-03</RoslynDevVersion>
