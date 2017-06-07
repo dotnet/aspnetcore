@@ -27,6 +27,7 @@ namespace Webpack.ActionResults
         {
             var nodeServices = context.HttpContext.RequestServices.GetRequiredService<INodeServices>();
             var hostEnv = context.HttpContext.RequestServices.GetRequiredService<IHostingEnvironment>();
+            var applicationLifetime = context.HttpContext.RequestServices.GetRequiredService<IApplicationLifetime>();
             var applicationBasePath = hostEnv.ContentRootPath;
             var request = context.HttpContext.Request;
             var response = context.HttpContext.Response;
@@ -34,6 +35,7 @@ namespace Webpack.ActionResults
             var prerenderedHtml = await Prerenderer.RenderToString(
                 applicationBasePath,
                 nodeServices,
+                applicationLifetime.ApplicationStopping,
                 _moduleExport,
                 request.GetEncodedUrl(),
                 request.Path + request.QueryString.Value,

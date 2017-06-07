@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.NodeServices.Sockets
                 options.ProjectPath,
                 options.WatchFileExtensions,
                 MakeNewCommandLineOptions(socketAddress),
+                options.ApplicationStoppingToken,
                 options.NodeInstanceOutputLogger,
                 options.EnvironmentVariables,
                 options.InvocationTimeoutMilliseconds,

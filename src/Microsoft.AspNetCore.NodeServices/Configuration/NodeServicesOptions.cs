@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.AspNetCore.NodeServices.HostingModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,12 @@ namespace Microsoft.AspNetCore.NodeServices
             {
                 ProjectPath = hostEnv.ContentRootPath;
                 EnvironmentVariables["NODE_ENV"] = hostEnv.IsDevelopment() ? "development" : "production"; // De-facto standard values for Node
+            }
+
+            var applicationLifetime = serviceProvider.GetService<IApplicationLifetime>();
+            if (applicationLifetime != null)
+            {
+                ApplicationStoppingToken = applicationLifetime.ApplicationStopping;
             }
 
             // If the DI system gives us a logger, use it. Otherwise, set up a default one.
@@ -93,5 +100,10 @@ namespace Microsoft.AspNetCore.NodeServices
         /// Specifies the maximum duration, in milliseconds, that your .NET code should wait for Node.js RPC calls to return.
         /// </summary>
         public int InvocationTimeoutMilliseconds { get; set; }
+
+        /// <summary>
+        /// A token that indicates when the host application is stopping.
+        /// </summary>
+        public CancellationToken ApplicationStoppingToken { get; set; }
     }
 }

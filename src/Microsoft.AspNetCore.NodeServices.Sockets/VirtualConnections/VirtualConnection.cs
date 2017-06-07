@@ -12,11 +12,7 @@ namespace Microsoft.AspNetCore.NodeServices.Sockets.VirtualConnections
     /// </summary>
     internal class VirtualConnection : Stream
     {
-#if NET451
-        private readonly static Task CompletedTask = Task.FromResult((object)null);
-#else
         private readonly static Task CompletedTask = Task.CompletedTask;
-#endif
         private VirtualConnectionClient _host;
         private readonly BufferBlock<byte[]> _receivedDataQueue = new BufferBlock<byte[]>();
         private ArraySegment<byte> _receivedDataNotYetUsed;
