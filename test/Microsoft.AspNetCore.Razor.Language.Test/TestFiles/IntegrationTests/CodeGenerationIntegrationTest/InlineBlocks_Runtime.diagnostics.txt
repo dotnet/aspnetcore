@@ -1,0 +1,1 @@
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml(1,14): Error RZ9999: Unexpected literal following the 'section' directive. Expected '{'.

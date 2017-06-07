@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 #if NET46
@@ -128,13 +129,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 return;
             }
 
-            var testFile = TestFile.Create(baselineFilename, GetType().GetTypeInfo().Assembly);
-            if (!testFile.Exists())
+            var irFile = TestFile.Create(baselineFilename, GetType().GetTypeInfo().Assembly);
+            if (!irFile.Exists())
             {
                 throw new XunitException($"The resource {baselineFilename} was not found.");
             }
 
-            var baseline = testFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var baseline = irFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             RazorIRNodeVerifier.Verify(document, baseline);
         }
 
@@ -147,26 +148,48 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
 
             var baselineFilename = Path.ChangeExtension(Filename, ".codegen.cs");
+            var baselineDiagnosticsFilename = Path.ChangeExtension(Filename, ".diagnostics.txt");
 
             if (GenerateBaselines)
             {
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFilename);
                 File.WriteAllText(baselineFullPath, document.GeneratedCode);
+
+                var baselineDiagnosticsFullPath = Path.Combine(TestProjectRoot, baselineDiagnosticsFilename);
+                var lines = document.Diagnostics.Select(RazorDiagnosticSerializer.Serialize).ToArray();
+                if (lines.Any())
+                {
+                    File.WriteAllLines(baselineDiagnosticsFullPath, lines);
+                }
+                else if (File.Exists(baselineDiagnosticsFullPath))
+                {
+                    File.Delete(baselineDiagnosticsFullPath);
+                }
+
                 return;
             }
 
-            var testFile = TestFile.Create(baselineFilename, GetType().GetTypeInfo().Assembly);
-            if (!testFile.Exists())
+            var codegenFile = TestFile.Create(baselineFilename, GetType().GetTypeInfo().Assembly);
+            if (!codegenFile.Exists())
             {
                 throw new XunitException($"The resource {baselineFilename} was not found.");
             }
 
-            var baseline = testFile.ReadAllText();
+            var baseline = codegenFile.ReadAllText();
 
             // Normalize newlines to match those in the baseline.
             var actual = document.GeneratedCode.Replace("\r", "").Replace("\n", "\r\n");
-
             Assert.Equal(baseline, actual);
+
+            var baselineDiagnostics = string.Empty;
+            var diagnosticsFile = TestFile.Create(baselineDiagnosticsFilename, GetType().GetTypeInfo().Assembly);
+            if (diagnosticsFile.Exists())
+            {
+                baselineDiagnostics = diagnosticsFile.ReadAllText();
+            }
+
+            var actualDiagnostics = string.Concat(document.Diagnostics.Select(d => RazorDiagnosticSerializer.Serialize(d) + "\r\n"));
+            Assert.Equal(baselineDiagnostics, actualDiagnostics);
         }
 
         protected void AssertLineMappingsMatchBaseline(RazorCodeDocument document)

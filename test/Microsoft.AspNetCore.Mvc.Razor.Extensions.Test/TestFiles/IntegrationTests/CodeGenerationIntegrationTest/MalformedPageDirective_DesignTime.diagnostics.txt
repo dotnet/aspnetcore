@@ -1,0 +1,1 @@
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MalformedPageDirective.cshtml(1,7): Error RZ9999: The 'page' directive expects a string surrounded by double quotes.
