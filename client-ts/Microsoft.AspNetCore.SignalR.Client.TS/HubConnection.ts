@@ -3,36 +3,10 @@ import { IConnection } from "./IConnection"
 import { Connection } from "./Connection"
 import { TransportType } from "./Transports"
 import { Subject, Observable } from "./Observable"
-import * as Formatters from "./Formatters";
-
-const enum MessageType {
-    Invocation = 1,
-    Result,
-    Completion
-}
-
-interface HubMessage {
-    readonly type: MessageType;
-    readonly invocationId: string;
-}
-
-interface InvocationMessage extends HubMessage {
-    readonly target: string;
-    readonly arguments: Array<any>;
-    readonly nonblocking?: boolean;
-}
-
-interface ResultMessage extends HubMessage {
-    readonly item?: any;
-}
-
-interface CompletionMessage extends HubMessage {
-    readonly error?: string;
-    readonly result?: any;
-}
-
 export { Connection } from "./Connection"
 export { TransportType } from "./Transports"
+import { IHubProtocol, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage } from "./IHubProtocol";
+import { JsonHubProtocol } from "./JsonHubProtocol";
 
 export class HubConnection {
     private connection: IConnection;
@@ -40,6 +14,7 @@ export class HubConnection {
     private methods: Map<string, (...args: any[]) => void>;
     private id: number;
     private connectionClosedCallback: ConnectionClosed;
+    private protocol: IHubProtocol;
 
     static create(url: string, queryString?: string): HubConnection {
         return new this(new Connection(url, queryString))
@@ -59,22 +34,16 @@ export class HubConnection {
         this.callbacks = new Map<string, (invocationEvent: CompletionMessage | ResultMessage) => void>();
         this.methods = new Map<string, (...args: any[]) => void>();
         this.id = 0;
+        this.protocol = new JsonHubProtocol();
     }
 
     private onDataReceived(data: any) {
-        // TODO: separate JSON parsing
-        // Can happen if a poll request was cancelled
-        if (!data) {
-            return;
-        }
-
         // Parse the messages
-        let messages = Formatters.TextMessageFormat.parse(data);
+        let messages = this.protocol.parseMessages(data);
 
         for (var i = 0; i < messages.length; ++i) {
-            console.log(`Received message: ${messages[i]}`);
+            var message = messages[i];
 
-            var message = JSON.parse(messages[i]);
             switch (message.type) {
                 case MessageType.Invocation:
                     this.InvokeClientMethod(<InvocationMessage>message);
@@ -159,8 +128,7 @@ export class HubConnection {
             }
         });
 
-        // TODO: separate conversion to enable different data formats
-        let message = this.framePayload(invocationDescriptor);
+        let message = this.protocol.writeMessage(invocationDescriptor);
 
         this.connection.send(message)
             .catch(e => {
@@ -190,8 +158,7 @@ export class HubConnection {
                 }
             });
 
-            // TODO: separate conversion to enable different data formats
-            let message = this.framePayload(invocationDescriptor);
+            let message = this.protocol.writeMessage(invocationDescriptor);
 
             this.connection.send(message)
                 .catch(e => {
@@ -209,11 +176,6 @@ export class HubConnection {
 
     set onClosed(callback: ConnectionClosed) {
         this.connectionClosedCallback = callback;
-    }
-
-    private framePayload(invocationDescriptor: InvocationMessage): string {
-        let data = JSON.stringify(invocationDescriptor);
-        return Formatters.TextMessageFormat.write(data);
     }
 
     private createInvocation(methodName: string, args: any[]): InvocationMessage {
