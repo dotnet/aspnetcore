@@ -121,6 +121,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected string ConnectionId => _frameContext.ConnectionId;
 
         public string ConnectionIdFeature { get; set; }
+        public bool HasStartedConsumingRequestBody { get; set; }
+        public long? MaxRequestBodySize { get; set; }
 
         /// <summary>
         /// The request id. <seealso cref="HttpContext.TraceIdentifier"/>
@@ -310,8 +312,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void PauseStreams() => _frameStreams.Pause();
 
-        public void ResumeStreams() => _frameStreams.Resume();
-
         public void StopStreams() => _frameStreams.Stop();
 
         public void Reset()
@@ -326,6 +326,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             ResetFeatureCollection();
 
+            HasStartedConsumingRequestBody = false;
+            MaxRequestBodySize = ServerOptions.Limits.MaxRequestBodySize;
             TraceIdentifier = null;
             Scheme = null;
             Method = null;
@@ -368,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _manuallySetRequestAbortToken = null;
             _abortedCts = null;
 
-            // Allow to bytes for \r\n after headers
+            // Allow two bytes for \r\n after headers
             _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
             _requestHeadersParsed = 0;
 
@@ -949,7 +951,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var result = _parser.ParseRequestLine(new FrameAdapter(this), buffer, out consumed, out examined);
             if (!result && overLength)
             {
-                RejectRequest(RequestRejectionReason.RequestLineTooLong);
+                ThrowRequestRejected(RequestRejectionReason.RequestLineTooLong);
             }
 
             return result;
@@ -973,7 +975,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!result && overLength)
             {
-                RejectRequest(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                ThrowRequestRejected(RequestRejectionReason.HeadersExceedMaxTotalSize);
             }
             if (result)
             {
@@ -1059,13 +1061,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             throw new ObjectDisposedException(CoreStrings.UnhandledApplicationException, _applicationException);
         }
 
-        public void RejectRequest(RequestRejectionReason reason)
+        public void ThrowRequestRejected(RequestRejectionReason reason)
             => throw BadHttpRequestException.GetException(reason);
 
-        public void RejectRequest(RequestRejectionReason reason, string detail)
+        public void ThrowRequestRejected(RequestRejectionReason reason, string detail)
             => throw BadHttpRequestException.GetException(reason, detail);
 
-        private void RejectRequestTarget(Span<byte> target)
+        private void ThrowRequestTargetRejected(Span<byte> target)
             => throw GetInvalidRequestTargetException(target);
 
         private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
@@ -1207,7 +1209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             catch (InvalidOperationException)
             {
-                RejectRequestTarget(target);
+                ThrowRequestTargetRejected(target);
             }
 
             QueryString = query.GetAsciiStringNonNullCharacters();
@@ -1226,7 +1228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var ch = target[i];
                 if (!UriUtilities.IsValidAuthorityCharacter(ch))
                 {
-                    RejectRequestTarget(target);
+                    ThrowRequestTargetRejected(target);
                 }
             }
 
@@ -1234,7 +1236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // requests (https://tools.ietf.org/html/rfc7231#section-4.3.6).
             if (method != HttpMethod.Connect)
             {
-                RejectRequest(RequestRejectionReason.ConnectMethodRequired);
+                ThrowRequestRejected(RequestRejectionReason.ConnectMethodRequired);
             }
 
             // When making a CONNECT request to establish a tunnel through one or
@@ -1259,7 +1261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // OPTIONS request (https://tools.ietf.org/html/rfc7231#section-4.3.7).
             if (method != HttpMethod.Options)
             {
-                RejectRequest(RequestRejectionReason.OptionsMethodRequired);
+                ThrowRequestRejected(RequestRejectionReason.OptionsMethodRequired);
             }
 
             RawTarget = Asterisk;
@@ -1288,7 +1290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
             {
-                RejectRequestTarget(target);
+                ThrowRequestTargetRejected(target);
             }
 
             _absoluteRequestTarget = uri;
@@ -1312,7 +1314,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
-                RejectRequest(RequestRejectionReason.TooManyHeaders);
+                ThrowRequestRejected(RequestRejectionReason.TooManyHeaders);
             }
             var valueString = value.GetAsciiStringNonNullCharacters();
 
@@ -1335,17 +1337,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var host = FrameRequestHeaders.HeaderHost;
             if (host.Count <= 0)
             {
-                RejectRequest(RequestRejectionReason.MissingHostHeader);
+                ThrowRequestRejected(RequestRejectionReason.MissingHostHeader);
             }
             else if (host.Count > 1)
             {
-                RejectRequest(RequestRejectionReason.MultipleHostHeaders);
+                ThrowRequestRejected(RequestRejectionReason.MultipleHostHeaders);
             }
             else if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
             {
                 if (!host.Equals(RawTarget))
                 {
-                    RejectRequest(RequestRejectionReason.InvalidHostHeader, host.ToString());
+                    ThrowRequestRejected(RequestRejectionReason.InvalidHostHeader, host.ToString());
                 }
             }
             else if (_requestTargetForm == HttpRequestTarget.AbsoluteForm)
@@ -1361,7 +1363,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if ((host != _absoluteRequestTarget.Authority || !_absoluteRequestTarget.IsDefaultPort)
                     && host != authorityAndPort)
                 {
-                    RejectRequest(RequestRejectionReason.InvalidHostHeader, host.ToString());
+                    ThrowRequestRejected(RequestRejectionReason.InvalidHostHeader, host.ToString());
                 }
             }
         }
@@ -1370,9 +1372,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             => ConnectionInformation.PipeFactory.Create(new PipeOptions
             {
                 ReaderScheduler = ServiceContext.ThreadPool,
-                WriterScheduler = ConnectionInformation.InputWriterScheduler,
-                MaximumSizeHigh = ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-                MaximumSizeLow = ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+                WriterScheduler = InlineScheduler.Default,
+                MaximumSizeHigh = 1,
+                MaximumSizeLow = 1
             });
 
         private enum HttpRequestTarget

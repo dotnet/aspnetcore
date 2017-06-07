@@ -241,5 +241,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().MaxConcurrentUpgradedConnections = value);
             Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
         }
+
+        [Fact]
+        public void MaxRequestBodySizeDefault()
+        {
+            // ~28.6 MB (https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005)
+            Assert.Equal(30000000, new KestrelServerLimits().MaxRequestBodySize);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(long.MaxValue)]
+        public void MaxRequestBodySizeValid(long? value)
+        {
+            var limits = new KestrelServerLimits
+            {
+                MaxRequestBodySize = value
+            };
+
+            Assert.Equal(value, limits.MaxRequestBodySize);
+        }
+
+        [Theory]
+        [InlineData(long.MinValue)]
+        [InlineData(-1)]
+        public void MaxRequestBodySizeInvalid(long value)
+        {
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().MaxRequestBodySize = value);
+            Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
+        }
     }
 }

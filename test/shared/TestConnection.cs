@@ -117,20 +117,31 @@ namespace Microsoft.AspNetCore.Testing
             var expected = string.Join("\r\n", lines);
             var actual = new char[expected.Length];
             var offset = 0;
-            while (offset < expected.Length)
+
+            try
             {
-                var data = new byte[expected.Length];
-                var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
-                if (!Debugger.IsAttached)
+                while (offset < expected.Length)
                 {
-                    task = task.TimeoutAfter(Timeout);
+                    var data = new byte[expected.Length];
+                    var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
+                    if (!Debugger.IsAttached)
+                    {
+                        task = task.TimeoutAfter(Timeout);
+                    }
+                    var count = await task.ConfigureAwait(false);
+                    if (count == 0)
+                    {
+                        break;
+                    }
+                    offset += count;
                 }
-                var count = await task.ConfigureAwait(false);
-                if (count == 0)
-                {
-                    break;
-                }
-                offset += count;
+            }
+            catch (TimeoutException ex) when (offset != 0)
+            {
+                throw new TimeoutException($"Did not receive a complete response within {Timeout}.{Environment.NewLine}{Environment.NewLine}" +
+                    $"Expected:{Environment.NewLine}{expected}{Environment.NewLine}{Environment.NewLine}" +
+                    $"Actual:{Environment.NewLine}{new string(actual, 0, offset)}{Environment.NewLine}",
+                    ex);
             }
 
             Assert.Equal(expected, new string(actual, 0, offset));

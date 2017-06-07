@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -731,6 +729,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(header0Count + header1Count, _frame.RequestHeaders.Count);
 
             await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+        }
+
+        [Fact]
+        public void ThrowsWhenMaxRequestBodySizeIsSetAfterReadingFromRequestBody()
+        {
+            // Act
+            // This would normally be set by the MessageBody during the first read.
+            _frame.HasStartedConsumingRequestBody = true;
+
+            // Assert
+            Assert.True(((IHttpMaxRequestBodySizeFeature)_frame).IsReadOnly);
+            var ex = Assert.Throws<InvalidOperationException>(() => ((IHttpMaxRequestBodySizeFeature)_frame).MaxRequestBodySize = 1);
+            Assert.Equal(CoreStrings.MaxRequestBodySizeCannotBeModifiedAfterRead, ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsWhenMaxRequestBodySizeIsSetToANegativeValue()
+        {
+            // Assert
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => ((IHttpMaxRequestBodySizeFeature)_frame).MaxRequestBodySize = -1);
+            Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
         }
 
         private static async Task WaitForCondition(TimeSpan timeout, Func<bool> condition)

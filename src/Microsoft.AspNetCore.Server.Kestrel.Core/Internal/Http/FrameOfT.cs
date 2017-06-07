@@ -93,8 +93,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                         InitializeStreams(messageBody);
 
-                        var messageBodyTask = messageBody.StartAsync();
-
                         var context = _application.CreateContext(this);
                         try
                         {
@@ -142,8 +140,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             // If _requestAbort is set, the connection has already been closed.
                             if (Volatile.Read(ref _requestAborted) == 0)
                             {
-                                ResumeStreams();
-
                                 if (HasResponseStarted)
                                 {
                                     // If the response has already started, call ProduceEnd() before
@@ -158,20 +154,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                     await ProduceEnd();
                                 }
 
-                                if (!_keepAlive)
+                                // ForZeroContentLength does not complete the reader nor the writer
+                                if (!messageBody.IsEmpty)
                                 {
-                                    messageBody.Cancel();
+                                    if (_keepAlive)
+                                    {
+                                        // Finish reading the request body in case the app did not.
+                                        await messageBody.ConsumeAsync();
+                                        // At this point both the request body pipe reader and writer should be completed.
+                                        RequestBodyPipe.Reset();
+                                    }
+                                    else
+                                    {
+                                        RequestBodyPipe.Reader.Complete();
+                                        messageBody.Cancel();
+                                        Input.CancelPendingRead();
+                                    }
                                 }
-
-                                // An upgraded request has no defined request body length.
-                                // Cancel any pending read so the read loop ends.
-                                if (_upgradeAvailable)
-                                {
-                                    Input.CancelPendingRead();
-                                }
-
-                                // Finish reading the request body in case the app did not.
-                                await messageBody.ConsumeAsync();
 
                                 if (!HasResponseStarted)
                                 {
@@ -199,15 +198,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             // StopStreams should be called before the end of the "if (!_requestProcessingStopping)" block
                             // to ensure InitializeStreams has been called.
                             StopStreams();
-                        }
-
-                        // At this point both the request body pipe reader and writer should be completed.
-                        await messageBodyTask;
-
-                        // ForZeroContentLength does not complete the reader nor the writer
-                        if (_keepAlive && !messageBody.IsEmpty)
-                        {
-                            RequestBodyPipe.Reset();
                         }
                     }
 
