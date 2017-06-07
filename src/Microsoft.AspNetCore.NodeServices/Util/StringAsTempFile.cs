@@ -23,15 +23,10 @@ namespace Microsoft.AspNetCore.NodeServices
 
             // Because .NET finalizers don't reliably run when the process is terminating, also
             // add event handlers for other shutdown scenarios.
-#if NET451
-            AppDomain.CurrentDomain.ProcessExit += HandleProcessExit;
-            AppDomain.CurrentDomain.DomainUnload += HandleProcessExit;
-#else
             // Note that this still doesn't capture SIGKILL (at least on macOS) - there doesn't
             // appear to be a way of doing that. So in that case, the temporary file will be
             // left behind.
             System.Runtime.Loader.AssemblyLoadContext.Default.Unloading += HandleAssemblyUnloading;
-#endif
         }
 
         /// <summary>
@@ -55,12 +50,7 @@ namespace Microsoft.AspNetCore.NodeServices
                 if (disposing)
                 {
                     // Dispose managed state
-#if NET451
-                    AppDomain.CurrentDomain.ProcessExit -= HandleProcessExit;
-                    AppDomain.CurrentDomain.DomainUnload -= HandleProcessExit;
-#else
                     System.Runtime.Loader.AssemblyLoadContext.Default.Unloading -= HandleAssemblyUnloading;
-#endif
                 }
 
                 EnsureTempFileDeleted();
@@ -81,17 +71,10 @@ namespace Microsoft.AspNetCore.NodeServices
             }
         }
 
-#if NET451
-        private void HandleProcessExit(object sender, EventArgs args)
-        {
-            EnsureTempFileDeleted();
-        }
-#else
         private void HandleAssemblyUnloading(System.Runtime.Loader.AssemblyLoadContext context)
         {
             EnsureTempFileDeleted();
         }
-#endif
 
         /// <summary>
         /// Implements the finalization part of the IDisposable pattern by calling Dispose(false).

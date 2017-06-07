@@ -315,11 +315,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         private static void SetEnvironmentVariable(ProcessStartInfo startInfo, string name, string value)
         {
-#if NET451
-            startInfo.EnvironmentVariables[name] = value;
-#else
             startInfo.Environment[name] = value;
-#endif
         }
 
         private static Process LaunchNodeProcess(ProcessStartInfo startInfo)

@@ -18,11 +18,7 @@ namespace Microsoft.AspNetCore.NodeServices.Sockets.PhysicalConnections
                 PipeDirection.InOut,
                 PipeOptions.Asynchronous);
 
-#if NET451
-            _namedPipeClientStream.Connect();
-#else
             await _namedPipeClientStream.ConnectAsync().ConfigureAwait(false);
-#endif
 
             return _namedPipeClientStream;
         }

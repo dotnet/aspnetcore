@@ -11,9 +11,6 @@ namespace Microsoft.AspNetCore.NodeServices.Sockets.PhysicalConnections
 
         public static StreamConnection Create()
         {
-#if NET451
-            return new NamedPipeConnection();
-#else
             var useNamedPipes = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
                 System.Runtime.InteropServices.OSPlatform.Windows);
             if (useNamedPipes)
@@ -24,7 +21,6 @@ namespace Microsoft.AspNetCore.NodeServices.Sockets.PhysicalConnections
             {
                 return new UnixDomainSocketConnection();
             }
-#endif
         }
     }
 }
