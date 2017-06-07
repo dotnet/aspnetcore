@@ -689,7 +689,78 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
         }
 
- 
+        [Fact]
+        public async Task AllPoliciesRequiredForAuthorizedEndPoint()
+        {
+            var manager = CreateConnectionManager();
+            var connection = manager.CreateConnection();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddOptions();
+            services.AddEndPoint<TestEndPoint>();
+            services.AddAuthorizationPolicyEvaluator();
+            services.AddAuthorization(o =>
+            {
+                o.AddPolicy("test", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.NameIdentifier);
+                });
+                o.AddPolicy("secondPolicy", policy =>
+                {
+                    policy.RequireClaim(ClaimTypes.StreetAddress);
+                });
+            });
+            services.AddLogging();
+            services.AddAuthenticationCore(o => o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler)));
+            var sp = services.BuildServiceProvider();
+            context.Request.Path = "/foo";
+            context.Request.Method = "GET";
+            context.RequestServices = sp;
+            var values = new Dictionary<string, StringValues>();
+            values["id"] = connection.ConnectionId;
+            var qs = new QueryCollection(values);
+            context.Request.Query = qs;
+            context.Response.Body = new MemoryStream();
+
+            var builder = new SocketBuilder(sp);
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
+            options.AuthorizationData.Add(new AuthorizeAttribute("secondPolicy"));
+
+            // partially "authorize" user
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+
+            // would hang if EndPoint was running
+            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+
+            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+
+            // reset HttpContext
+            context = new DefaultHttpContext();
+            context.Request.Path = "/foo";
+            context.Request.Method = "GET";
+            context.RequestServices = sp;
+            context.Request.Query = qs;
+            context.Response.Body = new MemoryStream();
+            // fully "authorize" user
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "name"),
+                new Claim(ClaimTypes.StreetAddress, "12345 123rd St. NW")
+            }));
+
+            var endPointTask = dispatcher.ExecuteAsync(context, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+
+            await endPointTask.OrTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
+        }
+
         [Fact]
         public async Task AuthorizedConnectionWithAcceptedSchemesCanConnectToEndPoint()
         {
