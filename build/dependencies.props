@@ -4,6 +4,7 @@
     <AspNetCoreVersion>2.0.0-preview2-*</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <DepsRuntimeFrameworkVersion>2.0.0-preview2-25407-01</DepsRuntimeFrameworkVersion>
+    <DotnetDebToolVersion>2.0.0-preview2-*</DotnetDebToolVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
