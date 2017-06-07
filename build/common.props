@@ -67,6 +67,7 @@
     <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Logging" />
+    <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Configuration" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Console" />
     <MetaPackagePackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
