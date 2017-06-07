@@ -4,8 +4,6 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -29,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return AddValueProviderAsync(context);
             }
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private static async Task AddValueProviderAsync(ValueProviderFactoryContext context)

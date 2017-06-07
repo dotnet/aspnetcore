@@ -475,7 +475,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     arguments.Add(entry.Key, entry.Value);
                 }
 
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
         }
 

@@ -69,9 +69,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             selected = actions[1];
                         }
 
-                        routeContext.Handler = (c) => TaskCache.CompletedTask;
+                        routeContext.Handler = (c) => Task.CompletedTask;
 
-                        return TaskCache.CompletedTask;
+                        return Task.CompletedTask;
 
                     });
                 return handler.Object;
@@ -788,7 +788,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             handler
                 .Setup(h => h.RouteAsync(It.IsAny<RouteContext>()))
                 .Callback<RouteContext>(c => c.Handler = NullHandler)
-                .Returns(TaskCache.CompletedTask)
+                .Returns(Task.CompletedTask)
                 .Verifiable();
             return handler;
         }

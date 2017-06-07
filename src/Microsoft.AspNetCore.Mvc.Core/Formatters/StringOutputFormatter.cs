@@ -5,8 +5,6 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -53,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var valueAsString = (string)context.Object;
             if (string.IsNullOrEmpty(valueAsString))
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             var response = context.HttpContext.Response;

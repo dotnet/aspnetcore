@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
             bindingContext.Result = ModelBindingResult.Success(model);
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

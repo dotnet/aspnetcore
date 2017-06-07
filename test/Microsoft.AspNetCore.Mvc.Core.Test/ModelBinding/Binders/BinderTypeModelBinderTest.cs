@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             public Task BindModelAsync(ModelBindingContext bindingContext)
             {
                 bindingContext.Result = ModelBindingResult.Success(_model);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
         }
     }

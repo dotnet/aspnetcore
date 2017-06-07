@@ -7,7 +7,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -45,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (!CanCreateModel(bindingContext))
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             // Perf: separated to avoid allocating a state machine when we don't

@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
@@ -183,11 +182,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 {
                     // Binding Sources are opt-in. This model either didn't specify one or specified something
                     // incompatible so let other binders run.
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }
 
                 bindingContext.Result = ModelBindingResult.Success(new Address());
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
         }
 

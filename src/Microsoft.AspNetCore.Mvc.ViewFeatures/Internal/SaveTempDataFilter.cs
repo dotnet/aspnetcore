@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
@@ -41,10 +41,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     // Example: An action returns NoContentResult and since NoContentResult does not write anything to
                     // the body of the response, this delegate would get executed way late in the pipeline at which point
                     // the session feature would have been removed.
-                    object obj;
-                    if (saveTempDataContext.HttpContext.Items.TryGetValue(TempDataSavedKey, out obj))
+                    if (saveTempDataContext.HttpContext.Items.TryGetValue(TempDataSavedKey, out var obj))
                     {
-                        return TaskCache.CompletedTask;
+                        return Task.CompletedTask;
                     }
 
                     SaveTempData(
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         filters: saveTempDataContext.Filters,
                         httpContext: saveTempDataContext.HttpContext);
 
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 state: new SaveTempDataContext()
                 {

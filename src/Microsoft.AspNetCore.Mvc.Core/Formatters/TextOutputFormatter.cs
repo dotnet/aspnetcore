@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -138,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 var response = context.HttpContext.Response;
                 response.StatusCode = StatusCodes.Status406NotAcceptable;
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             context.ContentType = selectedMediaType;

@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 {
                     Assert.Equal(expectedModelName, context.ModelName, StringComparer.Ordinal);
                 })
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             var parameterDescriptor = new ParameterDescriptor
             {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 {
                     Assert.Equal(expectedModelName, context.ModelName, StringComparer.Ordinal);
                 })
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             var parameterDescriptor = new ParameterDescriptor
             {

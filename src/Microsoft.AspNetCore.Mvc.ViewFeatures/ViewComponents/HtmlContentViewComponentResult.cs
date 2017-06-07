@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         {
             Execute(context);
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

@@ -624,7 +624,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         if (scope == Scope.Exception)
                         {
                             isCompleted = true;
-                            return TaskCache.CompletedTask;
+                            return Task.CompletedTask;
                         }
 
                         if (exceptionContext != null)
@@ -662,7 +662,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             // If we're inside an exception filter, let's allow those filters to 'unwind' before
                             // the result.
                             isCompleted = true;
-                            return TaskCache.CompletedTask;
+                            return Task.CompletedTask;
                         }
 
                         Debug.Assert(scope == Scope.Invoker || scope == Scope.Resource);
@@ -847,7 +847,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             }
 
                             isCompleted = true;
-                            return TaskCache.CompletedTask;
+                            return Task.CompletedTask;
                         }
 
                         Rethrow(_resultExecutedContext);
@@ -877,7 +877,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         if (scope == Scope.Resource)
                         {
                             isCompleted = true;
-                            return TaskCache.CompletedTask;
+                            return Task.CompletedTask;
                         }
 
                         Debug.Assert(scope == Scope.Invoker);
@@ -889,7 +889,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 case State.InvokeEnd:
                     {
                         isCompleted = true;
-                        return TaskCache.CompletedTask;
+                        return Task.CompletedTask;
                     }
 
                 default:

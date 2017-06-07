@@ -67,14 +67,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (candidates == null || candidates.Count == 0)
             {
                 _logger.NoActionsMatched(context.RouteData.Values);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             var actionDescriptor = _actionSelector.SelectBestCandidate(context, candidates);
             if (actionDescriptor == null)
             {
                 _logger.NoActionsMatched(context.RouteData.Values);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             context.Handler = (c) =>
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return invoker.InvokeAsync();
             };
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

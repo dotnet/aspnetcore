@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
@@ -33,14 +32,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var value = valueProviderResult.FirstValue;
             if (string.IsNullOrEmpty(value))
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             try
             {
                 var model = Convert.FromBase64String(value);
                 bindingContext.Result = ModelBindingResult.Success(model);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             catch (Exception exception)
             {
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     bindingContext.ModelName,
                     exception,
                     bindingContext.ModelMetadata);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
         }
     }

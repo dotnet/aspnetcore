@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             }
 
             // Let the action be executed.
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

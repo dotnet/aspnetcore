@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (valueProviderResult == ValueProviderResult.None)
             {
                 // no entry
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
@@ -83,12 +82,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
                             valueProviderResult.ToString()));
 
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }
                 else
                 {
                     bindingContext.Result = ModelBindingResult.Success(model);
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }
             }
             catch (Exception exception)
@@ -107,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     bindingContext.ModelMetadata);
 
                 // Were able to find a converter for the type but conversion failed.
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
         }
     }

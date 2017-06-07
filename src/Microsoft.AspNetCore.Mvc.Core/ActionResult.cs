@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc
         public virtual Task ExecuteResultAsync(ActionContext context)
         {
             ExecuteResult(context);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>

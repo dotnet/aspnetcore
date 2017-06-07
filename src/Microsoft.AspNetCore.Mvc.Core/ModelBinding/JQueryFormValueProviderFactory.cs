@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return AddValueProviderAsync(context);
             }
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private static async Task AddValueProviderAsync(ValueProviderFactoryContext context)

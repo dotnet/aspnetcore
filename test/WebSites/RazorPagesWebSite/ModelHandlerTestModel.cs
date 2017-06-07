@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace RazorPagesWebSite
@@ -19,26 +18,26 @@ namespace RazorPagesWebSite
 
         public async Task<IActionResult> OnPostAsync()
         {
-            await TaskCache.CompletedTask;
+            await Task.CompletedTask;
             MethodName = nameof(OnPostAsync);
             return Page();
         }
 
         public async Task OnGetCustomer()
         {
-            await TaskCache.CompletedTask;
+            await Task.CompletedTask;
             MethodName = nameof(OnGetCustomer);
         }
 
         public async Task OnGetViewCustomerAsync()
         {
-            await TaskCache.CompletedTask;
+            await Task.CompletedTask;
             MethodName = nameof(OnGetViewCustomerAsync);
         }
 
         public async Task<CustomActionResult> OnPostCustomActionResult()
         {
-            await TaskCache.CompletedTask;
+            await Task.CompletedTask;
             return new CustomActionResult();
         }
 

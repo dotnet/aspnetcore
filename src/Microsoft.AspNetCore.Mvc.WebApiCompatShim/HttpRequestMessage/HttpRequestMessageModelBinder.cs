@@ -3,7 +3,6 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
             bindingContext.Result = ModelBindingResult.Success(model);
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

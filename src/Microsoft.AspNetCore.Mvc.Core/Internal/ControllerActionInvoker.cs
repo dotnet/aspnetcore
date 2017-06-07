@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             }
 
                             isCompleted = true;
-                            return TaskCache.CompletedTask;
+                            return Task.CompletedTask;
                         }
 
                         var actionExecutedContext = _actionExecutedContext;
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         }
 
                         isCompleted = true;
-                        return TaskCache.CompletedTask;
+                        return Task.CompletedTask;
                     }
 
                 default:
@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (actionDescriptor.BoundProperties.Count == 0 &&
                 actionDescriptor.Parameters.Count == 0)
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             Debug.Assert(_cacheEntry.ControllerBinderDelegate != null);

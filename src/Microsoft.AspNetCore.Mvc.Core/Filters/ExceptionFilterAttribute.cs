@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             }
 
             OnException(context);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />

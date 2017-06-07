@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             context.ValueProviders.Add(valueProvider);
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

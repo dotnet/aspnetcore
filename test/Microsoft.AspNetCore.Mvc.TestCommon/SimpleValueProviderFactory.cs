@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
         {
             context.ValueProviders.Add(_valueProvider);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

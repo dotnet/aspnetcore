@@ -1374,7 +1374,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     bindingContext.Result = result;
                 }
 
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             protected override Task BindProperty(ModelBindingContext bindingContext)

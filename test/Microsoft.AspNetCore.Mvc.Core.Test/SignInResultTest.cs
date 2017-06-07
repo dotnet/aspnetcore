@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc
             var auth = new Mock<IAuthenticationService>();
             auth
                 .Setup(c => c.SignInAsync(httpContext.Object, "", principal, null))
-                .Returns(TaskCache.CompletedTask)
+                .Returns(Task.CompletedTask)
                 .Verifiable();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
             var result = new SignInResult("", principal, null);
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
             var auth = new Mock<IAuthenticationService>();
             auth
                 .Setup(c => c.SignInAsync(httpContext.Object, "Scheme1", principal, authProperties))
-                .Returns(TaskCache.CompletedTask)
+                .Returns(Task.CompletedTask)
                 .Verifiable();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
             var result = new SignInResult("Scheme1", principal, authProperties);

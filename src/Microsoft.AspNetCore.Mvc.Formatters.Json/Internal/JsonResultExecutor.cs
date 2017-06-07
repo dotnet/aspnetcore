@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
                 }
             }
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

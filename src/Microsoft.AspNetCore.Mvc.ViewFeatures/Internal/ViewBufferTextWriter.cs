@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
@@ -253,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             if (IsBuffering)
             {
                 Buffer.AppendHtml(value.ToString());
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             else
             {
@@ -281,7 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             if (IsBuffering)
             {
                 Buffer.AppendHtml(new string(buffer, index, count));
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             else
             {
@@ -295,7 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             if (IsBuffering)
             {
                 Buffer.AppendHtml(value);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             else
             {
@@ -337,7 +336,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             {
                 Buffer.AppendHtml(value.ToString());
                 Buffer.AppendHtml(NewLine);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             else
             {
@@ -352,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             {
                 Buffer.AppendHtml(new string(value, start, offset));
                 Buffer.AppendHtml(NewLine);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             else
             {
@@ -367,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             {
                 Buffer.AppendHtml(value);
                 Buffer.AppendHtml(NewLine);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             else
             {
@@ -381,7 +380,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             if (IsBuffering)
             {
                 Buffer.AppendHtml(NewLine);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             else
             {

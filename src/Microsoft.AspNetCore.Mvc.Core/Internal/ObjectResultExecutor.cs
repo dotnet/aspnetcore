@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 Logger.NoFormatter(formatterContext);
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             Logger.FormatterSelected(selectedFormatter, formatterContext);

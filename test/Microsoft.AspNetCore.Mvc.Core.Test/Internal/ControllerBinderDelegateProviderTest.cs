@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.CompletedTask);
             var factory = GetModelBinderFactory(binder.Object);
             var parameterBinder = GetParameterBinder(factory);
 
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.CompletedTask);
             var factory = GetModelBinderFactory(binder.Object);
             var parameterBinder = GetParameterBinder(factory);
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     context.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string));
                     context.Result = ModelBindingResult.Success(value);
                 })
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.CompletedTask);
             var factory = GetModelBinderFactory(binder.Object);
             var parameterBinder = GetParameterBinder(factory);
 
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
@@ -821,7 +821,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Returns<DefaultModelBindingContext>(mbc =>
                 {
                     mbc.Result = ModelBindingResult.Success(model);
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
             return GetModelBinderFactory(binder.Object);
