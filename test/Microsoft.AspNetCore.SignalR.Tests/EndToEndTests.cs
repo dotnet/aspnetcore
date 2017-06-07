@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal("Websocket closed with error: InternalServerError.", exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/SignalR/issues/526")]
         public async Task ServerClosesConnectionWithErrorIfHubCannotBeCreated_LongPolling()
         {
             var exception = await Assert.ThrowsAsync<HttpRequestException>(
