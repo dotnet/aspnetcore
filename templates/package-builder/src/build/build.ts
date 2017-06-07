@@ -11,6 +11,7 @@ import * as targz from 'tar.gz';
 const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx'];
 const yeomanGeneratorSource = './src/yeoman';
+const localizationPackageGuid = '{296D76CB-AD6F-4B46-9072-33CC07E265F8}';
 
 const dotNetPackages = {
     builtIn: 'Microsoft.DotNet.Web.Spa.ProjectTemplates',
@@ -22,15 +23,16 @@ interface TemplateConfig {
     dotNetNewId: string;
     dotNetPackageId: string;
     displayName: string;
+    localizationIdStart: number;
 }
 
 const templates: { [key: string]: TemplateConfig } = {
-    'angular': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/AngularSpa/', dotNetNewId: 'Angular', displayName: 'Angular' },
-    'aurelia': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
-    'knockout': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
-    'react-redux': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
-    'react': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' },
-    'vue': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/VueSpa/', dotNetNewId: 'Vue', displayName: 'Vue.js' }
+    'angular': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/AngularSpa/', dotNetNewId: 'Angular', displayName: 'Angular', localizationIdStart: 100 },
+    'aurelia': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia', localizationIdStart: 200 },
+    'knockout': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js', localizationIdStart: 300 },
+    'react-redux': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux', localizationIdStart: 400 },
+    'react': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js', localizationIdStart: 500 },
+    'vue': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/VueSpa/', dotNetNewId: 'Vue', displayName: 'Vue.js', localizationIdStart: 600 }
 };
 
 function isTextFile(filename: string): boolean {
@@ -251,10 +253,13 @@ function buildDotNetNewNuGetPackage(packageId: string) {
             }
         }, null, 2));
         
+        const localisedNameId = templateConfig.localizationIdStart + 0;
+        const localisedDescId = templateConfig.localizationIdStart + 1;
+
         fs.writeFileSync(path.join(templateConfigDir, 'vs-2017.3.host.json'), JSON.stringify({
             $schema: 'http://json.schemastore.org/vs-2017.3.host',
-            name: { text: templateConfig.displayName },
-            description: { text: `ASP.NET Core application with MVC and ${templateConfig.displayName}` },
+            name: { text: templateConfig.displayName, package: localizationPackageGuid, id: localisedNameId.toString() },
+            description: { text: `ASP.NET Core application with ${templateConfig.displayName}`, package: localizationPackageGuid, id: localisedDescId.toString() },
             order: 301,
             icon: 'icon.png',
             learnMoreLink: 'https://github.com/aspnet/JavaScriptServices',
