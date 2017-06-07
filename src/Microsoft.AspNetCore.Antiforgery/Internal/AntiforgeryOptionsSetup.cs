@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         private static string ComputeCookieName(string applicationId)
         {
-            using (var sha256 = SHA256.Create())
+            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
             {
                 var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(applicationId));
                 var subHash = hash.Take(8).ToArray();
