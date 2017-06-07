@@ -6,28 +6,17 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class CSharpStatementIRNode : RazorIRNode
+    public sealed class CSharpCodeAttributeValueIRNode : RazorIRNode
     {
-        private ItemCollection _annotations;
-
-        public override ItemCollection Annotations
-        {
-            get
-            {
-                if (_annotations == null)
-                {
-                    _annotations = new DefaultItemCollection();
-                }
-
-                return _annotations;
-            }
-        }
+        public override ItemCollection Annotations => ReadOnlyItemCollection.Empty;
 
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }
 
         public override SourceSpan? Source { get; set; }
+
+        public string Prefix { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {
@@ -36,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitCSharpStatement(this);
+            visitor.VisitCSharpCodeAttributeValue(this);
         }
     }
 }

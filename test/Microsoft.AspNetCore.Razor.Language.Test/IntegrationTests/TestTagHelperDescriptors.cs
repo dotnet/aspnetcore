@@ -292,6 +292,46 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
+        public static IEnumerable<TagHelperDescriptor> DuplicateTargetTagHelperDescriptors
+        {
+            get
+            {
+                var typePropertyInfo = typeof(TestType).GetRuntimeProperty("Type");
+                var checkedPropertyInfo = typeof(TestType).GetRuntimeProperty("Checked");
+                return new[]
+                {
+                    CreateTagHelperDescriptor(
+                        tagName: "*",
+                        typeName: "TestNamespace.CatchAllTagHelper",
+                        assemblyName: "TestAssembly",
+                        attributes: new Action<BoundAttributeDescriptorBuilder>[]
+                        {
+                            builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", typePropertyInfo),
+                            builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "checked", checkedPropertyInfo),
+                        },
+                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        {
+                            builder => builder.RequireAttribute(attribute => attribute.Name("type")),
+                            builder => builder.RequireAttribute(attribute => attribute.Name("checked"))
+                        }),
+                    CreateTagHelperDescriptor(
+                        tagName: "input",
+                        typeName: "TestNamespace.InputTagHelper",
+                        assemblyName: "TestAssembly",
+                        attributes: new Action<BoundAttributeDescriptorBuilder>[]
+                        {
+                            builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", typePropertyInfo),
+                            builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "checked", checkedPropertyInfo),
+                        },
+                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        {
+                            builder => builder.RequireAttribute(attribute => attribute.Name("type")),
+                            builder => builder.RequireAttribute(attribute => attribute.Name("checked"))
+                        })
+                };
+            }
+        }
+
         public static IEnumerable<TagHelperDescriptor> AttributeTargetingTagHelperDescriptors
         {
             get

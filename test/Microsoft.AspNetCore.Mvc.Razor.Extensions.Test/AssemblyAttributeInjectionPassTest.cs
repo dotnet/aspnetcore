@@ -185,8 +185,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Collection(irDocument.Children,
                 node =>
                 {
-                    var csharpStatement = Assert.IsType<CSharpStatementIRNode>(node);
-                    var token = Assert.IsType<RazorIRToken>(Assert.Single(csharpStatement.Children));
+                    var csharpCode = Assert.IsType<CSharpCodeIRNode>(node);
+                    var token = Assert.IsType<RazorIRToken>(Assert.Single(csharpCode.Children));
                     Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
                     Assert.Equal(expectedAttribute, token.Content);
                 },
@@ -236,8 +236,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Collection(irDocument.Children,
                 node =>
                 {
-                    var csharpStatement = Assert.IsType<CSharpStatementIRNode>(node);
-                    var token = Assert.IsType<RazorIRToken>(Assert.Single(csharpStatement.Children));
+                    var csharpCode = Assert.IsType<CSharpCodeIRNode>(node);
+                    var token = Assert.IsType<RazorIRToken>(Assert.Single(csharpCode.Children));
                     Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
                     Assert.Equal(expectedAttribute, token.Content);
                 },
@@ -294,8 +294,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 node => Assert.Same(pageDirective, node),
                 node =>
                 {
-                    var csharpStatement = Assert.IsType<CSharpStatementIRNode>(node);
-                    var token = Assert.IsType<RazorIRToken>(Assert.Single(csharpStatement.Children));
+                    var csharpCode = Assert.IsType<CSharpCodeIRNode>(node);
+                    var token = Assert.IsType<RazorIRToken>(Assert.Single(csharpCode.Children));
                     Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
                     Assert.Equal(expectedAttribute, token.Content);
                 },
@@ -346,8 +346,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Collection(irDocument.Children,
                 node =>
                 {
-                    var csharpStatement = Assert.IsType<CSharpStatementIRNode>(node);
-                    var token = Assert.IsType<RazorIRToken>(Assert.Single(csharpStatement.Children));
+                    var csharpCode = Assert.IsType<CSharpCodeIRNode>(node);
+                    var token = Assert.IsType<RazorIRToken>(Assert.Single(csharpCode.Children));
                     Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
                     Assert.Equal(expectedAttribute, token.Content);
                 },

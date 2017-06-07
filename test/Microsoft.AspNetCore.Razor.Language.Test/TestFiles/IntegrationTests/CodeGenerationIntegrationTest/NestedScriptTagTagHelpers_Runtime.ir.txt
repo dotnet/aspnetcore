@@ -24,9 +24,9 @@ Document -
                     TagHelperBody - 
                         HtmlContent - (180:4,49 [2] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (180:4,49 [2] NestedScriptTagTagHelpers.cshtml) - Html - \n
-                        CSharpStatement - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml)
+                        CSharpCode - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (182:5,0 [12] NestedScriptTagTagHelpers.cshtml) - CSharp -             
-                        CSharpStatement - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml)
+                        CSharpCode - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (195:5,13 [30] NestedScriptTagTagHelpers.cshtml) - CSharp - for(var i = 0; i < 5; i++) {\n
                         HtmlContent - (225:6,0 [84] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (225:6,0 [16] NestedScriptTagTagHelpers.cshtml) - Html -                 
@@ -54,7 +54,7 @@ Document -
                             RazorIRToken - (395:7,106 [18] NestedScriptTagTagHelpers.cshtml) - Html - \n                
                             RazorIRToken - (413:8,16 [9] NestedScriptTagTagHelpers.cshtml) - Html - </script>
                             RazorIRToken - (422:8,25 [2] NestedScriptTagTagHelpers.cshtml) - Html - \n
-                        CSharpStatement - (424:9,0 [15] NestedScriptTagTagHelpers.cshtml)
+                        CSharpCode - (424:9,0 [15] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (424:9,0 [15] NestedScriptTagTagHelpers.cshtml) - CSharp -             }\n
                         HtmlContent - (439:10,0 [129] NestedScriptTagTagHelpers.cshtml)
                             RazorIRToken - (439:10,0 [12] NestedScriptTagTagHelpers.cshtml) - Html -             

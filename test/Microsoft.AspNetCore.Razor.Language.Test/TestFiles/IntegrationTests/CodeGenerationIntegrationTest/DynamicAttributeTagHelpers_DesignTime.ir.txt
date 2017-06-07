@@ -4,7 +4,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DynamicAttributeTagHelpers_DesignTime -  - 
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] DynamicAttributeTagHelpers.cshtml) - "*, TestAssembly"
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
@@ -24,7 +24,7 @@ Document -
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
                     AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
-                        CSharpStatementAttributeValue - (95:4,16 [44] DynamicAttributeTagHelpers.cshtml) - 
+                        CSharpCodeAttributeValue - (95:4,16 [44] DynamicAttributeTagHelpers.cshtml) - 
                             RazorIRToken - (96:4,17 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - if (true) { 
                             CSharpExpression - (109:4,30 [12] DynamicAttributeTagHelpers.cshtml)
                                 RazorIRToken - (109:4,30 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - string.Empty
@@ -64,15 +64,15 @@ Document -
                             RazorIRToken - (256:8,15 [13] DynamicAttributeTagHelpers.cshtml) - CSharp - long.MinValue
                         HtmlContent - (269:8,28 [1] DynamicAttributeTagHelpers.cshtml)
                             RazorIRToken - (269:8,28 [1] DynamicAttributeTagHelpers.cshtml) - Html -  
-                        CSharpStatement - (271:8,30 [12] DynamicAttributeTagHelpers.cshtml)
+                        CSharpCode - (271:8,30 [12] DynamicAttributeTagHelpers.cshtml)
                             RazorIRToken - (271:8,30 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - if (true) { 
                         CSharpExpression - (284:8,43 [12] DynamicAttributeTagHelpers.cshtml)
                             RazorIRToken - (284:8,43 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - string.Empty
-                        CSharpStatement - (296:8,55 [10] DynamicAttributeTagHelpers.cshtml)
+                        CSharpCode - (296:8,55 [10] DynamicAttributeTagHelpers.cshtml)
                             RazorIRToken - (296:8,55 [10] DynamicAttributeTagHelpers.cshtml) - CSharp -  } else { 
                         CSharpExpression - (307:8,66 [5] DynamicAttributeTagHelpers.cshtml)
                             RazorIRToken - (307:8,66 [5] DynamicAttributeTagHelpers.cshtml) - CSharp - false
-                        CSharpStatement - (312:8,71 [2] DynamicAttributeTagHelpers.cshtml)
+                        CSharpCode - (312:8,71 [2] DynamicAttributeTagHelpers.cshtml)
                             RazorIRToken - (312:8,71 [2] DynamicAttributeTagHelpers.cshtml) - CSharp -  }
                         HtmlContent - (314:8,73 [1] DynamicAttributeTagHelpers.cshtml)
                             RazorIRToken - (314:8,73 [1] DynamicAttributeTagHelpers.cshtml) - Html -  
@@ -81,7 +81,7 @@ Document -
                     AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpressionAttributeValue - (347:9,16 [14] DynamicAttributeTagHelpers.cshtml) - 
                             RazorIRToken - (348:9,17 [13] DynamicAttributeTagHelpers.cshtml) - CSharp - long.MinValue
-                        CSharpStatementAttributeValue - (361:9,30 [45] DynamicAttributeTagHelpers.cshtml) -  
+                        CSharpCodeAttributeValue - (361:9,30 [45] DynamicAttributeTagHelpers.cshtml) -  
                             RazorIRToken - (363:9,32 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - if (true) { 
                             CSharpExpression - (376:9,45 [12] DynamicAttributeTagHelpers.cshtml)
                                 RazorIRToken - (376:9,45 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - string.Empty
@@ -113,7 +113,7 @@ Document -
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
                     AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
-                        CSharpStatementAttributeValue - (528:13,16 [44] DynamicAttributeTagHelpers.cshtml) - 
+                        CSharpCodeAttributeValue - (528:13,16 [44] DynamicAttributeTagHelpers.cshtml) - 
                             RazorIRToken - (529:13,17 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - if (true) { 
                             CSharpExpression - (542:13,30 [12] DynamicAttributeTagHelpers.cshtml)
                                 RazorIRToken - (542:13,30 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - string.Empty

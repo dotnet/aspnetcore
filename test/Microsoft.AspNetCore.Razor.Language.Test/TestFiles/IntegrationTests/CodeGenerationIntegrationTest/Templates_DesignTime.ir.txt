@@ -3,12 +3,12 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Templates_DesignTime -  - 
             DesignTimeDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (278:8,1 [4] Templates.cshtml)
                     RazorIRToken - (278:8,1 [4] Templates.cshtml) - Html - \n\n
-                CSharpStatement - (284:10,2 [34] Templates.cshtml)
+                CSharpCode - (284:10,2 [34] Templates.cshtml)
                     RazorIRToken - (284:10,2 [34] Templates.cshtml) - CSharp - \n    Func<dynamic, object> foo = 
                 Template - (325:11,39 [16] Templates.cshtml)
                     HtmlContent - (325:11,39 [11] Templates.cshtml)
@@ -17,15 +17,15 @@ Document -
                         RazorIRToken - (337:11,51 [4] Templates.cshtml) - CSharp - item
                     HtmlContent - (341:11,55 [1] Templates.cshtml)
                         RazorIRToken - (341:11,55 [1] Templates.cshtml) - Html - !
-                CSharpStatement - (349:11,63 [7] Templates.cshtml)
+                CSharpCode - (349:11,63 [7] Templates.cshtml)
                     RazorIRToken - (349:11,63 [7] Templates.cshtml) - CSharp - ;\n    
                 CSharpExpression - (357:12,5 [7] Templates.cshtml)
                     RazorIRToken - (357:12,5 [7] Templates.cshtml) - CSharp - foo("")
-                CSharpStatement - (364:12,12 [2] Templates.cshtml)
+                CSharpCode - (364:12,12 [2] Templates.cshtml)
                     RazorIRToken - (364:12,12 [2] Templates.cshtml) - CSharp - \n
                 HtmlContent - (369:14,0 [2] Templates.cshtml)
                     RazorIRToken - (369:14,0 [2] Templates.cshtml) - Html - \n
-                CSharpStatement - (373:15,2 [35] Templates.cshtml)
+                CSharpCode - (373:15,2 [35] Templates.cshtml)
                     RazorIRToken - (373:15,2 [35] Templates.cshtml) - CSharp -  \n    Func<dynamic, object> bar = 
                 Template - (409:16,33 [26] Templates.cshtml)
                     HtmlContent - (409:16,33 [2] Templates.cshtml)
@@ -37,11 +37,11 @@ Document -
                         RazorIRToken - (425:16,49 [1] Templates.cshtml) - Html - >
                         RazorIRToken - (426:16,50 [5] Templates.cshtml) - Html - Hello
                         RazorIRToken - (431:16,55 [4] Templates.cshtml) - Html - </p>
-                CSharpStatement - (435:16,59 [7] Templates.cshtml)
+                CSharpCode - (435:16,59 [7] Templates.cshtml)
                     RazorIRToken - (435:16,59 [7] Templates.cshtml) - CSharp - ;\n    
                 CSharpExpression - (443:17,5 [14] Templates.cshtml)
                     RazorIRToken - (443:17,5 [14] Templates.cshtml) - CSharp - bar("myclass")
-                CSharpStatement - (457:17,19 [2] Templates.cshtml)
+                CSharpCode - (457:17,19 [2] Templates.cshtml)
                     RazorIRToken - (457:17,19 [2] Templates.cshtml) - CSharp - \n
                 HtmlContent - (462:19,0 [8] Templates.cshtml)
                     RazorIRToken - (462:19,0 [2] Templates.cshtml) - Html - \n
@@ -122,7 +122,7 @@ Document -
                             RazorIRToken - (781:45,15 [4] Templates.cshtml) - CSharp - item
                         HtmlContent - (785:45,19 [10] Templates.cshtml)
                             RazorIRToken - (785:45,19 [10] Templates.cshtml) - Html - \n        
-                        CSharpStatement - (797:46,10 [18] Templates.cshtml)
+                        CSharpCode - (797:46,10 [18] Templates.cshtml)
                             RazorIRToken - (797:46,10 [18] Templates.cshtml) - CSharp - var parent = item;
                         HtmlContent - (818:47,0 [53] Templates.cshtml)
                             RazorIRToken - (818:47,0 [8] Templates.cshtml) - Html -         
@@ -142,5 +142,5 @@ Document -
                     RazorIRToken - (957:51,10 [2] Templates.cshtml) - Html - \n
                     RazorIRToken - (959:52,0 [5] Templates.cshtml) - Html - </ul>
                     RazorIRToken - (964:52,5 [1] Templates.cshtml) - Html -  
-            CSharpStatement - (12:0,12 [265] Templates.cshtml)
+            CSharpCode - (12:0,12 [265] Templates.cshtml)
                 RazorIRToken - (12:0,12 [265] Templates.cshtml) - CSharp - \n    public HelperResult Repeat(int times, Func<int, object> template) {\n        return new HelperResult((writer) => {\n            for(int i = 0; i < times; i++) {\n                ((HelperResult)template(i)).WriteTo(writer);\n            }\n        });\n    }\n

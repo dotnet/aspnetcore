@@ -5,7 +5,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - test - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (35:1,2 [59] TransitionsInTagHelperAttributes.cshtml)
+                CSharpCode - (35:1,2 [59] TransitionsInTagHelperAttributes.cshtml)
                     RazorIRToken - (35:1,2 [59] TransitionsInTagHelperAttributes.cshtml) - CSharp -  \n    var @class = "container-fluid";\n    var @int = 1;\n
                 HtmlContent - (97:5,0 [2] TransitionsInTagHelperAttributes.cshtml)
                     RazorIRToken - (97:5,0 [2] TransitionsInTagHelperAttributes.cshtml) - Html - \n
@@ -15,7 +15,7 @@ Document -
                             RazorIRToken - (128:6,29 [11] TransitionsInTagHelperAttributes.cshtml) - Html - Body of Tag
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
-                        CSharpStatementAttributeValue - (109:6,10 [6] TransitionsInTagHelperAttributes.cshtml) - 
+                        CSharpCodeAttributeValue - (109:6,10 [6] TransitionsInTagHelperAttributes.cshtml) - 
                     SetTagHelperProperty - (122:6,23 [4] TransitionsInTagHelperAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                         RazorIRToken - (122:6,23 [4] TransitionsInTagHelperAttributes.cshtml) - CSharp - 1337
                 HtmlContent - (143:6,44 [2] TransitionsInTagHelperAttributes.cshtml)

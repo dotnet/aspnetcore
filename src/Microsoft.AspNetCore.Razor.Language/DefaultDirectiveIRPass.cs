@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 var sectionIndex = node.Parent.Children.IndexOf(node);
                 node.Parent.Children.Remove(node);
 
-                var defineSectionEndStatement = new CSharpStatementIRNode();
+                var defineSectionEndStatement = new CSharpCodeIRNode();
                 RazorIRBuilder.Create(defineSectionEndStatement)
                     .Add(new RazorIRToken()
                     {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 var lambdaContent = designTime ? "__razor_section_writer" : string.Empty;
                 var sectionName = node.Tokens.FirstOrDefault()?.Content;
-                var defineSectionStartStatement = new CSharpStatementIRNode();
+                var defineSectionStartStatement = new CSharpCodeIRNode();
                 RazorIRBuilder.Create(defineSectionStartStatement)
                     .Add(new RazorIRToken()
                     {

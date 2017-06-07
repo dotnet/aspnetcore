@@ -4,13 +4,13 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DesignTime_DesignTime -  - 
             DesignTimeDirective - 
                 DirectiveToken - (173:11,9 [6] DesignTime.cshtml) - Footer
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [19] DesignTime.cshtml)
                     RazorIRToken - (0:0,0 [5] DesignTime.cshtml) - Html - <div>
                     RazorIRToken - (5:0,5 [14] DesignTime.cshtml) - Html - \n            
-                CSharpStatement - (20:1,13 [36] DesignTime.cshtml)
+                CSharpCode - (20:1,13 [36] DesignTime.cshtml)
                     RazorIRToken - (20:1,13 [36] DesignTime.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
                 HtmlContent - (56:2,4 [17] DesignTime.cshtml)
                     RazorIRToken - (56:2,4 [3] DesignTime.cshtml) - Html - <p>
@@ -19,7 +19,7 @@ Document -
                     RazorIRToken - (74:2,22 [1] DesignTime.cshtml) - CSharp - i
                 HtmlContent - (75:2,23 [4] DesignTime.cshtml)
                     RazorIRToken - (75:2,23 [4] DesignTime.cshtml) - Html - </p>
-                CSharpStatement - (79:2,27 [15] DesignTime.cshtml)
+                CSharpCode - (79:2,27 [15] DesignTime.cshtml)
                     RazorIRToken - (79:2,27 [15] DesignTime.cshtml) - CSharp - \n            }
                 HtmlContent - (94:3,13 [17] DesignTime.cshtml)
                     RazorIRToken - (94:3,13 [2] DesignTime.cshtml) - Html - \n
@@ -47,7 +47,7 @@ Document -
                     RazorIRToken - (154:8,26 [2] DesignTime.cshtml) - Html - \n
                     RazorIRToken - (156:9,0 [4] DesignTime.cshtml) - Html - </p>
                     RazorIRToken - (160:9,4 [4] DesignTime.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("Footer", async (__razor_section_writer) => {
                 HtmlContent - (181:11,17 [22] DesignTime.cshtml)
                     RazorIRToken - (181:11,17 [6] DesignTime.cshtml) - Html - \n    
@@ -59,5 +59,5 @@ Document -
                     RazorIRToken - (204:13,5 [3] DesignTime.cshtml) - CSharp - bar
                 HtmlContent - (207:13,8 [2] DesignTime.cshtml)
                     RazorIRToken - (207:13,8 [2] DesignTime.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });

@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var index = irDocument.Children.IndexOf(@namespace);
             Debug.Assert(index >= 0);
 
-            var pageAttribute = new CSharpStatementIRNode();
+            var pageAttribute = new CSharpCodeIRNode();
             RazorIRBuilder.Create(pageAttribute)
                 .Add(new RazorIRToken()
                 {

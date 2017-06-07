@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteCSharpStatement(CSharpRenderingContext context, CSharpStatementIRNode node)
+        public override void WriteCSharpCode(CSharpRenderingContext context, CSharpCodeIRNode node)
         {
             var isWhitespaceStatement = true;
             for (var i = 0; i < node.Children.Count; i++)
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteCSharpStatementAttributeValue(CSharpRenderingContext context, CSharpStatementAttributeValueIRNode node)
+        public override void WriteCSharpCodeAttributeValue(CSharpRenderingContext context, CSharpCodeAttributeValueIRNode node)
         {
             for (var i = 0; i < node.Children.Count; i++)
             {

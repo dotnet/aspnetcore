@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
@@ -28,7 +28,7 @@ Document -
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (7:0,7 [8] ModelExpressionTagHelper.cshtml) - DateTime
                 DirectiveToken - (33:2,14 [29] ModelExpressionTagHelper.cshtml) - "InputTestTagHelper, AppCode"
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - InputTestTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync

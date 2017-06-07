@@ -5,7 +5,7 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [15] TagHelpersWithPrefix.cshtml) - *, TestAssembly
                 DirectiveToken - (48:1,17 [5] TagHelpersWithPrefix.cshtml) - cool:
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - InputTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

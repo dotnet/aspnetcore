@@ -236,7 +236,7 @@ __o = i++;
         }
 
         [Fact]
-        public void WriteCSharpStatement_WhitespaceContent_DoesNothing()
+        public void WriteCSharpCode_WhitespaceContent_DoesNothing()
         {
             // Arrange
             var writer = new DesignTimeBasicWriter();
@@ -246,7 +246,7 @@ __o = i++;
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpStatementIRNode();
+            var node = new CSharpCodeIRNode();
             RazorIRBuilder.Create(node)
                 .Add(new RazorIRToken()
                 {
@@ -255,7 +255,7 @@ __o = i++;
                 });
 
             // Act
-            writer.WriteCSharpStatement(context, node);
+            writer.WriteCSharpCode(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -263,7 +263,7 @@ __o = i++;
         }
 
         [Fact]
-        public void WriteCSharpStatement_WhitespaceContentWithSource_WritesContent()
+        public void WriteCSharpCode_WhitespaceContentWithSource_WritesContent()
         {
             // Arrange
             var writer = new DesignTimeBasicWriter();
@@ -274,7 +274,7 @@ __o = i++;
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
-            var node = new CSharpStatementIRNode()
+            var node = new CSharpCodeIRNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 3),
             };
@@ -286,7 +286,7 @@ __o = i++;
                 });
 
             // Act
-            writer.WriteCSharpStatement(context, node);
+            writer.WriteCSharpCode(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -298,7 +298,7 @@ __o = i++;
         }
 
         [Fact]
-        public void WriteCSharpStatement_SkipsLinePragma_WithoutSource()
+        public void WriteCSharpCode_SkipsLinePragma_WithoutSource()
         {
             // Arrange
             var writer = new DesignTimeBasicWriter();
@@ -308,7 +308,7 @@ __o = i++;
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpStatementIRNode();
+            var node = new CSharpCodeIRNode();
             RazorIRBuilder.Create(node)
                 .Add(new RazorIRToken()
                 {
@@ -317,7 +317,7 @@ __o = i++;
                 });
 
             // Act
-            writer.WriteCSharpStatement(context, node);
+            writer.WriteCSharpCode(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -329,7 +329,7 @@ __o = i++;
         }
 
         [Fact]
-        public void WriteCSharpStatement_WritesLinePragma_WithSource()
+        public void WriteCSharpCode_WritesLinePragma_WithSource()
         {
             // Arrange
             var writer = new DesignTimeBasicWriter();
@@ -340,7 +340,7 @@ __o = i++;
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
-            var node = new CSharpStatementIRNode()
+            var node = new CSharpCodeIRNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 13),
             };
@@ -352,7 +352,7 @@ __o = i++;
                 });
 
             // Act
-            writer.WriteCSharpStatement(context, node);
+            writer.WriteCSharpCode(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -368,7 +368,7 @@ if (true) { }
         }
 
         [Fact]
-        public void WriteCSharpStatement_WritesPadding_WithSource()
+        public void WriteCSharpCode_WritesPadding_WithSource()
         {
             // Arrange
             var writer = new DesignTimeBasicWriter();
@@ -379,7 +379,7 @@ if (true) { }
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
-            var node = new CSharpStatementIRNode()
+            var node = new CSharpCodeIRNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 17),
             };
@@ -391,7 +391,7 @@ if (true) { }
                 });
 
             // Act
-            writer.WriteCSharpStatement(context, node);
+            writer.WriteCSharpCode(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -436,7 +436,7 @@ if (true) { }
         }
 
         [Fact]
-        public void WriteCSharpStatementAttributeValue_RendersCorrectly()
+        public void WriteCSharpCodeAttributeValue_RendersCorrectly()
         {
             var writer = new DesignTimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
@@ -446,10 +446,10 @@ if (true) { }
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             context.CodeDocument = codeDocument;
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpStatementAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpCodeAttributeValueIRNode;
 
             // Act
-            writer.WriteCSharpStatementAttributeValue(context, node);
+            writer.WriteCSharpCodeAttributeValue(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -465,7 +465,7 @@ if (true) { }
         }
 
         [Fact]
-        public void WriteCSharpStatementAttributeValue_WithExpression_RendersCorrectly()
+        public void WriteCSharpCodeAttributeValue_WithExpression_RendersCorrectly()
         {
             var writer = new DesignTimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
@@ -475,10 +475,10 @@ if (true) { }
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             context.CodeDocument = codeDocument;
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpStatementAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpCodeAttributeValueIRNode;
 
             // Act
-            writer.WriteCSharpStatementAttributeValue(context, node);
+            writer.WriteCSharpCodeAttributeValue(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();

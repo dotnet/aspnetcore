@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             var attributeValueStyleParameter = $"{HtmlAttributeValueStyleTypeName}.{node.ValueStyle}";
             var isConditionalAttributeValue = node.Children.Any(
-                child => child is CSharpExpressionAttributeValueIRNode || child is CSharpStatementAttributeValueIRNode);
+                child => child is CSharpExpressionAttributeValueIRNode || child is CSharpCodeAttributeValueIRNode);
 
             // All simple text and minimized attributes will be pre-allocated.
             if (isConditionalAttributeValue)
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     child =>
                         child is HtmlAttributeValueIRNode ||
                         child is CSharpExpressionAttributeValueIRNode ||
-                        child is CSharpStatementAttributeValueIRNode ||
+                        child is CSharpCodeAttributeValueIRNode ||
                         child is ExtensionIRNode);
 
                 context.Writer
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 context.Writer.Write(token.Content);
             }
-            else if (node is CSharpStatementIRNode)
+            else if (node is CSharpCodeIRNode)
             {
                 var error = new RazorError(
                     LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,

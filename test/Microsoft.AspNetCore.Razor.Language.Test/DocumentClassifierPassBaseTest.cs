@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new HtmlContentIRNode());
-            builder.Add(new CSharpStatementIRNode());
+            builder.Add(new CSharpCodeIRNode());
 
             var pass = new TestDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b => { });
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Children(
                 method,
                 n => Assert.IsType<HtmlContentIRNode>(n),
-                n => Assert.IsType<CSharpStatementIRNode>(n));
+                n => Assert.IsType<CSharpCodeIRNode>(n));
         }
 
         [Fact]
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new HtmlContentIRNode());
-            builder.Add(new CSharpStatementIRNode());
+            builder.Add(new CSharpCodeIRNode());
 
             var pass = new TestDocumentClassifierPass()
             {
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new HtmlContentIRNode());
-            builder.Add(new CSharpStatementIRNode());
+            builder.Add(new CSharpCodeIRNode());
 
             var pass = new TestDocumentClassifierPass()
             {

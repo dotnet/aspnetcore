@@ -14,7 +14,7 @@ Document -
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] ComplexTagHelpers.cshtml)
                     RazorIRToken - (33:1,0 [2] ComplexTagHelpers.cshtml) - Html - \n
-                CSharpStatement - (36:2,1 [48] ComplexTagHelpers.cshtml)
+                CSharpCode - (36:2,1 [48] ComplexTagHelpers.cshtml)
                     RazorIRToken - (36:2,1 [48] ComplexTagHelpers.cshtml) - CSharp - if (true)\n{\n    var checkbox = "checkbox";\n\n
                 HtmlContent - (84:6,0 [55] ComplexTagHelpers.cshtml)
                     RazorIRToken - (84:6,0 [4] ComplexTagHelpers.cshtml) - Html -     
@@ -48,9 +48,9 @@ Document -
                             RazorIRToken - (244:9,16 [9] ComplexTagHelpers.cshtml) - Html - Set Time:
                             RazorIRToken - (253:9,25 [5] ComplexTagHelpers.cshtml) - Html - </h1>
                             RazorIRToken - (258:9,30 [2] ComplexTagHelpers.cshtml) - Html - \n
-                        CSharpStatement - (260:10,0 [12] ComplexTagHelpers.cshtml)
+                        CSharpCode - (260:10,0 [12] ComplexTagHelpers.cshtml)
                             RazorIRToken - (260:10,0 [12] ComplexTagHelpers.cshtml) - CSharp -             
-                        CSharpStatement - (273:10,13 [27] ComplexTagHelpers.cshtml)
+                        CSharpCode - (273:10,13 [27] ComplexTagHelpers.cshtml)
                             RazorIRToken - (273:10,13 [27] ComplexTagHelpers.cshtml) - CSharp - if (false)\n            {\n
                         HtmlContent - (300:12,0 [16] ComplexTagHelpers.cshtml)
                             RazorIRToken - (300:12,0 [16] ComplexTagHelpers.cshtml) - Html -                 
@@ -69,7 +69,7 @@ Document -
                             CreateTagHelper -  - TestNamespace.PTagHelper
                         HtmlContent - (399:12,99 [2] ComplexTagHelpers.cshtml)
                             RazorIRToken - (399:12,99 [2] ComplexTagHelpers.cshtml) - Html - \n
-                        CSharpStatement - (401:13,0 [48] ComplexTagHelpers.cshtml)
+                        CSharpCode - (401:13,0 [48] ComplexTagHelpers.cshtml)
                             RazorIRToken - (401:13,0 [48] ComplexTagHelpers.cshtml) - CSharp -             }\n            else\n            {\n
                         HtmlContent - (449:16,0 [16] ComplexTagHelpers.cshtml)
                             RazorIRToken - (449:16,0 [16] ComplexTagHelpers.cshtml) - Html -                 
@@ -111,30 +111,30 @@ Document -
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             SetTagHelperProperty - (622:18,29 [64] ComplexTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
-                                CSharpStatement - (623:18,30 [10] ComplexTagHelpers.cshtml)
+                                CSharpCode - (623:18,30 [10] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (623:18,30 [10] ComplexTagHelpers.cshtml) - CSharp - if(true) {
                                 HtmlContent - (640:18,47 [8] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (640:18,47 [8] ComplexTagHelpers.cshtml) - Html - checkbox
-                                CSharpStatement - (655:18,62 [9] ComplexTagHelpers.cshtml)
+                                CSharpCode - (655:18,62 [9] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (655:18,62 [9] ComplexTagHelpers.cshtml) - CSharp -  } else {
                                 HtmlContent - (671:18,78 [8] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (671:18,78 [8] ComplexTagHelpers.cshtml) - Html - anything
-                                CSharpStatement - (686:18,93 [2] ComplexTagHelpers.cshtml)
+                                CSharpCode - (686:18,93 [2] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (686:18,93 [2] ComplexTagHelpers.cshtml) - CSharp -  }
                             SetTagHelperProperty - (622:18,29 [64] ComplexTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
-                                CSharpStatement - (623:18,30 [10] ComplexTagHelpers.cshtml)
+                                CSharpCode - (623:18,30 [10] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (623:18,30 [10] ComplexTagHelpers.cshtml) - CSharp - if(true) {
                                 HtmlContent - (640:18,47 [8] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (640:18,47 [8] ComplexTagHelpers.cshtml) - Html - checkbox
-                                CSharpStatement - (655:18,62 [9] ComplexTagHelpers.cshtml)
+                                CSharpCode - (655:18,62 [9] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (655:18,62 [9] ComplexTagHelpers.cshtml) - CSharp -  } else {
                                 HtmlContent - (671:18,78 [8] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (671:18,78 [8] ComplexTagHelpers.cshtml) - Html - anything
-                                CSharpStatement - (686:18,93 [2] ComplexTagHelpers.cshtml)
+                                CSharpCode - (686:18,93 [2] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (686:18,93 [2] ComplexTagHelpers.cshtml) - CSharp -  }
                         HtmlContent - (690:18,97 [2] ComplexTagHelpers.cshtml)
                             RazorIRToken - (690:18,97 [2] ComplexTagHelpers.cshtml) - Html - \n
-                        CSharpStatement - (692:19,0 [15] ComplexTagHelpers.cshtml)
+                        CSharpCode - (692:19,0 [15] ComplexTagHelpers.cshtml)
                             RazorIRToken - (692:19,0 [15] ComplexTagHelpers.cshtml) - CSharp -             }\n
                         HtmlContent - (707:20,0 [8] ComplexTagHelpers.cshtml)
                             RazorIRToken - (707:20,0 [8] ComplexTagHelpers.cshtml) - Html -         
@@ -152,9 +152,9 @@ Document -
                     TagHelperBody - 
                         HtmlContent - (816:21,95 [2] ComplexTagHelpers.cshtml)
                             RazorIRToken - (816:21,95 [2] ComplexTagHelpers.cshtml) - Html - \n
-                        CSharpStatement - (818:22,0 [12] ComplexTagHelpers.cshtml)
+                        CSharpCode - (818:22,0 [12] ComplexTagHelpers.cshtml)
                             RazorIRToken - (818:22,0 [12] ComplexTagHelpers.cshtml) - CSharp -             
-                        CSharpStatement - (832:22,14 [21] ComplexTagHelpers.cshtml)
+                        CSharpCode - (832:22,14 [21] ComplexTagHelpers.cshtml)
                             RazorIRToken - (832:22,14 [21] ComplexTagHelpers.cshtml) - CSharp -  var @object = false;
                         HtmlContent - (856:23,0 [12] ComplexTagHelpers.cshtml)
                             RazorIRToken - (856:23,0 [12] ComplexTagHelpers.cshtml) - Html -             
@@ -273,5 +273,5 @@ Document -
                     RazorIRToken - (1425:34,79 [6] ComplexTagHelpers.cshtml) - Html - \n    
                     RazorIRToken - (1431:35,4 [6] ComplexTagHelpers.cshtml) - Html - </div>
                     RazorIRToken - (1437:35,10 [2] ComplexTagHelpers.cshtml) - Html - \n
-                CSharpStatement - (1439:36,0 [1] ComplexTagHelpers.cshtml)
+                CSharpCode - (1439:36,0 [1] ComplexTagHelpers.cshtml)
                     RazorIRToken - (1439:36,0 [1] ComplexTagHelpers.cshtml) - CSharp - }

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var beginContextMethodName = "BeginContext"; /* ORIGINAL: BeginContextMethodName */
             var endContextMethodName = "EndContext"; /* ORIGINAL: EndContextMethodName */
 
-            var beginNode = new CSharpStatementIRNode()
+            var beginNode = new CSharpCodeIRNode()
             {
                 Parent = item.Node.Parent
             };
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         item.IsLiteral ? "true" : "false")
                 });
 
-            var endNode = new CSharpStatementIRNode()
+            var endNode = new CSharpCodeIRNode()
             {
                 Parent = item.Node.Parent
             };

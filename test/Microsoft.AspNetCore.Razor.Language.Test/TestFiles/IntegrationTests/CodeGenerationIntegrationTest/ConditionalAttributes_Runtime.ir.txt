@@ -3,7 +3,7 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ConditionalAttributes_Runtime -  - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (2:0,2 [44] ConditionalAttributes.cshtml)
+                CSharpCode - (2:0,2 [44] ConditionalAttributes.cshtml)
                     RazorIRToken - (2:0,2 [44] ConditionalAttributes.cshtml) - CSharp - \n    var ch = true;\n    var cls = "bar";\n
                 HtmlContent - (46:3,0 [28] ConditionalAttributes.cshtml)
                     RazorIRToken - (46:3,0 [4] ConditionalAttributes.cshtml) - Html -     
@@ -62,7 +62,7 @@ Document -
                     RazorIRToken - (242:9,0 [4] ConditionalAttributes.cshtml) - Html -     
                     RazorIRToken - (246:9,4 [2] ConditionalAttributes.cshtml) - Html - <p
                 HtmlAttribute - (248:9,6 [34] ConditionalAttributes.cshtml) -  class=" - "
-                    CSharpStatementAttributeValue - (256:9,14 [25] ConditionalAttributes.cshtml) - 
+                    CSharpCodeAttributeValue - (256:9,14 [25] ConditionalAttributes.cshtml) - 
                         RazorIRToken - (257:9,15 [18] ConditionalAttributes.cshtml) - CSharp - if(cls != null) { 
                         CSharpExpression - (276:9,34 [3] ConditionalAttributes.cshtml)
                             RazorIRToken - (276:9,34 [3] ConditionalAttributes.cshtml) - CSharp - cls
@@ -102,5 +102,5 @@ Document -
                     RazorIRToken - (628:13,105 [1] ConditionalAttributes.cshtml) - Html - >
                     RazorIRToken - (629:13,106 [9] ConditionalAttributes.cshtml) - Html - </script>
                     RazorIRToken - (638:13,115 [2] ConditionalAttributes.cshtml) - Html - \n
-                CSharpStatement - (640:14,0 [0] ConditionalAttributes.cshtml)
+                CSharpCode - (640:14,0 [0] ConditionalAttributes.cshtml)
                     RazorIRToken - (640:14,0 [0] ConditionalAttributes.cshtml) - CSharp - 

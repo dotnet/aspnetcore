@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.Prefix);
         }
 
-        public override void VisitCSharpStatementAttributeValue(CSharpStatementAttributeValueIRNode node)
+        public override void VisitCSharpCodeAttributeValue(CSharpCodeAttributeValueIRNode node)
         {
             WriteContentNode(node, node.Prefix);
         }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public abstract void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIRNode node);
 
-        public abstract void WriteCSharpStatement(CSharpRenderingContext context, CSharpStatementIRNode node);
+        public abstract void WriteCSharpCode(CSharpRenderingContext context, CSharpCodeIRNode node);
 
         public abstract void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIRNode node);
 
@@ -23,6 +23,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public abstract void WriteCSharpExpressionAttributeValue(CSharpRenderingContext context, CSharpExpressionAttributeValueIRNode node);
 
-        public abstract void WriteCSharpStatementAttributeValue(CSharpRenderingContext context, CSharpStatementAttributeValueIRNode node);
+        public abstract void WriteCSharpCodeAttributeValue(CSharpRenderingContext context, CSharpCodeAttributeValueIRNode node);
     }
 }

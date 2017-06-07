@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 n => Directive(
                     "functions",
                     n,
-                    c => Assert.IsType<CSharpStatementIRNode>(c)));
+                    c => Assert.IsType<CSharpCodeIRNode>(c)));
         }
 
         [Fact]

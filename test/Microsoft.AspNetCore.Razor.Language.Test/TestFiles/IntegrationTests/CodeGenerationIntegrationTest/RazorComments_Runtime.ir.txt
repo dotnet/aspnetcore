@@ -11,15 +11,15 @@ Document -
                     RazorIRToken - (62:1,24 [9] RazorComments.cshtml) - Html -  be shown
                     RazorIRToken - (71:1,33 [4] RazorComments.cshtml) - Html - </p>
                     RazorIRToken - (75:1,37 [4] RazorComments.cshtml) - Html - \n\n
-                CSharpStatement - (81:3,2 [6] RazorComments.cshtml)
+                CSharpCode - (81:3,2 [6] RazorComments.cshtml)
                     RazorIRToken - (81:3,2 [6] RazorComments.cshtml) - CSharp - \n    
-                CSharpStatement - (122:4,39 [22] RazorComments.cshtml)
+                CSharpCode - (122:4,39 [22] RazorComments.cshtml)
                     RazorIRToken - (122:4,39 [22] RazorComments.cshtml) - CSharp - \n    Exception foo = 
-                CSharpStatement - (173:5,49 [58] RazorComments.cshtml)
+                CSharpCode - (173:5,49 [58] RazorComments.cshtml)
                     RazorIRToken - (173:5,49 [58] RazorComments.cshtml) - CSharp -  null;\n    if(foo != null) {\n        throw foo;\n    }\n
                 HtmlContent - (234:10,0 [2] RazorComments.cshtml)
                     RazorIRToken - (234:10,0 [2] RazorComments.cshtml) - Html - \n
-                CSharpStatement - (238:11,2 [24] RazorComments.cshtml)
+                CSharpCode - (238:11,2 [24] RazorComments.cshtml)
                     RazorIRToken - (238:11,2 [24] RazorComments.cshtml) - CSharp -  var bar = "@* bar *@"; 
                 HtmlContent - (265:12,0 [44] RazorComments.cshtml)
                     RazorIRToken - (265:12,0 [3] RazorComments.cshtml) - Html - <p>

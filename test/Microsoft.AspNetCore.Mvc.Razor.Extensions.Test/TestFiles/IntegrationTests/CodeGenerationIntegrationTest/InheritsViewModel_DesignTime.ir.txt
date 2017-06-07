@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsViewModel_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
@@ -28,7 +28,7 @@ Document -
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (10:0,10 [26] InheritsViewModel.cshtml) - MyBasePageForViews<TModel>
                 DirectiveToken - (45:1,7 [7] InheritsViewModel.cshtml) - MyModel
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
             InjectDirective - 

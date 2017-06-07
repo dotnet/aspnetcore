@@ -341,7 +341,7 @@ Document -
                     RazorIRToken - (2001:83,18 [4] StringLiterals.cshtml) - Html - </p>
                     RazorIRToken - (2005:83,22 [4] StringLiterals.cshtml) - Html - <br>
                     RazorIRToken - (2009:83,26 [4] StringLiterals.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("WriteLiteralsToInHere", async () => {
                 HtmlContent - (2045:85,32 [2618] StringLiterals.cshtml)
                     RazorIRToken - (2045:85,32 [6] StringLiterals.cshtml) - Html - \n    
@@ -645,7 +645,7 @@ Document -
                     RazorIRToken - (4635:160,7 [22] StringLiterals.cshtml) - Html - This is line 75 nested
                     RazorIRToken - (4657:160,29 [4] StringLiterals.cshtml) - Html - </p>
                     RazorIRToken - (4661:160,33 [2] StringLiterals.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });
                 HtmlContent - (4666:162,0 [1026] StringLiterals.cshtml)
                     RazorIRToken - (4666:162,0 [3] StringLiterals.cshtml) - Html - <p>
@@ -820,7 +820,7 @@ Document -
                     RazorIRToken - (5668:204,3 [15] StringLiterals.cshtml) - Html - This is line 43
                     RazorIRToken - (5683:204,18 [4] StringLiterals.cshtml) - Html - </p>
                     RazorIRToken - (5687:204,22 [5] StringLiterals.cshtml) - Html - hi!\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("WriteLiteralsToInHereAlso", async () => {
                 HtmlContent - (5728:205,36 [1023] StringLiterals.cshtml)
                     RazorIRToken - (5728:205,36 [6] StringLiterals.cshtml) - Html - \n    
@@ -944,7 +944,7 @@ Document -
                     RazorIRToken - (6743:235,7 [2] StringLiterals.cshtml) - Html - 30
                     RazorIRToken - (6745:235,9 [4] StringLiterals.cshtml) - Html - </p>
                     RazorIRToken - (6749:235,13 [2] StringLiterals.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });
                 HtmlContent - (6752:236,1 [1] StringLiterals.cshtml)
                     RazorIRToken - (6752:236,1 [1] StringLiterals.cshtml) - Html - !

@@ -13,7 +13,7 @@ Document -
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (33:1,0 [2] PrefixedAttributeTagHelpers.cshtml) - Html - \n
-                CSharpStatement - (37:2,2 [242] PrefixedAttributeTagHelpers.cshtml)
+                CSharpCode - (37:2,2 [242] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (37:2,2 [242] PrefixedAttributeTagHelpers.cshtml) - CSharp - \n    var literate = "or illiterate";\n    var intDictionary = new Dictionary<string, int>\n    {\n        { "three", 3 },\n    };\n    var stringDictionary = new SortedDictionary<string, string>\n    {\n        { "name", "value" },\n    };\n
                 HtmlContent - (282:13,0 [49] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (282:13,0 [2] PrefixedAttributeTagHelpers.cshtml) - Html - \n

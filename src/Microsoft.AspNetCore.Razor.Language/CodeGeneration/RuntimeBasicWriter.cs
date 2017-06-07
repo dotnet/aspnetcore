@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             linePragmaScope?.Dispose();
         }
 
-        public override void WriteCSharpStatement(CSharpRenderingContext context, CSharpStatementIRNode node)
+        public override void WriteCSharpCode(CSharpRenderingContext context, CSharpCodeIRNode node)
         {
             var isWhitespaceStatement = true;
             for (var i = 0; i < node.Children.Count; i++)
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .Count(child =>
                     child is HtmlAttributeValueIRNode ||
                     child is CSharpExpressionAttributeValueIRNode ||
-                    child is CSharpStatementAttributeValueIRNode ||
+                    child is CSharpCodeAttributeValueIRNode ||
                     child is ExtensionIRNode);
 
             var prefixLocation = node.Source.Value.AbsoluteIndex;
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteCSharpStatementAttributeValue(CSharpRenderingContext context, CSharpStatementAttributeValueIRNode node)
+        public override void WriteCSharpCodeAttributeValue(CSharpRenderingContext context, CSharpCodeAttributeValueIRNode node)
         {
             const string ValueWriterName = "__razor_attribute_value_writer";
 

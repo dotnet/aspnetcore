@@ -3,7 +3,7 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Await_DesignTime -  - 
             DesignTimeDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (89:5,1 [102] Await.cshtml)
@@ -30,14 +30,14 @@ Document -
                     RazorIRToken - (263:10,54 [6] Await.cshtml) - Html - \n    
                     RazorIRToken - (269:11,4 [3] Await.cshtml) - Html - <p>
                     RazorIRToken - (272:11,7 [30] Await.cshtml) - Html - Basic Asynchronous Statement: 
-                CSharpStatement - (304:11,39 [14] Await.cshtml)
+                CSharpCode - (304:11,39 [14] Await.cshtml)
                     RazorIRToken - (304:11,39 [14] Await.cshtml) - CSharp -  await Foo(); 
                 HtmlContent - (319:11,54 [50] Await.cshtml)
                     RazorIRToken - (319:11,54 [4] Await.cshtml) - Html - </p>
                     RazorIRToken - (323:11,58 [6] Await.cshtml) - Html - \n    
                     RazorIRToken - (329:12,4 [3] Await.cshtml) - Html - <p>
                     RazorIRToken - (332:12,7 [37] Await.cshtml) - Html - Basic Asynchronous Statement Nested: 
-                CSharpStatement - (371:12,46 [1] Await.cshtml)
+                CSharpCode - (371:12,46 [1] Await.cshtml)
                     RazorIRToken - (371:12,46 [1] Await.cshtml) - CSharp -  
                 HtmlContent - (372:12,47 [3] Await.cshtml)
                     RazorIRToken - (372:12,47 [3] Await.cshtml) - Html - <b>
@@ -45,7 +45,7 @@ Document -
                     RazorIRToken - (376:12,51 [11] Await.cshtml) - CSharp - await Foo()
                 HtmlContent - (387:12,62 [4] Await.cshtml)
                     RazorIRToken - (387:12,62 [4] Await.cshtml) - Html - </b>
-                CSharpStatement - (391:12,66 [1] Await.cshtml)
+                CSharpCode - (391:12,66 [1] Await.cshtml)
                     RazorIRToken - (391:12,66 [1] Await.cshtml) - CSharp -  
                 HtmlContent - (393:12,68 [54] Await.cshtml)
                     RazorIRToken - (393:12,68 [4] Await.cshtml) - Html - </p>
@@ -88,21 +88,21 @@ Document -
                     RazorIRToken - (743:20,68 [6] Await.cshtml) - Html - \n    
                     RazorIRToken - (749:21,4 [3] Await.cshtml) - Html - <p>
                     RazorIRToken - (752:21,7 [33] Await.cshtml) - Html - Advanced Asynchronous Statement: 
-                CSharpStatement - (787:21,42 [39] Await.cshtml)
+                CSharpCode - (787:21,42 [39] Await.cshtml)
                     RazorIRToken - (787:21,42 [39] Await.cshtml) - CSharp -  await Foo(something, hello: "world"); 
                 HtmlContent - (827:21,82 [55] Await.cshtml)
                     RazorIRToken - (827:21,82 [4] Await.cshtml) - Html - </p>
                     RazorIRToken - (831:21,86 [6] Await.cshtml) - Html - \n    
                     RazorIRToken - (837:22,4 [3] Await.cshtml) - Html - <p>
                     RazorIRToken - (840:22,7 [42] Await.cshtml) - Html - Advanced Asynchronous Statement Extended: 
-                CSharpStatement - (884:22,51 [21] Await.cshtml)
+                CSharpCode - (884:22,51 [21] Await.cshtml)
                     RazorIRToken - (884:22,51 [21] Await.cshtml) - CSharp -  await Foo.Bar(1, 2) 
                 HtmlContent - (906:22,73 [53] Await.cshtml)
                     RazorIRToken - (906:22,73 [4] Await.cshtml) - Html - </p>
                     RazorIRToken - (910:22,77 [6] Await.cshtml) - Html - \n    
                     RazorIRToken - (916:23,4 [3] Await.cshtml) - Html - <p>
                     RazorIRToken - (919:23,7 [40] Await.cshtml) - Html - Advanced Asynchronous Statement Nested: 
-                CSharpStatement - (961:23,49 [1] Await.cshtml)
+                CSharpCode - (961:23,49 [1] Await.cshtml)
                     RazorIRToken - (961:23,49 [1] Await.cshtml) - CSharp -  
                 HtmlContent - (962:23,50 [3] Await.cshtml)
                     RazorIRToken - (962:23,50 [3] Await.cshtml) - Html - <b>
@@ -110,7 +110,7 @@ Document -
                     RazorIRToken - (966:23,54 [27] Await.cshtml) - CSharp - await Foo(boolValue: false)
                 HtmlContent - (993:23,81 [4] Await.cshtml)
                     RazorIRToken - (993:23,81 [4] Await.cshtml) - Html - </b>
-                CSharpStatement - (997:23,85 [1] Await.cshtml)
+                CSharpCode - (997:23,85 [1] Await.cshtml)
                     RazorIRToken - (997:23,85 [1] Await.cshtml) - CSharp -  
                 HtmlContent - (999:23,87 [57] Await.cshtml)
                     RazorIRToken - (999:23,87 [4] Await.cshtml) - Html - </p>
@@ -123,5 +123,5 @@ Document -
                     RazorIRToken - (1076:24,71 [4] Await.cshtml) - Html - </p>
                     RazorIRToken - (1080:24,75 [2] Await.cshtml) - Html - \n
                     RazorIRToken - (1082:25,0 [10] Await.cshtml) - Html - </section>
-            CSharpStatement - (12:0,12 [76] Await.cshtml)
+            CSharpCode - (12:0,12 [76] Await.cshtml)
                 RazorIRToken - (12:0,12 [76] Await.cshtml) - CSharp - \n    public async Task<string> Foo()\n    {\n        return "Bar";\n    }\n

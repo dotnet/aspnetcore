@@ -6,7 +6,7 @@ Document -
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] EnumTagHelpers.cshtml)
                     RazorIRToken - (33:1,0 [2] EnumTagHelpers.cshtml) - Html - \n
-                CSharpStatement - (37:2,2 [39] EnumTagHelpers.cshtml)
+                CSharpCode - (37:2,2 [39] EnumTagHelpers.cshtml)
                     RazorIRToken - (37:2,2 [39] EnumTagHelpers.cshtml) - CSharp - \n    var enumValue = MyEnum.MyValue;\n
                 HtmlContent - (79:5,0 [2] EnumTagHelpers.cshtml)
                     RazorIRToken - (79:5,0 [2] EnumTagHelpers.cshtml) - Html - \n

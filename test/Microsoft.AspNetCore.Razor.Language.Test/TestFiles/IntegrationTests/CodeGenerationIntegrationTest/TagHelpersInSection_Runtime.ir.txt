@@ -6,11 +6,11 @@ Document -
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] TagHelpersInSection.cshtml)
                     RazorIRToken - (33:1,0 [2] TagHelpersInSection.cshtml) - Html - \n
-                CSharpStatement - (37:2,2 [31] TagHelpersInSection.cshtml)
+                CSharpCode - (37:2,2 [31] TagHelpersInSection.cshtml)
                     RazorIRToken - (37:2,2 [31] TagHelpersInSection.cshtml) - CSharp - \n    var code = "some code";\n
                 HtmlContent - (71:5,0 [2] TagHelpersInSection.cshtml)
                     RazorIRToken - (71:5,0 [2] TagHelpersInSection.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("MySection", async () => {
                 HtmlContent - (93:6,20 [21] TagHelpersInSection.cshtml)
                     RazorIRToken - (93:6,20 [6] TagHelpersInSection.cshtml) - Html - \n    
@@ -48,5 +48,5 @@ Document -
                     RazorIRToken - (359:11,22 [6] TagHelpersInSection.cshtml) - Html - \n    
                     RazorIRToken - (365:12,4 [6] TagHelpersInSection.cshtml) - Html - </div>
                     RazorIRToken - (371:12,10 [2] TagHelpersInSection.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });

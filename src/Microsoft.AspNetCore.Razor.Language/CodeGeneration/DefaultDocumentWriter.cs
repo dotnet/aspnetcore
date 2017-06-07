@@ -194,9 +194,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.BasicWriter.WriteCSharpExpression(Context, node);
             }
 
-            public override void VisitCSharpStatement(CSharpStatementIRNode node)
+            public override void VisitCSharpCode(CSharpCodeIRNode node)
             {
-                Context.BasicWriter.WriteCSharpStatement(Context, node);
+                Context.BasicWriter.WriteCSharpCode(Context, node);
             }
 
             public override void VisitHtmlAttribute(HtmlAttributeIRNode node)
@@ -214,9 +214,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.BasicWriter.WriteCSharpExpressionAttributeValue(Context, node);
             }
 
-            public override void VisitCSharpStatementAttributeValue(CSharpStatementAttributeValueIRNode node)
+            public override void VisitCSharpCodeAttributeValue(CSharpCodeAttributeValueIRNode node)
             {
-                Context.BasicWriter.WriteCSharpStatementAttributeValue(Context, node);
+                Context.BasicWriter.WriteCSharpCodeAttributeValue(Context, node);
             }
 
             public override void VisitHtml(HtmlContentIRNode node)

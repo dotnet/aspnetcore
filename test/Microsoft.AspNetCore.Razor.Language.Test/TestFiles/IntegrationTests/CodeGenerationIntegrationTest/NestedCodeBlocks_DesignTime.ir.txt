@@ -3,12 +3,12 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedCodeBlocks_DesignTime -  - 
             DesignTimeDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (1:0,1 [15] NestedCodeBlocks.cshtml)
+                CSharpCode - (1:0,1 [15] NestedCodeBlocks.cshtml)
                     RazorIRToken - (1:0,1 [15] NestedCodeBlocks.cshtml) - CSharp - if(foo) {\n    
-                CSharpStatement - (17:1,5 [16] NestedCodeBlocks.cshtml)
+                CSharpCode - (17:1,5 [16] NestedCodeBlocks.cshtml)
                     RazorIRToken - (17:1,5 [16] NestedCodeBlocks.cshtml) - CSharp - if(bar) {\n    }
-                CSharpStatement - (33:2,5 [3] NestedCodeBlocks.cshtml)
+                CSharpCode - (33:2,5 [3] NestedCodeBlocks.cshtml)
                     RazorIRToken - (33:2,5 [3] NestedCodeBlocks.cshtml) - CSharp - \n}

@@ -25,7 +25,7 @@ Document -
                 DirectiveToken - (729:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (159:11,8 [17] IncompleteDirectives.cshtml) - MyService<TModel>
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
@@ -51,7 +51,7 @@ Document -
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml>)PageContext?.ViewData;
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml Model => ViewData.Model;

@@ -15,21 +15,21 @@ Document -
                     RazorIRToken - (264:14,9 [2] IncompleteDirectives.cshtml) - Html - \n
                 HtmlContent - (276:15,10 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (276:15,10 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("", async () => {
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });
                 HtmlContent - (315:20,8 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (315:20,8 [2] IncompleteDirectives.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("", async () => {
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });
                 HtmlContent - (326:21,9 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (326:21,9 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("", async () => {
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });
                 HtmlContent - (339:23,9 [3] IncompleteDirectives.cshtml)
                     RazorIRToken - (339:23,9 [3] IncompleteDirectives.cshtml) - Html - {\n

@@ -4,7 +4,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inherits_DesignTime - foo.bar<baz<biz>>.boz - 
             DesignTimeDirective - 
                 DirectiveToken - (20:2,10 [21] Inherits.cshtml) - foo.bar<baz<biz>>.boz
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpExpression - (1:0,1 [5] Inherits.cshtml)

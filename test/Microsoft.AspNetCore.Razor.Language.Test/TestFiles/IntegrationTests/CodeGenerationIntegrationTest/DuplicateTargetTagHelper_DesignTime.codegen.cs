@@ -1,14 +1,12 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
-    using System;
-    using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DuplicateTargetTagHelper_DesignTime
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
-System.Object __typeHelper = "*, TestAssembly";
+global::System.Object __typeHelper = "*, TestAssembly";
         }
         ))();
         }

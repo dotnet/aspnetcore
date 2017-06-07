@@ -9,7 +9,7 @@ Document -
         UsingStatement - (123:6,1 [41] Usings.cshtml) - static global::System.Text.Encoding
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Usings_DesignTime -  - 
             DesignTimeDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (16:0,16 [2] Usings.cshtml)

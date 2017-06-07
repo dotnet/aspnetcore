@@ -12,7 +12,7 @@ Document -
                 DirectiveToken - (212:10,16 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (231:11,17 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (250:12,17 [1] IncompleteDirectives.cshtml) - "
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
@@ -39,21 +39,21 @@ Document -
                     RazorIRToken - (264:14,9 [2] IncompleteDirectives.cshtml) - Html - \n
                 HtmlContent - (276:15,10 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (276:15,10 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("", async (__razor_section_writer) => {
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });
                 HtmlContent - (315:20,8 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (315:20,8 [2] IncompleteDirectives.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("", async (__razor_section_writer) => {
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });
                 HtmlContent - (326:21,9 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (326:21,9 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - DefineSection("", async (__razor_section_writer) => {
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - });
                 HtmlContent - (339:23,9 [3] IncompleteDirectives.cshtml)
                     RazorIRToken - (339:23,9 [3] IncompleteDirectives.cshtml) - Html - {\n

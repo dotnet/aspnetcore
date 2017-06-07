@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement - (1:0,1 [14] ) - System
@@ -13,19 +13,19 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime> - 
             DeclareTagHelperFields -  - InputTestTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(17, 2, true);
                 HtmlContent - (17:1,0 [2] ModelExpressionTagHelper.cshtml)
                     RazorIRToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(64, 2, true);
                 HtmlContent - (64:3,0 [2] ModelExpressionTagHelper.cshtml)
                     RazorIRToken - (64:3,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(66, 25, false);
                 TagHelper - (66:4,0 [25] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
                     TagHelperBody - 
@@ -36,15 +36,15 @@ Document -
                             RazorIRToken -  - CSharp - __model.
                             RazorIRToken - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - CSharp - Date
                             RazorIRToken -  - CSharp - )
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(91, 2, true);
                 HtmlContent - (91:4,25 [2] ModelExpressionTagHelper.cshtml)
                     RazorIRToken - (91:4,25 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(93, 27, false);
                 TagHelper - (93:5,0 [27] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
                     TagHelperBody - 
@@ -54,13 +54,13 @@ Document -
                             RazorIRToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
                             RazorIRToken - (111:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
                             RazorIRToken -  - CSharp - )
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(120, 2, true);
                 HtmlContent - (120:5,27 [2] ModelExpressionTagHelper.cshtml)
                     RazorIRToken - (120:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
             InjectDirective - 
             InjectDirective - 

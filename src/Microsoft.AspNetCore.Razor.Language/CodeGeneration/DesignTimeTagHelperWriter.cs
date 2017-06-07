@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                 context.Writer.Write(token.Content);
             }
-            else if (node is CSharpStatementIRNode)
+            else if (node is CSharpCodeIRNode)
             {
                 var error = new RazorError(
                     LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,

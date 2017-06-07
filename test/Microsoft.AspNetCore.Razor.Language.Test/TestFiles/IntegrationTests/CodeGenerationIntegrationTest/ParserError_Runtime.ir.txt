@@ -3,5 +3,5 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ParserError_Runtime -  - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (2:0,2 [31] ParserError.cshtml)
+                CSharpCode - (2:0,2 [31] ParserError.cshtml)
                     RazorIRToken - (2:0,2 [31] ParserError.cshtml) - CSharp - \n/*\nint i =10;\nint j =20;\n}

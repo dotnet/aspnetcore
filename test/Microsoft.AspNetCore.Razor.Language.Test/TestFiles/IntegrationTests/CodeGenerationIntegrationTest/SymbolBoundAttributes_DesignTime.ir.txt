@@ -4,7 +4,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SymbolBoundAttributes_DesignTime -  - 
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [15] SymbolBoundAttributes.cshtml) - *, TestAssembly
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.CatchAllTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

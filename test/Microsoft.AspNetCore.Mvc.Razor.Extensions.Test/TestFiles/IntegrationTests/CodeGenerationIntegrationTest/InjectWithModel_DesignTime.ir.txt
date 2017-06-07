@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InjectWithModel_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
@@ -31,7 +31,7 @@ Document -
                 DirectiveToken - (30:1,14 [14] InjectWithModel.cshtml) - MyPropertyName
                 DirectiveToken - (54:2,8 [17] InjectWithModel.cshtml) - MyService<TModel>
                 DirectiveToken - (72:2,26 [4] InjectWithModel.cshtml) - Html
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
             InjectDirective - 

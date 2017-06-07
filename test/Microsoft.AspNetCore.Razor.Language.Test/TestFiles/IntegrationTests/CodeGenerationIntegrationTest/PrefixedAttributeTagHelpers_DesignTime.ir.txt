@@ -4,13 +4,13 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_PrefixedAttributeTagHelpers_DesignTime -  - 
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] PrefixedAttributeTagHelpers.cshtml) - "*, TestAssembly"
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper1 - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (31:0,31 [4] PrefixedAttributeTagHelpers.cshtml) - Html - \n\n
-                CSharpStatement - (37:2,2 [242] PrefixedAttributeTagHelpers.cshtml)
+                CSharpCode - (37:2,2 [242] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (37:2,2 [242] PrefixedAttributeTagHelpers.cshtml) - CSharp - \n    var literate = "or illiterate";\n    var intDictionary = new Dictionary<string, int>\n    {\n        { "three", 3 },\n    };\n    var stringDictionary = new SortedDictionary<string, string>\n    {\n        { "name", "value" },\n    };\n
                 HtmlContent - (282:13,0 [49] PrefixedAttributeTagHelpers.cshtml)
                     RazorIRToken - (282:13,0 [2] PrefixedAttributeTagHelpers.cshtml) - Html - \n

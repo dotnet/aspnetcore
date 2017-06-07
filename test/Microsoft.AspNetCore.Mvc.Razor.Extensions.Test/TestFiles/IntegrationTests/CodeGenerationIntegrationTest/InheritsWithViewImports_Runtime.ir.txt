@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsWithViewImports_cshtml), null)]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement - (1:0,1 [14] ) - System
@@ -17,7 +17,7 @@ Document -
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<MyModel> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<MyModel>)PageContext?.ViewData;
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public MyModel Model => ViewData.Model;

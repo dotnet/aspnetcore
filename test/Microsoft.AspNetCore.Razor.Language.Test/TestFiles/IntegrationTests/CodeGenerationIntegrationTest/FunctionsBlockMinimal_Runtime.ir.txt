@@ -5,7 +5,7 @@ Document -
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [4] FunctionsBlockMinimal.cshtml)
                     RazorIRToken - (0:0,0 [4] FunctionsBlockMinimal.cshtml) - Html - \n\n
-            CSharpStatement - (4:2,0 [1] FunctionsBlockMinimal.cshtml)
+            CSharpCode - (4:2,0 [1] FunctionsBlockMinimal.cshtml)
                 RazorIRToken - (4:2,0 [1] FunctionsBlockMinimal.cshtml) - CSharp - 	
-            CSharpStatement - (16:2,12 [55] FunctionsBlockMinimal.cshtml)
+            CSharpCode - (16:2,12 [55] FunctionsBlockMinimal.cshtml)
                 RazorIRToken - (16:2,12 [55] FunctionsBlockMinimal.cshtml) - CSharp - \nstring foo(string input) {\n	return input + "!";\n}\n

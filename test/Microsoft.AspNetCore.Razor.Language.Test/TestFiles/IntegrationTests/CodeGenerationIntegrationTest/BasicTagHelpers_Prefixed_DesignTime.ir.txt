@@ -5,7 +5,7 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (17:0,17 [5] BasicTagHelpers_Prefixed.cshtml) - "THS"
                 DirectiveToken - (38:1,14 [17] BasicTagHelpers_Prefixed.cshtml) - "*, TestAssembly"
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

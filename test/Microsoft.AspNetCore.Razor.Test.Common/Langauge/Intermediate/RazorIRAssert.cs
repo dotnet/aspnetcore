@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public static void CSharpStatement(string expected, RazorIRNode node)
+        public static void CSharpCode(string expected, RazorIRNode node)
         {
             try
             {
-                var statement = Assert.IsType<CSharpStatementIRNode>(node);
+                var statement = Assert.IsType<CSharpCodeIRNode>(node);
                 var content = new StringBuilder();
                 for (var i = 0; i < statement.Children.Count; i++)
                 {
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             try
             {
-                var beginNode = Assert.IsType<CSharpStatementIRNode>(node);
+                var beginNode = Assert.IsType<CSharpCodeIRNode>(node);
                 var content = new StringBuilder();
                 for (var i = 0; i < beginNode.Children.Count; i++)
                 {
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             try
             {
-                var endNode = Assert.IsType<CSharpStatementIRNode>(node);
+                var endNode = Assert.IsType<CSharpCodeIRNode>(node);
                 var content = new StringBuilder();
                 for (var i = 0; i < endNode.Children.Count; i++)
                 {

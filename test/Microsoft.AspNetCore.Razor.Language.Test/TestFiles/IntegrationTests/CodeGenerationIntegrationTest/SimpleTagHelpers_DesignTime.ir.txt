@@ -4,7 +4,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SimpleTagHelpers_DesignTime -  - 
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [15] SimpleTagHelpers.cshtml) - *, TestAssembly
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - InputTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(Test.Namespace.PageWithNamespace_Page), null)]
     NamespaceDeclaration -  - Test.Namespace
         UsingStatement - (1:0,1 [14] ) - System
@@ -12,21 +12,21 @@ Document -
         UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - PageWithNamespace_Page - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(34, 20, true);
                 HtmlContent - (34:2,0 [20] PageWithNamespace.cshtml)
                     RazorIRToken - (34:2,0 [4] PageWithNamespace.cshtml) - Html - <h1>
                     RazorIRToken - (38:2,4 [9] PageWithNamespace.cshtml) - Html - Hi There!
                     RazorIRToken - (47:2,13 [5] PageWithNamespace.cshtml) - Html - </h1>
                     RazorIRToken - (52:2,18 [2] PageWithNamespace.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<PageWithNamespace_Page> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<PageWithNamespace_Page>)PageContext?.ViewData;
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public PageWithNamespace_Page Model => ViewData.Model;

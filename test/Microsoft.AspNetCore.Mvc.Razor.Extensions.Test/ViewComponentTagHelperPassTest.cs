@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal(2, @class.Children.Count); // No class node created for a VCTH
             for (var i = 0; i < @class.Children.Count; i++)
             {
-                Assert.IsNotType<CSharpStatementIRNode>(@class.Children[i]);
+                Assert.IsNotType<CSharpCodeIRNode>(@class.Children[i]);
             }
         }
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @class = FindClassNode(irDocument);
             Assert.Equal(3, @class.Children.Count);
 
-            var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
+            var vcthClass = Assert.IsType<CSharpCodeIRNode>(@class.Children[2]);
             var tokenNode = vcthClass.Children[0] as RazorIRToken;
             Assert.Equal(
                 @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
@@ -167,7 +167,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             var @class = FindClassNode(irDocument);
             Assert.Equal(3, @class.Children.Count);
 
-            var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
+            var vcthClass = Assert.IsType<CSharpCodeIRNode>(@class.Children[2]);
             var tokenNode = vcthClass.Children[0] as RazorIRToken;
             Assert.Equal(
                 @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
@@ -253,7 +253,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             var @class = FindClassNode(irDocument);
             Assert.Equal(3, @class.Children.Count);
 
-            var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
+            var vcthClass = Assert.IsType<CSharpCodeIRNode>(@class.Children[2]);
             var tokenNode = vcthClass.Children[0] as RazorIRToken;
             Assert.Equal(
                 @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]

@@ -10,66 +10,66 @@ Document -
         UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(83, 4, true);
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(108, 5, true);
                 HtmlContent - (108:4,6 [5] IncompleteDirectives.cshtml)
                     RazorIRToken - (108:4,6 [5] IncompleteDirectives.cshtml) - Html - "\n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(119, 2, true);
                 HtmlContent - (119:6,6 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (119:6,6 [2] IncompleteDirectives.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(128, 4, true);
                 HtmlContent - (128:7,7 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (128:7,7 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(139, 2, true);
                 HtmlContent - (139:9,7 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (139:9,7 [2] IncompleteDirectives.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(149, 2, true);
                 HtmlContent - (149:10,8 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (149:10,8 [2] IncompleteDirectives.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(176, 4, true);
                 HtmlContent - (176:11,25 [4] IncompleteDirectives.cshtml)
                     RazorIRToken - (176:11,25 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(190, 2, true);
                 HtmlContent - (190:13,10 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (190:13,10 [2] IncompleteDirectives.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(203, 2, true);
                 HtmlContent - (203:14,11 [2] IncompleteDirectives.cshtml)
                     RazorIRToken - (203:14,11 [2] IncompleteDirectives.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml>)PageContext?.ViewData;
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml Model => ViewData.Model;

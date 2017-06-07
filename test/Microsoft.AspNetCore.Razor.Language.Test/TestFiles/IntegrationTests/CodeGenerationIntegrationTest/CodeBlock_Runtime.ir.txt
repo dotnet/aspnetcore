@@ -3,5 +3,5 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CodeBlock_Runtime -  - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (2:0,2 [115] CodeBlock.cshtml)
+                CSharpCode - (2:0,2 [115] CodeBlock.cshtml)
                     RazorIRToken - (2:0,2 [115] CodeBlock.cshtml) - CSharp - \n    for(int i = 1; i <= 10; i++) {\n        Output.Write("<p>Hello from C#, #" + i.ToString() + "</p>");\n    }\n

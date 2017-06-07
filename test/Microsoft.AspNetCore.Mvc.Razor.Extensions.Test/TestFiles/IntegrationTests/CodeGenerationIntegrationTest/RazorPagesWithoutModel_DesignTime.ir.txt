@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml), null)]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
@@ -28,7 +28,7 @@ Document -
                 DirectiveToken - (729:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (23:2,14 [12] RazorPagesWithoutModel.cshtml) - "*, AppCode"
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - DivTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
@@ -123,14 +123,14 @@ Document -
                     RazorIRToken - (910:34,10 [2] RazorPagesWithoutModel.cshtml) - Html - \n
                     RazorIRToken - (912:35,0 [7] RazorPagesWithoutModel.cshtml) - Html - </form>
                     RazorIRToken - (919:35,7 [2] RazorPagesWithoutModel.cshtml) - Html - \n
-            CSharpStatement - (95:5,12 [283] RazorPagesWithoutModel.cshtml)
+            CSharpCode - (95:5,12 [283] RazorPagesWithoutModel.cshtml)
                 RazorIRToken - (95:5,12 [283] RazorPagesWithoutModel.cshtml) - CSharp - \n    public IActionResult OnPost(Customer customer)\n    {\n        Name = customer.Name;\n        return Redirect("~/customers/inlinepagemodels/");\n    }\n\n    public string Name { get; set; }\n\n    public class Customer\n    {\n        public string Name { get; set; }\n    }\n
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml>)PageContext?.ViewData;
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml Model => ViewData.Model;

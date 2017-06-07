@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml), null)]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
@@ -29,7 +29,7 @@ Document -
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (16:2,7 [8] RazorPages.cshtml) - NewModel
                 DirectiveToken - (40:3,14 [12] RazorPages.cshtml) - "*, AppCode"
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - DivTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
@@ -124,14 +124,14 @@ Document -
                     RazorIRToken - (1011:38,10 [2] RazorPages.cshtml) - Html - \n
                     RazorIRToken - (1013:39,0 [7] RazorPages.cshtml) - Html - </form>
                     RazorIRToken - (1020:39,7 [2] RazorPages.cshtml) - Html - \n
-            CSharpStatement - (112:6,12 [360] RazorPages.cshtml)
+            CSharpCode - (112:6,12 [360] RazorPages.cshtml)
                 RazorIRToken - (112:6,12 [360] RazorPages.cshtml) - CSharp - \n    public class NewModel : PageModel\n    {\n        public IActionResult OnPost(Customer customer)\n        {\n            Name = customer.Name;\n            return Redirect("~/customers/inlinepagemodels/");\n        }\n\n        public string Name { get; set; }\n    }\n\n    public class Customer\n    {\n        public string Name { get; set; }\n    }\n
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
             InjectDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<NewModel> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<NewModel>)PageContext?.ViewData;
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - public NewModel Model => ViewData.Model;

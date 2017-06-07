@@ -3,16 +3,16 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ConditionalAttributes_DesignTime -  - 
             DesignTimeDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (2:0,2 [48] ConditionalAttributes.cshtml)
+                CSharpCode - (2:0,2 [48] ConditionalAttributes.cshtml)
                     RazorIRToken - (2:0,2 [48] ConditionalAttributes.cshtml) - CSharp - \n    var ch = true;\n    var cls = "bar";\n    
                 HtmlContent - (50:3,4 [16] ConditionalAttributes.cshtml)
                     RazorIRToken - (50:3,4 [2] ConditionalAttributes.cshtml) - Html - <a
                     RazorIRToken - (52:3,6 [11] ConditionalAttributes.cshtml) - Html -  href="Foo"
                     RazorIRToken - (63:3,17 [3] ConditionalAttributes.cshtml) - Html -  />
-                CSharpStatement - (66:3,20 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (66:3,20 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (66:3,20 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (72:4,4 [2] ConditionalAttributes.cshtml)
                     RazorIRToken - (72:4,4 [2] ConditionalAttributes.cshtml) - Html - <p
@@ -21,7 +21,7 @@ Document -
                         RazorIRToken - (83:4,15 [3] ConditionalAttributes.cshtml) - CSharp - cls
                 HtmlContent - (87:4,19 [3] ConditionalAttributes.cshtml)
                     RazorIRToken - (87:4,19 [3] ConditionalAttributes.cshtml) - Html -  />
-                CSharpStatement - (90:4,22 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (90:4,22 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (90:4,22 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (96:5,4 [2] ConditionalAttributes.cshtml)
                     RazorIRToken - (96:5,4 [2] ConditionalAttributes.cshtml) - Html - <p
@@ -32,7 +32,7 @@ Document -
                         RazorIRToken - (111:5,19 [3] ConditionalAttributes.cshtml) - CSharp - cls
                 HtmlContent - (115:5,23 [3] ConditionalAttributes.cshtml)
                     RazorIRToken - (115:5,23 [3] ConditionalAttributes.cshtml) - Html -  />
-                CSharpStatement - (118:5,26 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (118:5,26 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (118:5,26 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (124:6,4 [2] ConditionalAttributes.cshtml)
                     RazorIRToken - (124:6,4 [2] ConditionalAttributes.cshtml) - Html - <p
@@ -43,7 +43,7 @@ Document -
                         RazorIRToken - (139:6,19 [3] ConditionalAttributes.cshtml) - Html - foo
                 HtmlContent - (143:6,23 [3] ConditionalAttributes.cshtml)
                     RazorIRToken - (143:6,23 [3] ConditionalAttributes.cshtml) - Html -  />
-                CSharpStatement - (146:6,26 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (146:6,26 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (146:6,26 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (152:7,4 [22] ConditionalAttributes.cshtml)
                     RazorIRToken - (152:7,4 [6] ConditionalAttributes.cshtml) - Html - <input
@@ -53,7 +53,7 @@ Document -
                         RazorIRToken - (185:7,37 [2] ConditionalAttributes.cshtml) - CSharp - ch
                 HtmlContent - (188:7,40 [3] ConditionalAttributes.cshtml)
                     RazorIRToken - (188:7,40 [3] ConditionalAttributes.cshtml) - Html -  />
-                CSharpStatement - (191:7,43 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (191:7,43 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (191:7,43 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (197:8,4 [22] ConditionalAttributes.cshtml)
                     RazorIRToken - (197:8,4 [6] ConditionalAttributes.cshtml) - Html - <input
@@ -65,25 +65,25 @@ Document -
                         RazorIRToken - (234:8,41 [2] ConditionalAttributes.cshtml) - CSharp - ch
                 HtmlContent - (237:8,44 [3] ConditionalAttributes.cshtml)
                     RazorIRToken - (237:8,44 [3] ConditionalAttributes.cshtml) - Html -  />
-                CSharpStatement - (240:8,47 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (240:8,47 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (240:8,47 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (246:9,4 [2] ConditionalAttributes.cshtml)
                     RazorIRToken - (246:9,4 [2] ConditionalAttributes.cshtml) - Html - <p
                 HtmlAttribute - (248:9,6 [34] ConditionalAttributes.cshtml) -  class=" - "
-                    CSharpStatementAttributeValue - (256:9,14 [25] ConditionalAttributes.cshtml) - 
+                    CSharpCodeAttributeValue - (256:9,14 [25] ConditionalAttributes.cshtml) - 
                         RazorIRToken - (257:9,15 [18] ConditionalAttributes.cshtml) - CSharp - if(cls != null) { 
                         CSharpExpression - (276:9,34 [3] ConditionalAttributes.cshtml)
                             RazorIRToken - (276:9,34 [3] ConditionalAttributes.cshtml) - CSharp - cls
                         RazorIRToken - (279:9,37 [2] ConditionalAttributes.cshtml) - CSharp -  }
                 HtmlContent - (282:9,40 [3] ConditionalAttributes.cshtml)
                     RazorIRToken - (282:9,40 [3] ConditionalAttributes.cshtml) - Html -  />
-                CSharpStatement - (285:9,43 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (285:9,43 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (285:9,43 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (291:10,4 [18] ConditionalAttributes.cshtml)
                     RazorIRToken - (291:10,4 [2] ConditionalAttributes.cshtml) - Html - <a
                     RazorIRToken - (293:10,6 [13] ConditionalAttributes.cshtml) - Html -  href="~/Foo"
                     RazorIRToken - (306:10,19 [3] ConditionalAttributes.cshtml) - Html -  />
-                CSharpStatement - (309:10,22 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (309:10,22 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (309:10,22 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (315:11,4 [7] ConditionalAttributes.cshtml)
                     RazorIRToken - (315:11,4 [7] ConditionalAttributes.cshtml) - Html - <script
@@ -94,7 +94,7 @@ Document -
                     RazorIRToken - (374:11,63 [23] ConditionalAttributes.cshtml) - Html -  type="text/javascript"
                     RazorIRToken - (397:11,86 [1] ConditionalAttributes.cshtml) - Html - >
                     RazorIRToken - (398:11,87 [9] ConditionalAttributes.cshtml) - Html - </script>
-                CSharpStatement - (407:11,96 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (407:11,96 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (407:11,96 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (413:12,4 [7] ConditionalAttributes.cshtml)
                     RazorIRToken - (413:12,4 [7] ConditionalAttributes.cshtml) - Html - <script
@@ -105,7 +105,7 @@ Document -
                     RazorIRToken - (488:12,79 [23] ConditionalAttributes.cshtml) - Html -  type="text/javascript"
                     RazorIRToken - (511:12,102 [1] ConditionalAttributes.cshtml) - Html - >
                     RazorIRToken - (512:12,103 [9] ConditionalAttributes.cshtml) - Html - </script>
-                CSharpStatement - (521:12,112 [6] ConditionalAttributes.cshtml)
+                CSharpCode - (521:12,112 [6] ConditionalAttributes.cshtml)
                     RazorIRToken - (521:12,112 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (527:13,4 [111] ConditionalAttributes.cshtml)
                     RazorIRToken - (527:13,4 [7] ConditionalAttributes.cshtml) - Html - <script
@@ -113,5 +113,5 @@ Document -
                     RazorIRToken - (605:13,82 [23] ConditionalAttributes.cshtml) - Html -  type="text/javascript"
                     RazorIRToken - (628:13,105 [1] ConditionalAttributes.cshtml) - Html - >
                     RazorIRToken - (629:13,106 [9] ConditionalAttributes.cshtml) - Html - </script>
-                CSharpStatement - (638:13,115 [2] ConditionalAttributes.cshtml)
+                CSharpCode - (638:13,115 [2] ConditionalAttributes.cshtml)
                     RazorIRToken - (638:13,115 [2] ConditionalAttributes.cshtml) - CSharp - \n

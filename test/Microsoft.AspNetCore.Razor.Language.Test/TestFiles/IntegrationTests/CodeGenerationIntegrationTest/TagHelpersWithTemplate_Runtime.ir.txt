@@ -15,9 +15,9 @@ Document -
                     TagHelperBody - 
                         HtmlContent - (325:11,5 [2] TagHelpersWithTemplate.cshtml)
                             RazorIRToken - (325:11,5 [2] TagHelpersWithTemplate.cshtml) - Html - \n
-                        CSharpStatement - (327:12,0 [4] TagHelpersWithTemplate.cshtml)
+                        CSharpCode - (327:12,0 [4] TagHelpersWithTemplate.cshtml)
                             RazorIRToken - (327:12,0 [4] TagHelpersWithTemplate.cshtml) - CSharp -     
-                        CSharpStatement - (333:12,6 [66] TagHelpersWithTemplate.cshtml)
+                        CSharpCode - (333:12,6 [66] TagHelpersWithTemplate.cshtml)
                             RazorIRToken - (333:12,6 [66] TagHelpersWithTemplate.cshtml) - CSharp - \n        RenderTemplate(\n            "Template: ",\n            
                         Template - (400:15,13 [82] TagHelpersWithTemplate.cshtml)
                             TagHelper - (400:15,13 [82] TagHelpersWithTemplate.cshtml) - div - TagMode.StartTagAndEndTag
@@ -35,10 +35,10 @@ Document -
                                         AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                                 CreateTagHelper -  - DivTagHelper
                                 AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
-                        CSharpStatement - (482:15,95 [8] TagHelpersWithTemplate.cshtml)
+                        CSharpCode - (482:15,95 [8] TagHelpersWithTemplate.cshtml)
                             RazorIRToken - (482:15,95 [8] TagHelpersWithTemplate.cshtml) - CSharp - );\n    
                     CreateTagHelper -  - DivTagHelper
                 HtmlContent - (499:17,6 [4] TagHelpersWithTemplate.cshtml)
                     RazorIRToken - (499:17,6 [4] TagHelpersWithTemplate.cshtml) - Html - \n\n
-            CSharpStatement - (47:2,12 [268] TagHelpersWithTemplate.cshtml)
+            CSharpCode - (47:2,12 [268] TagHelpersWithTemplate.cshtml)
                 RazorIRToken - (47:2,12 [268] TagHelpersWithTemplate.cshtml) - CSharp - \n    public void RenderTemplate(string title, Func<string, HelperResult> template)\n    {\n        Output.WriteLine("<br /><p><em>Rendering Template:</em></p>");\n        var helperResult = template(title);\n        helperResult.WriteTo(Output, HtmlEncoder);\n    }\n

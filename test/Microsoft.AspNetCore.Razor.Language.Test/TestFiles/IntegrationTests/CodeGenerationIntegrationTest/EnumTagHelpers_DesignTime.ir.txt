@@ -4,13 +4,13 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EnumTagHelpers_DesignTime -  - 
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] EnumTagHelpers.cshtml) - "*, TestAssembly"
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.CatchAllTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] EnumTagHelpers.cshtml)
                     RazorIRToken - (31:0,31 [4] EnumTagHelpers.cshtml) - Html - \n\n
-                CSharpStatement - (37:2,2 [39] EnumTagHelpers.cshtml)
+                CSharpCode - (37:2,2 [39] EnumTagHelpers.cshtml)
                     RazorIRToken - (37:2,2 [39] EnumTagHelpers.cshtml) - CSharp - \n    var enumValue = MyEnum.MyValue;\n
                 HtmlContent - (79:5,0 [2] EnumTagHelpers.cshtml)
                     RazorIRToken - (79:5,0 [2] EnumTagHelpers.cshtml) - Html - \n

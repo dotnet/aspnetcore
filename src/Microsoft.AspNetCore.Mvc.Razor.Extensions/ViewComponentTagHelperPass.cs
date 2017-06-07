@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var writer = new CSharpCodeWriter();
             WriteClass(writer, tagHelper);
 
-            var statement = new CSharpStatementIRNode()
+            var statement = new CSharpCodeIRNode()
             {
                 Parent = @class
             };

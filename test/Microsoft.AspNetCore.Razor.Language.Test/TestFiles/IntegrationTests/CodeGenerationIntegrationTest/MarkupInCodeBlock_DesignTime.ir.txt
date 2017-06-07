@@ -3,10 +3,10 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MarkupInCodeBlock_DesignTime -  - 
             DesignTimeDirective - 
-            CSharpStatement - 
+            CSharpCode - 
                 RazorIRToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - (2:0,2 [46] MarkupInCodeBlock.cshtml)
+                CSharpCode - (2:0,2 [46] MarkupInCodeBlock.cshtml)
                     RazorIRToken - (2:0,2 [46] MarkupInCodeBlock.cshtml) - CSharp - \n    for(int i = 1; i <= 10; i++) {\n        
                 HtmlContent - (48:2,8 [19] MarkupInCodeBlock.cshtml)
                     RazorIRToken - (48:2,8 [3] MarkupInCodeBlock.cshtml) - Html - <p>
@@ -15,5 +15,5 @@ Document -
                     RazorIRToken - (69:2,29 [12] MarkupInCodeBlock.cshtml) - CSharp - i.ToString()
                 HtmlContent - (82:2,42 [4] MarkupInCodeBlock.cshtml)
                     RazorIRToken - (82:2,42 [4] MarkupInCodeBlock.cshtml) - Html - </p>
-                CSharpStatement - (86:2,46 [9] MarkupInCodeBlock.cshtml)
+                CSharpCode - (86:2,46 [9] MarkupInCodeBlock.cshtml)
                     RazorIRToken - (86:2,46 [9] MarkupInCodeBlock.cshtml) - CSharp - \n    }\n

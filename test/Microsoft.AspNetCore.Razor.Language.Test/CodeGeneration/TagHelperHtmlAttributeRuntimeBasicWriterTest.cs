@@ -62,7 +62,7 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
         }
 
         [Fact]
-        public void WriteCSharpStatementAttributeValue_BuffersResult()
+        public void WriteCSharpCodeAttributeValue_BuffersResult()
         {
             var writer = new TagHelperHtmlAttributeRuntimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
@@ -72,10 +72,10 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             context.CodeDocument = codeDocument;
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpStatementAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpCodeAttributeValueIRNode;
 
             // Act
-            writer.WriteCSharpStatementAttributeValue(context, node);
+            writer.WriteCSharpCodeAttributeValue(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();

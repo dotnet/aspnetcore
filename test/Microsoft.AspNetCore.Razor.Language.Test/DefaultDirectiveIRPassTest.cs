@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var @class = @namespace.Children[0];
             Children(@class,
                 node => Assert.IsType<MethodDeclarationIRNode>(node),
-                node => CSharpStatement(" var value = true; ", node));
+                node => CSharpCode(" var value = true; ", node));
             var method = (MethodDeclarationIRNode)@class.Children[0];
             Assert.Empty(method.Children);
         }
@@ -96,9 +96,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             var @class = @namespace.Children[0];
             var method = SingleChild<MethodDeclarationIRNode>(@class);
             Children(method,
-                node => CSharpStatement("DefineSection(\"Header\", async () => {", node),
+                node => CSharpCode("DefineSection(\"Header\", async () => {", node),
                 node => Html(" <p>Hello World</p> ", node),
-                node => CSharpStatement("});", node));
+                node => CSharpCode("});", node));
         }
 
         [Fact]
@@ -129,9 +129,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             var @class = @namespace.Children[0];
             var method = SingleChild<MethodDeclarationIRNode>(@class);
             Children(method,
-                node => CSharpStatement("DefineSection(\"Header\", async (__razor_section_writer) => {", node),
+                node => CSharpCode("DefineSection(\"Header\", async (__razor_section_writer) => {", node),
                 node => Html(" <p>Hello World</p> ", node),
-                node => CSharpStatement("});", node));
+                node => CSharpCode("});", node));
         }
 
         private static DocumentIRNode Lower(RazorCodeDocument codeDocument)

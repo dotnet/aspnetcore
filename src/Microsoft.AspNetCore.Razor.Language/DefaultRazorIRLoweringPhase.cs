@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
                 else
                 {
-                    _builder.Push(new CSharpStatementAttributeValueIRNode()
+                    _builder.Push(new CSharpCodeAttributeValueIRNode()
                     {
                         Prefix = chunkGenerator.Prefix,
                         Source = BuildSourceSpanFromNode(block),
@@ -433,11 +433,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
             {
-                var isAttributeValue = _builder.Current is CSharpStatementAttributeValueIRNode;
+                var isAttributeValue = _builder.Current is CSharpCodeAttributeValueIRNode;
 
                 if (!isAttributeValue)
                 {
-                    var statementNode = new CSharpStatementIRNode()
+                    var statementNode = new CSharpCodeIRNode()
                     {
                         Source = BuildSourceSpanFromNode(span)
                     };

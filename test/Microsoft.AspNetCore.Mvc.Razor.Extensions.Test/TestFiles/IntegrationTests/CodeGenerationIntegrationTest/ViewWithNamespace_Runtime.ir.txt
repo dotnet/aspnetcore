@@ -1,6 +1,6 @@
 Document - 
     Checksum - 
-    CSharpStatement - 
+    CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(Test.Namespace.ViewWithNamespace_View))]
     NamespaceDeclaration -  - Test.Namespace
         UsingStatement - (1:0,1 [14] ) - System
@@ -12,14 +12,14 @@ Document -
         UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - ViewWithNamespace_View - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - BeginContext(27, 20, true);
                 HtmlContent - (27:1,0 [20] ViewWithNamespace.cshtml)
                     RazorIRToken - (27:1,0 [4] ViewWithNamespace.cshtml) - Html - <h1>
                     RazorIRToken - (31:1,4 [9] ViewWithNamespace.cshtml) - Html - Hi There!
                     RazorIRToken - (40:1,13 [5] ViewWithNamespace.cshtml) - Html - </h1>
                     RazorIRToken - (45:1,18 [2] ViewWithNamespace.cshtml) - Html - \n
-                CSharpStatement - 
+                CSharpCode - 
                     RazorIRToken -  - CSharp - EndContext();
             InjectDirective - 
             InjectDirective - 
