@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Routing
             if (!_matcher.TryMatch(requestPath, context.RouteData.Values))
             {
                 // If we got back a null value set, that means the URI did not match
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             // Perf: Avoid accessing dictionaries if you don't need to write to them, these dictionaries are all
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Routing
                 RouteDirection.IncomingRequest,
                 _constraintLogger))
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             _logger.MatchedRoute(Name, ParsedTemplate.TemplateText);
 

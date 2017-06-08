@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing
         public Task RouteAsync(RouteContext context)
         {
             context.Handler = _requestDelegate;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }
