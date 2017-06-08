@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
                     context.Succeed(requirement);
                 }
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

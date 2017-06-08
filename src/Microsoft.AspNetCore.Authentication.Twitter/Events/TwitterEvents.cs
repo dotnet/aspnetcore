@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         /// <summary>
         /// Gets or sets the function that is invoked when the Authenticated method is invoked.
         /// </summary>
-        public Func<TwitterCreatingTicketContext, Task> OnCreatingTicket { get; set; } = context => TaskCache.CompletedTask;
+        public Func<TwitterCreatingTicketContext, Task> OnCreatingTicket { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Gets or sets the delegate that is invoked when the ApplyRedirect method is invoked.
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         public Func<TwitterRedirectToAuthorizationEndpointContext, Task> OnRedirectToAuthorizationEndpoint { get; set; } = context =>
         {
             context.Response.Redirect(context.RedirectUri);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         };
 
         /// <summary>

@@ -7,7 +7,6 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <returns>A task</returns>
         protected virtual Task InitializeHandlerAsync()
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         protected string BuildRedirectUri(string targetPath)
@@ -193,7 +192,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected virtual Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public async Task SignOutAsync(AuthenticationProperties properties)
@@ -205,7 +204,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected virtual Task HandleSignOutAsync(AuthenticationProperties properties)
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -216,7 +215,7 @@ namespace Microsoft.AspNetCore.Authentication
         protected virtual Task HandleForbiddenAsync(AuthenticationProperties properties)
         {
             Response.StatusCode = 403;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -229,7 +228,7 @@ namespace Microsoft.AspNetCore.Authentication
         protected virtual Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             Response.StatusCode = 401;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public async Task ChallengeAsync(AuthenticationProperties properties)

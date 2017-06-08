@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {

@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
@@ -15,47 +14,47 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <summary>
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
         /// </summary>
-        public Func<AuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => TaskCache.CompletedTask;
+        public Func<AuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked after security token validation if an authorization code is present in the protocol message.
         /// </summary>
-        public Func<AuthorizationCodeReceivedContext, Task> OnAuthorizationCodeReceived { get; set; } = context => TaskCache.CompletedTask;
+        public Func<AuthorizationCodeReceivedContext, Task> OnAuthorizationCodeReceived { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
-        public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => TaskCache.CompletedTask;
+        public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked before redirecting to the identity provider to authenticate.
         /// </summary>
-        public Func<RedirectContext, Task> OnRedirectToIdentityProvider { get; set; } = context => TaskCache.CompletedTask;
+        public Func<RedirectContext, Task> OnRedirectToIdentityProvider { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked before redirecting to the identity provider to sign out.
         /// </summary>
-        public Func<RedirectContext, Task> OnRedirectToIdentityProviderForSignOut { get; set; } = context => TaskCache.CompletedTask;
+        public Func<RedirectContext, Task> OnRedirectToIdentityProviderForSignOut { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked when a request is received on the RemoteSignOutPath.
         /// </summary>
-        public Func<RemoteSignOutContext, Task> OnRemoteSignOut { get; set; } = context => TaskCache.CompletedTask;
+        public Func<RemoteSignOutContext, Task> OnRemoteSignOut { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked after "authorization code" is redeemed for tokens at the token endpoint.
         /// </summary>
-        public Func<TokenResponseReceivedContext, Task> OnTokenResponseReceived { get; set; } = context => TaskCache.CompletedTask;
+        public Func<TokenResponseReceivedContext, Task> OnTokenResponseReceived { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked when an IdToken has been validated and produced an AuthenticationTicket.
         /// </summary>
-        public Func<TokenValidatedContext, Task> OnTokenValidated { get; set; } = context => TaskCache.CompletedTask;
+        public Func<TokenValidatedContext, Task> OnTokenValidated { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked when user information is retrieved from the UserInfoEndpoint.
         /// </summary>
-        public Func<UserInformationReceivedContext, Task> OnUserInformationReceived { get; set; } = context => TaskCache.CompletedTask;
+        public Func<UserInformationReceivedContext, Task> OnUserInformationReceived { get; set; } = context => Task.CompletedTask;
 
         public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
 

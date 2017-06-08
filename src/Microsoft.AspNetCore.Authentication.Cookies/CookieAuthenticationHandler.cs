@@ -6,11 +6,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -50,7 +47,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             // Cookies needs to finish the response
             Context.Response.OnStarting(FinishResponseAsync);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>

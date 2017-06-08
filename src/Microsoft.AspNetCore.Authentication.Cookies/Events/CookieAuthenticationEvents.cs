@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
@@ -18,22 +17,22 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called.
         /// </summary>
-        public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; } = context => TaskCache.CompletedTask;
+        public Func<CookieValidatePrincipalContext, Task> OnValidatePrincipal { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called.
         /// </summary>
-        public Func<CookieSigningInContext, Task> OnSigningIn { get; set; } = context => TaskCache.CompletedTask;
+        public Func<CookieSigningInContext, Task> OnSigningIn { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called.
         /// </summary>
-        public Func<CookieSignedInContext, Task> OnSignedIn { get; set; } = context => TaskCache.CompletedTask;
+        public Func<CookieSignedInContext, Task> OnSignedIn { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called.
         /// </summary>
-        public Func<CookieSigningOutContext, Task> OnSigningOut { get; set; } = context => TaskCache.CompletedTask;
+        public Func<CookieSigningOutContext, Task> OnSigningOut { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// A delegate assigned to this property will be invoked when the related method is called.
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 context.Response.Redirect(context.RedirectUri);
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         };
 
         /// <summary>
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 context.Response.Redirect(context.RedirectUri);
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         };
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 context.Response.Redirect(context.RedirectUri);
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         };
 
         /// <summary>
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 context.Response.Redirect(context.RedirectUri);
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         };
 
         private static bool IsAjaxRequest(HttpRequest request)
