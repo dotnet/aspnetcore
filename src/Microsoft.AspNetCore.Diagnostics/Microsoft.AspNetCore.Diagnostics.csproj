@@ -27,7 +27,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.RazorViews.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
     <PackageReference Include="Microsoft.Extensions.StackTrace.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
-    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
     <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(CoreFxVersion)" />
     <DotNetCliToolReference Include="RazorPageGenerator" Version="$(AspNetCoreVersion)" />

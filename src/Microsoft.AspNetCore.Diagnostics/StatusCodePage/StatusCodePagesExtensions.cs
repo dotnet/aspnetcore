@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     var location = string.Format(CultureInfo.InvariantCulture, locationFormat, context.HttpContext.Response.StatusCode);
                     context.HttpContext.Response.Redirect(context.HttpContext.Request.PathBase + location);
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 });
             }
             else
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     var location = string.Format(CultureInfo.InvariantCulture, locationFormat, context.HttpContext.Response.StatusCode);
                     context.HttpContext.Response.Redirect(location);
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 });
             }
         }
