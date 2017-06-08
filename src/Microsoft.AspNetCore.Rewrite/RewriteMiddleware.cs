@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Rewrite
                         _logger.RewriteMiddlewareRequestResponseComplete(
                             context.Response.Headers[HeaderNames.Location],
                             context.Response.StatusCode);
-                        return TaskCache.CompletedTask;
+                        return Task.CompletedTask;
                     case RuleResult.SkipRemainingRules:
                         _logger.RewriteMiddlewareRequestStopRules(context.Request.GetEncodedUrl());
                         return _next(context);
