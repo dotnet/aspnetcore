@@ -31,12 +31,10 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public virtual void OnStarting(Func<object, Task> callback, object state)
         {
-            throw new NotImplementedException();
         }
 
         public virtual void OnCompleted(Func<object, Task> callback, object state)
         {
-            throw new NotImplementedException();
         }
     }
 }
