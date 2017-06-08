@@ -8,7 +8,6 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
@@ -63,20 +62,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             // We would normally set the www-authenticate header here, but IIS does that for us.
             _context.Response.StatusCode = 401;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public Task ForbidAsync(AuthenticationProperties properties)
         {
             _context.Response.StatusCode = 403;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
         {
             Scheme = scheme;
             _context = context;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public Task SignOutAsync(AuthenticationProperties properties)
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }
