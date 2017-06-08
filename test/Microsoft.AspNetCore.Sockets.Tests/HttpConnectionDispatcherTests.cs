@@ -26,10 +26,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 {
     public class HttpConnectionDispatcherTests
     {
-        // Redefined from MessageFormatter because we want constants to go in the Attributes
-        private const string TextContentType = "application/vnd.microsoft.aspnetcore.endpoint-messages.v1+text";
-        private const string BinaryContentType = "application/vnd.microsoft.aspnetcore.endpoint-messages.v1+binary";
-
         [Fact]
         public async Task NegotiateReservesConnectionIdAndReturnsIt()
         {
@@ -62,6 +58,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var manager = CreateConnectionManager();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             var services = new ServiceCollection();
             services.AddEndPoint<TestEndPoint>();
             services.AddOptions();
@@ -96,6 +93,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var strm = new MemoryStream())
             {
                 var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 context.Response.Body = strm;
 
                 var services = new ServiceCollection();
@@ -163,6 +161,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var strm = new MemoryStream())
             {
                 var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 context.Response.Body = strm;
                 var services = new ServiceCollection();
                 services.AddOptions();
@@ -311,6 +310,28 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
             Assert.False(exists);
+        }
+
+        [Fact]
+        public async Task LongPollingTimeoutSets200StatusCode()
+        {
+            var manager = CreateConnectionManager();
+            var connection = manager.CreateConnection();
+
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+
+            var context = MakeRequest("/foo", connection);
+
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.LongPolling.PollTimeout = TimeSpan.FromSeconds(2);
+            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         }
 
         [Fact]
@@ -648,6 +669,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             var services = new ServiceCollection();
             services.AddOptions();
             services.AddEndPoint<TestEndPoint>();
@@ -696,6 +718,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             var services = new ServiceCollection();
             services.AddOptions();
             services.AddEndPoint<TestEndPoint>();
@@ -740,6 +763,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             // reset HttpContext
             context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
             context.RequestServices = sp;
@@ -768,6 +792,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var connection = manager.CreateConnection();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             var services = new ServiceCollection();
             services.AddOptions();
             services.AddEndPoint<TestEndPoint>();
@@ -918,6 +943,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var strm = new MemoryStream())
             {
                 var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 context.Response.Body = strm;
                 var services = new ServiceCollection();
                 services.AddOptions();
@@ -951,6 +977,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         private static DefaultHttpContext MakeRequest(string path, DefaultConnectionContext connection, string format = null)
         {
             var context = new DefaultHttpContext();
+            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             context.Request.Path = path;
             context.Request.Method = "GET";
             var values = new Dictionary<string, StringValues>();
@@ -1037,6 +1064,18 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             while (await connection.Transport.Input.WaitToReadAsync())
             {
             }
+        }
+    }
+
+    public class ResponseFeature : HttpResponseFeature
+    {
+        public override void OnCompleted(Func<object, Task> callback, object state)
+        {
+            
+        }
+
+        public override void OnStarting(Func<object, Task> callback, object state)
+        {
         }
     }
 }

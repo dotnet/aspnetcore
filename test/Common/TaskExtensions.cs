@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR.Tests.Common
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
 
         public static async Task OrTimeout(this Task task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
         {
-            var completed = await Task.WhenAny(task, Task.Delay(timeout));
+            var completed = await Task.WhenAny(task, Task.Delay(Debugger.IsAttached ? Timeout.InfiniteTimeSpan : timeout));
             if (completed != task)
             {
                 throw new TimeoutException(GetMessage(memberName, filePath, lineNumber));
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
 
         public static async Task<T> OrTimeout<T>(this Task<T> task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
         {
-            var completed = await Task.WhenAny(task, Task.Delay(timeout));
+            var completed = await Task.WhenAny(task, Task.Delay(Debugger.IsAttached ? Timeout.InfiniteTimeSpan : timeout));
             if (completed != task)
             {
                 throw new TimeoutException(GetMessage(memberName, filePath, lineNumber));

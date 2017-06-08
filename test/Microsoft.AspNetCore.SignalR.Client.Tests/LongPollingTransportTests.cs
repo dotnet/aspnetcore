@@ -93,6 +93,63 @@ namespace Microsoft.AspNetCore.Client.Tests
         }
 
         [Fact]
+        public async Task LongPollingTransportResponseWithNoContentDoesNotStopPoll()
+        {
+            int requests = 0;
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+
+                    if (requests == 0)
+                    {
+                        requests++;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK, "Hello");
+                    }
+                    else if (requests == 1)
+                    {
+                        requests++;
+                        // Time out
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    }
+                    else if (requests == 2)
+                    {
+                        requests++;
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK, "World");
+                    }
+
+                    // Done
+                    return ResponseUtils.CreateResponse(HttpStatusCode.NoContent);
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+
+                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                try
+                {
+                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
+                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
+                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
+
+                    var data = await transportToConnection.In.ReadAllAsync().OrTimeout();
+                    await longPollingTransport.Running.OrTimeout();
+                    Assert.True(transportToConnection.In.Completion.IsCompleted);
+                    Assert.Equal(2, data.Count);
+                    Assert.Equal(Encoding.UTF8.GetBytes("Hello"), data[0]);
+                    Assert.Equal(Encoding.UTF8.GetBytes("World"), data[1]);
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
+            }
+        }
+
+        [Fact]
         public async Task LongPollingTransportStopsWhenPollRequestFails()
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();

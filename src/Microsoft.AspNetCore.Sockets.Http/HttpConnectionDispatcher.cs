@@ -139,24 +139,19 @@ namespace Microsoft.AspNetCore.Sockets
 
                     if (connection.Status == DefaultConnectionContext.ConnectionStatus.Active)
                     {
-                        _logger.LogDebug("Connection {connectionId} is already active via {requestId}. Cancelling previous request.", connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
+                        var existing = connection.GetHttpContext();
+
+                        _logger.LogDebug("Connection {connectionId} is already active via {requestId}. Cancelling previous request.", connection.ConnectionId, existing.TraceIdentifier);
 
                         using (connection.Cancellation)
                         {
                             // Cancel the previous request
                             connection.Cancellation.Cancel();
 
-                            try
-                            {
-                                // Wait for the previous request to drain
-                                await connection.TransportTask;
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                // Should be a cancelled task
-                            }
+                            // Wait for the previous request to drain
+                            await connection.TransportTask;
 
-                            _logger.LogDebug("Previous poll cancelled for {connectionId} on {requestId}.", connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
+                            _logger.LogDebug("Previous poll cancelled for {connectionId} on {requestId}.", connection.ConnectionId, existing.TraceIdentifier);
                         }
                     }
 
@@ -177,15 +172,23 @@ namespace Microsoft.AspNetCore.Sockets
                         _logger.LogDebug("Resuming existing connection: {connectionId} on {requestId}", connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
                     }
 
-                    var longPolling = new LongPollingTransport(connection.Application.Input, _loggerFactory);
-
+                    // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
                     connection.Cancellation = new CancellationTokenSource();
 
-                    // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
-                    var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(connection.Cancellation.Token, context.RequestAborted);
+                    var timeoutSource = new CancellationTokenSource();
+                    var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(connection.Cancellation.Token, context.RequestAborted, timeoutSource.Token);
+
+                    // Dispose these tokens when the request is over
+                    context.Response.RegisterForDispose(timeoutSource);
+                    context.Response.RegisterForDispose(tokenSource);
+
+                    var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Input, _loggerFactory);
 
                     // Start the transport
                     connection.TransportTask = longPolling.ProcessRequestAsync(context, tokenSource.Token);
+
+                    // Start the timeout after we return from creating the transport task
+                    timeoutSource.CancelAfter(options.LongPolling.PollTimeout);
                 }
                 finally
                 {
@@ -206,7 +209,7 @@ namespace Microsoft.AspNetCore.Sockets
                     // Wait for the transport to run
                     await connection.TransportTask;
 
-                    // If the status code is a 204 it means we didn't write anything
+                    // If the status code is a 204 it means the connection is done
                     if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                     {
                         // We should be able to safely dispose because there's no more data being written
@@ -216,7 +219,7 @@ namespace Microsoft.AspNetCore.Sockets
                         pollAgain = false;
                     }
                 }
-                else if (resultTask.IsCanceled)
+                else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                 {
                     // Don't poll if the transport task was cancelled
                     pollAgain = false;
@@ -340,7 +343,7 @@ namespace Microsoft.AspNetCore.Sockets
                 jsonWriter.WriteStartArray();
                 if ((options.Transports & TransportType.WebSockets) != 0)
                 {
-                   jsonWriter.WriteValue(nameof(TransportType.WebSockets));
+                    jsonWriter.WriteValue(nameof(TransportType.WebSockets));
                 }
                 if ((options.Transports & TransportType.ServerSentEvents) != 0)
                 {

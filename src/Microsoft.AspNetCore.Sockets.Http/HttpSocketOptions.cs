@@ -13,5 +13,7 @@ namespace Microsoft.AspNetCore.Sockets
         public TransportType Transports { get; set; } = TransportType.All;
 
         public WebSocketOptions WebSockets { get; } = new WebSocketOptions();
+
+        public LongPollingOptions LongPolling { get; } = new LongPollingOptions();
     }
 }
