@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -88,13 +88,12 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
             if (configuration.EncryptionAlgorithmType == typeof(Aes))
             {
                 Func<Aes> factory = null;
-#if !NETSTANDARD1_3
                 if (OSVersionUtil.IsWindows())
                 {
                     // If we're on desktop CLR and running on Windows, use the FIPS-compliant implementation.
                     factory = () => new AesCryptoServiceProvider();
                 }
-#endif
+
                 return factory ?? Aes.Create;
             }
             else
