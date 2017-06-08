@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
         /// </summary>
         /// <remarks>
-        /// Defaults to null (unlimited).
+        /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
         /// </remarks>
         public long? MaxRequestBodySize
         {
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// This can be overridden per-request via <see cref="IHttpRequestBodyMinimumDataRateFeature"/>.
         /// </summary>
         /// <remarks>
-        /// Defaults to null.
+        /// Defaults to 1 byte/second with a 5 second grace period.
         /// </remarks>
         public MinimumDataRate RequestBodyMinimumDataRate { get; set; } = new MinimumDataRate(rate: 1, gracePeriod: TimeSpan.FromSeconds(5));
     }
