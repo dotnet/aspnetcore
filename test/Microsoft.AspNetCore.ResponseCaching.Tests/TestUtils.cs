@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             {
                 context.Response.Write(uniqueId);
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         internal static IResponseCachingKeyProvider CreateTestKeyProvider()
@@ -169,7 +168,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             if (next == null)
             {
-                next = httpContext => TaskCache.CompletedTask;
+                next = httpContext => Task.CompletedTask;
             }
             if (cache == null)
             {
@@ -294,7 +293,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
     {
         public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 
@@ -383,7 +382,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             Set(key, entry, validFor);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 

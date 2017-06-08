@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             Set(key, entry, validFor);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

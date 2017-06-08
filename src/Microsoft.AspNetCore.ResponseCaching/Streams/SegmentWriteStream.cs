@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
@@ -170,7 +169,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             Write(buffer, offset, count);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public override void WriteByte(byte value)

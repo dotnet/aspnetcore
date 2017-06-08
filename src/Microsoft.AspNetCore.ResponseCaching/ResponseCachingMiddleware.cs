@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -314,7 +313,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 return _cache.SetAsync(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         internal async Task FinalizeCacheBodyAsync(ResponseCachingContext context)
@@ -378,7 +377,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 return FinalizeCacheHeadersAsync(context);
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         internal static void AddResponseCachingFeature(HttpContext context)

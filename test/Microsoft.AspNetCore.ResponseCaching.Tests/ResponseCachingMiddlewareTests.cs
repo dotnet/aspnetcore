@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -857,7 +856,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var middleware = TestUtils.CreateTestMiddleware(next: httpContext =>
             {
                 responseCachingFeatureAdded = httpContext.Features.Get<IResponseCachingFeature>() != null;
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             },
             policyProvider: new TestResponseCachingPolicyProvider
             {
