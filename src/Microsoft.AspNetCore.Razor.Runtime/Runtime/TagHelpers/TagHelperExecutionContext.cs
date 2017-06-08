@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                    tagMode,
                    items: new Dictionary<object, object>(),
                    uniqueId: string.Empty,
-                   executeChildContentAsync: () => TaskCache.CompletedTask,
+                   executeChildContentAsync: () => Task.CompletedTask,
                    startTagHelperWritingScope: _ => { },
                    endTagHelperWritingScope: () => new DefaultTagHelperContent())
         {
