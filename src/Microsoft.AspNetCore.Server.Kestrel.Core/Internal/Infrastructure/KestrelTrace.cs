@@ -7,9 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    /// <summary>
-    /// Summary description for KestrelTrace
-    /// </summary>
     public class KestrelTrace : IKestrelTrace
     {
         private static readonly Action<ILogger, string, Exception> _connectionStart =
@@ -56,6 +53,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private static readonly Action<ILogger, string, Exception> _connectionRejected =
             LoggerMessage.Define<string>(LogLevel.Warning, 24, @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
+
+        private static readonly Action<ILogger, string, string, Exception> _requestBodyStart =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, 25, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.");
+
+        private static readonly Action<ILogger, string, string, Exception> _requestBodyDone =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, 26, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
+
+        private static readonly Action<ILogger, string, string, double, Exception> _requestBodyMinimumDataRateNotSatisfied =
+            LoggerMessage.Define<string, string, double>(LogLevel.Information, 27, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": request body incoming data rate dropped below {Rate} bytes/second.");
 
         protected readonly ILogger _logger;
 
@@ -137,6 +143,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void ApplicationNeverCompleted(string connectionId)
         {
             _applicationNeverCompleted(_logger, connectionId, null);
+        }
+
+        public virtual void RequestBodyStart(string connectionId, string traceIdentifier)
+        {
+            _requestBodyStart(_logger, connectionId, traceIdentifier, null);
+        }
+
+        public virtual void RequestBodyDone(string connectionId, string traceIdentifier)
+        {
+            _requestBodyDone(_logger, connectionId, traceIdentifier, null);
+        }
+
+        public void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate)
+        {
+            _requestBodyMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, rate, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

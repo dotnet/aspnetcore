@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -274,6 +273,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         options.Limits.MaxRequestHeadersTotalSize = (int)maxRequestBufferSize;
                     }
+
+                    options.Limits.RequestBodyMinimumDataRate = null;
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Configure(app => app.Run(async context =>

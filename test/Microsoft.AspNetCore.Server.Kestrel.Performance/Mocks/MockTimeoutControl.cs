@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks
 {
     public class MockTimeoutControl : ITimeoutControl
     {
+        public bool TimedOut { get; }
+
         public void CancelTimeout()
         {
         }
@@ -16,6 +18,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks
         }
 
         public void SetTimeout(long ticks, TimeoutAction timeoutAction)
+        {
+        }
+
+        public void StartTimingReads()
+        {
+        }
+
+        public void StopTimingReads()
+        {
+        }
+
+        public void PauseTimingReads()
+        {
+        }
+
+        public void ResumeTimingReads()
+        {
+        }
+
+        public void BytesRead(int count)
         {
         }
     }

@@ -160,7 +160,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                     if (_keepAlive)
                                     {
                                         // Finish reading the request body in case the app did not.
+                                        TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutAction.SendTimeoutResponse);
                                         await messageBody.ConsumeAsync();
+                                        TimeoutControl.CancelTimeout();
+
                                         // At this point both the request body pipe reader and writer should be completed.
                                         RequestBodyPipe.Reset();
                                     }

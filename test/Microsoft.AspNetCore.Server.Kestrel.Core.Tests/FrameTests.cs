@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -140,6 +141,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void ResetResetsRequestBodyMinimumDataRate()
+        {
+            _frame.RequestBodyMinimumDataRate = new MinimumDataRate(rate: 1, gracePeriod: TimeSpan.Zero);
+
+            _frame.Reset();
+
+            Assert.Equal(_serviceContext.ServerOptions.Limits.RequestBodyMinimumDataRate, _frame.RequestBodyMinimumDataRate);
+        }
+
+        [Fact]
         public void TraceIdentifierCountsRequestsPerFrame()
         {
             var connectionId = _frameContext.ConnectionId;
@@ -240,6 +251,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Act/Assert
             Assert.True(_frame.HasResponseStarted);
             Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_frame).OnStarting(_ => Task.CompletedTask, null));
+        }
+
+        [Theory]
+        [MemberData(nameof(RequestBodyMinimumDataRateData))]
+        public void ConfiguringRequestBodyMinimumDataRateFeatureSetsRequestBodyMinimumDateRate(MinimumDataRate minimumDataRate)
+        {
+            ((IFeatureCollection)_frame).Get<IHttpRequestBodyMinimumDataRateFeature>().MinimumDataRate = minimumDataRate;
+
+            Assert.Same(minimumDataRate, _frame.RequestBodyMinimumDataRate);
         }
 
         [Fact]
@@ -842,6 +862,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return data;
             }
         }
+
+        public static TheoryData<TimeSpan> RequestBodyTimeoutDataValid => new TheoryData<TimeSpan>
+        {
+            TimeSpan.FromTicks(1),
+            TimeSpan.MaxValue,
+            Timeout.InfiniteTimeSpan,
+            TimeSpan.FromMilliseconds(-1) // Same as Timeout.InfiniteTimeSpan
+        };
+
+        public static TheoryData<TimeSpan> RequestBodyTimeoutDataInvalid => new TheoryData<TimeSpan>
+        {
+            TimeSpan.MinValue,
+            TimeSpan.FromTicks(-1),
+            TimeSpan.Zero
+        };
+
+        public static TheoryData<MinimumDataRate> RequestBodyMinimumDataRateData => new TheoryData<MinimumDataRate>
+        {
+            null,
+            new MinimumDataRate(rate: 1, gracePeriod: TimeSpan.Zero)
+        };
 
         private class RequestHeadersWrapper : IHeaderDictionary
         {

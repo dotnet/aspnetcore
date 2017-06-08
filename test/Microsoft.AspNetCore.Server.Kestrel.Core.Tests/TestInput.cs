@@ -3,15 +3,15 @@
 
 using System;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Testing;
+using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    class TestInput : IFrameControl, IDisposable
+    class TestInput : IDisposable
     {
         private MemoryPool _memoryPool;
         private PipeFactory _pipelineFactory;
@@ -22,23 +22,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pipelineFactory = new PipeFactory();
             Pipe = _pipelineFactory.Create();
 
-            FrameContext = new Frame<object>(null, new FrameContext
+            FrameContext = new FrameContext
             {
                 ServiceContext = new TestServiceContext(),
                 Input = Pipe.Reader,
                 ConnectionInformation = new MockConnectionInformation
                 {
                     PipeFactory = _pipelineFactory
-                }
-            });
-            FrameContext.FrameControl = this;
+                },
+                TimeoutControl = Mock.Of<ITimeoutControl>()
+            };
+
+            Frame = new Frame<object>(null, FrameContext);
+            Frame.FrameControl = Mock.Of<IFrameControl>();
         }
 
         public IPipe Pipe { get; }
 
         public PipeFactory PipeFactory => _pipelineFactory;
 
-        public Frame FrameContext { get; set; }
+        public FrameContext FrameContext { get;  }
+
+        public Frame Frame { get; set; }
 
         public void Add(string text)
         {
@@ -51,38 +56,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Pipe.Writer.Complete();
         }
 
-        public void ProduceContinue()
+        public void Cancel()
         {
-        }
-
-        public void Pause()
-        {
-        }
-
-        public void Resume()
-        {
-        }
-
-        public void End(ProduceEndType endType)
-        {
-        }
-
-        public void Abort()
-        {
-        }
-
-        public void Write(ArraySegment<byte> data, Action<Exception, object> callback, object state)
-        {
-        }
-
-        Task IFrameControl.WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
-        Task IFrameControl.FlushAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
+            Pipe.Reader.CancelPendingRead();
         }
 
         public void Dispose()

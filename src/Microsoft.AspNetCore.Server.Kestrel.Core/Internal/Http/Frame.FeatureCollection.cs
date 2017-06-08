@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -21,7 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                  IHttpConnectionFeature,
                                  IHttpRequestLifetimeFeature,
                                  IHttpRequestIdentifierFeature,
-                                 IHttpMaxRequestBodySizeFeature
+                                 IHttpMaxRequestBodySizeFeature,
+                                 IHttpRequestBodyMinimumDataRateFeature
     {
         // NOTE: When feature interfaces are added to or removed from this Frame class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -225,6 +227,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 MaxRequestBodySize = value;
             }
+        }
+
+        MinimumDataRate IHttpRequestBodyMinimumDataRateFeature.MinimumDataRate
+        {
+            get => RequestBodyMinimumDataRate;
+            set => RequestBodyMinimumDataRate = value;
         }
 
         object IFeatureCollection.this[Type key]
