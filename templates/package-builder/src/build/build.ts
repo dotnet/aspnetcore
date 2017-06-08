@@ -232,6 +232,14 @@ function buildDotNetNewNuGetPackage(packageId: string) {
                     continueOnError: false
                 }
                 */
+                {
+                    // For the preview2 release, just display manual instructions instead.
+                    // This is only applicable on the command line, because VS will restore
+                    // NPM packages automatically by default.
+                    actionId: 'AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C',
+                    description: '\n\n-------------------------------------------------------------------\nIMPORTANT: Before running this project on the command line,\n           you must restore NPM packages by running "npm install"\n-------------------------------------------------------------------\n',
+                    manualInstructions: [{ text: 'Run "npm install"' }]
+                }
             ],
         }, null, 2));
 
