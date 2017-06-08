@@ -142,7 +142,7 @@
     <ZipArchive File="$(OutputZip)" SourceFiles="@(OutputZipFiles)" WorkingDirectory="$(RuntimeStoreZipTimestampDir)" Overwrite="true"/>
     <ZipArchive File="$(OutputZipNoTimeStamp)" SourceFiles="@(OutputZipFilesNoTimestamp)" WorkingDirectory="$(RuntimeStoreZipNoTimestampDir)" Overwrite="true"/>
     <ZipArchive File="$(OutputSymbolZip)" SourceFiles="@(OutputSymbolZipFiles)" WorkingDirectory="$(RuntimeStoreSymbolsZipTimestampDir)" Overwrite="true" Condition="'@(OutputSymbolZipFiles)' != ''"/>
-    <ZipArchive File="$(OutputSymbolZipNoTimeStamp)" SourceFiles="@(OutputSymbolZipFilesNoTimestamp)" WorkingDirectory="$(RuntimeStoreSymbolsZipNoTimestampDir)" Overwrite="true" Condition="'$(OutputSymbolZipFilesNoTimestamp)' != ''"/>
+    <ZipArchive File="$(OutputSymbolZipNoTimeStamp)" SourceFiles="@(OutputSymbolZipFilesNoTimestamp)" WorkingDirectory="$(RuntimeStoreSymbolsZipNoTimestampDir)" Overwrite="true" Condition="'@(OutputSymbolZipFilesNoTimestamp)' != ''"/>
 
     <MSBuild Projects="$(ProjectPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZip);TGZFileName=$(OutputSymbolTGZ)" Condition="'$(OSPlatform)' == 'Linux'"/>
     <MSBuild Projects="$(ProjectPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZipNoTimeStamp);TGZFileName=$(OutputSymbolTGZNoTimeStamp)" Condition="'$(OSPlatform)' == 'Linux'"/>
