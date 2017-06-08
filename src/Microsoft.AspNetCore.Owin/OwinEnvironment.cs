@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Owin
 {
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.Owin
                         feature.OnStarting(s =>
                         {
                             cb(s);
-                            return TaskCache.CompletedTask;
+                            return Task.CompletedTask;
                         }, state);
                     }))
                 },

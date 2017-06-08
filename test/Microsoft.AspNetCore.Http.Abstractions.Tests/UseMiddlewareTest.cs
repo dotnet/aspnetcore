@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http.Abstractions;
-using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http
@@ -304,28 +303,28 @@ namespace Microsoft.AspNetCore.Http
         {
             public MiddlewareInjectInvokeNoService(RequestDelegate next) { }
 
-            public Task Invoke(HttpContext context, object value) => TaskCache.CompletedTask;
+            public Task Invoke(HttpContext context, object value) => Task.CompletedTask;
         }
 
         private class MiddlewareInjectInvoke
         {
             public MiddlewareInjectInvoke(RequestDelegate next) { }
 
-            public Task Invoke(HttpContext context, IServiceProvider provider) => TaskCache.CompletedTask;
+            public Task Invoke(HttpContext context, IServiceProvider provider) => Task.CompletedTask;
         }
 
         private class MiddlewareNoParametersStub
         {
             public MiddlewareNoParametersStub(RequestDelegate next) { }
 
-            public Task Invoke() => TaskCache.CompletedTask;
+            public Task Invoke() => Task.CompletedTask;
         }
 
         private class MiddlewareAsyncNoParametersStub
         {
             public MiddlewareAsyncNoParametersStub(RequestDelegate next) { }
 
-            public Task InvokeAsync() => TaskCache.CompletedTask;
+            public Task InvokeAsync() => Task.CompletedTask;
         }
 
         private class MiddlewareNonTaskReturnStub
@@ -351,27 +350,27 @@ namespace Microsoft.AspNetCore.Http
         {
             public MiddlewareMultipleInvokesStub(RequestDelegate next) { }
 
-            public Task Invoke(HttpContext context) => TaskCache.CompletedTask;
+            public Task Invoke(HttpContext context) => Task.CompletedTask;
 
-            public Task Invoke(HttpContext context, int i) => TaskCache.CompletedTask;
+            public Task Invoke(HttpContext context, int i) => Task.CompletedTask;
         }
 
         private class MiddlewareMultipleInvokeAsyncStub
         {
             public MiddlewareMultipleInvokeAsyncStub(RequestDelegate next) { }
 
-            public Task InvokeAsync(HttpContext context) => TaskCache.CompletedTask;
+            public Task InvokeAsync(HttpContext context) => Task.CompletedTask;
 
-            public Task InvokeAsync(HttpContext context, int i) => TaskCache.CompletedTask;
+            public Task InvokeAsync(HttpContext context, int i) => Task.CompletedTask;
         }
 
         private class MiddlewareMultipleInvokeAndInvokeAsyncStub
         {
             public MiddlewareMultipleInvokeAndInvokeAsyncStub(RequestDelegate next) { }
 
-            public Task Invoke(HttpContext context) => TaskCache.CompletedTask;
+            public Task Invoke(HttpContext context) => Task.CompletedTask;
 
-            public Task InvokeAsync(HttpContext context) => TaskCache.CompletedTask;
+            public Task InvokeAsync(HttpContext context) => Task.CompletedTask;
         }
     }
 }

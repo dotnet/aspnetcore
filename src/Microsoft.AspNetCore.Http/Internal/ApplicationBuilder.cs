@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
             RequestDelegate app = context =>
             {
                 context.Response.StatusCode = 404;
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             };
 
             foreach (var component in _components.Reverse())
