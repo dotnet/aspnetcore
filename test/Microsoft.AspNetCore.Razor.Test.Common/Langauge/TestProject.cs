@@ -11,12 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public static string GetProjectDirectory(Type type)
         {
-
-#if NET452
-            var currentDirectory = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-#else
             var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-#endif
             var name = type.GetTypeInfo().Assembly.GetName().Name;
 
             while (currentDirectory != null &&

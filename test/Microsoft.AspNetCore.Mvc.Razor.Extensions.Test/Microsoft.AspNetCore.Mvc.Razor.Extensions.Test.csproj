@@ -3,7 +3,7 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**</DefaultItemExcludes>
@@ -41,17 +41,17 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='net461'">
+    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup>
     <MvcShim
-      Condition="$(TargetFramework) != ''" 
+      Condition="$(TargetFramework) != ''"
       Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim\bin\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.deps.json" />
   </ItemGroup>
 
   <Target Name="CopyDepsFromShims" AfterTargets="Build">
     <Copy SourceFiles="@(MvcShim)" DestinationFolder="$(OutputPath)" />
   </Target>
-  
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
 </Project>

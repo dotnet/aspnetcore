@@ -60,12 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 case HtmlTokenizerState.AtSymbolAfterRazorCommentBody:
                     return AtSymbolAfterRazorCommentBody();
                 default:
-#if NET451
-                    // No Debug.Fail
                     Debug.Fail("Invalid TokenizerState");
-#else
-                    Debug.Assert(false, "Invalid TokenizerState");
-#endif
                     return default(StateResult);
             }
         }
@@ -230,13 +225,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     TakeCurrent();
                     return EndSymbol(HtmlSymbolType.DoubleHyphen);
                 default:
-#if NET451
-                    // No Debug.Fail in CoreCLR
-
                     Debug.Fail("Unexpected symbol!");
-#else
-                    Debug.Assert(false, "Unexpected symbol");
-#endif
                     return EndSymbol(HtmlSymbolType.Unknown);
             }
         }

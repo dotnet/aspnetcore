@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-#if NET452
+using System.Threading.Tasks;
+#if NET46
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
-using System.Threading.Tasks;
 #endif
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     [IntializeTestFile]
     public abstract class IntegrationTestBase
     {
-#if !NET452
+#if !NET46
         private static readonly AsyncLocal<string> _filename = new AsyncLocal<string>();
 #endif
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         // Used by the test framework to set the 'base' name for test files.
         public static string Filename
         {
-#if NET452
+#if NET46
             get
             {
                 var handle = (ObjectHandle)CallContext.LogicalGetData("IntegrationTestBase_Filename");
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 CallContext.LogicalSetData("IntegrationTestBase_Filename", new ObjectHandle(value));
             }
-#else
+#elif NETCOREAPP2_0
             get { return _filename.Value; }
             set { _filename.Value = value; }
 #endif

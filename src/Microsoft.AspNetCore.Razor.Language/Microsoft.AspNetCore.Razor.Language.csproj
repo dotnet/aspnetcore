@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor parser and code generation infrastructure.</Description>
-    <TargetFrameworks>netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;cshtml;razor</PackageTags>
@@ -12,10 +12,6 @@
 
   <ItemGroup>
      <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Threading.Thread" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

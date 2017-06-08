@@ -4,10 +4,11 @@
 
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor parser and code generation infrastructure.</Description>
-    <TargetFrameworks>netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;cshtml;razor</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
+
 </Project>
