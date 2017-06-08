@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Localization
             var request = httpContext.Request;
             if (!request.QueryString.HasValue)
             {
-                return TaskCache<ProviderCultureResult>.DefaultCompletedTask;
+                return NullProviderCultureResult;
             }
 
             string queryCulture = null;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Localization
             if (queryCulture == null && queryUICulture == null)
             {
                 // No values specified for either so no match
-                return TaskCache<ProviderCultureResult>.DefaultCompletedTask;
+                return NullProviderCultureResult;
             }
 
             if (queryCulture != null && queryUICulture == null)

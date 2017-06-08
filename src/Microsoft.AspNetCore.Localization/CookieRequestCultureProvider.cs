@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Localization
 
             if (string.IsNullOrEmpty(cookie))
             {
-                return TaskCache<ProviderCultureResult>.DefaultCompletedTask;
+                return NullProviderCultureResult;
             }
 
             var providerResultCulture = ParseCookieValue(cookie);

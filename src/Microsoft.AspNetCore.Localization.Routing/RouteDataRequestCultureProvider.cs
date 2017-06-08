@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
             if (culture == null && uiCulture == null)
             {
                 // No values specified for either so no match
-                return TaskCache<ProviderCultureResult>.DefaultCompletedTask;
+                return NullProviderCultureResult;
             }
 
             if (culture != null && uiCulture == null)

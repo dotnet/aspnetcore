@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Localization
 
             if (acceptLanguageHeader == null || acceptLanguageHeader.Count == 0)
             {
-                return TaskCache<ProviderCultureResult>.DefaultCompletedTask;
+                return NullProviderCultureResult;
             }
 
             var languages = acceptLanguageHeader.AsEnumerable();
@@ -49,12 +49,12 @@ namespace Microsoft.AspNetCore.Localization
             var orderedLanguages = languages.OrderByDescending(h => h, StringWithQualityHeaderValueComparer.QualityComparer)
                 .Select(x => x.Value).ToList();
 
-            if (orderedLanguages.Any())
+            if (orderedLanguages.Count > 0)
             {
                 return Task.FromResult(new ProviderCultureResult(orderedLanguages));
             }
 
-            return TaskCache<ProviderCultureResult>.DefaultCompletedTask;
+            return NullProviderCultureResult;
         }
     }
 }
