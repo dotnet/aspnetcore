@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly MessageBody _zeroContentLengthKeepAlive = new ForZeroContentLength(keepAlive: true);
 
         private readonly Frame _context;
+
         private bool _send100Continue = true;
         private volatile bool _canceled;
 
@@ -32,22 +34,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public virtual bool IsEmpty => false;
 
+        private IKestrelTrace Log => _context.ServiceContext.Log;
+
         private async Task PumpAsync()
         {
             Exception error = null;
 
             try
             {
+                var awaitable = _context.Input.ReadAsync();
+
+                if (!awaitable.IsCompleted)
+                {
+                    TryProduceContinue();
+                }
+
+                TryStartTimingReads();
+
                 while (true)
                 {
-                    var awaitable = _context.Input.ReadAsync();
+                    var result = await awaitable;
 
-                    if (!awaitable.IsCompleted)
+                    if (_context.TimeoutControl.TimedOut)
                     {
-                        TryProduceContinue();
+                        _context.ThrowRequestRejected(RequestRejectionReason.RequestTimeout);
                     }
 
-                    var result = await awaitable;
                     var readableBuffer = result.Buffer;
                     var consumed = readableBuffer.Start;
                     var examined = readableBuffer.End;
@@ -73,7 +85,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 writableBuffer.Commit();
                             }
 
-                            await writableBuffer.FlushAsync();
+                            var writeAwaitable = writableBuffer.FlushAsync();
+                            var backpressure = false;
+
+                            if (!writeAwaitable.IsCompleted)
+                            {
+                                // Backpressure, stop controlling incoming data rate until data is read.
+                                backpressure = true;
+                                _context.TimeoutControl.PauseTimingReads();
+                            }
+
+                            await writeAwaitable;
+
+                            if (backpressure)
+                            {
+                                _context.TimeoutControl.ResumeTimingReads();
+                            }
 
                             if (done)
                             {
@@ -84,6 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _context.ThrowRequestRejected(RequestRejectionReason.UnexpectedEndOfRequestContent);
                         }
+
+                        awaitable = _context.Input.ReadAsync();
                     }
                     finally
                     {
@@ -98,6 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             finally
             {
                 _context.RequestBodyPipe.Writer.Complete(error);
+                TryStopTimingReads();
             }
         }
 
@@ -191,6 +221,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void Copy(ReadableBuffer readableBuffer, WritableBuffer writableBuffer)
         {
+            _context.TimeoutControl.BytesRead(readableBuffer.Length);
+
             if (readableBuffer.IsSingleSpan)
             {
                 writableBuffer.Write(readableBuffer.First.Span);
@@ -230,6 +262,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual void OnReadStart()
         {
+        }
+
+        private void TryStartTimingReads()
+        {
+            if (!RequestUpgrade)
+            {
+                Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                _context.TimeoutControl.StartTimingReads();
+            }
+        }
+
+        private void TryStopTimingReads()
+        {
+            if (!RequestUpgrade)
+            {
+                Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
+                _context.TimeoutControl.StopTimingReads();
+            }
         }
 
         public static MessageBody For(

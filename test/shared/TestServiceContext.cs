@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Testing
             SystemClock = new MockSystemClock();
             DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
             ConnectionManager = new FrameConnectionManager(Log, ResourceCounter.Unlimited, ResourceCounter.Unlimited);
-            DateHeaderValue = DateHeaderValueManager.GetDateHeaderValues().String;
             HttpParserFactory = frameAdapter => new HttpParser<FrameAdapter>(frameAdapter.Frame.ServiceContext.Log.IsEnabled(LogLevel.Information));
             ServerOptions = new KestrelServerOptions
             {
@@ -39,6 +38,6 @@ namespace Microsoft.AspNetCore.Testing
 
         public ILoggerFactory LoggerFactory { get; }
 
-        public string DateHeaderValue { get; }
+        public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
     }
 }

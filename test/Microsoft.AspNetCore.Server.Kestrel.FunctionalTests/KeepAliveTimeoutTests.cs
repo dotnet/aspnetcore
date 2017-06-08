@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 cts.CancelAfter(LongDelay);
 
                 await connection.Send(
-                        "POST / HTTP/1.1",
+                        "POST /consume HTTP/1.1",
                         "Host:",
                         "Transfer-Encoding: chunked",
                         "",
@@ -193,7 +194,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ServerOptions =
                 {
                     AddServerHeader = false,
-                    Limits = { KeepAliveTimeout = KeepAliveTimeout }
+                    Limits =
+                    {
+                        KeepAliveTimeout = KeepAliveTimeout,
+                        RequestBodyMinimumDataRate = null
+                    }
                 }
             });
         }
@@ -201,6 +206,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private async Task App(HttpContext httpContext, CancellationToken longRunningCt, CancellationToken upgradeCt)
         {
             var ct = httpContext.RequestAborted;
+            var responseStream = httpContext.Response.Body;
+            var responseBytes = Encoding.ASCII.GetBytes("hello, world");
 
             if (httpContext.Request.Path == "/longrunning")
             {
@@ -208,8 +215,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await Task.Delay(1000);
                 }
-
-                await httpContext.Response.WriteAsync("hello, world");
             }
             else if (httpContext.Request.Path == "/upgrade")
             {
@@ -220,14 +225,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         await Task.Delay(LongDelay);
                     }
 
-                    var responseBytes = Encoding.ASCII.GetBytes("hello, world");
-                    await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
+                    responseStream = stream;
                 }
             }
-            else
+            else if (httpContext.Request.Path == "/consume")
             {
-                await httpContext.Response.WriteAsync("hello, world");
+                var buffer = new byte[1024];
+                while (await httpContext.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) ;
             }
+
+            await responseStream.WriteAsync(responseBytes, 0, responseBytes.Length);
         }
 
         private async Task ReceiveResponse(TestConnection connection)

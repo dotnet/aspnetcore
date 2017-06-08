@@ -2,24 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Testing
 {
     public class MockSystemClock : ISystemClock
     {
-        private DateTimeOffset _utcNow = DateTimeOffset.Now;
+        private long _utcNowTicks = DateTimeOffset.UtcNow.Ticks;
 
         public DateTimeOffset UtcNow
         {
             get
             {
                 UtcNowCalled++;
-                return _utcNow;
+                return new DateTimeOffset(Interlocked.Read(ref _utcNowTicks), TimeSpan.Zero);
             }
             set
             {
-                _utcNow = value;
+                Interlocked.Exchange(ref _utcNowTicks, value.Ticks);
             }
         }
 

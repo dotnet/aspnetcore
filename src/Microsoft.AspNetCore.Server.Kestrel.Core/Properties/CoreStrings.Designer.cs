@@ -977,7 +977,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("MaxRequestBodySizeCannotBeModifiedAfterRead");
 
         /// <summary>
-        /// The maximum request body size cannot be modified after the request has be upgraded.
+        /// The maximum request body size cannot be modified after the request has been upgraded.
         /// </summary>
         internal static string MaxRequestBodySizeCannotBeModifiedForUpgradedRequests
         {
@@ -985,10 +985,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// The maximum request body size cannot be modified after the request has be upgraded.
+        /// The maximum request body size cannot be modified after the request has been upgraded.
         /// </summary>
         internal static string FormatMaxRequestBodySizeCannotBeModifiedForUpgradedRequests()
             => GetString("MaxRequestBodySizeCannotBeModifiedForUpgradedRequests");
+
+        /// <summary>
+        /// Value must be a positive TimeSpan.
+        /// </summary>
+        internal static string PositiveTimeSpanRequired
+        {
+            get => GetString("PositiveTimeSpanRequired");
+        }
+
+        /// <summary>
+        /// Value must be a positive TimeSpan.
+        /// </summary>
+        internal static string FormatPositiveTimeSpanRequired()
+            => GetString("PositiveTimeSpanRequired");
+
+        /// <summary>
+        /// Value must be a non-negative TimeSpan.
+        /// </summary>
+        internal static string NonNegativeTimeSpanRequired
+        {
+            get => GetString("NonNegativeTimeSpanRequired");
+        }
+
+        /// <summary>
+        /// Value must be a non-negative TimeSpan.
+        /// </summary>
+        internal static string FormatNonNegativeTimeSpanRequired()
+            => GetString("NonNegativeTimeSpanRequired");
 
         private static string GetString(string name, params string[] formatterNames)
         {

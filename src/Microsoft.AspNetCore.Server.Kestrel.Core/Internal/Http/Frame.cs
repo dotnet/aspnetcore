@@ -21,6 +21,7 @@ using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 // ReSharper disable AccessToModifiedClosure
 
@@ -300,6 +301,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected FrameResponseHeaders FrameResponseHeaders { get; } = new FrameResponseHeaders();
 
+        public MinimumDataRate RequestBodyMinimumDataRate { get; set; }
+
         public void InitializeStreams(MessageBody messageBody)
         {
             if (_frameStreams == null)
@@ -376,6 +379,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             _responseBytesWritten = 0;
             _requestCount++;
+
+            RequestBodyMinimumDataRate = ServerOptions.Limits.RequestBodyMinimumDataRate;
         }
 
         /// <summary>

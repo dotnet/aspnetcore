@@ -25,7 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0EF2AC
 		test\shared\KestrelTestLoggerProvider.cs = test\shared\KestrelTestLoggerProvider.cs
 		test\shared\LifetimeNotImplemented.cs = test\shared\LifetimeNotImplemented.cs
 		test\shared\MockConnectionInformation.cs = test\shared\MockConnectionInformation.cs
-		test\shared\MockFrameControl.cs = test\shared\MockFrameControl.cs
 		test\shared\MockLogger.cs = test\shared\MockLogger.cs
 		test\shared\MockSystemClock.cs = test\shared\MockSystemClock.cs
 		test\shared\StringExtensions.cs = test\shared\StringExtensions.cs

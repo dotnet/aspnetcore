@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using System.Threading;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -154,16 +154,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(0)]
-        [InlineData(0.5)]
-        [InlineData(2.1)]
-        [InlineData(2.5)]
-        [InlineData(2.9)]
-        public void KeepAliveTimeoutValid(double seconds)
+        [MemberData(nameof(TimeoutValidData))]
+        public void KeepAliveTimeoutValid(TimeSpan value)
         {
-            var o = new KestrelServerLimits();
-            o.KeepAliveTimeout = TimeSpan.FromSeconds(seconds);
-            Assert.Equal(seconds, o.KeepAliveTimeout.TotalSeconds);
+            Assert.Equal(value, new KestrelServerLimits { KeepAliveTimeout = value }.KeepAliveTimeout);
+        }
+
+        [Fact]
+        public void KeepAliveTimeoutCanBeSetToInfinite()
+        {
+            Assert.Equal(TimeSpan.MaxValue, new KestrelServerLimits { KeepAliveTimeout = Timeout.InfiniteTimeSpan }.KeepAliveTimeout);
+        }
+
+        [Theory]
+        [MemberData(nameof(TimeoutInvalidData))]
+        public void KeepAliveTimeoutInvalid(TimeSpan value)
+        {
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits { KeepAliveTimeout = value });
+
+            Assert.Equal("value", exception.ParamName);
+            Assert.StartsWith(CoreStrings.PositiveTimeSpanRequired, exception.Message);
         }
 
         [Fact]
@@ -173,17 +183,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(0)]
-        [InlineData(0.5)]
-        [InlineData(1.0)]
-        [InlineData(2.5)]
-        [InlineData(10)]
-        [InlineData(60)]
-        public void RequestHeadersTimeoutValid(double seconds)
+        [MemberData(nameof(TimeoutValidData))]
+        public void RequestHeadersTimeoutValid(TimeSpan value)
         {
-            var o = new KestrelServerLimits();
-            o.RequestHeadersTimeout = TimeSpan.FromSeconds(seconds);
-            Assert.Equal(seconds, o.RequestHeadersTimeout.TotalSeconds);
+            Assert.Equal(value, new KestrelServerLimits { RequestHeadersTimeout = value }.RequestHeadersTimeout);
+        }
+
+        [Fact]
+        public void RequestHeadersTimeoutCanBeSetToInfinite()
+        {
+            Assert.Equal(TimeSpan.MaxValue, new KestrelServerLimits { RequestHeadersTimeout = Timeout.InfiniteTimeSpan }.RequestHeadersTimeout);
+        }
+
+        [Theory]
+        [MemberData(nameof(TimeoutInvalidData))]
+        public void RequestHeadersTimeoutInvalid(TimeSpan value)
+        {
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits { RequestHeadersTimeout = value });
+
+            Assert.Equal("value", exception.ParamName);
+            Assert.StartsWith(CoreStrings.PositiveTimeSpanRequired, exception.Message);
         }
 
         [Fact]
@@ -272,5 +291,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new KestrelServerLimits().MaxRequestBodySize = value);
             Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
         }
+
+        [Fact]
+        public void RequestBodyMinimumDataRateDefault()
+        {
+            Assert.NotNull(new KestrelServerLimits().RequestBodyMinimumDataRate);
+            Assert.Equal(1, new KestrelServerLimits().RequestBodyMinimumDataRate.Rate);
+            Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().RequestBodyMinimumDataRate.GracePeriod);
+        }
+
+        public static TheoryData<TimeSpan> TimeoutValidData => new TheoryData<TimeSpan>
+        {
+            TimeSpan.FromTicks(1),
+            TimeSpan.MaxValue,
+        };
+
+        public static TheoryData<TimeSpan> TimeoutInfiniteData => new TheoryData<TimeSpan>
+        {
+            Timeout.InfiniteTimeSpan,
+        };
+
+        public static TheoryData<TimeSpan> TimeoutInvalidData => new TheoryData<TimeSpan>
+        {
+            TimeSpan.MinValue,
+            TimeSpan.FromTicks(-1),
+            TimeSpan.Zero
+        };
     }
 }

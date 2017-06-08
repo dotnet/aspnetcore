@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -11,8 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         // Matches the non-configurable default response buffer size for Kestrel in 1.0.0
         private long? _maxResponseBufferSize = 64 * 1024;
 
-        // Matches the default client_max_body_size in nginx.  Also large enough that most requests
-        // should be under the limit.
+        // Matches the default client_max_body_size in nginx.
+        // Also large enough that most requests should be under the limit.
         private long? _maxRequestBufferSize = 1024 * 1024;
 
         // Matches the default large_client_header_buffers in nginx.
@@ -33,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private TimeSpan _requestHeadersTimeout = TimeSpan.FromSeconds(30);
 
-        // default to unlimited
+        // Unlimited connections are allowed by default.
         private long? _maxConcurrentConnections = null;
         private long? _maxConcurrentUpgradedConnections = null;
 
@@ -169,7 +171,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public TimeSpan KeepAliveTimeout
         {
             get => _keepAliveTimeout;
-            set => _keepAliveTimeout = value;
+            set
+            {
+                if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
+                }
+                _keepAliveTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
+            }
         }
 
         /// <summary>
@@ -181,7 +190,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public TimeSpan RequestHeadersTimeout
         {
             get => _requestHeadersTimeout;
-            set => _requestHeadersTimeout = value;
+            set
+            {
+                if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
+                }
+                _requestHeadersTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
+            }
         }
 
         /// <summary>
@@ -234,5 +250,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 _maxConcurrentUpgradedConnections = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the request body minimum data rate in bytes/second.
+        /// Setting this property to null indicates no minimum data rate should be enforced.
+        /// This limit has no effect on upgraded connections which are always unlimited.
+        /// This can be overridden per-request via <see cref="IHttpRequestBodyMinimumDataRateFeature"/>.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to null.
+        /// </remarks>
+        public MinimumDataRate RequestBodyMinimumDataRate { get; set; } = new MinimumDataRate(rate: 1, gracePeriod: TimeSpan.FromSeconds(5));
     }
 }
