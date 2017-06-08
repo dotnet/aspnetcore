@@ -378,12 +378,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var htmlSymbol = firstChild.Symbols[firstChild.Symbols.Count - 1] as HtmlSymbol;
                 switch (htmlSymbol.Type)
                 {
-                    // Treat NoQuotes and DoubleQuotes equivalently. We purposefully do not persist NoQuotes
-                    // ValueStyles at code generation time to protect users from rendering dynamic content with spaces
-                    // that can break attributes.
-                    // Ex: <tag my-attribute=@value /> where @value results in the test "hello world".
-                    // This way, the above code would render <tag my-attribute="hello world" />.
                     case HtmlSymbolType.Equals:
+                        if (builder.Children.Count == 2 &&
+                            builder.Children[1] is Span value &&
+                            value.Kind == SpanKindInternal.Markup)
+                        {
+                            // Attribute value is a string literal. Eg: <tag my-attribute=foo />.
+                            result.AttributeValueStyle = HtmlAttributeValueStyle.NoQuotes;
+                        }
+                        else
+                        {
+                            // Could be an expression, treat NoQuotes and DoubleQuotes equivalently. We purposefully do not persist NoQuotes
+                            // ValueStyles at code generation time to protect users from rendering dynamic content with spaces
+                            // that can break attributes.
+                            // Ex: <tag my-attribute=@value /> where @value results in the test "hello world".
+                            // This way, the above code would render <tag my-attribute="hello world" />.
+                            result.AttributeValueStyle = HtmlAttributeValueStyle.DoubleQuotes;
+                        }
+                        break;
                     case HtmlSymbolType.DoubleQuote:
                         result.AttributeValueStyle = HtmlAttributeValueStyle.DoubleQuotes;
                         break;

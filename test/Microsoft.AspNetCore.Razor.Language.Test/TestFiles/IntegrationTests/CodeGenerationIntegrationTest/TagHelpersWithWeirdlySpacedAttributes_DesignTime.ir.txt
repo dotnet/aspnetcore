@@ -60,6 +60,6 @@ Document -
                     SetTagHelperProperty - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             RazorIRToken - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - password
-                    AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.NoQuotes
                         HtmlContent - (270:14,31 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             RazorIRToken - (270:14,31 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - blah

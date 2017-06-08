@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bar",
                                         factory.Markup("false"),
-                                        HtmlAttributeValueStyle.DoubleQuotes)
+                                        HtmlAttributeValueStyle.NoQuotes)
                                 })),
                         new []
                         {
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                                 new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"))
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.NoQuotes)
                                 })),
                         new []
                         {
@@ -572,7 +572,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                                 new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"))
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.NoQuotes)
                                 })),
                         new []
                         {
@@ -757,7 +757,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                                 new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("some"))
+                                    new TagHelperAttributeNode("class", factory.Markup("some"), HtmlAttributeValueStyle.NoQuotes)
                                 })),
                         new []
                         {
@@ -1238,7 +1238,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo")),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
                                 new TagHelperAttributeNode(
                                     "dynamic",
                                     new MarkupBlock(
@@ -1254,7 +1254,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))),
                                     HtmlAttributeValueStyle.DoubleQuotes),
-                                new TagHelperAttributeNode("style", factory.Markup("color:red;"))
+                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes)
                             },
                             new MarkupTagHelperBlock("strong")),
                             blockFactory.MarkupTagBlock("</strong>")),
@@ -2467,9 +2467,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                         new List<TagHelperAttributeNode>
                         {
-                            new TagHelperAttributeNode("class", factory.Markup("foo")),
+                            new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
                             new TagHelperAttributeNode("dynamic", dateTimeNow(21)),
-                            new TagHelperAttributeNode("style", factory.Markup("color:red;"))
+                            new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes)
                         }))
                 };
                 yield return new object[]
@@ -2479,9 +2479,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo")),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(21)),
-                                new TagHelperAttributeNode("style", factory.Markup("color:red;"))
+                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes)
                             },
                             factory.Markup("Hello World")))
                 };
@@ -2492,7 +2492,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo")),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(21)),
                                 new TagHelperAttributeNode(
                                     "style",
@@ -2513,7 +2513,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo")),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(21))
                             },
                             factory.Markup("Hello")),
@@ -2521,7 +2521,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("style", factory.Markup("color:red;")),
+                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(73))
                             },
                             factory.Markup("World")))
@@ -2533,9 +2533,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo")),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(21)),
-                                new TagHelperAttributeNode("style", factory.Markup("color:red;"))
+                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes)
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
