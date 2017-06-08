@@ -1,13 +1,16 @@
 import { NgModule } from '@angular/core';
-import { ServerModule } from '@angular/platform-server';
+import { BrowserModule } from '@angular/platform-browser';
 import { AppModuleShared } from './app.module.shared';
 import { AppComponent } from './components/app/app.component';
 
 @NgModule({
     bootstrap: [ AppComponent ],
     imports: [
-        ServerModule,
+        BrowserModule,
         AppModuleShared
+    ],
+    providers: [
+        { provide: 'ORIGIN_URL', useValue: location.origin }
     ]
 })
 export class AppModule {
