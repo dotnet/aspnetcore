@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.Extensions.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -553,7 +552,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (_completed)
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             _completed = true;
             return NotifyOnCompletedAsync();

@@ -14,7 +14,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Security.Principal.Windows" Version="$(CoreFxVersion)" />

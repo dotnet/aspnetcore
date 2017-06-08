@@ -7,7 +7,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -29,13 +28,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public Task ChallengeAsync(AuthenticationProperties properties)
         {
             _requestContext.Response.StatusCode = 401;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public Task ForbidAsync(AuthenticationProperties properties)
         {
             _requestContext.Response.StatusCode = 403;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw new InvalidOperationException("No RequestContext found.");
             }
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public Task SignOutAsync(AuthenticationProperties properties)
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }
