@@ -39,7 +39,7 @@
       <NuspecPath>$(RepositoryRoot)nuget\AspNetCore.nuspec</NuspecPath>
     </PropertyGroup>
 
-    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;$(NuspecPath)&quot; -OutputDirectory &quot;$(ArtifactsDir) &quot; -prop Version=1.0.0-$(BuildNumber)" />
+    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;$(NuspecPath)&quot; -OutputDirectory &quot;$(ArtifactsDir)\build&quot; -prop Version=1.0.0-$(BuildNumber)" />
   </Target>
 
     <Target Name="_ResolvePackagePublisherPath" DependsOnTargets="RunResolvePackageDependencies">
@@ -56,6 +56,6 @@
     DependsOnTargets="_ResolvePackagePublisherPath"
     Condition="'$(PublishPackage)'=='true'">
     
-    <Exec Command="&quot;$(PackagePublisherPath)&quot; -d &quot;$(ArtifactsDir) &quot; -f $(PublishFeed)" />
+    <Exec Command="&quot;$(PackagePublisherPath)&quot; -d &quot;$(ArtifactsDir)\build&quot; -f $(PublishFeed)" />
   </Target>
 </Project>
