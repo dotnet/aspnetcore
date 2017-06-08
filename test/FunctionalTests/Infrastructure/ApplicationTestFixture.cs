@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
+namespace FunctionalTests
 {
     public abstract class ApplicationTestFixture : IDisposable
     {

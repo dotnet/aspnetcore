@@ -4,18 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.CommandLineUtils;
@@ -181,25 +176,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             });
 
             compilation = compilation.AddSyntaxTrees(syntaxTrees);
-            Parallel.For(0, results.Length, ParalellOptions, i =>
-            {
-                results[i].TypeName = ReadTypeInfo(compilation, syntaxTrees[i]);
-            });
 
             // Post process the compilation - run ExpressionRewritter and any user specified callbacks.            
             compilation = ExpressionRewriter.Rewrite(compilation);
             var compilationContext = new RoslynCompilationContext(compilation);
             MvcServiceProvider.ViewEngineOptions.CompilationCallback(compilationContext);
-            compilation = compilationContext.Compilation;
-
-            var codeGenerator = new ManifestGenerator(compiler, compilation);
-            codeGenerator.GenerateManifest(results);
-
-            var assemblyName = new AssemblyName(Options.ApplicationName);
-            assemblyName = Assembly.Load(assemblyName).GetName();
-            codeGenerator.AddAssemblyMetadata(assemblyName, Options);
-
-            return codeGenerator.Compilation;
+            compilation  = AssemblyMetadataGenerator.AddAssemblyMetadata(
+                compiler, 
+                compilationContext.Compilation,
+                Options);
+            
+            return compilation;
         }
 
         private bool ParseArguments()
@@ -247,11 +234,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                     compilationInfo = new ViewCompilationInfo(fileInfo, csharpDocument);
                 }
 
-                if (PageDirectiveFeature.TryGetPageDirective(fileInfo.CreateReadStream, out var template))
-                {
-                    compilationInfo.RouteTemplate = template ?? string.Empty;
-                }
-
                 results[i] = compilationInfo;
             });
 
@@ -276,22 +258,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             }
 
             return viewFileInfo;
-        }
-
-        private string ReadTypeInfo(CSharpCompilation compilation, SyntaxTree syntaxTree)
-        {
-            var semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: true);
-            var classDeclarations = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();
-            foreach (var declaration in classDeclarations)
-            {
-                var typeSymbol = semanticModel.GetDeclaredSymbol(declaration);
-                if (typeSymbol.ContainingType == null && typeSymbol.DeclaredAccessibility == Accessibility.Public)
-                {
-                    return typeSymbol.ToDisplayString();
-                }
-            }
-
-            return null;
         }
     }
 }

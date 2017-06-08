@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02F7AA35-91A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0398AFFF-505E-4283-89DA-BBD9D28B53DB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests", "test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests.csproj", "{46C9A4B2-8B1C-451B-B670-C194901D66AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "test\FunctionalTests\FunctionalTests.csproj", "{46C9A4B2-8B1C-451B-B670-C194901D66AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test", "test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test.csproj", "{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}"
 EndProject

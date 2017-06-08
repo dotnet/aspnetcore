@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
+namespace FunctionalTests
 {
-    public class SimpleAppTest : IClassFixture<SimpleAppTest.SimpleAppTestFixture>
+    public class StrongNamedAppTest : IClassFixture<StrongNamedAppTest.StrongNamedAppFixture>
     {
-        public SimpleAppTest(SimpleAppTestFixture fixture)
+        public StrongNamedAppTest(StrongNamedAppFixture fixture)
         {
             Fixture = fixture;
         }
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         [ConditionalTheory]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task Precompilation_WorksForSimpleApps(RuntimeFlavor flavor)
+        public async Task PrecompiledAssembliesUseSameStrongNameAsApplication(RuntimeFlavor flavor)
         {
             // Arrange
             using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
@@ -32,14 +32,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                     Fixture.Logger);
 
                 // Assert
-                TestEmbeddedResource.AssertContent("SimpleAppTest.Home.Index.txt", response);
+                TestEmbeddedResource.AssertContent("StrongNamedApp.Home.Index.txt", response);
             }
         }
 
-        public class SimpleAppTestFixture : ApplicationTestFixture
+        public class StrongNamedAppFixture : ApplicationTestFixture
         {
-            public SimpleAppTestFixture()
-                : base("SimpleApp")
+            public StrongNamedAppFixture()
+                : base("StrongNamedApp")
             {
             }
         }

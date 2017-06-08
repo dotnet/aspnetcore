@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
+namespace FunctionalTests
 {
     public static class TestEmbeddedResource
     {

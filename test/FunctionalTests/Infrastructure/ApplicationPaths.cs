@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
+namespace FunctionalTests
 {
     public static class ApplicationPaths
     {

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
+namespace FunctionalTests
 {
     public static class RuntimeFlavors
     {

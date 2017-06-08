@@ -1,12 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    internal class ViewCompilationInfo
+    internal struct ViewCompilationInfo
     {
         public ViewCompilationInfo(
             ViewFileInfo viewFileInfo,
@@ -19,9 +18,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
         public ViewFileInfo ViewFileInfo { get; }
 
         public RazorCSharpDocument CSharpDocument { get; }
-
-        public string TypeName { get; set; }
-
-        public string RouteTemplate { get; set; }
     }
 }

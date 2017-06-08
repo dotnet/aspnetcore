@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
+namespace FunctionalTests
 {
     public class ApplicationWithCustomInputFilesTest
         : IClassFixture<ApplicationWithCustomInputFilesTest.ApplicationWithCustomInputFilesTestFixture>

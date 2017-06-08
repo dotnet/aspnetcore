@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
+namespace FunctionalTests
 {
-    public class StrongNamedAppTest : IClassFixture<StrongNamedAppTest.StrongNamedAppFixture>
+    public class ApplicationConsumingPrecompiledViews
+        : IClassFixture<ApplicationConsumingPrecompiledViews.ApplicationConsumingPrecompiledViewsFixture>
     {
-        public StrongNamedAppTest(StrongNamedAppFixture fixture)
+        public ApplicationConsumingPrecompiledViews(ApplicationConsumingPrecompiledViewsFixture fixture)
         {
             Fixture = fixture;
         }
@@ -21,25 +22,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         [ConditionalTheory]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task PrecompiledAssembliesUseSameStrongNameAsApplication(RuntimeFlavor flavor)
+        public async Task ConsumingClassLibrariesWithPrecompiledViewsWork(RuntimeFlavor flavor)
         {
-            // Arrange
             using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
             {
                 // Act
-                var response = await deployment.HttpClient.GetStringWithRetryAsync(
-                    deployment.DeploymentResult.ApplicationBaseUri,
-                    Fixture.Logger);
+                var response = await deployment.HttpClient.GetStringWithRetryAsync("Manage/Home", Fixture.Logger);
 
                 // Assert
-                TestEmbeddedResource.AssertContent("StrongNamedApp.Home.Index.txt", response);
+                TestEmbeddedResource.AssertContent("ApplicationConsumingPrecompiledViews.Manage.Home.Index.txt", response);
             }
         }
 
-        public class StrongNamedAppFixture : ApplicationTestFixture
+        public class ApplicationConsumingPrecompiledViewsFixture : ApplicationTestFixture
         {
-            public StrongNamedAppFixture()
-                : base("StrongNamedApp")
+            public ApplicationConsumingPrecompiledViewsFixture()
+                : base("ApplicationUsingPrecompiledViewClassLibrary")
             {
             }
         }

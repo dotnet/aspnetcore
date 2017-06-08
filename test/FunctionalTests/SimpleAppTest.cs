@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
+namespace FunctionalTests
 {
-    public class SimpleAppWithAssemblyRenameTest : IClassFixture<SimpleAppWithAssemblyRenameTest.TestFixture>
+    public class SimpleAppTest : IClassFixture<SimpleAppTest.SimpleAppTestFixture>
     {
-        public SimpleAppWithAssemblyRenameTest(TestFixture fixture)
+        public SimpleAppTest(SimpleAppTestFixture fixture)
         {
             Fixture = fixture;
         }
@@ -32,22 +32,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                     Fixture.Logger);
 
                 // Assert
-                TestEmbeddedResource.AssertContent("SimpleAppWithAssemblyRenameTest.Home.Index.txt", response);
+                TestEmbeddedResource.AssertContent("SimpleAppTest.Home.Index.txt", response);
             }
         }
 
-        public class TestFixture : ApplicationTestFixture
+        public class SimpleAppTestFixture : ApplicationTestFixture
         {
-            public TestFixture()
-                : base("SimpleAppWithAssemblyRename")
+            public SimpleAppTestFixture()
+                : base("SimpleApp")
             {
-            }
-
-            public override DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
-            {
-                var parameters = base.GetDeploymentParameters(flavor);
-                parameters.ApplicationName = "NewAssemblyName";
-                return parameters;
             }
         }
     }
