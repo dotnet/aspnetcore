@@ -4,16 +4,6 @@
             "SigningVerificationCompositeRule"
         ],
         "packages": {
-            "Microsoft.AspNetCore.CertificateGeneration.Task": {
-                "exclusions": {
-                    "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
-                        "Microsoft.AspNetCore.CertificateGeneration.Task; .NETCoreApp,Version=v2.0": "Temporary exception while waiting for Coherence-Signed to get a new version of NugetPackageVerifier."
-                    },
-                    "BUILD_ITEMS_FRAMEWORK": {
-                        "*": "This is an MSBuild task intended to run through dotnet msbuild /t:Target independently of whether your project targets full framework or .net core."
-                    }
-                }
-            },
             "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation": {
                 "exclusions": {
                     "DOC_MISSING": {
