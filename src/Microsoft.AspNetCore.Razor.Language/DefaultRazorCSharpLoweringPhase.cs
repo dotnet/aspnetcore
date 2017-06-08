@@ -20,9 +20,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             var irDocument = codeDocument.GetIRDocument();
             ThrowForMissingDocumentDependency(irDocument);
 
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            ThrowForMissingDocumentDependency(syntaxTree);
-
             var target = irDocument.Target;
             if (target == null)
             {
@@ -59,13 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             documentWriter.WriteDocument(irDocument);
 
             var diagnostics = new List<RazorDiagnostic>();
-            diagnostics.AddRange(syntaxTree.Diagnostics);
-
-            var importSyntaxTrees = codeDocument.GetImportSyntaxTrees();
-            for (var i = 0; i < importSyntaxTrees?.Count; i++)
-            {
-                diagnostics.AddRange(importSyntaxTrees[i].Diagnostics);
-            }
+            diagnostics.AddRange(irDocument.GetAllDiagnostics());
             diagnostics.AddRange(renderingContext.Diagnostics);
 
             var csharpDocument = RazorCSharpDocument.Create(

@@ -7,9 +7,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     {
         public abstract ItemCollection Annotations { get; }
 
+        public abstract RazorDiagnosticCollection Diagnostics { get; }
+        
         public abstract RazorIRNodeCollection Children { get; }
 
         public abstract SourceSpan? Source { get; set; }
+
+        public abstract bool HasDiagnostics { get; }
 
         public abstract void Accept(RazorIRNodeVisitor visitor);
     }

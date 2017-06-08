@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // This might not have been set if there are no tag helpers.
             var tagHelperContext = codeDocument.GetTagHelperContext();
-            
+
             var document = new DocumentIRNode();
             var builder = RazorIRBuilder.Create(document);
 
@@ -74,6 +74,26 @@ namespace Microsoft.AspNetCore.Razor.Language
                 };
 
                 builder.Insert(i++, @using);
+            }
+
+            // The document should contain all errors that currently exist in the system. This involves
+            // adding the errors from the primary and imported syntax trees.
+
+            for (i = 0; i < syntaxTree.Diagnostics.Count; i++)
+            {
+                document.Diagnostics.Add(syntaxTree.Diagnostics[i]);
+            }
+
+            if (imports != null)
+            {
+                for (i = 0; i < imports.Count; i++)
+                {
+                    var import = imports[i];
+                    for (var j = 0; j < import.Diagnostics.Count; j++)
+                    {
+                        document.Diagnostics.Add(import.Diagnostics[j]);
+                    }
+                }
             }
 
             codeDocument.SetIRDocument(document);

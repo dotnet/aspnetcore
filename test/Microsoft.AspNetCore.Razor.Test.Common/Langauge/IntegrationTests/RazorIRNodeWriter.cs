@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
@@ -188,24 +190,66 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             if (node.Source != null)
             {
-                var sourceRange = node.Source.Value;
-                _writer.Write("(");
-                _writer.Write(sourceRange.AbsoluteIndex);
-                _writer.Write(":");
-                _writer.Write(sourceRange.LineIndex);
-                _writer.Write(",");
-                _writer.Write(sourceRange.CharacterIndex);
-                _writer.Write(" [");
-                _writer.Write(sourceRange.Length);
-                _writer.Write("] ");
+                WriteSourceRange(node.Source.Value);
+            }
+        }
 
-                if (sourceRange.FilePath != null)
+        protected void WriteSourceRange(SourceSpan sourceRange)
+        {
+            _writer.Write("(");
+            _writer.Write(sourceRange.AbsoluteIndex);
+            _writer.Write(":");
+            _writer.Write(sourceRange.LineIndex);
+            _writer.Write(",");
+            _writer.Write(sourceRange.CharacterIndex);
+            _writer.Write(" [");
+            _writer.Write(sourceRange.Length);
+            _writer.Write("] ");
+
+            if (sourceRange.FilePath != null)
+            {
+                var fileName = sourceRange.FilePath.Substring(sourceRange.FilePath.LastIndexOf('/') + 1);
+                _writer.Write(fileName);
+            }
+
+            _writer.Write(")");
+        }
+
+        protected void WriteDiagnostics(RazorIRNode node)
+        {
+            if (node.HasDiagnostics)
+            {
+                _writer.Write("| ");
+                for (var i = 0; i < node.Diagnostics.Count; i++)
                 {
-                    var fileName = sourceRange.FilePath.Substring(sourceRange.FilePath.LastIndexOf('/') + 1);
-                    _writer.Write(fileName);
-                }
+                    var diagnostic = node.Diagnostics[i];
+                    _writer.Write("{");
+                    WriteSourceRange(diagnostic.Span);
+                    _writer.Write(": ");
+                    _writer.Write(diagnostic.Severity);
+                    _writer.Write(" ");
+                    _writer.Write(diagnostic.Id);
+                    _writer.Write(": ");
 
-                _writer.Write(")");
+                    // Purposefully not writing out the entire message to ensure readable IR and because messages 
+                    // can span multiple lines. Not using string.GetHashCode because we can't have any collisions.
+                    using (var md5 = MD5.Create())
+                    {
+                        var diagnosticMessage = diagnostic.GetMessage();
+                        var messageBytes = Encoding.UTF8.GetBytes(diagnosticMessage);
+                        var messageHash = md5.ComputeHash(messageBytes);
+                        var stringHashBuilder = new StringBuilder();
+
+                        for (var j = 0; j < messageHash.Length; j++)
+                        {
+                            stringHashBuilder.Append(messageHash[j].ToString("x2"));
+                        }
+
+                        var stringHash = stringHashBuilder.ToString();
+                        _writer.Write(stringHash);
+                    }
+                    _writer.Write("} ");
+                }
             }
         }
 

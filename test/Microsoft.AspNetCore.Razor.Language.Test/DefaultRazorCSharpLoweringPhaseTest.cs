@@ -31,26 +31,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Execute_ThrowsForMissingDependency_SyntaxTree()
-        {
-            // Arrange
-            var phase = new DefaultRazorCSharpLoweringPhase();
-
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
-
-            var codeDocument = TestRazorCodeDocument.CreateEmpty();
-
-            var irDocument = new DocumentIRNode();
-            codeDocument.SetIRDocument(irDocument);
-
-            // Act & Assert
-            ExceptionAssert.Throws<InvalidOperationException>(
-                () => phase.Execute(codeDocument),
-                $"The '{nameof(DefaultRazorCSharpLoweringPhase)}' phase requires a '{nameof(RazorSyntaxTree)}' " +
-                $"provided by the '{nameof(RazorCodeDocument)}'.");
-        }
-
-        [Fact]
         public void Execute_ThrowsForMissingDependency_CodeTarget()
         {
             // Arrange
@@ -76,13 +56,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Execute_CollatesSyntaxDiagnosticsFromSourceDocument()
+        public void Execute_CollatesIRDocumentDiagnosticsFromSourceDocument()
         {
             // Arrange
             var phase = new DefaultRazorCSharpLoweringPhase();
             var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
             var codeDocument = TestRazorCodeDocument.Create("<p class=@(");
-            codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source));
             var options = RazorCodeGenerationOptions.CreateDefault();
             var irDocument = new DocumentIRNode()
             {
@@ -90,6 +69,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Target = CodeTarget.CreateDefault(codeDocument, options),
                 Options = options,
             };
+            var expectedDiagnostic = RazorDiagnostic.Create(
+                    new RazorDiagnosticDescriptor("1234", () => "I am an error.", RazorDiagnosticSeverity.Error),
+                    new SourceSpan("SomeFile.cshtml", 11, 0, 11, 1));
+            irDocument.Diagnostics.Add(expectedDiagnostic);
             codeDocument.SetIRDocument(irDocument);
 
             // Act
@@ -98,49 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             var csharpDocument = codeDocument.GetCSharpDocument();
             var diagnostic = Assert.Single(csharpDocument.Diagnostics);
-            Assert.Equal(@"The explicit expression block is missing a closing "")"" character.  Make sure you have a matching "")"" character for all the ""("" characters within this block, and that none of the "")"" characters are being interpreted as markup.",
-                diagnostic.GetMessage());
-        }
-
-        [Fact]
-        public void Execute_CollatesSyntaxDiagnosticsFromImportDocuments()
-        {
-            // Arrange
-            var phase = new DefaultRazorCSharpLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
-
-            var codeDocument = TestRazorCodeDocument.CreateEmpty();
-            codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source));
-            codeDocument.SetImportSyntaxTrees(new[]
-            {
-                RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("@ ")),
-                RazorSyntaxTree.Parse(TestRazorSourceDocument.Create("<p @(")),
-            });
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var irDocument = new DocumentIRNode()
-            {
-                DocumentKind = "test",
-                Target = CodeTarget.CreateDefault(codeDocument, options),
-                Options = options,
-            };
-            codeDocument.SetIRDocument(irDocument);
-
-            // Act
-            phase.Execute(codeDocument);
-
-            // Assert
-            var csharpDocument = codeDocument.GetCSharpDocument();
-            Assert.Collection(csharpDocument.Diagnostics,
-                diagnostic =>
-                {
-                    Assert.Equal(@"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.",
-                        diagnostic.GetMessage());
-                },
-                diagnostic =>
-                {
-                    Assert.Equal(@"The explicit expression block is missing a closing "")"" character.  Make sure you have a matching "")"" character for all the ""("" characters within this block, and that none of the "")"" characters are being interpreted as markup.",
-                        diagnostic.GetMessage());
-                });
+            Assert.Same(expectedDiagnostic, diagnostic);
         }
     }
 }

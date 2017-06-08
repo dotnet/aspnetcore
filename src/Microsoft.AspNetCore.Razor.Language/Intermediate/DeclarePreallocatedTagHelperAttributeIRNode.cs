@@ -9,9 +9,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     internal sealed class DeclarePreallocatedTagHelperAttributeIRNode : ExtensionIRNode
     {
+        public override RazorDiagnosticCollection Diagnostics { get; } = ReadOnlyDiagnosticCollection.Instance;
+        
         public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
         public override SourceSpan? Source { get; set; }
+
+        public override bool HasDiagnostics => false;
 
         public string VariableName { get; set; }
 

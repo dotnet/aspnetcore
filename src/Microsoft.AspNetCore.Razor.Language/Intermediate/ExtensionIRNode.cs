@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     public abstract class ExtensionIRNode : RazorIRNode
     {
         private ItemCollection _annotations;
+        private RazorDiagnosticCollection _diagnostics;
 
         public override ItemCollection Annotations
         {
@@ -22,9 +23,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
+        public override RazorDiagnosticCollection Diagnostics
+        {
+            get
+            {
+                if (_diagnostics == null)
+                {
+                    _diagnostics = new DefaultDiagnosticCollection();
+                }
+
+                return _diagnostics;
+            }
+        }
+
+        public override bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
+
         public abstract void WriteNode(CodeTarget target, CSharpRenderingContext context);
 
-        protected static void AcceptExtensionNode<TNode>(TNode node, RazorIRNodeVisitor visitor) 
+        protected static void AcceptExtensionNode<TNode>(TNode node, RazorIRNodeVisitor visitor)
             where TNode : ExtensionIRNode
         {
             var typedVisitor = visitor as IExtensionIRNodeVisitor<TNode>;
