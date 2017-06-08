@@ -8,7 +8,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Identity
 {
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(role));
             }
             role.Name = roleName;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -202,7 +201,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(role));
             }
             role.NormalizedName = normalizedName;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>

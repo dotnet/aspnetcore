@@ -8,7 +8,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Identity
 {
@@ -181,7 +180,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.UserName = userName;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -217,7 +216,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.NormalizedUserName = normalizedName;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -316,7 +315,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.PasswordHash = passwordHash;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -587,7 +586,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.EmailConfirmed = confirmed;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -606,7 +605,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.Email = email;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -661,7 +660,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.NormalizedEmail = normalizedEmail;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -711,7 +710,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.LockoutEnd = lockoutEnd;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -748,7 +747,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.AccessFailedCount = 0;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -803,7 +802,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.LockoutEnabled = enabled;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -822,7 +821,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.PhoneNumber = phoneNumber;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -878,7 +877,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.PhoneNumberConfirmed = confirmed;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -901,7 +900,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(stamp));
             }
             user.SecurityStamp = stamp;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -938,7 +937,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             user.TwoFactorEnabled = enabled;
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>

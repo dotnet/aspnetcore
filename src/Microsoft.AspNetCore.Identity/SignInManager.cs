@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -766,7 +765,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return UserManager.ResetAccessFailedCountAsync(user);
             }
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         internal class TwoFactorAuthenticationInfo

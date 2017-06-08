@@ -9,7 +9,6 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public Task SaveChanges(CancellationToken cancellationToken)
         {
-            return AutoSaveChanges ? Context.SaveChangesAsync(cancellationToken) : TaskCache.CompletedTask;
+            return AutoSaveChanges ? Context.SaveChangesAsync(cancellationToken) : Task.CompletedTask;
         }
 
         /// <summary>
@@ -633,7 +632,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         public override Task AddUserTokenAsync(TUserToken token)
         {
             UserTokens.Add(token);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -644,7 +643,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         public override Task RemoveUserTokenAsync(TUserToken token)
         {
             UserTokens.Remove(token);
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }
