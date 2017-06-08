@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ServerOptions = { AddServerHeader = true }
             };
 
-            using (var server = new TestServer(ctx => TaskCache.CompletedTask, testContext))
+            using (var server = new TestServer(ctx => Task.CompletedTask, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {

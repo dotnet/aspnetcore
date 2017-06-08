@@ -12,15 +12,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.Text.Encodings.Web.Utf8;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Microsoft.AspNetCore.Http.Features;
 
 // ReSharper disable AccessToModifiedClosure
 
@@ -526,7 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (data.Count == 0)
                     {
-                        return TaskCache.CompletedTask;
+                        return Task.CompletedTask;
                     }
                     return WriteChunkedAsync(data, cancellationToken);
                 }
@@ -539,7 +538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
         }
 
@@ -665,7 +664,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (HasResponseStarted)
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             if (_onStarting != null)
@@ -681,7 +680,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             VerifyAndUpdateWrite(firstWriteByteCount);
             ProduceStart(appCompleted: false);
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private async Task InitializeResponseAwaited(int firstWriteByteCount)
@@ -716,7 +715,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return ProduceEnd();
             }
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         protected Task ProduceEnd()
@@ -727,7 +726,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // We can no longer change the response, so we simply close the connection.
                     _requestProcessingStopping = true;
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }
 
                 // If the request was rejected, the error state has already been set by SetBadRequestState and
@@ -780,7 +779,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Log.ConnectionHeadResponseBodyWrite(ConnectionId, _responseBytesWritten);
             }
 
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private async Task WriteAutoChunkSuffixAwaited()

@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -126,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, listenOptions))
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {
@@ -256,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, listenOptions))
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {
@@ -287,7 +286,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, listenOptions))
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {
@@ -316,7 +315,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, listenOptions))
+            using (var server = new TestServer(context => Task.CompletedTask, serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {

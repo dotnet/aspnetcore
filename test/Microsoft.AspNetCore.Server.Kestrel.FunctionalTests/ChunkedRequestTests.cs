@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -538,7 +537,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var testContext = new TestServiceContext();
             using (var server = new TestServer(httpContext =>
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())

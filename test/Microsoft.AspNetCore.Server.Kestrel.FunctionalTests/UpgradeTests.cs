@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -154,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task RejectsRequestWithContentLengthAndUpgrade()
         {
-            using (var server = new TestServer(context => TaskCache.CompletedTask))
+            using (var server = new TestServer(context => Task.CompletedTask))
             using (var connection = server.CreateConnection())
             {
                 await connection.Send("POST / HTTP/1.1",
@@ -177,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task AcceptsRequestWithNoContentLengthAndUpgrade()
         {
-            using (var server = new TestServer(context => TaskCache.CompletedTask))
+            using (var server = new TestServer(context => Task.CompletedTask))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -201,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task RejectsRequestWithChunkedEncodingAndUpgrade()
         {
-            using (var server = new TestServer(context => TaskCache.CompletedTask))
+            using (var server = new TestServer(context => Task.CompletedTask))
             using (var connection = server.CreateConnection())
             {
                 await connection.Send("POST / HTTP/1.1",

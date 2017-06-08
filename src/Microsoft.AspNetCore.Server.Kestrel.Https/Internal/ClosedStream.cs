@@ -5,12 +5,13 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
     internal class ClosedStream : Stream
     {
+        private static readonly Task<int> ZeroResultTask = Task.FromResult(result: 0);
+
         public override bool CanRead => true;
         public override bool CanSeek => false;
         public override bool CanWrite => false;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return TaskCache<int>.DefaultCompletedTask;
+            return ZeroResultTask;
         }
 
         public override void Write(byte[] buffer, int offset, int count)

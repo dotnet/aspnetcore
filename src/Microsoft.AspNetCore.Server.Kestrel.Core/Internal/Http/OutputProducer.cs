@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -110,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_completed)
                 {
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }
 
                 writableBuffer = _pipe.Writer.Alloc(1);
@@ -143,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (awaitable.IsCompleted)
             {
                 // The flush task can't fail today
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
             return FlushAsyncAwaited(awaitable, cancellationToken);
         }

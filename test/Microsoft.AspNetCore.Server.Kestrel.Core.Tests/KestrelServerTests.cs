@@ -5,12 +5,12 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static void StartDummyApplication(IServer server)
         {
-            server.StartAsync(new DummyApplication(context => TaskCache.CompletedTask), CancellationToken.None).GetAwaiter().GetResult();
+            server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None).GetAwaiter().GetResult();
         }
 
         private class MockTransportFactory : ITransportFactory

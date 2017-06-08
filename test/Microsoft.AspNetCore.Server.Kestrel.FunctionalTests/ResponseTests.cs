@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Moq;
@@ -182,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         await context.Response.WriteAsync("hello, world");
                         await context.Response.Body.FlushAsync();
-                        ex = Assert.Throws<InvalidOperationException>(() => context.Response.OnStarting(_ => TaskCache.CompletedTask, null));
+                        ex = Assert.Throws<InvalidOperationException>(() => context.Response.OnStarting(_ => Task.CompletedTask, null));
                     });
                 });
 
@@ -220,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 context =>
                 {
                     context.Abort();
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 expectedClientStatusCode: null,
                 expectedServerStatusCode: 0);
@@ -245,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return ResponseStatusCodeSetBeforeHttpContextDispose(
                 context =>
                 {
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 },
                 expectedClientStatusCode: null,
                 expectedServerStatusCode: HttpStatusCode.BadRequest,
@@ -421,7 +420,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Response.StatusCode = statusCode;
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }))
             {
                 using (var connection = server.CreateConnection())
@@ -445,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             using (var server = new TestServer(httpContext =>
             {
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }))
             {
                 using (var connection = server.CreateConnection())
@@ -516,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.ContentLength = 11;
                 httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello,"), 0, 6);
                 httpContext.Response.Body.Write(Encoding.ASCII.GetBytes(" world"), 0, 6);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
@@ -592,7 +591,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var response = Encoding.ASCII.GetBytes("hello, world");
                 httpContext.Response.ContentLength = 5;
                 httpContext.Response.Body.Write(response, 0, response.Length);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
@@ -764,7 +763,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Response.ContentLength = 5;
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
@@ -912,7 +911,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Response.ContentLength = 42;
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }))
             {
                 using (var connection = server.CreateConnection())
@@ -973,7 +972,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.ContentLength = 12;
                 httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
                 flushed.Wait();
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }))
             {
                 using (var connection = server.CreateConnection())
@@ -1255,7 +1254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     // Change response to chunked
                     httpContext.Response.ContentLength = null;
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
                 var response = Encoding.ASCII.GetBytes("hello, world");
@@ -1263,7 +1262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // If OnStarting is not run before verifying writes, an error response will be sent.
                 httpContext.Response.Body.Write(response, 0, response.Length);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }))
             {
                 using (var connection = server.CreateConnection())
@@ -1296,7 +1295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     // Change response to chunked
                     httpContext.Response.ContentLength = null;
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
                 var response = Encoding.ASCII.GetBytes("hello, world");
@@ -1305,7 +1304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // If OnStarting is not run before verifying writes, an error response will be sent.
                 httpContext.Response.Body.Write(response, 0, response.Length / 2);
                 httpContext.Response.Body.Write(response, response.Length / 2, response.Length - response.Length / 2);
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }))
             {
                 using (var connection = server.CreateConnection())
@@ -1340,7 +1339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     // Change response to chunked
                     httpContext.Response.ContentLength = null;
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
                 var response = Encoding.ASCII.GetBytes("hello, world");
@@ -1380,7 +1379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     // Change response to chunked
                     httpContext.Response.ContentLength = null;
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 });
 
                 var response = Encoding.ASCII.GetBytes("hello, world");
@@ -1454,7 +1453,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task WhenResponseNotStartedResponseEndedAfterConsumingRequestBody()
         {
-            using (var server = new TestServer(httpContext => TaskCache.CompletedTask))
+            using (var server = new TestServer(httpContext => Task.CompletedTask))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1822,7 +1821,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 response.OnStarting(_ =>
                 {
                     onStartingCalled = true;
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }, null);
 
                 // Anything added to the ResponseHeaders dictionary is ignored
@@ -2166,7 +2165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Abort();
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
@@ -2205,7 +2204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Assert.Same(originalResponseHeaders, responseFeature.Headers);
                 }
 
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
@@ -2249,12 +2248,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     callOrder.Push(1);
                     onStartingTcs.SetResult(null);
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }, null);
                 context.Response.OnStarting(_ =>
                 {
                     callOrder.Push(2);
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }, null);
 
                 context.Response.ContentLength = response.Length;
@@ -2301,12 +2300,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     callOrder.Push(1);
                     onCompletedTcs.SetResult(null);
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }, null);
                 context.Response.OnCompleted(_ =>
                 {
                     callOrder.Push(2);
-                    return TaskCache.CompletedTask;
+                    return Task.CompletedTask;
                 }, null);
 
                 context.Response.ContentLength = response.Length;

@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
@@ -291,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv")))
                 .Returns(mockLogger.Object);
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -345,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel", "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv")))
                 .Returns(mockLogger.Object);
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1105,7 +1104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Assert.Same(originalRequestHeaders, requestFeature.Headers);
                 }
 
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())

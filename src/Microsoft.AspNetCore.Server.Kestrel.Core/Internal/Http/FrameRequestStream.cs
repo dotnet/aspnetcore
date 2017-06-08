@@ -3,12 +3,10 @@
 
 using System;
 using System.IO;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -42,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             // No-op.
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public override long Seek(long offset, SeekOrigin origin)

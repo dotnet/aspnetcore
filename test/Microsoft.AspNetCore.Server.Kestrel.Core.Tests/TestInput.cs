@@ -2,17 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
-using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
@@ -82,12 +77,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         Task IFrameControl.WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         Task IFrameControl.FlushAsync(CancellationToken cancellationToken)
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
 
         public void Dispose()

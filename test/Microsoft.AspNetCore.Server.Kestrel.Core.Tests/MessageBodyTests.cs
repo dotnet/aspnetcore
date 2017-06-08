@@ -9,14 +9,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -398,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     writeTcs.SetResult(buffer);
                     writeCount++;
                 })
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             using (var input = new TestInput())
             {

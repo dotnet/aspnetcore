@@ -4,7 +4,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public static Task EmptyApp(HttpContext httpContext)
         {
-            return TaskCache.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }
