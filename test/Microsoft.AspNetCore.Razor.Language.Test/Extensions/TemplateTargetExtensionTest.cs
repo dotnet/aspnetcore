@@ -17,14 +17,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var extension = new TemplateTargetExtension()
             {
-                TemplateTypeName = "global::TestTemplate",
-                PushWriterMethod = "TestPushWriter",
-                PopWriterMethod = "TestPopWriter"
+                TemplateTypeName = "global::TestTemplate"
             };
 
             var context = new CSharpRenderingContext()
             { 
-                BasicWriter = new RuntimeBasicWriter(),
+                BasicWriter = new RuntimeBasicWriter()
+                {
+                    PushWriterMethod = "TestPushWriter",
+                    PopWriterMethod = "TestPopWriter"
+                },
                 TagHelperWriter = new RuntimeTagHelperWriter(),
                 Writer = new CSharpCodeWriter(),
                 Options = RazorCodeGenerationOptions.CreateDefault(),

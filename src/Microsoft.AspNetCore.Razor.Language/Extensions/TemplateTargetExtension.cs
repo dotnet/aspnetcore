@@ -8,14 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     public class TemplateTargetExtension : ITemplateTargetExtension
     {
         public static readonly string DefaultTemplateTypeName = "Template";
-        public static readonly string DefaultPushWriterMethod = "PushWriter";
-        public static readonly string DefaultPopWriterMethod = "PopWriter";
 
         public string TemplateTypeName { get; set; } = DefaultTemplateTypeName;
-
-        public string PushWriterMethod { get; set; } = DefaultPushWriterMethod;
-
-        public string PopWriterMethod { get; set; } = DefaultPopWriterMethod;
 
         public void WriteTemplate(CSharpRenderingContext context, TemplateIRNode node)
         {
@@ -28,17 +22,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
             {
-                if (!context.Options.DesignTime)
-                {
-                    context.Writer.WriteMethodInvocation(PushWriterMethod, TemplateWriterName);
-                }
+                context.BasicWriter.BeginWriterScope(context, TemplateWriterName);
 
                 context.RenderChildren(node);
 
-                if (!context.Options.DesignTime)
-                {
-                    context.Writer.WriteMethodInvocation(PopWriterMethod);
-                }
+                context.BasicWriter.EndWriterScope(context);
             }
 
             context.Writer.WriteEndMethodInvocation(endLine: false);

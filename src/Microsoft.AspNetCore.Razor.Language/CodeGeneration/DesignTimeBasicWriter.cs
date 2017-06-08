@@ -269,5 +269,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Do nothing
         }
+
+        public override void BeginWriterScope(CSharpRenderingContext context, string writer)
+        {
+            // Do nothing
+        }
+
+        public override void EndWriterScope(CSharpRenderingContext context)
+        {
+            // Do nothing
+        }
     }
 }

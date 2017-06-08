@@ -433,6 +433,7 @@ if (true) { }
         [Fact]
         public void WriteHtmlContent_RendersContentCorrectly()
         {
+            // Arrange
             var writer = new RuntimeBasicWriter();
             var context = new CSharpRenderingContext()
             {
@@ -462,6 +463,7 @@ if (true) { }
         [Fact]
         public void WriteHtmlContent_LargeStringLiteral_UsesMultipleWrites()
         {
+            // Arrange
             var writer = new RuntimeBasicWriter();
             var context = new CSharpRenderingContext()
             {
@@ -493,6 +495,7 @@ WriteLiteral(@""{1}"");
         [Fact]
         public void WriteHtmlAttribute_RendersCorrectly()
         {
+            // Arrange
             var writer = new RuntimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
 
@@ -519,6 +522,7 @@ EndWriteAttribute();
         [Fact]
         public void WriteHtmlAttributeValue_RendersCorrectly()
         {
+            // Arrange
             var writer = new RuntimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
 
@@ -543,6 +547,7 @@ EndWriteAttribute();
         [Fact]
         public void WriteCSharpExpressionAttributeValue_RendersCorrectly()
         {
+            // Arrange
             var writer = new RuntimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
 
@@ -571,6 +576,7 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
         [Fact]
         public void WriteCSharpCodeAttributeValue_BuffersResult()
         {
+            // Arrange
             var writer = new RuntimeBasicWriter();
             var context = GetCSharpRenderingContext(writer);
 
@@ -597,6 +603,50 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
     PopWriter();
 }
 ), 28, 13, false);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void BeginWriterScope_UsesSpecifiedWriter_RendersCorrectly()
+        {
+            // Arrange
+            var writer = new RuntimeBasicWriter()
+            {
+                PushWriterMethod = "TestPushWriter"
+            };
+            var context = GetCSharpRenderingContext(writer);
+
+            // Act
+            writer.BeginWriterScope(context, "MyWriter");
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"TestPushWriter(MyWriter);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void EndWriterScope_RendersCorrectly()
+        {
+            // Arrange
+            var writer = new RuntimeBasicWriter()
+            {
+                PopWriterMethod = "TestPopWriter"
+            };
+            var context = GetCSharpRenderingContext(writer);
+
+            // Act
+            writer.EndWriterScope(context);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"TestPopWriter();
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);

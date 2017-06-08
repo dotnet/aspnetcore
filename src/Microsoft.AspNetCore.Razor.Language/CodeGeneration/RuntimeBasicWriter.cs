@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: ValueWriterName))
             {
-                context.Writer.WriteMethodInvocation(PushWriterMethod, ValueWriterName);
+                BeginWriterScope(context, ValueWriterName);
 
                 for (var i = 0; i < node.Children.Count; i++)
                 {
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     }
                 }
 
-                context.Writer.WriteMethodInvocation(PopWriterMethod);
+                EndWriterScope(context);
             }
 
             context.Writer.WriteEndMethodInvocation(false);
@@ -363,6 +363,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                 charactersConsumed += textToRender.Length;
             }
+        }
+
+        public override void BeginWriterScope(CSharpRenderingContext context, string writer)
+        {
+            context.Writer.WriteMethodInvocation(PushWriterMethod, writer);
+        }
+
+        public override void EndWriterScope(CSharpRenderingContext context)
+        {
+            context.Writer.WriteMethodInvocation(PopWriterMethod);
         }
     }
 }
