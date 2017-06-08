@@ -40,7 +40,7 @@ Document -
                             RazorIRToken - (166:7,35 [6] ComplexTagHelpers.cshtml) - Html - string
                 HtmlContent - (178:7,47 [10] ComplexTagHelpers.cshtml)
                     RazorIRToken - (178:7,47 [10] ComplexTagHelpers.cshtml) - Html - \n        
-                TagHelper - (188:8,8 [529] ComplexTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
+                TagHelper - (188:8,8 [531] ComplexTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (226:8,46 [34] ComplexTagHelpers.cshtml)
                             RazorIRToken - (226:8,46 [14] ComplexTagHelpers.cshtml) - Html - \n            
@@ -106,28 +106,28 @@ Document -
                         HtmlContent - (591:17,66 [18] ComplexTagHelpers.cshtml)
                             RazorIRToken - (591:17,66 [2] ComplexTagHelpers.cshtml) - Html - \n
                             RazorIRToken - (593:18,0 [16] ComplexTagHelpers.cshtml) - Html -                 
-                        TagHelper - (609:18,16 [79] ComplexTagHelpers.cshtml) - input - TagMode.StartTagOnly
+                        TagHelper - (609:18,16 [81] ComplexTagHelpers.cshtml) - input - TagMode.StartTagOnly
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            SetTagHelperProperty - (622:18,29 [64] ComplexTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
-                                CSharpCode - (623:18,30 [10] ComplexTagHelpers.cshtml)
-                                    RazorIRToken - (623:18,30 [10] ComplexTagHelpers.cshtml) - CSharp - if(true) {
+                            SetTagHelperProperty - (622:18,29 [66] ComplexTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
+                                CSharpCode - (623:18,30 [11] ComplexTagHelpers.cshtml)
+                                    RazorIRToken - (623:18,30 [11] ComplexTagHelpers.cshtml) - CSharp - if(true) { 
                                 HtmlContent - (640:18,47 [8] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (640:18,47 [8] ComplexTagHelpers.cshtml) - Html - checkbox
-                                CSharpCode - (655:18,62 [9] ComplexTagHelpers.cshtml)
-                                    RazorIRToken - (655:18,62 [9] ComplexTagHelpers.cshtml) - CSharp -  } else {
+                                CSharpCode - (655:18,62 [10] ComplexTagHelpers.cshtml)
+                                    RazorIRToken - (655:18,62 [10] ComplexTagHelpers.cshtml) - CSharp -  } else { 
                                 HtmlContent - (671:18,78 [8] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (671:18,78 [8] ComplexTagHelpers.cshtml) - Html - anything
                                 CSharpCode - (686:18,93 [2] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (686:18,93 [2] ComplexTagHelpers.cshtml) - CSharp -  }
-                            SetTagHelperProperty - (622:18,29 [64] ComplexTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
-                                CSharpCode - (623:18,30 [10] ComplexTagHelpers.cshtml)
-                                    RazorIRToken - (623:18,30 [10] ComplexTagHelpers.cshtml) - CSharp - if(true) {
+                            SetTagHelperProperty - (622:18,29 [66] ComplexTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
+                                CSharpCode - (623:18,30 [11] ComplexTagHelpers.cshtml)
+                                    RazorIRToken - (623:18,30 [11] ComplexTagHelpers.cshtml) - CSharp - if(true) { 
                                 HtmlContent - (640:18,47 [8] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (640:18,47 [8] ComplexTagHelpers.cshtml) - Html - checkbox
-                                CSharpCode - (655:18,62 [9] ComplexTagHelpers.cshtml)
-                                    RazorIRToken - (655:18,62 [9] ComplexTagHelpers.cshtml) - CSharp -  } else {
+                                CSharpCode - (655:18,62 [10] ComplexTagHelpers.cshtml)
+                                    RazorIRToken - (655:18,62 [10] ComplexTagHelpers.cshtml) - CSharp -  } else { 
                                 HtmlContent - (671:18,78 [8] ComplexTagHelpers.cshtml)
                                     RazorIRToken - (671:18,78 [8] ComplexTagHelpers.cshtml) - Html - anything
                                 CSharpCode - (686:18,93 [2] ComplexTagHelpers.cshtml)

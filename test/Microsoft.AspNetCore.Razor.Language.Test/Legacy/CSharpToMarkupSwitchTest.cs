@@ -605,12 +605,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
-        [Fact(Skip = "Fails due to https://github.com/aspnet/Razor/issues/897")]
+        [Fact]
         public void ParseBlockCorrectlyReturnsFromMarkupBlockWithPseudoTag()
         {
             ParseBlockTest("if (i > 0) { <text>;</text> }",
                            new StatementBlock(
-                               Factory.Code("if (i > 0) {").AsStatement(),
+                               Factory.Code("if (i > 0) { ").AsStatement(),
                                new MarkupBlock(
                                    new MarkupTagBlock(
                                         Factory.MarkupTransition("<text>").Accepts(AcceptedCharactersInternal.None)),
@@ -620,13 +620,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code(" }").AsStatement()));
         }
 
-        [Fact(Skip = "Fails due to https://github.com/aspnet/Razor/issues/897")]
+        [Fact]
         public void ParseBlockCorrectlyReturnsFromMarkupBlockWithPseudoTagInCodeBlock()
         {
             ParseBlockTest("{ if (i > 0) { <text>;</text> } }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                               Factory.Code(" if (i > 0) {")
+                               Factory.Code(" if (i > 0) { ")
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
-        [Fact(Skip = "Fails due to https://github.com/aspnet/Razor/issues/897")]
+        [Fact]
         public void ParseBlockSupportsAllKindsOfImplicitMarkupInCodeBlock()
         {
             ParseBlockTest("{" + Environment.NewLine
@@ -665,7 +665,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    Factory.Markup("Single Line Markup" + Environment.NewLine)
                                     .With(new SpanEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharactersInternal.None))
                                    ),
-                               Factory.Code($"    }}{Environment.NewLine}    foreach (var p in Enumerable.Range(1, 10)) {{{Environment.NewLine}").AsStatement(),
+                               Factory.Code($"    }}{Environment.NewLine}    foreach (var p in Enumerable.Range(1, 10)) {{{Environment.NewLine}        ").AsStatement(),
                                new MarkupBlock(
                                    new MarkupTagBlock(
                                         Factory.MarkupTransition("<text>").Accepts(AcceptedCharactersInternal.None)),

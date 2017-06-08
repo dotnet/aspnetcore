@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     length: 1));
         }
 
-        [Fact(Skip = "Fails due to https://github.com/aspnet/Razor/issues/897")]
+        [Fact]
         public void RazorCommentInVerbatimBlock()
         {
             ParseDocumentTest("@{" + Environment.NewLine
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new StatementBlock(
                         Factory.CodeTransition(),
                         Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code(Environment.NewLine)
+                        Factory.Code($"{Environment.NewLine}    ")
                             .AsStatement()
                             .AutoCompleteWith("}"),
                         new MarkupBlock(

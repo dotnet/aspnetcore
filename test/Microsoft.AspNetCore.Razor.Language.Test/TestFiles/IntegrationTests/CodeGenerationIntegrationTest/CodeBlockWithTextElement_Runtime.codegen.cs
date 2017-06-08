@@ -9,14 +9,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         {
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml"
   
-    var a = 1;
+    var a = 1; 
 
 #line default
 #line hidden
             WriteLiteral("foo");
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml"
                                 		
-    var b = 1;
+    var b = 1;			
 
 #line default
 #line hidden

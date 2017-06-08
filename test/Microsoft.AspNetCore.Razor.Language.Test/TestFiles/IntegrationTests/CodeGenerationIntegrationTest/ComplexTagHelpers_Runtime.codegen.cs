@@ -199,13 +199,13 @@ __TestNamespace_InputTagHelper2.Checked = true;
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
                 BeginWriteTagHelperAttribute();
 #line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                              if(true) {
+                              if(true) { 
 
 #line default
 #line hidden
                 WriteLiteral("checkbox");
 #line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                                                               } else {
+                                                               } else { 
 
 #line default
 #line hidden

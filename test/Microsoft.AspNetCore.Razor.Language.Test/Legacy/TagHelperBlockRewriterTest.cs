@@ -1451,7 +1451,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new SourceLocation(index, 0, index)),
                             new StatementBlock(
                                 factory.CodeTransition(),
-                                factory.Code("do { var foo = bar;").AsStatement(),
+                                factory.Code("do { var foo = bar; ").AsStatement(),
                                 new MarkupBlock(
                                     new MarkupTagBlock(
                                         factory.MarkupTransition("<text>")),

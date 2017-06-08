@@ -141,7 +141,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         [InlineData(12, 2)]
         [InlineData(12, 14)]
         [InlineData(13, 13)]
-        [InlineData(13, 13)]
         [InlineData(20, 1)]
         [InlineData(21, 0)]
         public void GetOffSet_SpanIsNotOwnerOfChange_ThrowsException(int absoluteIndex, int length)

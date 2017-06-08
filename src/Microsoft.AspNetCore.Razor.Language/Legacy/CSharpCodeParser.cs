@@ -1272,6 +1272,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     PutBack(lastWhitespace);
                 }
+                else
+                {
+                    // If it precedes a '<text>' tag, it should be accepted as code.
+                    Accept(lastWhitespace);
+                }
             }
 
             if (isMarkup)
