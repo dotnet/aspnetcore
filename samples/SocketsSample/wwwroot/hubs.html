@@ -20,7 +20,7 @@
     <h4>To Everybody</h4>
     <form class="form-inline">
         <div class="input-append">
-            <input type="text" id="msg" placeholder="Type a message, name or group" />
+            <input type="text" id="message-text" placeholder="Type a message, name or group" />
             <input type="button" id="broadcast" class="btn" value="Broadcast" />
             <input type="button" id="broadcast-exceptme" class="btn" value="Broadcast (All Except Me)" />
             <input type="button" id="join" class="btn" value="Enter Name" />
@@ -32,7 +32,7 @@
     <h4>To Me</h4>
     <form class="form-inline">
         <div class="input-append">
-            <input type="text" id="me" placeholder="Type a message" />
+            <input type="text" id="me-message-text" placeholder="Type a message" />
             <input type="button" id="send" class="btn" value="Send to me" />
         </div>
     </form>
@@ -40,7 +40,7 @@
     <h4>Private Message</h4>
     <form class="form-inline">
         <div class="input-prepend input-append">
-            <input type="text" name="message" id="message" placeholder="Type a message" />
+            <input type="text" name="private-message" id="private-message-text" placeholder="Type a message" />
             <input type="text" name="user" id="target" placeholder="Type a user or group name" />
 
             <input type="button" id="privatemsg" class="btn" value="Send to user" />
@@ -48,7 +48,7 @@
         </div>
     </form>
 
-    <ul id="messages"></ul>
+    <ul id="message-list"></ul>
 </body>
 </html>
 <script src="lib/signalr-client/signalr-client.js"></script>
@@ -65,11 +65,11 @@ function invoke(connection, method, ...args) {
                 console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
 
                 if (result) {
-                    addLine('messages', result);
+                    addLine('message-list', result);
                 }
             })
             .catch(err => {
-                addLine('messages', err, 'red');
+                addLine('message-list', err, 'red');
             });
 }
 
@@ -83,15 +83,15 @@ document.getElementById('head1').innerHTML = signalR.TransportType[transportType
 
 let connection = new signalR.HubConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
 connection.on('Send', msg => {
-    addLine('messages', msg);
+    addLine('message-list', msg);
 });
 
 connection.onClosed = e => {
     if (e) {
-        addLine('messages', 'Connection closed with error: ' + e, 'red');
+        addLine('message-list', 'Connection closed with error: ' + e, 'red');
     }
     else {
-        addLine('messages', 'Disconnected', 'green');
+        addLine('message-list', 'Disconnected', 'green');
     }
 }
 
@@ -99,10 +99,10 @@ click('connect', event => {
     connection.start(transportType)
         .then(() => {
             isConnected = true;
-            addLine('messages', 'Connected successfully', 'green');
+            addLine('message-list', 'Connected successfully', 'green');
         })
         .catch(err => {
-            addLine('messages', err, 'red');
+            addLine('message-list', err, 'red');
         });
 });
 
@@ -114,28 +114,28 @@ click('disconnect', event => {
 });
 
 click('broadcast', event => {
-    let data = getText('msg');
+    let data = getText('message-text');
     invoke(connection, 'Send', data);
 });
 
 click('join-group', event => {
-    let groupName = getText('msg');
+    let groupName = getText('message-text');
     invoke(connection, 'JoinGroup', groupName);
 });
 
 click('leave-group', event => {
-    let groupName = getText('msg');
+    let groupName = getText('message-text');
     invoke(connection, 'LeaveGroup', groupName);
 });
 
 click('groupmsg', event => {
     let groupName = getText('target');
-    let message = getText('messages');
+    let message = getText('private-message-text');
     invoke(connection, 'SendToGroup', groupName, message);
 });
 
 click('send', event => {
-    let data = getText('me');
+    let data = getText('me-message-text');
     invoke(connection, 'Echo', data);
 });
 
