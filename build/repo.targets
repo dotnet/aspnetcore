@@ -36,6 +36,8 @@
     <DependencyBuildDirectory>$(RepositoryRoot).deps\build\</DependencyBuildDirectory>
     <RuntimeStoreReferenceDirectory>$(ToolsDir)Build.RuntimeStore.References\</RuntimeStoreReferenceDirectory>
     <RuntimeStoreReferencePackageDirectory>$(RuntimeStoreReferenceDirectory)bin\Release\</RuntimeStoreReferencePackageDirectory>
+    <BuildTempDirectory>$(RepositoryRoot).build\temp\</BuildTempDirectory>
+
     <PrepareDependsOn>
       $(PrepareDependsOn);
       UpdateNuGetConfig
@@ -158,17 +160,34 @@
   </Target>
 
   <Target Name="AddDiaSymReaderToPath" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Command="powershell.exe $(ToolsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
+    </Exec>
+
+    <MSBuild Projects="$(ProjectPath)" Targets="_AddDiaSymReaderFromCurrentSharedFramework" Properties="SharedFrameworkVersion=$(SharedFrameworkVersion)" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x64'" />
+    <MSBuild Projects="$(ProjectPath)" Targets="_AddDiaSymReaderFromDownloadedSharedFramework" Properties="SharedFrameworkVersion=$(SharedFrameworkVersion)" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x86'" />
+  </Target>
+
+  <Target Name="_AddDiaSymReaderFromCurrentSharedFramework">
     <!-- Parse framework version -->
     <GetDotNetHost>
       <Output TaskParameter="DotNetDirectory" PropertyName="DotnetHomeDirectory" />
     </GetDotNetHost>
 
-    <Exec Command="powershell.exe $(ToolsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
-    </Exec>
-
     <PropertyGroup>
       <DiaSymReaderDirectory>$(DotnetHomeDirectory)shared\Microsoft.NETCore.App\$(SharedFrameworkVersion)</DiaSymReaderDirectory>
+    </PropertyGroup>
+
+    <Message Text="Adding DiaSymReader to PATH by appending: $(DiaSymReaderDirectory)" Importance="high" />
+
+    <SetEnvironmentVariable Variable="PATH" Value="$(PATH);$(DiaSymReaderDirectory)" />
+  </Target>
+
+  <Target Name="_AddDiaSymReaderFromDownloadedSharedFramework">
+    <Exec Command="powershell.exe $(ToolsDir)InstallSharedFrameworkx86.ps1 $(SharedFrameworkVersion) $(BuildTempDirectory)"/>
+
+    <PropertyGroup>
+      <DiaSymReaderDirectory>$(BuildTempDirectory)shared\Microsoft.NETCore.App\$(SharedFrameworkVersion)</DiaSymReaderDirectory>
     </PropertyGroup>
 
     <Message Text="Adding DiaSymReader to PATH by appending: $(DiaSymReaderDirectory)" Importance="high" />
