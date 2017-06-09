@@ -983,7 +983,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The <see cref="RedirectToPageResult"/>.</returns>
         [NonAction]
         public virtual RedirectToPageResult RedirectToPage(string pageName, string pageHandler, object routeValues)
-            => RedirectToPage(pageName, pageHandler, routeValues);
+            => RedirectToPage(pageName, pageHandler, routeValues, fragment: null);
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status302Found"/>) to the specified <paramref name="pageName"/>
