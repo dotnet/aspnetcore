@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -17,18 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
     public class ViewsFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
     {
         public static readonly string PrecompiledViewsAssemblySuffix = ".PrecompiledViews";
-
-        /// <summary>
-        /// Gets the namespace for the <see cref="ViewInfoContainer"/> type in the view assembly.
-        /// </summary>
-        public static readonly string ViewInfoContainerNamespace = "AspNetCore";
-
-        /// <summary>
-        /// Gets the type name for the view collection type in the view assembly.
-        /// </summary>
-        public static readonly string ViewInfoContainerTypeName = "__PrecompiledViewCollection";
-
-        private static readonly string FullyQualifiedManifestTypeName = ViewInfoContainerNamespace + "." + ViewInfoContainerTypeName;
 
         /// <inheritdoc />
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewsFeature feature)
@@ -64,13 +53,42 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                 throw new ArgumentNullException(nameof(assemblyPart));
             }
 
-            var featureAssembly = CompiledViewManfiest.GetFeatureAssembly(assemblyPart);
+            var featureAssembly = GetFeatureAssembly(assemblyPart);
             if (featureAssembly != null)
             {
                 return featureAssembly.GetCustomAttributes<RazorViewAttribute>();
             }
 
             return Enumerable.Empty<RazorViewAttribute>();
+        }
+
+        private static Assembly GetFeatureAssembly(AssemblyPart assemblyPart)
+        {
+            if (assemblyPart.Assembly.IsDynamic || string.IsNullOrEmpty(assemblyPart.Assembly.Location))
+            {
+                return null;
+            }
+
+            var precompiledAssemblyFileName = assemblyPart.Assembly.GetName().Name
+                + PrecompiledViewsAssemblySuffix
+                + ".dll";
+            var precompiledAssemblyFilePath = Path.Combine(
+                Path.GetDirectoryName(assemblyPart.Assembly.Location),
+                precompiledAssemblyFileName);
+
+            if (File.Exists(precompiledAssemblyFilePath))
+            {
+                try
+                {
+                    return Assembly.LoadFile(precompiledAssemblyFilePath);
+                }
+                catch (FileLoadException)
+                {
+                    // Don't throw if assembly cannot be loaded. This can happen if the file is not a managed assembly.
+                }
+            }
+
+            return null;
         }
     }
 }

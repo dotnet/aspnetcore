@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Options;
 
@@ -61,16 +59,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 }
 
                 var cachedApplicationModels = new List<PageApplicationModel>();
-                foreach (var pageAttribute in GetRazorPageAttributes(_applicationManager.ApplicationParts))
+                foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
                 {
-                    var normalizedPath = ViewPath.NormalizePath(pageAttribute.Path);
-                    if (!normalizedPath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
+                    if (!viewDescriptor.RelativePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
-                    var viewEnginePath = GetViewEnginePath(rootDirectory, normalizedPath);
-                    var model = new PageApplicationModel(normalizedPath, viewEnginePath);
+                    var viewEnginePath = GetViewEnginePath(rootDirectory, viewDescriptor.RelativePath);
+                    var model = new PageApplicationModel(viewDescriptor.RelativePath, viewEnginePath);
+                    var pageAttribute = (RazorPageAttribute)viewDescriptor.ViewAttribute;
                     PageSelectorModel.PopulateDefaults(model, pageAttribute.RouteTemplate);
 
                     cachedApplicationModels.Add(model);
@@ -81,31 +79,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         /// <summary>
-        /// Gets the sequence of <see cref="CompiledViewDescriptor"/> from <paramref name="parts"/>.
+        /// Gets the sequence of <see cref="CompiledViewDescriptor"/> from <paramref name="applicationManager"/>.
         /// </summary>
-        /// <param name="parts">The <see cref="ApplicationPart"/>s</param>
+        /// <param name="applicationManager">The <see cref="ApplicationPartManager"/>s</param>
         /// <returns>The sequence of <see cref="CompiledViewDescriptor"/>.</returns>
-        protected virtual IEnumerable<RazorPageAttribute> GetRazorPageAttributes(IEnumerable<ApplicationPart> parts)
+        protected virtual IEnumerable<CompiledViewDescriptor> GetViewDescriptors(ApplicationPartManager applicationManager)
         {
-            if (parts == null)
+            if (applicationManager == null)
             {
-                throw new ArgumentNullException(nameof(parts));
+                throw new ArgumentNullException(nameof(applicationManager));
             }
 
-            return _applicationManager.ApplicationParts
-                .OfType<AssemblyPart>()
-                .SelectMany(GetAttributes);
-        }
+            var viewsFeature = new ViewsFeature();
+            applicationManager.PopulateFeature(viewsFeature);
 
-        private static IEnumerable<RazorPageAttribute> GetAttributes(AssemblyPart assemblyPart)
-        {
-            var featureAssembly = CompiledViewManfiest.GetFeatureAssembly(assemblyPart);
-            if (featureAssembly != null)
-            {
-                return featureAssembly.GetCustomAttributes<RazorPageAttribute>();
-            }
-
-            return Enumerable.Empty<RazorPageAttribute>();
+            return viewsFeature.ViewDescriptors.Where(d => d.IsPrecompiled && d.ViewAttribute is RazorPageAttribute);
         }
 
         private string GetViewEnginePath(string rootDirectory, string path)
