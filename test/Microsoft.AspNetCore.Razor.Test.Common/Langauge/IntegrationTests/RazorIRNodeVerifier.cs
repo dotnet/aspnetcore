@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
@@ -47,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 _visitor.Visit(node);
                 var actual = _writer.GetStringBuilder().ToString();
 
-                AssertNodeEquals(node, expected, actual);
+                AssertNodeEquals(node, Ancestors, expected, actual);
 
                 _visitor.Depth++;
                 base.VisitDefault(node);
@@ -60,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 Assert.True(_baseline.Length == _index, "Not all lines of the baseline were visited!");
             }
 
-            private void AssertNodeEquals(RazorIRNode node, string expected, string actual)
+            private void AssertNodeEquals(RazorIRNode node, IEnumerable<RazorIRNode> ancestors, string expected, string actual)
             {
                 if (string.Equals(expected, actual))
                 {
@@ -71,21 +73,21 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 if (expected == null)
                 {
                     var message = "The node is missing from baseline.";
-                    throw new IRBaselineException(node, expected, actual, message);
+                    throw new IRBaselineException(node, Ancestors.ToArray(), expected, actual, message);
                 }
 
                 int charsVerified = 0;
-                AssertNestingEqual(node, expected, actual, ref charsVerified);
-                AssertNameEqual(node, expected, actual, ref charsVerified);
+                AssertNestingEqual(node, ancestors, expected, actual, ref charsVerified);
+                AssertNameEqual(node, ancestors, expected, actual, ref charsVerified);
                 AssertDelimiter(node, expected, actual, true, ref charsVerified);
-                AssertLocationEqual(node, expected, actual, ref charsVerified);
+                AssertLocationEqual(node, ancestors, expected, actual, ref charsVerified);
                 AssertDelimiter(node, expected, actual, false, ref charsVerified);
-                AssertContentEqual(node, expected, actual, ref charsVerified);
+                AssertContentEqual(node, ancestors, expected, actual, ref charsVerified);
 
                 throw new InvalidOperationException("We can't figure out HOW these two things are different. This is a bug.");
             }
 
-            private void AssertNestingEqual(RazorIRNode node, string expected, string actual, ref int charsVerified)
+            private void AssertNestingEqual(RazorIRNode node, IEnumerable<RazorIRNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var i = 0;
                 for (; i < expected.Length; i++)
@@ -115,13 +117,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 if (failed)
                 {
                     var message = "The node is at the wrong level of nesting. This usually means a child is missing.";
-                    throw new IRBaselineException(node, expected, actual, message);
+                    throw new IRBaselineException(node, ancestors.ToArray(), expected, actual, message);
                 }
 
                 charsVerified = j;
             }
 
-            private void AssertNameEqual(RazorIRNode node, string expected, string actual, ref int charsVerified)
+            private void AssertNameEqual(RazorIRNode node, IEnumerable<RazorIRNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedName = GetName(expected, charsVerified);
                 var actualName = GetName(actual, charsVerified);
@@ -129,7 +131,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 if (!string.Equals(expectedName, actualName))
                 {
                     var message = $"Node names are not equal.";
-                    throw new IRBaselineException(node, expected, actual, message);
+                    throw new IRBaselineException(node, ancestors.ToArray(), expected, actual, message);
                 }
 
                 charsVerified += expectedName.Length;
@@ -170,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 charsVerified += 3;
             }
 
-            private void AssertLocationEqual(RazorIRNode node, string expected, string actual, ref int charsVerified)
+            private void AssertLocationEqual(RazorIRNode node, IEnumerable<RazorIRNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedLocation = GetLocation(expected, charsVerified);
                 var actualLocation = GetLocation(actual, charsVerified);
@@ -178,13 +180,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 if (!string.Equals(expectedLocation, actualLocation))
                 {
                     var message = $"Locations are not equal.";
-                    throw new IRBaselineException(node, expected, actual, message);
+                    throw new IRBaselineException(node, ancestors.ToArray(), expected, actual, message);
                 }
 
                 charsVerified += expectedLocation.Length;
             }
 
-            private void AssertContentEqual(RazorIRNode node, string expected, string actual, ref int charsVerified)
+            private void AssertContentEqual(RazorIRNode node, IEnumerable<RazorIRNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedContent = GetContent(expected, charsVerified);
                 var actualContent = GetContent(actual, charsVerified);
@@ -192,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 if (!string.Equals(expectedContent, actualContent))
                 {
                     var message = $"Contents are not equal.";
-                    throw new IRBaselineException(node, expected, actual, message);
+                    throw new IRBaselineException(node, ancestors.ToArray(), expected, actual, message);
                 }
 
                 charsVerified += expectedContent.Length;
@@ -222,8 +224,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             private class IRBaselineException : XunitException
             {
-                public IRBaselineException(RazorIRNode node, string expected, string actual, string userMessage)
-                    : base(Format(node, expected, actual, userMessage))
+                public IRBaselineException(RazorIRNode node, RazorIRNode[] ancestors, string expected, string actual, string userMessage)
+                    : base(Format(node, ancestors, expected, actual, userMessage))
                 {
                     Node = node;
                     Expected = expected;
@@ -236,7 +238,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 public string Expected { get; }
 
-                private static string Format(RazorIRNode node, string expected, string actual, string userMessage)
+                private static string Format(RazorIRNode node, RazorIRNode[] ancestors, string expected, string actual, string userMessage)
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine(userMessage);
@@ -254,15 +256,16 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         builder.AppendLine(actual);
                     }
 
-                    builder.AppendLine();
-                    builder.AppendLine("Path:");
-
-                    var current = node;
-                    do
+                    if (ancestors != null)
                     {
-                        builder.AppendLine(current.ToString());
+                        builder.AppendLine();
+                        builder.AppendLine("Path:");
+
+                        foreach (var ancestor in ancestors)
+                        {
+                            builder.AppendLine(ancestor.ToString());
+                        }
                     }
-                    while ((current = current.Parent) != null);
 
                     return builder.ToString();
                 }

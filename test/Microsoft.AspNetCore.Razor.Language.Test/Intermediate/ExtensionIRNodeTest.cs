@@ -46,7 +46,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
-            public override RazorIRNode Parent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public override SourceSpan? Source { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
             public override void Accept(RazorIRNodeVisitor visitor)

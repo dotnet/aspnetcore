@@ -27,8 +27,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public IList<string> Modifiers { get; set; } = new List<string>();
 
-        public override RazorIRNode Parent { get; set; }
-
         public override SourceSpan? Source { get; set; }
 
         public string AccessModifier { get; set; }

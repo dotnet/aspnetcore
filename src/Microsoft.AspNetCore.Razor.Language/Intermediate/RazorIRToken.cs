@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public TokenKind Kind { get; set; } = TokenKind.Unknown;
 
-        public override RazorIRNode Parent { get; set; }
-
         public override SourceSpan? Source { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)

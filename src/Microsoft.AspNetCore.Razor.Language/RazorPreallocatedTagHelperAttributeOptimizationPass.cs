@@ -72,7 +72,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                         Name = node.Name,
                         Value = plainTextValue,
                         ValueStyle = node.ValueStyle,
-                        Parent = _classDeclaration
                     };
                     _classDeclaration.Children.Insert(_preallocatedDeclarationCount++, declaration);
                 }
@@ -80,11 +79,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 var addPreAllocatedAttribute = new AddPreallocatedTagHelperHtmlAttributeIRNode
                 {
                     VariableName = declaration.VariableName,
-                    Parent = node.Parent
                 };
 
-                var nodeIndex = node.Parent.Children.IndexOf(node);
-                node.Parent.Children[nodeIndex] = addPreAllocatedAttribute;
+                var nodeIndex = Parent.Children.IndexOf(node);
+                Parent.Children[nodeIndex] = addPreAllocatedAttribute;
             }
 
             public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
@@ -127,7 +125,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                         Name = node.AttributeName,
                         Value = plainTextValue,
                         ValueStyle = node.ValueStyle,
-                        Parent = _classDeclaration
                     };
                     _classDeclaration.Children.Insert(_preallocatedDeclarationCount++, declaration);
                 }
@@ -140,12 +137,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                     PropertyName = node.PropertyName,
                     Descriptor = node.Descriptor,
                     Binding = node.Binding,
-                    Parent = node.Parent,
                     IsIndexerNameMatch = node.IsIndexerNameMatch,
                 };
 
-                var nodeIndex = node.Parent.Children.IndexOf(node);
-                node.Parent.Children[nodeIndex] = setPreallocatedProperty;
+                var nodeIndex = Parent.Children.IndexOf(node);
+                Parent.Children[nodeIndex] = setPreallocatedProperty;
             }
 
             private string GetContent(HtmlContentIRNode node)

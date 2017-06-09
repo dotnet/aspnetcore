@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
@@ -10,8 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     internal sealed class DesignTimeDirectiveIRNode : ExtensionIRNode
     {
         public override RazorIRNodeCollection Children { get; } = new DefaultIRNodeCollection();
-
-        public override RazorIRNode Parent { get; set; }
 
         public override SourceSpan? Source { get; set; }
 

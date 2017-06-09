@@ -445,7 +445,6 @@ if (true) { }
             {
                 Content = "SomeContent",
                 Kind = RazorIRToken.TokenKind.Html,
-                Parent = node
             });
 
             // Act
@@ -476,7 +475,6 @@ if (true) { }
             {
                 Content = new string('*', 2000),
                 Kind = RazorIRToken.TokenKind.Html,
-                Parent = node
             });
 
             // Act
@@ -652,7 +650,6 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
         {
             public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
-            public override RazorIRNode Parent { get; set; }
             public override SourceSpan? Source { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
             public override void Accept(RazorIRNodeVisitor visitor)

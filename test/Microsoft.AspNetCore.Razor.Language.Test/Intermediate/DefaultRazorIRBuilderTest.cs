@@ -34,11 +34,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             // Assert
             Assert.Same(node, builder.Current);
-            Assert.Null(node.Parent);
         }
 
         [Fact]
-        public void Push_WhenNonEmpty_SetsUpParentAndChild()
+        public void Push_WhenNonEmpty_SetsUpChild()
         {
             // Arrange
             var builder = new DefaultRazorIRBuilder();
@@ -53,7 +52,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             // Assert
             Assert.Same(node, builder.Current);
-            Assert.Same(parent, node.Parent);
             Assert.Collection(parent.Children, n => Assert.Same(node, n));
         }
 
@@ -122,12 +120,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             // Assert
             Assert.Same(parent, builder.Current);
-            Assert.Same(parent, node.Parent);
             Assert.Collection(parent.Children, n => Assert.Same(node, n));
         }
 
         [Fact]
-        public void Insert_AddsToChildrenAndSetsParent_EmptyCollection()
+        public void Insert_AddsToChildren_EmptyCollection()
         {
             // Arrange
             var builder = new DefaultRazorIRBuilder();
@@ -142,12 +139,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             // Assert
             Assert.Same(parent, builder.Current);
-            Assert.Same(parent, node.Parent);
             Assert.Collection(parent.Children, n => Assert.Same(node, n));
         }
 
         [Fact]
-        public void Insert_AddsToChildrenAndSetsParent_NonEmpyCollection()
+        public void Insert_AddsToChildren_NonEmpyCollection()
         {
             // Arrange
             var builder = new DefaultRazorIRBuilder();
@@ -165,12 +161,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             // Assert
             Assert.Same(parent, builder.Current);
-            Assert.Same(parent, node.Parent);
             Assert.Collection(parent.Children, n => Assert.Same(node, n), n => Assert.Same(child, n));
         }
 
         [Fact]
-        public void Insert_AddsToChildrenAndSetsParent_NonEmpyCollection_AtEnd()
+        public void Insert_AddsToChildren_NonEmpyCollection_AtEnd()
         {
             // Arrange
             var builder = new DefaultRazorIRBuilder();
@@ -188,7 +183,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             // Assert
             Assert.Same(parent, builder.Current);
-            Assert.Same(parent, node.Parent);
             Assert.Collection(parent.Children, n => Assert.Same(child, n), n => Assert.Same(node, n));
         }
 
@@ -217,8 +211,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             public override ItemCollection Annotations { get; } = new DefaultItemCollection();
 
             public override RazorIRNodeCollection Children { get; } = new DefaultIRNodeCollection();
-
-            public override RazorIRNode Parent { get; set; }
 
             public override SourceSpan? Source { get; set; }
 

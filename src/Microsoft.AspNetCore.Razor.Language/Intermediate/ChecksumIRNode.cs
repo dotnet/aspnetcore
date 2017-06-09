@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
-        public override RazorIRNode Parent { get; set; }
-
         public override SourceSpan? Source { get; set; }
 
         public string Bytes { get; set; }

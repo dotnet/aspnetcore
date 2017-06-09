@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
@@ -29,8 +28,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public string DocumentKind { get; set; }
 
         public RazorCodeGenerationOptions Options { get; set; }
-
-        public override RazorIRNode Parent { get; set; }
 
         public override SourceSpan? Source { get; set; }
 

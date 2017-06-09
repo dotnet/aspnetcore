@@ -136,14 +136,26 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         private void RenderTagHelperAttributeInline(
             CSharpRenderingContext context,
+            SetTagHelperPropertyIRNode property,
+            SourceSpan documentLocation)
+        {
+            for (var i = 0; i < property.Children.Count; i++)
+            {
+                RenderTagHelperAttributeInline(context, property, property.Children[i], documentLocation);
+            }
+        }
+
+        private void RenderTagHelperAttributeInline(
+            CSharpRenderingContext context,
+            SetTagHelperPropertyIRNode property,
             RazorIRNode node,
             SourceSpan documentLocation)
         {
-            if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode || node is HtmlContentIRNode)
+            if (node is CSharpExpressionIRNode || node is HtmlContentIRNode)
             {
                 for (var i = 0; i < node.Children.Count; i++)
                 {
-                    RenderTagHelperAttributeInline(context, node.Children[i], documentLocation);
+                    RenderTagHelperAttributeInline(context, property, node.Children[i], documentLocation);
                 }
             }
             else if (node is RazorIRToken token)
@@ -165,9 +177,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
             else if (node is TemplateIRNode)
             {
-                var attributeValueNode = (SetTagHelperPropertyIRNode)node.Parent;
+                var expectedTypeName = property.IsIndexerNameMatch ? property.Descriptor.IndexerTypeName : property.Descriptor.TypeName;
                 var error = new RazorError(
-                    LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(attributeValueNode.Descriptor.TypeName),
+                    LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(expectedTypeName),
                     new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.Length),
                     documentLocation.Length);
                 context.Diagnostics.Add(RazorDiagnostic.Create(error));

@@ -79,7 +79,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     node.Children.Clear();
 
                     node.Children.Add(expression);
-                    expression.Parent = node;
                 }
             }
         }

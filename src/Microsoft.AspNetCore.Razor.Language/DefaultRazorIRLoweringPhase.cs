@@ -551,7 +551,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Content = span.Content,
                     Kind = RazorIRToken.TokenKind.Html,
                     Source = BuildSourceSpanFromNode(span),
-                    Parent = node
                 });
 
                 if (node.Source != null)
@@ -571,7 +570,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (_tagHelperFields == null)
                 {
-                    _tagHelperFields = new DeclareTagHelperFieldsIRNode() { Parent = _document, };
+                    _tagHelperFields = new DeclareTagHelperFieldsIRNode();
                     _document.Children.Add(_tagHelperFields);
                 }
 

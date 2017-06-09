@@ -30,8 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 throw new ArgumentNullException(nameof(node));
             }
-
-            node.Parent = Current;
+            
             Current.Children.Add(node);
         }
 
@@ -41,8 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
-
-            node.Parent = Current;
+            
             if (index == Current.Children.Count)
             {
                 // Allow inserting at 'Children.Count' to be friendlier than List<> typically is.
@@ -95,7 +93,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             if (_depth > 0)
             {
                 var parent = _stack[_depth - 1];
-                node.Parent = parent;
                 parent.Children.Add(node);
             }
 

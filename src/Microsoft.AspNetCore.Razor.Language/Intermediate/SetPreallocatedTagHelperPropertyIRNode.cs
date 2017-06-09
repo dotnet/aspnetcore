@@ -2,17 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     internal sealed class SetPreallocatedTagHelperPropertyIRNode : ExtensionIRNode
     {
         public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
-
-        public override RazorIRNode Parent { get; set; }
 
         public override SourceSpan? Source { get; set; }
 

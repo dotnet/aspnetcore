@@ -22,10 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @class = visitor.Class;
 
             var viewDataType = $"global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<{modelType}>";
-            var vddProperty = new CSharpCodeIRNode()
-            {
-                Parent = @class
-            };
+            var vddProperty = new CSharpCodeIRNode();
             RazorIRBuilder.Create(vddProperty)
                 .Add(new RazorIRToken()
                 {
@@ -34,10 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 });
             @class.Children.Add(vddProperty);
 
-            var modelProperty = new CSharpCodeIRNode()
-            {
-                Parent = @class
-            };
+            var modelProperty = new CSharpCodeIRNode();
             RazorIRBuilder.Create(modelProperty)
                 .Add(new RazorIRToken()
                 {

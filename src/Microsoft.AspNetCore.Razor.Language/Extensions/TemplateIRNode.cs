@@ -10,9 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     public sealed class TemplateIRNode : ExtensionIRNode
     {
         public override RazorIRNodeCollection Children { get; } = new DefaultIRNodeCollection();
-
-        public override RazorIRNode Parent { get; set; }
-
+        
         public override SourceSpan? Source { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)

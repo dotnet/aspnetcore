@@ -15,19 +15,19 @@ namespace Microsoft.AspNetCore.Razor.Language
             var visitor = new Visitor();
             visitor.VisitDocument(irDocument);
 
-            foreach (var node in visitor.DirectiveNodes)
+            foreach (var (node, parent) in visitor.DirectiveNodes)
             {
-                node.Parent.Children.Remove(node);
+                parent.Children.Remove(node);
             }
         }
 
         private class Visitor : RazorIRNodeWalker
         {
-            public IList<DirectiveIRNode> DirectiveNodes { get; } = new List<DirectiveIRNode>();
+            public IList<(DirectiveIRNode node, RazorIRNode parent)> DirectiveNodes { get; } = new List<(DirectiveIRNode node, RazorIRNode parent)>();
 
             public override void VisitDirective(DirectiveIRNode node)
             {
-                DirectiveNodes.Add(node);
+                DirectiveNodes.Add((node, Parent));
             }
         }
     }

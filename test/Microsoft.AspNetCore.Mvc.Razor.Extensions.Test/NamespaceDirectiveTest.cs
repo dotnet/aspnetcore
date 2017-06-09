@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 Source = new SourceSpan(imports, 0, 0, 0, 0),
             };
             node.Children.Add(new DirectiveTokenIRNode() { Content = string.Empty });
-            node.Children[0].Parent = node;
 
             // Act
             var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);
@@ -71,7 +70,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             };
 
             node.Children.Add(new DirectiveTokenIRNode() { Content = "Base" });
-            node.Children[0].Parent = node;
 
             // Act
             var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);
@@ -102,7 +100,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             };
 
             node.Children.Add(new DirectiveTokenIRNode() { Content = "Base" });
-            node.Children[0].Parent = node;
 
             // Act
             var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);

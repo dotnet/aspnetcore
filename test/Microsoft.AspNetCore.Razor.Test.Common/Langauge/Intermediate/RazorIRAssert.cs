@@ -431,13 +431,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         private class IRAssertException : XunitException
         {
             public IRAssertException(RazorIRNode node, string userMessage)
-                : base(Format(node, null, userMessage))
+                : base(Format(node, null, null, userMessage))
             {
                 Node = node;
             }
 
             public IRAssertException(RazorIRNode node, IEnumerable<RazorIRNode> nodes, string userMessage)
-                : base(Format(node, nodes, userMessage))
+                : base(Format(node, null, nodes, userMessage))
             {
                 Node = node;
                 Nodes = nodes;
@@ -448,7 +448,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 IEnumerable<RazorIRNode> nodes,
                 string userMessage,
                 Exception innerException)
-                : base(Format(node, nodes, userMessage), innerException)
+                : base(Format(node, null, nodes, userMessage), innerException)
+            {
+            }
+
+            public IRAssertException(
+                RazorIRNode node,
+                RazorIRNode[] ancestors,
+                IEnumerable<RazorIRNode> nodes,
+                string userMessage,
+                Exception innerException)
+                : base(Format(node, ancestors, nodes, userMessage), innerException)
             {
             }
 
@@ -456,7 +466,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             public IEnumerable<RazorIRNode> Nodes { get; }
 
-            private static string Format(RazorIRNode node, IEnumerable<RazorIRNode> nodes, string userMessage)
+            private static string Format(RazorIRNode node, RazorIRNode[] ancestors, IEnumerable<RazorIRNode> nodes, string userMessage)
             {
                 var builder = new StringBuilder();
                 builder.AppendLine(userMessage);
@@ -477,12 +487,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
                 builder.AppendLine("Path:");
 
-                var current = node;
-                do
+                if (ancestors != null)
                 {
-                    builder.AppendLine(current.ToString());
+                    builder.AppendLine();
+                    builder.AppendLine("Path:");
+
+                    foreach (var ancestor in ancestors)
+                    {
+                        builder.AppendLine(ancestor.ToString());
+                    }
                 }
-                while ((current = current.Parent) != null);
 
                 return builder.ToString();
             }

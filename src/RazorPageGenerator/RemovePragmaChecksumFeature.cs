@@ -13,16 +13,16 @@ namespace RazorPageGenerator
             var walker = new Walker();
             walker.Visit(irDocument);
 
-            walker.ChecksumNode.Parent.Children.Remove(walker.ChecksumNode);
+            walker.Checksum.parent.Children.Remove(walker.Checksum.node);
         }
 
         private class Walker : RazorIRNodeWalker
         {
-            public ChecksumIRNode ChecksumNode { get; private set; }
+            public (ChecksumIRNode node, RazorIRNode parent) Checksum { get; private set; }
 
             public override void VisitChecksum(ChecksumIRNode node)
             {
-                ChecksumNode = node;
+                Checksum = (node, Parent);
             }
         }
     }

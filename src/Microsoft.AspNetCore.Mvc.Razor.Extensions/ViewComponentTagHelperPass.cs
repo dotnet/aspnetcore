@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
 
-            foreach (var createNode in visitor.CreateTagHelpers)
+            foreach (var (node, parent) in visitor.CreateTagHelpers)
             {
-                RewriteCreateNode(visitor.Namespace, visitor.Class, createNode);
+                RewriteCreateNode(visitor.Namespace, visitor.Class, node, parent);
             }
         }
 
@@ -48,10 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var writer = new CSharpCodeWriter();
             WriteClass(writer, tagHelper);
 
-            var statement = new CSharpCodeIRNode()
-            {
-                Parent = @class
-            };
+            var statement = new CSharpCodeIRNode();
             RazorIRBuilder.Create(statement)
                 .Add(new RazorIRToken()
                 {
@@ -65,12 +62,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         private void RewriteCreateNode(
             NamespaceDeclarationIRNode @namespace,
             ClassDeclarationIRNode @class,
-            CreateTagHelperIRNode node)
+            CreateTagHelperIRNode node,
+            RazorIRNode parent)
         {
             var newTypeName = GetVCTHFullName(@namespace, @class, node.Descriptor);
-            for (var i = 0; i < node.Parent.Children.Count; i++)
+            for (var i = 0; i < parent.Children.Count; i++)
             {
-                if (node.Parent.Children[i] is SetTagHelperPropertyIRNode setProperty &&
+                if (parent.Children[i] is SetTagHelperPropertyIRNode setProperty &&
                     node.Descriptor.BoundAttributes.Contains(setProperty.Descriptor))
                 {
                     setProperty.TagHelperTypeName = newTypeName;
@@ -232,7 +230,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public NamespaceDeclarationIRNode Namespace { get; private set; }
 
-            public List<CreateTagHelperIRNode> CreateTagHelpers { get; } = new List<CreateTagHelperIRNode>();
+            public List<(CreateTagHelperIRNode node, RazorIRNode parent)> CreateTagHelpers { get; } = new List<(CreateTagHelperIRNode node, RazorIRNode parent)>();
 
             public Dictionary<string, TagHelperDescriptor> TagHelpers { get; } = new Dictionary<string, TagHelperDescriptor>();
 
@@ -245,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
                     TagHelpers[vcName] = tagHelper;
 
-                    CreateTagHelpers.Add(node);
+                    CreateTagHelpers.Add((node, Parent));
                 }
             }
 

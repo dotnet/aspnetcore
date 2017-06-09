@@ -59,7 +59,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     {
                         TypeName = typeName,
                         MemberName = memberName,
-                        Parent = visitor.Class,
                     };
 
                     visitor.Class.Children.Add(injectNode);

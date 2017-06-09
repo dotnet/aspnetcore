@@ -20,20 +20,19 @@ namespace Microsoft.AspNetCore.Razor.Language
             walker.VisitDocument(irDocument);
 
             var classNode = walker.ClassNode;
-            foreach (var node in walker.FunctionsDirectiveNodes)
+            foreach (var (node, parent) in walker.FunctionsDirectiveNodes)
             {
-                node.Parent.Children.Remove(node);
+                parent.Children.Remove(node);
 
                 foreach (var child in node.Children.Except(node.Tokens))
                 {
-                    child.Parent = classNode;
                     classNode.Children.Add(child);
                 }
             }
 
-            foreach (var node in walker.InheritsDirectiveNodes.Reverse())
+            foreach (var (node, parent) in walker.InheritsDirectiveNodes.Reverse())
             {
-                node.Parent.Children.Remove(node);
+                parent.Children.Remove(node);
 
                 var token = node.Tokens.FirstOrDefault();
                 if (token != null)
@@ -43,10 +42,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            foreach (var node in walker.SectionDirectiveNodes)
+            foreach (var (node, parent) in walker.SectionDirectiveNodes)
             {
-                var sectionIndex = node.Parent.Children.IndexOf(node);
-                node.Parent.Children.Remove(node);
+                var sectionIndex = parent.Children.IndexOf(node);
+                parent.Children.Remove(node);
 
                 var defineSectionEndStatement = new CSharpCodeIRNode();
                 RazorIRBuilder.Create(defineSectionEndStatement)
@@ -56,11 +55,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                         Content = "});"
                     });
 
-                node.Parent.Children.Insert(sectionIndex, defineSectionEndStatement);
+                parent.Children.Insert(sectionIndex, defineSectionEndStatement);
 
                 foreach (var child in node.Children.Except(node.Tokens).Reverse())
                 {
-                    node.Parent.Children.Insert(sectionIndex, child);
+                    parent.Children.Insert(sectionIndex, child);
                 }
 
                 var lambdaContent = designTime ? "__razor_section_writer" : string.Empty;
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         Content = $"DefineSection(\"{sectionName}\", async ({lambdaContent}) => {{"
                     });
 
-                node.Parent.Children.Insert(sectionIndex, defineSectionStartStatement);
+                parent.Children.Insert(sectionIndex, defineSectionStartStatement);
             }
         }
 
@@ -81,11 +80,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             public ClassDeclarationIRNode ClassNode { get; private set; }
 
-            public IList<DirectiveIRNode> FunctionsDirectiveNodes { get; } = new List<DirectiveIRNode>();
+            public IList<(DirectiveIRNode node, RazorIRNode parent)> FunctionsDirectiveNodes { get; } = new List<(DirectiveIRNode node, RazorIRNode parent)>();
 
-            public IList<DirectiveIRNode> InheritsDirectiveNodes { get; } = new List<DirectiveIRNode>();
+            public IList<(DirectiveIRNode node, RazorIRNode parent)> InheritsDirectiveNodes { get; } = new List<(DirectiveIRNode node, RazorIRNode parent)>();
 
-            public IList<DirectiveIRNode> SectionDirectiveNodes { get; } = new List<DirectiveIRNode>();
+            public IList<(DirectiveIRNode node, RazorIRNode parent)> SectionDirectiveNodes { get; } = new List<(DirectiveIRNode node, RazorIRNode parent)>();
 
             public override void VisitClassDeclaration(ClassDeclarationIRNode node)
             {
@@ -101,15 +100,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (string.Equals(node.Name, CSharpCodeParser.FunctionsDirectiveDescriptor.Directive, StringComparison.Ordinal))
                 {
-                    FunctionsDirectiveNodes.Add(node);
+                    FunctionsDirectiveNodes.Add((node, Parent));
                 }
                 else if (string.Equals(node.Name, CSharpCodeParser.InheritsDirectiveDescriptor.Directive, StringComparison.Ordinal))
                 {
-                    InheritsDirectiveNodes.Add(node);
+                    InheritsDirectiveNodes.Add((node, Parent));
                 }
                 else if (string.Equals(node.Name, CSharpCodeParser.SectionDirectiveDescriptor.Directive, StringComparison.Ordinal))
                 {
-                    SectionDirectiveNodes.Add(node);
+                    SectionDirectiveNodes.Add((node, Parent));
                 }
             }
         }

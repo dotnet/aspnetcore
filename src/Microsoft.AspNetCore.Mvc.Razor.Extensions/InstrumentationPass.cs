@@ -30,10 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var beginContextMethodName = "BeginContext"; /* ORIGINAL: BeginContextMethodName */
             var endContextMethodName = "EndContext"; /* ORIGINAL: EndContextMethodName */
 
-            var beginNode = new CSharpCodeIRNode()
-            {
-                Parent = item.Node.Parent
-            };
+            var beginNode = new CSharpCodeIRNode();
             RazorIRBuilder.Create(beginNode)
                 .Add(new RazorIRToken()
                 {
@@ -45,10 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         item.IsLiteral ? "true" : "false")
                 });
 
-            var endNode = new CSharpCodeIRNode()
-            {
-                Parent = item.Node.Parent
-            };
+            var endNode = new CSharpCodeIRNode();
             RazorIRBuilder.Create(endNode)
                 .Add(new RazorIRToken()
                 {
@@ -56,21 +50,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     Content = string.Format("{0}();", endContextMethodName)
                 });
 
-            var nodeIndex = item.Node.Parent.Children.IndexOf(item.Node);
-            item.Node.Parent.Children.Insert(nodeIndex, beginNode);
-            item.Node.Parent.Children.Insert(nodeIndex + 2, endNode);
+            var nodeIndex = item.Parent.Children.IndexOf(item.Node);
+            item.Parent.Children.Insert(nodeIndex, beginNode);
+            item.Parent.Children.Insert(nodeIndex + 2, endNode);
         }
 
         private struct InstrumentationItem
         {
-            public InstrumentationItem(RazorIRNode node, bool isLiteral, SourceSpan source)
+            public InstrumentationItem(RazorIRNode node, RazorIRNode parent, bool isLiteral, SourceSpan source)
             {
                 Node = node;
+                Parent = parent;
                 IsLiteral = isLiteral;
                 Source = source;
             }
 
             public RazorIRNode Node { get; }
+
+            public RazorIRNode Parent { get; }
 
             public bool IsLiteral { get; }
 
@@ -85,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 if (node.Source != null)
                 {
-                    Items.Add(new InstrumentationItem(node, isLiteral: true, source: node.Source.Value));
+                    Items.Add(new InstrumentationItem(node, Parent, isLiteral: true, source: node.Source.Value));
                 }
 
                 VisitDefault(node);
@@ -95,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 if (node.Source != null)
                 {
-                    Items.Add(new InstrumentationItem(node, isLiteral: false, source: node.Source.Value));
+                    Items.Add(new InstrumentationItem(node, Parent, isLiteral: false, source: node.Source.Value));
                 }
 
                 VisitDefault(node);
@@ -105,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 if (node.Source != null)
                 {
-                    Items.Add(new InstrumentationItem(node, isLiteral: false, source: node.Source.Value));
+                    Items.Add(new InstrumentationItem(node, Parent, isLiteral: false, source: node.Source.Value));
                 }
 
                 VisitDefault(node);

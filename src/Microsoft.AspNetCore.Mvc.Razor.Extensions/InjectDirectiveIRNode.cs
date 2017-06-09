@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
-        public override RazorIRNode Parent { get; set; }
-
         public override SourceSpan? Source { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
