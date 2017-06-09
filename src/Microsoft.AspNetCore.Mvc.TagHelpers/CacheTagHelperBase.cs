@@ -23,9 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string ExpiresOnAttributeName = "expires-on";
         private const string ExpiresAfterAttributeName = "expires-after";
         private const string ExpiresSlidingAttributeName = "expires-sliding";
-        private const string CacheKeyTokenSeparator = "||";
         private const string EnabledAttributeName = "enabled";
-        private static readonly char[] AttributeSeparator = new[] { ',' };
 
         /// <summary>
         /// Creates a new <see cref="CacheTagHelperBase"/>.

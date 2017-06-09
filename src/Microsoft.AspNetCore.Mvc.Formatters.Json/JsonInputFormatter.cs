@@ -153,8 +153,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     {
                         successful = false;
 
-                        var exception = eventArgs.ErrorContext.Error;
-
                         // Handle path combinations such as "" + "Property", "Parent" + "Property", or "Parent" + "[12]".
                         var key = eventArgs.ErrorContext.Path;
                         if (!string.IsNullOrEmpty(context.ModelName))

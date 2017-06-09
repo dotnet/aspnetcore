@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
                         }
 
                         var nestedLength = 0;
-                        HttpParseResult nestedResult = GetExpressionLength(input, current, openChar, closeChar,
+                        var nestedResult = GetExpressionLength(input, current, openChar, closeChar,
                             supportsNesting, ref nestedCount, out nestedLength);
 
                         switch (nestedResult)

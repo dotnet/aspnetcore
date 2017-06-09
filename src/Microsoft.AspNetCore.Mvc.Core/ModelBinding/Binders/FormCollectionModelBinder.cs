@@ -78,19 +78,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 return false;
             }
 
-            public string Get(string key)
-            {
-                return null;
-            }
-
             public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
             {
                 return Enumerable.Empty<KeyValuePair<string, StringValues>>().GetEnumerator();
-            }
-
-            public IList<StringValues> GetValues(string key)
-            {
-                return null;
             }
 
             public bool TryGetValue(string key, out StringValues value)

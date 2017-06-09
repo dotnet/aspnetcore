@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 return null;
             }
 
-            return _wrappingTypeConstructor.Invoke(new object[] { original, _wrapperProvider });
+            return _wrappingTypeConstructor.Invoke(new[] { original, _wrapperProvider });
         }
     }
 }

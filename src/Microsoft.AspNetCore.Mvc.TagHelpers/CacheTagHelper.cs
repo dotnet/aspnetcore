@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                 while (content == null)
                 {
-                    Task<IHtmlContent> result = null;
+                    Task<IHtmlContent> result;
 
                     if (!MemoryCache.TryGetValue(cacheKey, out result))
                     {

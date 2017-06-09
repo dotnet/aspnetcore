@@ -273,7 +273,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 {
                     // This means we're writing to another buffer. Use MoveTo to combine them.
                     bodyWriter.Buffer.MoveTo(viewBufferTextWriter.Buffer);
-                    return;
                 }
             }
         }

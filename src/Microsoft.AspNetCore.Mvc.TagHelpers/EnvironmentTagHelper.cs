@@ -150,7 +150,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 // This instance had at least one non-empty environment (names or include) specified but none of these
                 // environments matched the current environment. Suppress the output in this case.
                 output.SuppressOutput();
-                return;
             }
         }
     }

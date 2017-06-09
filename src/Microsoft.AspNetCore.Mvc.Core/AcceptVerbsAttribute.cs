@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="method">The HTTP method the action supports.</param>
         public AcceptVerbsAttribute(string method)
-            : this(new string[] { method })
+            : this(new [] { method })
         {
             if (method == null)
             {

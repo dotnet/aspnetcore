@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             var type = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
-            var constructor = type.GetConstructor(new Type[] { typeof(IModelMetadataProvider), typeof(ModelStateDictionary) });
+            var constructor = type.GetConstructor(new[] { typeof(IModelMetadataProvider), typeof(ModelStateDictionary) });
             Debug.Assert(constructor != null);
 
             var parameter1 = Expression.Parameter(typeof(IModelMetadataProvider), "metadataProvider");
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             var type = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
-            var constructor = type.GetConstructor(new Type[] { typeof(ViewDataDictionary) });
+            var constructor = type.GetConstructor(new[] { typeof(ViewDataDictionary) });
             Debug.Assert(constructor != null);
 
             var parameter = Expression.Parameter(typeof(ViewDataDictionary), "viewDataDictionary");

@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         private IEnumerable<string> GetViewNames()
         {
             var metadata = _viewData.ModelMetadata;
-            var templateHints = new string[]
+            var templateHints = new[]
             {
                 _templateName,
                 metadata.TemplateHint,

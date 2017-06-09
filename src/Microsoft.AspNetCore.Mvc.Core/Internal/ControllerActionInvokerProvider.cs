@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.ActionContext.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
+            if (context.ActionContext.ActionDescriptor is ControllerActionDescriptor)
             {
                 var controllerContext = new ControllerContext(context.ActionContext);
                 // PERF: These are rarely going to be changed, so let's go copy-on-write.

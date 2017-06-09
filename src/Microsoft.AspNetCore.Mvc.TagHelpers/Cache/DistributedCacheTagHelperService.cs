@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Distributed;
@@ -81,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 
             while (content == null)
             {
-                Task<IHtmlContent> result = null;
+                Task<IHtmlContent> result;
 
                 // Is there any request already processing the value?
                 if (!_workers.TryGetValue(key, out result))

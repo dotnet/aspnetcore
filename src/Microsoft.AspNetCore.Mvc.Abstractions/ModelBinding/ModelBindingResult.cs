@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
             else
             {
-                return $"Failed";
+                return "Failed";
             }
         }
 

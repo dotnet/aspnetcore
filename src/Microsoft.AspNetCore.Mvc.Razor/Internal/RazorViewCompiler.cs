@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// </summary>
     public class RazorViewCompiler : IViewCompiler
     {
-        private readonly object _initializeLock = new object();
         private readonly object _cacheLock = new object();
         private readonly Dictionary<string, Task<CompiledViewDescriptor>> _precompiledViewLookup;
         private readonly ConcurrentDictionary<string, string> _normalizedPathLookup;

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class HttpPutAttribute : HttpMethodAttribute
     {
-        private static readonly IEnumerable<string> _supportedMethods = new string[] { "PUT" };
+        private static readonly IEnumerable<string> _supportedMethods = new [] { "PUT" };
 
         /// <summary>
         /// Creates a new <see cref="HttpPutAttribute"/>.

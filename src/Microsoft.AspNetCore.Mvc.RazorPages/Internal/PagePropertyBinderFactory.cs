@@ -34,8 +34,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 return null;
             }
 
-            var isHandlerThePage = actionDescriptor.HandlerTypeInfo == actionDescriptor.PageTypeInfo;
-            
             var type = actionDescriptor.HandlerTypeInfo.AsType();
             var metadata = new ModelMetadata[properties.Count];
             for (var i = 0; i < properties.Count; i++)

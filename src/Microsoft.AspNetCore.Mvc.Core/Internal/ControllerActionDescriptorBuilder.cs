@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             .Where(constraint => !(constraint is IRouteTemplateProvider)).ToList();
                     }
 
-                    AddActionConstraints(actionDescriptor, action, actionSelectorModel, controllerConstraints);
+                    AddActionConstraints(actionDescriptor, actionSelectorModel, controllerConstraints);
                 }
                 else if (controllerAttributeRoutes.Count > 0)
                 {
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         // metadata from the 'other' attribute routes.
                         var controllerConstraints = controllerSelectorModel.ActionConstraints
                             .Where(c => c == controllerAttributeRoute?.Attribute || !(c is IRouteTemplateProvider));
-                        AddActionConstraints(actionDescriptor, action, actionSelectorModel, controllerConstraints);
+                        AddActionConstraints(actionDescriptor, actionSelectorModel, controllerConstraints);
                     }
                 }
                 else
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     // If there's no attribute route on the controller, then we use all of the filters/constraints
                     // on the controller regardless.
                     AddActionFilters(actionDescriptor, action.Filters, controller.Filters, application.Filters);
-                    AddActionConstraints(actionDescriptor, action, actionSelectorModel, controllerConstraints);
+                    AddActionConstraints(actionDescriptor, actionSelectorModel, controllerConstraints);
                 }
             }
 
@@ -378,7 +378,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static void AddActionConstraints(
             ControllerActionDescriptor actionDescriptor,
-            ActionModel action,
             SelectorModel selectorModel,
             IEnumerable<IActionConstraintMetadata> controllerConstraints)
         {
@@ -673,8 +672,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 ActionModel action,
                 IList<ControllerActionDescriptor> actionDescriptors)
             {
-                IDictionary<ActionModel, IList<ControllerActionDescriptor>> actionsForMethod = null;
-                if (TryGetValue(action.ActionMethod, out actionsForMethod))
+                if (TryGetValue(action.ActionMethod, out var actionsForMethod))
                 {
                     actionsForMethod.Add(action, actionDescriptors);
                 }

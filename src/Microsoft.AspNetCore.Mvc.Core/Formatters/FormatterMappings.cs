@@ -77,8 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             format = RemovePeriodIfPresent(format);
 
-            string value = null;
-            _map.TryGetValue(format, out value);
+            _map.TryGetValue(format, out var value);
 
             return value;
         }

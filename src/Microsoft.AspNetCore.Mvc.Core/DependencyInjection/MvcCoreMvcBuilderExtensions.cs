@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(setupAction));
             }
 
-            builder.Services.Configure<MvcOptions>(setupAction);
+            builder.Services.Configure(setupAction);
             return builder;
         }
 

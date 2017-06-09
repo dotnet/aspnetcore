@@ -162,7 +162,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 if (viewDataInfo.PropertyInfo != null)
                 {
                     // We've identified a property access, which provides us with accurate metadata.
-                    var containerType = viewDataInfo.Container?.GetType() ?? viewDataInfo.PropertyInfo.DeclaringType;
                     var containerMetadata = metadataProvider.GetMetadataForType(viewDataInfo.Container.GetType());
                     var propertyMetadata = containerMetadata.Properties[viewDataInfo.PropertyInfo.Name];
 

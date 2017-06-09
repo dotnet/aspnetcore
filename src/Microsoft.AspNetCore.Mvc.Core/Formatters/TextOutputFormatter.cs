@@ -207,7 +207,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
         {
             var sortNeeded = false;
-            var count = 0;
 
             for (var i = 0; i < values.Count; i++)
             {
@@ -218,12 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
                 else if (value.Quality != null)
                 {
-                    count++;
                     sortNeeded = true;
-                }
-                else
-                {
-                    count++;
                 }
             }
 

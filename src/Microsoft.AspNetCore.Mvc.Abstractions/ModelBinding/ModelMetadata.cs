@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            return base.Equals(obj as ModelMetadata);
+            return Equals(obj as ModelMetadata);
         }
 
         /// <inheritdoc />

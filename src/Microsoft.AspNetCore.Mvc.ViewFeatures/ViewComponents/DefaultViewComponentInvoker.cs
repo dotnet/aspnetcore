@@ -4,11 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Internal;
@@ -110,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
                 var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
 
-                object resultAsObject = null;
+                object resultAsObject;
                 var returnType = executor.MethodReturnType;
 
                 if (returnType == typeof(Task<IViewComponentResult>))

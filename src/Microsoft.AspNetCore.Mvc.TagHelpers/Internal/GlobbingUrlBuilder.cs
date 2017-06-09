@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -149,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 matcher.AddExcludePatterns(trimmedExcludePatterns);
             }
 
-            return Cache.Set<List<string>>(
+            return Cache.Set(
                 cacheKey,
                 FindFiles(matcher),
                 options);

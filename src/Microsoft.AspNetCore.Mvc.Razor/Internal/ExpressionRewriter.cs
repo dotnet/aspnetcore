@@ -149,9 +149,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             SimpleLambdaExpressionSyntax node,
             IdentifierNameSyntax memberAccess)
         {
-            // We want to make the new span
-            var originalSpan = node.GetLocation().GetMappedLineSpan();
-
             var charactersToExclude = memberAccess.Identifier.Text.Length;
             var triviaList = new SyntaxTriviaList();
 

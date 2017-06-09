@@ -79,7 +79,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
             var viewEngine = ViewEngine ?? ResolveViewEngine(context);
             var viewContext = context.ViewContext;
-            var viewData = ViewData ?? context.ViewData;
             var isNullOrEmptyViewName = string.IsNullOrEmpty(ViewName);
 
             ViewEngineResult result = null;

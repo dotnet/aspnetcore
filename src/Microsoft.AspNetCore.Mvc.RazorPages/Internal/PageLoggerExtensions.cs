@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -12,7 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     internal static class PageLoggerExtensions
     {
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
         private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _handlerMethodExecuting;
         private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;

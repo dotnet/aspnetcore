@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Initializes a new instance of <see cref="CompositeValueProvider"/>.
         /// </summary>
         public CompositeValueProvider()
-            : base()
         {
         }
 

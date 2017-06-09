@@ -65,8 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return Task.CompletedTask;
             }
 
-            var response = context.HttpContext.Response;
-            var outputStream = response.Body;
             return WriteFileAsync(context.HttpContext, result.FileStream, range, rangeLength);
         }
     }

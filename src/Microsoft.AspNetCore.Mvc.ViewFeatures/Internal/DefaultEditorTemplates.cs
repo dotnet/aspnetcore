@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             object htmlClassObject;
             if (htmlAttributes.TryGetValue("class", out htmlClassObject))
             {
-                var htmlClassName = htmlClassObject.ToString() + " " + className;
+                var htmlClassName = htmlClassObject + " " + className;
                 htmlAttributes["class"] = htmlClassName;
             }
             else
@@ -445,10 +445,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         private class HasContentTextWriter : TextWriter
         {
-            public HasContentTextWriter()
-            {
-            }
-
             public bool HasContent { get; private set; }
 
             public override Encoding Encoding => Null.Encoding;

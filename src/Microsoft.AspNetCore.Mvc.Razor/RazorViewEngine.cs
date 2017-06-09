@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     cacheResult = new ViewLocationCacheResult(new[] { applicationRelativePath });
                 }
 
-                cacheResult = ViewLookupCache.Set<ViewLocationCacheResult>(
+                cacheResult = ViewLookupCache.Set(
                     cacheKey,
                     cacheResult,
                     cacheEntryOptions);
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 cacheEntryOptions.AddExpirationToken(expirationToken);
             }
 
-            return ViewLookupCache.Set<ViewLocationCacheResult>(cacheKey, cacheResult, cacheEntryOptions);
+            return ViewLookupCache.Set(cacheKey, cacheResult, cacheEntryOptions);
         }
 
         // Internal for unit testing

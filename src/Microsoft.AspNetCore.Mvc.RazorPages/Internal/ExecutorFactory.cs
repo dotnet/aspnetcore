@@ -30,10 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var method = handlerDescriptor.MethodInfo;
             var parameters = handlerDescriptor.Parameters.ToArray();
 
-            var methodParameters = method.GetParameters();
-
             var returnType = method.ReturnType;
-            var returnTypeInfo = method.ReturnType.GetTypeInfo();
             if (returnType == typeof(void))
             {
                 return new VoidHandlerMethod(parameters, method);

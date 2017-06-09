@@ -13,13 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     public class MediaTypeCollection : Collection<string>
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="MediaTypeCollection"/>.
-        /// </summary>
-        public MediaTypeCollection()
-        {
-        }
-
-        /// <summary>
         /// Adds an object to the end of the <see cref="MediaTypeCollection"/>. 
         /// </summary>
         /// <param name="item">The media type to be added to the end of the <see cref="MediaTypeCollection"/>.</param>

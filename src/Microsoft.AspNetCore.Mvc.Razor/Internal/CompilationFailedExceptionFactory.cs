@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private static string ReadContent(RazorCodeDocument codeDocument, string filePath)
         {
-            RazorSourceDocument sourceDocument = null;
+            RazorSourceDocument sourceDocument;
             if (string.IsNullOrEmpty(filePath) || string.Equals(codeDocument.Source.FileName, filePath, StringComparison.Ordinal))
             {
                 sourceDocument = codeDocument.Source;

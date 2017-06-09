@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         // Information about private static method declared below.
         private static readonly MethodInfo _strongTryGetValueImplInfo =
-            typeof(TryGetValueProvider).GetTypeInfo().GetDeclaredMethod("StrongTryGetValueImpl");
+            typeof(TryGetValueProvider).GetTypeInfo().GetDeclaredMethod(nameof(StrongTryGetValueImpl));
 
         public static TryGetValueDelegate CreateInstance(Type targetType)
         {

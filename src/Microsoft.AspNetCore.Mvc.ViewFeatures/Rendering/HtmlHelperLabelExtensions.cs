@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return htmlHelper.LabelFor<TResult>(expression, labelText: null, htmlAttributes: null);
+            return htmlHelper.LabelFor(expression, labelText: null, htmlAttributes: null);
         }
 
         /// <summary>

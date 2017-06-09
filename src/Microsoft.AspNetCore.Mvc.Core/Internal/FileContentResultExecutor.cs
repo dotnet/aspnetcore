@@ -60,10 +60,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return Task.CompletedTask;
             }
 
-            var response = context.HttpContext.Response;
-            var outputStream = response.Body;
-            var fileContentsStream = new MemoryStream(result.FileContents);
-            return WriteFileAsync(context.HttpContext, fileContentsStream, range, rangeLength);
+            var fileContentStream = new MemoryStream(result.FileContents);
+            return WriteFileAsync(context.HttpContext, fileContentStream, range, rangeLength);
         }
     }
 }

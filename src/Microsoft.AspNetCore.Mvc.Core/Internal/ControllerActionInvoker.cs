@@ -54,9 +54,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private Task Next(ref State next, ref Scope scope, ref object state, ref bool isCompleted)
         {
-            var diagnosticSource = _diagnosticSource;
-            var logger = _logger;
-
             switch (next)
             {
                 case State.ActionBegin:

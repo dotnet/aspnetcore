@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                     value = path;
                 }
 
-                value = _cache.Set<string>(path, value, cacheEntryOptions);
+                value = _cache.Set(path, value, cacheEntryOptions);
             }
 
             return value;

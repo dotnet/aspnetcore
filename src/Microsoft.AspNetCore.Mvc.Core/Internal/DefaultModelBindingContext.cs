@@ -20,13 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private State _state;
         private readonly Stack<State> _stack = new Stack<State>();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultModelBindingContext"/> class.
-        /// </summary>
-        public DefaultModelBindingContext()
-        {
-        }
-
         /// <inheritdoc />
         public override ActionContext ActionContext
         {

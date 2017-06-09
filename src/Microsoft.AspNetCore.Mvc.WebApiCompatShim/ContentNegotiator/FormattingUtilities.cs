@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Xml;
 using Newtonsoft.Json.Linq;
 
@@ -133,7 +132,7 @@ namespace System.Net.Http
         public static HttpContentHeaders CreateEmptyContentHeaders()
         {
             HttpContent tempContent = null;
-            HttpContentHeaders contentHeaders = null;
+            HttpContentHeaders contentHeaders;
             try
             {
                 tempContent = new StringContent(string.Empty);

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// <summary>
     /// An <see cref="IActionFilter"/> which sets the appropriate headers related to response caching.
     /// </summary>
-    public class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
+    public class ResponseCacheFilter : IResponseCacheFilter
     {
         private readonly CacheProfile _cacheProfile;
         private int? _cacheDuration;

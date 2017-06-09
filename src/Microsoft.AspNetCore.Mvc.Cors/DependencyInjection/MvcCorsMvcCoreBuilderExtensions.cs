@@ -38,12 +38,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             AddCorsServices(builder.Services);
-
-            if (setupAction != null)
-            {
-                builder.Services.Configure(setupAction);
-            }
-
+            builder.Services.Configure(setupAction);
+            
             return builder;
         }
 

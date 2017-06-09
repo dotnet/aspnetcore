@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var request = context.HttpContext.Request;
             var selectedEncoding = SelectCharacterEncoding(context);
             if (selectedEncoding == null)
             {

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class HttpPatchAttribute : HttpMethodAttribute
     {
-        private static readonly IEnumerable<string> _supportedMethods = new string[] { "PATCH" };
+        private static readonly IEnumerable<string> _supportedMethods = new [] { "PATCH" };
 
         /// <summary>
         /// Creates a new <see cref="HttpPatchAttribute"/>.

@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     /// </summary>
     public class ControllerActivatorProvider : IControllerActivatorProvider
     {
-        private static readonly Func<Type, ObjectFactory> _createFactory = (type) => ActivatorUtilities.CreateFactory(type, Type.EmptyTypes);
         private static readonly Action<ControllerContext, object> _dispose = Dispose;
         private readonly Func<ControllerContext, object> _controllerActivatorCreate;
         private readonly Action<ControllerContext, object> _controllerActivatorRelease;

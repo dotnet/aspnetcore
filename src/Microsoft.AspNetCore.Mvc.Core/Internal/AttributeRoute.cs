@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (handlerFactory == null)
             {
-                _handlerFactory = handlerFactory;
+                throw new ArgumentNullException(nameof(handlerFactory));
             }
 
             _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;

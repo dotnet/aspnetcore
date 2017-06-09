@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return htmlHelper.DisplayNameForInnerType<TModelItem, TResult>(expression);
+            return htmlHelper.DisplayNameForInnerType(expression);
         }
     }
 }

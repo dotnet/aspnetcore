@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
                 valueProvider,
                 modelMetadata,
                 bindingInfo: null,
-                modelName: prefix ?? string.Empty);
+                modelName: prefix);
 
             modelBindingContext.Model = model;
             modelBindingContext.PropertyFilter = propertyFilter;

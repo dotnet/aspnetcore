@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -118,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             var runtimeReturnType = GetRuntimeReturnType(declaredReturnType);
 
-            var apiResponseTypes = GetApiResponseTypes(action, responseMetadataAttributes, runtimeReturnType);
+            var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, runtimeReturnType);
             foreach (var apiResponseType in apiResponseTypes)
             {
                 apiDescription.SupportedResponseTypes.Add(apiResponseType);
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // could end up with duplicate data.
             foreach (var parameter in apiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Body))
             {
-                var requestFormats = GetRequestFormats(action, requestMetadataAttributes, parameter.Type);
+                var requestFormats = GetRequestFormats(requestMetadataAttributes, parameter.Type);
                 foreach (var format in requestFormats)
                 {
                     apiDescription.SupportedRequestFormats.Add(format);
@@ -302,7 +301,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         private IReadOnlyList<ApiRequestFormat> GetRequestFormats(
-            ControllerActionDescriptor action,
             IApiRequestMetadataProvider[] requestMetadataAttributes,
             Type type)
         {
@@ -352,7 +350,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         private IReadOnlyList<ApiResponseType> GetApiResponseTypes(
-            ControllerActionDescriptor action,
             IApiResponseMetadataProvider[] responseMetadataAttributes,
             Type type)
         {
@@ -579,7 +576,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 Context = context;
                 Parameter = parameter;
 
-                Visited = new HashSet<PropertyKey>();
+                Visited = new HashSet<PropertyKey>(new PropertyKeyEqualityComparer());
             }
 
             public ApiParameterContext Context { get; }
@@ -736,7 +733,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
                 public int GetHashCode(PropertyKey obj)
                 {
-                    return obj.ContainerType.GetHashCode() ^ obj.PropertyName.GetHashCode() ^ obj.Source.GetHashCode();
+                    var hashCodeCombiner = HashCodeCombiner.Start();
+                    hashCodeCombiner.Add(obj.ContainerType);
+                    hashCodeCombiner.Add(obj.PropertyName);
+                    hashCodeCombiner.Add(obj.Source);
+                    return hashCodeCombiner.CombinedHash;
                 }
             }
         }

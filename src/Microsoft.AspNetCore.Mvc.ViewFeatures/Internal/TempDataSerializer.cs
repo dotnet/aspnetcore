@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public IDictionary<string, object> Deserialize(byte[] value)
         {
-            Dictionary<string, object> tempDataDictionary = null;
+            Dictionary<string, object> tempDataDictionary;
 
             using (var memoryStream = new MemoryStream(value))
             using (var reader = new BsonDataReader(memoryStream))
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 }
             }
 
-            return convertedDictionary ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            return convertedDictionary;
         }
 
         public byte[] Serialize(IDictionary<string, object> values)

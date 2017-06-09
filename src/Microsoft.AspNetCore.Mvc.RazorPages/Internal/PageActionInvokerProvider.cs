@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -225,21 +224,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             return viewStartFactories;
-        }
-
-        private static object GetDefaultValue(ParameterInfo methodParameter)
-        {
-            object defaultValue = null;
-            if (methodParameter.HasDefaultValue)
-            {
-                defaultValue = methodParameter.DefaultValue;
-            }
-            else if (methodParameter.ParameterType.GetTypeInfo().IsValueType)
-            {
-                defaultValue = Activator.CreateInstance(methodParameter.ParameterType);
-            }
-
-            return defaultValue;
         }
 
         private static Func<object, object[], Task<IActionResult>>[] GetExecutors(CompiledPageActionDescriptor actionDescriptor)

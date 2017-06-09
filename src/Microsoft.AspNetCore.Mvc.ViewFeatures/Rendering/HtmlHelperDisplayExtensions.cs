@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return htmlHelper.DisplayFor<TResult>(
+            return htmlHelper.DisplayFor(
                 expression,
                 templateName: null,
                 htmlFieldName: null,
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return htmlHelper.DisplayFor<TResult>(
+            return htmlHelper.DisplayFor(
                 expression,
                 templateName: null,
                 htmlFieldName: null,
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return htmlHelper.DisplayFor<TResult>(
+            return htmlHelper.DisplayFor(
                 expression,
                 templateName,
                 htmlFieldName: null,
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return htmlHelper.DisplayFor<TResult>(
+            return htmlHelper.DisplayFor(
                 expression,
                 templateName,
                 htmlFieldName: null,
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return htmlHelper.DisplayFor<TResult>(
+            return htmlHelper.DisplayFor(
                 expression,
                 templateName: templateName,
                 htmlFieldName: htmlFieldName,

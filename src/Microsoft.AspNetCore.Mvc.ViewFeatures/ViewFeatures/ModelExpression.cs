@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {

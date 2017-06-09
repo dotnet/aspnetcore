@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// The default constructor is provided for unit test purposes only.
         /// </remarks>
         public ControllerContext()
-            : base()
         {
         }
 

@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     {
         public static readonly string CookieName = ".AspNetCore.Mvc.CookieTempDataProvider";
         private static readonly string Purpose = "Microsoft.AspNetCore.Mvc.CookieTempDataProviderToken.v1";
-        private const byte TokenVersion = 0x01;
         private readonly IDataProtector _dataProtector;
         private readonly TempDataSerializer _tempDataSerializer;
         private readonly ChunkingCookieManager _chunkingCookieManager;

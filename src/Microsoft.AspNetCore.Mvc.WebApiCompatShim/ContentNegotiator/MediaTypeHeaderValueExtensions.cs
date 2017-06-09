@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Mvc;
 
 namespace System.Net.Http.Formatting
 {

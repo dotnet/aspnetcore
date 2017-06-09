@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class HttpDeleteAttribute : HttpMethodAttribute
     {
-        private static readonly IEnumerable<string> _supportedMethods = new string[] { "DELETE" };
+        private static readonly IEnumerable<string> _supportedMethods = new [] { "DELETE" };
 
         /// <summary>
         /// Creates a new <see cref="HttpDeleteAttribute"/>.

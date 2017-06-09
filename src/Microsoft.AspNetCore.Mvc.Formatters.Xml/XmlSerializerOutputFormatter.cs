@@ -166,8 +166,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(selectedEncoding));
             }
 
-            var response = context.HttpContext.Response;
-
             var writerSettings = WriterSettings.Clone();
             writerSettings.Encoding = selectedEncoding;
 

@@ -159,9 +159,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private Task Next(ref State next, ref Scope scope, ref object state, ref bool isCompleted)
         {
-            var diagnosticSource = _diagnosticSource;
-            var logger = _logger;
-
             switch (next)
             {
                 case State.InvokeBegin:
@@ -733,7 +730,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var resultExecutingContext = _resultExecutingContext;
                         var resultExecutedContext = _resultExecutedContext;
 
-                        if (resultExecutedContext == null || resultExecutingContext.Cancel == true)
+                        if (resultExecutedContext == null || resultExecutingContext.Cancel)
                         {
                             // Short-circuited by not calling next || Short-circuited by setting Cancel == true
                             _logger.ResultFilterShortCircuited(filter);
@@ -766,7 +763,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         _diagnosticSource.AfterOnResultExecuting(resultExecutingContext, filter);
 
-                        if (_resultExecutingContext.Cancel == true)
+                        if (_resultExecutingContext.Cancel)
                         {
                             // Short-circuited by setting Cancel == true
                             _logger.ResultFilterShortCircuited(filter);
@@ -857,8 +854,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 case State.ResourceInsideEnd:
                     {
-                        var result = _result;
-
                         if (scope == Scope.Resource)
                         {
                             _resourceExecutedContext = new ResourceExecutedContext(_actionContext, _filters)
@@ -991,7 +986,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private async Task<ResultExecutedContext> InvokeNextResultFilterAwaitedAsync()
         {
             Debug.Assert(_resultExecutingContext != null);
-            if (_resultExecutingContext.Cancel == true)
+            if (_resultExecutingContext.Cancel)
             {
                 // If we get here, it means that an async filter set cancel == true AND called next().
                 // This is forbidden.

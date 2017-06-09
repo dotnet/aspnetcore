@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class HttpHeadAttribute : HttpMethodAttribute
     {
-        private static readonly IEnumerable<string> _supportedMethods = new string[] { "HEAD" };
+        private static readonly IEnumerable<string> _supportedMethods = new [] { "HEAD" };
 
         /// <summary>
         /// Creates a new <see cref="HttpHeadAttribute"/>.

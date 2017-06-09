@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class HttpOptionsAttribute : HttpMethodAttribute
     {
-        private static readonly IEnumerable<string> _supportedMethods = new string[] { "OPTIONS" };
+        private static readonly IEnumerable<string> _supportedMethods = new [] { "OPTIONS" };
 
         /// <summary>
         /// Creates a new <see cref="HttpOptionsAttribute"/>.

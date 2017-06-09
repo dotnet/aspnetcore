@@ -217,8 +217,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var response = viewContext.HttpContext.Response;
 
-            string resolvedContentType = null;
-            Encoding resolvedContentTypeEncoding = null;
+            string resolvedContentType;
+            Encoding resolvedContentTypeEncoding;
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 contentType,
                 response.ContentType,

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class HttpGetAttribute : HttpMethodAttribute
     {
-        private static readonly IEnumerable<string> _supportedMethods = new string[] { "GET" };
+        private static readonly IEnumerable<string> _supportedMethods = new [] { "GET" };
 
         /// <summary>
         /// Creates a new <see cref="HttpGetAttribute"/>.

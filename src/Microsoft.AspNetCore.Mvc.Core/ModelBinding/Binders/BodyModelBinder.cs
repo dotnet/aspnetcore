@@ -150,7 +150,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             try
             {
-                var previousCount = bindingContext.ModelState.ErrorCount;
                 var result = await formatter.ReadAsync(formatterContext);
                 var model = result.Model;
 
@@ -177,13 +176,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         .MissingRequestBodyRequiredValueAccessor();
                     bindingContext.ModelState.AddModelError(modelBindingKey, message);
                 }
-
-                return;
             }
             catch (Exception ex)
             {
                 bindingContext.ModelState.AddModelError(modelBindingKey, ex, bindingContext.ModelMetadata);
-                return;
             }
         }
     }

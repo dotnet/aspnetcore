@@ -170,7 +170,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // JSON Helper
             //
             services.TryAddSingleton<IJsonHelper, JsonHelper>();
-            services.TryAdd(ServiceDescriptor.Singleton<JsonOutputFormatter>(serviceProvider =>
+            services.TryAdd(ServiceDescriptor.Singleton(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
                 var charPool = serviceProvider.GetRequiredService<ArrayPool<char>>();

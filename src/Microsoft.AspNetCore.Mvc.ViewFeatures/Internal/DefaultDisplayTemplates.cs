@@ -25,11 +25,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             return htmlHelper.ViewData.ModelMetadata.IsNullableValueType ?
-                BooleanTemplateDropDownList(htmlHelper, value) :
-                BooleanTemplateCheckbox(value ?? false, htmlHelper);
+                BooleanTemplateDropDownList(value) :
+                BooleanTemplateCheckbox(value ?? false);
         }
 
-        private static IHtmlContent BooleanTemplateCheckbox(bool value, IHtmlHelper htmlHelper)
+        private static IHtmlContent BooleanTemplateCheckbox(bool value)
         {
             var inputTag = new TagBuilder("input");
             inputTag.AddCssClass("check-box");
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             return inputTag;
         }
 
-        private static IHtmlContent BooleanTemplateDropDownList(IHtmlHelper htmlHelper, bool? value)
+        private static IHtmlContent BooleanTemplateDropDownList(bool? value)
         {
             var selectTag = new TagBuilder("select");
             selectTag.AddCssClass("list-box");
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 string.Empty :
                 htmlHelper.ViewData.TemplateInfo.FormattedModelValue.ToString();
 
-            return HyperlinkTemplate(uriString, linkedText, htmlHelper);
+            return HyperlinkTemplate(uriString, linkedText);
         }
 
         public static IHtmlContent HiddenInputTemplate(IHtmlHelper htmlHelper)
@@ -297,11 +297,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 string.Empty :
                 htmlHelper.ViewData.TemplateInfo.FormattedModelValue.ToString();
 
-            return HyperlinkTemplate(uriString, linkedText, htmlHelper);
+            return HyperlinkTemplate(uriString, linkedText);
         }
 
         // Neither uriString nor linkedText need be encoded prior to calling this method.
-        private static IHtmlContent HyperlinkTemplate(string uriString, string linkedText, IHtmlHelper htmlHelper)
+        private static IHtmlContent HyperlinkTemplate(string uriString, string linkedText)
         {
             var hyperlinkTag = new TagBuilder("a");
             hyperlinkTag.MergeAttribute("href", uriString);

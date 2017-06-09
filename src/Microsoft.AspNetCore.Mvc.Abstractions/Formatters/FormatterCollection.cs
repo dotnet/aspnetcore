@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Initializes a new instance of the <see cref="FormatterCollection{TFormatter}"/> class that is empty.
         /// </summary>
         public FormatterCollection()
-            : base()
         {
         }
 

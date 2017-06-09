@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var request = formatterContext.HttpContext.Request;
-            var acceptableMediaTypes = GetAcceptableMediaTypes(contentTypes, request);
+            var acceptableMediaTypes = GetAcceptableMediaTypes(request);
             var selectFormatterWithoutRegardingAcceptHeader = false;
             IOutputFormatter selectedFormatter = null;
 
@@ -254,12 +254,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         private List<MediaTypeSegmentWithQuality> GetAcceptableMediaTypes(
-            MediaTypeCollection contentTypes,
             HttpRequest request)
         {
             var result = new List<MediaTypeSegmentWithQuality>();
             AcceptHeaderParser.ParseAcceptHeader(request.Headers[HeaderNames.Accept], result);
-            for (int i = 0; i < result.Count; i++)
+            for (var i = 0; i < result.Count; i++)
             {
                 var mediaType = new MediaType(result[i].MediaType);
                 if (!RespectBrowserAcceptHeader && mediaType.MatchesAllSubTypes && mediaType.MatchesAllTypes)

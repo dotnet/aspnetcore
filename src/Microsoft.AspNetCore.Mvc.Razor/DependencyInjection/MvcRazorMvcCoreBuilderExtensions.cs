@@ -52,10 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
             AddRazorViewEngineFeatureProviders(builder);
             AddRazorViewEngineServices(builder.Services);
 
-            if (setupAction != null)
-            {
-                builder.Services.Configure(setupAction);
-            }
+            builder.Services.Configure(setupAction);
 
             return builder;
         }
@@ -164,7 +161,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<RazorTemplateEngine, MvcRazorTemplateEngine>();
             services.TryAddSingleton<LazyMetadataReferenceFeature>();
 
-            services.TryAddSingleton<RazorEngine>(s =>
+            services.TryAddSingleton(s =>
             {
                 return RazorEngine.Create(b =>
                 {

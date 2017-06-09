@@ -684,9 +684,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private struct MediaTypeParameter : IEquatable<MediaTypeParameter>
         {
-            public static readonly StringSegment Type = new StringSegment("type");
-            public static readonly StringSegment Subtype = new StringSegment("subtype");
-
             public MediaTypeParameter(StringSegment name, StringSegment value)
             {
                 Name = name;
