@@ -141,23 +141,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private Task BindArgumentsAsync()
         {
-            // This is a temporary workaround.
-            PageSaveTempDataPropertyFilter propertyFilter = null;
-            for (var i = 0; i < _filters.Length; i++)
-            {
-                propertyFilter = _filters[i] as PageSaveTempDataPropertyFilter;
-                if (propertyFilter != null)
-                {
-                    break;
-                }
-            }
-
-            if (propertyFilter != null)
-            {
-                propertyFilter.Subject = _instance;
-                propertyFilter.ApplyTempDataChanges(_pageContext.HttpContext);
-            }
-
             // Perf: Avoid allocating async state machines where possible. We only need the state
             // machine if you need to bind properties or arguments.
             if (_actionDescriptor.BoundProperties.Count == 0 && (_handler == null || _handler.Parameters.Count == 0))

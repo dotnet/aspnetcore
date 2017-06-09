@@ -12,12 +12,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         private readonly Action<object, object> _setter;
 
-        public TempDataProperty(PropertyInfo propertyInfo, Func<object, object> getter, Action<object, object> setter)
+        public TempDataProperty(string tempDataKey, PropertyInfo propertyInfo, Func<object, object> getter, Action<object, object> setter)
         {
+            TempDataKey = tempDataKey;
             PropertyInfo = propertyInfo;
             _getter = getter;
             _setter = setter;
         }
+
+        public string TempDataKey { get; }
 
         public PropertyInfo PropertyInfo { get; }
 

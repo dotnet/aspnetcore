@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageSaveTempDataPropertyFilterFactory : IFilterFactory
     {
-        public IList<TempDataProperty> TempDataProperties { get; set; }
+        public IList<TempDataProperty> Properties { get; set; }
 
         public bool IsReusable => false;
 
@@ -32,12 +33,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // TempDataProperties are stored here as a cache for the filter. But in pages by the time we know the type
             // of our model we no longer have access to the factory, so we store the factory on the filter so it can
             // call this method to populate its TempDataProperties.
-            if (TempDataProperties == null)
+            if (Properties == null)
             {
-                TempDataProperties = SaveTempDataPropertyFilterBase.GetTempDataProperties(modelType);
+                Properties = SaveTempDataPropertyFilterBase.GetTempDataProperties(modelType);
             }
 
-            return TempDataProperties;
+            return Properties;
         }
     }
 }

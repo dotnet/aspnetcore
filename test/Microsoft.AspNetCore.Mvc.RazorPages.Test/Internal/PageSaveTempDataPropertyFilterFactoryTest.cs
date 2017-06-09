@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageSaveTempDataPropertyFilterFactoryTest
     {

@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// <summary>
         /// Describes the temp data properties which exist on <see cref="Subject"/>
         /// </summary>
-        public IList<TempDataProperty> TempDataProperties { get; set; }
+        public IList<TempDataProperty> Properties { get; set; }
 
         /// <summary>
         /// The <see cref="object"/> which has the temp data properties.
         /// </summary>
-        public virtual object Subject { get; set; }
+        public object Subject { get; set; }
 
         /// <summary>
         /// Tracks the values which originally existed in temp data.
@@ -40,17 +40,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// <param name="tempData">The <see cref="ITempDataDictionary"/> to be updated.</param>
         public void OnTempDataSaving(ITempDataDictionary tempData)
         {
-            if (Subject != null && OriginalValues != null)
+            if (Subject != null && Properties != null)
             {
-                foreach (var kvp in OriginalValues)
+                for (var i = 0; i < Properties.Count; i++)
                 {
-                    var property = kvp.Key;
-                    var originalValue = kvp.Value;
+                    var property = Properties[i];
+                    OriginalValues.TryGetValue(property.PropertyInfo, out var originalValue);
 
                     var newValue = property.GetValue(Subject);
                     if (newValue != null && !newValue.Equals(originalValue))
                     {
-                        tempData[Prefix + property.Name] = newValue;
+                        tempData[property.TempDataKey] = newValue;
                     }
                 }
             }
@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     }
 
                     results.Add(new TempDataProperty(
+                        Prefix + propertyHelper.Name,
                         propertyHelper.Property,
                         propertyHelper.GetValue,
                         propertyHelper.SetValue));
@@ -109,14 +110,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// <param name="subject">The <see cref="object"/> which will have it's properties set.</param>
         protected void SetPropertyVaules(ITempDataDictionary tempData, object subject)
         {
-            if (TempDataProperties == null)
+            if (Properties == null)
             {
                 return;
             }
 
-            for (var i = 0; i < TempDataProperties.Count; i++)
+            for (var i = 0; i < Properties.Count; i++)
             {
-                var property = TempDataProperties[i];
+                var property = Properties[i];
                 var value = tempData[Prefix + property.PropertyInfo.Name];
 
                 OriginalValues[property.PropertyInfo] = value;

@@ -19,16 +19,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             factory.TempDataProperties = new List<TempDataProperty>()
             {
-                new TempDataProperty(propertyInfo, null, null)
+                new TempDataProperty("TempDataProperty-StringProp", propertyInfo, null, null)
             };
 
             // Act
             var filter = factory.CreateInstance(CreateServiceProvider());
 
             // Assert
-            var controllerFilter = Assert.IsType<ControllerSaveTempDataPropertyFilter>(filter);
-            Assert.Collection(controllerFilter.TempDataProperties,
-                property => Assert.Equal("StringProp", property.PropertyInfo.Name));
+            Assert.Collection(
+                Assert.IsType<ControllerSaveTempDataPropertyFilter>(filter).Properties,
+                property => Assert.Equal(propertyInfo, property.PropertyInfo));
         }
 
         private ServiceProvider CreateServiceProvider()

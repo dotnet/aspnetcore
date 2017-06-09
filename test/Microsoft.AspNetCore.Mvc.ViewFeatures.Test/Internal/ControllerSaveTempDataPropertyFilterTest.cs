@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var controller = new TestController();
 
             var controllerType = controller.GetType();
-            var testProp = controllerType.GetProperty(nameof(TestController.Test));
-            var test2Prop = controllerType.GetProperty(nameof(TestController.Test2));
+            var testProperty = controllerType.GetProperty(nameof(TestController.Test));
+            var test2Property = controllerType.GetProperty(nameof(TestController.Test2));
 
-            filter.TempDataProperties = new List<TempDataProperty>
+            filter.Properties = new List<TempDataProperty>
             {
-                new TempDataProperty(testProp, testProp.GetValue, testProp.SetValue),
-                new TempDataProperty(test2Prop, test2Prop.GetValue, test2Prop.SetValue)
+                new TempDataProperty("TempDataProperty-Test", testProperty, testProperty.GetValue, testProperty.SetValue),
+                new TempDataProperty("TempDataProperty-Test2", test2Property, test2Property.GetValue, test2Property.SetValue)
             };
 
             var context = new ActionExecutingContext(
@@ -73,13 +73,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var controller = new TestController();
 
             var controllerType = controller.GetType();
-            var testProp = controllerType.GetProperty(nameof(TestController.Test));
-            var test2Prop = controllerType.GetProperty(nameof(TestController.Test2));
+            var testProperty = controllerType.GetProperty(nameof(TestController.Test));
+            var test2Property = controllerType.GetProperty(nameof(TestController.Test2));
 
-            filter.TempDataProperties = new List<TempDataProperty>
+            filter.Properties = new List<TempDataProperty>
             {
-                new TempDataProperty(testProp, testProp.GetValue, testProp.SetValue),
-                new TempDataProperty(test2Prop, test2Prop.GetValue, test2Prop.SetValue)
+                new TempDataProperty("TempDataProperty-Test", testProperty, testProperty.GetValue, testProperty.SetValue),
+                new TempDataProperty("TempDataProperty-Test2", test2Property, test2Property.GetValue, test2Property.SetValue)
             };
 
             var context = new ActionExecutingContext(
@@ -107,7 +107,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             TempDataDictionary tempData)
         {
             var factory = new Mock<ITempDataDictionaryFactory>();
-            factory.Setup(f => f.GetTempData(httpContext))
+            factory
+                .Setup(f => f.GetTempData(httpContext))
                 .Returns(tempData);
 
             return new ControllerSaveTempDataPropertyFilter(factory.Object);

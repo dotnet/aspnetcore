@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             var service = serviceProvider.GetRequiredService<ControllerSaveTempDataPropertyFilter>();
-            service.TempDataProperties = TempDataProperties;
+            service.Properties = TempDataProperties;
             return service;
         }
     }
