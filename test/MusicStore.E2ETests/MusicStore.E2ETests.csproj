@@ -5,7 +5,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <UserSecretsId>MusicStore.E2ETests</UserSecretsId>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
   </PropertyGroup>

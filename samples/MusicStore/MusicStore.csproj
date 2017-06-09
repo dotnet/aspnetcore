@@ -6,7 +6,6 @@
     <Description>Music store application on ASP.NET Core</Description>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RuntimeIdentifiers Condition="'$(MUSICSTORE_ASPNETCORE_STORE_FEED)' == ''">win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
