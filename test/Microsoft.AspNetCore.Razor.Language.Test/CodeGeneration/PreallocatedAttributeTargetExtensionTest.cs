@@ -171,7 +171,8 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             var extension = new PreallocatedAttributeTargetExtension();
             var context = new CSharpRenderingContext()
             {
-                Writer = new CSharpCodeWriter()
+                Writer = new CSharpCodeWriter(),
+                TagHelperRenderingContext = new TagHelperRenderingContext()
             };
 
             var descriptor = BoundAttributeDescriptorBuilder
@@ -197,7 +198,11 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             // Assert
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
-@"__FooTagHelper.FooProp[""Foo""] = (string)_tagHelper1.Value;
+@"if (__FooTagHelper.FooProp == null)
+{
+    throw new InvalidOperationException(InvalidTagHelperIndexerAssignment(""pre-Foo"", ""FooTagHelper"", ""FooProp""));
+}
+__FooTagHelper.FooProp[""Foo""] = (string)_tagHelper1.Value;
 __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
 ",
                 csharp,

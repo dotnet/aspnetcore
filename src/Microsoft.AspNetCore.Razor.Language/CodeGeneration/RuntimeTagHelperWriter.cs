@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             // Ensure that the property we're trying to set has initialized its dictionary bound properties.
             if (node.IsIndexerNameMatch &&
-                tagHelperRenderingContext.VerifiedPropertyDictionaries.Add(propertyName))
+                tagHelperRenderingContext.VerifiedPropertyDictionaries.Add($"{node.TagHelperTypeName}.{propertyName}"))
             {
                 // Throw a reasonable Exception at runtime if the dictionary property is null.
                 context.Writer

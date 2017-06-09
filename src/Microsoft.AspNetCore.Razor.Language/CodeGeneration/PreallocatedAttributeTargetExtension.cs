@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
@@ -17,6 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public string ExecutionContextAddHtmlAttributeMethodName { get; set; } = "AddHtmlAttribute";
 
         public string ExecutionContextAddTagHelperAttributeMethodName { get; set; } = "AddTagHelperAttribute";
+
+        public string FormatInvalidIndexerAssignmentMethodName { get; set; } = "InvalidTagHelperIndexerAssignment";
 
         public void WriteDeclarePreallocatedTagHelperHtmlAttribute(CSharpRenderingContext context, DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
         {
@@ -74,8 +77,39 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void WriteSetPreallocatedTagHelperProperty(CSharpRenderingContext context, SetPreallocatedTagHelperPropertyIRNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
+            var propertyName = node.Descriptor.GetPropertyName();
             var propertyValueAccessor = GetTagHelperPropertyAccessor(node.IsIndexerNameMatch, tagHelperVariableName, node.AttributeName, node.Descriptor);
             var attributeValueAccessor = $"{node.VariableName}.Value" /* ORIGINAL: TagHelperAttributeValuePropertyName */;
+
+            // Ensure that the property we're trying to set has initialized its dictionary bound properties.
+            if (node.IsIndexerNameMatch &&
+                context.TagHelperRenderingContext.VerifiedPropertyDictionaries.Add($"{node.TagHelperTypeName}.{propertyName}"))
+            {
+                // Throw a reasonable Exception at runtime if the dictionary property is null.
+                context.Writer
+                    .Write("if (")
+                    .Write(tagHelperVariableName)
+                    .Write(".")
+                    .Write(propertyName)
+                    .WriteLine(" == null)");
+                using (context.Writer.BuildScope())
+                {
+                    // System is in Host.NamespaceImports for all MVC scenarios. No need to generate FullName
+                    // of InvalidOperationException type.
+                    context.Writer
+                        .Write("throw ")
+                        .WriteStartNewObject(nameof(InvalidOperationException))
+                        .WriteStartMethodInvocation(FormatInvalidIndexerAssignmentMethodName)
+                        .WriteStringLiteral(node.AttributeName)
+                        .WriteParameterSeparator()
+                        .WriteStringLiteral(node.TagHelperTypeName)
+                        .WriteParameterSeparator()
+                        .WriteStringLiteral(propertyName)
+                        .WriteEndMethodInvocation(endLine: false)   // End of method call
+                        .WriteEndMethodInvocation();   // End of new expression / throw statement
+                }
+            }
+
             context.Writer
                 .WriteStartAssignment(propertyValueAccessor)
                 .Write("(string)")
