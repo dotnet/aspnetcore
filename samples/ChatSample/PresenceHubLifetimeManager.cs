@@ -113,7 +113,7 @@ namespace ChatSample
 
                     hub.Clients = _hubContext.Clients;
                     hub.Context = new HubCallerContext(connection);
-                    hub.Groups = new GroupManager<THub>(connection, this);
+                    hub.Groups = new GroupManager<THub>(this);
 
                     try
                     {
