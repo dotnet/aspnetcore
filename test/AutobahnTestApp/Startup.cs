@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +22,10 @@ namespace AutobahnTestApp
                 if (context.WebSockets.IsWebSocketRequest)
                 {
                     logger.LogInformation("Received WebSocket request");
-                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await Echo(webSocket);
+                    using (var webSocket = await context.WebSockets.AcceptWebSocketAsync())
+                    {
+                        await Echo(webSocket, context.RequestAborted);
+                    }
                 }
                 else
                 {
@@ -35,16 +37,16 @@ namespace AutobahnTestApp
 
         }
 
-        private async Task Echo(WebSocket webSocket)
+        private async Task Echo(WebSocket webSocket, CancellationToken cancellationToken)
         {
             var buffer = new byte[1024 * 4];
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
             while (!result.CloseStatus.HasValue)
             {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, cancellationToken);
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
             }
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellationToken);
         }
     }
 }

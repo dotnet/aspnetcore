@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
     public class AutobahnTester : IDisposable
     {
         private readonly List<IApplicationDeployer> _deployers = new List<IApplicationDeployer>();
+        private readonly List<DeploymentResult> _deployments = new List<DeploymentResult>();
         private readonly List<AutobahnExpectations> _expectations = new List<AutobahnExpectations>();
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -35,6 +36,10 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             var specFile = Path.GetTempFileName();
             try
             {
+                // Start pinging the servers to see that they're still running
+                var pingCts = new CancellationTokenSource();
+                var pinger = new Timer(state => Pinger((CancellationToken)state), pingCts.Token, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+
                 Spec.WriteJson(specFile);
 
                 // Run the test (write something to the console so people know this will take a while...)
@@ -44,6 +49,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 {
                     throw new Exception("wstest failed");
                 }
+
+                pingCts.Cancel();
             }
             finally
             {
@@ -60,6 +67,42 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             using (var reader = new StreamReader(File.OpenRead(outputFile)))
             {
                 return AutobahnResult.FromReportJson(JObject.Parse(await reader.ReadToEndAsync()));
+            }
+        }
+
+        // Async void! It's OK here because we are running in a timer. We're just using async void to chain continuations.
+        // There's nobody to await this, hence async void.
+        private async void Pinger(CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        foreach (var deployment in _deployments)
+                        {
+                            if (token.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
+                            var resp = await deployment.HttpClient.GetAsync("/ping", token);
+                            if (!resp.IsSuccessStatusCode)
+                            {
+                                _logger.LogWarning("Non-successful response when pinging {url}: {statusCode} {reasonPhrase}", deployment.ApplicationBaseUri, resp.StatusCode, resp.ReasonPhrase);
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // We don't want to throw when the token fires, just stop.
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while pinging servers");
             }
         }
 
@@ -104,6 +147,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             var deployer = ApplicationDeployerFactory.Create(parameters, _loggerFactory);
             var result = await deployer.DeployAsync();
             _deployers.Add(deployer);
+            _deployments.Add(result);
             cancellationToken.ThrowIfCancellationRequested();
 
             var handler = new HttpClientHandler();
@@ -114,7 +158,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 // See https://github.com/dotnet/corefx/issues/9728
                 handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
             }
-            var client = new HttpClient(handler);
+            var client = result.CreateHttpClient(handler);
 
             // Make sure the server works
             var resp = await RetryHelper.RetryRequest(() =>

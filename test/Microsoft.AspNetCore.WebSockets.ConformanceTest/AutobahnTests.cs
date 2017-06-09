@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit.Abstractions;
 
@@ -14,6 +15,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
 {
     public class AutobahnTests : LoggedTest
     {
+        private static readonly TimeSpan TestTimeout = TimeSpan.FromMinutes(3);
+
         public AutobahnTests(ITestOutputHelper output) : base(output)
         {
         }
@@ -26,6 +29,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
         {
             using (StartLog(out var loggerFactory))
             {
+                var logger = loggerFactory.CreateLogger<AutobahnTests>();
                 var reportDir = Environment.GetEnvironmentVariable("AUTOBAHN_SUITES_REPORT_DIR");
                 var outDir = !string.IsNullOrEmpty(reportDir) ?
                     reportDir :
@@ -44,28 +48,31 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                     .ExcludeCase("9.*", "12.*", "13.*");
 
                 var cts = new CancellationTokenSource();
-                cts.CancelAfter(TimeSpan.FromMinutes(5)); // These tests generally complete in just over 1 minute.
+                cts.CancelAfter(TestTimeout); // These tests generally complete in just over 1 minute.
 
-                AutobahnResult result;
-                using (var tester = new AutobahnTester(loggerFactory, spec))
+                using (cts.Token.Register(() => logger.LogError("Test run is taking longer than maximum duration of {timeoutMinutes:0.00} minutes. Aborting...", TestTimeout.TotalMinutes)))
                 {
-                    await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
-
-                    // Windows-only WebListener tests, and Kestrel SSL tests (due to: https://github.com/aspnet/WebSockets/issues/102)
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    AutobahnResult result;
+                    using (var tester = new AutobahnTester(loggerFactory, spec))
                     {
-                        await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
+                        await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
 
-                        if (IsWindows8OrHigher())
+                        // Windows-only WebListener tests, and Kestrel SSL tests (due to: https://github.com/aspnet/WebSockets/issues/102)
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
-                            // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?
-                            // For now, just allow the non-strict response, it's not a failure.
-                            await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
-                        }
-                    }
+                            await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
 
-                    result = await tester.Run(cts.Token);
-                    tester.Verify(result);
+                            if (IsWindows8OrHigher())
+                            {
+                                // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?
+                                // For now, just allow the non-strict response, it's not a failure.
+                                await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
+                            }
+                        }
+
+                        result = await tester.Run(cts.Token);
+                        tester.Verify(result);
+                    }
                 }
 
                 // If it hasn't been cancelled yet, cancel the token just to be sure
