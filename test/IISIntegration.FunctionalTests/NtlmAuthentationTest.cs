@@ -1,5 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#if NET461
+// Per https://github.com/dotnet/corefx/issues/5045, HttpClientHandler.UseDefaultCredentials does not work correctly in CoreFx.
+// We'll require the desktop HttpClient to run these tests.
 
 using System;
 using System.IO;
@@ -7,7 +11,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -22,29 +25,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [Fact]
+        public Task NtlmAuthentication_Clr_X64()
         {
-            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
+            return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051);
         }
 
-        [ConditionalTheory(Skip = "No test configuration enabled")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Standalone)]
-        // TODO reenable when https://github.com/aspnet/IISIntegration/issues/373 is resolved
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-         Task NtlmAuthentication_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [Fact]
+        public Task NtlmAuthentication_CoreClr_X64_Portable()
         {
-            return NtlmAuthentication(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
+            return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052);
         }
 
-        private async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        private async Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port)
         {
-            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{architecture}";
+            var serverType = ServerType.IISExpress;
+            var architecture = RuntimeArchitecture.x64;
+            var testName = $"NtlmAuthentication_{runtimeFlavor}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
@@ -55,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
+                    ApplicationBaseUriHint = $"http://localhost:{port}",
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
@@ -117,10 +115,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                         Assert.NotEmpty(responseText);
-
-                        response = await httpClient.GetAsync("/AutoForbid");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
                     }
                     catch (XunitException)
                     {
@@ -133,3 +127,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
+#elif NETCOREAPP2_0
+#else
+#error Target frameworks need to be updated
+#endif

@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+#if NETCOREAPP2_0
 
 using System;
 using System.IO;
@@ -7,7 +8,6 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -25,29 +25,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44396/", ApplicationType.Portable)]
-        public Task Https_HelloWorld(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [Fact]
+        public Task Https_HelloWorld_CLR_X64()
         {
-            return HttpsHelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
+            return HttpsHelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44396);
         }
 
-        [ConditionalTheory(Skip = "No test configuration enabled")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44394/", ApplicationType.Portable)]
-        // TODO reenable when https://github.com/aspnet/IISIntegration/issues/373 is resolved
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44395/", ApplicationType.Standalone)]
-        public Task Https_HelloWorld_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [Fact]
+        public Task Https_HelloWorld_CoreCLR_X64_Portable()
         {
-            return HttpsHelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
+            return HttpsHelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44394);
         }
 
-        private async Task HttpsHelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        private async Task HttpsHelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port)
         {
-            var testName = $"HttpsHelloWorld_{serverType}_{runtimeFlavor}_{architecture}";
+            var serverType = ServerType.IISExpress;
+            var architecture = RuntimeArchitecture.x64;
+
+            var applicationBaseUrl = $"https://localhost:{port}/";
+            var testName = $"HttpsHelloWorld_{runtimeFlavor}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HttpsHelloWorldTest");
@@ -91,47 +87,40 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [ConditionalTheory(Skip = "No test configuration enabled")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "https://localhost:44399/", ApplicationType.Standalone)]
-        public Task Https_HelloWorld_NoClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [Fact]
+        public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable()
         {
-            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: false);
+            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44398, sendClientCert: false);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        // TODO reenable when https://github.com/aspnet/IISIntegration/issues/373 is resolved
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44397/", ApplicationType.Standalone)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44398/", ApplicationType.Portable)]
-        public Task Https_HelloWorld_NoClientCert_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        [Fact]
+        public Task Https_HelloWorld_NoClientCert_Clr_X64()
         {
-            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: false);
+            return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44398, sendClientCert: false);
         }
 
-        [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44301/", ApplicationType.Portable)]
-        public Task Https_HelloWorld_ClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
+        public Task Https_HelloWorld_ClientCert_Clr_X64()
         {
-            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: true);
+            return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44301, sendClientCert: true);
         }
 
-        [ConditionalTheory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44302/", ApplicationType.Standalone)]
-        public Task Https_HelloWorld_ClientCert_CoreCLR(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
+        public Task Https_HelloWorld_ClientCert_CoreCLR_X64_Portable()
         {
-            return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: true);
+            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44302, sendClientCert: true);
         }
 
-        private async Task HttpsHelloWorldCerts(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType, bool sendClientCert)
+        private async Task HttpsHelloWorldCerts(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, bool sendClientCert)
         {
-            var testName = $"HttpsHelloWorldCerts_{serverType}_{runtimeFlavor}_{architecture}";
+            var serverType = ServerType.IISExpress;
+            var architecture = RuntimeArchitecture.x64;
+            var applicationBaseUrl = $"https://localhost:{port}/";
+            var testName = $"HttpsHelloWorldCerts_{runtimeFlavor}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HttpsHelloWorldTest");
@@ -226,3 +215,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
+#elif NET461
+#else
+#error Target frameworks need to be updated
+#endif

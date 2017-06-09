@@ -61,11 +61,6 @@ namespace TestSites
                     return context.ForbidAsync();
                 }
 
-                if (context.Request.Path.Equals("/AutoForbid"))
-                {
-                    return context.ChallengeAsync();
-                }
-
                 if (context.Request.Path.Equals("/RestrictedNTLM"))
                 {
                     if (string.Equals("NTLM", context.User.Identity.AuthenticationType, StringComparison.Ordinal))

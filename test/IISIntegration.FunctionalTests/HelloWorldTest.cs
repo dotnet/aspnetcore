@@ -1,11 +1,11 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+#if NETCOREAPP2_0
 
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -20,31 +20,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [Fact]
+        public Task HelloWorld_IISExpress_Clr_X64_Portable()
         {
-            return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, ApplicationType.Portable)]
-        // TODO reenable when https://github.com/aspnet/IISIntegration/issues/373 is resolved
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        public Task HelloWorld_IISExpress_CoreClr(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [Fact]
+        public Task HelloWorld_IISExpress_CoreClr_X64_Portable()
         {
-            return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationType);
+            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable);
         }
 
-        private async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
+        private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
         {
-            var testName = $"HelloWorld_{serverType}_{runtimeFlavor}_{architecture}";
+            var serverType = ServerType.IISExpress;
+            var architecture = RuntimeArchitecture.x64;
+            var testName = $"HelloWorld_{runtimeFlavor}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorldTest");
@@ -101,3 +93,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
+#elif NET461
+#else
+#error Target frameworks need to be updated
+#endif
