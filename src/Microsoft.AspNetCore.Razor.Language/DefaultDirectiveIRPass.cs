@@ -16,25 +16,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             var parserOptions = irDocument.Options;
 
             var designTime = parserOptions.DesignTime;
-            var walker = new DirectiveWalker();
-            walker.VisitDocument(irDocument);
 
-            var classNode = walker.ClassNode;
-            foreach (var (node, parent) in walker.FunctionsDirectiveNodes)
+            var classNode = irDocument.FindPrimaryClass();
+            if (classNode == null)
             {
-                parent.Children.Remove(node);
+                return;
+            }
 
-                foreach (var child in node.Children.Except(node.Tokens))
+            foreach (var functions in irDocument.FindDirectiveReferences(CSharpCodeParser.FunctionsDirectiveDescriptor))
+            {
+                functions.Remove();
+
+                for (var i =0; i < functions.Node.Children.Count; i++)
                 {
-                    classNode.Children.Add(child);
+                    classNode.Children.Add(functions.Node.Children[i]);
                 }
             }
 
-            foreach (var (node, parent) in walker.InheritsDirectiveNodes.Reverse())
+            foreach (var inherits in irDocument.FindDirectiveReferences(CSharpCodeParser.InheritsDirectiveDescriptor).Reverse())
             {
-                parent.Children.Remove(node);
+                inherits.Remove();
 
-                var token = node.Tokens.FirstOrDefault();
+                var token = ((DirectiveIRNode)inherits.Node).Tokens.FirstOrDefault();
                 if (token != null)
                 {
                     classNode.BaseType = token.Content;
@@ -42,74 +45,30 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            foreach (var (node, parent) in walker.SectionDirectiveNodes)
+            foreach (var section in irDocument.FindDirectiveReferences(CSharpCodeParser.SectionDirectiveDescriptor))
             {
-                var sectionIndex = parent.Children.IndexOf(node);
-                parent.Children.Remove(node);
-
-                var defineSectionEndStatement = new CSharpCodeIRNode();
-                RazorIRBuilder.Create(defineSectionEndStatement)
-                    .Add(new RazorIRToken()
-                    {
-                        Kind = RazorIRToken.TokenKind.CSharp,
-                        Content = "});"
-                    });
-
-                parent.Children.Insert(sectionIndex, defineSectionEndStatement);
-
-                foreach (var child in node.Children.Except(node.Tokens).Reverse())
-                {
-                    parent.Children.Insert(sectionIndex, child);
-                }
-
                 var lambdaContent = designTime ? "__razor_section_writer" : string.Empty;
-                var sectionName = node.Tokens.FirstOrDefault()?.Content;
-                var defineSectionStartStatement = new CSharpCodeIRNode();
-                RazorIRBuilder.Create(defineSectionStartStatement)
-                    .Add(new RazorIRToken()
-                    {
-                        Kind = RazorIRToken.TokenKind.CSharp,
-                        Content = $"DefineSection(\"{sectionName}\", async ({lambdaContent}) => {{"
-                    });
+                var sectionName = ((DirectiveIRNode)section.Node).Tokens.FirstOrDefault()?.Content;
 
-                parent.Children.Insert(sectionIndex, defineSectionStartStatement);
-            }
-        }
-
-        private class DirectiveWalker : RazorIRNodeWalker
-        {
-            public ClassDeclarationIRNode ClassNode { get; private set; }
-
-            public IList<(DirectiveIRNode node, RazorIRNode parent)> FunctionsDirectiveNodes { get; } = new List<(DirectiveIRNode node, RazorIRNode parent)>();
-
-            public IList<(DirectiveIRNode node, RazorIRNode parent)> InheritsDirectiveNodes { get; } = new List<(DirectiveIRNode node, RazorIRNode parent)>();
-
-            public IList<(DirectiveIRNode node, RazorIRNode parent)> SectionDirectiveNodes { get; } = new List<(DirectiveIRNode node, RazorIRNode parent)>();
-
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
-            {
-                if (ClassNode == null)
+                var builder = RazorIRBuilder.Create(new CSharpCodeIRNode());
+                builder.Add(new RazorIRToken()
                 {
-                    ClassNode = node;
-                }
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = $"DefineSection(\"{sectionName}\", async ({lambdaContent}) => {{"
+                });
+                section.InsertBefore(builder.Build());
+                
+                section.InsertBefore(section.Node.Children.Except(((DirectiveIRNode)section.Node).Tokens));
 
-                VisitDefault(node);
-            }
+                builder = RazorIRBuilder.Create(new CSharpCodeIRNode());
+                builder.Add(new RazorIRToken()
+                {
+                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Content = "});"
+                });
+                section.InsertAfter(builder.Build());
 
-            public override void VisitDirective(DirectiveIRNode node)
-            {
-                if (string.Equals(node.Name, CSharpCodeParser.FunctionsDirectiveDescriptor.Directive, StringComparison.Ordinal))
-                {
-                    FunctionsDirectiveNodes.Add((node, Parent));
-                }
-                else if (string.Equals(node.Name, CSharpCodeParser.InheritsDirectiveDescriptor.Directive, StringComparison.Ordinal))
-                {
-                    InheritsDirectiveNodes.Add((node, Parent));
-                }
-                else if (string.Equals(node.Name, CSharpCodeParser.SectionDirectiveDescriptor.Directive, StringComparison.Ordinal))
-                {
-                    SectionDirectiveNodes.Add((node, Parent));
-                }
+                section.Remove();
             }
         }
     }

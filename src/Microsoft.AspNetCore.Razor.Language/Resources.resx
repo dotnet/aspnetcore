@@ -213,4 +213,13 @@
   <data name="KeyMustNotBeNull" xml:space="preserve">
     <value>The key must not be null.</value>
   </data>
+  <data name="IRNodeReference_NodeNotFound" xml:space="preserve">
+    <value>The reference is invalid. The node '{0}' could not be found as a child of '{1}'.</value>
+  </data>
+  <data name="IRNodeReference_NotInitialized" xml:space="preserve">
+    <value>The reference is invalid. References initialized with the default constructor cannot modify nodes.</value>
+  </data>
+  <data name="IRNodeReference_CollectionIsReadOnly" xml:space="preserve">
+    <value>The node '{0}' has a read-only child collection and cannot be modified.</value>
+  </data>
 </root>

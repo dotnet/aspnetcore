@@ -60,5 +60,54 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             // Assert
             Assert.Same(@namespace, result);
         }
+
+        [Fact]
+        public void FindDirectiveReferences_FindsMatchingDirectives()
+        {
+            // Arrange
+            var directive = DirectiveDescriptor.CreateSingleLineDirective("test");
+            var directive2 = DirectiveDescriptor.CreateSingleLineDirective("test");
+
+            var document = new DocumentIRNode();
+            var @namespace = new NamespaceDeclarationIRNode();
+
+            var builder = RazorIRBuilder.Create(document);
+            builder.Push(@namespace);
+
+            var match1 = new DirectiveIRNode()
+            {
+                Descriptor = directive,
+            };
+            builder.Add(match1);
+
+            var nonMatch = new DirectiveIRNode()
+            {
+                Descriptor = directive2,
+            };
+            builder.Add(nonMatch);
+
+            var match2 = new DirectiveIRNode()
+            {
+                Descriptor = directive,
+            };
+            builder.Add(match2);
+
+            // Act
+            var results = document.FindDirectiveReferences(directive);
+
+            // Assert
+            Assert.Collection(
+                results,
+                r =>
+                {
+                    Assert.Same(@namespace, r.Parent);
+                    Assert.Same(match1, r.Node);
+                },
+                r =>
+                {
+                    Assert.Same(@namespace, r.Parent);
+                    Assert.Same(match2, r.Node);
+                });
+        }
     }
 }

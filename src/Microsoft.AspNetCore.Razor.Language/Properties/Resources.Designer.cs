@@ -458,6 +458,48 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatKeyMustNotBeNull()
             => GetString("KeyMustNotBeNull");
 
+        /// <summary>
+        /// The reference is invalid. The node '{0}' could not be found as a child of '{1}'.
+        /// </summary>
+        internal static string IRNodeReference_NodeNotFound
+        {
+            get => GetString("IRNodeReference_NodeNotFound");
+        }
+
+        /// <summary>
+        /// The reference is invalid. The node '{0}' could not be found as a child of '{1}'.
+        /// </summary>
+        internal static string FormatIRNodeReference_NodeNotFound(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("IRNodeReference_NodeNotFound"), p0, p1);
+
+        /// <summary>
+        /// The reference is invalid. References initialized with the default constructor cannot modify nodes.
+        /// </summary>
+        internal static string IRNodeReference_NotInitialized
+        {
+            get => GetString("IRNodeReference_NotInitialized");
+        }
+
+        /// <summary>
+        /// The reference is invalid. References initialized with the default constructor cannot modify nodes.
+        /// </summary>
+        internal static string FormatIRNodeReference_NotInitialized()
+            => GetString("IRNodeReference_NotInitialized");
+
+        /// <summary>
+        /// The node '{0}' has a read-only child collection and cannot be modified.
+        /// </summary>
+        internal static string IRNodeReference_CollectionIsReadOnly
+        {
+            get => GetString("IRNodeReference_CollectionIsReadOnly");
+        }
+
+        /// <summary>
+        /// The node '{0}' has a read-only child collection and cannot be modified.
+        /// </summary>
+        internal static string FormatIRNodeReference_CollectionIsReadOnly(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("IRNodeReference_CollectionIsReadOnly"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

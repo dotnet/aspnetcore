@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
-using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
@@ -37,9 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
 
-            foreach (var (node, parent) in visitor.CreateTagHelpers)
+            foreach (var (parent, node) in visitor.CreateTagHelpers)
             {
-                RewriteCreateNode(visitor.Namespace, visitor.Class, node, parent);
+                RewriteCreateNode(visitor.Namespace, visitor.Class, (CreateTagHelperIRNode)node, parent);
             }
         }
 
@@ -230,7 +228,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public NamespaceDeclarationIRNode Namespace { get; private set; }
 
-            public List<(CreateTagHelperIRNode node, RazorIRNode parent)> CreateTagHelpers { get; } = new List<(CreateTagHelperIRNode node, RazorIRNode parent)>();
+            public List<RazorIRNodeReference> CreateTagHelpers { get; } = new List<RazorIRNodeReference>();
 
             public Dictionary<string, TagHelperDescriptor> TagHelpers { get; } = new Dictionary<string, TagHelperDescriptor>();
 
@@ -243,7 +241,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
                     TagHelpers[vcName] = tagHelper;
 
-                    CreateTagHelpers.Add((node, Parent));
+                    CreateTagHelpers.Add(new RazorIRNodeReference(Parent, node));
                 }
             }
 

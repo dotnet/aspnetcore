@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     internal static class ViewComponentResources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.CodeAnalysis.Razor.ViewComponentResources", typeof(ViewComponentResources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microsoft.AspNetCore.Mvc.Razor.Extensions.ViewComponentResources", typeof(ViewComponentResources).GetTypeInfo().Assembly);
 
         /// <summary>
         /// View component '{0}' must have exactly one public method named '{1}' or '{2}'.
