@@ -27,7 +27,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// Invoked before redirecting to the identity provider to authenticate.
+        /// Invoked before redirecting to the identity provider to authenticate. This can be used to set ProtocolMessage.State
+        /// that will be persisted through the authentication process. The ProtocolMessage can also be used to add or customize
+        /// parameters sent to the identity provider.
         /// </summary>
         public Func<RedirectContext, Task> OnRedirectToIdentityProvider { get; set; } = context => Task.CompletedTask;
 
