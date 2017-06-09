@@ -7,22 +7,39 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace RewriteSample
 {
     public class Startup
     {
+        public Startup(IHostingEnvironment environment)
+        {
+            Environment = environment;
+        }
+
+        public IHostingEnvironment Environment { get; private set; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.Configure<RewriteOptions>(options =>
+            {
+                options.AddRedirect("(.*)/$", "$1")
+                       .AddRewrite(@"app/(\d+)", "app?id=$1", skipRemainingRules: false)
+                       .AddRedirectToHttps(302, 5001)
+                       .AddIISUrlRewrite(Environment.ContentRootFileProvider, "UrlRewrite.xml")
+                       .AddApacheModRewrite(Environment.ContentRootFileProvider, "Rewrite.txt");
+            });
+        }
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            var options = new RewriteOptions()
-                .AddRedirect("(.*)/$", "$1")
-                .AddRewrite(@"app/(\d+)", "app?id=$1", skipRemainingRules: false)
-                .AddRedirectToHttps(302, 5001)
-                .AddIISUrlRewrite(env.ContentRootFileProvider, "UrlRewrite.xml")
-                .AddApacheModRewrite(env.ContentRootFileProvider, "Rewrite.txt");
+            app.UseRewriter();
 
-            app.UseRewriter(options);
-            app.Run(context => context.Response.WriteAsync($"Rewritten Url: {context.Request.Path + context.Request.QueryString}"));
+            app.Run(context =>
+            {
+                return context.Response.WriteAsync($"Rewritten Url: {context.Request.Path + context.Request.QueryString}");
+            });
         }
 
         public static void Main(string[] args)

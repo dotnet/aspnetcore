@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -11,6 +12,21 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class RewriteBuilderExtensions
     {
+        /// <summary>
+        /// Checks if a given Url matches rules and conditions, and modifies the HttpContext on match.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseRewriter(this IApplicationBuilder app)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseMiddleware<RewriteMiddleware>();
+        }
+
         /// <summary>
         /// Checks if a given Url matches rules and conditions, and modifies the HttpContext on match.
         /// </summary>
@@ -28,8 +44,9 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new ArgumentNullException(nameof(options));
             }
+
             // put middleware in pipeline
-            return app.UseMiddleware<RewriteMiddleware>(options);
+            return app.UseMiddleware<RewriteMiddleware>(Options.Create(options));
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task CheckRedirectPath()
         {
-            var options = new RewriteOptions().AddRedirect("(.*)","http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
+            var options = new RewriteOptions().AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
             var builder = new WebHostBuilder()
             .Configure(app =>
             {
@@ -52,9 +53,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         }
 
         [Fact]
+        public async Task RewriteRulesCanComeFromConfigureOptions()
+        {
+            var builder = new WebHostBuilder()
+            .ConfigureServices(services =>
+            {
+                services.Configure<RewriteOptions>(options =>
+                {
+                    options.AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
+                });
+            })
+            .Configure(app =>
+            {
+                app.UseRewriter();
+            });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync("foo");
+
+            Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
+        }
+
+        [Fact]
         public async Task CheckRedirectPathWithQueryString()
         {
-            var options = new RewriteOptions().AddRedirect("(.*)","http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
+            var options = new RewriteOptions().AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
             var builder = new WebHostBuilder()
             .Configure(app =>
             {
@@ -108,9 +131,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Theory]
         [InlineData(25, "https://example.com:25/")]
         [InlineData(-25, "https://example.com/")]
-        public async Task CheckRedirectToHttpsWithSslPort(int sslPort,string expected)
+        public async Task CheckRedirectToHttpsWithSslPort(int sslPort, string expected)
         {
-            var options = new RewriteOptions().AddRedirectToHttps(statusCode: StatusCodes.Status301MovedPermanently, sslPort:sslPort);
+            var options = new RewriteOptions().AddRedirectToHttps(statusCode: StatusCodes.Status301MovedPermanently, sslPort: sslPort);
             var builder = new WebHostBuilder()
             .Configure(app =>
             {
@@ -170,7 +193,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
                         context.Request.Path +
                         context.Request.QueryString));
             });
-            var server = new TestServer(builder) {BaseAddress = new Uri("http://localhost:5000/foo")};
+            var server = new TestServer(builder) { BaseAddress = new Uri("http://localhost:5000/foo") };
 
             var response = await server.CreateClient().GetAsync("");
 

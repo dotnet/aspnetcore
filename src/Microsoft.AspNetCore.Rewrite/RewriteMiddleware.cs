@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
 using Microsoft.AspNetCore.Rewrite.Logging;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Rewrite
             RequestDelegate next,
             IHostingEnvironment hostingEnvironment,
             ILoggerFactory loggerFactory,
-            RewriteOptions options)
+            IOptions<RewriteOptions> options)
         {
             if (next == null)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Rewrite
             }
 
             _next = next;
-            _options = options;
+            _options = options.Value;
             _fileProvider = _options.StaticFileProvider ?? hostingEnvironment.WebRootFileProvider;
             _logger = loggerFactory.CreateLogger<RewriteMiddleware>();
         }
