@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public override IList<RazorIRNode> Children { get; } = EmptyArray;
+        public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
         public IList<string> Modifiers { get; set; } = new List<string>();
 

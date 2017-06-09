@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     {
         public override ItemCollection Annotations => ReadOnlyItemCollection.Empty;
 
-        public override IList<RazorIRNode> Children { get; } = EmptyArray;
+        public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
         public override RazorIRNode Parent { get; set; }
 

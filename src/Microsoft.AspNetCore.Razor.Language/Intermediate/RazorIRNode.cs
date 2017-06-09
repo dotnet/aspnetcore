@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public abstract ItemCollection Annotations { get; }
 
-        public abstract IList<RazorIRNode> Children { get; }
+        public abstract RazorIRNodeCollection Children { get; }
 
         public abstract RazorIRNode Parent { get; set; }
 

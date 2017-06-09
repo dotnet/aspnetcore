@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         private class TestExtensionIRNode : ExtensionIRNode
         {
-            public override IList<RazorIRNode> Children => throw new NotImplementedException();
+            public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
             public override RazorIRNode Parent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public override SourceSpan? Source { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

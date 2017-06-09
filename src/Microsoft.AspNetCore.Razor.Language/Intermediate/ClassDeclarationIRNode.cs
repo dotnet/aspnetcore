@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
+        public override RazorIRNodeCollection Children { get; } = new DefaultIRNodeCollection();
 
         public override RazorIRNode Parent { get; set; }
 
