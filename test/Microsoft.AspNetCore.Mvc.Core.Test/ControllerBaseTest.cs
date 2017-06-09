@@ -2478,6 +2478,26 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.True(controller.ModelState.IsValid);
         }
 
+        [Fact]
+        public void RedirectToPage_WithPageName_Handler_AndRouteValues()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.RedirectToPage("page", "handler", new { test = "value"});
+
+            // Assert
+            Assert.Equal("page", result.PageName);
+            Assert.Equal("handler", result.PageHandler);
+            Assert.Collection(result.RouteValues,
+                item =>
+                {
+                    Assert.Equal("test", item.Key);
+                    Assert.Equal("value", item.Value);
+                });
+        }
+
         private static ControllerBase GetController(IModelBinder binder, IValueProvider valueProvider)
         {
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
