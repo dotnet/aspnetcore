@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +9,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public interface IConnection
     {
-        Task StartAsync(ITransportFactory transportFactory, HttpClient httpClient);
+        Task StartAsync();
         Task SendAsync(byte[] data, CancellationToken cancellationToken);
         Task DisposeAsync();
 

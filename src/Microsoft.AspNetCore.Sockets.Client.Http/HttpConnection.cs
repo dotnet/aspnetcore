@@ -15,18 +15,19 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
-    public class Connection : IConnection
+    public class HttpConnection : IConnection
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
 
         private volatile int _connectionState = ConnectionState.Initial;
         private volatile IChannelConnection<byte[], SendMessage> _transportChannel;
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
         private volatile ITransport _transport;
         private volatile Task _receiveLoopTask;
         private TaskCompletionSource<object> _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private TaskQueue _eventQueue = new TaskQueue();
+        private readonly ITransportFactory _transportFactory;
 
         private ReadableChannel<byte[]> Input => _transportChannel.Input;
         private WritableChannel<SendMessage> Output => _transportChannel.Output;
@@ -37,34 +38,45 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public event Action<byte[]> Received;
         public event Action<Exception> Closed;
 
-        public Connection(Uri url)
-            : this(url, null)
+        public HttpConnection(Uri url)
+            : this(url, TransportType.WebSockets)
         { }
 
-        public Connection(Uri url, ILoggerFactory loggerFactory)
+        public HttpConnection(Uri url, TransportType transportType)
+                    : this(url, transportType, loggerFactory: null)
+        {
+        }
+
+        public HttpConnection(Uri url, ILoggerFactory loggerFactory)
+            : this(url, TransportType.WebSockets, loggerFactory, httpMessageHandler: null)
+        {
+        }
+
+        public HttpConnection(Uri url, TransportType transportType, ILoggerFactory loggerFactory)
+            : this(url, transportType, loggerFactory, httpMessageHandler: null)
+        {
+        }
+
+        public HttpConnection(Uri url, TransportType transportType, ILoggerFactory loggerFactory, HttpMessageHandler httpMessageHandler)
         {
             Url = url ?? throw new ArgumentNullException(nameof(url));
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-            _logger = _loggerFactory.CreateLogger<Connection>();
+            _logger = _loggerFactory.CreateLogger<HttpConnection>();
+            _httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
+            _transportFactory = new DefaultTransportFactory(transportType, _loggerFactory, _httpClient);
         }
 
-        public Task StartAsync() => StartAsync(transportFactory: null, httpClient: null);
-        public Task StartAsync(HttpClient httpClient) => StartAsync(transportFactory: null, httpClient: httpClient);
-        public Task StartAsync(ITransportFactory transportFactory) => StartAsync(transportFactory, httpClient: null);
-        public Task StartAsync(TransportType transportType) => StartAsync(transportType, httpClient: null);
-        public Task StartAsync(TransportType transportType, HttpClient httpClient)
+        public HttpConnection(Uri url, ITransportFactory transportFactory, ILoggerFactory loggerFactory, HttpMessageHandler httpMessageHandler)
         {
-            if (httpClient == null)
-            {
-                // We are creating the client so store it to be able to dispose
-                _httpClient = httpClient = new HttpClient();
-            }
-
-            return StartAsync(new DefaultTransportFactory(transportType, _loggerFactory, httpClient), httpClient);
+            Url = url ?? throw new ArgumentNullException(nameof(url));
+            _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+            _logger = _loggerFactory.CreateLogger<HttpConnection>();
+            _httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
+            _transportFactory = transportFactory ?? throw new ArgumentNullException(nameof(transportFactory));
         }
 
-        public Task StartAsync(ITransportFactory transportFactory, HttpClient httpClient)
+        public Task StartAsync()
         {
             if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connecting, ConnectionState.Initial)
                 != ConnectionState.Initial)
@@ -73,13 +85,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     new InvalidOperationException("Cannot start a connection that is not in the Initial state."));
             }
 
-            if (httpClient == null)
-            {
-                // We are creating the client so store it to be able to dispose
-                _httpClient = httpClient = new HttpClient();
-            }
-
-            StartAsyncInternal(transportFactory ?? new DefaultTransportFactory(TransportType.All, _loggerFactory, httpClient), httpClient)
+            StartAsyncInternal()
                 .ContinueWith(t =>
                 {
                     if (t.IsFaulted)
@@ -99,13 +105,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return _startTcs.Task;
         }
 
-        private async Task StartAsyncInternal(ITransportFactory transportFactory, HttpClient httpClient)
+        private async Task StartAsyncInternal()
         {
             _logger.LogDebug("Starting connection.");
 
             try
             {
-                var negotiationResponse = await Negotiate(Url, httpClient, _logger);
+                var negotiationResponse = await Negotiate(Url, _httpClient, _logger);
 
                 // Connection is being stopped while start was in progress
                 if (_connectionState == ConnectionState.Disconnected)
@@ -114,7 +120,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     return;
                 }
 
-                _transport = transportFactory.CreateTransport(GetAvailableServerTransports(negotiationResponse));
+                _transport = _transportFactory.CreateTransport(GetAvailableServerTransports(negotiationResponse));
 
                 var connectUrl = CreateConnectUrl(Url, negotiationResponse);
                 _logger.LogDebug("Starting transport '{0}' with Url: {1}", _transport.GetType().Name, connectUrl);
@@ -161,7 +167,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     _logger.LogDebug("Draining event queue");
                     await _eventQueue.Drain();
 
-                    _httpClient?.Dispose();
+                    _httpClient.Dispose();
 
                     _logger.LogDebug("Raising Closed event");
 
@@ -387,7 +393,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 await _receiveLoopTask;
             }
 
-            _httpClient?.Dispose();
+            _httpClient.Dispose();
         }
 
         private class ConnectionState

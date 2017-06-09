@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -32,7 +33,8 @@ namespace ClientSample
             var loggerFactory = new LoggerFactory();
 
             Console.WriteLine("Connecting to {0}", baseUrl);
-            var connection = new HubConnection(new Uri(baseUrl), loggerFactory);
+            var httpConnection = new HttpConnection(new Uri(baseUrl));
+            var connection = new HubConnection(httpConnection, loggerFactory);
             try
             {
                 await connection.StartAsync();

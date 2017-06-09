@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -37,7 +36,7 @@ namespace ClientSample
             var logger = loggerFactory.CreateLogger<Program>();
 
             Console.WriteLine($"Connecting to {baseUrl}...");
-            var connection = new Connection(new Uri(baseUrl), loggerFactory);
+            var connection = new HttpConnection(new Uri(baseUrl), loggerFactory);
             try
             {
                 var cts = new CancellationTokenSource();

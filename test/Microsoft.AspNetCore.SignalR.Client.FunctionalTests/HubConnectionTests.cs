@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -51,21 +52,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var loggerFactory = CreateLogger();
 
-            using (var httpClient = _testServer.CreateClient())
+            var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
+            var connection = new HubConnection(httpConnection, loggerFactory);
+            try
             {
-                var connection = new HubConnection(new Uri("http://test/hubs"), loggerFactory);
-                try
-                {
-                    await connection.StartAsync(TransportType.LongPolling, httpClient);
+                await connection.StartAsync();
 
-                    var result = await connection.Invoke<string>(nameof(TestHub.HelloWorld));
+                var result = await connection.Invoke<string>(nameof(TestHub.HelloWorld));
 
-                    Assert.Equal("Hello World!", result);
-                }
-                finally
-                {
-                    await connection.DisposeAsync();
-                }
+                Assert.Equal("Hello World!", result);
+            }
+            finally
+            {
+                await connection.DisposeAsync();
             }
         }
 
@@ -75,21 +74,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var loggerFactory = CreateLogger();
             const string originalMessage = "SignalR";
 
-            using (var httpClient = _testServer.CreateClient())
+            var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
+            var connection = new HubConnection(httpConnection, loggerFactory);
+            try
             {
-                var connection = new HubConnection(new Uri("http://test/hubs"), loggerFactory);
-                try
-                {
-                    await connection.StartAsync(TransportType.LongPolling, httpClient);
+                await connection.StartAsync();
 
-                    var result = await connection.Invoke<string>(nameof(TestHub.Echo), originalMessage);
+                var result = await connection.Invoke<string>(nameof(TestHub.Echo), originalMessage);
 
-                    Assert.Equal(originalMessage, result);
-                }
-                finally
-                {
-                    await connection.DisposeAsync();
-                }
+                Assert.Equal(originalMessage, result);
+            }
+            finally
+            {
+                await connection.DisposeAsync();
             }
         }
 
@@ -99,21 +96,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var loggerFactory = CreateLogger();
             const string originalMessage = "SignalR";
 
-            using (var httpClient = _testServer.CreateClient())
+            var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
+            var connection = new HubConnection(httpConnection, loggerFactory);
+            try
             {
-                var connection = new HubConnection(new Uri("http://test/hubs"), loggerFactory);
-                try
-                {
-                    await connection.StartAsync(TransportType.LongPolling, httpClient);
+                await connection.StartAsync();
 
-                    var result = await connection.Invoke<string>(nameof(TestHub.Echo).ToLowerInvariant(), originalMessage);
+                var result = await connection.Invoke<string>(nameof(TestHub.Echo).ToLowerInvariant(), originalMessage);
 
-                    Assert.Equal(originalMessage, result);
-                }
-                finally
-                {
-                    await connection.DisposeAsync();
-                }
+                Assert.Equal(originalMessage, result);
+            }
+            finally
+            {
+                await connection.DisposeAsync();
             }
         }
 
@@ -123,24 +118,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var loggerFactory = CreateLogger();
             const string originalMessage = "SignalR";
 
-            using (var httpClient = _testServer.CreateClient())
+            var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
+            var connection = new HubConnection(httpConnection, loggerFactory);
+            try
             {
-                var connection = new HubConnection(new Uri("http://test/hubs"), loggerFactory);
-                try
-                {
-                    await connection.StartAsync(TransportType.LongPolling, httpClient);
+                await connection.StartAsync();
 
-                    var tcs = new TaskCompletionSource<string>();
-                    connection.On<string>("Echo", tcs.SetResult);
+                var tcs = new TaskCompletionSource<string>();
+                connection.On<string>("Echo", tcs.SetResult);
 
-                    await connection.Invoke(nameof(TestHub.CallEcho), originalMessage).OrTimeout();
+                await connection.Invoke(nameof(TestHub.CallEcho), originalMessage).OrTimeout();
 
-                    Assert.Equal(originalMessage, await tcs.Task.OrTimeout());
-                }
-                finally
-                {
-                    await connection.DisposeAsync().OrTimeout();
-                }
+                Assert.Equal(originalMessage, await tcs.Task.OrTimeout());
+            }
+            finally
+            {
+                await connection.DisposeAsync().OrTimeout();
             }
         }
 
@@ -149,23 +142,21 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var loggerFactory = CreateLogger();
 
-            using (var httpClient = _testServer.CreateClient())
+            var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
+            var connection = new HubConnection(httpConnection, loggerFactory);
+            try
             {
-                var connection = new HubConnection(new Uri("http://test/hubs"), loggerFactory);
-                try
-                {
-                    await connection.StartAsync(TransportType.LongPolling, httpClient);
+                await connection.StartAsync();
 
-                    var tcs = new TaskCompletionSource<string>();
+                var tcs = new TaskCompletionSource<string>();
 
-                    var results = await connection.Stream<string>(nameof(TestHub.Stream)).ReadAllAsync().OrTimeout();
+                var results = await connection.Stream<string>(nameof(TestHub.Stream)).ReadAllAsync().OrTimeout();
 
-                    Assert.Equal(new[] { "a", "b", "c" }, results.ToArray());
-                }
-                finally
-                {
-                    await connection.DisposeAsync().OrTimeout();
-                }
+                Assert.Equal(new[] { "a", "b", "c" }, results.ToArray());
+            }
+            finally
+            {
+                await connection.DisposeAsync().OrTimeout();
             }
         }
 
@@ -174,22 +165,20 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var loggerFactory = CreateLogger();
 
-            using (var httpClient = _testServer.CreateClient())
+            var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
+            var connection = new HubConnection(httpConnection, loggerFactory);
+            try
             {
-                var connection = new HubConnection(new Uri("http://test/hubs"), loggerFactory);
-                try
-                {
-                    await connection.StartAsync(TransportType.LongPolling, httpClient);
+                await connection.StartAsync();
 
-                    var ex = await Assert.ThrowsAnyAsync<Exception>(
-                        async () => await connection.Invoke("!@#$%"));
+                var ex = await Assert.ThrowsAnyAsync<Exception>(
+                    async () => await connection.Invoke("!@#$%"));
 
-                    Assert.Equal("Unknown hub method '!@#$%'", ex.Message);
-                }
-                finally
-                {
-                    await connection.DisposeAsync();
-                }
+                Assert.Equal("Unknown hub method '!@#$%'", ex.Message);
+            }
+            finally
+            {
+                await connection.DisposeAsync();
             }
         }
 

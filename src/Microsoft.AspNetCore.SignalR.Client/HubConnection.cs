@@ -5,13 +5,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -26,8 +24,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IConnection _connection;
         private readonly IHubProtocol _protocol;
         private readonly HubBinder _binder;
-
-        private HttpClient _httpClient;
 
         private readonly object _pendingCallsLock = new object();
         private readonly CancellationTokenSource _connectionActive = new CancellationTokenSource();
@@ -48,12 +44,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             remove { _connection.Closed -= value; }
         }
 
-        public HubConnection(Uri url)
-            : this(new Connection(url), new JsonHubProtocol(new JsonSerializer()), null)
-        { }
-
-        public HubConnection(Uri url, ILoggerFactory loggerFactory)
-            : this(new Connection(url), new JsonHubProtocol(new JsonSerializer()), loggerFactory)
+        public HubConnection(IConnection connection)
+            : this(connection, new JsonHubProtocol(new JsonSerializer()), null)
         { }
 
         // These are only really needed for tests now...
@@ -82,31 +74,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _connection.Closed += Shutdown;
         }
 
-        public Task StartAsync() => StartAsync(TransportType.All, httpClient: null);
-        public Task StartAsync(HttpClient httpClient) => StartAsync(TransportType.All, httpClient: httpClient);
-        public Task StartAsync(TransportType transportType) => StartAsync(transportType, httpClient: null);
-
-        public async Task StartAsync(TransportType transportType, HttpClient httpClient)
+        public async Task StartAsync()
         {
-            if (httpClient == null)
-            {
-                // We are creating the client so store it to be able to dispose
-                _httpClient = httpClient = new HttpClient();
-            }
-
-            await _connection.StartAsync(new DefaultTransportFactory(transportType, _loggerFactory, httpClient), httpClient);
-        }
-
-        public async Task StartAsync(ITransportFactory transportFactory, HttpClient httpClient)
-        {
-            await _connection.StartAsync(transportFactory, httpClient);
+            await _connection.StartAsync();
         }
 
         public async Task DisposeAsync()
         {
             await _connection.DisposeAsync();
-
-            _httpClient?.Dispose();
         }
 
         // TODO: Client return values/tasks?

@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
-using ClientConnection = Microsoft.AspNetCore.Sockets.Client.Connection;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 const string message = "Major Key";
 
                 var url = _serverFixture.BaseUrl + "/echo";
-                var connection = new ClientConnection(new Uri(url), loggerFactory);
+                var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
                 try
                 {
                     var receiveTcs = new TaskCompletionSource<string>();
@@ -114,7 +113,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     };
 
                     logger.LogInformation("Starting connection to {url}", url);
-                    await connection.StartAsync(transportType).OrTimeout();
+                    await connection.StartAsync().OrTimeout();
                     logger.LogInformation("Started connection to {url}", url);
 
                     var bytes = Encoding.UTF8.GetBytes(message);
@@ -156,7 +155,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
                 var url = _serverFixture.BaseUrl + "/echo";
-                var connection = new ClientConnection(new Uri(url), loggerFactory);
+                var connection = new HttpConnection(new Uri(url), loggerFactory);
                 try
                 {
                     var receiveTcs = new TaskCompletionSource<byte[]>();
@@ -167,7 +166,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     };
 
                     logger.LogInformation("Starting connection to {url}", url);
-                    await connection.StartAsync(TransportType.WebSockets).OrTimeout();
+                    await connection.StartAsync().OrTimeout();
                     logger.LogInformation("Started connection to {url}", url);
 
                     var bytes = Encoding.UTF8.GetBytes(message);
@@ -213,7 +212,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
                 var url = _serverFixture.BaseUrl + "/uncreatable";
-                var connection = new HubConnection(new Uri(url), loggerFactory);
+              
+                var connection = new HubConnection(new HttpConnection(new Uri(url), transportType, loggerFactory), loggerFactory);
                 try
                 {
                     var closeTcs = new TaskCompletionSource<object>();
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     };
 
                     logger.LogInformation("Starting connection to {url}", url);
-                    await connection.StartAsync(transportType).OrTimeout();
+                    await connection.StartAsync().OrTimeout();
 
                     await closeTcs.Task.OrTimeout();
                 }

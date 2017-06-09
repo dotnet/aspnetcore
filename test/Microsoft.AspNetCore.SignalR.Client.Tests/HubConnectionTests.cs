@@ -4,19 +4,13 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
-using Microsoft.AspNetCore.Sockets.Client.Tests;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -24,110 +18,34 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class HubConnectionTests
     {
         [Fact]
-        public void CannotCreateHubConnectionWithNullUrl()
+        public async Task StartAsyncCallsConnectionStart()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new HubConnection((Uri)null, Mock.Of<ILoggerFactory>()));
-            Assert.Equal("url", exception.ParamName);
+            var connection = new Mock<IConnection>();
+            connection.Setup(m => m.StartAsync()).Returns(Task.CompletedTask).Verifiable();
+            var hubConnection = new HubConnection(connection.Object);
+            await hubConnection.StartAsync();
+
+            connection.Verify(c => c.StartAsync(), Times.Once());
         }
 
         [Fact]
-        public async Task CanDisposeNotStartedHubConnection()
+        public async Task DisposeAsyncCallsConnectionStart()
         {
-            await new HubConnection(new Uri("http://fakeuri.org"), new LoggerFactory())
-                .DisposeAsync();
-        }
-
-        [Fact]
-        public async Task CannotStartRunningHubConnection()
-        {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-                    return request.Method == HttpMethod.Options
-                        ? ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
-                        : ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
-                });
-
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            {
-                var hubConnection = new HubConnection(new Uri("http://fakeuri.org/"), new LoggerFactory());
-
-                try
-                {
-                    await hubConnection.StartAsync(TransportType.LongPolling, httpClient);
-                    var exception =
-                        await Assert.ThrowsAsync<InvalidOperationException>(
-                            async () => await hubConnection.StartAsync());
-                    Assert.Equal("Cannot start a connection that is not in the Initial state.", exception.Message);
-                }
-                finally
-                {
-                    await hubConnection.DisposeAsync();
-                }
-            }
-        }
-
-        [Fact]
-        public async Task CannotStartStoppedHubConnection()
-        {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-                    return request.Method == HttpMethod.Options
-                        ? ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
-                        : ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
-                });
-
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            {
-                var hubConnection = new HubConnection(new Uri("http://fakeuri.org/"), new LoggerFactory());
-
-                await hubConnection.StartAsync(TransportType.LongPolling, httpClient);
-                await hubConnection.DisposeAsync();
-                var exception =
-                    await Assert.ThrowsAsync<InvalidOperationException>(
-                        async () => await hubConnection.StartAsync());
-
-                Assert.Equal("Cannot start a connection that is not in the Initial state.", exception.Message);
-            }
-        }
-
-        [Fact]
-        public async Task InvokeThrowsIfHubConnectionNotStarted()
-        {
-            var hubConnection = new HubConnection(new Uri("http://fakeuri.org"));
-            var exception =
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.Invoke<int>("test"));
-            Assert.Equal("Cannot send messages when the connection is not in the Connected state.", exception.Message);
-        }
-
-        [Fact]
-        public async Task InvokeThrowsIfHubConnectionDisposed()
-        {
-            var hubConnection = new HubConnection(new Uri("http://fakeuri.org"));
+            var connection = new Mock<IConnection>();
+            connection.Setup(m => m.StartAsync()).Verifiable();
+            var hubConnection = new HubConnection(connection.Object);
             await hubConnection.DisposeAsync();
 
-            var exception =
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.Invoke<int>("test"));
-            Assert.Equal("Cannot send messages when the connection is not in the Connected state.", exception.Message);
+            connection.Verify(c => c.DisposeAsync(), Times.Once());
         }
 
         [Fact]
         public async Task InvokeThrowsIfSerializingMessageFails()
         {
-            var mockConnection = new Mock<IConnection>();
-
             var exception = new InvalidOperationException();
             var mockProtocol = MockHubProtocol.Throw(exception);
-            var hubConnection = new HubConnection(mockConnection.Object, mockProtocol, null);
-            await hubConnection.StartAsync(TransportType.All, httpClient: null);
+            var hubConnection = new HubConnection(new TestConnection(), mockProtocol, null);
+            await hubConnection.StartAsync();
 
             var actualException =
                 await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.Invoke<int>("test"));
@@ -137,75 +55,43 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task HubConnectionConnectedEventRaisedWhenTheClientIsConnected()
         {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-                    return request.Method == HttpMethod.Options
-                        ? ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
-                        : ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
-                });
-
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection);
+            try
             {
-                var hubConnection = new HubConnection(new Uri("http://fakeuri.org"), new LoggerFactory());
-                try
-                {
-                    var connectedEventRaisedTcs = new TaskCompletionSource<object>();
-                    hubConnection.Connected += () => connectedEventRaisedTcs.SetResult(null);
+                var connectedEventRaisedTcs = new TaskCompletionSource<object>();
+                hubConnection.Connected += () => connectedEventRaisedTcs.SetResult(null);
 
-                    await hubConnection.StartAsync(TransportType.LongPolling, httpClient);
+                await hubConnection.StartAsync();
 
-                    await connectedEventRaisedTcs.Task.OrTimeout();
-                }
-                finally
-                {
-                    await hubConnection.DisposeAsync();
-                }
+                await connectedEventRaisedTcs.Task.OrTimeout();
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync();
             }
         }
 
         [Fact]
         public async Task ClosedEventRaisedWhenTheClientIsStopped()
         {
-            var mockHttpHandler = new Mock<HttpMessageHandler>();
-            mockHttpHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
-                {
-                    await Task.Yield();
-                    return request.Method == HttpMethod.Options
-                        ? ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
-                        : ResponseUtils.CreateResponse(System.Net.HttpStatusCode.OK);
-                });
+            var hubConnection = new HubConnection(new TestConnection());
+            var closedEventTcs = new TaskCompletionSource<Exception>();
+            hubConnection.Closed += e => closedEventTcs.SetResult(e);
 
-            using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            {
-                var hubConnection = new HubConnection(new Uri("http://fakeuri.org"), new LoggerFactory());
-                var closedEventTcs = new TaskCompletionSource<Exception>();
-                hubConnection.Closed += e => closedEventTcs.SetResult(e);
+            await hubConnection.StartAsync();
+            await hubConnection.DisposeAsync();
 
-                await hubConnection.StartAsync(TransportType.LongPolling, httpClient);
-                await hubConnection.DisposeAsync();
-
-                Assert.Null(await closedEventTcs.Task.OrTimeout());
-            }
+            Assert.Null(await closedEventTcs.Task.OrTimeout());
         }
 
         [Fact]
         public async Task CannotCallInvokeOnClosedHubConnection()
         {
-            var mockConnection = new Mock<IConnection>();
-            mockConnection
-                .Setup(m => m.DisposeAsync())
-                .Callback(() => mockConnection.Raise(c => c.Closed += null, (Exception)null))
-                .Returns(Task.FromResult<object>(null));
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new LoggerFactory());
 
-            var hubConnection = new HubConnection(mockConnection.Object, new LoggerFactory());
-
-            await hubConnection.StartAsync(new TestTransportFactory(Mock.Of<ITransport>()), httpClient: null);
+            await hubConnection.StartAsync();
             await hubConnection.DisposeAsync();
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 async () => await hubConnection.Invoke<int>("test"));
@@ -216,15 +102,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task PendingInvocationsAreCancelledWhenConnectionClosesCleanly()
         {
-            var mockConnection = new Mock<IConnection>();
-            mockConnection
-                .Setup(m => m.DisposeAsync())
-                .Callback(() => mockConnection.Raise(c => c.Closed += null, (Exception)null))
-                .Returns(Task.FromResult<object>(null));
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new LoggerFactory());
 
-            var hubConnection = new HubConnection(mockConnection.Object, new LoggerFactory());
-
-            await hubConnection.StartAsync(new TestTransportFactory(Mock.Of<ITransport>()), httpClient: null);
+            await hubConnection.StartAsync();
             var invokeTask = hubConnection.Invoke<int>("testMethod");
             await hubConnection.DisposeAsync();
 
@@ -243,7 +124,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             var hubConnection = new HubConnection(mockConnection.Object, new LoggerFactory());
 
-            await hubConnection.StartAsync(new TestTransportFactory(Mock.Of<ITransport>()), httpClient: null);
+            await hubConnection.StartAsync();
             var invokeTask = hubConnection.Invoke<int>("testMethod");
             await hubConnection.DisposeAsync();
 
@@ -261,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var mockProtocol = MockHubProtocol.ReturnOnParse(invocation);
 
             var hubConnection = new HubConnection(mockConnection.Object, mockProtocol, null);
-            await hubConnection.StartAsync(new TestTransportFactory(Mock.Of<ITransport>()), httpClient: null);
+            await hubConnection.StartAsync();
 
             mockConnection.Raise(c => c.Received += null, new object[] { new byte[] { } });
             Assert.Equal(1, mockProtocol.ParseCalls);
