@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 return 1;
             }
 
-            var precompileAssemblyName = $"{Options.ApplicationName}{CompiledViewManfiest.PrecompiledViewsAssemblySuffix}";
+            var precompileAssemblyName = $"{Options.ApplicationName}{ViewsFeatureProvider.PrecompiledViewsAssemblySuffix}";
             var compilation = CompileViews(results, precompileAssemblyName);
             var resources = GetResources(results);
 
