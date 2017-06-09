@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
   <PropertyGroup>
     <MicrosoftCommonTargetsImported>true</MicrosoftCommonTargetsImported>
     <VerifyDependsOn>$(VerifyDependsOn);PublishPackage</VerifyDependsOn>
@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PackagePublisher" Version="1.0.1-*" />
+    <PackageReference Include="PackagePublisher" Version="1.0.2-*" />
     <PackageReference Include="NuGet.CommandLine" Version="$(NuGetCommandLineVersion)" />
   </ItemGroup>
 
@@ -42,20 +42,16 @@
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;$(NuspecPath)&quot; -OutputDirectory &quot;$(ArtifactsDir)\build&quot; -prop Version=1.0.0-$(BuildNumber)" />
   </Target>
 
-    <Target Name="_ResolvePackagePublisherPath" DependsOnTargets="RunResolvePackageDependencies">
-    <ItemGroup>
-      <PackagePublisherPath Include="%(PackageDefinitions.ResolvedPath)" Condition="'%(PackageDefinitions.Name)'=='PackagePublisher'" />
-    </ItemGroup>
- 
-   <PropertyGroup>
-      <_PackagePublisherPath>@(PackagePublisherPath)\PackagePublisher.exe</_PackagePublisherPath>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="PublishPackage" 
-    DependsOnTargets="_ResolvePackagePublisherPath"
+    DependsOnTargets="_FindDotNetPath"
     Condition="'$(PublishPackage)'=='true'">
     
-    <Exec Command="&quot;$(PackagePublisherPath)&quot; -d &quot;$(ArtifactsDir)\build&quot; -f $(PublishFeed)" />
+    <Exec Command="&quot;$(DotNetPath)&quot; $(PackagePublisherNetCoreApp) -d &quot;$(ArtifactsDir)\build&quot; -f $(PublishFeed)" />
+  </Target>
+
+  <Target Name="_FindDotNetPath">
+    <GetDotNetHost>
+      <Output TaskParameter="ExecutablePath" PropertyName="DotNetPath" />
+    </GetDotNetHost>
   </Target>
 </Project>
